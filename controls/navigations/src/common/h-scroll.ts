@@ -49,11 +49,6 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     private timeout: number;
     private keyTimeout: boolean;
     private keyTimer: number;
-    private onKeyPressBound: (e: KeyboardEvent) => void;
-    private onKeyUpBound: (e: KeyboardEvent) => void;
-    private repeatScrollBound: () => void;
-    private contextMenuBound: (e: Event) => void;
-    private navTouchCollection: Touch[];
     private browser: string;
     private browserCheck: boolean;
     private ieCheck: boolean;
@@ -164,13 +159,8 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         ele.classList.remove(CLS_RTL);
         const nav: HTEle[] =  selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
         const overlay: HTEle[] = selectAll('.' + CLS_OVERLAY, ele);
-        [].slice.call(overlay).forEach((oElem: HTEle) => {
-            if (this.onKeyPressBound) { oElem.removeEventListener('keydown', this.onKeyPressBound); }
-            if (this.onKeyUpBound) { oElem.removeEventListener('keyup', this.onKeyUpBound); }
-            if (this.repeatScrollBound) { oElem.removeEventListener('mouseup', this.repeatScrollBound); oElem.removeEventListener('touchend', this.repeatScrollBound); }
-            if (this.contextMenuBound) { oElem.removeEventListener('contextmenu', this.contextMenuBound); }
-            EventHandler.remove(oElem, 'click', this.clickEventHandler);
-            detach(oElem);
+        [].slice.call(overlay).forEach((ele: HTEle) => {
+            detach(ele);
         });
         for (const elem of [].slice.call(this.scrollItems.children)) {
             ele.appendChild(elem);
@@ -179,27 +169,15 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
             this.element.removeAttribute('id');
         }
         detach(this.scrollEle);
-        if (nav.length > 0) {            
-            [].slice.call(nav).forEach((nElem: HTEle) => {
-                if (this.onKeyPressBound) { nElem.removeEventListener('keydown', this.onKeyPressBound); }
-                if (this.onKeyUpBound) { nElem.removeEventListener('keyup', this.onKeyUpBound); }
-                if (this.repeatScrollBound) { nElem.removeEventListener('mouseup', this.repeatScrollBound); nElem.removeEventListener('touchend', this.repeatScrollBound); }
-                if (this.contextMenuBound) { nElem.removeEventListener('contextmenu', this.contextMenuBound); }
-                EventHandler.remove(nElem, 'click', this.clickEventHandler);
-                detach(nElem);
-            });
+        if (nav.length > 0) {
+            detach(nav[0]);
+            if (!isNullOrUndefined(nav[1])) {
+                detach(nav[1]);
+            }
         }
         EventHandler.remove(this.scrollEle, 'scroll', this.scrollHandler);
         this.touchModule.destroy();
         this.touchModule = null;
-        if (this.navTouchCollection) {
-            this.navTouchCollection.forEach((t) => { if (t && typeof (t as any).destroy === 'function') { (t as any).destroy(); } });
-            this.navTouchCollection = null;
-        }
-        this.onKeyPressBound = null;
-        this.onKeyUpBound = null;
-        this.repeatScrollBound = null;
-        this.contextMenuBound = null;
         super.destroy();
     }
     /**
@@ -283,32 +261,18 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private eventBinding(ele: HTEle[]): void {
         [].slice.call(ele).forEach((el: HTEle) => {
-            const navTouch = new Touch(el, {tapHold: this.tabHoldHandler.bind(this), tapHoldThreshold: 500 });
-            if (!this.navTouchCollection) { this.navTouchCollection = []; }
-            this.navTouchCollection.push(navTouch);
-            if (!this.onKeyPressBound) {
-                this.onKeyPressBound = this.onKeyPress.bind(this);
-            }
-            if (!this.onKeyUpBound) {
-                this.onKeyUpBound = this.onKeyUp.bind(this);
-            }
-            if (!this.repeatScrollBound) {
-                this.repeatScrollBound = this.repeatScroll.bind(this);
-            }
-            if (!this.contextMenuBound) {
-                this.contextMenuBound = this.contextMenuHandler.bind(this);
-            }
-            el.addEventListener('keydown' , this.onKeyPressBound);
-            el.addEventListener('keyup', this.onKeyUpBound);
-            el.addEventListener('mouseup', this.repeatScrollBound);
-            el.addEventListener('touchend', this.repeatScrollBound);
-            el.addEventListener('contextmenu', this.contextMenuBound);
+            new Touch(el, {tapHold: this.tabHoldHandler.bind(this), tapHoldThreshold: 500 });
+            el.addEventListener('keydown' , this.onKeyPress.bind(this));
+            el.addEventListener('keyup', this.onKeyUp.bind(this));
+            el.addEventListener('mouseup', this.repeatScroll.bind(this));
+            el.addEventListener('touchend', this.repeatScroll.bind(this));
+            el.addEventListener('contextmenu', (e: Event) => {
+                e.preventDefault();
+            });
             EventHandler.add(el, 'click', this.clickEventHandler, this);
         });
     }
-    private contextMenuHandler(e: Event): void {
-        e.preventDefault();
-    }
+    
     private repeatScroll(): void {
         clearInterval (this.timeout);
     }

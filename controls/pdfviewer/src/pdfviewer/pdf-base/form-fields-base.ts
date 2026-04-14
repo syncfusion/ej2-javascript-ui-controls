@@ -393,7 +393,7 @@ export class FormFieldsBase {
                                     currentField.readOnly = table['isReadOnly'] === 'true' ? true : false;
                                 }
                             }
-                            fieldName = !isNullOrUndefined(JSON.parse(fieldName) [0]) ? JSON.parse(fieldName) [0].replace(/[^0-9a-zA-Z]+/g, '') : '';
+                            fieldName = !isNullOrUndefined(JSON.parse(fieldName) [0]) ? JSON.parse(fieldName) [0].itemName.replace(/[^0-9a-zA-Z]+/g, '') : '';
                             const selectedIndexes: number[] = [];
                             for (let k: number = 0; k < count; k++) {
                                 const text: string = currentField.itemAt(k).text;

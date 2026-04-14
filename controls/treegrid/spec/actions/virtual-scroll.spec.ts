@@ -7572,3 +7572,44 @@ describe('Coverage for updateScrollbarOnResize', function () {
     destroy(gridObj);
   });
 });
+
+describe("Virtual Scroll - Filter orphan child (hierarchyMode None)", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    const data = [
+      { TaskID: 1, ParentID: null, FIELD1: 'parent' },
+      { TaskID: 2, ParentID: 1, FIELD1: 'childmatch' },
+      { TaskID: 3, ParentID: 1, FIELD1: 'childno' }
+    ];
+    treegrid = createGrid({
+      dataSource: data,
+      parentIdMapping: 'ParentID',
+      idMapping: 'TaskID',
+      height: 200,
+      enableVirtualization: true,
+      allowFiltering: true,
+      filterSettings: { hierarchyMode: 'None' },
+      columns: [
+        { field: 'TaskID', isPrimaryKey: true },
+        { field: 'FIELD1' }
+      ],
+      treeColumnIndex: 1
+    }, done);
+  });
+
+  it("should show orphaned child when parent doesn't match the filter", (done: Function) => {
+    treegrid.actionComplete = (args?: any) => {
+      if (args.requestType === 'filtering') {
+        expect(treegrid.getCurrentViewRecords().length).toBe(1);
+        expect((treegrid.getCurrentViewRecords()[0] as any).FIELD1).toBe('childmatch');
+        treegrid.actionComplete = null;
+        done();
+      }
+    };
+    treegrid.filterByColumn('FIELD1', 'contains', 'childmatch');
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});

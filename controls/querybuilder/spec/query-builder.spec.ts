@@ -1636,6 +1636,20 @@ describe('QueryBuilder', () => {
             (queryBuilder as any).beforeSuccessCallBack(args, queryBuilder.element.querySelector('.e-qb-toggle-btn'));
         });
 
+        it('ID value checking', () => {
+            queryBuilder = null;
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: buttonData,
+                enableSeparateConnector: true,
+                enableNotCondition: true,
+                rule: eRules
+            }, '#querybuilder');
+            expect(queryBuilder.element.id ).not.toBe('ej2-querybuilder_0_group0');
+            queryBuilder.refresh();
+            expect(queryBuilder.element.id ).not.toBe('ej2-querybuilder_0_group0');
+        });
+
         it('Button changes with angular', () => {
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,

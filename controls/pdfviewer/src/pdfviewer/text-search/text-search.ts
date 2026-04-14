@@ -3150,15 +3150,25 @@ export class TextSearch {
         const searchResults: Record<string, SearchResultModel[]> = {};
         const startIndex: number = !isNullOrUndefined(pageIndex) ? pageIndex : 0;
         const endIndex: number = !isNullOrUndefined(pageIndex) ? pageIndex + 1 : this.pdfViewerBase.documentTextCollection.length;
-        const fetchTextCollection: any = (endIndex: number) =>
-            this.pdfViewerBase.documentTextCollection[parseInt(endIndex.toString(), 10)] ?
-                this.pdfViewerBase.documentTextCollection[parseInt(endIndex.toString(), 10)][parseInt(endIndex.toString(), 10)] : null;
-        const documentTextCollection: any = fetchTextCollection(endIndex - 1);
+        const hasAnyText: boolean =
+            this.pdfViewerBase.documentTextCollection
+                .slice(startIndex, endIndex)
+                .some((page: any, relativeIndex: number): boolean => {
+                    const actualIndex: number = startIndex + relativeIndex;
+                    if (!page || !page[actualIndex as number]) {
+                        return false;
+                    }
+                    const textData: any = page[actualIndex as number];
+                    return (
+                        (Array.isArray(textData.TextData) && textData.TextData.length > 0) ||
+                        (typeof textData.PageText === 'string' && textData.PageText.trim().length > 0)
+                    );
+                });
         let findTextResult: any = [];
-        if (documentTextCollection && documentTextCollection.TextData.length > 0 && !isNullOrUndefined(pageIndex)) {
+        if (hasAnyText && !isNullOrUndefined(pageIndex)) {
             findTextResult = this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
                                                    this.pdfViewerBase.documentTextCollection[parseInt(pageIndex.toString(), 10)]);
-        } else if (documentTextCollection && documentTextCollection.TextData.length > 0) {
+        } else if (hasAnyText) {
             findTextResult = this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
                                                    this.pdfViewerBase.documentTextCollection);
         }

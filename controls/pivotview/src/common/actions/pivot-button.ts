@@ -284,6 +284,7 @@ export class PivotButton implements IAction {
                                     }
                                 });
                                 columnFieldDropDownList.isStringTemplate = true;
+                                columnFieldDropDownList.isAngular = this.parent.isModalDialog;
                                 columnFieldDropDownList.appendTo(ddlDiv);
                             }
                         }
@@ -538,6 +539,7 @@ export class PivotButton implements IAction {
             }
         });
         valueFiedDropDownList.isStringTemplate = true;
+        valueFiedDropDownList.isAngular = this.parent.isModalDialog;
         valueFiedDropDownList.appendTo(ddlDiv);
         return valueFiedDropDownList;
     }

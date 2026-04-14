@@ -1214,6 +1214,14 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.updateGridHeight(true, true);
         }
         this.popupObj.refreshPosition();
+        if (args.requestType === 'refresh') {
+            setTimeout(() => {
+                if (this.popupObj && this.isPopupOpen) {
+                    this.popupObj.refreshPosition();
+                }
+            }, 0);
+
+        }
         this.gridObj.element.querySelector('.e-content').scrollTop = 0;
     }
 

@@ -321,6 +321,39 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 1017686: List alignment becomes incorrect when pasting Word content.', () => {
+        let editor: RichTextEditor;
+        let innerHTML: string = `\r\n\x3C!--StartFragment-->\r\n\r\n<p class=MsoListParagraphCxSpFirst style='margin-left:67.5pt;mso-add-space:\r\nauto;text-indent:-63.0pt;mso-list:l0 level1 lfo1'><![if !supportLists]><span\r\nstyle='mso-fareast-font-family:Aptos;mso-fareast-theme-font:minor-latin;\r\nmso-bidi-font-family:Aptos;mso-bidi-theme-font:minor-latin'><span\r\nstyle='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]>List 1<o:p></o:p></p>\r\n\r\n<p class=MsoListParagraphCxSpMiddle style='margin-left:67.5pt;mso-add-space:\r\nauto;text-indent:-63.0pt;mso-list:l0 level1 lfo1'><![if !supportLists]><span\r\nstyle='mso-fareast-font-family:Aptos;mso-fareast-theme-font:minor-latin;\r\nmso-bidi-font-family:Aptos;mso-bidi-theme-font:minor-latin'><span\r\nstyle='mso-list:Ignore'>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]>List 2<o:p></o:p></p>\r\n\r\n<p class=MsoListParagraphCxSpLast style='margin-left:67.5pt;mso-add-space:auto;\r\ntext-indent:-63.0pt;mso-list:l0 level1 lfo1'><![if !supportLists]><span\r\nstyle='mso-fareast-font-family:Aptos;mso-fareast-theme-font:minor-latin;\r\nmso-bidi-font-family:Aptos;mso-bidi-theme-font:minor-latin'><span\r\nstyle='mso-list:Ignore'>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]>List 3<o:p></o:p></p>\r\n\r\n<p class=MsoNormal><o:p>&nbsp;</o:p></p>\r\n\r\n\x3C!--EndFragment-->\r\n`;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false,
+                    plainText: false,
+                    keepFormat: true
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Test for margin-left removal in list items', (done: Function) => {
+            editor.focusIn();
+            setCursorPoint((editor as any).inputElement.firstElementChild, 0);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', innerHTML);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                let listItems: NodeListOf<HTMLLIElement> = editor.inputElement.querySelectorAll('ul, ol');
+                for (let i = 0; i < listItems.length; i++) {
+                    expect(listItems[i].style.marginLeft).toBe('');
+                }
+                done();
+            }, 100);
+        });
+    });
+
+
     describe('857054 - MaxLength property is not working properly in RichTextEditor, when pasting contents into the Editor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

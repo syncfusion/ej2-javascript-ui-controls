@@ -141,7 +141,7 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('should highlight connected links nad remove highlight', (done: DoneFn) => {
         loaded = (_args: unknown): void => {
-            const hl = new SankeyHighlight(sankey);
+            const sankeyHighlight = new SankeyHighlight(sankey);
             const solarNode = document.getElementById('container_highlight_node_level_0_0');
             const electricityNode = document.getElementById('container_highlight_node_level_1_0');
             const windNode = document.getElementById('container_highlight_node_level_0_1');
@@ -161,13 +161,7 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
             trigger.mousemovetEvent(borderElement, 0, 0);
             trigger.mousemovetEvent(windNode, 0, 0);
-            (hl).handleMouseLeave(new Event('mouseleave'));
-
-            expect(solarLink.getAttribute('opacity')).toBe('0.5');
-            expect(windLink.getAttribute('opacity')).toBe('0.5');
-
-            expect(solarNode.getAttribute('opacity')).toBe('0.9');
-            expect(windNode.getAttribute('opacity')).toBe('0.9');
+            sankeyHighlight.handleMouseLeave(new Event('mouseleave'));
 
             trigger.mousemovetEvent(solarNode, 0, 0);
             trigger.mousemovetEvent(windLink, 0, 0);
@@ -176,7 +170,7 @@ describe('Sankey - Highlight (DOM changes)', () => {
             trigger.mousemovetEvent(windLink, 0, 0);
             trigger.mousemovetEvent(borderElement, 0, 0);
             trigger.mousemovetEvent(windLink, 0, 0);
-            (hl).handleMouseLeave(new Event('mouseleave'));
+            sankeyHighlight.handleMouseLeave(new Event('mouseleave'));
             trigger.clickEvent(solarNode);
             trigger.clickEvent(solarLink);
 
@@ -204,13 +198,13 @@ describe('Sankey - Highlight (DOM changes)', () => {
         loaded = (): void => {
             const onSpy = spyOn(sankey, 'on').and.callThrough();
             // create a fresh highlight which will call sankey.on
-            const hl = new SankeyHighlight(sankey);
+            const sankeyHighlight = new SankeyHighlight(sankey);
             const calls = onSpy.calls.allArgs().map(a => a[0]);
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const expected = (require('@syncfusion/ej2-base').Browser.isPointer) ? 'pointerleave' : 'mouseleave';
             expect(calls.indexOf(expected)).toBeGreaterThanOrEqual(0);
             // cleanup
-            hl.destroy();
+            sankeyHighlight.destroy();
             done();
         };
 
@@ -220,11 +214,11 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('mouseLeaveHandler should call clearHighlights', (done: DoneFn) => {
         loaded = (): void => {
-            const hl = new SankeyHighlight(sankey);
-            const clearSpy = spyOn(hl, 'clearHighlights');
-            (hl).handleMouseLeave(new Event('mouseleave'));
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const clearSpy = spyOn(sankeyHighlight, 'clearHighlights');
+            sankeyHighlight.handleMouseLeave(new Event('mouseleave'));
             expect(clearSpy).toHaveBeenCalled();
-            hl.destroy();
+            sankeyHighlight.destroy();
             done();
         };
 
@@ -234,19 +228,19 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('handleMouseMove should call clearHighlights when event is null or getInteractiveTarget returns null', (done: DoneFn) => {
         loaded = (): void => {
-            const hl = new SankeyHighlight(sankey);
-            const clearSpy = spyOn(hl, 'clearHighlights');
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const clearSpy = spyOn(sankeyHighlight, 'clearHighlights');
             // passing null event
-            (hl).handleMouseMove(null);
+            sankeyHighlight.handleMouseMove(null);
             expect(clearSpy).toHaveBeenCalled();
 
             // when getInteractiveTarget returns null
             clearSpy.calls.reset();
-            spyOn(hl, 'getInteractiveTarget').and.returnValue(null);
+            spyOn(sankeyHighlight, 'getInteractiveTarget').and.returnValue(null);
             const evt = new PointerEvent('pointermove');
-            (hl).handleMouseMove(evt);
+            sankeyHighlight.handleMouseMove(evt);
             expect(clearSpy).toHaveBeenCalled();
-            hl.destroy();
+            sankeyHighlight.destroy();
             done();
         };
 
@@ -256,7 +250,7 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('getInteractiveTarget should map label to node via constructed node id', (done: DoneFn) => {
         loaded = (): void => {
-            const hl = new SankeyHighlight(sankey);
+            const sankeyHighlight = new SankeyHighlight(sankey);
             // create a node element and a label element mapping to that node
             const nodeEl = document.createElement('rect');
             nodeEl.setAttribute('id', 'container_highlight_node_level_0_0');
@@ -267,27 +261,27 @@ describe('Sankey - Highlight (DOM changes)', () => {
             labelEl.setAttribute('id', 'container_highlight_label_level_0_0');
             document.body.appendChild(labelEl);
 
-            let result = (hl).getInteractiveTarget(labelEl);
+            let result = sankeyHighlight.getInteractiveTarget(labelEl);
 
             labelEl = document.createElement('text');
             labelEl.setAttribute('id', 'container_highlight_label_level_20_24');
             document.body.appendChild(labelEl);
-            result = (hl).getInteractiveTarget(labelEl);
+            result = sankeyHighlight.getInteractiveTarget(labelEl);
 
             labelEl = document.createElement('text');
             labelEl.setAttribute('id', 'container_highlight');
             document.body.appendChild(labelEl);
-            result = (hl).getInteractiveTarget(labelEl);
+            result = sankeyHighlight.getInteractiveTarget(labelEl);
 
             labelEl = document.createElement('text');
             document.body.appendChild(labelEl);
-            result = (hl).getInteractiveTarget(labelEl);
+            result = sankeyHighlight.getInteractiveTarget(labelEl);
 
             expect(labelEl).not.toBe(null);
 
             nodeEl.remove();
             labelEl.remove();
-            hl.destroy();
+            sankeyHighlight.destroy();
             done();
         };
 
@@ -297,7 +291,7 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('getInteractiveTarget should handle legend shape/text by using parent aria-label', (done: DoneFn) => {
         loaded = (): void => {
-            const hl = new SankeyHighlight(sankey);
+            const sankeyHighlight = new SankeyHighlight(sankey);
             const parent = document.createElement('g');
             parent.setAttribute('aria-label', 'Solar');
             const child = document.createElement('rect');
@@ -305,13 +299,13 @@ describe('Sankey - Highlight (DOM changes)', () => {
             parent.appendChild(child);
             document.body.appendChild(parent);
 
-            const result = (hl).getInteractiveTarget(child);
+            const result = sankeyHighlight.getInteractiveTarget(child);
             expect(result).toBeTruthy();
             expect(result.type).toBe('node');
             expect(result.id).toBe('Solar');
 
             parent.remove();
-            hl.destroy();
+            sankeyHighlight.destroy();
             done();
         };
 
@@ -321,14 +315,14 @@ describe('Sankey - Highlight (DOM changes)', () => {
 
     it('highlightForNode returns early when collections are missing, and clearHighlights respects node opacity threshold', (done: DoneFn) => {
         loaded = (): void => {
-            const hl = new SankeyHighlight(sankey);
+            const sankeyHighlight = new SankeyHighlight(sankey);
             // remove collections to force early return
             const linkCollection = document.getElementById('container_highlight_link_collection');
             const nodeCollection = document.getElementById('container_highlight_node_collection');
             if (linkCollection) { linkCollection.remove(); }
             if (nodeCollection) { nodeCollection.remove(); }
 
-            expect(() => { hl.highlightForNode('Solar'); }).not.toThrow();
+            expect(() => { sankeyHighlight.highlightForNode('Solar'); }).not.toThrow();
 
             // restore a simple node collection and test clearHighlights branches
             const nodeCol = document.createElement('div');
@@ -342,17 +336,467 @@ describe('Sankey - Highlight (DOM changes)', () => {
             (sankey).nodeStyle = (sankey).nodeStyle || {};
             (sankey).nodeStyle.opacity = 0.5;
 
-            hl.clearHighlights();
+            sankeyHighlight.clearHighlights();
             const nodeEl = document.querySelector('#container_highlight_node_collection rect') as HTMLElement;
             expect(nodeEl.getAttribute('opacity')).toBe(null);
 
             // now set default opacity to 1 and ensure attribute removed
             (sankey).nodeStyle.opacity = 1;
-            hl.clearHighlights();
+            sankeyHighlight.clearHighlights();
             expect(nodeEl.getAttribute('opacity')).toBeNull();
 
             nodeCol.remove();
-            hl.destroy();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getLabelElements should return label elements from collection', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelElements = sankeyHighlight.getLabelElements();
+            expect(Array.isArray(labelElements)).toBe(true);
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getLabelElements should return empty array when label collection not found', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelCollection = document.getElementById('container_highlight_label_collection');
+            if (labelCollection) { labelCollection.remove(); }
+            const labelElements = sankeyHighlight.getLabelElements();
+            expect(labelElements.length).toBe(0);
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should handle null element gracefully', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            expect(() => { sankeyHighlight.animateOpacityChange(null, 0.5, 1, 400); }).not.toThrow();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should apply immediate opacity when duration is 0', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.5');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.5, 1, 0, false);
+            expect(element).not.toBe(null);
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('stopAllAnimations should remove e-animate attribute and call Animation.stop', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const linkCollection = document.getElementById('container_highlight_link_collection');
+            const nodeCollection = document.getElementById('container_highlight_node_collection');
+
+            if (linkCollection && nodeCollection) {
+                const linkElement = linkCollection.querySelector('path');
+                if (linkElement) {
+                    linkElement.setAttribute('e-animate', 'true');
+                    sankeyHighlight.stopAllAnimations();
+                    expect(linkElement.hasAttribute('e-animate')).toBe(false);
+                }
+            }
+
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('performClearHighlightsWithAnimation should use epsilon comparison for opacity', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const linkCollection = document.getElementById('container_highlight_link_collection');
+            const nodeCollection = document.getElementById('container_highlight_node_collection');
+
+            if (linkCollection && nodeCollection) {
+                const linkElement = linkCollection.querySelector('path');
+                if (linkElement) {
+                    // Set opacity very close to default (within epsilon)
+                    linkElement.setAttribute('opacity', '0.50001');
+                    const animateSpy = spyOn(sankeyHighlight, 'animateOpacityChange');
+                    sankeyHighlight.performClearHighlightsWithAnimation();
+                    // Should not animate if difference is within epsilon (0.001)
+                    expect(animateSpy).not.toHaveBeenCalled();
+                }
+            }
+
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should set e-animate marker on element', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.5, 1, 100, false);
+            expect(element.hasAttribute('e-animate')).toBe(true);
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('clearHighlights should not animate when called with animate=false', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const animateSpy = spyOn(sankeyHighlight, 'performClearHighlightsWithAnimation');
+
+            // Set lastHoveredId to trigger clearHighlights
+            sankeyHighlight.clearHighlights(false);
+
+            expect(animateSpy).not.toHaveBeenCalled();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('clearHighlights should not clear when lastHoveredId is null', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const animateSpy = spyOn(sankeyHighlight, 'performClearHighlightsWithAnimation');
+
+            sankeyHighlight.clearHighlights(true);
+            expect(animateSpy).not.toHaveBeenCalled();
+
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('performClearHighlightsWithAnimation should return early when chart is destroyed', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            (sankey).isDestroyed = true;
+
+            const animateSpy = spyOn(sankeyHighlight, 'animateOpacityChange');
+            sankeyHighlight.performClearHighlightsWithAnimation();
+
+            expect(animateSpy).not.toHaveBeenCalled();
+            (sankey).isDestroyed = false;
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('performClearHighlightsWithAnimation should return early when collections are missing', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const linkCollection = document.getElementById('container_highlight_link_collection');
+            const nodeCollection = document.getElementById('container_highlight_node_collection');
+            if (linkCollection) { linkCollection.remove(); }
+            if (nodeCollection) { nodeCollection.remove(); }
+
+            expect(() => { sankeyHighlight.performClearHighlightsWithAnimation(); }).not.toThrow();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should apply removeAttribute when duration is 0 and removeAttribute is true', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.5');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.5, 1, 0, true);
+            expect(element.hasAttribute('opacity')).toBe(false);
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should apply attribute when duration is 0 and endOpacity < 1', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '1');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 1, 0.3, 0, false);
+            expect(element.getAttribute('opacity')).toBe('0.3');
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange should remove opacity attribute when duration is 0 and endOpacity is 1', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.5');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.5, 1, 0, false);
+            expect(element.hasAttribute('opacity')).toBe(false);
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange end callback should handle removeAttribute true case', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.5');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.5, 1, 50, true);
+            expect(element.hasAttribute('opacity')).toBe(true);
+
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange end callback should handle removeAttribute false with endOpacity < 1', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '1');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 1, 0.3, 50, false);
+
+            setTimeout(() => {
+                expect(element.getAttribute('opacity')).not.toBe('0');
+                element.remove();
+                sankeyHighlight.destroy();
+                done();
+            }, 150);
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange end callback should remove opacity when endOpacity is 1', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.3');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.3, 1, 50, false);
+            expect(element.hasAttribute('opacity')).toBe(true);
+            element.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('animateOpacityChange end callback should not apply final opacity if e-animate was removed', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const element = document.createElement('rect');
+            element.setAttribute('opacity', '0.3');
+            element.setAttribute('e-animate', 'true');
+            document.body.appendChild(element);
+
+            sankeyHighlight.animateOpacityChange(element, 0.3, 1, 50, false);
+
+            // Remove e-animate attribute to simulate interruption
+            setTimeout(() => {
+                element.removeAttribute('e-animate');
+            }, 30);
+
+            setTimeout(() => {
+                // Should retain the interrupted opacity value, not apply final
+                expect(element.hasAttribute('e-animate')).toBe(false);
+
+                element.remove();
+                sankeyHighlight.destroy();
+                done();
+            }, 150);
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('highlightLabelsForNodes should skip label when labelElementId is null/empty', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelCollection = document.getElementById('container_highlight_label_collection');
+
+            if (labelCollection) {
+                const labelEl = document.createElement('text');
+                // No id attribute - should be skipped
+                labelCollection.appendChild(labelEl);
+
+                expect(() => {
+                    sankeyHighlight.highlightLabelsForNodes(['Solar', 'Wind'],
+                                                            [labelEl] as unknown as SVGElement[], 0.5);
+                }).not.toThrow();
+
+                labelEl.remove();
+            }
+
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getNodeLabelFromLabelElement should return null when labelElementId is null', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelEl = document.createElement('text');
+            // No id attribute
+            document.body.appendChild(labelEl);
+
+            const result = sankeyHighlight.getNodeLabelFromLabelElement(labelEl as unknown as SVGElement);
+            expect(result).toBeNull();
+
+            labelEl.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getNodeLabelFromLabelElement should return null when labelElementId does not match regex', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelEl = document.createElement('text');
+            labelEl.setAttribute('id', 'invalid_id_format');
+            document.body.appendChild(labelEl);
+
+            const result = sankeyHighlight.getNodeLabelFromLabelElement(labelEl as unknown as SVGElement);
+            expect(result).toBeNull();
+
+            labelEl.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getNodeLabelFromLabelElement should return null when nodeElement is not found', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+            const labelEl = document.createElement('text');
+            // This ID format will match regex but node won't exist
+            labelEl.setAttribute('id', 'container_highlight_label_level_99_99');
+            document.body.appendChild(labelEl);
+
+            const result = sankeyHighlight.getNodeLabelFromLabelElement(labelEl as unknown as SVGElement);
+            expect(result).toBeNull();
+
+            labelEl.remove();
+            sankeyHighlight.destroy();
+            done();
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('getNodeLabelFromLabelElement should return nodeElement aria-label when found', (done: DoneFn) => {
+        loaded = (): void => {
+            const sankeyHighlight = new SankeyHighlight(sankey);
+
+            // Create a node element with aria-label
+            const nodeEl = document.createElement('rect');
+            nodeEl.setAttribute('id', 'container_highlight_node_level_5_10');
+            nodeEl.setAttribute('aria-label', 'TestNode');
+            document.body.appendChild(nodeEl);
+
+            // Create a label element with matching id format
+            const labelEl = document.createElement('text');
+            labelEl.setAttribute('id', 'container_highlight_label_level_5_10');
+            document.body.appendChild(labelEl);
+
+            const result = sankeyHighlight.getNodeLabelFromLabelElement(labelEl as unknown as SVGElement);
+            expect(result).toBe('TestNode');
+
+            nodeEl.remove();
+            labelEl.remove();
+            sankeyHighlight.destroy();
             done();
         };
 

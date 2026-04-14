@@ -16,9 +16,9 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { setFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
-import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
+import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells, checkSortRange } from '../../workbook/index';
 import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs, checkRange } from '../../workbook/index';
-import { cellValidation, removeUniquecol, wrapEvent } from '../../workbook/common/event';
+import { cellValidation, removeUniquecol, removeSortcol, wrapEvent } from '../../workbook/common/event';
 import { ColumnModel } from '../../workbook/base/column-model';
 
 /**
@@ -380,6 +380,8 @@ export class Clipboard {
                 }
                 let isUniqueCell: boolean = false;
                 const uniqueCellColl: number[][] = [];
+                let isSortCell: boolean = false;
+                const sortCellColl: number[][] = [];
                 const copyCellArgs: { sheet: SheetModel, isExternal?: boolean, isRandFormula?: boolean } = {
                     sheet: curSheet, isExternal: !!isExternal
                 };
@@ -540,8 +542,9 @@ export class Clipboard {
                                     if (curSheet.isProtected && cell && cell.isLocked !== false) {
                                         cell.isLocked = prevCell.isLocked;
                                     }
-                                    if (prevCell && prevCell.formula && prevCell.formula.indexOf('=UNIQUE(') > -1) {
-                                        this.parent.notify(removeUniquecol, null);
+                                    if (prevCell && prevCell.formula) {
+                                        if (prevCell.formula.indexOf('=UNIQUE(') > -1) { this.parent.notify(removeUniquecol, null); }
+                                        if (prevCell.formula.indexOf('=SORT(') > -1) { this.parent.notify(removeSortcol, null); }
                                     }
                                     const uniqueFormulaArgs: {
                                         cellIdx: number[], isUnique: boolean, uniqueRange: string,
@@ -552,13 +555,18 @@ export class Clipboard {
                                     if (uniqueFormulaArgs.isUnique) {
                                         cell.value = null;
                                     }
-                                    isUniqueCell = false;
-                                    if (cell && cell.formula && cell.formula.indexOf('=UNIQUE(') > -1) {
-                                        isUniqueCell = true;
-                                        uniqueCellColl.push([x, colInd]);
-                                        cell.value = null;
-                                    }
-                                    cancel = pasteSetCell(x + l, colInd, cell, colInd === selIdx[3], isExtend, isUniqueCell,
+                                    const sortFormulaArgs: {
+                                        cellIdx: number[], isSort: boolean, sortRange: string,
+                                        sheetName: string } = {
+                                        cellIdx: [i, j], isSort: false, sortRange: '', sheetName: prevSheet.name
+                                    };
+                                    this.parent.notify(checkSortRange, sortFormulaArgs);
+                                    const checkFormulaStr: string = cell && cell.formula ? cell.formula.toUpperCase() : '';
+                                    isUniqueCell = uniqueFormulaArgs.isUnique || checkFormulaStr.indexOf('=UNIQUE(') > -1;
+                                    if (isUniqueCell) { uniqueCellColl.push([x, colInd]); cell.value = null; }
+                                    isSortCell = sortFormulaArgs.isSort || checkFormulaStr.indexOf('=SORT(') > -1;
+                                    if (isSortCell) { sortCellColl.push([x, colInd]); cell.value = null; }
+                                    cancel = pasteSetCell(x + l, colInd, cell, colInd === selIdx[3], isExtend, isUniqueCell || isSortCell,
                                                           args.beforeActionData, args.isUndo);
                                     if (cancel) {
                                         continue;
@@ -667,6 +675,12 @@ export class Clipboard {
                     for (let i: number = 0; i < uniqueCellColl.length; i++) {
                         this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(
                             uniqueCellColl[i as number][0], uniqueCellColl[i as number][1]);
+                    }
+                }
+                if (sortCellColl.length) {
+                    for (let i: number = 0; i < sortCellColl.length; i++) {
+                        this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(
+                            sortCellColl[i as number][0], sortCellColl[i as number][1]);
                     }
                 }
                 if (copyCellArgs.isRandFormula && this.parent.calculationMode === 'Automatic') {

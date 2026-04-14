@@ -332,9 +332,6 @@ export class PdfForm {
     /**
      * Gets the `PdfField` at the specified index.
      *
-     * @param {number} index Field index.
-     * @returns {PdfField} Loaded PDF form field at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -345,6 +342,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Field index.
+     * @returns {PdfField} Loaded PDF form field at the specified index.
      */
     public fieldAt(index: number): PdfField {
         if (index < 0 || index >= this._fields.length) {
@@ -420,9 +420,6 @@ export class PdfForm {
     /**
      * Add a new `PdfField`.
      *
-     * @param {PdfField} field Field object to add.
-     * @returns {number} Field index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -433,6 +430,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfField} field Field object to add.
+     * @returns {number} Field index.
      */
     public add(field: PdfField): number {
         if (this._fields.length > 0) {
@@ -759,9 +759,6 @@ export class PdfForm {
     /**
      * Remove the specified PDF form field.
      *
-     * @param {PdfField} field Field object to remove.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -774,6 +771,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfField} field Field object to remove.
+     * @returns {void} Nothing.
      */
     public removeField(field: PdfField): void {
         const index: number = this._fields.indexOf(field._ref);
@@ -783,9 +783,6 @@ export class PdfForm {
     }
     /**
      * Remove the PDF form field from specified index.
-     *
-     * @param {number} index Field index to remove.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -797,6 +794,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Field index to remove.
+     * @returns {void} Nothing.
      */
     public removeFieldAt(index: number): void {
         const field: PdfField = this.fieldAt(index);
@@ -854,9 +854,6 @@ export class PdfForm {
      * If true, appearance will not be created. Default appearance has been considered.
      * If false, new appearance stream has been created from field values and updated as normal appearance.
      *
-     * @param {boolean} value Set default appearance.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -867,6 +864,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {boolean} value Set default appearance.
+     * @returns {void} Nothing.
      */
     public setDefaultAppearance(value: boolean): void {
         this._setAppearance = !value;
@@ -875,8 +875,6 @@ export class PdfForm {
     }
     /**
      * Order the form fields.
-     *
-     * @returns {void}
      *
      * ```typescript
      * // Load an existing PDF document
@@ -888,13 +886,12 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {void}
      */
     public orderFormFields(): void
     /**
      * Order the form fields based on page tab order.
-     *
-     * @param {PdfFormFieldsTabOrder} tabOrder tab order types for form fields.
-     * @returns {void}
      *
      * ```typescript
      * // Load an existing PDF document
@@ -906,13 +903,13 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfFormFieldsTabOrder} tabOrder tab order types for form fields.
+     * @returns {void}
      */
     public orderFormFields(tabOrder: PdfFormFieldsTabOrder): void
     /**
      * Order the form fields based on tab collection.
-     *
-     * @param {Map<number, PdfFormFieldsTabOrder>} tabCollection collection of tab order with page index.
-     * @returns {void}
      *
      * ```typescript
      * // Load an existing PDF document
@@ -930,6 +927,9 @@ export class PdfForm {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Map<number, PdfFormFieldsTabOrder>} tabCollection collection of tab order with page index.
+     * @returns {void}
      */
     public orderFormFields(tabCollection: Map<number, PdfFormFieldsTabOrder>): void
     public orderFormFields(tabOrder?: PdfFormFieldsTabOrder | Map<number, PdfFormFieldsTabOrder>): void {

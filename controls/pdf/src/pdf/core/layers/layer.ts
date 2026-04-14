@@ -505,9 +505,6 @@ export class PdfLayer {
     /**
      * Initializes graphics context of the layer.
      *
-     * @param {PdfPage} page The PDF page.
-     * @returns {PdfGraphics} Graphics of the layer content.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -522,6 +519,9 @@ export class PdfLayer {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPage} page The PDF page.
+     * @returns {PdfGraphics} Graphics of the layer content.
      */
     public createGraphics(page: PdfPage): PdfGraphics {
         if (!this._graphics || this._needInitializeGraphics) {

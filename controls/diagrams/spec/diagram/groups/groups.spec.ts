@@ -6,7 +6,7 @@ import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Snapping } from '../../../src/diagram/objects/snapping';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
-import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector, LineRouting } from '../../../src/diagram/index';
+import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector, LineRouting, GroupableView } from '../../../src/diagram/index';
 import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints, ConnectorConstraints, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -3034,6 +3034,125 @@ describe('Bug 959575 - Dragging multiple groups with node is not working properl
             mouseEvents.mouseUpEvent(diagramCanvas, 100 + centerX, 100 + centerY);
         }
         expect(diagram.selectedItems.offsetX === 450 && diagram.selectedItems.offsetY === 250).toBe(true);
+        done();
+    });
+});
+
+describe('CR BUG - 1020464: Group Style Update Bug Fix', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip();
+            return;
+        }
+        ele = createElement('div', { id: 'group-style-diagram' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'child1',
+                width: 100,
+                height: 60,
+                offsetX: 150,
+                offsetY: 150,
+                style: { fill: '#ffffff', strokeColor: '#000000', strokeWidth: 1 }
+            },
+            {
+                id: 'child2',
+                width: 100,
+                height: 60,
+                offsetX: 300,
+                offsetY: 150,
+                style: { fill: '#ffffff', strokeColor: '#000000', strokeWidth: 1 }
+            },
+            {
+                id: 'groupNode',
+                children: ['child1', 'child2'],
+                style: { fill: 'transparent', strokeColor: '#cccccc', strokeWidth: 1 }
+            }
+        ]
+
+        diagram = new Diagram({
+            width: '800px', height: '500px', nodes: nodes,
+        });
+        diagram.appendTo('#group-style-diagram');
+    });
+
+    afterAll(function () {
+        diagram.destroy();
+        diagram = null;
+        ele.remove();
+        ele = null;
+    });
+
+    it('should apply strokeColor update only to group wrapper (GroupableView), not to first child wrapper', function (done: Function) {
+        const groupNode = diagram.nameTable['groupNode'];
+
+        (diagram.nodes[2] as NodeModel).style.strokeColor = '#FF0000';
+        diagram.dataBind();
+
+        const groupWrapper = groupNode.wrapper as DiagramElement;
+        expect(groupWrapper instanceof GroupableView).toBe(true);
+        expect(groupWrapper.style.strokeColor).toBe('#FF0000',
+            'Expected strokeColor "#FF0000" to be applied to the GroupableView wrapper');
+        done();
+    });
+
+    it('should apply fill, strokeColor and strokeWidth only to GroupableView wrapper and not to any child wrapper', function (done: Function) {
+        const groupNode = diagram.nameTable['groupNode'] ;
+        const child1Node = diagram.nameTable['child1'] ;
+        const child2Node = diagram.nameTable['child2'] ;
+
+        const getChildStyle = (childNode: any) => {
+            const target = childNode.wrapper.children[0]
+                ? (childNode.wrapper.children[0] as DiagramElement)
+                : (childNode.wrapper as DiagramElement);
+            return {
+                fill: target.style.fill,
+                strokeColor: target.style.strokeColor,
+                strokeWidth: target.style.strokeWidth
+            };
+        };
+
+        const originalChild1Style = getChildStyle(child1Node);
+        const originalChild2Style = getChildStyle(child2Node);
+
+        const groupNodeModel = diagram.nodes[2] as NodeModel;
+        groupNodeModel.style.fill = '#EEEEEE';
+        groupNodeModel.style.strokeColor = '#0000FF';
+        groupNodeModel.style.strokeWidth = 4;
+        diagram.dataBind();
+
+        const groupWrapper = groupNode.wrapper as DiagramElement;
+
+        expect(groupWrapper instanceof GroupableView).toBe(true);
+
+        expect(groupWrapper.style.fill).toBe('#EEEEEE',
+            'Group wrapper fill must be updated to "#EEEEEE"');
+        expect(groupWrapper.style.strokeColor).toBe('#0000FF',
+            'Group wrapper strokeColor must be updated to "#0000FF"');
+        expect(groupWrapper.style.strokeWidth).toBe(4,
+            'Group wrapper strokeWidth must be updated to 4');
+
+        const updatedChild1Style = getChildStyle(child1Node);
+        const updatedChild2Style = getChildStyle(child2Node);
+
+        expect(updatedChild1Style.fill).toBe(originalChild1Style.fill,
+            'Child1 fill must remain unchanged after group style update');
+        expect(updatedChild1Style.strokeColor).toBe(originalChild1Style.strokeColor,
+            'Child1 strokeColor must remain unchanged after group style update');
+        expect(updatedChild1Style.strokeWidth).toBe(originalChild1Style.strokeWidth,
+            'Child1 strokeWidth must remain unchanged after group style update');
+
+        expect(updatedChild2Style.fill).toBe(originalChild2Style.fill,
+            'Child2 fill must remain unchanged after group style update');
+        expect(updatedChild2Style.strokeColor).toBe(originalChild2Style.strokeColor,
+            'Child2 strokeColor must remain unchanged after group style update');
+        expect(updatedChild2Style.strokeWidth).toBe(originalChild2Style.strokeWidth,
+            'Child2 strokeWidth must remain unchanged after group style update');
         done();
     });
 });

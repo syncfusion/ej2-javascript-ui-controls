@@ -155,6 +155,25 @@ describe('TextBox ', () => {
             expect(textbox.placeholder).toBe('Feuilleter');
         });
     });
+    describe('Localization Deutsch', () => {
+        let textbox: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'input'});
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            textbox = new TextBox({placeholder: 'enter name'});
+            textbox.appendTo(document.getElementById('input'));
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+            textbox.destroy();
+        });
+        it('Placeholder Text', () => {
+            textbox.locale = 'de';
+            textbox.dataBind();
+            expect(textbox.placeholder).toBe('enter name');
+        });
+    });
     describe('Duplicate ID and name attribute testing in angular platform - ', () => {
         let inputObj: any;
         beforeAll((): void => {

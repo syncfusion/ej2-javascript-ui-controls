@@ -11374,6 +11374,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 } else {
                     if (fieldValue.type === 'RadioButton') {
                         target.selected = fieldValue.isSelected;
+                        target.checked = fieldValue.isSelected;
                     }
                     else {
                         target.checked = fieldValue.isChecked;

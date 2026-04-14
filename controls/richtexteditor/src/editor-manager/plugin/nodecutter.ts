@@ -211,6 +211,6 @@ export class NodeCutter {
      * @private
      */
     public TrimLineBreak(line: string): string {
-        return line.replace(/(\r\n\t|\n|\r\t)/gm, ' ');
+        return line.replace(/(\r\n\t|\r\t)/gm, ' ');
     }
 }

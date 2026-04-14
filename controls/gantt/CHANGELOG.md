@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I825110` - Fixed an issue where selection between the `TreeGrid` and Gantt chart is not maintained after a menu filter action, and additional white space appears when scrolling to the last collapsed record.
+- `#I807756` - Fixed an issue where using an ng-template for the editing tooltip template caused it to appear below the Gantt grid instead of the correct position when connecting tasks.
+
 ## 33.1.47 (2026-04-07)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I824735` - Fixed an issue in the Gantt component where taskbar drag actions did not respect DST offsets, resulting in incorrect start/end time updates during drag operations.
+- `#FB73382` - Fixed an issue where the timeline became unexpectedly shrunk after refreshing the Gantt component following a `zoomToFit` action.
+- `#I825110` - Fixed an issue where expanding a collapsed item did not reflect immediately in the UI, and the record expanded unexpectedly only after scrolling.
+
+## 33.1.46 (2026-03-31)
 
 ### GanttChart
 

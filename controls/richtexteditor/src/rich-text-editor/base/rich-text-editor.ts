@@ -1639,6 +1639,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private previousRange: Range | null;
     public isRTEFocused: boolean;
     public isSelectAll: boolean;
+    public isFullTableDeleted: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -1647,6 +1648,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isSelecting = false;
         this.isSelectionStartInRTE = false;
         this.isRTEFocused = false;
+        this.isFullTableDeleted = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -2424,6 +2426,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             return;
         }
         this.isSelectionStartInRTE = true;
+        this.isFullTableDeleted = false;
         this.isFullSelection(e);
         const isMacDev: boolean = this.userAgentData.getPlatform() === 'macOS';
         if (((e.ctrlKey || (e.metaKey && isMacDev)) && e.shiftKey && e.keyCode === 86) ||
@@ -2741,7 +2744,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46 || e.which === 9 && isMention;
         const formatPainterCopy: boolean = e.key === 'C' && e.altKey && e.shiftKey;
         const formatPainterPaste: boolean = e.key === 'V' && e.altKey && e.shiftKey;
-        if ((!formatPainterCopy && !formatPainterPaste) && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
+        if ((!formatPainterCopy && !formatPainterPaste) && !this.isFullTableDeleted  && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) || (this.autoSaveOnIdle && Browser.isDevice) && !this.inlineMode.enable) {
             this.formatter.onKeyHandler(this, e);
         }
@@ -3246,6 +3249,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.previousRange = null;
         this.isRTEFocused = false;
         this.isModalDialog = false;
+        this.isFullTableDeleted = false;
         super.destroy();
     }
 

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I825684` - Fixed an issue where the `updateFormFieldsValue` method did not update the Radio Button in the UI when the Form Designer module was not injected.
+- `#I825682` - Fixed an issue where List Box options were not displayed correctly when the Form Designer module was not injected.
+- `#I827597` - Fixed an issue where the `findText` method did not work for a customer-provided document.
+- `#I812588` - Resolved an issue where the form field tab order did not work in rotated documents in server-rendering mode.
+
 ## 33.1.47 (2026-04-07)
 
 ### PDF Viewer

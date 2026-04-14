@@ -698,5 +698,20 @@ describe('Default and Getting started', () => {
         expect(result[18]._operands.length).toBe(0);
         parsed.destroy();
     });
+    it('Removing and adding page to document', () => {
+        // Create a new PDF document
+        let pdf = new PdfDocument();
+        // Add a new page
+        pdf.addPage();
+        expect(pdf.pageCount).toBe(1);
+        // Get page to check remove
+        let removablePage = pdf.getPage(pdf.pageCount - 1);
+        // Remove the page
+        pdf.removePage(removablePage);
+        expect(pdf.pageCount).toBe(0);
+        // Destroy the PDF document instance
+        pdf.destroy();
+        
+    });
 });
 

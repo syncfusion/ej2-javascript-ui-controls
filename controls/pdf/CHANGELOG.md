@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 33.1.47 (2026-04-07)
+## 33.1.49 (2026-04-14)
 
 ### PDF
 
 #### Bug Fixes
 
 - Fixed a return type mismatch error that caused a compile-time interface violation.
+- Fixed an issue where signature position is not preserved correctly after flattening the signature.
+- Fixed a performance issue when rendering PNG images in page graphics.
+- Fixed an issue where the example code snippets missed for the properties and methods in documentation.
+
+## 33.1.47 (2026-04-07)
+
+### PDF
+
+#### Bug Fixes
+
 - Fixed an issue where PDF corruption occurred during the redaction process for a specific document.
 - Fixed an issue where combo box field color is not visible in chrome and edge browsers.
 - Fixed an issue where form field names were not retrieved correctly in a specific PDF document.

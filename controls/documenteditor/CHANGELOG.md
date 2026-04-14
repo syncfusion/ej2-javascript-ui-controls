@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I818385` - Fixed an issue where the Editor crashed due to an infinite loop during the Select All action.
+
 ## 33.1.47 (2026-04-07)
 
 ### DocumentEditor

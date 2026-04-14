@@ -1,5 +1,5 @@
 import { Gantt } from '../base/gantt';
-import { getValue, Internationalization, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { getValue, Internationalization, isNullOrUndefined, initializeCSPTemplate, append } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BeforeTooltipRenderEventArgs, ITaskData } from '../base/interface';
 import { TaskbarEdit } from '../actions/taskbar-edit';
@@ -208,10 +208,14 @@ export class EditTooltip {
         if (this.parent.tooltipSettings.editing) {
             const templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
                 this.parent.tooltipSettings.editing, this.parent, this.taskbarEdit.taskBarEditRecord, 'TooltipEditingTemplate');
+            const tooltipTemplate: Element = document.createElement('div');
+            if (templateNode) {
+                append(templateNode, tooltipTemplate);
+            }
             if (getValue('tooltipEle', this.toolTipObj)) {
                 this.parent.renderTemplates();
             }
-            tooltipString = (templateNode[0] as HTMLElement);
+            tooltipString = tooltipTemplate as HTMLElement;
         } else {
             let startDate: string;
             let endDate: string;

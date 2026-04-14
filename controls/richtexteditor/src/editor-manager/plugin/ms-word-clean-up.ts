@@ -1641,7 +1641,7 @@ export class MsWordPaste {
     ): void {
         let currentElement: HTMLElement = listItem;
         let listElement: HTMLElement;
-        while (currentElement.parentElement) {
+        while (currentElement && currentElement.parentElement) {
             currentElement = currentElement.parentElement;
             const levelAttribute: Attr = currentElement.attributes.getNamedItem('level');
             if (levelAttribute) {
@@ -1806,8 +1806,31 @@ export class MsWordPaste {
     /* Processes margins for different element types in the document */
     private processMargin(clipboardDataElement: HTMLElement): void {
         this.processListItemMargins(clipboardDataElement);
+        this.processListParentStructure(clipboardDataElement);
         this.processTableMargins(clipboardDataElement);
         this.processIgnoredNodeMargins(clipboardDataElement);
+    }
+
+    /* Processes and preserves list structure while removing absolute margins based on level 1 removal */
+    private processListParentStructure(clipboardDataElement: HTMLElement): void {
+        const lists: NodeListOf<HTMLElement> = clipboardDataElement.querySelectorAll('ul, ol');
+        let level1Margin: number = 0;
+        for (let i: number = 0; i < lists.length; i++) {
+            const list: HTMLElement = lists[i as number];
+            const level: number = parseInt(list.getAttribute('level'), 10);
+            const marginLeft: string = list.style.marginLeft;
+            const currentMargin: number = !isNOU(marginLeft) && marginLeft !== '' ?
+                (marginLeft.indexOf('pt') !== -1 ? parseFloat(marginLeft.split('pt')[0]) / 72 :
+                    marginLeft.indexOf('px') !== -1 ? parseFloat(marginLeft.split('px')[0]) / 96 :
+                        parseFloat(marginLeft.split('in')[0])) : 0;
+            if (level === 1 || isNaN(level)) {
+                level1Margin = currentMargin;
+                list.style.marginLeft = '';
+            } else if (level1Margin > 0 && currentMargin > 0) {
+                const adjustedMargin: number = currentMargin - level1Margin;
+                list.style.marginLeft = adjustedMargin > 0 ? adjustedMargin + 'in' : '';
+            }
+        }
     }
 
     /* Processes margins for list items */

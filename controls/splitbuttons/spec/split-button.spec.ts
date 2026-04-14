@@ -41,6 +41,11 @@ describe('Split Button', () => {
         expect(element.nextElementSibling.classList).toContain('e-dropdown-btn');
     });
 
+    it('aria-haspopup attribute should not be present', () => {
+        button = new SplitButton({ items: items }, '#splitbtn');
+        expect(element.hasAttribute('aria-haspopup')).toBeFalsy();
+    });
+
     it('click event args', () => {
         const click: any = (args: any) => {
             expect(args.element).toEqual(button.element);

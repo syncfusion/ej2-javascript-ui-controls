@@ -218,8 +218,6 @@ export abstract class PdfImage {
     /**
      * Represents a method to draw a image on the PDF graphics.
      *
-     * @param {PdfGraphics} graphics value.
-     * @returns {void} Draws a image on the page graphics.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -236,14 +234,14 @@ export abstract class PdfImage {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfGraphics} graphics value.
+     * @returns {void} Draws a image on the page graphics.
      */
     public draw(graphics: PdfGraphics): void
     /**
      * Represents a method to draw a image on the PDF graphics.
      *
-     * @param {PdfGraphics} graphics value.
-     * @param {Point} location The (x, y) coordinates of the image
-     * @returns {void} Draws a image on the page graphics.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -260,6 +258,10 @@ export abstract class PdfImage {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfGraphics} graphics value.
+     * @param {Point} location The (x, y) coordinates of the image
+     * @returns {void} Draws a image on the page graphics.
      */
     public draw(graphics: PdfGraphics, location: Point): void
     public draw(graphics: PdfGraphics, location?: Point): void {

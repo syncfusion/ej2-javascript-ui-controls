@@ -2647,24 +2647,33 @@ export class DocumentHelper {
             let textYPosition: number = this.owner.selectionModule.end.location.y;
             let textHeight: number = this.owner.selectionModule.end.currentWidget ? this.owner.selectionModule.end.currentWidget.height : 0;
             let cursorPoint: Point = new Point(event.x - (pageLeft + viewerLeft), event.y - viewerTop);
-            if (event.y - viewerTop > this.viewerContainer.clientHeight) {
+            // Clamp visible container boundaries to the viewport.
+            // When the container is taller than the viewport, clientHeight exceeds window.innerHeight,
+            // so the mouse can never reach viewerTop + clientHeight. We use the actual visible bounds instead.
+            let visibleContainerBottom: number = Math.min(viewerTop + this.viewerContainer.clientHeight, window.innerHeight);
+            let visibleContainerTop: number = Math.max(viewerTop, 0);
+            // Convert the selection-end content Y position to a viewport Y coordinate.
+            let selectionEndViewportY: number = viewerTop + hRulerHeight + textYPosition - this.viewerContainer.scrollTop;
+            if (event.y > visibleContainerBottom) {
+                // Mouse is below the visible container area — auto-scroll down.
                 this.scrollMoveTimer = setInterval((): void => {
                     this.viewerContainer.scrollTop += this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
                     this.scrollForwardOnSelection(cursorPoint);
                 }, 100);
             }
-            else if (event.y - viewerTop < this.viewerContainer.clientTop && this.viewerContainer.scrollTop > 0) {
+            else if (event.y < visibleContainerTop && this.viewerContainer.scrollTop > 0) {
+                // Mouse is above the visible container area — auto-scroll up.
                 this.scrollMoveTimer = setInterval((): void => {
                     this.viewerContainer.scrollTop -= this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
                     this.scrollBackwardOnSelection(cursorPoint);
                 }, 100);
             }
-            else if (event.y + this.viewerContainer.scrollTop > viewerTop + hRulerHeight + textYPosition + textHeight + this.viewerContainer.scrollTop
-                && !this.isRowOrCellResizing) {
+            else if (event.y > selectionEndViewportY + textHeight && !this.isRowOrCellResizing) {
+                // Mouse is inside container but below the current selection end — extend selection forward.
                 this.scrollForwardOnSelection(cursorPoint);
             }
-            else if (event.y + this.viewerContainer.scrollTop < viewerTop + hRulerHeight + textYPosition + this.viewerContainer.scrollTop
-                && !this.isRowOrCellResizing) {
+            else if (event.y < selectionEndViewportY && !this.isRowOrCellResizing) {
+                // Mouse is inside container but above the current selection end — extend selection backward.
                 this.scrollBackwardOnSelection(cursorPoint);
             }
             if (this.isMouseEntered) {

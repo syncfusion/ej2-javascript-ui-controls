@@ -818,7 +818,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         }, this.clearButton);
         this.changeEventArgs = null;
         this.inputObj = null;
-        setValue('ej2_instances', null, this.element);
+        if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
+            setValue('ej2_instances', null, this.element);
+        }
         super.destroy();
     }
 }

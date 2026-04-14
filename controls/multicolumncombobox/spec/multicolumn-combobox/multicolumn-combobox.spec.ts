@@ -2890,6 +2890,140 @@ describe('MultiColumnComboBox control', () => {
             }, 1200);
         });
     });
+        describe('Popup refresh position on filtering', () => {
+        let multiColObj: any;
+        let element: HTMLInputElement;
+        beforeEach((): void => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (multiColObj) {
+                multiColObj.destroy();
+                multiColObj = undefined;
+            }
+            remove(element);
+        });
+
+        it('should refresh popup position when actionComplete with refresh requestType during filtering', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: data,
+                fields: { text: 'CustomerID', value: 'OrderID' },
+                columns: [
+                    { field: 'CustomerID', header: 'Customer ID', width: 100 },
+                    { field: 'ShipCity', header: 'Ship City', width: 100 },
+                    { field: 'Role', header: 'Role', width: 100 }
+                ],
+                allowFiltering: true,
+                popupHeight: '300px',
+                popupWidth: '500px'
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                // Open popup
+                multiColObj.showPopup();
+                expect(multiColObj.isPopupOpen).toBe(true);
+                
+                // Get initial popup position
+                const initialPopupPosition = multiColObj.popupObj.element.getBoundingClientRect();
+                
+                // Trigger filtering
+                const keyEventArgs: any = {
+                    preventDefault: (): void => {},
+                    key: 'V',
+                    value: 'V',
+                    action: 'input',
+                    stopImmediatePropagation: (): void => {}
+                };
+                multiColObj.inputEle.value = 'V';
+                multiColObj.inputEle.dispatchEvent(new Event('input'));
+                
+                setTimeout(() => {
+                    // Verify popup is still open after filtering
+                    expect(multiColObj.isPopupOpen).toBe(true);
+                    
+                    // Verify popup object exists and refreshPosition was called
+                    expect(multiColObj.popupObj).toBeDefined();
+                    expect(multiColObj.popupObj.element).toBeDefined();
+                    
+                    // Check that popup is still in DOM
+                    const popupElement = document.querySelector('.e-popup');
+                    expect(popupElement).toBeDefined();
+                    
+                    done();
+                }, 500);
+            }, 100);
+        });
+
+        it('should handle popup refresh position gracefully when popup is closed during filtering', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: data,
+                fields: { text: 'CustomerID', value: 'OrderID' },
+                columns: [
+                    { field: 'CustomerID', header: 'Customer ID', width: 100 },
+                    { field: 'ShipCity', header: 'Ship City', width: 100 }
+                ],
+                allowFiltering: true
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                // Open popup
+                multiColObj.showPopup();
+                expect(multiColObj.isPopupOpen).toBe(true);
+                
+                // Close popup
+                multiColObj.hidePopup();
+                expect(multiColObj.isPopupOpen).toBe(false);
+                
+                // Trigger filtering event - should not throw error
+                const filterEventArgs: any = {
+                    requestType: 'refresh',
+                    rows: []
+                };
+                multiColObj.handleActionComplete(filterEventArgs);
+                
+                // Popup should remain closed
+                expect(multiColObj.isPopupOpen).toBe(false);
+                done();
+            }, 100);
+        });
+
+        it('should refresh popup position without errors when grid data is refreshed with filtering', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: data,
+                fields: { text: 'CustomerID', value: 'OrderID' },
+                columns: [
+                    { field: 'CustomerID', header: 'Customer ID', width: 100 },
+                    { field: 'ShipCity', header: 'Ship City', width: 100 },
+                    { field: 'Freight', header: 'Freight', width: 100 }
+                ],
+                allowFiltering: true,
+                popupHeight: '300px'
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                multiColObj.showPopup();
+                expect(multiColObj.isPopupOpen).toBe(true);
+                
+                // Simulate typing to filter
+                multiColObj.inputEle.value = 'VINET';
+                multiColObj.inputEle.dispatchEvent(new Event('input'));
+                
+                setTimeout(() => {
+                    // Verify popup is visible and grid is rendered
+                    expect(multiColObj.popupObj).toBeDefined();
+                    expect(multiColObj.gridObj).toBeDefined();
+                    expect(multiColObj.isPopupOpen).toBe(true);
+                    
+                    // Verify grid content exists
+                    const gridContent = multiColObj.gridObj.element.querySelector('.e-gridcontent');
+                    expect(gridContent).toBeDefined();
+                    
+                    done();
+                }, 500);
+            }, 100);
+        });
+    });
 
     describe('Templates', () => {
         let multiColObj: any;

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 33.1.47 (2026-04-07)
+## 33.1.49 (2026-04-14)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I827900` - Fixed an issue where group style updates were incorrectly applied to the child node.
+
+## 33.1.46 (2026-03-31)
 
 ### Diagram
 

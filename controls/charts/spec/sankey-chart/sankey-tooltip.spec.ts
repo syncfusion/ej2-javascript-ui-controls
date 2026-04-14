@@ -1218,6 +1218,74 @@ describe('Sankey - Tooltip (default / format / template)', () => {
         sankey.loaded = loaded;
         sankey.refresh();
     });
+    it('handleMouseMove should return early when tooltip disabled or disableTrackTooltip enabled', (done: DoneFn) => {
+        loaded = (): void => {
+            const tooltip = new SankeyTooltip(sankey);
+            sankey.tooltip.enable = false;
+            const pointerEvent = new PointerEvent('pointermove', { bubbles: true });
+            (tooltip).handleMouseMove(pointerEvent);
+            sankey.tooltip.enable = true;
+            sankey.disableTrackTooltip = true;
+            (tooltip).handleMouseMove(pointerEvent);
+            sankey.disableTrackTooltip = false;
+            sankey.tooltip.enable = true;
+            sankey.tooltip.fadeOutMode = 'Move';
+            sankey.mouseX = -100; // outside bounds
+            sankey.mouseY = -100;
+            (tooltip).handleMouseMove(pointerEvent);
+            expect(tooltip).not.toBe(null);
+
+            tooltip.destroy();
+            done();
+        };
+
+        sankey.tooltip = {
+            ...sankey.tooltip,
+            enable: true,
+            enableAnimation: false,
+            fadeOutMode: 'Click',
+            fadeOutDuration: 0
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
+    it('showTooltipForElement should handle null/invalid hitTarget and resolveInteractiveTarget fallback cases', (done: DoneFn) => {
+        loaded = (): void => {
+            const tooltip = new SankeyTooltip(sankey);
+            (tooltip).showTooltipForElement(null);
+            const chartId = sankey.element.id;
+            const divElement = document.createElement('div');
+            divElement.style.cssText = 'position: absolute; left: 100px; top: 100px;';
+            document.body.appendChild(divElement);
+            tooltip.resolveInteractiveTarget(chartId, divElement);
+            const linkElement = document.createElement('g');
+            linkElement.setAttribute('id', `${chartId}_link_level_0_0`);
+            document.body.appendChild(linkElement);
+            tooltip.resolveInteractiveTarget(chartId, linkElement);
+            sankey.tooltip.enable = false;
+            const pointerUpEvent = new PointerEvent('pointerup', { bubbles: true });
+            (tooltip).handlePointerUp(pointerUpEvent);
+            expect(tooltip).not.toBe(null);
+            divElement.remove();
+            linkElement.remove();
+            tooltip.destroy();
+            done();
+        };
+
+        sankey.tooltip = {
+            ...sankey.tooltip,
+            enable: true,
+            enableAnimation: false,
+            fadeOutMode: 'Click',
+            fadeOutDuration: 0
+        };
+
+        sankey.loaded = loaded;
+        sankey.refresh();
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average = inMB(profile.averageChange);

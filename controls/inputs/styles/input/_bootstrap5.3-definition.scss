@@ -193,9 +193,9 @@ $input-bigger-small-left-child-min-height: $zero-value !default;
 $input-bigger-small-left-child-min-width: $zero-value !default;
 $input-icon-inner-width: $zero-value !default;
 $input-icon-inner-height: $zero-value !default;
-$input-error-border-shadow: 0 0 0 4px rgba(from var(--color-sf-danger) r g b / .25) !default;
-$input-success-border-shadow: 0 0 0 4px rgba(from var(--color-sf-success) r g b / .25) !default;
-$input-warning-border-shadow: 0 0 0 4px rgba(from var(--color-sf-warning) r g b / .25) !default;
+$input-error-border-shadow: 0 0 0 4px rgba($danger-shadow, .25) !default;
+$input-success-border-shadow: 0 0 0 4px rgba($success-shadow, .25) !default;
+$input-warning-border-shadow: 0 0 0 4px rgba($warning-shadow, .25) !default;
 $input-group-border-shadow: $shadow-sm !default;
 
 // color

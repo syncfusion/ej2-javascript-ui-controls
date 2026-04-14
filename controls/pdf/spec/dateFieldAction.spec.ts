@@ -1,11 +1,13 @@
 import { PdfDocument, PdfFormFieldExportSettings } from '../src/pdf/core/pdf-document';
-import { PdfPage } from '../src/pdf/core/pdf-page';
+import { PdfDestination, PdfPage } from '../src/pdf/core/pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from '../src/pdf/core/pdf-primitives';
 import { _PdfContentStream } from '../src/pdf/core/base-stream';
 import { _ContentParser, _PdfRecord } from '../src/pdf/core/content-parser';
-import { PdfField, PdfTextBoxField } from '../src/pdf/core/form/field';
+import { PdfButtonField, PdfField, PdfTextBoxField } from '../src/pdf/core/form/field';
 import { PdfForm } from '../src/pdf/core/form/form';
-import { PdfJavaScriptAction } from '../src/pdf/core/pdf-action';
+import { PdfAction, PdfFieldActions, PdfGoToAction, PdfJavaScriptAction } from '../src/pdf/core/pdf-action';
+import { PdfFontFamily, PdfStandardFont } from '../src/pdf/core/fonts/pdf-standard-font';
+import { PdfDestinationMode } from '../src/pdf/core/enumerator';
 describe('1000704 - PDF Creation — Date Input (TextBox) ', () => {
     it('1) Attaches  custom format action (/F) — /AA survives after parsing', () => {
         const document: PdfDocument = new PdfDocument();
@@ -3128,5 +3130,317 @@ describe('1000704 - PDF Creation - date input with different Format', () => {
         expect(result[25]._operands.length).toBe(0);
         expect(result[25]._operands.length).toBe(0);
         reopened.destroy();
+    });
+});
+describe('PdfAction file code coverage', () => {
+    it('PdfAction - validating mouse action assignments and resets', function () {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        document.addPage();
+        document.addPage();
+        let form = document.form;
+        form.fieldAutoNaming = true;
+        let field1: PdfButtonField = new PdfButtonField(page, 'ButtonFormField', { x: 0, y: 50, width: 100, height: 50 });
+        field1.font = new PdfStandardFont(PdfFontFamily.helvetica, 12);
+        field1.backColor = { r: 255, g: 0, b: 0 };
+        field1.borderColor = { r: 255, g: 165, b: 0 };
+        field1.toolTip = 'field 1';
+        field1.color = { r: 0, g: 128, b: 0 };
+        field1.text = 'Field 1';
+        field1.setAppearance(true);
+        form.add(field1);
+        // Access button field
+        let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+        // Access the second page
+        let secondPage: PdfPage = document.getPage(2);
+        // Create a new GoTo action with the specified page
+        let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
+        // Get the GoTo action to the mouse enter property of the button field
+        let mouseEnter: PdfAction = field.actions.mouseEnter;
+        let mouseDown: PdfAction = field.actions.mouseDown;
+        let mouseLeave: PdfAction = field.actions.mouseLeave;
+        let mouseUp: PdfAction = field.actions.mouseUp;
+        field.actions.mouseEnter = gotoAction;
+        field.actions.mouseDown = gotoAction;
+        field.actions.mouseLeave = gotoAction;
+        field.actions.mouseUp = gotoAction;
+        mouseEnter = field.actions.mouseEnter;
+        mouseDown = field.actions.mouseDown;
+        mouseLeave = field.actions.mouseLeave;
+        mouseUp = field.actions.mouseUp;
+        field.actions.mouseEnter = undefined;
+        field.actions.mouseDown = undefined;
+        field.actions.mouseLeave = undefined;
+        field.actions.mouseUp = undefined;
+        // Save the document
+        document.save();
+        expect(document.pageCount).toBeGreaterThan(0);
+        // Destroy the document
+        document.destroy();
+    });
+    it('PdfAction - handling destination updates and next action linking', function () {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        document.addPage();
+        document.addPage();
+        let form = document.form;
+        form.fieldAutoNaming = true;
+        let field1: PdfButtonField = new PdfButtonField(page, 'ButtonFormField', { x: 0, y: 50, width: 100, height: 50 });
+        field1.font = new PdfStandardFont(PdfFontFamily.helvetica, 12);
+        field1.backColor = { r: 255, g: 0, b: 0 };
+        field1.borderColor = { r: 255, g: 165, b: 0 };
+        field1.toolTip = 'field 1';
+        field1.color = { r: 0, g: 128, b: 0 };
+        field1.text = 'Field 1';
+        field1.setAppearance(true);
+        form.add(field1);
+        // Access button field
+        let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+        // Access the second page
+        let secondPage: PdfPage = document.getPage(2);
+        // Create a new GoTo action with the specified page
+        let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
+        let next = gotoAction.next;
+        // Access the page1
+        let page1: PdfPage = document.getPage(1);
+        let action: PdfGoToAction = new PdfGoToAction(page1);
+        // Set the destination page for the action
+        action.destination = new PdfDestination(secondPage);
+        gotoAction.next = action;
+        let newAction: PdfGoToAction = new PdfGoToAction(gotoAction.destination);
+        // Save the document
+        document.save();
+        expect(document.pageCount).toBeGreaterThan(0);
+        // Destroy the document
+        document.destroy();
+    });
+    it('PdfAction - managing gotFocus action assignment and clearing', function () {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        document.addPage();
+        document.addPage();
+        let form = document.form;
+        form.fieldAutoNaming = true;
+        let field1: PdfButtonField = new PdfButtonField(page, 'ButtonFormField', { x: 0, y: 50, width: 100, height: 50 });
+        field1.font = new PdfStandardFont(PdfFontFamily.helvetica, 12);
+        field1.backColor = { r: 255, g: 0, b: 0 };
+        field1.borderColor = { r: 255, g: 165, b: 0 };
+        field1.toolTip = 'field 1';
+        field1.color = { r: 0, g: 128, b: 0 };
+        field1.text = 'Field 1';
+        field1.setAppearance(true);
+        form.add(field1);
+        // Access button field
+        let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+        // Get the action to be executed when the got focus the field area.
+        let action: PdfAction = field.actions.gotFocus;
+        // Access the second page
+        let secondPage: PdfPage = document.getPage(2);
+        // Create a new GoTo action with the specified page
+        let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
+        // Set the destination location within the specified page for the PdfGoToAction
+        gotoAction.destination = new PdfDestination(secondPage, { x: 0, y: 100 });
+        // Set the GoTo action to the got focus property of the button field
+        field.actions.gotFocus = gotoAction;
+        // Get the gotFocus after setting value for it
+        action = field.actions.gotFocus;
+        // Set undefined to gotFocus
+        field.actions.gotFocus = undefined;
+        // Save the document
+        document.save();
+        expect(document.pageCount).toBeGreaterThan(0);
+        // Destroy the document
+        document.destroy();
+    });
+    it('PdfAction - managing lostFocus action assignment and clearing', function () {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        document.addPage();
+        document.addPage();
+        let form = document.form;
+        form.fieldAutoNaming = true;
+        let field1: PdfButtonField = new PdfButtonField(page, 'ButtonFormField', { x: 0, y: 50, width: 100, height: 50 });
+        field1.font = new PdfStandardFont(PdfFontFamily.helvetica, 12);
+        field1.backColor = { r: 255, g: 0, b: 0 };
+        field1.borderColor = { r: 255, g: 165, b: 0 };
+        field1.toolTip = 'field 1';
+        field1.color = { r: 0, g: 128, b: 0 };
+        field1.text = 'Field 1';
+        field1.setAppearance(true);
+        form.add(field1);
+        // Access button field
+        let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+        // Get the action to be executed when the lost focus the field area.
+        let action: PdfAction = field.actions.lostFocus;
+        // Access the second page
+        let secondPage: PdfPage = document.getPage(2);
+        // Create a new GoTo action with the specified page
+        let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
+        // Set the destination location within the specified page for the PdfGoToAction
+        gotoAction.destination = new PdfDestination(secondPage, { x: 0, y: 100 });
+        // Set the GoTo action to the lost focus property of the button field
+        field.actions.lostFocus = gotoAction;
+        // Get the lostFocus after setting value for it
+        action = field.actions.lostFocus;
+        // Set undefined to gotFocus
+        field.actions.lostFocus = undefined;
+        // Save the document
+        document.save();
+        expect(document.pageCount).toBeGreaterThan(0);
+        // Destroy the document
+        document.destroy();
+    });
+    it('PdfAction - updating actions for various destination modes and field states', function () {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        document.addPage();
+        document.addPage();
+        let form = document.form;
+        form.fieldAutoNaming = true;
+        let field1: PdfButtonField = new PdfButtonField(page, 'ButtonFormField', { x: 0, y: 50, width: 100, height: 50 });
+        field1.font = new PdfStandardFont(PdfFontFamily.helvetica, 12);
+        field1.backColor = { r: 255, g: 0, b: 0 };
+        field1.borderColor = { r: 255, g: 165, b: 0 };
+        field1.toolTip = 'field 1';
+        field1.color = { r: 0, g: 128, b: 0 };
+        field1.text = 'Field 1';
+        field1.setAppearance(true);
+        form.add(field1);
+        // Access button field
+        let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+        // Access the second page
+        let secondPage: PdfPage = document.getPage(2);
+        // Create a new GoTo action with the specified page
+        let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
+        // Set the destination location within the specified page for the PdfGoToAction
+        gotoAction.destination = new PdfDestination(secondPage, { x: 0, y: 100 });
+        gotoAction.destination._destinationMode = PdfDestinationMode.fitToPage;
+        field.actions._updateAction(gotoAction, '');
+        gotoAction.destination._destinationMode = PdfDestinationMode.fitH;
+        field.actions._updateAction(gotoAction, '');
+        gotoAction.destination._destinationMode = PdfDestinationMode.fitR;
+        field.actions._updateAction(gotoAction, '');
+        gotoAction.destination._destinationMode = undefined;
+        field.actions._updateAction(gotoAction, '');
+        let firstItem = field.actions._field.itemAt(0);
+        firstItem._dictionary = undefined;
+        field.actions._updateAction(field.actions.keyPressed, 'K')
+        field.actions._field._kids = [];
+        field.actions._updateAction(field.actions.keyPressed, 'K');
+        // Save the document
+        document.save();
+        expect(document.pageCount).toBeGreaterThan(0);
+        // Destroy the document
+        document.destroy();
+    });
+    it('pdfAction - resolving format action across different AA dictionary states', () => {
+        const document: PdfDocument = new PdfDocument();
+        const page: PdfPage = document.addPage();
+        const form: PdfForm = document.form;
+        const dateField: PdfTextBoxField = new PdfTextBoxField(page, 'dateInput', {
+            x: 50, y: 120, width: 150, height: 20
+        });
+        dateField.text = "18/01/2003";
+        const formatScript = `
+        // If the value is 8 digits (ddMMyyyy), insert slashes => dd/MM/yyyy
+        if (event.value && /^\\d{8}$/.test(event.value)) {
+          event.value = event.value.replace(/(\\d{2})(\\d{2})(\\d{4})/, '$1/$2/$3');
+        }
+      `;
+        const formatAction = new PdfJavaScriptAction(formatScript);
+        dateField.actions.format = formatAction;
+        form.add(dateField);
+        const bytes = document.save();
+        document.destroy();
+        const parsed = new PdfDocument(bytes);
+        const parsedField = parsed.form.fieldAt(0) as PdfTextBoxField;
+        let fieldDictionary = parsedField.actions._field._dictionary;
+        let aaDictionary = fieldDictionary.get('AA');
+        let actionDictionary = aaDictionary.get('F');
+        let s = actionDictionary.get('S');
+        s = null;
+        actionDictionary.update('S', s);
+        aaDictionary.update('F', actionDictionary);
+        parsedField.actions._field._dictionary.update('AA', aaDictionary);
+        let format = parsedField.actions.format;
+        actionDictionary = null;
+        aaDictionary.update('F', actionDictionary);
+        parsedField.actions._field._dictionary.update('AA', aaDictionary);
+        format = parsedField.actions.format;
+        aaDictionary = null;
+        parsedField.actions._field._dictionary.update('AA', aaDictionary);
+        format = parsedField.actions.format;
+        parsedField.actions._field._dictionary = null;
+        format = parsedField.actions.format;
+        parsedField.actions.format = new PdfJavaScriptAction("AFDate_FormatEx('dd/mm/yyyy')");
+        expect(format).toBeUndefined;
+        parsed.destroy();
+    });
+    it('_getPdfAction returns undefined when widget has no AA', () => {
+        const widget: any = { _dictionary: new _PdfDictionary(), _crossReference: {} };
+        const field: any = { _kidsCount: 1, itemAt: () => widget, _dictionary: new _PdfDictionary() };
+        const actions: any = new PdfFieldActions(field);
+        const res = actions._getPdfAction('E');
+        expect(res).toBeUndefined();
+    });
+    it('_getPdfAction returns undefined when action S is not GoTo', () => {
+        const widget: any = { _dictionary: new _PdfDictionary(), _crossReference: {} };
+        const inner: any = new _PdfDictionary();
+        inner.set('S', new _PdfName('JavaScript'));
+        inner.set('JS', 'alert(1)');
+        const aa: any = new _PdfDictionary();
+        aa.set('E', inner);
+        widget._dictionary.set('AA', aa);
+        const field: any = { _kidsCount: 1, itemAt: () => widget, _dictionary: new _PdfDictionary() };
+        const actions: any = new PdfFieldActions(field);
+        const res = actions._getPdfAction('E');
+        expect(res).toBeUndefined();
+    });
+    it('_getPdfAction constructs PdfGoToAction and sets dictionary._crossReference when absent', () => {
+        const widget: any = { _dictionary: new _PdfDictionary(), _crossReference: { marker: 'xref' } };
+        const inner: any = new _PdfDictionary();
+        inner.set('S', new _PdfName('GoTo'));
+        inner.set('D', [null, _PdfName.get('Fit')]);
+        const aa: any = new _PdfDictionary();
+        aa.set('E', inner);
+        widget._dictionary.set('AA', aa);
+        const field: any = { _kidsCount: 1, itemAt: () => widget, _dictionary: new _PdfDictionary() };
+        const actions: any = new PdfFieldActions(field);
+        const res: any = actions._getPdfAction('E');
+        expect(res instanceof PdfGoToAction).toBeTruthy();
+        expect(inner._crossReference).toBe(widget._crossReference);
+    });
+    it('_getPdfAction preserves existing dictionary._crossReference when present', () => {
+        const existingXref = { existing: true };
+        const widget: any = { _dictionary: new _PdfDictionary(), _crossReference: { marker: 'xref2' } };
+        const inner: any = new _PdfDictionary();
+        inner._crossReference = existingXref;
+        inner.set('S', new _PdfName('GoTo'));
+        inner.set('D', [null, _PdfName.get('Fit')]);
+        const aa: any = new _PdfDictionary();
+        aa.set('E', inner);
+        widget._dictionary.set('AA', aa);
+        const field: any = { _kidsCount: 1, itemAt: () => widget, _dictionary: new _PdfDictionary() };
+        const actions: any = new PdfFieldActions(field);
+        const res: any = actions._getPdfAction('E');
+        expect(res instanceof PdfGoToAction).toBeTruthy();
+        expect(inner._crossReference).toBe(existingXref);
+    });
+    it('_getPdfAction setting AA dictionary null', () => {
+        const existingXref = { existing: true };
+        const widget: any = { _dictionary: new _PdfDictionary(), _crossReference: { marker: 'xref2' } };
+        const inner: any = new _PdfDictionary();
+        inner._crossReference = existingXref;
+        const aa: any = new _PdfDictionary();
+        aa.set('E', inner);
+        const field: any = { _kidsCount: 1, itemAt: () => widget, _dictionary: new _PdfDictionary() };
+        const actions: any = new PdfFieldActions(field);
+        widget._dictionary.set('AA', aa);
+        let res: any = actions._getPdfAction('E');
+        inner.set('S', new _PdfName('GoTo'));
+        inner.set('D', [null, _PdfName.get('Fit')]);
+        widget._dictionary.set('AA', null);
+        res = actions._getPdfAction('E');
+        expect(inner._crossReference).toBe(existingXref);
     });
 });

@@ -2,13 +2,20 @@
 
 ## [Unreleased]
 
-## 33.1.47 (2026-04-07)
+## 33.1.49 (2026-04-14)
 
 ### Pivot Table
 
 #### Bug Fixes
 
 - `#I823311` - Fixed an issue where report manipulation dialogs were rendered with duplicate instances when loading data dynamically in the Pivot Table.
+
+## 33.1.47 (2026-04-07)
+
+### Pivot Table
+
+#### Bug Fixes
+
 - `#I822874` - Fixed an issue where Pivot Table popups, such as filtering and number formatting dialogs, did not render properly when the component was rendered inside Angular Material dialogs.
 
 ## 31.1.17 (2025-09-05)

@@ -717,9 +717,6 @@ export abstract class PdfList {
     /**
      * Draws the `PdfList` at the specified coordinates on the `PdfGraphics` context.
      *
-     * @param {PdfGraphics} graphics The graphics context on which to draw the list.
-     * @param {Point} location The (x, y) coordinates where the list will be drawn.
-     * @returns Nothing.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -736,14 +733,15 @@ export abstract class PdfList {
      * // Destroy the document
      * document.destroy();
      * ````
+     *
+     * @param {PdfGraphics} graphics The graphics context on which to draw the list.
+     * @param {Point} location The (x, y) coordinates where the list will be drawn.
+     * @returns Nothing.
      */
     public draw(graphics: PdfGraphics, location: Point): void
     /**
      * Draws the content on the specified `PdfPage` at the given coordinates.
      *
-     * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {Point} location The (x, Y) coordinates where the list will be drawn.
-     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -760,15 +758,15 @@ export abstract class PdfList {
      * // Destroy the document
      * document.destroy();
      * ````
+     *
+     * @param {PdfPage} page The PDF page on which to draw the content.
+     * @param {Point} location The (x, Y) coordinates where the list will be drawn.
+     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      */
     public draw(page: PdfPage, location: Point): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` at the given coordinates with the specified layout format.
      *
-     * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {Point} location The (x, y) coordinates where the list will be drawn.
-     * @param {PdfLayoutFormat} format The layout format options for drawing.
-     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -790,14 +788,16 @@ export abstract class PdfList {
      * // Destroy the document
      * document.destroy();
      * ````
+     *
+     * @param {PdfPage} page The PDF page on which to draw the content.
+     * @param {Point} location The (x, y) coordinates where the list will be drawn.
+     * @param {PdfLayoutFormat} format The layout format options for drawing.
+     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      */
     public draw(page: PdfPage, location: Point, format: PdfLayoutFormat): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` within the specified bounds.
      *
-     * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
-     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -814,15 +814,15 @@ export abstract class PdfList {
      * // Destroy the document
      * document.destroy();
      * ````
+     *
+     * @param {PdfPage} page The PDF page on which to draw the content.
+     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
+     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      */
     public draw(page: PdfPage, bounds: Rectangle): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` at the given bounds with the specified layout format.
      *
-     * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
-     * @param {PdfLayoutFormat} format The layout format options for drawing.
-     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -844,6 +844,11 @@ export abstract class PdfList {
      * // Destroy the document
      * document.destroy();
      * ````
+     *
+     * @param {PdfPage} page The PDF page on which to draw the content.
+     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
+     * @param {PdfLayoutFormat} format The layout format options for drawing.
+     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      */
     public draw(page: PdfPage, bounds: Rectangle, format: PdfLayoutFormat): PdfLayoutResult
     public draw(arg1: PdfPage | PdfGraphics,

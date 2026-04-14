@@ -185,6 +185,7 @@ export class DrillThroughDialog {
                     close: this.removeDrillThroughDialog.bind(this)
                 });
                 this.dialogPopUp.isStringTemplate = true;
+                this.dialogPopUp.isAngular = this.parent.isModalDialog;
                 this.dialogPopUp.appendTo(drillThroughDialog);
                 // this.dialogPopUp.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('details');
                 setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });

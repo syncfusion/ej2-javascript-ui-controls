@@ -768,7 +768,7 @@ export class HtmlEditor {
             return true;
         }
         // Otherwise, we need to check if the cursor is positioned at the absolute beginning of content
-        let currentNode: Node = elementAtCursor;
+        let currentNode: Node = range.startContainer;
         let previousContentFound: boolean = false;
         // Walk up the DOM tree until we reach the block parent
         while (currentNode && currentNode !== blockNode) {
@@ -868,6 +868,10 @@ export class HtmlEditor {
             } else if (findBlockElementSibiling) {
                 const prevSibling: HTMLElement = findBlockElementSibiling;
                 const currentElement: HTMLElement = findBlockElement[0] as HTMLElement;
+                if ((prevSibling.nodeName === 'LI' && currentElement.closest('li') && currentElement.closest('li').querySelector('ul, ol'))) {
+                    // the nested list backspace is handled in list file so used return here.
+                    return;
+                }
                 if (prevSibling.textContent.trim()) {
                     this.removeLastBr(prevSibling);
                     const lastPosition: { node: Node; offset: number } | null =
@@ -1654,6 +1658,7 @@ export class HtmlEditor {
         // Handle the space, enter and backspace keys when the table cells are selected.
         const tableCellSelectNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.e-cell-select');
         if (this.handleEntireTableBackspace(e, args)) {
+            this.parent.isFullTableDeleted = true;
             return;
         }
         for (let i: number = 0; i < tableCellSelectNodes.length; i++) {

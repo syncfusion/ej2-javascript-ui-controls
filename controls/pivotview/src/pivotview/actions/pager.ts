@@ -154,6 +154,7 @@ export class Pager {
                             popupWidth: '100%',
                             cssClass: this.parent.cssClass
                         });
+                        rowPageSizeDropDown.isAngular = this.parent.isModalDialog;
                         rowPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element));
                         this.trackUIComponent('DropDownList', rowPageSizeDropDown);
                     }
@@ -197,6 +198,7 @@ export class Pager {
                             popupWidth: '100%',
                             cssClass: this.parent.cssClass
                         });
+                        columnPageSizeDropDown.isAngular = this.parent.isModalDialog;
                         columnPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element));
                         this.trackUIComponent('DropDownList', columnPageSizeDropDown);
                     }

@@ -773,7 +773,7 @@ export class ColumnChooser implements IAction {
         this.selectedColumnModels = [];
         this.selectedColumns = [];
         this.sortDirection = '';
-        if (this.infiniteRenderMode) {
+        if (this.infiniteRenderMode && this.dlgDiv) {
             const focusListElement: HTMLElement = this.dlgDiv.querySelector('.e-cclist.e-cc-selectall.e-colfocus');
             if (focusListElement) {
                 focusListElement.classList.remove('e-colfocus');
@@ -1406,14 +1406,14 @@ export class ColumnChooser implements IAction {
     }
 
     private addcancelIcon(): void {
-        if (this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
+        if (this.dlgDiv && this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
             this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
             this.dlgDiv.querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
         }
     }
 
     private removeCancelIcon(): void {
-        if (this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
+        if (this.dlgDiv && this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
             this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
             this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
         }

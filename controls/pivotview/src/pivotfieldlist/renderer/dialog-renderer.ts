@@ -359,6 +359,7 @@ export class DialogRenderer {
                 open: this.dialogOpen.bind(this)
             });
             this.fieldListDialog.isStringTemplate = true;
+            this.fieldListDialog.isAngular = this.parent.isModalDialog;
             this.fieldListDialog.appendTo(fieldListWrappper);
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             setStyleAttribute(select('#' + fieldListWrappper.id + '_dialog-content', fieldListWrappper) as HTMLElement, {
@@ -397,6 +398,7 @@ export class DialogRenderer {
                 beforeOpen: this.beforeOpen.bind(this)
             });
             this.fieldListDialog.isStringTemplate = true;
+            this.fieldListDialog.isAngular = this.parent.isModalDialog;
             this.fieldListDialog.appendTo(fieldListWrappper);
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             // this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;

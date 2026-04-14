@@ -599,7 +599,7 @@ export class RowDD {
         this.removeLastrowBorder(rowEle as HTMLTableRowElement);
         for (let i: number = 0; i < args.rows.length; i++) {
             if (!isNullOrUndefined(rowEle) && rowEle.getAttribute('data-uid') === args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid')
-                || !parentsUntil(args.target, 'e-gridcontent')) {
+                || !parentsUntil(args.target, 'e-gridcontent') || rowEle.classList.contains('e-summaryrow')) {
                 this.dropPosition = 'Invalid';
                 this.addErrorElem();
                 if (isNullOrUndefined(this.parent.rowDropSettings.targetID)) {
@@ -1109,8 +1109,10 @@ export class RowDD {
     private rowDropped(args: RowDropEventArgs): void {
         if (!isNullOrUndefined(this.parent.aggregates[0]) && this.parent.aggregates[0].showChildSummary) {
             const records: ITreeData[] = this.parent.grid.getCurrentViewRecords();
-            args.fromIndex = records[args.fromIndex as any].index;
-            args.dropIndex = records[args.dropIndex as any].index;
+            if (!isNullOrUndefined(records[records[args.fromIndex].index]) && !isNullOrUndefined(records[records[args.dropIndex].index])) {
+                args.fromIndex = records[args.fromIndex as any].index;
+                args.dropIndex = records[args.dropIndex as any].index;
+            }
         }
         const tObj: TreeGrid = this.parent;
         const parentItem: string = 'parentItem';
@@ -1621,14 +1623,16 @@ export class RowDD {
             } else {
                 currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             }
-            count++;
-            tObj.flatData.splice(count, 0, currentRecord);
-            setValue('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);
-            if (tObj.parentIdMapping) {
-                this.treeData.splice(count, 0, currentRecord.taskData);
-            }
-            if (currentRecord.hasChildRecords) {
-                count = this.updateChildRecord(currentRecord, count);
+            if (!isNullOrUndefined(currentRecord)) {
+                count++;
+                tObj.flatData.splice(count, 0, currentRecord);
+                setValue('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);
+                if (tObj.parentIdMapping) {
+                    this.treeData.splice(count, 0, currentRecord.taskData);
+                }
+                if (currentRecord.hasChildRecords) {
+                    count = this.updateChildRecord(currentRecord, count);
+                }
             }
         }
         return count;
@@ -1655,15 +1659,17 @@ export class RowDD {
             } else {
                 currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             }
-            let parentData: ITreeData;
-            if (record.parentItem) {
-                parentData = getParentData(this.parent, record.parentItem.uniqueID);
-            }
-            if (isNullOrUndefined(parentData) && !isNullOrUndefined(record.parentItem)) { parentData = record.parentItem; }
-            currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
-            if (currentRecord.hasChildRecords) {
-                level--;
-                level = this.updateChildRecordLevel(currentRecord, level);
+            if (!isNullOrUndefined(currentRecord)) {
+                let parentData: ITreeData;
+                if (record.parentItem) {
+                    parentData = getParentData(this.parent, record.parentItem.uniqueID);
+                }
+                if (isNullOrUndefined(parentData) && !isNullOrUndefined(record.parentItem)) { parentData = record.parentItem; }
+                currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
+                if (currentRecord.hasChildRecords) {
+                    level--;
+                    level = this.updateChildRecordLevel(currentRecord, level);
+                }
             }
         }
         return level;
@@ -1793,22 +1799,29 @@ export class RowDD {
                 treeGridData = this.parent.dataSource;
             }
             for (let i: number = 0; i < (<ITreeData[]>treeGridData).length; i++) {
-                if (treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
-                    idx = i;
+                if (!isNullOrUndefined(currentRecord.taskData)) {
+                    if (treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                        idx = i;
+                        break;
+                    }
                 }
             }
             for (let i: number = 0; i < this.treeGridData.length; i++) {
-                if (this.treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping]
-                    === currentRecord.taskData[this.parent.idMapping]) {
-                    idz = i;
-                    break;
+                if (!isNullOrUndefined(currentRecord.taskData)) {
+                    if (this.treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping]
+                        === currentRecord.taskData[this.parent.idMapping]) {
+                        idz = i;
+                        break;
+                    }
                 }
             }
             if (idx !== -1 && !isNullOrUndefined(idx)) {
                 (dataSource as ITreeData[]).splice(idx, 1);
+                idx = -1;
             }
             if (idz !== -1 && !isNullOrUndefined(idz)) {
                 this.treeGridData.splice(idz, 1);
+                idz = -1;
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);
@@ -1830,7 +1843,7 @@ export class RowDD {
         }
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[parseInt(i.toString(), 10)];
-            count++;
+            count = currentRecord.isSummaryRow ? count : count + 1;
             if (currentRecord.hasChildRecords) {
                 count = this.getChildCount(currentRecord, count);
             }

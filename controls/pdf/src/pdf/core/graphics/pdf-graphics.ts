@@ -372,7 +372,6 @@ export class PdfGraphics {
     /**
      * Save the current graphics state.
      *
-     * @returns {PdfGraphicsState} graphics state.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -395,6 +394,8 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfGraphicsState} graphics state.
      */
     public save(): PdfGraphicsState {
         const state: PdfGraphicsState = new PdfGraphicsState(this, this._matrix);
@@ -412,8 +413,6 @@ export class PdfGraphics {
     /**
      * Restore the graphics state.
      *
-     * @param {PdfGraphicsState} state graphics state.
-     * @returns {void} restore of the graphics state.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -436,6 +435,9 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfGraphicsState} state graphics state.
+     * @returns {void} restore of the graphics state.
      */
     public restore(state?: PdfGraphicsState): void {
         if (this._graphicsState.length > 0) {
@@ -454,10 +456,6 @@ export class PdfGraphics {
     }
     /**
      * Represents a scale transform of the graphics.
-     *
-     * @param {number} scaleX Scale factor in the x direction.
-     * @param {number} scaleY Scale factor in the y direction.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -481,6 +479,10 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} scaleX Scale factor in the x direction.
+     * @param {number} scaleY Scale factor in the y direction.
+     * @returns {void} Nothing.
      */
     public scaleTransform(scaleX: number, scaleY: number): void {
         const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
@@ -490,9 +492,6 @@ export class PdfGraphics {
     }
     /**
      * Represents a translate transform of the graphics.
-     *
-     * @param {Point} location (x, y) coordinates of the translation.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -516,6 +515,9 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Point} location (x, y) coordinates of the translation.
+     * @returns {void} Nothing.
      */
     public translateTransform(location: Point): void {
         const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
@@ -525,9 +527,6 @@ export class PdfGraphics {
     }
     /**
      * Represents a rotate transform of the graphics.
-     *
-     * @param {number} angle Angle of rotation in degrees.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -551,6 +550,9 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} angle Angle of rotation in degrees.
+     * @returns {void} Nothing.
      */
     public rotateTransform(angle: number): void {
         const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
@@ -560,10 +562,6 @@ export class PdfGraphics {
     }
     /**
      * Represents a clipping region of this graphics.
-     *
-     * @param {Rectangle} bounds Rectangle structure that represents the new clip region.
-     * @param {PdfFillMode} mode Member of the PdfFillMode enumeration that specifies the filling operation to use.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -583,6 +581,10 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds Rectangle structure that represents the new clip region.
+     * @param {PdfFillMode} mode Member of the PdfFillMode enumeration that specifies the filling operation to use.
+     * @returns {void} Nothing.
      */
     public setClip(bounds: Rectangle, mode?: PdfFillMode): void {
         if (typeof mode === 'undefined') {
@@ -593,9 +595,6 @@ export class PdfGraphics {
     }
     /**
      * Represents a transparency of this graphics.
-     *
-     * @param {number} stroke The transparency value for the stroke.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -615,16 +614,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} stroke The transparency value for the stroke.
+     * @returns {void} Nothing.
      */
     public setTransparency(stroke: number): void
     /**
      * Represents a transparency setting for the graphics.
      *
-     * @param {number} stroke The transparency value for strokes.
-     * @param {number} fill The transparency value for fills.
-     * @param {PdfBlendMode} mode The blend mode to use.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -643,16 +640,16 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
      */
     public setTransparency(stroke: number, fill: number, mode: PdfBlendMode): void
     /**
      * Sets the transparency for the graphics.
      *
-     * @param {number} stroke The transparency value for strokes.
-     * @param {number} fill The transparency value for fills.
-     * @param {PdfBlendMode} mode The blend mode to use.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -671,6 +668,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
      */
     public setTransparency(stroke: number, fill?: number, mode?: PdfBlendMode): void {
         if (typeof fill === 'undefined') {
@@ -736,11 +738,6 @@ export class PdfGraphics {
     /**
      * Draws a line on the page graphics.
      *
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the line.
-     * @param {Point} start The (x, y) coordinates of the starting point of the line.
-     * @param {Point} end The (x, y) coordinates of the ending point of the line.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -757,6 +754,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the line.
+     * @param {Point} start The (x, y) coordinates of the starting point of the line.
+     * @param {Point} end The (x, y) coordinates of the ending point of the line.
+     * @returns {void} Nothing.
      */
     public drawLine(pen: PdfPen, start: Point, end: Point): void {
         this._beginMarkContent();
@@ -769,9 +771,6 @@ export class PdfGraphics {
     }
     /**
      * Draw a rectangle on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounds of the rectangular region.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -789,14 +788,13 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounds of the rectangular region.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
      */
     public drawRectangle(bounds: Rectangle, pen: PdfPen): void
     /**
      * Draw a rectangle on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounds of the rectangular region.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -814,15 +812,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounds of the rectangular region.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing
      */
     public drawRectangle(bounds: Rectangle, brush: PdfBrush): void
     /**
      * Draw a rectangle on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounds of the rectangular region.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -842,6 +839,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounds of the rectangular region.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing
      */
     public drawRectangle(bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
     public drawRectangle(bounds?: Rectangle, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
@@ -853,13 +855,6 @@ export class PdfGraphics {
     }
     /**
      * Draws a Bezier curve using a specified pen and coordinates for the start point, two control points, and end point.
-     *
-     * @param {Point} start The (x, y) coordinates of the starting point of the Bezier curve.
-     * @param {Point} first The (x, y) coordinates of the first control point of the Bezier curve.
-     * @param {Point} second The (x, y) coordinates of the second control point of the Bezier curve.
-     * @param {Point} end The (x, y) coordinates of the ending point of the Bezier curve.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the Bezier curve.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -877,6 +872,13 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Point} start The (x, y) coordinates of the starting point of the Bezier curve.
+     * @param {Point} first The (x, y) coordinates of the first control point of the Bezier curve.
+     * @param {Point} second The (x, y) coordinates of the second control point of the Bezier curve.
+     * @param {Point} end The (x, y) coordinates of the ending point of the Bezier curve.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the Bezier curve.
+     * @returns {void} Nothing
      */
     public drawBezier(start: Point, first: Point, second: Point, end: Point, pen: PdfPen): void {
         this._beginMarkContent();
@@ -888,12 +890,6 @@ export class PdfGraphics {
     }
     /**
      * Draws a pie slice on a PDF graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle.
-     * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
-     * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle to the end of the pie slice.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -911,16 +907,16 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle.
+     * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle to the end of the pie slice.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
+     * @returns {void} Nothing
      */
     public drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen): void
     /**
      * Draws a pie slice on PDF graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle.
-     * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
-     * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -938,17 +934,16 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, brush: PdfBrush): void
-    /**
-     * Draws a pie slice on PDF graphics.
      *
      * @param {Rectangle} bounds The bounding rectangle.
      * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
      * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
      * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
      * @returns {void} Nothing
+     */
+    public drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, brush: PdfBrush): void
+    /**
+     * Draws a pie slice on PDF graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -968,6 +963,13 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle.
+     * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
+     * @returns {void} Nothing
      */
     public drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen, brush: PdfBrush): void
     public drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
@@ -980,10 +982,6 @@ export class PdfGraphics {
     }
     /**
      * Draw polygon on the page graphics.
-     *
-     * @param {Point[]} points The points of the polygon.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
-     * @returns {void} Nothing.
      *
      *  ```typescript
      * // Load an existing PDF document
@@ -1003,14 +1001,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Point[]} points The points of the polygon.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
+     * @returns {void} Nothing.
      */
     public drawPolygon(points: Point[], pen: PdfPen): void
     /**
      * Draw polygon on the page graphics.
-     *
-     * @param {Point[]} points The points of the polygon.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
-     * @returns {void} Nothing
      *
      *```typescript
      * // Load an existing PDF document
@@ -1030,15 +1028,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Point[]} points The points of the polygon.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
+     * @returns {void} Nothing
      */
     public drawPolygon(points: Point[], brush: PdfBrush): void
     /**
      * Draw polygon on the page graphics.
-     *
-     * @param {Point[]} points The points of the polygon.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1060,6 +1057,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Point[]} points The points of the polygon.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
+     * @returns {void} Nothing.
      */
     public drawPolygon(points: Point[], pen: PdfPen, brush: PdfBrush): void
     public drawPolygon(points: Point[], first?: PdfPen| PdfBrush, second?: PdfBrush): void {
@@ -1079,10 +1081,6 @@ export class PdfGraphics {
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1099,14 +1097,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
+     * @returns {void} Nothing.
      */
     public drawEllipse(bounds: Rectangle, pen: PdfPen): void
     /**
      * Draw ellipse on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1124,15 +1122,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
+     * @returns {void} Nothing.
      */
     public drawEllipse(bounds: Rectangle, brush: PdfBrush): void
     /**
      * Draw ellipse on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
-     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1152,6 +1149,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
+     * @returns {void} Nothing.
      */
     public drawEllipse(bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
     public drawEllipse(bounds: Rectangle, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
@@ -1163,12 +1165,6 @@ export class PdfGraphics {
     }
     /**
      * Draw arc on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse from which the arc shape comes.
-     * @param {number} startAngle Angle measured in degrees clockwise from the x-axis to the first side of the arc shape.
-     * @param {number} sweepAngle Angle measured in degrees clockwise from the startAngle parameter to the second side of the arc shape.
-     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the arc.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1186,6 +1182,12 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {number} startAngle Angle measured in degrees clockwise from the x-axis to the first side of the arc shape.
+     * @param {number} sweepAngle Angle measured in degrees clockwise from the startAngle parameter to the second side of the arc shape.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the arc.
+     * @returns {void} Nothing.
      */
     public drawArc(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen): void {
         if (sweepAngle !== 0) {
@@ -1198,10 +1200,6 @@ export class PdfGraphics {
     }
     /**
      * Draws an image on the page graphics.
-     *
-     * @param {PdfImage} image The image to be drawn on the page.
-     * @param {Point} location The (x, y) coordinates of the upper-left corner where the image will be drawn.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1219,14 +1217,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfImage} image The image to be drawn on the page.
+     * @param {Point} location The (x, y) coordinates of the upper-left corner where the image will be drawn.
+     * @returns {void} Nothing.
      */
     public drawImage(image: PdfImage, location: Point) : void
     /**
      * Draws an image on the page graphics.
-     *
-     * @param {PdfImage} image The image to be drawn on the page.
-     * @param {Rectangle} bounds The bounding rectangle that defines where the image will be drawn.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1244,6 +1242,10 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfImage} image The image to be drawn on the page.
+     * @param {Rectangle} bounds The bounding rectangle that defines where the image will be drawn.
+     * @returns {void} Nothing.
      */
     public drawImage(image: PdfImage, bounds: Rectangle) : void
     public drawImage(arg1: PdfImage, arg2: Point | Rectangle) : void {
@@ -1302,10 +1304,6 @@ export class PdfGraphics {
     /**
      * Draws a PDF template onto the page graphics.
      *
-     * @param {PdfTemplate} template The PDF template to be drawn.
-     * @param {Rectangle} bounds The bounds of the template.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1324,6 +1322,10 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfTemplate} template The PDF template to be drawn.
+     * @param {Rectangle} bounds The bounds of the template.
+     * @returns {void} Nothing.
      */
     public drawTemplate(template: PdfTemplate, bounds: Rectangle): void {
         this._beginMarkContent();
@@ -1375,18 +1377,7 @@ export class PdfGraphics {
                     this._page._pageDictionary.has('MediaBox') && cropBox && mediaBox &&
                     cropBox[0] === mediaBox[0] && cropBox[1] === mediaBox[1] && cropBox[2] === mediaBox[2] && cropBox[3] === mediaBox[3]) ||
                     (this._page._pageDictionary.has('MediaBox') && mediaBox && mediaBox[3] === 0);
-                const yAxis: number = (bounds.y + ((this._page._origin[0] >= 0 || needTransform) ? bounds.height : 0));
-                if (template && template._isSignature &&
-                    template._content && template._content.dictionary &&
-                    template._content.dictionary.has('BBox')) {
-                    const bbox: number[] = template._content.dictionary.get('BBox');
-                    const hasValidBBoxSize: boolean = bbox[2] !== 0 && bbox[3] !== 0;
-                    const xTranslate: number = (bbox[0] > 0 && hasValidBBoxSize) ? 0 : bounds.x;
-                    const yTranslate: number = (bbox[1] > 0 && hasValidBBoxSize) ? this._page.size.height : yAxis;
-                    matrix._translate(xTranslate, -yTranslate);
-                } else {
-                    matrix._translate(bounds.x, -yAxis);
-                }
+                matrix._translate(bounds.x, -(bounds.y + ((this._page._origin[0] >= 0 || needTransform) ? bounds.height : 0)));
             } else {
                 matrix._translate(bounds.x, -(bounds.y + bounds.height));
             }
@@ -1500,10 +1491,6 @@ export class PdfGraphics {
     /**
      * Draws a graphics path defined by a pen and path.
      *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1526,14 +1513,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @returns {void} Nothing.
      */
     public drawPath(path: PdfPath, pen: PdfPen): void
     /**
      * Draws a graphics path defined by a brush and path.
-     *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1555,15 +1542,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
      */
     public drawPath(path: PdfPath, brush: PdfBrush): void
     /**
      * Draws a graphics path defined by a pen, brush, and path.
-     *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1587,6 +1573,11 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
      */
     public drawPath(path: PdfPath, pen: PdfPen, brush: PdfBrush): void
     public drawPath(path: PdfPath, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
@@ -1600,12 +1591,6 @@ export class PdfGraphics {
     }
     /**
      * Draws a rounded rectangle on the page graphics.
-     *
-     * @param {Rectangle} bounds The bounding rectangle of the rounded rectangle.
-     * @param {number} radius The radius of the rounded corners of the rectangle.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the rectangle.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the rectangle.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1625,6 +1610,12 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Rectangle} bounds The bounding rectangle of the rounded rectangle.
+     * @param {number} radius The radius of the rounded corners of the rectangle.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the rectangle.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing.
      */
     public drawRoundedRectangle(bounds: Rectangle, radius: number, pen: PdfPen, brush: PdfBrush): void {
         if (pen === null || typeof pen === 'undefined') {
@@ -1656,12 +1647,6 @@ export class PdfGraphics {
     /**
      * Draw text on the page graphics.
      *
-     * @param {string} value The string to be drawn.
-     * @param {PdfFont} font The font used to draw the string.
-     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1678,17 +1663,16 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush): void;
-    /**
-     * Draw text on the page graphics.
      *
      * @param {string} value The string to be drawn.
      * @param {PdfFont} font The font used to draw the string.
      * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
      * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
-     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
      * @returns {void} Nothing.
+     */
+    public drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush): void;
+    /**
+     * Draw text on the page graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1709,16 +1693,17 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush, format: PdfStringFormat): void
-    /**
-     * Draw text on the page graphics.
      *
      * @param {string} value The string to be drawn.
      * @param {PdfFont} font The font used to draw the string.
      * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
      * @returns {void} Nothing.
+     */
+    public drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush, format: PdfStringFormat): void
+    /**
+     * Draw text on the page graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1738,17 +1723,16 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen): void
-    /**
-     * Draw text on the page graphics.
      *
      * @param {string} value The string to be drawn.
      * @param {PdfFont} font The font used to draw the string.
      * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
-     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
      * @returns {void} Nothing.
+     */
+    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen): void
+    /**
+     * Draw text on the page graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1771,17 +1755,17 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, format: PdfStringFormat): void
-    /**
-     * Draw text on the page graphics.
      *
      * @param {string} value The string to be drawn.
      * @param {PdfFont} font The font used to draw the string.
      * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
      * @returns {void} Nothing.
+     */
+    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, format: PdfStringFormat): void
+    /**
+     * Draw text on the page graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1801,18 +1785,17 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
-    /**
-     * Draw text on the page graphics.
      *
      * @param {string} value The string to be drawn.
      * @param {PdfFont} font The font used to draw the string.
      * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
      * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
-     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
      * @returns {void} Nothing.
+     */
+    public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
+    /**
+     * Draw text on the page graphics.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1835,6 +1818,14 @@ export class PdfGraphics {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
+     * @returns {void} Nothing.
      */
     public drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, brush: PdfBrush, format: PdfStringFormat): void
     public drawString(value: string,

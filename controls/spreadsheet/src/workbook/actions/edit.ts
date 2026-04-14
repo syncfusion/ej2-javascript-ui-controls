@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet, isCustomDateTime } from '../base/index';
-import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange, getFormattedCellObject, checkNumberFormat } from '../common/event';
+import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange, checkSortRange, getFormattedCellObject, checkNumberFormat } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress, NumberFormatArgs, isNumber, LocaleNumericSettings } from '../common/index';
 import { defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula, DateFormatCheckArgs } from '../../workbook/common/index';
@@ -91,7 +91,7 @@ export class WorkbookEdit {
             let isFormula: boolean = checkIsFormula(value);
             isFormula = value === '#SPILL!' ? true : isFormula;
             let skipFormula: boolean = false; // for unique formula
-            if (cell.formula && cell.formula.indexOf('UNIQUE') > - 1 && value === '') {
+            if (cell && cell.formula && value === '' && (cell.formula.indexOf('UNIQUE') > -1 || cell.formula.indexOf('SORT') > -1)) {
                 skipFormula = true;
             }
             const isNotTextFormat: boolean = getTypeFromFormat(cell.format) !== 'Text' && (!isFormula ||
@@ -171,6 +171,8 @@ export class WorkbookEdit {
                     }
                 } else if (!isNullOrUndefined(value) && value.toLowerCase().includes('unique(') && (value as string).length > 0) {
                     cell.value = <string>value;
+                } else if (!isNullOrUndefined(value) && value.toLowerCase().includes('sort(') && (value as string).length > 0) {
+                    cell.value = <string>value;
                 }
             }
             if (value === '#SPILL!') {
@@ -178,6 +180,8 @@ export class WorkbookEdit {
             } else {
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.parent.notify(checkUniqueRange, args);
+                const sortArgs: { cellIdx: number[], isSort: boolean } = { cellIdx: range, isSort: false };
+                this.parent.notify(checkSortRange, sortArgs);
                 if (this.parent.calculationMode === 'Manual' && isFormula && isNullOrUndefined(isDependentUpdate) &&
                     (actionName !== 'autofill' || cell.formula !== '') && !this.parent.isEdit &&
                     isNullOrUndefined((this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement))) {

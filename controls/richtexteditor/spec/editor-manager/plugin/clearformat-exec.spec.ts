@@ -46,7 +46,7 @@ describe('Clear Format Exec plugin', () => {
             editorObj.nodeSelection.setSelectionText(document, node, node, 0, 2);
             let callback: boolean = false;
             editorObj.execCommand("Clear", 'ClearFormat', null, ():boolean => { callback = true; return true;} );
-            expect(document.getElementById('paragraph1').querySelectorAll('a').length).toBe(0);
+            expect(document.getElementById('paragraph1').querySelectorAll('a').length).toBe(1);
             expect(callback).toBe(true);
         });
         it('label clear format', () => {

@@ -10713,6 +10713,24 @@ export class Editor {
         }
         this.fireContentChange();
     }
+    private updateBookmarkEndPositions(currentParagraph: ParagraphWidget): void {
+        if (!isNullOrUndefined(currentParagraph) && currentParagraph.isUpdateBookmarkEnd) {
+            let lastLine: LineWidget = currentParagraph.lastChild as LineWidget;
+            if (isNullOrUndefined(lastLine)) {
+                return;
+            }
+            for (var i = 0; i < lastLine.children.length; i++) {
+                var element = lastLine.children[i];
+                if (element instanceof BookmarkElementBox && element.bookmarkType === 1) {
+                    if (isNullOrUndefined(element.properties) && this.owner.documentHelper.render.isBookmarkEndAtStart(element)) {
+                        element.properties = {};
+                    }
+                    (element.properties as any).isAfterParagraphMark = true;
+                }
+            }
+            currentParagraph.isUpdateBookmarkEnd = false;
+        }
+    };
     private insertParagraph(newParagraph: ParagraphWidget, insertAfter: boolean): void {
         let lineWidget: LineWidget = this.selection.start.currentWidget;
         let offset: number = this.selection.start.offset;
@@ -10721,6 +10739,9 @@ export class Editor {
             offset = 0;
         }
         let currentParagraph: ParagraphWidget = this.selection.start.paragraph;
+        if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
+            this.updateBookmarkEndPositions(currentParagraph);
+        }
         currentParagraph = currentParagraph.combineWidget(this.owner.viewer) as ParagraphWidget;
         if (insertAfter) {
             let length: number = this.selection.getLineLength(currentParagraph.lastChild as LineWidget);
@@ -19222,6 +19243,9 @@ export class Editor {
                 container.height += height;
             }
         }
+        if (paragraph.previousWidget instanceof ParagraphWidget && paragraph.previousWidget.paragraphFormat.contextualSpacing && !isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.previousWidget.paragraphFormat.baseStyle) && !isNullOrUndefined(paragraph.paragraphFormat.baseStyle) && paragraph.previousWidget.paragraphFormat.baseStyle.name === paragraph.paragraphFormat.baseStyle.name) {
+            this.documentHelper.layout.reLayoutParagraph((paragraph.previousWidget as ParagraphWidget), (paragraph.previousWidget.lastChild as LineWidget).indexInOwner, 0);
+        }
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
         return paragraph;
     }
@@ -20149,6 +20173,7 @@ export class Editor {
                 if (paragraph.paragraphFormat.leftIndent !== 0) {
                     this.onApplyParagraphFormat('leftIndent', 0, false, false);
                 }
+                selection.skipFormatRetrieval = false;
                 return;
             }
             if (paragraph.paragraphFormat.leftIndent !== 0) {
@@ -21463,7 +21488,9 @@ export class Editor {
                         nextParagraph.childWidgets.push(new LineWidget(nextParagraph));
                     }
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+                    this.updateBookmarkEnd(paragraph);
                     this.removeBlock(nextParagraph);
+                    this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
                     if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== "Insert" && !skipToAddHistory) {
                         // if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
                         //     this.removeRevisionForBlock(nextParagraph, undefined, false, true);
@@ -21474,6 +21501,26 @@ export class Editor {
             }
         }
     }
+    private updateBookmarkEnd(paragraph: ParagraphWidget): void {
+        var lastLine = paragraph.lastChild as LineWidget;
+        if (isNullOrUndefined(lastLine)) {
+            return;
+        }
+        for (var i = 0; i < lastLine.children.length; i++) {
+            var element = lastLine.children[i];
+            if (element instanceof BookmarkElementBox
+                && element.bookmarkType === 1
+                && !isNullOrUndefined(element.properties)
+                && element.properties.hasOwnProperty('isAfterParagraphMark')
+                && element.properties['isAfterParagraphMark']) {
+                (element.properties as any).isAfterParagraphMark = false;
+                if (this.owner.documentHelper.render.isBookmarkEndAtStart(element)) {
+                    element.properties = undefined;
+                }
+                element.line.paragraph.isUpdateBookmarkEnd = true;
+            }
+        }
+    };
     private handleDeleteParaMark(currentPara: ParagraphWidget, skipSameUserInsertRevisionRemoval?: boolean, skipRevisionInsertionAndDeletion?: boolean): boolean {
         if (!this.owner.enableTrackChanges && currentPara.characterFormat.revisionLength > 0) {
             // If tracking disabled and revision exists then remove revision from character format

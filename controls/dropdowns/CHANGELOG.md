@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I816920` - Resolved an issue where the MultiSelect “Select All” option selected only the first 30 items when using string arrays with virtualization enabled.
+
 ## 33.1.47 (2026-04-07)
 
 ### drop-down-tree

@@ -4122,8 +4122,9 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('836851 - iOS device interaction', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
+        let QTBarModule: IQuickToolbar;
         let innerHTML: string = `<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`;
-        beforeAll(() => {
+        beforeEach(() => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 height: 400,
@@ -4134,8 +4135,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                 value: innerHTML,
             });
             rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
         });
-        afterAll(() => {
+        afterEach(() => {
             Browser.userAgent = currentBrowserUA;
             destroy(rteObj);
         });
@@ -4157,6 +4159,50 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(isNullOrUndefined(document.querySelector('.e-rte-image') as HTMLElement)).toBe(true);
                 expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
                 done();
+            }, 100);
+        });
+        it('1018162: Open quick toolbar, close it, then reopen quick toolbar', (done: Function) => {
+            let contentTarget = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: any = document.createEvent("MouseEvents");
+            // Step 1: Initial mousedown on content area
+            clickEvent.initEvent("mousedown", false, true);
+            contentTarget.dispatchEvent(clickEvent);
+            // Step 2: Get the image element and set selection
+            let imageTarget = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), imageTarget);
+            // Step 3: Trigger mousedown on image to open quick toolbar
+            clickEvent.initEvent("mousedown", false, true);
+            imageTarget.dispatchEvent(clickEvent);
+            imageTarget.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                // Verify quick toolbar is open
+                expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
+                QTBarModule.imageQTBar.hidePopup();
+                setTimeout(() => {
+                    debugger;
+                    // Verify quick toolbar is closed
+                    expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
+                    // Step 5: Select the image again to reopen quick toolbar
+                    let contentTarget = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+                    let clickEvent: any = document.createEvent("MouseEvents");
+                    // Step 1: Initial mousedown on content area
+                    clickEvent.initEvent("mousedown", false, true);
+                    contentTarget.dispatchEvent(clickEvent);
+                    // Step 2: Get the image element and set selection
+                    let imageTarget = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+                    (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), imageTarget);
+                    // Step 3: Trigger mousedown on image to open quick toolbar
+                    clickEvent.initEvent("mousedown", false, true);
+                    imageTarget.dispatchEvent(clickEvent);
+                    imageTarget.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        // Verify quick toolbar is open again
+                        expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
+                        let imageQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                        expect(!isNullOrUndefined(imageQTBarEle)).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
             }, 100);
         });
     });

@@ -2801,7 +2801,19 @@ describe('MaskedTextBox Component', () => {
             expect((targetElement as any).ej2_instances[0].value).toBe('321');
             formElement.reset();
             expect((targetElement as any).ej2_instances[0].value).toBe('123');
-        });        
+        });
+        it('invoking refresh() method causes the instance of MaskedTextBox to be destroyed', () => {
+            mask = new MaskedTextBox({
+                value: '123',
+                mask: '999'
+            });
+            mask.appendTo(targetElement);
+
+            mask.value = '321';
+            expect((targetElement as any).ej2_instances[0]).not.toBeNull;
+            (targetElement as any).ej2_instances[0].refresh()
+            expect((targetElement as any).ej2_instances[0]).not.toBeNull;
+        });    
     });
     it('memory leak testing', () => {
         profile.sample();

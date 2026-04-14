@@ -354,7 +354,8 @@ export class ClearFormat {
                 currentInlineNode = currentInlineNode.parentElement;
             }
             if (currentNode &&
-                IsFormatted.inlineTags.indexOf(currentNode.nodeName.toLocaleLowerCase()) > -1 ) {
+                IsFormatted.inlineTags.indexOf(currentNode.nodeName.toLocaleLowerCase()) > -1 &&
+                currentNode.nodeName.toLocaleLowerCase() !== 'a') {
                 if (!isTableSelected) {
                     nodeCutter.GetSpliceNode(range, currentNode as HTMLElement );
                 }
@@ -366,11 +367,16 @@ export class ClearFormat {
     private static removeInlineParent(textNodes: Node): void {
         const nodes: Node[] = InsertMethods.unwrap( textNodes );
         for (let index: number = 0; index < nodes.length; index++) {
-            if (nodes[index as number].parentNode.childNodes.length === 1 && !((nodes[index as number].parentNode as HTMLElement).classList.contains('e-img-inner') ||
-                (nodes[index as number].parentNode as HTMLElement).classList.contains('e-img-caption-text'))
-                && IsFormatted.inlineTags.indexOf(nodes[index as number].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
-                this.removeInlineParent(nodes[index as number].parentNode);
-            } else if (IsFormatted.inlineTags.indexOf(nodes[index as number].nodeName.toLocaleLowerCase()) > -1) {
+            const parent: HTMLElement = nodes[index as number].parentNode as HTMLElement;
+            const nodeName: string = nodes[index as number].nodeName.toLocaleLowerCase();
+            const parentName: string = parent && parent.nodeName ? parent.nodeName.toLocaleLowerCase() : '';
+            // do not unwrap anchor elements
+            if (parent && parent.childNodes.length === 1 && !((parent as HTMLElement).classList.contains('e-img-inner') ||
+                (parent as HTMLElement).classList.contains('e-img-caption-text'))
+                && parentName !== 'a'
+                && IsFormatted.inlineTags.indexOf(parentName) > -1 ) {
+                this.removeInlineParent(parent);
+            } else if (nodeName !== 'a' && IsFormatted.inlineTags.indexOf(nodeName) > -1) {
                 this.removeInlineParent(nodes[index as number]);
             }
         }

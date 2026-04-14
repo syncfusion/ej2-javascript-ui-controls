@@ -1185,6 +1185,10 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * @private
      */
+    public isUpdateBookmarkEnd: boolean = false;
+    /**
+     * @private
+     */
     public ischildContentControl: boolean = false;
     /**
      * @private

@@ -11,7 +11,7 @@ import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow,
 import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeIndex, Row, Sheet, Column } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
-import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat, addDPRValue } from '../../workbook/index';
+import { checkUniqueRange, checkSortRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat, addDPRValue } from '../../workbook/index';
 import { applyProtect, chartDesignTab, commentUndoRedo, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, noteUndoRedo, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 import { keyCodes } from './constant';
 
@@ -2337,9 +2337,18 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                 const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
                 skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
             }
+            const sortArgs: { cellIdx: number[], isSort: boolean, sortRange: string } = {
+                cellIdx: [sRIdx, sCIdx], isSort: false,
+                sortRange: ''
+            };
+            context.notify(checkSortRange, sortArgs);
+            if (sortArgs.sortRange !== '') {
+                const rangeIndex: number[] = getIndexesFromAddress(sortArgs.sortRange);
+                skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
+            }
             // Determine if it's the last iteration of the given range.
             const isLastIteration: boolean = (sRIdx === eRIdx) && (sCIdx === eCIdx);
-            if (!args.isUnique || skip) {
+            if ((!args.isUnique && !sortArgs.isSort) || skip) {
                 cell = getCell(sRIdx, sCIdx, sheet);
                 if ((cell && <unknown>cell.value === 0) || cell && cell.value && (isNullOrUndefined(cell.value) || cell.value !== '')) {
                     isCellUpdated = false;

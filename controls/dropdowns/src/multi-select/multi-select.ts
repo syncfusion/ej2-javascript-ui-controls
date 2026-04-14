@@ -5794,7 +5794,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.listData = this.virtualSelectAllData;
             const ulElement: HTMLElement =
                 this.createListItems(
-                    this.virtualSelectAllData.slice(0, 30) as { [key: string]: Object }[],
+                    this.virtualSelectAllData.slice(0, Math.min(50, this.virtualSelectAllData.length)) as { [key: string]: Object }[],
                     this.fields
                 );
             const firstItems: NodeListOf<HTMLLIElement> = ulElement.querySelectorAll('li');
@@ -5828,10 +5828,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.updateListSelection(concatenatedNodeList[index as number], event, length - index);
                     }
                     else {
-                        let value: any = getValue(
-                            this.fields.value ? this.fields.value : '',
-                            this.virtualSelectAllData[index as number]
-                        );
+                        const rawItem: any = this.virtualSelectAllData[index as number];
+                        let value: any = this.fields.value
+                            ? getValue(this.fields.value, rawItem)
+                            : (typeof rawItem === 'object' && rawItem !== null ? rawItem : rawItem);
                         value = this.allowObjectBinding ? this.getDataByValue(value) : value;
                         if (((!this.allowObjectBinding && this.value && (this.value as string[]).indexOf(value as string) >= 0) ||
                             (this.allowObjectBinding && this.indexOfObjectInArray(value, this.value) >= 0))) {
@@ -5864,12 +5864,17 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 const batch: any = dataArray.slice(currentIndex, endIndex);
                                 // Use map on the batch
                                 batch.map((obj: any) => {
-                                    if (this.value && obj[this.fields.value] != null && Array.isArray(this.value) &&
-                                        ((!this.allowObjectBinding && this.value.indexOf(obj[this.fields.value] as never) < 0) ||
-                                        (this.allowObjectBinding && !this.isObjectInArray(obj[this.fields.value], this.value)))) {
-                                        const value: string | number | boolean | object = obj[this.fields.value];
-                                        const text: string = (obj[this.fields.text]).toString();
-                                        this.dispatchSelect(value, event, null, false, length, obj, text);
+                                    const isPlainValue: boolean = typeof obj !== 'object' || obj === null;
+                                    const value: any = isPlainValue
+                                        ? obj
+                                        : (this.fields.value ? obj[this.fields.value] : obj);
+                                    const text: string = isPlainValue
+                                        ? String(obj)
+                                        : (this.fields.text ? (obj[this.fields.text]).toString() : String(obj));
+                                    if (this.value && value != null && Array.isArray(this.value) &&
+                                        ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) ||
+                                        (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
+                                        this.dispatchSelect(value, event, null, false, length, isPlainValue ? null : obj, text);
                                     }
                                 });
                                 currentIndex = endIndex;

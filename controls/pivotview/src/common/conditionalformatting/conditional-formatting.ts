@@ -111,6 +111,7 @@ export class ConditionalFormatting {
             });
         }
         dialog.isStringTemplate = true;
+        dialog.isAngular = this.parent.isModalDialog;
         dialog.appendTo(conditionalFormattingElement);
         // dialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('conditionalFormating');
     }
@@ -401,6 +402,7 @@ export class ConditionalFormatting {
             change: this.measureChange.bind(this, i)
         });
         fieldsDropDown[i as number].isStringTemplate = true;
+        fieldsDropDown[i as number].isAngular = this.parent.isModalDialog;
         fieldsDropDown[i as number].appendTo(select('#' + this.parentID + 'measureinput' + i, dialogElement) as HTMLElement);
         const conditions: { [key: string]: Object }[] = [
             { value: 'LessThan', name: this.parent.localeObj.getConstant('LessThan') },
@@ -422,6 +424,7 @@ export class ConditionalFormatting {
             change: this.conditionChange.bind(this, i)
         });
         conditionsDropDown[i as number].isStringTemplate = true;
+        conditionsDropDown[i as number].isAngular = this.parent.isModalDialog;
         conditionsDropDown[i as number].appendTo(select('#' + this.parentID + 'conditioninput' + i, dialogElement) as HTMLElement);
         const formatValueClassName: string = !(this.newFormat[i as number].conditions === 'Between' || this.newFormat[i as number].conditions === 'NotBetween') ?
             cls.HIDDEN : '';
@@ -467,6 +470,7 @@ export class ConditionalFormatting {
             change: this.fontNameChange.bind(this, i)
         });
         fontNameDropDown[i as number].isStringTemplate = true;
+        fontNameDropDown[i as number].isAngular = this.parent.isModalDialog;
         fontNameDropDown[i as number].appendTo(select('#' + this.parentID + 'fontnameinput' + i, dialogElement) as HTMLElement);
         const fontSize: { [key: string]: Object }[] = [
             { index: 0, name: '9px' }, { index: 1, name: '10px' }, { index: 2, name: '11px' }, { index: 3, name: '12px' },
@@ -482,6 +486,7 @@ export class ConditionalFormatting {
             cssClass: this.parent.cssClass
         });
         fontSizeDropDown[i as number].isStringTemplate = true;
+        fontSizeDropDown[i as number].isAngular = this.parent.isModalDialog;
         fontSizeDropDown[i as number].appendTo(select('#' + this.parentID + 'fontsizeinput' + i, dialogElement) as HTMLElement);
     }
 
@@ -530,6 +535,7 @@ export class ConditionalFormatting {
             change: this.fontColorChange.bind(this, i), locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.fontColor[i as number].isStringTemplate = true;
+        this.fontColor[i as number].isAngular = this.parent.isModalDialog;
         this.fontColor[i as number].appendTo(select('#' + this.parentID + 'fontcolor' + i, dialogElement) as HTMLElement);
         addClass([this.fontColor[i as number].element.nextElementSibling.querySelector('.' + cls.SELECTED_COLOR)], cls.ICON);
         value = isNaN(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
@@ -543,6 +549,7 @@ export class ConditionalFormatting {
             locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.backgroundColor[i as number].isStringTemplate = true;
+        this.fontColor[i as number].isAngular = this.parent.isModalDialog;
         this.backgroundColor[i as number].appendTo(select('#' + this.parentID + 'backgroundcolor' + i, dialogElement) as HTMLElement);
         addClass([this.backgroundColor[i as number].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         const toggleBtn: Button = new Button({

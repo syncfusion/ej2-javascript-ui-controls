@@ -3,7 +3,7 @@ import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullO
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell, getCellAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, enableToolbarItems, completeAction } from '../common/index';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey } from '../common/index';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart, mergedRange } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, getSortRange, removeUniquecol, removeSortcol, checkUniqueRange, checkSortRange, reApplyFormula, refreshChart, mergedRange } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, setCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex, isReadOnlyCells, getTypeFromFormat } from '../../workbook/index';
 import { beginAction, updateCell, CheckCellValidArgs, NumberFormatArgs, isReadOnly, getViewportIndexes, getRow } from '../../workbook/index';
@@ -33,6 +33,9 @@ export class Edit {
     private uniqueColl: string = '';
     private uniqueCell: boolean;
     private uniqueActCell: string = '';
+    private sortColl: string = '';
+    private sortCell: boolean;
+    private sortActCell: string = '';
     private isSpill: boolean = false;
     private tapedTwice: boolean;
     private isImeComposing: boolean;
@@ -118,6 +121,7 @@ export class Edit {
         this.parent.on(initiateEdit, this.initiateRefSelection, this);
         this.parent.on(forRefSelRender, this.refSelectionRender, this);
         this.parent.on(checkUniqueRange, this.checkUniqueRange, this);
+        this.parent.on(checkSortRange, this.checkSortRange, this);
         this.parent.on(reApplyFormula, this.reApplyFormula, this);
         this.parent.on(activeSheetChanged, this.sheetChangeHandler, this);
         this.parent.on(readonlyAlert, this.readOnlyAlertHandler, this);
@@ -144,6 +148,7 @@ export class Edit {
             this.parent.off(initiateEdit, this.initiateRefSelection);
             this.parent.off(forRefSelRender, this.refSelectionRender);
             this.parent.off(checkUniqueRange, this.checkUniqueRange);
+            this.parent.off(checkSortRange, this.checkSortRange);
             this.parent.off(reApplyFormula, this.reApplyFormula);
             this.parent.off(activeSheetChanged, this.sheetChangeHandler);
             this.parent.off(readonlyAlert, this.readOnlyAlertHandler);
@@ -594,25 +599,34 @@ export class Edit {
                 if (range[0] === 0 && range[1] === 0 && range[2] >= sheet.usedRange.rowIndex  && range[3] >= sheet.usedRange.colIndex) {
                     (this.parent as Workbook).setUsedRange(0, 0, sheet, false, true);
                 }
-                const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
-                this.checkUniqueRange(args);
-                if (args.isUnique) {
-                    const indexes: number[] = getRangeIndexes(this.uniqueColl);
+                const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
+                const sortArgs: { cellIdx: number[], isSort: boolean } = { cellIdx: range, isSort: false };
+                this.checkUniqueRange(uniqueArgs);
+                this.checkSortRange(sortArgs);
+                if (uniqueArgs.isUnique || sortArgs.isSort) {
+                    const indexes: number[] = uniqueArgs.isUnique ? getRangeIndexes(this.uniqueColl) : getRangeIndexes(this.sortColl);
                     const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                     if (cell && cell.value) {
                         isSpill = cell.value.toString().indexOf('#SPILL!') > - 1;
                     }
                 }
-                if (args.isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) {
+                if ((uniqueArgs.isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) ||
+                    (sortArgs.isSort && this.sortColl.split(':')[0] === address.split(':')[0])) {
                     const index: number[] = getRangeIndexes(this.uniqueColl);
                     for (let i: number = index[0]; i <= index[2]; i++) {
                         for (let j: number = index[1]; j <= index[3]; j++) {
-                            this.parent.updateCellInfo({value: '', formula: ''}, getRangeAddress([i, j]), true);
+                            this.parent.updateCellInfo({ value: '', formula: '' }, getRangeAddress([i, j]), true);
                         }
                     }
-                    this.parent.notify(removeUniquecol, null);
-                    this.uniqueColl = '';
-                } else if (args.isUnique) {
+                    if (uniqueArgs.isUnique) {
+                        this.parent.notify(removeUniquecol, null);
+                        this.uniqueColl = '';
+                    }
+                    if (sortArgs.isSort) {
+                        this.parent.notify(removeSortcol, null);
+                        this.sortColl = '';
+                    }
+                } else if (uniqueArgs.isUnique) {
                     const uniqueRange: number[] = getRangeIndexes(this.uniqueColl);
                     if (getCell(uniqueRange[0], uniqueRange[1], sheet).value === '#SPILL!') {
                         let skip: boolean = false;
@@ -626,10 +640,26 @@ export class Edit {
                                 }
                             }
                         }
-                        if (!skip) { this.reApplyFormula(); }
+                        if (!skip) { this.reApplyFormula({ isUnique: true }); }
+                    }
+                } else if (sortArgs.isSort) {
+                    const sortRange: number[] = getRangeIndexes(this.sortColl);
+                    if (getCell(sortRange[0], sortRange[1], sheet).value === '#SPILL!') {
+                        let skip: boolean = false;
+                        for (let j: number = sortRange[0]; j <= sortRange[2]; j++) {
+                            for (let k: number = sortRange[1]; k <= sortRange[3]; k++) {
+                                const cell: CellModel = getCell(j, k, sheet);
+                                if (j === sortRange[0] && k === sortRange[1]) {
+                                    skip = false;
+                                } else if (cell && !isNullOrUndefined(cell.value) && cell.value !== '') {
+                                    skip = true;
+                                }
+                            }
+                        }
+                        if (!skip) { this.reApplyFormula({ isSort: true }); }
                     }
                 }
-                if (args.isUnique) {
+                if (uniqueArgs.isUnique || sortArgs.isSort) {
                     this.parent.notify(completeAction, { action: 'cellDelete',
                         eventArgs: { address: sheet.name + '!' + address, isSpill: isSpill }});
                 } else {
@@ -945,20 +975,22 @@ export class Edit {
             } else {
                 editWidth = (mainContElement.offsetWidth - (left - cont.scrollLeft) - 28) -
                     this.parent.sheetModule.getRowHeaderWidth(sheet);
-                const tdEleInf: ClientRect = tdElem.getBoundingClientRect();
-                const mainContEleInf: ClientRect = mainContElement.getBoundingClientRect();
-                const getCellRight: number = this.parent.enableRtl ? tdEleInf.left : tdEleInf.right;
-                const getMainConEleRight: number = this.parent.enableRtl ? mainContEleInf.left : mainContEleInf.right;
-                const horizontalScrollBar: Element = this.parent.getScrollElement();
-                const verticalScrollBarWidth: number = this.parent.sheetModule.getScrollSize();
-                if (horizontalScrollBar && tdEleInf.width < horizontalScrollBar.getBoundingClientRect().width - verticalScrollBarWidth) {
-                    if (this.parent.enableRtl) {
-                        if ((getMainConEleRight + verticalScrollBarWidth) > getCellRight) {
-                            horizontalScrollBar.scrollLeft -= tdEleInf.width;
-                        }
-                    } else {
-                        if ((getMainConEleRight - verticalScrollBarWidth) < getCellRight) {
-                            horizontalScrollBar.scrollLeft += tdEleInf.width;
+                if (Browser.info.name !== 'safari') {
+                    const tdEleInf: ClientRect = tdElem.getBoundingClientRect();
+                    const verticalScrollBarWidth: number = this.parent.sheetModule.getScrollSize();
+                    const horizontalScrollBar: Element = this.parent.getScrollElement();
+                    const visibleScrollWidth: number = horizontalScrollBar ?
+                        (horizontalScrollBar.getBoundingClientRect().width - verticalScrollBarWidth) : 0;
+                    if (horizontalScrollBar && tdEleInf.width < visibleScrollWidth) {
+                        const mainContEleRect: ClientRect = mainContElement.getBoundingClientRect();
+                        if (this.parent.enableRtl) {
+                            if ((mainContEleRect.left + verticalScrollBarWidth) > tdEleInf.left) {
+                                horizontalScrollBar.scrollLeft -= tdEleInf.width;
+                            }
+                        } else {
+                            if ((mainContEleRect.right - verticalScrollBarWidth) < tdEleInf.right) {
+                                horizontalScrollBar.scrollLeft += (tdEleInf.width - editWidth);
+                            }
                         }
                     }
                 }
@@ -1097,21 +1129,33 @@ export class Edit {
                 this.refreshEditor(curCellValue, this.isCellEdit, false, false, false);
             }
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
-            if (oldCellValue && oldCellValue.indexOf('=UNIQUE(') > - 1 && this.editCellData.value === '') {
-                this.parent.notify(removeUniquecol, null);
+            if (oldCellValue && this.editCellData.value === '') {
+                if (oldCellValue.indexOf('=UNIQUE(') > -1) {
+                    this.parent.notify(removeUniquecol, null);
+                } else if (oldCellValue.indexOf('=SORT(') > -1) {
+                    this.parent.notify(removeSortcol, null);
+                }
             }
             const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: cellIndex, isUnique: false };
             this.checkUniqueRange(args);
+            const sortArgs: { cellIdx: number[], isSort: boolean } = { cellIdx: cellIndex, isSort: false };
+            this.checkSortRange(sortArgs);
             const isUniqueRange: boolean = args.isUnique;
-            if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
-                const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
-                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') === - 1) {
+            const isSortRange: boolean = sortArgs.isSort;
+            if ((isUniqueRange || isSortRange) && oldCellValue !== '' && this.editCellData.value === '') {
+                const rangeIdx: number[] = getRangeIndexes(isUniqueRange ? this.uniqueColl : this.sortColl);
+                const cellValue: string = getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString();
+                if (!cellValue.includes('#SPILL!')) {
                     return;
                 }
             }
-            if (oldCellValue && oldCellValue.indexOf('UNIQUE') > - 1 &&
-                this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
+            if (isUniqueRange && oldCellValue && oldCellValue.toString().includes('UNIQUE') &&
+                this.editCellData.value && this.editCellData.value.toString().includes('UNIQUE')) {
                 this.updateUniqueRange('');
+            }
+            if (isSortRange && oldCellValue && oldCellValue.toString().includes('SORT') &&
+                this.editCellData.value && this.editCellData.value.toString().includes('SORT')) {
+                this.updateSortRange('');
             }
             const evtArgs: { [key: string]: string | boolean | number[] | number } = {
                 action: 'updateCellValue',
@@ -1182,8 +1226,14 @@ export class Edit {
             if (cell && cell.wrap) {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
-            if (isUniqueRange) {
-                const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
+            if (isUniqueRange || isSortRange) {
+                let rangeIdx: number[] = [];
+                if (isUniqueRange) {
+                    rangeIdx = getRangeIndexes(this.uniqueColl);
+                }
+                if (isSortRange) {
+                    rangeIdx = getRangeIndexes(this.sortColl);
+                }
                 if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') > - 1) { this.isSpill = true; }
                 if ((oldCellValue !== '' && this.editCellData.value === '') ||
                     (this.editCellData.formula && this.editCellData.formula.length > 1 &&
@@ -1199,9 +1249,21 @@ export class Edit {
                             }
                         }
                     }
-                    if (!skip) { this.reApplyFormula(); }
+                    if (!skip) {
+                        if (isUniqueRange) {
+                            this.reApplyFormula({ isUnique: true });
+                        }
+                        if (isSortRange) {
+                            this.reApplyFormula({ isSort: true });
+                        }
+                    }
                 } else {
-                    this.updateUniqueRange(newVal);
+                    if (isUniqueRange) {
+                        this.updateUniqueRange(newVal);
+                    }
+                    if (isSortRange) {
+                        this.updateSortRange(newVal);
+                    }
                 }
             }
         } else {
@@ -1217,37 +1279,67 @@ export class Edit {
         this.focusElement(e as KeyboardEventArgs);
     }
 
-    private checkUniqueRange(uniquArgs: {cellIdx: number[], isUnique: boolean, uniqueRange?: string, sheetName?: string}): void {
-        const args: {range: string[]} = {range : []};
-        this.parent.notify(getUniqueRange, args);
-        const collection: string[] = args.range;
-        if (!uniquArgs.sheetName) {
-            uniquArgs.sheetName = this.parent.getActiveSheet().name;
-        }
+    private checkUniqueorSortRange(
+        args: { cellIdx: number[], isUnique?: boolean, isSort?: boolean, uniqueRange?: string, sortRange?: string, sheetName?: string },
+        eventKey: string): void {
+        const rangeArgs: { range: string[] } = { range: [] };
+        this.parent.notify(eventKey, rangeArgs);
+        const collection: string[] = rangeArgs.range;
+        const sheetName: string = args.sheetName || this.parent.getActiveSheet().name;
+        const isUnique: boolean = args.isUnique !== undefined;
         for (let i: number = 0; i < collection.length; i++) {
-            if (collection[i as number].substring(0, collection[i as number].lastIndexOf('!'))  === uniquArgs.sheetName) {
-                const rangeIdx: number[] = getRangeIndexes(collection[i as number]);
-                for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
-                    for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
-                        if (uniquArgs.cellIdx[0] === j && uniquArgs.cellIdx[1] === k) {
-                            uniquArgs.isUnique = true; this.uniqueCell = true;
-                            const uniqueIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
-                            const collectionIndex: number[] = getRangeIndexes(collection[i as number]);
-                            if (uniqueIndex[0] === collectionIndex[0] && uniqueIndex[1] === collectionIndex[1]) {
-                                const index: number[] = [uniqueIndex[0], collectionIndex[1], uniqueIndex[0], collectionIndex[1]];
-                                index[2] = uniqueIndex[2] > collectionIndex[2] ? uniqueIndex[2] : collectionIndex[2];
-                                index[3] = uniqueIndex[3] > collectionIndex[3] ? uniqueIndex[3] : collectionIndex[3];
-                                this.uniqueColl = getRangeAddress(index);
-                                uniquArgs.uniqueRange = getRangeAddress(index);
+            const address: string = collection[i as number];
+            const colSheet: string = address.substring(0, address.lastIndexOf('!'));
+            if (colSheet !== sheetName) { continue; }
+            const rangeIdx: number[] = getRangeIndexes(address);
+            for (let rowIdx: number = rangeIdx[0]; rowIdx <= rangeIdx[2]; rowIdx++) {
+                for (let colIdx: number = rangeIdx[1]; colIdx <= rangeIdx[3]; colIdx++) {
+                    if (args.cellIdx[0] === rowIdx && args.cellIdx[1] === colIdx) {
+                        if (isUnique) {
+                            args.isUnique = true;
+                            this.uniqueCell = true;
+                            const prevIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
+                            const collectionIndex: number[] = rangeIdx;
+                            if (prevIndex[0] === collectionIndex[0] && prevIndex[1] === collectionIndex[1]) {
+                                const merged: number[] = [prevIndex[0], collectionIndex[1],
+                                    prevIndex[2] > collectionIndex[2] ? prevIndex[2] : collectionIndex[2],
+                                    prevIndex[3] > collectionIndex[3] ? prevIndex[3] : collectionIndex[3]];
+                                this.uniqueColl = getRangeAddress(merged);
+                                args.uniqueRange = this.uniqueColl;
                             } else {
-                                this.uniqueColl = collection[i as number];
-                                uniquArgs.uniqueRange = collection[i as number];
+                                this.uniqueColl = address;
+                                args.uniqueRange = address;
+                            }
+                        } else {
+                            args.isSort = true;
+                            this.sortCell = true;
+                            const prevIndex: number[] = this.sortColl !== '' ? getRangeIndexes(this.sortColl) : [0, 0, 0, 0];
+                            const collectionIndex: number[] = rangeIdx;
+                            if (prevIndex[0] === collectionIndex[0] && prevIndex[1] === collectionIndex[1]) {
+                                const merged: number[] = [
+                                    prevIndex[0], collectionIndex[1],
+                                    prevIndex[2] > collectionIndex[2] ? prevIndex[2] : collectionIndex[2],
+                                    prevIndex[3] > collectionIndex[3] ? prevIndex[3] : collectionIndex[3]
+                                ];
+                                this.sortColl = getRangeAddress(merged);
+                                args.sortRange = this.sortColl;
+                            } else {
+                                this.sortColl = address;
+                                args.sortRange = address;
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    private checkUniqueRange(uniquArgs: { cellIdx: number[], isUnique: boolean, uniqueRange?: string, sheetName?: string }): void {
+        this.checkUniqueorSortRange(uniquArgs, getUniqueRange);
+    }
+
+    private checkSortRange(sortArgs: { cellIdx: number[], isSort: boolean, sortRange?: string, sheetName?: string }): void {
+        this.checkUniqueorSortRange(sortArgs, getSortRange);
     }
 
     private updateUniqueRange(value: string): void {
@@ -1272,21 +1364,52 @@ export class Edit {
         }
     }
 
-    private reApplyFormula(): void {
-        const cellIdx: number[] = getRangeIndexes(this.uniqueColl);
+    private updateSortRange(value: string): void {
+        const rangeIdx: number[] = getRangeIndexes(this.sortColl); let skip: boolean = false;
+        if (getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+            skip = true;
+        }
+        for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+            for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                if (skip) {
+                    if (j === rangeIdx[0] && k === rangeIdx[1]) {
+                        this.parent.updateCellInfo({ value: '#SPILL!' }, getRangeAddress([j, k]), true);
+                    } else {
+                        if (getRangeAddress([j, k]).split(':')[0] === this.editCellData.addr) {
+                            this.parent.updateCellInfo({ value: value }, getRangeAddress([j, k]), true);
+                        } else {
+                            this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private reApplyFormula(args: { isUnique?: boolean, isSort?: boolean }): void {
+        const cellIdx: number[] = getRangeIndexes(args.isUnique ? this.uniqueColl : this.sortColl);
         const cell: CellModel = getCell(cellIdx[0], cellIdx[1], this.parent.getActiveSheet());
-        this.parent.updateCellInfo({value: ''}, getRangeAddress([cellIdx[0], cellIdx[1]]), true);
+        this.parent.updateCellInfo({ value: '' }, getRangeAddress([cellIdx[0], cellIdx[1]]), true);
         const sheets: SheetModel[] = this.parent.sheets; let formula: string = cell.formula;
         for (let i: number = 0; i < sheets.length; i++) {
-            if (formula.indexOf(sheets[i as number].name) > - 1) {
+            if (formula.indexOf(sheets[i as number].name) > -1) {
                 formula = formula.replace(sheets[i as number].name, '!' + i);
             }
         }
-        this.parent.notify(workbookFormulaOperation, { action: 'computeExpression', formula: formula });
-        this.uniqueCell = false;
-        if (this.uniqueActCell !== '') {
-            this.editCellData.value = this.uniqueActCell;
-            this.uniqueActCell = '';
+        if (args.isUnique) {
+            this.parent.notify(workbookFormulaOperation, { action: 'computeExpression', formula: formula });
+            this.uniqueCell = false;
+            if (this.uniqueActCell !== '') {
+                this.editCellData.value = this.uniqueActCell;
+                this.uniqueActCell = '';
+            }
+        } else {
+            this.parent.notify(workbookFormulaOperation, { action: 'nestedFormulaTrue', formula: formula });
+            this.sortCell = false;
+            if (this.sortActCell !== '') {
+                this.editCellData.value = this.sortActCell;
+                this.sortActCell = '';
+            }
         }
     }
     private refreshDependentCellValue(rowIdx: number, colIdx: number): void {
@@ -1394,9 +1517,12 @@ export class Edit {
         };
         if (eventArgs.address) {
             const indexes: number[] = getRangeIndexes(eventArgs.address);
-            const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: indexes, isUnique: false };
-            this.checkUniqueRange(args);
-            if (args.isUnique) { eventArgs.isSpill = this.isSpill; }
+            const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: indexes, isUnique: false };
+            this.checkUniqueRange(uniqueArgs);
+            if (uniqueArgs.isUnique) { eventArgs.isSpill = this.isSpill; }
+            const sortArgs: { cellIdx: number[], isSort: boolean } = { cellIdx: indexes, isSort: false };
+            this.checkSortRange(sortArgs);
+            if (sortArgs.isSort) { eventArgs.isSpill = this.isSpill; }
         }
         const isValueChanged: boolean = (eventArgs.value || <unknown>eventArgs.value === 0 ? eventArgs.value.toString() : '') !==
             (eventArgs.oldValue || <unknown>eventArgs.oldValue === 0 ? eventArgs.oldValue.toString() : '');

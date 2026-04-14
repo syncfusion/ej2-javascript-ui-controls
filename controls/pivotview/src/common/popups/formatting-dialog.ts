@@ -86,6 +86,7 @@ export class NumberFormatting implements IAction {
             close: this.removeDialog.bind(this)
         });
         this.dialog.isStringTemplate = true;
+        this.dialog.isAngular = this.parent.isModalDialog;
         this.dialog.appendTo(valueDialog);
         (this.dialog.element.querySelector('.' + cls.DIALOG_HEADER) as HTMLElement).innerText = this.parent.localeObj.getConstant('numberFormat');
         let formatObject: FormatSettingsModel;
@@ -229,6 +230,7 @@ export class NumberFormatting implements IAction {
                 open: this.customUpdate.bind(this)
             });
             valuesDropDown.isStringTemplate = true;
+            valuesDropDown.isAngular = this.parent.isModalDialog;
             valuesDropDown.appendTo(select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
@@ -244,6 +246,7 @@ export class NumberFormatting implements IAction {
                 cssClass: cls.FORMATTING_FORMAT_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
             });
             formatDropDown.isStringTemplate = true;
+            formatDropDown.isAngular = this.parent.isModalDialog;
             formatDropDown.appendTo(select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
@@ -256,6 +259,7 @@ export class NumberFormatting implements IAction {
                 index: 0, cssClass: cls.FORMATTING_GROUPING_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%', change: this.groupingChange.bind(this)
             });
             groupingDropDown.isStringTemplate = true;
+            groupingDropDown.isAngular = this.parent.isModalDialog;
             groupingDropDown.appendTo(select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
@@ -277,6 +281,7 @@ export class NumberFormatting implements IAction {
                 index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
             decimalDropDown.isStringTemplate = true;
+            decimalDropDown.isAngular = this.parent.isModalDialog;
             decimalDropDown.appendTo(select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element));
         }
         if (formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {

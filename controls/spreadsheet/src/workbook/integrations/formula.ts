@@ -5,9 +5,9 @@ import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonEr
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined, getNumericObject, L10n } from '@syncfusion/ej2-base';
 import { Deferred } from '@syncfusion/ej2-data';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, removeSortcol, checkUniqueRange, checkSortRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
-import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
+import { getUniqueRange, getSortRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
 import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange, importModelUpdate } from '../common/index';
 import { formulaBarOperation } from '../../spreadsheet/common/event';
 import { locale } from '../../spreadsheet/common/constant';
@@ -66,6 +66,7 @@ export class WorkbookFormula {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.parent as any).refreshing) {
             this.clearAllUniqueFormulaValue();
+            this.clearAllSortFormulaValue();
             const formulaCollect: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
             formulaCollect.forEach((value: IFormulaColl, key: string) => {
                 if (value.isCustom) {
@@ -84,6 +85,8 @@ export class WorkbookFormula {
         this.parent.on(aggregateComputation, this.aggregateComputation, this);
         this.parent.on(getUniqueRange, this.getUniqueRange, this);
         this.parent.on(removeUniquecol, this.removeUniquecol, this);
+        this.parent.on(getSortRange, this.getSortRange, this);
+        this.parent.on(removeSortcol, this.removeSortcol, this);
         this.parent.on(clearFormulaDependentCells, this.clearFormulaDependentCells, this);
         this.parent.on(formulaInValidation, this.formulaInValidation, this);
         this.parent.on(refreshInsertDelete, this.refreshInsertDelete, this);
@@ -101,7 +104,9 @@ export class WorkbookFormula {
             this.parent.off(workbookFormulaOperation, this.performFormulaOperation);
             this.parent.off(aggregateComputation, this.aggregateComputation);
             this.parent.off(getUniqueRange, this.getUniqueRange);
+            this.parent.off(getSortRange, this.getSortRange);
             this.parent.off(removeUniquecol, this.removeUniquecol);
+            this.parent.off(removeSortcol, this.removeSortcol);
             this.parent.off(clearFormulaDependentCells, this.clearFormulaDependentCells);
             this.parent.off(formulaInValidation, this.formulaInValidation);
             this.parent.off(refreshInsertDelete, this.refreshInsertDelete);
@@ -143,6 +148,7 @@ export class WorkbookFormula {
             this.calculateInstance.getFormulaInfoTable().clear();
             this.calculateInstance.getDependentFormulaCells().clear();
             this.calculateInstance.uniqueRange = [];
+            this.calculateInstance.sortRange = [];
             this.calculateInstance.dependencyCollection = [];
             return;
         }
@@ -568,6 +574,9 @@ export class WorkbookFormula {
     private getUniqueRange(args: { [key: string]: string[] }): void {
         args.range = this.calculateInstance.uniqueRange;
     }
+    private getSortRange(args: { [key: string]: string[] }): void {
+        args.range = this.calculateInstance.sortRange;
+    }
 
     private removeUniquecol(args?: { clearAll: boolean }): void {
         if (args && args.clearAll) {
@@ -580,6 +589,27 @@ export class WorkbookFormula {
             if (uniqRngAddress[0] === sheet.name && uniqRngAddress[1] === sheet.activeCell ) {
                 const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i as number]);
                 this.calculateInstance.uniqueRange.splice(i, 1);
+                for (let j: number = range[0]; j <= range[2]; j++) {
+                    for (let k: number = range[1]; k <= range[3]; k++) {
+                        const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
+                        cell.formula = '';
+                        this.parent.updateCellDetails({ value: '', formula: ''}, getRangeAddress([j, k]), undefined, undefined, true);
+                    }
+                }
+            }
+        }
+    }
+    private removeSortcol(args?: { clearAll: boolean }): void {
+        if (args && args.clearAll) {
+            this.clearAllSortFormulaValue();
+            return;
+        }
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        for (let i: number = 0; i < this.calculateInstance.sortRange.length; i++) {
+            const sortRngAddress: string[] = this.calculateInstance.sortRange[i as number].split(':')[0].split('!');
+            if (sortRngAddress[0] === sheet.name && sortRngAddress[1] === sheet.activeCell ) {
+                const range: number[] = getRangeIndexes(this.calculateInstance.sortRange[i as number]);
+                this.calculateInstance.sortRange.splice(i, 1);
                 for (let j: number = range[0]; j <= range[2]; j++) {
                     for (let k: number = range[1]; k <= range[3]; k++) {
                         const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
@@ -639,7 +669,8 @@ export class WorkbookFormula {
         const sheet: SheetModel = args.sheet;
         this.autoCorrectFormula(args, sheet);
         let value: string = args.value;
-        if (args.isClipboard && value.toUpperCase().includes('UNIQUE')) {
+        const checkFormulaStr: string = (value || '').toUpperCase();
+        if (args.isClipboard && (checkFormulaStr.includes('UNIQUE') || checkFormulaStr.includes('SORT'))) {
             setCell(args.rowIndex, args.colIndex, sheet, { value: '' }, true);
         }
         let formula: string = value;
@@ -1309,6 +1340,9 @@ export class WorkbookFormula {
         if (cell.formula && cell.formula.includes('UNIQUE') && cell.value !== '#SPILL!' && row !== undefined) {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
+        if (cell.formula && cell.formula.includes('SORT') && cell.value !== '#SPILL!' && row !== undefined) {
+            this.clearSortRange(row, col, formulaSheet || args.sheet);
+        }
         const getAddress: () => string = (): string => {
             let range: string = (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[1] + 1) + (isAbsoluteRef ? '$' : '') + (index[0] + 1);
             if (index[0] !== index[2] || index[1] !== index[3]) {
@@ -1366,8 +1400,10 @@ export class WorkbookFormula {
             if (cell.formula !== newFormula) {
                 cell.formula = newFormula;
 
-                if (!(this.parent.calculationMode === 'Manual' && (args.isInsert || args.isDelete)) &&
-                    !(cell.formula.includes('UNIQUE') && cell.value === '#SPILL!')) {
+                const isManualInsertOrDelete: boolean = this.parent.calculationMode === 'Manual' && (args.isInsert || args.isDelete);
+                const formulaStr: string = (cell.formula || '').toUpperCase();
+                if (!isManualInsertOrDelete &&
+                    !(((formulaStr.includes('UNIQUE') || formulaStr.includes('SORT')) && cell.value === '#SPILL!'))) {
                     cell.value = null;
                 }
             }
@@ -1385,9 +1421,41 @@ export class WorkbookFormula {
             }
         }
     }
+    private clearSortRange(row: number, col: number, sheet: SheetModel): void {
+        const sortArgs: { cellIdx: number[], isSort: boolean, sortRange: string, sheetName: string } =
+        { cellIdx: [row, col, row, col], isSort: false, sortRange: '', sheetName: sheet.name };
+        this.parent.notify(checkSortRange, sortArgs);
+        const range: number[] = getRangeIndexes(sortArgs.sortRange);
+        for (let i: number = range[0]; i <= range[2]; i++) {
+            for (let j: number = range[1]; j <= range[3]; j++) {
+                delete getCell(i, j, sheet, false, true).value;
+            }
+        }
+    }
 
     private clearAllUniqueFormulaValue(): void {
         const ranges: string[] = this.calculateInstance.uniqueRange;
+        let cell: CellModel; let sheet: SheetModel; let range: number[];
+        for (let i: number = 0; i < ranges.length; i++) {
+            const lastIndex: number = ranges[i as number].lastIndexOf('!');
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, ranges[i as number].substring(0, lastIndex)));
+            range = getRangeIndexes(ranges[i as number].substring(lastIndex + 1));
+            cell = getCell(range[0], range[1], sheet);
+            if (cell && cell.value === '#SPILL!') {
+                continue;
+            }
+            for (let j: number = range[0]; j <= range[2]; j++) {
+                for (let k: number = range[1]; k <= range[3]; k++) {
+                    cell = getCell(j, k, sheet);
+                    if (cell && cell.value) {
+                        delete cell.value;
+                    }
+                }
+            }
+        }
+    }
+    private clearAllSortFormulaValue(): void {
+        const ranges: string[] = this.calculateInstance.sortRange;
         let cell: CellModel; let sheet: SheetModel; let range: number[];
         for (let i: number = 0; i < ranges.length; i++) {
             const lastIndex: number = ranges[i as number].lastIndexOf('!');

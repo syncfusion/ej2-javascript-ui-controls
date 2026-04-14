@@ -454,4 +454,54 @@ describe('Bookmark Test', () => {
         expect(bookmarks.contains(bookmark)).toBeFalsy();
         document.destroy();
     });
+    it('isExpanded set value else branch', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page: PdfPage = document.addPage();
+        let bookmarks: PdfBookmarkBase = document.bookmarks;
+        expect(bookmarks).toBeDefined();
+        expect(bookmarks.count).toEqual(0);
+        let parent: PdfBookmark = bookmarks.add('FirstBookmark');
+        expect(parent.title).toEqual('FirstBookmark');
+        expect(parent.destination).toBeUndefined();
+        parent.destination = new PdfDestination(page, { x: 10, y: 10 });
+        expect(parent.destination).toBeDefined();
+        expect(parent.destination.pageIndex).toEqual(0);
+        expect(parent.destination.location).toEqual({ x: 10, y: 10 });
+        expect(bookmarks.count).toEqual(1);
+        expect(parent.count).toEqual(0);
+        let child: PdfBookmark = parent.add('First_1');
+        expect(child.title).toEqual('First_1');
+        expect(child.destination).toBeUndefined();
+        child.destination = new PdfDestination(page, { x: 10, y: 30 });
+        expect(child.destination).toBeDefined();
+        expect(child.destination.pageIndex).toEqual(0);
+        expect(child.destination.location).toEqual({ x: 10, y: 30 });
+        expect(bookmarks.count).toEqual(1);
+        expect(parent.count).toEqual(1);
+        expect(parent.isExpanded).toBeTruthy();
+        bookmarks.remove('FirstBookmark');
+        bookmarks.isExpanded = false;
+        expect(bookmarks.isExpanded).toBeFalsy();
+        expect(bookmarks.count).toEqual(0);
+        document.destroy();
+    });
+    it("at - method branches check", () => {
+        let document: PdfDocument = new PdfDocument();
+        let page: PdfPage = document.addPage();
+        try {
+            let bookmark: PdfBookmarkBase = document.bookmarks.at(0);
+        } catch (error) {
+            expect(error.message).toBe('Index out of range.');
+        }
+        let bookmarks: PdfBookmarkBase = document.bookmarks;
+        document.destroy();
+    });
+    it("add- method check", () => {
+        let document: PdfDocument = new PdfDocument();
+        let bookmarks: any = document.bookmarks;
+        bookmarks._dictionary = undefined;
+        let bookmark = bookmarks.add("FirstBookmark");
+        expect(bookmark).toBeUndefined();
+    });
+
 });

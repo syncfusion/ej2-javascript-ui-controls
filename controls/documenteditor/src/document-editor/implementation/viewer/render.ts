@@ -2125,7 +2125,11 @@ private calculatePathBounds(data: string): Rect {
             return '.....' + l10n.getConstant('Page Break') + '.....' + String.fromCharCode(182);
         }
     }
-    private isBookmarkEndAtStart(bookmark: BookmarkElementBox): boolean{
+    /**
+     *
+     * @private
+     */
+    public isBookmarkEndAtStart(bookmark: BookmarkElementBox): boolean{
         let para: ParagraphWidget = bookmark.paragraph;
         let index: number = 0;
         let firstLine: LineWidget = para.childWidgets[index] as LineWidget;

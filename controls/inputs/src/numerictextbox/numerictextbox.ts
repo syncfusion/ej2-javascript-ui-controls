@@ -1634,7 +1634,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             floatLabelType: this.floatLabelType,
             properties: this.properties
         }, this.clearButton);
-        setValue('ej2_instances', null, this.element);
+        if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
+            setValue('ej2_instances', null, this.element);
+        }
         super.destroy();
     }
 

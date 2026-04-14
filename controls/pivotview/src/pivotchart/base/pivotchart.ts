@@ -1572,6 +1572,7 @@ export class PivotChart {
             this.parent.element.appendChild(contextMenu);
         }
         this.accumulationMenu.isStringTemplate = true;
+        this.accumulationMenu.isAngular = this.parent.isModalDialog;
         this.accumulationMenu.appendTo(contextMenu);
     }
     private drillMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {

@@ -1299,9 +1299,7 @@ export class TableCommand {
             e.item.selection.restore();
             this.focusAfterTableDeletion(elementNextSibling);
         }
-        if (e.event && (e.event as KeyboardEvent).type && (e.event as KeyboardEvent).type !== 'keydown') {
-            this.executeCallback(e);
-        }
+        this.executeCallback(e);
     }
     /*
      * Manages cursor positioning after a table has been deleted

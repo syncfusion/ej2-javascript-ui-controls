@@ -413,9 +413,6 @@ export abstract class PdfFont {
     /**
      * Measures the size of a given text string when rendered using this PDF font.
      *
-     * @param {string} text Text.
-     * @returns {Size} actualSize.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -432,14 +429,13 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @returns {Size} actualSize.
      */
     public measureString(text: string): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the string format.
-     *
-     * @param {string} text Text.
-     * @param {PdfStringFormat} format String format.
-     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -457,16 +453,14 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {PdfStringFormat} format String format.
+     * @returns {Size} actualSize.
      */
     public measureString(text: string, format: PdfStringFormat): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font.
-     *
-     * @param {string} text Text.
-     * @param {PdfStringFormat} format String format.
-     * @param {number} charactersFitted Characters fitted.
-     * @param {number} linesFilled Lines filled.
-     * @returns {size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -484,14 +478,16 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {PdfStringFormat} format String format.
+     * @param {number} charactersFitted Characters fitted.
+     * @param {number} linesFilled Lines filled.
+     * @returns {size} actualSize.
      */
     public measureString(text: string, format: PdfStringFormat, charactersFitted: number, linesFilled: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the maximum line width.
-     *
-     * @param {string} text Text.
-     * @param {number} width width.
-     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -509,15 +505,14 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {number} width width.
+     * @returns {Size} actualSize.
      */
     public measureString(text: string, width: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font  with respect to the string format and maximum line width.
-     *
-     * @param {string} text Text.
-     * @param {number} width width.
-     * @param {PdfStringFormat} format String format.
-     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -535,17 +530,15 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public measureString(text: string, width: number, format: PdfStringFormat): Size
-    /**
-     * Measures the size of a given text string when rendered using this PDF font.
      *
      * @param {string} text Text.
      * @param {number} width width.
      * @param {PdfStringFormat} format String format.
-     * @param {number} charactersFitted Characters fitted.
-     * @param {number} linesFilled Lines filled.
      * @returns {Size} actualSize.
+     */
+    public measureString(text: string, width: number, format: PdfStringFormat): Size
+    /**
+     * Measures the size of a given text string when rendered using this PDF font.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -563,15 +556,18 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {number} width width.
+     * @param {PdfStringFormat} format String format.
+     * @param {number} charactersFitted Characters fitted.
+     * @param {number} linesFilled Lines filled.
+     * @returns {Size} actualSize.
      */
     public measureString(text: string, width: number, format: PdfStringFormat,
         charactersFitted: number, linesFilled: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the layout area.
-     *
-     * @param {string} text Text.
-     * @param {Size} layoutArea Layout area.
-     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -589,15 +585,14 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {Size} layoutArea Layout area.
+     * @returns {Size} actualSize.
      */
     public measureString(text: string, layoutArea: Size): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the layout area and string format.
-     *
-     * @param {string} text Text.
-     * @param {PdfStringFormat} format String format.
-     * @param {Size} layoutArea Layout area.
-     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -615,17 +610,15 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public measureString(text: string, layoutArea: Size, format: PdfStringFormat): Size
-    /**
-     * Measures the size of a given text string when rendered using this PDF font.
      *
      * @param {string} text Text.
      * @param {PdfStringFormat} format String format.
      * @param {Size} layoutArea Layout area.
-     * @param {number} charactersFitted Characters fitted.
-     * @param {number} linesFilled Lines filled.
      * @returns {Size} actualSize.
+     */
+    public measureString(text: string, layoutArea: Size, format: PdfStringFormat): Size
+    /**
+     * Measures the size of a given text string when rendered using this PDF font.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -643,6 +636,13 @@ export abstract class PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} text Text.
+     * @param {PdfStringFormat} format String format.
+     * @param {Size} layoutArea Layout area.
+     * @param {number} charactersFitted Characters fitted.
+     * @param {number} linesFilled Lines filled.
+     * @returns {Size} actualSize.`
      */
     public measureString(text: string, layoutArea: Size, format: PdfStringFormat,
         charactersFitted: number, linesFilled: number): Size
@@ -808,10 +808,6 @@ export class PdfStandardFont extends PdfFont {
     /**
      * Gets the line width.
      *
-     * @param {string} line Line.
-     * @param {PdfStringFormat} format String format.
-     * @returns {number} width.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -828,6 +824,10 @@ export class PdfStandardFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} line Line.
+     * @param {PdfStringFormat} format String format.
+     * @returns {number} width.
      */
     public getLineWidth(line: string, format: PdfStringFormat): number {
         let width: number = 0;
@@ -840,10 +840,6 @@ export class PdfStandardFont extends PdfFont {
     }
     /**
      * Gets a variant of the current font with the specified size and style.
-     *
-     * @param {number} size The Font size.
-     * @param {PdfFontStyle} style The Font style.
-     * @returns {PdfStandardFont} The Font object.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -863,6 +859,10 @@ export class PdfStandardFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @returns {PdfStandardFont} The Font object.
      */
     public getFont(size: number, style: PdfFontStyle): PdfStandardFont {
         if (this._document) {
@@ -1178,10 +1178,6 @@ export class PdfCjkStandardFont extends PdfFont {
     /**
      * Gets the line width.
      *
-     * @param {string} line Line.
-     * @param {PdfStringFormat} format String format.
-     * @returns {number} width.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1198,6 +1194,10 @@ export class PdfCjkStandardFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} line Line.
+     * @param {PdfStringFormat} format String format.
+     * @returns {number} width.
      */
     public getLineWidth(line: string, format: PdfStringFormat): number {
         let width: number = 0;
@@ -1210,10 +1210,6 @@ export class PdfCjkStandardFont extends PdfFont {
     }
     /**
      * Gets a variant of the current font with the specified size and style.
-     *
-     * @param {number} size The Font size.
-     * @param {PdfFontStyle} style The Font style.
-     * @returns {PdfCjkStandardFont} The Font object.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1233,6 +1229,10 @@ export class PdfCjkStandardFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @returns {PdfCjkStandardFont} The Font object.
      */
     public getFont(size: number, style: PdfFontStyle): PdfCjkStandardFont {
         if (this._document) {
@@ -1593,10 +1593,6 @@ export class PdfTrueTypeFont extends PdfFont {
     /**
      * Gets the line width.
      *
-     * @param {string} line Line.
-     * @param {PdfStringFormat} format String format.
-     * @returns {number} width.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1613,6 +1609,10 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} line Line.
+     * @param {PdfStringFormat} format String format.
+     * @returns {number} width.
      */
     public getLineWidth(line: string, format: PdfStringFormat): number {
         let width: number = 0;
@@ -1633,10 +1633,6 @@ export class PdfTrueTypeFont extends PdfFont {
     /**
      * Gets a variant of the current font with the specified size and style.
      *
-     * @param {number} size The Font size.
-     * @param {PdfFontStyle} style The Font style.
-     * @returns {PdfTrueTypeFont} The Font object.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1655,6 +1651,10 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @returns {PdfTrueTypeFont} The Font object.
      */
     public getFont(size: number, style?: PdfFontStyle): PdfTrueTypeFont {
         if (this._document) {

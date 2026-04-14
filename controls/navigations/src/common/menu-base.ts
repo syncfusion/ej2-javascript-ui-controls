@@ -252,6 +252,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private delegateScrollHandler: () => void;
     private delegateMouseDownHandler: () => void;
     private delegateTouchOutsideHandler: () => void;
+    private delegateParentScrollHandler: () => void;
+    private delegateContextMenuHandler: () => void;
     private navIdx: number[] = [];
     private animation: Animation = new Animation({});
     private isTapHold: boolean = false;
@@ -290,6 +292,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private skipNextArrowDown: boolean = false;
     private touchStartFn: (e: TouchEvent) => void;
     private touchMoveFn: (e: TouchEvent) => void;
+    private scrollParents: HTMLElement[];
+    private isCmenuOpened: boolean = false;
     /**
      * Triggers while rendering each menu item.
      *
@@ -631,15 +635,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (Browser.isIos) {
                         new Touch(target, { tapHold: this.touchHandler.bind(this) });
                     } else {
-                        EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                        this.delegateContextMenuHandler = this.cmenuHandler.bind(this);
+                        EventHandler.add(target, 'contextmenu', this.delegateContextMenuHandler, this);
                     }
                 }
             }
             this.targetElement = target;
             if (!this.isMenu) {
                 EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
-                for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+                this.scrollParents = getScrollableParent(this.targetElement).slice();
+                this.delegateParentScrollHandler = this.scrollHandler.bind(this);
+                for (const parent of this.scrollParents) {
+                    EventHandler.add(parent, 'scroll', this.delegateParentScrollHandler, this);
                 }
             }
         }
@@ -963,6 +970,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.isCMenu) {
             if (this.canOpen(e.target as Element)) {
                 this.openMenu(null, null, this.pageY, this.pageX, e);
+                this.isCmenuOpened = true;
             }
             this.isCMenu = false;
         }
@@ -2257,14 +2265,22 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             touchModule.destroy();
                         }
                     } else {
-                        EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                        if (this.delegateContextMenuHandler) {
+                            EventHandler.remove(target, 'contextmenu', this.delegateContextMenuHandler);
+                            this.delegateContextMenuHandler = null;
+                        }
                     }
                 }
             }
             if (!this.isMenu) {
                 EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
-                for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
+                if (this.scrollParents) {
+                    for (const parent of this.scrollParents) {
+                        EventHandler.remove(parent, 'scroll', this.delegateParentScrollHandler);
+                    }
+                    this.delegateParentScrollHandler = null;
+                    this.scrollParents.length = 0;
+                    this.scrollParents = null;
                 }
             }
         }
@@ -2720,6 +2736,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const wrapper: Element = this.getWrapper();
         if (wrapper) {
             this.unWireEvents();
+            this.delegateClickHandler = null;
+            this.delegateMoverHandler = null;
+            this.delegateMouseDownHandler = null;
+            this.delegateDomKeyHandler = null;
+            this.delegateScrollHandler = null;
+            this.delegateTouchOutsideHandler = null;
+            this.delegateParentScrollHandler = null;
+            if (this.delegateContextMenuHandler) {
+                EventHandler.remove(this.targetElement, 'contextmenu', this.delegateContextMenuHandler);
+                this.delegateContextMenuHandler = null;
+            }
             if (!this.isMenu) {
                 this.clonedElement.style.display = '';
                 if (this.clonedElement.tagName === 'EJS-CONTEXTMENU') {
@@ -2758,7 +2785,31 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 wrapper.parentNode.insertBefore(this.element, wrapper);
                 this.clonedElement = null;
             }
+            if (this.popupObj) {
+                this.popupObj.destroy();
+                this.popupObj = null;
+            }
+            this.currentTarget = null;
+            this.targetElement = null;
+            if (this.animation) {
+                this.animation.destroy();
+                this.animation = null;
+            }
+            if (!this.isMenu && !this.isCmenuOpened && this.element) {
+                const elementInstance: Object = getValue('ej2_instances', this.element);
+                if (elementInstance && Array.isArray(elementInstance)) {
+                    elementInstance.length = 0;
+                    setValue('ej2_instances', elementInstance, this.element);
+                }
+            }
             detach(wrapper);
+            if (this.uList && !document.body.contains(this.uList)) {
+                const ulInstance: Object = getValue('ej2_instances', this.uList);
+                if (ulInstance && Array.isArray(ulInstance)) {
+                    ulInstance.length = 0;
+                    setValue('ej2_instances', ulInstance, this.uList);
+                }
+            }
             super.destroy();
             if (this.template) { this.clearTemplate(['template']); }
         }

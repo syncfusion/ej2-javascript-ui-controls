@@ -5,7 +5,7 @@ import { getDecoratorShape, inchToPoint, inchToPx, isObject } from './visio-core
 import { ParsingContext } from './visio-import-export';
 import { VisioTheme } from './visio-models';
 import { getTextAlign, getTextDecoration } from './visio-nodes';
-import { ConnectorInput, ConnectorResolvedStyle, ConnectorStrokeList, FlatTransform, FormattedColors, ParsedXmlObject, ResolvedAnnotationStyle, Transform, VarientStyle, VisioNode, ColorEntry, FaceNameEntry, SchemeColor, GradientStop, SolidFillValue } from './visio-types';
+import { ConnectorInput, ConnectorResolvedStyle, ConnectorStrokeList, FlatTransform, FormattedColors, ParsedXmlObject, ResolvedAnnotationStyle, VisioColorTransform, VarientStyle, VisioNode, ColorEntry, FaceNameEntry, SchemeColor, GradientStop, SolidFillValue } from './visio-types';
 import { ensureArray } from './visio-core';
 import { VisioStyleModel } from './visio-connectors';
 import { GradientType } from '../../enum/enum';
@@ -1695,7 +1695,7 @@ function applyOfficeColorModifiers(gradStopArray: VisioLinearGradient,
                         : resolveSchemeColor(s.color, theme[0].fontColor);
 
             // ==================== Apply Color Transforms ====================
-            const color: string = applyTransformsOOXML(baseHex, s.modifiers as Transform);
+            const color: string = applyTransformsOOXML(baseHex, s.modifiers as VisioColorTransform);
             const opacity: number = 1;
             const offset: number = toPercent(s.position);
 
@@ -1798,14 +1798,14 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
  *
  * Converts to normalized 0-1 range.
  *
- * @param {Transform['type']} type - The transform type.
+ * @param {VisioColorTransform['type']} type - The transform type.
  * @param {number} v - The value to normalize.
  * @returns {number} Normalized value (0-1).
  *
  * @private
  */
 /* eslint-enable valid-jsdoc */
-function normValByType(type: Transform['type'], v: number): number {
+function normValByType(type: VisioColorTransform['type'], v: number): number {
     // if (!Number.isFinite(v)) { return 0; }
 
     // // ==================== Hue-based transforms ====================
@@ -1825,19 +1825,19 @@ function normValByType(type: Transform['type'], v: number): number {
  * Handles both canonical { type, val } format and flat { propertyName: value } format.
  * Validates transform types against VALID_TYPES.
  *
- * @param {Transform | Transform[]} input - Single or array of transform definitions.
- * @returns {Transform[]} Array of validated transforms with normalized values.
+ * @param {VisioColorTransform | VisioColorTransform[]} input - Single or array of transform definitions.
+ * @returns {VisioColorTransform[]} Array of validated transforms with normalized values.
  *
  * @private
  */
-function normalizeTransforms(input: Transform): Transform[] {
+function normalizeTransforms(input: VisioColorTransform): VisioColorTransform[] {
     // ==================== Handle Empty Input ====================
     if (input == null) { return []; }
 
     // ==================== Normalize to Array ====================
-    const arr: Transform[] = Array.isArray(input) ? input : [input];
+    const arr: VisioColorTransform[] = Array.isArray(input) ? input : [input];
 
-    const out: Transform[] = [];
+    const out: VisioColorTransform[] = [];
 
     // ==================== Process Each Transform ====================
     for (const item of arr) {
@@ -1846,10 +1846,10 @@ function normalizeTransforms(input: Transform): Transform[] {
         }
 
         // ==================== Case A: Canonical { type, val } Format ====================
-        if ((item as Transform).type && (item as Transform).val != null) {
-            const transform: Transform = item as Transform;
+        if ((item as VisioColorTransform).type && (item as VisioColorTransform).val != null) {
+            const transform: VisioColorTransform = item as VisioColorTransform;
             if (VALID_TYPES.has(transform.type)) {
-                out.push({ type: transform.type, val: normValByType(transform.type, Number(transform.val)) } as Transform);
+                out.push({ type: transform.type, val: normValByType(transform.type, Number(transform.val)) } as VisioColorTransform);
             }
             continue;
         }
@@ -1864,7 +1864,7 @@ function normalizeTransforms(input: Transform): Transform[] {
             const raw: number = (flat)[`${key}`];
             const v: number = Number(raw);
             if (!VALID_TYPES.has(key) || raw == null || !Number.isFinite(v)) { continue; }
-            out.push({ type: key as Transform['type'], val: normValByType(key, v) } as Transform);
+            out.push({ type: key as VisioColorTransform['type'], val: normValByType(key, v) } as VisioColorTransform);
         }
     }
 
@@ -1878,12 +1878,12 @@ function normalizeTransforms(input: Transform): Transform[] {
  * Supports: shade, tint, lumMod, satMod (and more in commented code).
  *
  * @param {string} baseHex - Base hex color (with '#').
- * @param {Transform} transforms - Color modifier transforms to apply.
+ * @param {VisioColorTransform} transforms - Color modifier transforms to apply.
  * @returns {string} Modified hex color (with '#').
  *
  * @private
  */
-function applyTransformsOOXML(baseHex: string, transforms: Transform): string {
+function applyTransformsOOXML(baseHex: string, transforms: VisioColorTransform): string {
     // // ==================== Validate Input ====================
     // if (!baseHex || !isValidColor(baseHex)) {
     //     return '#000000';
@@ -1897,11 +1897,11 @@ function applyTransformsOOXML(baseHex: string, transforms: Transform): string {
     h = h * 1; // Ensure h is a number
 
     // ==================== Normalize Transforms ====================
-    const mods: Transform[] = normalizeTransforms(transforms);
+    const mods: VisioColorTransform[] = normalizeTransforms(transforms);
 
     // ==================== Apply Each Transform ====================
     for (let i: number = 0; i < mods.length; i++) {
-        const t: Transform = mods[parseInt(i.toString(), 10)];
+        const t: VisioColorTransform = mods[parseInt(i.toString(), 10)];
 
         switch (t.type) {
         // ==================== Shade: Darken by multiplying lightness ====================
@@ -2178,7 +2178,7 @@ export function resolveAccentColor(result: ColorInfo, theme: VisioTheme[], baseC
     // }
 
     // ==================== Apply Color Modifiers ====================
-    const color: string = applyTransformsOOXML(hex, modifiers as Transform);
+    const color: string = applyTransformsOOXML(hex, modifiers as VisioColorTransform);
 
     return isValidColor(color) ? color : defaultFill;
 }

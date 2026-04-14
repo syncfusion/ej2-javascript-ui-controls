@@ -982,7 +982,8 @@ export class FormFields {
                     const childItems: any = currentData['TextList'];
                     const childItemsText: string[] = [];
                     for (let m: number = 0; m < currentData.SelectedList.length; m++) {
-                        const currentElement: any = currentData.SelectedList[parseInt(m.toString(), 10)];
+                        const currentElement: any = currentData.TextList.findIndex(
+                            (item: any) => (item.itemName || item.ItemName) === currentData.SelectedValue);
                         childItemsText.push(childItems[`${currentElement}`]);
                     }
                     fieldDatas = { fieldValue: JSON.stringify(childItemsText), isReadOnly: currentData.IsReadonly};
@@ -1716,6 +1717,9 @@ export class FormFields {
                             }
                             if (target.value === currentData.Value || target.id === currentData.uniqueID) {
                                 currentData.Selected = true;
+                                if (!isNullOrUndefined(target.selected)) {
+                                    currentData.Selected = target.selected;
+                                }
                                 break;
                             }
                             else {
@@ -2280,7 +2284,8 @@ export class FormFields {
                     option.selected = true;
                 }
             }
-            option.innerHTML = childItems[parseInt(j.toString(), 10)];
+            const item: any = childItems[parseInt(j.toString(), 10)];
+            option.innerHTML = typeof item === 'string' ? item : (item.itemName || item.ItemName || '');
             inputField.appendChild(option);
         }
         inputField.name = data.Text;

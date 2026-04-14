@@ -169,9 +169,6 @@ export class PdfBookmarkBase {
     /**
      * Gets the `PdfBookmark` at the specified index.
      *
-     * @param {number} index Bookmark index.
-     * @returns {PdfBookmark} Bookmark at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -182,6 +179,9 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Bookmark index.
+     * @returns {PdfBookmark} Bookmark at the specified index.
      */
     public at(index: number): PdfBookmark {
         let bookmark: PdfBookmark;
@@ -196,9 +196,6 @@ export class PdfBookmarkBase {
     /**
      * Gets the boolean flag indicating whether `PdfBookmark` is present or not.
      *
-     * @param {PdfBookmark} outline Bookmark.
-     * @returns {boolean} whether the bookmark is present or not.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -211,15 +208,15 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfBookmark} outline Bookmark.
+     * @returns {boolean} whether the bookmark is present or not.
      */
     public contains(outline: PdfBookmark): boolean {
         return this._bookMarkList.indexOf(outline) !== -1;
     }
     /**
      * Creates and adds a new outline to the PDF document.
-     *
-     * @param {string} title The title of the outline.
-     * @returns {PdfBookmark} PDF bookmark.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -235,18 +232,13 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} title The title of the outline.
+     * @returns {PdfBookmark} PDF bookmark.
      */
     public add(title: string): PdfBookmark
     /**
      * Adds a new outline (bookmark) with title and optional properties to the PDF document .
-     *
-     * @param {string} title The title of the bookmark.
-     * @param {object} [options] Optional parameters for the bookmark.
-     * @param {PdfDestination} [options.destination] The destination within the PDF.
-     * @param {PdfNamedDestination} [options.namedDestination] A named destination reference.
-     * @param {PdfColor} [options.color] The color of the bookmark text.
-     * @param {PdfTextStyle} [options.textStyle] The style of the bookmark text.
-     * @returns {PdfBookmark} The newly created PDF bookmark.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -262,6 +254,14 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} title The title of the bookmark.
+     * @param {object} [options] Optional parameters for the bookmark.
+     * @param {PdfDestination} [options.destination] The destination within the PDF.
+     * @param {PdfNamedDestination} [options.namedDestination] A named destination reference.
+     * @param {PdfColor} [options.color] The color of the bookmark text.
+     * @param {PdfTextStyle} [options.textStyle] The style of the bookmark text.
+     * @returns {PdfBookmark} The newly created PDF bookmark.
      */
     public add(title: string, options: {
         destination?: PdfDestination,
@@ -271,10 +271,6 @@ export class PdfBookmarkBase {
     }): PdfBookmark
     /**
      * Insert a new outline to the PDF document at specified index.
-     *
-     * @param {string} title The title of the outline.
-     * @param {index} index The index to insert.
-     * @returns {PdfBookmark} PDF bookmark.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -290,19 +286,14 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} title The title of the outline.
+     * @param {index} index The index to insert.
+     * @returns {PdfBookmark} PDF bookmark.
      */
     public add(title: string, index: number): PdfBookmark
     /**
      * Adds a new outline (bookmark) to the PDF document.
-     *
-     * @param {string} title The title of the bookmark.
-     * @param {number} index The index at which to insert the bookmark.
-     * @param {object} [options] Optional parameters for the bookmark.
-     * @param {PdfDestination} [options.destination] The destination within the PDF.
-     * @param {PdfNamedDestination} [options.namedDestination] A named destination reference.
-     * @param {PdfColor} [options.color] The color of the bookmark text.
-     * @param {PdfTextStyle} [options.textStyle] The style of the bookmark text.
-     * @returns {PdfBookmark} The newly created PDF bookmark.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -318,6 +309,15 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} title The title of the bookmark.
+     * @param {number} index The index at which to insert the bookmark.
+     * @param {object} [options] Optional parameters for the bookmark.
+     * @param {PdfDestination} [options.destination] The destination within the PDF.
+     * @param {PdfNamedDestination} [options.namedDestination] A named destination reference.
+     * @param {PdfColor} [options.color] The color of the bookmark text.
+     * @param {PdfTextStyle} [options.textStyle] The style of the bookmark text.
+     * @returns {PdfBookmark} The newly created PDF bookmark.
      */
     public add(title: string, index: number, options: {
         destination?: PdfDestination,
@@ -421,8 +421,6 @@ export class PdfBookmarkBase {
     /**
      * Remove specified bookmark from the document.
      *
-     * @param {string} title The title of the outline.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -437,12 +435,13 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} title The title of the outline.
+     * @returns {void} nothing.
      */
     public remove(title: string): void
     /**
      * Remove the bookmark from the document at the specified index.
-     *
-     * @param {number} index The index.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -458,6 +457,8 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The index.
      */
     public remove(index: number): void
     public remove(value: string | number): void {
@@ -509,8 +510,6 @@ export class PdfBookmarkBase {
     /**
      * Removes all the bookmark from the collection.
      *
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -523,6 +522,8 @@ export class PdfBookmarkBase {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {void} Nothing.
      */
     public clear(): void {
         this._removeFirst(this._dictionary);

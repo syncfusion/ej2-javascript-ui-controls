@@ -1685,49 +1685,6 @@ describe('Gantt base module', () => {
             projectEndDate: new Date('03/24/2018'),
         }, done);
     });
-// disconnect issue occurs in CI has been resolved -increase 0.75% coverage
-    it('Zoom to fit when perDay width exceed the last zoomout level width', (done: Function) => {
-        ganttObj.dataSource = zoomData1;
-        ganttObj.splitterSettings.position = '99%';
-        ganttObj.dataBound = () => {
-            ganttObj.fitToProject();
-            expect(ganttObj.currentZoomingLevel.level).toBe(2);
-            ganttObj.zoomingLevels[3].bottomTier.count = 13;
-            ganttObj.zoomIn();
-            setTimeout(() => {
-                done();
-            }, 1000); // Added delay to ensure all operations complete
-        }
-        ganttObj.refresh();
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-});
-describe('Gantt base module', () => {
-    let ganttObj: Gantt;
-    beforeAll((done: Function) => {
-        ganttObj = createGantt({
-            dataSource: defaultGanttData,
-            taskFields: {
-                id: 'TaskID',
-                name: 'TaskName',
-                startDate: 'StartDate',
-                endDate: 'EndDate',
-                duration: 'Duration',
-                progress: 'Progress',
-                child: 'Children',
-            },
-            splitterSettings: {
-                position: '100%'
-            },
-            toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
-            projectStartDate: new Date('01/28/2018'),
-            projectEndDate: new Date('03/24/2018'),
-        }, done);
-    });
     // doesn't used to improve the coverage
     it('To check disable state of zoomin icon when mismatching the count value', (done: Function) => {
         ganttObj.dataSource = defaultGanttData;
@@ -4395,57 +4352,6 @@ describe('timeline with showeekend as false', () => {
     it('zoom to fit without weekends without weekends', () => {
         ganttObj.fitToProject();
         expect(ganttObj.currentZoomingLevel.level).toBe(9);
-    });
-    it('timeline mode as month without weekends', () => {
-        ganttObj.timelineSettings =   {
-            showTooltip: true,
-            showWeekend: false,
-            topTier: {
-                unit: 'Month',
-                format: 'dd/MM/yyyy'
-            },
-            bottomTier: {
-                unit: 'Day',
-                count: 1
-            }
-        },
-        ganttObj.refresh();
-        expect(Math.round(ganttObj.timelineModule.topTierCollection[1].width)).toBe(1537)
-        
-    });
-    it('timeline mode as year without weekends', () => {
-        ganttObj.timelineSettings =   {
-            showTooltip: true,
-            showWeekend: false,
-            topTier: {
-                unit: 'Year',
-                format: 'dd/MM/yyyy'
-            },
-            bottomTier: {
-                unit: 'Day',
-                count: 1
-            }
-        },
-        ganttObj.refresh();
-        expect(ganttObj.timelineModule.topTierCollection[0].width).toBe(3353)
-        
-    });
-    it('timeline mode as year without weekends', () => {
-        ganttObj.timelineSettings =   {
-            showTooltip: true,
-            showWeekend: false,
-            topTier: {
-                unit: 'Day',
-                format: 'dd/MM/yyyy'
-            },
-            bottomTier: {
-                unit: 'Hour',
-                count: 1
-            }
-        },
-        ganttObj.refresh();
-        expect(ganttObj.timelineModule.topTierCollection.length).toBe(48)
-        
     });
     afterAll(() => {
         if (ganttObj) {

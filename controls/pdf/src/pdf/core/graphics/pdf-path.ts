@@ -317,8 +317,6 @@ export class PdfPath {
     /**
      * Appends the specified path to this one.
      *
-     * @param {PdfPath} path The path to append.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -341,14 +339,11 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {PdfPath} path The path to append.
      */
     public addPath(path: PdfPath): void;
     /**
      * Appends the specified path points and their types to this path.
-     *
-     * @param {Array<Point>} pathPoints The path points to append.
-     * @param {PathPointType[]} pathPointTypes The types of the path points.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -371,6 +366,9 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Array<Point>} pathPoints The path points to append.
+     * @param {PathPointType[]} pathPointTypes The types of the path points.
+     * @returns {void} Nothing
      */
     public addPath(pathPoints: Array<Point>, pathPointTypes: PathPointType[]): void;
     public addPath(arg1: PdfPath | Array<Point>, arg2?: PathPointType[]): void {
@@ -415,10 +413,6 @@ export class PdfPath {
     /**
      * Adds a line segment to the path.
      *
-     * @param {Point} start The (x,y) coordinates of the starting point of the line.
-     * @param {Point} end The (x,y) coordinates of the ending point of the line.
-     * @returns {void} Nothing
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -440,6 +434,9 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Point} start The (x,y) coordinates of the starting point of the line.
+     * @param {Point} end The (x,y) coordinates of the ending point of the line.
+     * @returns {void} Nothing
      */
     public addLine(start: Point, end: Point): void {
         this._addPoints([start.x, start.y, end.x, end.y], PathPointType.line);
@@ -508,11 +505,6 @@ export class PdfPath {
     /**
      * Adds an arc within a bounding rectangle using the angles that define the start and sweep of the arc.
      *
-     * @param {Rectangle} bounds The bounding rectangle.
-     * @param {number} startAngle The start angle of the arc.
-     * @param {number} sweepAngle The angle between start angle and the end of the arc.
-     * @returns {void} Nothing
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('Empty.pdf'));
@@ -534,6 +526,10 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Rectangle} bounds The bounding rectangle.
+     * @param {number} startAngle The start angle of the arc.
+     * @param {number} sweepAngle The angle between start angle and the end of the arc.
+     * @returns {void} Nothing
      */
     public addArc(bounds: Rectangle, startAngle: number, sweepAngle: number): void {
         const points: number[] = _getBezierArc(bounds.x, bounds.y, bounds.x + bounds.width,
@@ -552,9 +548,6 @@ export class PdfPath {
     }
     /**
      * Adds a rectangle to the path.
-     *
-     * @param {Rectangle} bounds The bounding rectangle.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -579,6 +572,8 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Rectangle} bounds The bounding rectangle.
+     * @returns {void} Nothing
      */
     public addRectangle(bounds: Rectangle): void {
         this.startFigure();
@@ -588,9 +583,6 @@ export class PdfPath {
     }
     /**
      * Adds a polygon to the path.
-     *
-     * @param {Array<Point>} points The points of the polygon, where each point representing the x and y coordinates.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -615,6 +607,8 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Array<Point>} points The points of the polygon, where each point representing the x and y coordinates.
+     * @returns {void} Nothing
      */
     public addPolygon(points: Array<Point>): void {
         const newPoints: number[] = [];
@@ -628,9 +622,6 @@ export class PdfPath {
     }
     /**
      * Adds an ellipse to the path.
-     *
-     * @param {Rectangle} bounds The bounds of the ellipse.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -655,6 +646,8 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Rectangle} bounds The bounds of the ellipse.
+     * @returns {void} Nothing
      */
     public addEllipse(bounds: Rectangle): void {
         this.startFigure();
@@ -663,12 +656,6 @@ export class PdfPath {
     }
     /**
      * Adds a Bezier curve to the path using specified coordinates for the start point, two control points, and the end point.
-     *
-     * @param {Point} start The (x, y) coordinates of the starting point of the Bezier curve.
-     * @param {Point} first The (x, y) coordinates of the first control point of the Bezier curve.
-     * @param {Point} second The (x, y) coordinates of the second control point of the Bezier curve.
-     * @param {Point} end The (x, y) coordinates of the ending point of the Bezier curve.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -693,6 +680,11 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Point} start The (x, y) coordinates of the starting point of the Bezier curve.
+     * @param {Point} first The (x, y) coordinates of the first control point of the Bezier curve.
+     * @param {Point} second The (x, y) coordinates of the second control point of the Bezier curve.
+     * @param {Point} end The (x, y) coordinates of the ending point of the Bezier curve.
+     * @returns {void} Nothing
      */
     public addBezier(start: Point,
                      first: Point,
@@ -731,11 +723,6 @@ export class PdfPath {
     /**
      * Adds a pie slice to the path.
      *
-     * @param {Rectangle} bounds The bounding rectangle.
-     * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
-     * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle parameter to the end of the pie slice.
-     * @returns {void} Nothing
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -759,6 +746,10 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {Rectangle} bounds The bounding rectangle.
+     * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle parameter to the end of the pie slice.
+     * @returns {void} Nothing
      */
     public addPie(bounds: Rectangle, startAngle: number, sweepAngle: number): void {
         this.startFigure();
@@ -768,8 +759,6 @@ export class PdfPath {
     }
     /**
      * Starts a new figure in the path.
-     *
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -796,14 +785,13 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @returns {void} Nothing
      */
     public startFigure(): void {
         this._isStart = true;
     }
     /**
      * Closes all open figures in the path.
-     *
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -828,13 +816,11 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @returns {void} Nothing
      */
     public closeFigure(): void;
     /**
      * Closes all non-closed figures in the path.
-     *
-     * @param {number} index The optional index of the figure to close. If not provided, the last figure is closed.
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -859,6 +845,8 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @param {number} index The optional index of the figure to close. If not provided, the last figure is closed.
+     * @returns {void} Nothing
      */
     public closeFigure(index: number): void;
     public closeFigure(index?: number): void {
@@ -875,8 +863,6 @@ export class PdfPath {
     }
     /**
      * Closes all non-closed figures in the path.
-     *
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -901,6 +887,7 @@ export class PdfPath {
      * document.destroy();
      * ```
      *
+     * @returns {void} Nothing
      */
     public closeAllFigures(): void {
         for (let i: number = 0; i < this._points.length; ++i) {

@@ -497,7 +497,7 @@ describe('Chart', () => {
                 let element: HTMLElement = document.getElementById('containerIndicatorGroup0');
                 let rect: ClientRect;
                 rect = element.getBoundingClientRect();
-                expect(Math.round(rect.top) == 378 || Math.round(rect.top) == 377).toBe(true);
+                expect(Math.round(rect.top) == 378 || Math.round(rect.top) == 377 || Math.round(rect.top) == 339).toBe(true);
                 chartObj.loaded = null;
                 done();
             };

@@ -126,6 +126,7 @@ export class FilterDialog {
             close: this.removeFilterDialog.bind(this)
         });
         this.dialogPopUp.isStringTemplate = true;
+        this.dialogPopUp.isAngular = this.parent.control.isModalDialog;
         this.dialogPopUp.appendTo(editorDialog);
         const filterArgs: MemberEditorOpenEventArgs = {
             cancel: false,
@@ -257,6 +258,7 @@ export class FilterDialog {
             cssClass: this.parent.cssClass
         });
         this.allMemberSelect.isStringTemplate = true;
+        this.allMemberSelect.isAngular = this.parent.control.isModalDialog;
         if (!isNullOrUndefined(this.parent.currentTreeItems)) {
             for (let i: number = 0; i < this.parent.currentTreeItems.length; i++) {
                 if ((this.parent.currentTreeItems[i as number].id as string).indexOf('\n') ||
@@ -285,6 +287,7 @@ export class FilterDialog {
             cssClass: this.parent.cssClass
         });
         this.memberTreeView.isStringTemplate = true;
+        this.memberTreeView.isAngular = this.parent.control.isModalDialog;
         this.memberTreeView.appendTo(treeViewContainer);
         if (this.parent.isDataOverflow && (this.parent.control.maxNodeLimitInMemberEditor < this.parent.currentTreeItems.length)) {
             editorTreeWrapper.appendChild(labelWrapper);
@@ -877,6 +880,7 @@ export class FilterDialog {
                 }
             });
             levelWrapper.isStringTemplate = true;
+            levelWrapper.isAngular = this.parent.control.isModalDialog;
             levelWrapper.appendTo(levelDropOption);
         }
         const optionWrapper1: DropDownList = new DropDownList({
@@ -894,6 +898,7 @@ export class FilterDialog {
             }
         });
         optionWrapper1.isStringTemplate = true;
+        optionWrapper1.isAngular = this.parent.control.isModalDialog;
         optionWrapper1.appendTo(optionDiv1);
         const optionWrapper: DropDownList = new DropDownList({
             dataSource: oDataSource, enableRtl: this.parent.enableRtl,
@@ -918,6 +923,7 @@ export class FilterDialog {
             }
         });
         optionWrapper.isStringTemplate = true;
+        optionWrapper.isAngular = this.parent.control.isModalDialog;
         optionWrapper.appendTo(optionDiv2);
         if (type === 'date') {
             const inputObj1: DateTimePicker = new DateTimePicker({

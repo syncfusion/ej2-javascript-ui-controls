@@ -170,6 +170,7 @@ export class TreeViewRenderer implements IAction {
         });
         this.treeViewElement.innerHTML = '';
         this.fieldTable.isStringTemplate = true;
+        this.fieldTable.isAngular = this.parent.isModalDialog;
         this.fieldTable.appendTo(this.treeViewElement);
         const dragEle: HTMLElement = this.parent.renderMode === 'Fixed' ? this.parent.element : this.parentElement;
         if (!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))) {
@@ -321,6 +322,7 @@ export class TreeViewRenderer implements IAction {
             target: closest(this.parentElement, '.' + cls.WRAPPER_CLASS) as HTMLElement
         });
         this.fieldDialog.isStringTemplate = true;
+        this.fieldDialog.isAngular = this.parent.isModalDialog;
         this.fieldDialog.appendTo(fieldListDialog);
         // this.fieldDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('adaptiveFieldHeader');
     }
@@ -379,6 +381,7 @@ export class TreeViewRenderer implements IAction {
             }
         });
         this.fieldTable.isStringTemplate = true;
+        this.fieldTable.isAngular = this.parent.isModalDialog;
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
     }

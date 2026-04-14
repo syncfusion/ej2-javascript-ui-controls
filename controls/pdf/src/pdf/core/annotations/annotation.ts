@@ -1348,9 +1348,6 @@ export abstract class PdfAnnotation {
     /**
      * Set the boolean flag to create a new appearance stream for annotations.
      *
-     * @param {boolean} value Set appearance.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1361,6 +1358,9 @@ export abstract class PdfAnnotation {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {boolean} value Set appearance.
+     * @returns {void} Nothing.
      */
     public setAppearance(value: boolean): void {
         this._setAppearance = value;
@@ -1370,9 +1370,6 @@ export abstract class PdfAnnotation {
     }
     /**
      * Gets the values associated with the specified key.
-     *
-     * @param {string} name Key.
-     * @returns {string[]} Values associated with the key.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1384,6 +1381,9 @@ export abstract class PdfAnnotation {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Key.
+     * @returns {string[]} Values associated with the key.
      */
     public getValues(name: string): string[] {
         const values: string[] = [];
@@ -1415,10 +1415,6 @@ export abstract class PdfAnnotation {
     /**
      * Sets the values associated with the specified key.
      *
-     * @param {string} name Key.
-     * @param {string} value Value associated with the key..
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1432,6 +1428,10 @@ export abstract class PdfAnnotation {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Key.
+     * @param {string} value Value associated with the key..
+     * @returns {void} Nothing.
      */
     public setValues(name: string, value: string): void {
         if (name && name !== '' && value && value !== '') {
@@ -13972,7 +13972,6 @@ export class PdfRubberStampAnnotation extends PdfComment {
     /**
      * Create an appearance template for a rubber stamp annotation.
      *
-     * @returns {PdfTemplate} Returns the appearance template of the annotation.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -13987,6 +13986,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfTemplate} Returns the appearance template of the annotation.
      */
     public createTemplate(): PdfTemplate {
         let template: PdfTemplate = this._createTemplate();

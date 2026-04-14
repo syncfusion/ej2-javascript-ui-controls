@@ -118,6 +118,8 @@ export class SheetRender implements IRenderer {
             scroll.style[`${offset}`] = width + 'px'; scroll.style.width = widthCalc;
             if (Browser.userAgent.indexOf('Mac OS') > -1 && Browser.info.name === 'safari') {
                 scroll.style.height = '7px'; scroll.style.top = '-7px';
+            } else if (Browser.userAgent.indexOf('Firefox') > -1 && Browser.info.name === 'mozilla') {
+                scroll.style.height = '13px'; scroll.style.top = '-11px';
             }
         }
     }

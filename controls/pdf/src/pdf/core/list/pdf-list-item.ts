@@ -670,7 +670,6 @@ export class PdfListItemCollection {
     /**
      * Adds a `PdfListItem` to the collection.
      *
-     * @param {PdfListItem} item The list item to be added to the collection.
      * ``` typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -689,13 +688,13 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListItem} item The list item to be added to the collection.
      */
     public add(item: PdfListItem): void;
     /**
      * Adds a `PdfListItem` to the collection.
      *
-     * @param {PdfListItem} item The list item to be added to the collection.
-     * @param {number} itemIndent The indent of the list item
      * ``` typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -714,6 +713,9 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListItem} item The list item to be added to the collection.
+     * @param {number} itemIndent The indent of the list item
      */
     public add(item: PdfListItem, itemIndent: number): void;
     public add(item: PdfListItem, itemIndent?: number): void {
@@ -729,8 +731,6 @@ export class PdfListItemCollection {
     /**
      * Retrieves the `PdfListItem` at the specified index in the collection.
      *
-     * @param {number} index The zero-based index of the item to retrieve.
-     * @returns {PdfListItem} The `PdfListItem` at the specified index.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -751,6 +751,9 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The zero-based index of the item to retrieve.
+     * @returns {PdfListItem} The `PdfListItem` at the specified index.
      */
     public at(index: number): PdfListItem {
         if (index === null) {
@@ -762,8 +765,6 @@ export class PdfListItemCollection {
     /**
      * Removes a `PdfListItem` from the collection.
      *
-     * @param {PdfListItem} item The list item to be removed from the collection.
-     * @returns {void}
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('CircleAnnotation-Acrobat.pdf'));
@@ -791,6 +792,9 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListItem} item The list item to be removed from the collection.
+     * @returns {void}
      */
     public remove(item: PdfListItem): void {
         if (!item) {
@@ -811,8 +815,6 @@ export class PdfListItemCollection {
     /**
      * Removes a `PdfListItem` at the specified index from the collection.
      *
-     * @param {number} index The zero-based index of the item to remove.
-     * @returns {void}
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('CircleAnnotation-Acrobat.pdf'));
@@ -839,6 +841,9 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The zero-based index of the item to remove.
+     * @returns {void}
      */
     public removeAt(index: number): void {
         if (index < 0 || index >= this._listItems.length) {
@@ -849,7 +854,6 @@ export class PdfListItemCollection {
     /**
      * Clear the list item collection.
      *
-     * @returns {void}
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('CircleAnnotation-Acrobat.pdf'));
@@ -876,6 +880,8 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {void}
      */
     public clear(): void {
         this._listItems = [];
@@ -883,10 +889,6 @@ export class PdfListItemCollection {
     /**
      * Inserts a `PdfListItem` into the collection at the specified index.
      *
-     * @param {number} index The zero-based index at which the item should be inserted.
-     * @param {PdfListItem} item The list item to be inserted into the collection.
-     * @param {number} itemIndent The indent of the list item.
-     * @returns {void}
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('CircleAnnotation-Acrobat.pdf'));
@@ -915,6 +917,11 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The zero-based index at which the item should be inserted.
+     * @param {PdfListItem} item The list item to be inserted into the collection.
+     * @param {number} itemIndent The indent of the list item.
+     * @returns {void}
      */
     public insert(index: number, item: PdfListItem, itemIndent: number): void {
         if (index < 0 || index > this._listItems.length) {
@@ -931,8 +938,6 @@ export class PdfListItemCollection {
     /**
      * Finds the index of a `PdfListItem` in the collection.
      *
-     * @param {PdfListItem} item The list item to find in the collection.
-     * @returns {number} The zero-based index of the item in the collection, or -1 if not found.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(readFromResources('CircleAnnotation-Acrobat.pdf'));
@@ -961,6 +966,9 @@ export class PdfListItemCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListItem} item The list item to find in the collection.
+     * @returns {number} The zero-based index of the item in the collection, or -1 if not found.
      */
     public indexOf(item: PdfListItem): number {
         if (!item) {

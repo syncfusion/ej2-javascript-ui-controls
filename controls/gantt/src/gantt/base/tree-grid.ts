@@ -976,7 +976,9 @@ export class GanttTreeGrid {
                 }
                 column.type = column.type ? column.type : 'string';
                 if (column.type === 'checkbox') {
-                    this.parent.selectionSettings.type = 'Multiple';
+                    this.parent.setProperties({selectionSettings: {
+                        type: 'Multiple'
+                    }}, true );
                 }
                 this.bindTreeGridColumnProperties(column, true);
                 continue;

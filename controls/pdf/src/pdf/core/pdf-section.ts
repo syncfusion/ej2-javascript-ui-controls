@@ -113,8 +113,6 @@ export class PdfSection {
     /**
      * Creates a new page and adds it to the collection.
      *
-     * @returns {PdfPage} PDF page.
-     *
      * ```typescript
      * // Create a new PDF document
      * let document: PdfDocument = new PdfDocument();
@@ -127,6 +125,8 @@ export class PdfSection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfPage} PDF page.
      */
     public addPage(): PdfPage {
         const pageIndex: number = this._document.pageCount === 0 ? 0 : (this._document.pageCount);

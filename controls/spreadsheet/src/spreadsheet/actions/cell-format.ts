@@ -399,6 +399,16 @@ export class CellFormat {
             }
         }
         const cellModel: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+        const chkLineHgt: Function = (): boolean => {
+            if (!cellModel.wrap && (cell.style.fontSize || cell.style.fontFamily)) {
+                const size: number = getBorderHeight(rowIdx, colIdx, sheet);
+                const hgt: number = getRowHeight(sheet, rowIdx, true) - size;
+                if (hgt < getTextHeight(this.parent, cellModel.style) || (size > 1 && getRowHeight(sheet, rowIdx) < 20)) {
+                    return true;
+                }
+            }
+            return false;
+        };
         if (!sheet.rows[rowIdx as number] || !sheet.rows[rowIdx as number].customHeight) {
             if (actionUpdate && (lastCell || !this.checkHeight) && size < 3) {
                 if (!this.checkHeight) { this.checkHeight = true; }
@@ -410,7 +420,7 @@ export class CellFormat {
                         this.borders = [];
                     }
                     this.borders.push({ cell: cell, borderWidth: size, rowIdx: rowIdx });
-                } else if (cell.style.lineHeight) {
+                } else if (cell.style.lineHeight && !chkLineHgt()) {
                     cell.style.lineHeight = '';
                 }
             }
@@ -420,10 +430,10 @@ export class CellFormat {
                     const hgt: number = getRowHeight(sheet, rowIdx, true) - getBorderHeight(rowIdx, colIdx, sheet);
                     if ((hgt < getTextHeight(this.parent, cellModel.style) || getRowHeight(sheet, rowIdx) < 20) && size > 1) {
                         cell.style.lineHeight = `${hgt}px`;
-                    } else if (cell.style.lineHeight) {
+                    } else if (cell.style.lineHeight && !chkLineHgt()) {
                         cell.style.lineHeight = '';
                     }
-                } else if (cell.style.lineHeight) {
+                } else if (cell.style.lineHeight && !chkLineHgt()) {
                     cell.style.lineHeight = '';
                 }
             }

@@ -1497,7 +1497,7 @@ describe('Inversed Scrollbar ', function () {
                     var backRectEle = svgChildEle.children[0].children[0];
                     var width = backRectEle.getAttribute('width');
                     expect(svgChildEle.id === 'container_scrollBar_primaryXAxis').toBe(true);
-                    expect(svgChildEle.getAttribute('transform') === 'translate(832.5,16) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(836.5,16) rotate(180)').toBe(true);
+                    expect(svgChildEle.getAttribute('transform') === 'translate(882.5,16) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(886.5,16) rotate(180)').toBe(true);
                     expect(backRectEle.getAttribute('x') === '25').toBe(true);
                     expect(backRectEle.getAttribute('y') === '0').toBe(true);
                     expect(backRectEle.getAttribute('height') === '16').toBe(true);
@@ -1593,7 +1593,7 @@ describe('Inversed Scrollbar ', function () {
                 let backRectEle: Element = svgChildEle.children[0].children[0];
                 let width: string = backRectEle.getAttribute('width');
                 expect(svgChildEle.id).toBe('container_scrollBar_primaryXAxis');
-                expect(svgChildEle.getAttribute('transform') === 'translate(832.5,10) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(836.5,10) rotate(180)').toBe(true);
+                expect(svgChildEle.getAttribute('transform') === 'translate(882.5,10) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(886.5,10) rotate(180)').toBe(true);
                 expect(backRectEle.getAttribute('x')).toBe('0');
                 expect(backRectEle.getAttribute('y')).toBe('0');
                 expect(backRectEle.getAttribute('height')).toBe('10');

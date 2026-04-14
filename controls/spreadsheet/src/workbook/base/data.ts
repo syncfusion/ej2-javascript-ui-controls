@@ -178,7 +178,8 @@ export function getData(
                                 rowIndex: sRow, colIndex: i };
                             context.trigger(queryCellInfo, eventArgs);
                             const cellObj: CellModel = getCell(sRow, i, sheet, false, true);
-                            if (cellObj.formula && cellObj.formula.toUpperCase().includes('UNIQUE')) {
+                            const checkFormulaStr: string = (cellObj.formula || '').toUpperCase();
+                            if (checkFormulaStr.includes('UNIQUE') || checkFormulaStr.includes('SORT')) {
                                 context.notify(
                                     calculateFormula, { cell: cellObj, rowIdx: sRow, colIdx: i, sheetIndex: context.activeSheetIndex,
                                         address: eventArgs.address });

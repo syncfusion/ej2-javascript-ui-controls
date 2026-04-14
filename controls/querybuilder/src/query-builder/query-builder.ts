@@ -399,6 +399,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isRuleClicked: boolean = false;
     private groupCloned: boolean = false;
     private isRequestSent: boolean = false;
+    private initialID: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
     private boundResizeHandler: () => void;
@@ -4488,7 +4489,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     const parent: HTMLElement = this.element.querySelector('#' + groupID);
                     const allContainers: NodeListOf<HTMLElement> = parent.querySelectorAll(':scope > .e-group-body > .e-rule-list > [class*="-container"]');
                     const topLevelGroups: NodeListOf<HTMLElement> = parent.querySelectorAll(':scope > .e-group-body > .e-rule-list > .e-group-container');
-                    if (topLevelGroups.length > 0 && groupID !== 'querybuilder_group0' && !(this.isAngular && groupID === 'ej2-querybuilder_0_group0')) {
+                    if (topLevelGroups.length > 0 && groupID !== 'querybuilder_group0' && !(this.isAngular && groupID === this.initialID + '_group0')) {
                         let lastGroupIndex: number = -1;
                         const lastGroup: Element = topLevelGroups[topLevelGroups.length - 1];
                         for (let i: number = 0; i < allContainers.length; i++) {
@@ -4800,6 +4801,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     protected preRender(): void {
         this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
+        this.initialID = this.element.id;
         this.defaultLocale = {
             StartsWith: 'Starts With',
             DoesNotStartWith: 'Does Not Start With',
@@ -5545,6 +5547,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (this.headerTemplate && isRoot) {
             this.isRoot = true;
         }
+        this.clearQBTemplate();
         this.reset();
         this.groupIdCounter = 1;
         this.ruleIdCounter = 0;

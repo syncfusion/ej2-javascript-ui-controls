@@ -6,6 +6,7 @@ import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourc
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { TextBox } from '@syncfusion/ej2-inputs';
+import { Tooltip } from '@syncfusion/ej2-popups';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -6321,4 +6322,165 @@ describe('update record by id method to update expand state in self referance da
         }
     });
 
+});
+describe('Edit tooltip coverage', () => {
+    let ganttObj: Gantt;
+    const datas : Object[] =  [
+        {
+            taskID: '1',
+            taskName: 'Project Schedule',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('03/10/2019'),
+        },
+        {
+            taskID: '2',
+            taskName: 'Planning',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            parentID: 1,
+        }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datas,
+                height: '450px',
+                highlightWeekends: true,
+                allowSelection: true,
+                treeColumnIndex: 1,
+                taskFields: {
+                    id: 'taskID',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    parentID: 'parentID',
+                    expandState: 'expandState'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                selectedRowIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/28/2019'),
+                projectEndDate: new Date('03/10/2019'),
+        }, done);
+    });
+    it('ConnectorPointRightDrag - coverage',() => {
+        ganttObj.editModule.taskbarEditModule.connectorSecondAction = 'ConnectorPointRightDrag';
+        ganttObj.editModule.taskbarEditModule.taskBarEditRecord = ganttObj.flatData[0];
+        ganttObj.editModule.taskbarEditModule.connectorSecondElement = ganttObj.element.querySelectorAll('.e-taskbar-main-container')[1];
+        ganttObj.editModule.taskbarEditModule['editTooltip']['showHideTaskbarEditTooltip'](true, -1);
+        ganttObj.editModule.taskbarEditModule.taskBarEditAction = 'ConnectorPointRightDrag';
+        ganttObj.editModule.taskbarEditModule['editTooltip']['toolTipObj'] = null;
+        ganttObj.editModule.taskbarEditModule['editTooltip']['getTooltipText'](-1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Code coverage- edit tool tip', () => {
+    Gantt.Inject(Edit, VirtualScroll);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project Schedule',
+                    StartDate: new Date('02/04/2019'),
+                    EndDate: new Date('03/10/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2,
+                            TaskName: 'Planning',
+                            StartDate: new Date('02/04/2019'),
+                        },
+                        {
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '60',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                              ]
+                        },
+                    ]
+                },
+                {
+                    TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                    Duration: 10, Progress: '90'
+                },
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            gridLines: "Both",
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowTaskbarDragAndDrop: true,
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            tooltipSettings: {
+                showTooltip: true,
+                editing: '<div>game</div>'
+            },
+            enableRtl: true,
+            enableMultiTaskbar: true,
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    it('updateTooltip - coverage',() => {
+        ganttObj.editModule.taskbarEditModule.taskBarEditRecord = ganttObj.flatData[2];
+        ganttObj.editModule.taskbarEditModule.taskBarEditAction = 'ProgressResizing';
+        ganttObj.editModule.taskbarEditModule['mainElement']= ganttObj.element.querySelectorAll('.e-taskbar-main-container')[2];
+        ganttObj.editModule.taskbarEditModule['editTooltip']['toolTipHeight'] = "517.4px";
+        ganttObj.editModule.taskbarEditModule['editTooltip']['toolTipObj'] = new Tooltip(
+            {
+                opensOn: 'Custom',
+                position: 'TopRight',
+                enableRtl: ganttObj.enableRtl,
+                mouseTrail: false,
+                cssClass: 'e-gantt-tooltip',
+                windowCollision : true,
+                target: null,
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } }
+            }
+        );
+        ganttObj.editModule.taskbarEditModule['editTooltip']['updateTooltip'](0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });

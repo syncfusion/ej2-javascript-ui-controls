@@ -2445,12 +2445,12 @@ describe ('left indent testing', () => {
                 let sublist = editNode.querySelector('#sublist');
                 expect(sublist.parentElement.tagName === 'OL').toBe(true);
                 expect(sublist.parentElement.parentElement.tagName === 'UL').toBe(true);
-                innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ol><li id="sublist">sublist</li><li>sublist2</li></ol><li>mainlist</li></ul><div>`;
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br><ol><li id="sublist">sublist</li><li>sublist2</li></ol></li><li>mainlist</li></ul><div>`;
             });
 
             it('content with non empty space', () => {
                 startNode = editNode.querySelector('#firstli');
-                setCursorPoint(startNode, 1);
+                setCursorPoint(startNode, 0);
                 keyBoardEvent.event.shiftKey = false;
                 keyBoardEvent.action = 'backspace';
                 keyBoardEvent.event.which = 8;
@@ -3256,8 +3256,8 @@ describe ('left indent testing', () => {
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (editorObj as any).keyDown(keyBoardEvent);
-            expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list 2.1list 1.1').toBe(true);
-            expect(editorObj.inputElement.querySelector("OL").childNodes.length === 3).toBe(true);
+            expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list 2.1list 1.1<ol><li>list 1.1.1</li><li>list 1.1.2</li></ol>').toBe(true);
+            expect(editorObj.inputElement.querySelector("OL").childNodes.length === 1).toBe(true);
             done();
         });
     });
@@ -5380,6 +5380,119 @@ describe('1012056 - Enter split with inline image then Undo', () => {
                 done();
             }, 300);
         }, 600);
+    });
+});
+
+describe('1017735: Lists - Enter then Backspace scenarios (regressions)', () => {
+    describe('Case 1: Enter then Backspace on text contained target previous li element ', () => {
+        let elem: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<ul><li>Test1<ul><li>Test2</li><li>Test3</li></ul></li></ul>`
+            });
+            elem = rteObj.inputElement;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should move all the nested target child to previous text contained li element', (done: DoneFn) => {
+            const topUl = elem.querySelector('ul') as HTMLElement;
+            const outerLi = topUl.children[0] as HTMLElement;
+            const textNode = outerLi.firstChild as Node;
+            setCursorPoint(textNode as Element, textNode.textContent.length);
+            elem.focus();
+            // Press Enter
+            const enterDown: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            const enterUp: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            elem.dispatchEvent(enterDown);
+            elem.dispatchEvent(enterUp);
+            setTimeout(() => {
+                // Now press Backspace to join back
+                const backDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                const backUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                elem.dispatchEvent(backDown);
+                elem.dispatchEvent(backUp);
+                setTimeout(() => {
+                    // Expect restored single top-level li and nested ul still present
+                    expect((topUl.children.length === 1)).toBe(true);
+                    expect(topUl.querySelector('li > ul')).not.toBeNull();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Case 2: Enter then Backspace on br element contained target previous li element ', () => {
+        let elem: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<ul><li><br/><ul><li>Test2</li><li>Test3</li></ul></li></ul>`
+            });
+            elem = rteObj.inputElement;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Should move all the childrens to previous empty li element', (done: DoneFn) => {
+            const topUl = elem.querySelector('ul') as HTMLElement;
+            const outerLi = topUl.children[0] as HTMLElement;
+            // Place cursor after the BR node (child index 1)
+            setCursorPoint(outerLi, 0);
+            elem.focus();
+            // Press Enter
+            const enterDown: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            const enterUp: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            elem.dispatchEvent(enterDown);
+            elem.dispatchEvent(enterUp);
+            setTimeout(() => {
+                const backDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                const backUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                elem.dispatchEvent(backDown);
+                elem.dispatchEvent(backUp);
+                setTimeout(() => {
+                    expect((topUl.children.length === 1)).toBe(true);
+                    expect(topUl.querySelector('li > ul')).not.toBeNull();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Case: Enter then Backspace after Lorem ipsum text content in nested list', () => {
+        let elem: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<p style="margin: 0in 0in 12pt; font-size: 10pt; font-family: Avenir; border: none;"><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum <span style="color: black;"><span>&nbsp;</span></span>lorem ipsum lorem ipsum<span style="color: black;"> <span style="background: yellow;">[date],</span> </span>lorem ipsum lorem ipsum lorem ipsum lorem ipsum<span style="color: black;"> <span style="background: yellow;">[</span></span><span style="background: yellow;">lorem ipsum</span><span style="color: black;">] </span>lorem ipsum lorem ipsum<span style="color: black;"> [</span><span style="background: yellow;">lorem ipsum</span><span style="color: black;">] </span>lorem ipsum lorem ipsum<span style="color: black;"> [</span><span style="background: yellow;">lorem ipsum]<span style="color: black;">.</span></span></span></p><p style="margin: 0in 0in 12pt; font-size: 10pt; font-family: Avenir; border: none;"><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum <span style="color: black;"><span>&nbsp;</span><span style="background: yellow;">[</span></span><span style="background: yellow;">lorem ipsum<span style="color: black;">]</span></span></span></p><p style="margin: 0in 0in 12pt; font-size: 10pt; font-family: Avenir; border: none;"><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">lorem ipsum lorem ipsum lorem ipsum lorem ipsum</span></p><ol level="1" style="margin-bottom: 0in; margin-left: 0.35in; list-style-type: decimal;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 10pt; font-family: Avenir; border: none;"><p><b><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum</span></b></p></li></ol><p style="margin: 0in; font-size: 10pt; font-family: Avenir;"><span lang="EN">&nbsp;</span></p><ol level="2" style="margin-bottom: 0in; margin-left: 49.6pt; list-style-type: upper-alpha;"><li style="font-size: 10pt; font-family: Avenir; margin-top: 0in; margin-right: 0in; margin-bottom: 12pt; border: none;"><p><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum</span></p><ol level="3" style="margin-bottom: 0in; list-style-type: decimal;"><li style="font-size: 10pt; font-family: Avenir; margin-top: 0in; margin-right: 0in; margin-bottom: 12pt;"><p><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum </span></p></li><li style="font-size: 10pt; font-family: Avenir; margin-top: 0in; margin-right: 0in; margin-bottom: 12pt;"><p><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum </span></p></li><li style="font-size: 10pt; font-family: Avenir; margin-top: 0in; margin-right: 0in; margin-bottom: 12pt; border: none;"><p><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum <span style="color: black;">.</span></span></p></li><li style="font-size: 10pt; font-family: Avenir; margin-top: 0in; margin-right: 0in; margin-bottom: 12pt; border: none;"><p><span lang="EN" style="font-size: 11pt; font-family: Tahoma, sans-serif;">Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum <span style="color: black;"><span>&nbsp;</span></span></span></p></li></ol></li></ol>`
+            });
+            elem = rteObj.inputElement;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Should keep nested ol/ul inside the li after backspace', (done: DoneFn) => {
+            const level2: HTMLElement = elem.querySelector('ol[style*="upper-alpha"]');
+            const targetLi: HTMLElement = level2.children[0] as HTMLElement;
+            const span: Element = targetLi.querySelector('span');
+            setCursorPoint(span.firstChild as Element, span.firstChild.textContent.length);
+            elem.focus();
+            const enterDown: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            const enterUp: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT as KeyboardEventInit);
+            elem.dispatchEvent(enterDown);
+            elem.dispatchEvent(enterUp);
+            setTimeout(() => {
+                const backDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                const backUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT as KeyboardEventInit);
+                elem.dispatchEvent(backDown);
+                elem.dispatchEvent(backUp);
+                setTimeout(() => {
+                    expect(targetLi.querySelector('ol, ul')).not.toBeNull();
+                    done();
+                }, 100);
+            }, 100);
+        });
     });
 });
 

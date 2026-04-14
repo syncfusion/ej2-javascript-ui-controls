@@ -265,4 +265,42 @@ describe('Html-Editor specs', ()=> {
             }, 50);
         });
     });
+
+    describe('1018318: Backspace Key Not Removing Elements Properly When Content Contains SVG', () => {
+        let rteObj: RichTextEditor;
+        const originalHTML: string = `<div class="relative pl-9" style="border: 0px solid rgb(229, 231, 235); position: relative; padding-left: 2.25rem; color: rgb(75, 85, 99); font-family: "Open Sans", -apple-system, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">
+   <dt class="inline font-semibold text-gray-900" style="border: 0px solid rgb(229, 231, 235); display: inline; font-weight: 600; color: rgb(17, 24, 39);">Run Anywhere</dt>
+   <p><span> </span></p>
+   <dd class="inline" style="border: 0px solid rgb(229, 231, 235); margin: 0px; display: inline;">Universally compatible with diverse operating systems and environments, including Linux, Windows, macOS, FreeBSD, Kubernetes, and etc. Compatible with multiple architectures, such as x86 and arm64.</dd>
+</div>
+<div class="relative pl-9" style="border: 0px solid rgb(229, 231, 235); position: relative; padding-left: 2.25rem; margin-bottom: 0px; margin-top: 32px; color: rgb(75, 85, 99); font-family: "Open Sans", -apple-system, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">
+   <dt class="inline font-semibold text-gray-900" style="border: 0px solid rgb(229, 231, 235); display: inline; font-weight: 600; color: rgb(17, 24, 39);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="absolute left-1 top-1 h-5 w-5 text-blue-600"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"></path></svg>Supported Frequent Databases</dt>
+   <p><span> </span></p>
+   <dd class="inline" style="border: 0px solid rgb(229, 231, 235); margin: 0px; display: inline;">Offers seamless integration with various databases, including SQLite, MySQL, PostgreSQL, TiDB, MS SQL, and etc.</dd>
+</div>
+<div class="relative pl-9" style="border: 0px solid rgb(229, 231, 235); position: relative; padding-left: 2.25rem; margin-bottom: 0px; margin-top: 32px; color: rgb(75, 85, 99); font-family: "Open Sans", -apple-system, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">
+   <dt class="inline font-semibold text-gray-900" style="border: 0px solid rgb(229, 231, 235); display: inline; font-weight: 600; color: rgb(17, 24, 39);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="absolute left-1 top-1 h-5 w-5 text-blue-600"><path d="M4.632 3.533A2 2 0 016.577 2h6.846a2 2 0 011.945 1.533l1.976 8.234A3.489 3.489 0 0016 11.5H4c-.476 0-.93.095-1.344.267l1.976-8.234z"></path><path fill-rule="evenodd" d="M4 13a2 2 0 100 4h12a2 2 0 100-4H4zm11.24 2a.75.75 0 01.75-.75H16a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75V15zm-2.25-.75a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75H13a.75.75 0 00.75-.75V15a.75.75 0 00-.75-.75h-.01z" clip-rule="evenodd"></path></svg>Flexible Deployment</dt>
+   <p><span> </span></p>
+   <dd class="inline" style="border: 0px solid rgb(229, 231, 235); margin: 0px; display: inline;">Provides flexible deployment options, supporting both single server setups and replication configurations.</dd>
+</div>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: originalHTML
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Backspace at start of Supported Frequent text should not change HTML', (done: DoneFn) => {
+            const expectedHTML: string = rteObj.inputElement.innerHTML;
+            const targetTextNode: Node = rteObj.inputElement.querySelectorAll('dt')[1].childNodes[1];
+            setCursorPoint(targetTextNode as Element, 0);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === expectedHTML).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

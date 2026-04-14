@@ -1,9 +1,13 @@
+import { PdfPolyLineAnnotation } from '../../src/pdf/core/annotations/annotation';
 import { _PdfContentStream } from '../../src/pdf/core/base-stream';
 import { _ContentParser, _PdfRecord } from '../../src/pdf/core/content-parser';
 import { PdfPageOrientation, PdfRotationAngle } from '../../src/pdf/core/enumerator';
 import { PdfPen } from '../../src/pdf/core/graphics/pdf-graphics';
 import { PdfDocumentInformation } from '../../src/pdf/core/pdf-document-information';
+import { _PdfMergeHelper } from '../../src/pdf/core/pdf-merge';
 import { PdfPage } from '../../src/pdf/core/pdf-page';
+import { PdfPageImportOptions } from '../../src/pdf/core/pdf-page-import-options';
+import { _PdfDictionary } from '../../src/pdf/core/pdf-primitives';
 import { PdfSection } from '../../src/pdf/core/pdf-section';
 import { PdfDocument, PdfMargins, PdfPageSettings } from './../../src/pdf/core/pdf-document';
 describe('PdfDocument Creation Section And PageSettings Test - 2', () => {
@@ -2379,5 +2383,245 @@ describe('PdfDocument Creation Section And PageSettings Test - 2', () => {
         expect(page.rotation).toEqual(PdfRotationAngle.angle90);
         expect(document.pageCount).toEqual(10);
         document.destroy();
+    });
+});
+describe('EJ2-PDF source file code coverage', () => {
+    it('PdfPageImportOptions - validating page import behavior with rotation, target index, and resource optimization', () => {
+        let document: PdfDocument = new PdfDocument();
+        expect(document.pageCount).toEqual(0);
+        let settings: PdfPageSettings = new PdfPageSettings();
+        settings.margins = new PdfMargins(10);
+        let section: PdfSection = document.addSection(settings);
+        let page: PdfPage = section.addPage();
+        const annotation: PdfPolyLineAnnotation = new PdfPolyLineAnnotation([{ x: 50, y: 50 }, { x: 300, y: 50 }]);
+        annotation.rotationAngle = PdfRotationAngle.angle0;
+        annotation.setAppearance(true);
+        page.annotations.add(annotation);
+        page = section.addPage();
+        page = section.addPage();
+        page = document.addPage(settings);
+        let updatedData = document.save();
+        document.destroy();
+        document = new PdfDocument(updatedData);
+        let options: PdfPageImportOptions = new PdfPageImportOptions({
+            targetIndex: 2, rotation: PdfRotationAngle.angle90, optimizeResources: true,
+            groupFormFields: false
+        });
+        document.importPage(0, options);
+        let helper: _PdfMergeHelper;
+        const pageReference: Map<_PdfDictionary, PdfPage> = new Map<_PdfDictionary, PdfPage>();
+        helper = new _PdfMergeHelper(document._crossReference, document, document, pageReference, options);
+        helper._options.targetIndex = 3;
+        helper._options.rotation = PdfRotationAngle.angle180;
+        helper._options.optimizeResources = false;
+        helper._options.groupFormFields = true;
+        expect(document.pageCount).toBeGreaterThan(0);
+        document.destroy();
+    });
+    it('Removing kids from topPagesDictionary of document', () => {
+        // Create a new PDF document
+        let pdf = new PdfDocument();
+        let topPagesDictionary = pdf._catalog._topPagesDictionary;
+        let kids = topPagesDictionary.get('Kids');
+        kids = null;
+        pdf._catalog._topPagesDictionary.update('Kids', kids);
+        let settings: PdfPageSettings = new PdfPageSettings();
+        settings.margins = new PdfMargins(10);
+        pdf.addSection(settings);
+        expect(pdf.pageCount).toBe(0);
+        // Destroy the PDF document instance
+        pdf.destroy();
+    });
+    it('Removing kids from lastPage of document', () => {
+        // Create a new PDF document
+        let pdf = new PdfDocument();
+        pdf.addPage();
+        let lastPage = pdf.getPage(pdf.pageCount - 1);
+        var parentReference = lastPage._pageDictionary._get('Parent');
+        var parentDictionary = pdf._crossReference._fetch(parentReference);
+        let kids = parentDictionary.get('Kids');
+        kids = null;
+        parentDictionary.update('Kids', kids);
+        let settings: PdfPageSettings = new PdfPageSettings();
+        settings.margins = new PdfMargins(10);
+        let section: PdfSection = pdf.addSection(settings);
+        let sectionKids = section._dictionary._get('Kids');
+        sectionKids = null;
+        section._dictionary.update('Kids', sectionKids);
+        section.addPage();
+        lastPage._pageDictionary = null;
+        pdf.addSection(settings);
+        expect(pdf.pageCount).toBeGreaterThan(0);
+        // Destroy the PDF document instance
+        pdf.destroy();
+    });
+    it('Removing kids from dictionary of document', () => {
+        // Create a new PDF document
+        let pdf = new PdfDocument();
+        pdf.addPage();
+        let lastPage = pdf.getPage(pdf.pageCount - 1);
+        var parentReference = lastPage._pageDictionary._get('Parent');
+        var parentDictionary = pdf._crossReference._fetch(parentReference);
+        let settings: PdfPageSettings = new PdfPageSettings();
+        settings.margins = new PdfMargins(10);
+        pdf.addSection(settings);
+        expect(pdf.pageCount).toBeGreaterThan(0);
+        // Destroy the PDF document instance
+        pdf.destroy();
+    });
+});
+describe('PdfSection constructor and addPage behaviors', () => {
+    it('constructor leaves Parent absent when topPagesDictionary is undefined', () => {
+        const mockXref: any = { _getNextReference: () => ({ toString: () => 'r1' }), _cacheMap: new Map() };
+        const parentRef: any = { toString: () => 'parent' };
+        const doc: any = {
+            _crossReference: mockXref,
+            pageCount: 0,
+            _catalog: { _catalogDictionary: { _get: (_: string) => parentRef }, _topPagesDictionary: undefined },
+            _pageCount: 0,
+            _pages: new Map(),
+            getPage: (_: number): any => undefined
+        };
+        const section: any = new PdfSection(doc, new PdfPageSettings());
+        expect(section._dictionary.has('Parent')).toBeFalsy();
+        const kids: any = section._dictionary.get('Kids');
+        expect(Array.isArray(kids)).toBeTruthy();
+        expect(kids.length).toEqual(0);
+    });
+    it('constructor appends to existing topPagesDictionary.Kids when present', () => {
+        const mockXref: any = { _getNextReference: () => ({ toString: () => 'r2' }), _cacheMap: new Map() };
+        const parentRef: any = { toString: () => 'parent2' };
+        const top: any = new _PdfDictionary();
+        top.set('Kids', []);
+        const doc: any = {
+            _crossReference: mockXref,
+            pageCount: 0,
+            _catalog: { _catalogDictionary: { _get: (_: string) => parentRef }, _topPagesDictionary: top },
+            _pageCount: 0,
+            _pages: new Map(),
+            getPage: (_: number): any => undefined
+        };
+        const section: any = new PdfSection(doc, new PdfPageSettings());
+        const kids: any = top.get('Kids');
+        expect(Array.isArray(kids)).toBeTruthy();
+        expect(kids.length).toEqual(1);
+        expect(section._dictionary.has('Parent')).toBeTruthy();
+    });
+    it('constructor creates Kids when topPagesDictionary.has(Kids) is false', () => {
+        const mockXref: any = { _getNextReference: () => ({ toString: () => 'r3' }), _cacheMap: new Map() };
+        const parentRef: any = { toString: () => 'parent3' };
+        const top: any = new _PdfDictionary();
+        const doc: any = {
+            _crossReference: mockXref,
+            pageCount: 0,
+            _catalog: { _catalogDictionary: { _get: (_: string) => parentRef }, _topPagesDictionary: top },
+            _pageCount: 0,
+            _pages: new Map(),
+            getPage: (_: number): any => undefined
+        };
+        const section: any = new PdfSection(doc, new PdfPageSettings());
+        const kids: any = top.get('Kids');
+        expect(Array.isArray(kids)).toBeTruthy();
+        expect(kids.length).toEqual(1);
+        expect(section._dictionary.has('Parent')).toBeTruthy();
+    });
+    it('addPage updates existing Kids array and increments document._pageCount', () => {
+        const xref: any = { _getNextReference: () => ({ toString: () => 'pr1' }), _cacheMap: new Map() };
+        const doc: any = { pageCount: 0, _pageCount: 0, _crossReference: xref, _pages: new Map() };
+        const section: any = Object.create(PdfSection.prototype);
+        section._document = doc;
+        section._crossReference = xref;
+        section._dictionary = new _PdfDictionary();
+        section._dictionary.set('Kids', []);
+        section._reference = { toString: () => 'parentRef' };
+        section._pageSettings = new PdfPageSettings();
+        section._pageCount = 0;
+ 
+        const page = section.addPage();
+        const kids: any = section._dictionary.get('Kids');
+        expect(kids.length).toEqual(1);
+        expect(doc._pageCount).toEqual(1);
+        expect(section._pageCount).toEqual(1);
+        expect(doc._pages.get(0)).toBe(page);
+        expect(page._isNew).toBeTruthy();
+    });
+    it('addPage creates Kids when absent and sets document._pageCount to 1', () => {
+        const xref: any = { _getNextReference: () => ({ toString: () => 'pr2' }), _cacheMap: new Map() };
+        const doc: any = { pageCount: 0, _pageCount: 0, _crossReference: xref, _pages: new Map() };
+        const section: any = Object.create(PdfSection.prototype);
+        section._document = doc;
+        section._crossReference = xref;
+        section._dictionary = new _PdfDictionary(); // no Kids
+        section._reference = { toString: () => 'parentRef2' };
+        section._pageSettings = new PdfPageSettings();
+        section._pageCount = 0;
+ 
+        const page = section.addPage();
+        const kids: any = section._dictionary.get('Kids');
+        expect(Array.isArray(kids)).toBeTruthy();
+        expect(kids.length).toEqual(1);
+        expect(doc._pageCount).toEqual(1);
+        expect(section._pageCount).toEqual(1);
+        expect(doc._pages.get(0)).toBe(page);
+    });
+    it('addPage handles truthy has(Kids) but get(Kids) returning undefined', () => {
+        const xref: any = { _getNextReference: () => ({ toString: () => 'pr3' }), _cacheMap: new Map() };
+        const doc: any = { pageCount: 0, _pageCount: 0, _crossReference: xref, _pages: new Map() };
+        const section: any = Object.create(PdfSection.prototype);
+        section._document = doc;
+        section._crossReference = xref;
+        section._dictionary = { has: (_: string) => true, get: (_: string): any => undefined, update: (_: string, __: any) => {} } as any;
+        section._reference = { toString: () => 'parentRef3' };
+        section._pageSettings = new PdfPageSettings();
+        section._pageCount = 0;
+ 
+        const page = section.addPage();
+        // since get('Kids') was undefined, document._pageCount should not have been incremented
+        expect(doc._pageCount).toEqual(0);
+        expect(section._pageCount).toEqual(1);
+        expect(doc._pages.get(0)).toBe(page);
+    });
+    it('constructor appends to parentDictionary.Kids when pageCount > 0 and parent has Kids', () => {
+        const mockXref: any = {
+            _getNextReference: () => ({ toString: () => 'r4' }),
+            _cacheMap: new Map(),
+            _fetch: (_: any) => parentDict
+        };
+        const parentRef: any = { toString: () => 'parent4' };
+        const parentDict: any = new _PdfDictionary();
+        parentDict.set('Kids', []);
+        const lastPage: any = { _pageDictionary: { _get: (_: string) => parentRef } };
+        const doc: any = {
+            _crossReference: mockXref,
+            pageCount: 1,
+            getPage: (_: number) => lastPage,
+            _pageCount: 1,
+            _pages: new Map()
+        };
+        const section: any = new PdfSection(doc, new PdfPageSettings());
+        const kids: any = parentDict.get('Kids');
+        expect(Array.isArray(kids)).toBeTruthy();
+        expect(kids.length).toEqual(1);
+        expect(section._dictionary.has('Parent')).toBeTruthy();
+    });
+    it('constructor does nothing when parentDictionary.has(Kids) is false', () => {
+        const parentRef: any = { toString: () => 'parent5' };
+        const mockXref: any = {
+            _getNextReference: () => ({ toString: () => 'r5' }),
+            _cacheMap: new Map(),
+            _fetch: (_: any) => parentDict2
+        };
+        const parentDict2: any = new _PdfDictionary(); // no Kids
+        const lastPage: any = { _pageDictionary: { _get: (_: string) => parentRef } };
+        const doc: any = {
+            _crossReference: mockXref,
+            pageCount: 1,
+            getPage: (_: number) => lastPage,
+            _pageCount: 1,
+            _pages: new Map()
+        };
+        const section: any = new PdfSection(doc, new PdfPageSettings());
+        expect(parentDict2.has('Kids')).toBeFalsy();
+        expect(section._dictionary.has('Parent')).toBeFalsy();
     });
 });

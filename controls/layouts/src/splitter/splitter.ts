@@ -191,6 +191,7 @@ export class Splitter extends Component<HTMLElement> {
     private onMouseUpHandler: EventListenerOrEventListenerObject;
     private onTouchMoveHandler: EventListenerOrEventListenerObject;
     private onTouchEndHandler: EventListenerOrEventListenerObject;
+    private documentClickHandler: Function;
     private allPanes: HTMLElement[];
     private paneOrder: number[];
     private separatorOrder: number[];
@@ -598,6 +599,7 @@ export class Splitter extends Component<HTMLElement> {
         this.onMouseUpHandler = this.onMouseUp.bind(this);
         this.onTouchMoveHandler = this.onMouseMove.bind(this);
         this.onTouchEndHandler = this.onMouseUp.bind(this);
+        this.documentClickHandler = this.onDocumentClick.bind(this);
         this.wrapper = this.element.cloneNode(true) as HTMLElement;
         this.wrapperParent = this.element.parentElement;
         removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
@@ -646,7 +648,7 @@ export class Splitter extends Component<HTMLElement> {
         this.collapseFlag = true;
         this.isCollapsed();
         this.collapseFlag = false;
-        EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        EventHandler.add(document, 'touchstart click', this.documentClickHandler);
         this.renderComplete();
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onReportWindowSize, true);
         EventHandler.add(this.element, 'keydown', this.onMove, this);
@@ -2582,7 +2584,8 @@ export class Splitter extends Component<HTMLElement> {
     public destroy(): void {
         if (!this.isDestroyed) {
             super.destroy();
-            EventHandler.remove(document, 'touchstart click', this.onDocumentClick);
+            EventHandler.remove(document, 'touchstart click', this.documentClickHandler);
+            this.documentClickHandler = null;
             EventHandler.remove(this.element, 'keydown', this.onMove);
             this.element.ownerDocument.defaultView.removeEventListener('resize', this.onReportWindowSize, true);
             while (this.element.attributes.length > 0) {

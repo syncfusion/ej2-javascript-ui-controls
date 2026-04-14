@@ -574,6 +574,7 @@ export class CalculatedField implements IAction {
         dialog.element.appendChild(contextMenu);
         const menuObj: Menu = new Menu(menuOptions);
         menuObj.isStringTemplate = true;
+        menuObj.isAngular = this.parent.isModalDialog;
         menuObj.appendTo(contextMenu);
     }
 
@@ -1127,6 +1128,7 @@ export class CalculatedField implements IAction {
             cssClass: this.parent.cssClass
         });
         dialog.isStringTemplate = true;
+        dialog.isAngular = this.parent.isModalDialog;
         dialog.appendTo(calculatedFieldElement);
     }
 
@@ -1268,6 +1270,7 @@ export class CalculatedField implements IAction {
                         width: 220,
                         cssClass: this.parent.cssClass
                     });
+                    tooltip.isAngular = this.parent.isModalDialog;
                     tooltip.appendTo(headerWrapperDiv);
                     wrapDiv.appendChild(headerWrapperDiv);
                 } else {
@@ -1532,6 +1535,7 @@ export class CalculatedField implements IAction {
                 }
             });
             memberTypeObj.isStringTemplate = true;
+            memberTypeObj.isAngular = this.parent.isModalDialog;
             memberTypeObj.appendTo(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement);
             const hierarchyListObj: DropDownList = new DropDownList({
                 dataSource: fieldData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
@@ -1548,6 +1552,7 @@ export class CalculatedField implements IAction {
                 }
             });
             hierarchyListObj.isStringTemplate = true;
+            hierarchyListObj.isAngular = this.parent.isModalDialog;
             hierarchyListObj.appendTo(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement);
         }
         const formatStringObj: DropDownList = new DropDownList({
@@ -1564,6 +1569,7 @@ export class CalculatedField implements IAction {
             }
         });
         formatStringObj.isStringTemplate = true;
+        formatStringObj.isAngular = this.parent.isModalDialog;
         formatStringObj.appendTo(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement);
         const customerFormatObj: MaskedTextBox = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('customFormat'),
@@ -1685,6 +1691,7 @@ export class CalculatedField implements IAction {
             });
         }
         this.treeObj.isStringTemplate = true;
+        this.treeObj.isAngular = this.parent.isModalDialog;
         this.treeObj.appendTo(select('#' + this.parentID + 'tree', dialogElement) as HTMLElement);
     }
     private updateNodeIcon(args: NodeExpandEventArgs): void {
@@ -2003,6 +2010,7 @@ export class CalculatedField implements IAction {
                     cssClass: this.parent.cssClass
                 });
                 this.treeObj.isStringTemplate = true;
+                this.treeObj.isAngular = this.parent.isModalDialog;
                 this.treeObj.appendTo(select('#' + this.parentID + 'accordDiv', dialogElement) as HTMLElement);
             } else {
                 const accordion: Accordion = new Accordion({
@@ -2248,6 +2256,7 @@ export class CalculatedField implements IAction {
             close: this.removeErrorDialog.bind(this, node)
         });
         confirmPopUp.isStringTemplate = true;
+        confirmPopUp.isAngular = this.parent.isModalDialog;
         confirmPopUp.appendTo(errorDialog);
         // confirmPopUp.element.querySelector('.e-dlg-header').innerText = title;
     }

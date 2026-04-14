@@ -4,7 +4,7 @@ import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, pr
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, SortCollectionModel, clearCFRule, isHeightCheckNeeded, RowModel, getRow, ColumnModel, getColumn, checkColumnValidation } from '../../workbook/index';
-import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
+import { getSheet, Workbook, checkUniqueRange, checkSortRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
 import { sortComplete, ConditionalFormatModel, ApplyCFArgs, ImageModel, isImported, cellValidation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
@@ -781,8 +781,10 @@ export class UndoRedo {
             }
             const indexes: number[] = range;
             const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false, uniqueRange: '' };
+            const sortArgs: { cellIdx: number[], isSort: boolean, sortRange: string } = { cellIdx: [range[0], range[1]], isSort: false, sortRange: '' };
             if (!eventArgs.isColSelected) {
                 this.parent.notify(checkUniqueRange, uniqueArgs);
+                this.parent.notify(checkSortRange, sortArgs);
             }
             if (this.isUndo) {
                 if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
@@ -798,10 +800,38 @@ export class UndoRedo {
                         }
                     }
                 }
+                if (sortArgs.isSort && eventArgs.formula && eventArgs.formula.indexOf('SORT') > -1) {
+                    const sIdx: number[] = getRangeIndexes(sortArgs.sortRange);
+                    if (getCell(sIdx[0], sIdx[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                        for (let j: number = sIdx[0]; j <= sIdx[2]; j++) {
+                            for (let k: number = sIdx[1]; k <= sIdx[3]; k++) {
+                                if (j === sIdx[0] && k === sIdx[1]) { k = k + 1; }
+                                this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
+                            }
+                        }
+                    }
+                }
                 this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, preventEvt,
                                        eventArgs.isColSelected, true, isFromAutoFillOption);
                 if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
                     const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                    const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
+                    for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
+                        for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
+                            for (let k: number = range[0]; k <= range[2]; k++) {
+                                for (let l: number = range[1]; l <= range[3]; l++) {
+                                    if (i !== k || j !== l) {
+                                        this.parent.updateCellInfo({ value: '' }, getCellAddress(i, j), true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    cell.value = '#SPILL!';
+                    this.parent.updateCellInfo(cell, getCellAddress(rangeIdx[0], rangeIdx[1]), true);
+                }
+                if (sortArgs.isSort && args.action === 'cellDelete' && eventArgs.isSpill) {
+                    const rangeIdx: number[] = getRangeIndexes(sortArgs.sortRange);
                     const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
                     for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
                         for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
@@ -827,7 +857,17 @@ export class UndoRedo {
                             this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
                         }
                     }
-                    this.parent.notify(reApplyFormula, null);
+                    this.parent.notify(reApplyFormula, { isUnique: true });
+                }
+                if (!eventArgs.isSpill && sortArgs.sortRange !== '') {
+                    const indexes: number[] = getRangeIndexes(sortArgs.sortRange);
+                    for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                        for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                            if (j === indexes[0] && k === indexes[1]) { k = k + 1; }
+                            this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
+                        }
+                    }
+                    this.parent.notify(reApplyFormula, { isSort: true });
                 }
             } else {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -902,9 +942,24 @@ export class UndoRedo {
                             }
                         }
                     }
+                    if (!isNullOrUndefined(eventArgs.oldValue) && eventArgs.oldValue !== eventArgs.value && sortArgs.isSort) {
+                        const indexes: number[] = getRangeIndexes(sortArgs.sortRange);
+                        if (getCell(indexes[0], indexes[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                            for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                                for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                                    if (j === indexes[0] && k === indexes[1]) {
+                                        this.parent.updateCellInfo({ value: '#SPILL!' }, getRangeAddress([indexes[0], indexes[1]]), true);
+                                        k = k + 1;
+                                    }
+                                    this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
+                                }
+                            }
+                        }
+                    }
                     updateAction(args, this.parent, true);
-                    if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
-                        const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange); let Skip: boolean = false;
+                    if ((uniqueArgs.isUnique || sortArgs.isSort) && args.action === 'cellDelete' && eventArgs.isSpill) {
+                        const indexes: number[] = uniqueArgs.isUnique ? getRangeIndexes(uniqueArgs.uniqueRange)
+                            : getRangeIndexes(sortArgs.sortRange); let Skip: boolean = false;
                         for (let i: number = indexes[0]; i <= indexes[1]; i++) {
                             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
                                 if (i === indexes[0] && j === indexes[1]) {
@@ -920,7 +975,12 @@ export class UndoRedo {
                             const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                             cell.value = '';
                             this.parent.updateCellInfo(cell, getCellAddress(indexes[0], indexes[1]), true);
-                            this.parent.notify(reApplyFormula, null);
+                            if (uniqueArgs.isUnique) {
+                                this.parent.notify(reApplyFormula, { isUnique: true });
+                            }
+                            if (sortArgs.isSort) {
+                                this.parent.notify(reApplyFormula, { isSort: true });
+                            }
                         }
                     }
                 }
@@ -1062,7 +1122,7 @@ export class UndoRedo {
             }
             const currentCell: PreviousCellDetails = {
                 value: (
-                    cells[i as number].formula && cells[i as number].formula.toUpperCase().includes('UNIQUE')
+                    cells[i as number].formula && (cells[i as number].formula.toUpperCase().includes('UNIQUE') || cells[i as number].formula.toUpperCase().includes('SORT'))
                 ) ? null : cells[i as number].value, formula: cells[i as number].formula
             };
             if (cells[i as number].format) { currentCell.format = cells[i as number].format; }

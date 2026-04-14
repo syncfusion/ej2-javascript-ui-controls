@@ -2,7 +2,7 @@ import { _ImageDecoder } from './image-decoder';
 import { _PdfStream } from './../../base-stream';
 import { _PdfDictionary, _PdfName } from'./../../pdf-primitives';
 import { _ImageFormat } from './../../enumerator';
-import { _bytesToString, _toUnsigned, _toSigned32 } from './../../utils';
+import { _bytesToString } from './../../utils';
 import { _DeflateStream } from './../../compression/deflate-stream';
 /* eslint-disable */
 /**
@@ -78,13 +78,19 @@ export class _PngDecoder extends _ImageDecoder {
      *
      * @private
      */
-    _encodedStream: number[];
+    _encodedStream: Uint8Array;
+    /**
+     * Logical length of encoded stream (since we pre-allocate).
+     *
+     * @private
+     */
+    _encodedStreamLength: number;
     /**
      * Extracted mask channel data if available.
      *
      * @private
      */
-    _maskData: number[];
+    _maskData: Uint8Array;
     /**
      * Color space parameters resolved for this PNG image.
      *
@@ -102,13 +108,13 @@ export class _PngDecoder extends _ImageDecoder {
      *
      * @private
      */
-    _dataStream: number[];
+    _dataStream: Uint8Array;
     /**
      * Output buffer holding fully decoded pixel values.
      *
      * @private
      */
-    _decodedImageData: number[];
+    _decodedImageData: Uint8Array;
     /**
      * Current read offset into the data stream buffer.
      *
@@ -293,28 +299,26 @@ export class _PngDecoder extends _ImageDecoder {
     _readImageData(): void {
         if (!this._encodedStream) {
             const estimatedSize: number = Math.max(this._currentChunkLength * 2, 1024);
-            this._encodedStream = new Array(estimatedSize).fill(0);
-            this._encodedStream.length = 0;
+            this._encodedStream = new Uint8Array(estimatedSize);
+            this._encodedStreamLength = 0;
         }
         if (this._currentChunkLength <= this._stream.byteLength &&
             this._stream.byteLength - this._position >= this._currentChunkLength) {
-            const currentLength: number = this._encodedStream.length;
+            const currentLength: number = this._encodedStreamLength;
             const newLength: number = currentLength + this._currentChunkLength;
             if (this._encodedStream.length < newLength) {
                 const currentCapacity: number = this._encodedStream.length;
                 const doubleCapacity: number = currentCapacity * 2;
                 const capacity: number = Math.max(newLength, doubleCapacity);
-                const newArray = new Array(capacity).fill(0);
-                for (let i: number = 0; i < currentLength; i++) {
-                    newArray[<number>i] = this._encodedStream[<number>i];
-                }
+                const newArray: Uint8Array = new Uint8Array(capacity);
+                newArray.set(this._encodedStream.subarray(0, currentLength));
                 this._encodedStream = newArray;
             }
-            const startPos: number = this._position;
-            for (let i: number = 0; i < this._currentChunkLength; i++) {
-                this._encodedStream[currentLength + i] = this._stream[startPos + i];
-            }
-            this._encodedStream.length = newLength;
+            this._encodedStream.set(
+                this._stream.subarray(this._position, this._position + this._currentChunkLength),
+                currentLength
+            );
+            this._encodedStreamLength = newLength;
             this._position += this._currentChunkLength;
         }
         this._seek(4);
@@ -431,23 +435,23 @@ export class _PngDecoder extends _ImageDecoder {
         this._isDecode = (header._interlace === 1) || (header._bitDepth === 16) || ((header._colorType & 4) !== 0) || this._shades;
         if (this._isDecode) {
             if ((header._colorType & 4) !== 0 || this._shades) {
-                this._maskData = new Array(this._width * this._height).fill(0);
+                this._maskData = new Uint8Array(this._width * this._height);
             }
             if (this._encodedStream) {
-                this._dataStream = this._getDeflatedData(this._encodedStream);
+                this._dataStream = this._getDeflatedData(this._encodedStream.subarray(0, this._encodedStreamLength));
                 this._dataStreamOffset = 0;
             }
             if (this._idatLength > 0) {
-                this._decodedImageData = new Array(this._idatLength).fill(0);
+                this._decodedImageData = new Uint8Array(this._idatLength);
             }
             this._readDecodeData();
             if (this._decodedImageData && this._decodedImageData.length === 0 && this._shades) {
                 this._ideateDecode = false;
-                this._decodedImageData = this._encodedStream;
+                this._decodedImageData = this._encodedStream.subarray(0, this._encodedStreamLength);
             }
         } else {
             this._ideateDecode = false;
-            this._decodedImageData = this._encodedStream;
+            this._decodedImageData = this._encodedStream.subarray(0, this._encodedStreamLength);
         }
     }
     /**
@@ -455,14 +459,15 @@ export class _PngDecoder extends _ImageDecoder {
      * into a raw byte array.
      *
      * @private
-     * @param {number[]} data The zlib-wrapped IDAT bytes (concatenated).
-     * @returns {number[]} The inflated byte array.
+     * @param {Uint8Array} data The zlib-wrapped IDAT bytes (concatenated).
+     * @returns {Uint8Array} The inflated byte array.
      */
-    _getDeflatedData(data: number[]): number[] {
-        const idatData: number[] = data.slice(2, data.length - 4);
-        const deflateStream: _DeflateStream = new _DeflateStream(idatData, 0, true);
+    _getDeflatedData(data: Uint8Array): Uint8Array {
+        const idatData: Uint8Array = data.subarray(2, data.length - 4);
+        const deflateStream: _DeflateStream = new _DeflateStream(Array.from(idatData), 0, true);
         const chunkSize: number = 4096;
-        const outputData: number[] = [];
+        const outputChunks: Uint8Array[] = [];
+        let totalLength: number = 0;
         while (true) {
             const tempBuffer: number[] = new Array(chunkSize);
             const result: { count: number, data: number[] } = deflateStream._read(tempBuffer, 0, chunkSize);
@@ -471,9 +476,18 @@ export class _PngDecoder extends _ImageDecoder {
             if (count <= 0) {
                 break;
             }
+            const chunk: Uint8Array = new Uint8Array(count);
             for (let i: number = 0; i < count; i++) {
-                outputData.push(resultData[<number>i]);
+                chunk[<number>i] = resultData[<number>i];
             }
+            outputChunks.push(chunk);
+            totalLength += count;
+        }
+        const outputData: Uint8Array = new Uint8Array(totalLength);
+        let offset: number = 0;
+        for (const chunk of outputChunks) {
+            outputData.set(chunk, offset);
+            offset += chunk.length;
         }
         return outputData;
     }
@@ -515,8 +529,8 @@ export class _PngDecoder extends _ImageDecoder {
             return;
         }
         const bytesPerRow: number = Math.floor((this._inputBands * width * this._header._bitDepth + 7) / 8);
-        let current: number[] = Array<number>(bytesPerRow).fill(0);
-        let prior: number[] = Array<number>(bytesPerRow).fill(0);
+        let current: Uint8Array = new Uint8Array(bytesPerRow);
+        let prior: Uint8Array = new Uint8Array(bytesPerRow);
         for (let sourceY: number = 0, destinationY: number = yOffset; sourceY < height; sourceY++, destinationY += yStep) {
             const filter = this._dataStream[this._dataStreamOffset++];
             this._dataStreamOffset = this._readStream(this._dataStream, this._dataStreamOffset, current, bytesPerRow);
@@ -547,105 +561,82 @@ export class _PngDecoder extends _ImageDecoder {
      * `_read` routine, returning the updated stream offset.
      *
      * @private
-     * @param {number[]} stream The source byte array.
+     * @param {Uint8Array} stream The source byte array.
      * @param {number} streamOffset The current read offset in the stream.
-     * @param {number[]} data The destination buffer to fill.
+     * @param {Uint8Array} data The destination buffer to fill.
      * @param {number} count The number of bytes to read.
      * @returns {number} The new stream offset after reading.
      * @throws {Error} If insufficient data is available.
      */
-    _readStream(stream: number[], streamOffset: number, data: number[], count: number): number {
-        const result: {outputBuffer: number[], offset: number, length: number} = this._read(data, streamOffset, count, stream);
-        data = result.outputBuffer;
-        streamOffset = result.offset;
-        const n: number = result.length;
-        if (n <= 0) {
+    _readStream(stream: Uint8Array, streamOffset: number, data: Uint8Array, count: number): number {
+        if (streamOffset + count > stream.length) {
             throw new Error('Insufficient data');
         }
-        return streamOffset;
+        data.set(stream.subarray(streamOffset, streamOffset + count));
+        return streamOffset + count;
     }
     /**
      * Applies the PNG Sub filter (type 1) in-place to the current scanline.
      *
      * @private
-     * @param {number[]} data The scanline bytes to modify.
+     * @param {Uint8Array} data The scanline bytes to modify.
      * @param {number} count Number of bytes in the scanline row.
      * @param {number} bitsPerPixel Bytes-per-pixel (not bit-depth) for subtraction reference.
      * @returns {void}
      */
-    _decompressSub(data: number[], count: number, bitsPerPixel: number): void {
+    _decompressSub(data: Uint8Array, count: number, bitsPerPixel: number): void {
         for (let i: number = bitsPerPixel; i < count; i++) {
-            data[<number>i] = _toUnsigned((data[<number>i] & 0xff)
-                + (data[i - bitsPerPixel] & 0xff), 8);
+            data[<number>i] = (data[<number>i] + data[i - bitsPerPixel]) & 0xff;
         }
     }
     /**
      * Applies the PNG Up filter (type 2) in-place using the prior scanline.
      *
      * @private
-     * @param {number[]} data The current scanline bytes.
-     * @param {number[]} pData The prior scanline bytes.
+     * @param {Uint8Array} data The current scanline bytes.
+     * @param {Uint8Array} pData The prior scanline bytes.
      * @param {number} count Number of bytes per row.
      * @returns {void}
      */
-    _decompressUp(data: number[], pData: number[], count: number): void {
+    _decompressUp(data: Uint8Array, pData: Uint8Array, count: number): void {
         for (let i: number = 0; i < count; i++) {
-            data[<number>i] = _toUnsigned((data[<number>i] & 0xff)
-                + (pData[<number>i] & 0xff), 8);
+            data[<number>i] = (data[<number>i] + pData[<number>i]) & 0xff;
         }
     }
     /**
      * Applies the PNG Average filter (type 3) in-place using left and prior values.
      *
      * @private
-     * @param {number[]} data The current scanline bytes.
-     * @param {number[]} pData The prior scanline bytes.
+     * @param {Uint8Array} data The current scanline bytes.
+     * @param {Uint8Array} pData The prior scanline bytes.
      * @param {number} count Number of bytes per row.
      * @param {number} bitsPerPixel Bytes-per-pixel (not bit-depth) for left reference.
      * @returns {void}
      */
-    _decompressAverage(data: number[], pData: number[], count: number, bitsPerPixel: number): void {
-        let val: number;
-        let pp: number;
-        let pr: number;
+    _decompressAverage(data: Uint8Array, pData: Uint8Array, count: number, bitsPerPixel: number): void {
         for (let i: number = 0; i < bitsPerPixel; i++) {
-            val = data[<number>i] & 0xff;
-            pr = pData[<number>i] & 0xff;
-            data[<number>i] = _toUnsigned(Math.floor((val) + pr / 2), 8);
+            data[<number>i] = (data[<number>i] + (pData[<number>i] >> 1)) & 0xff;
         }
         for (let i: number = bitsPerPixel; i < count; i++) {
-            val = data[<number>i] & 0xff;
-            pp = data[i - bitsPerPixel] & 0xff;
-            pr = pData[<number>i] & 0xff;
-            data[<number>i] = _toUnsigned(Math.floor((val + Math.floor((pp + pr) / 2))), 8);
+            data[<number>i] = (data[<number>i] + ((data[i - bitsPerPixel] + pData[<number>i]) >> 1)) & 0xff;
         }
     }
     /**
      * Applies the PNG Paeth filter (type 4) in-place using left, up, and up-left predictors.
      *
      * @private
-     * @param {number[]} data The current scanline bytes.
-     * @param {number[]} pData The prior scanline bytes.
+     * @param {Uint8Array} data The current scanline bytes.
+     * @param {Uint8Array} pData The prior scanline bytes.
      * @param {number} count Number of bytes per row.
      * @param {number} bitsPerPixel Bytes-per-pixel (not bit-depth) for left reference.
      * @returns {void}
      */
-    _decompressPaeth(data: number[], pData: number[], count: number, bitsPerPixel: number): void {
-        let val: number;
-        let pp: number;
-        let pr: number;
-        let prp: number;
+    _decompressPaeth(data: Uint8Array, pData: Uint8Array, count: number, bitsPerPixel: number): void {
         for (let i: number = 0; i < bitsPerPixel; i++) {
-            val = data[<number>i] & 0xff;
-            pr = pData[<number>i] & 0xff;
-            data[<number>i] = _toUnsigned(val + pr, 8);
+            data[<number>i] = (data[<number>i] + pData[<number>i]) & 0xff;
         }
         for (let i: number = bitsPerPixel; i < count; i++) {
-            val = data[<number>i] & 0xff;
-            pp = data[i - bitsPerPixel] & 0xff;
-            pr = pData[<number>i] & 0xff;
-            prp = pData[i - bitsPerPixel] & 0xff;
-            data[<number>i] = _toUnsigned((val + this._paethPredictor(pp, pr, prp)), 8);
+            data[<number>i] = (data[<number>i] + this._paethPredictor(data[i - bitsPerPixel], pData[<number>i], pData[i - bitsPerPixel])) & 0xff;
         }
     }
     /**
@@ -669,18 +660,18 @@ export class _PngDecoder extends _ImageDecoder {
      * decoded image buffer, also writing an 8-bit mask row when alpha/shades are present.
      *
      * @private
-     * @param {number[]} data The unfiltered scanline bytes for this pass.
+     * @param {Uint8Array} data The unfiltered scanline bytes for this pass.
      * @param {number} x Destination x start (accounting for pass offset).
      * @param {number} step Destination x increment (per Adam7 pass or 1).
      * @param {number} y Destination y coordinate.
      * @param {number} width The number of pixels to process from this row.
      * @returns {void}
      */
-    _processPixels(data: number[], x: number, step: number, y: number, width: number): void {
+    _processPixels(data: Uint8Array, x: number, step: number, y: number, width: number): void {
         let sourceX: number = 0;
         let destX: number = 0;
         let size: number = 0;
-        const pixel: number[] = this._getPixel(data);
+        const pixel: Uint8Array | Uint16Array = this._getPixel(data);
         if (this._header._colorType === 0 || this._header._colorType === 3 || this._header._colorType === 4) {
             size = 1;
         } else if (this._header._colorType === 2 || this._header._colorType === 6) {
@@ -699,10 +690,10 @@ export class _PngDecoder extends _ImageDecoder {
         if (shades) {
             if ((this._header._colorType & 4) !== 0) {
                 if (this._header._bitDepth === 16) {
+                    const typedPixel: Uint16Array = pixel as Uint16Array;
                     for (let i: number = 0; i < width; ++i) {
                         const temp: number = i * this._inputBands + size;
-                        const unsigned: number = _toUnsigned(pixel[<number>temp], 32);
-                        pixel[<number>temp] = _toSigned32(unsigned >> 8);
+                        typedPixel[temp] = typedPixel[temp] >> 8;
                     }
                 }
                 const yStep: number = width;
@@ -713,11 +704,11 @@ export class _PngDecoder extends _ImageDecoder {
                 }
             } else {
                 const yStep: number = width;
-                const dt: number[] = [0];
+                const dt: Uint8Array = new Uint8Array(1);
                 destX = x;
                 for (sourceX = 0; sourceX < width; sourceX++) {
-                    const index: number = pixel[<number>sourceX];
-                    dt[0] = index < this._alpha.length ? this._alpha[<number>index] : 255;
+                    const index: number = pixel[sourceX];
+                    dt[0] = index < this._alpha.length ? this._alpha[index] : 255;
                     this._setPixel(this._maskData, dt, 0, 1, destX, y, 8, yStep);
                     destX += step;
                 }
@@ -729,35 +720,30 @@ export class _PngDecoder extends _ImageDecoder {
      * 8-bit (1:1), 16-bit (merge pairs), or packed sub-byte samples.
      *
      * @private
-     * @param {number[]} data The scanline bytes.
-     * @returns {number[]} The expanded per-sample values for the row.
+     * @param {Uint8Array} data The scanline bytes.
+     * @returns {Uint8Array | Uint16Array} The expanded per-sample values for the row.
      */
-    _getPixel(data: number[]): number[] {
+    _getPixel(data: Uint8Array): Uint8Array | Uint16Array {
         const bitDepth: number = this._header._bitDepth;
         if (bitDepth === 8) {
-            const pixel: number[] = new Array(data.length).fill(0);
-            for (let i: number = 0; i < data.length; i++) {
-                pixel[<number>i] = data[<number>i] & 0xff;
-            }
-            return pixel;
+            return data;
         } else if (bitDepth === 16) {
             const pixelLength: number = Math.floor(data.length / 2);
-            const pixel: number[] = new Array(pixelLength).fill(0);
+            const pixel: Uint16Array = new Uint16Array(pixelLength);
             for (let i: number = 0; i < pixelLength; i++) {
-                pixel[<number>i] = ((data[i * 2] & 0xff) << 8) + (data[i * 2 + 1] & 0xff);
+                pixel[<number>i] = (data[i * 2] << 8) | data[i * 2 + 1];
             }
             return pixel;
         } else {
             const pixelLength: number = Math.floor((data.length * 8) / bitDepth);
-            const pixel: number[] = new Array(pixelLength).fill(0);
+            const pixel: Uint8Array = new Uint8Array(pixelLength);
             let index: number = 0;
             const p: number = Math.floor(8 / bitDepth);
             const mask: number = (1 << bitDepth) - 1;
             for (let n: number = 0; n < data.length; n++) {
-                const d: number = data[<number>n];
+                const d: number = data[n];
                 for (let i: number = p - 1; i >= 0; i--) {
-                    const hb: number = bitDepth * i;
-                    pixel[index++] = ((hb < 1) ? d : _toSigned32(_toUnsigned(d, 32) >> hb)) & mask;
+                    pixel[index++] = (d >> (bitDepth * i)) & mask;
                 }
             }
             return pixel;
@@ -768,8 +754,8 @@ export class _PngDecoder extends _ImageDecoder {
      * 8/16-bit storage or sub-byte packing as required.
      *
      * @private
-     * @param {number[]} imageData The destination buffer (image or mask).
-     * @param {number[]} data The source per-sample array.
+     * @param {Uint8Array} imageData The destination buffer (image or mask).
+     * @param {Uint8Array | Uint16Array} data The source per-sample array.
      * @param {number} offset Offset into source sample array.
      * @param {number} size Number of samples to write (1=gray/alpha, 3=RGB).
      * @param {number} x Destination x coordinate.
@@ -778,24 +764,28 @@ export class _PngDecoder extends _ImageDecoder {
      * @param {number} bpr Bytes-per-row in the destination buffer.
      * @returns {void}
      */
-    _setPixel(imageData: number[],
-              data: number[],
+    _setPixel(imageData: Uint8Array,
+              data: Uint8Array | Uint16Array,
               offset: number,
               size: number,
               x: number,
               y: number,
               bitDepth: number,
               bpr: number): void {
-        if (bitDepth === 8 || bitDepth === 16) {
+        if (bitDepth === 8) {
             const position: number = bpr * y + size * x;
             for (let i: number = 0; i < size; ++i) {
-                const dataValue: number = data[i + offset];
-                imageData[position + i] = _toUnsigned(bitDepth === 8 ? dataValue : (dataValue >> 8), 8);
+                imageData[position + i] = data[i + offset] as number;
+            }
+        } else if (bitDepth === 16) {
+            const position: number = bpr * y + size * x;
+            for (let i: number = 0; i < size; ++i) {
+                imageData[position + i] = (data[i + offset] as number) >> 8;
             }
         } else {
             const position: number = Math.floor((bpr * y + x) / (8 / bitDepth));
-            const t: number = data[<number>offset] << (8 - bitDepth * (x % (8 / bitDepth)) - bitDepth);
-            imageData[<number>position] = imageData[<number>position] | _toUnsigned(t, 8);
+            const t: number = (data[offset] as number) << (8 - bitDepth * (x % (8 / bitDepth)) - bitDepth);
+            imageData[position] = imageData[position] | (t & 0xff);
         }
     }
     /**
@@ -813,11 +803,7 @@ export class _PngDecoder extends _ImageDecoder {
             const data: any = []; // eslint-disable
             this._imageStream = new _PdfStream(data, new _PdfDictionary());
             this._imageStream.isImageStream = true;
-            const imageDataLength: number = this._decodedImageData.length;
-            this._imageStream.bytes = new Uint8Array(imageDataLength);
-            for (let i: number = 0; i < imageDataLength; i++) {
-                this._imageStream.bytes[<number>i] = this._decodedImageData[<number>i] & 0xff;
-            }
+            this._imageStream.bytes = this._decodedImageData;
             this._imageStream._isCompress = this._isDecode && this._ideateDecode;
             const dictionary: _PdfDictionary = new _PdfDictionary();
             dictionary.set('Type', new _PdfName('XObject'));
@@ -857,6 +843,7 @@ export class _PngDecoder extends _ImageDecoder {
     _setMask(): void {
         if (this._maskData && this._maskData.length > 0) {
             this._maskStream = new _PdfStream(this._maskData, new _PdfDictionary());
+            this._maskStream.bytes = this._maskData;
             this._maskStream._isCompress = this._isDecode && this._ideateDecode;
             const dictionary: _PdfDictionary = new _PdfDictionary();
             dictionary.set('Type', new _PdfName('XObject'));
@@ -870,7 +857,6 @@ export class _PngDecoder extends _ImageDecoder {
             }
             dictionary.set('ColorSpace', _PdfName.get('DeviceGray'));
             this._maskStream.dictionary = dictionary;
-            this._maskStream.bytes = new Uint8Array(this._maskData);
             this._maskStream.end = this._maskStream.bytes.length;
             this._maskStream.dictionary._updated = true;
         }

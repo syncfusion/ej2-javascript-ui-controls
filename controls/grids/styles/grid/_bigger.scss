@@ -915,10 +915,6 @@
         line-height: $grid-device-ungroupbutton-line-height;
       }
 
-      .e-columnmenu {
-        margin: $grid-bigger-device-column-menu-margin;
-      }
-
       .e-groupheadercell {
         padding: $grid-device-group-headercell-padding;
         @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap5.3' {

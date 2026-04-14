@@ -4,7 +4,7 @@ import {
     TextSelection, TextSearch, Print, Annotation, FormFields, AnnotationDataFormat, FormDesigner, PageOrganizer
 } from "../../../../src/index";
 import { getTarget, mouseDownEvent, mouseMoveEvent, mouseUpEvent, waitFor } from "../../utils.spec";
-import { FAIL_PDF_B64, OLD_PDFVIEWER_JSON } from "../../Data/pdf-data.spec";
+import { FAIL_PDF_B64, OLD_PDFVIEWER_JSON, PDF_WITH_EMPTYPAGE_B64 } from "../../Data/pdf-data.spec";
 
 /**
 * PdfViewer spec
@@ -87,6 +87,57 @@ describe('PDF_Viewer_findText', () => {
 
             expect(value[0].bounds[3].x).toBe(180.80967680664065);
             expect(value[0].bounds[3].y).toBe(243.9886441406251);
+
+        } catch (e) {
+            fail(e);
+        }
+    });
+
+})
+
+describe('PDF_Viewer_findText_with_empty_page', () => {
+    let pdfviewer_findText_empty_page: PdfViewer = null;
+    PdfViewer.Inject(Toolbar, Magnification, Navigation, LinkAnnotation, ThumbnailView, BookmarkView,
+        TextSelection, TextSearch, Print, Annotation, FormFields, FormDesigner, PageOrganizer);
+
+    beforeAll((done) => {
+        const element: HTMLElement = createElement('div', { id: 'pdfviewer_findText_empty_page' });
+        document.body.appendChild(element);
+        pdfviewer_findText_empty_page = new PdfViewer({
+            resourceUrl: window.location.origin + '/base/src/pdfviewer/ej2-pdfviewer-lib',
+            documentPath: "data:application/pdf;base64," + PDF_WITH_EMPTYPAGE_B64
+        });
+        pdfviewer_findText_empty_page.documentLoad = () => {
+            done();
+        }
+        pdfviewer_findText_empty_page.appendTo("#pdfviewer_findText_empty_page");
+    });
+
+    afterAll(() => {
+        if (pdfviewer_findText_empty_page) {
+            pdfviewer_findText_empty_page.destroy();
+            const el = document.getElementById('pdfviewer_findText_empty_page');
+            if (el && el.parentNode) { el.parentNode.removeChild(el); }
+            pdfviewer_findText_empty_page = null;
+        }
+    });
+
+    afterEach(() => {
+    });
+
+    it('1020019 - Search using findText API', (done) => {
+        try {
+            pdfviewer_findText_empty_page.extractTextCompleted = function () {
+                const el = document.querySelector('#pdfviewer_findText_empty_page_textLayer_0');
+                expect(el.textContent.trim().length).toBeGreaterThan(0);
+                var searchText = 'energy';
+                const results = pdfviewer_findText_empty_page.textSearchModule.findText(searchText, false);
+                const values = JSON.stringify(results);
+                const value = JSON.parse(values);
+                expect(value[0].bounds[0].x).toBe(511.3448486328125);
+                expect(value[0].bounds[0].y).toBe(136.68579101562506);
+                done();
+            }
 
         } catch (e) {
             fail(e);

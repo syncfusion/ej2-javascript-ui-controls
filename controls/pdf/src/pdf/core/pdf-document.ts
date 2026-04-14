@@ -246,8 +246,6 @@ export class PdfDocument {
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
-     * @returns Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -260,6 +258,9 @@ export class PdfDocument {
      * }
      * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @returns Nothing.
      */
     public splitEvent: Function;
     /**
@@ -710,8 +711,6 @@ export class PdfDocument {
     /**
      * Gets an array of revision numbers for the PDF document.
      *
-     * @returns {number[]} - The list of revisions in the document.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -720,6 +719,8 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {number[]} - The list of revisions in the document.
      */
     public getRevisions(): number[] {
         if (!this._isLoaded) {
@@ -763,11 +764,6 @@ export class PdfDocument {
     /**
      * Embed a standard font into the PDF document.
      *
-     * @param {PdfFontFamily} fontFamily The font family.
-     * @param {number} size The font size.
-     * @param {PdfFontStyle } style The font style.
-     * @returns {PdfStandardFont} The embedded font object.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -780,16 +776,15 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfFontFamily} fontFamily The font family.
+     * @param {number} size The font size.
+     * @param {PdfFontStyle } style The font style.
+     * @returns {PdfStandardFont} The embedded font object.
      */
     public embedFont(fontFamily: PdfFontFamily, size: number, style: PdfFontStyle): PdfStandardFont;
     /**
      * Embed a Cjk font into the PDF document.
-     *
-     * @param {PdfCjkFontFamily} fontFamily The Cjk font family.
-     * @param {number} size The font size.
-     * @param {PdfFontStyle} style The font style.
-     * @param {boolean} isCjk Set to true by default to embed the font as a CJK font.
-     * @returns {PdfCjkStandardFont} The embedded font object.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -803,17 +798,16 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfCjkFontFamily} fontFamily The Cjk font family.
+     * @param {number} size The font size.
+     * @param {PdfFontStyle} style The font style.
+     * @param {boolean} isCjk Set to true by default to embed the font as a CJK font.
+     * @returns {PdfCjkStandardFont} The embedded font object.
      */
     public embedFont(fontFamily: PdfCjkFontFamily, size: number, style: PdfFontStyle, isCjk: true): PdfCjkStandardFont;
     /**
      * Embed a true type font into the PDF document.
-     *
-     * @param {Uint8Array} fontData The font data as byte array.
-     * @param {number} size The font size.
-     * @param {object} options Optional object containing font style options.
-     * @param {boolean} options.shouldUnderline Indicates whether the font should be rendered with an underline style.
-     * @param {boolean} options.shouldStrikeout Indicates whether the font should be rendered with a strikeout style.
-     * @return {PdfTrueTypeFont} The embedded font object.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -827,17 +821,17 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public embedFont(fontData: Uint8Array, size: number, options?: {shouldUnderline?: boolean, shouldStrikeout?: boolean}): PdfTrueTypeFont;
-    /**
-     * Embed a true type font into the PDF document.
      *
-     * @param {string } fontData The font data as base64 string.
+     * @param {Uint8Array} fontData The font data as byte array.
      * @param {number} size The font size.
      * @param {object} options Optional object containing font style options.
      * @param {boolean} options.shouldUnderline Indicates whether the font should be rendered with an underline style.
      * @param {boolean} options.shouldStrikeout Indicates whether the font should be rendered with a strikeout style.
      * @return {PdfTrueTypeFont} The embedded font object.
+     */
+    public embedFont(fontData: Uint8Array, size: number, options?: {shouldUnderline?: boolean, shouldStrikeout?: boolean}): PdfTrueTypeFont;
+    /**
+     * Embed a true type font into the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -851,6 +845,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string } fontData The font data as base64 string.
+     * @param {number} size The font size.
+     * @param {object} options Optional object containing font style options.
+     * @param {boolean} options.shouldUnderline Indicates whether the font should be rendered with an underline style.
+     * @param {boolean} options.shouldStrikeout Indicates whether the font should be rendered with a strikeout style.
+     * @return {PdfTrueTypeFont} The embedded font object.
      */
     public embedFont(fontData: string, size: number, options?: {shouldUnderline?: boolean, shouldStrikeout?: boolean}): PdfTrueTypeFont;
     public embedFont(arg1: PdfFontFamily | PdfCjkFontFamily | Uint8Array | string,
@@ -992,9 +993,6 @@ export class PdfDocument {
     /**
      * Gets the `PdfPage` at the specified index.
      *
-     * @param {number} pageIndex Page index.
-     * @returns {PdfPage} PDF page at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1005,6 +1003,9 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} pageIndex Page index.
+     * @returns {PdfPage} PDF page at the specified index.
      */
     public getPage(pageIndex: number): PdfPage {
         if (pageIndex < 0 || pageIndex >= this.pageCount) {
@@ -1033,8 +1034,6 @@ export class PdfDocument {
     /**
      * Creates a new page with default page settings and adds it to the collection.
      *
-     * @returns {PdfPage} PDF page at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1045,13 +1044,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfPage} PDF page at the specified index.
      */
     public addPage(): PdfPage
     /**
      * Creates a new page with default settings and inserts it into the collection at the specified page index.
-     *
-     * @param {number} index Page index.
-     * @returns {PdfPage} PDF page at the specified index.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1063,13 +1061,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Page index.
+     * @returns {PdfPage} PDF page at the specified index.
      */
     public addPage(index: number): PdfPage
     /**
      * Creates a new page with specified page settings and adds it to the collection.
-     *
-     * @param {PdfPageSettings} pageSettings Page settings.
-     * @returns {PdfPage} PDF page at the specified index.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1089,14 +1087,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPageSettings} pageSettings Page settings.
+     * @returns {PdfPage} PDF page at the specified index.
      */
     public addPage(pageSettings: PdfPageSettings): PdfPage
     /**
      * Creates a new page with specified page settings and inserts it into the collection at the specified page index.
-     *
-     * @param {number} index Page index.
-     * @param {PdfPageSettings} pageSettings Page settings.
-     * @returns {PdfPage} PDF page at the specified index.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1116,6 +1113,10 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Page index.
+     * @param {PdfPageSettings} pageSettings Page settings.
+     * @returns {PdfPage} PDF page at the specified index.
      */
     public addPage(index: number, pageSettings: PdfPageSettings): PdfPage
     public addPage(arg1?: number | PdfPageSettings, arg2?: PdfPageSettings): PdfPage {
@@ -1210,8 +1211,6 @@ export class PdfDocument {
     /**
      * Creates a new section with default page settings.
      *
-     * @returns {PdfSection} section of document
-     *
      * ```typescript
      * // Create a new PDF document
      * let document: PdfDocument = new PdfDocument();
@@ -1230,13 +1229,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfSection} section of document
      */
     public addSection(): PdfSection
     /**
      * Creates a new section with custom page settings.
-     *
-     * @param {PdfPageSettings} settings Settings of the section.
-     * @returns {PdfSection} section of document
      *
      * ```typescript
      * // Create an new PDF document
@@ -1264,6 +1262,9 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPageSettings} settings Settings of the section.
+     * @returns {PdfSection} section of document
      */
     public addSection(settings: PdfPageSettings): PdfSection
     public addSection(settings ?: PdfPageSettings): PdfSection {
@@ -1277,8 +1278,6 @@ export class PdfDocument {
     /**
      * Removes the specified page.
      *
-     * @param {PdfPage} page The page to remove.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1291,12 +1290,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPage} page The page to remove.
      */
     public removePage(page: PdfPage): void
     /**
      * Removes the page from the specified index.
-     *
-     * @param {number} index The page index to remove.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1308,6 +1307,8 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The page index to remove.
      */
     public removePage(index: number): void
     public removePage(argument: PdfPage | number): void {
@@ -1316,8 +1317,6 @@ export class PdfDocument {
     }
     /**
      * Gets the document information of the PDF.
-     *
-     * @returns {PdfDocumentInformation} Document information.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1344,6 +1343,8 @@ export class PdfDocument {
      * let modificationDate = documentProperties.modificationDate;
      * document.destroy();
      * ```
+     *
+     * @returns {PdfDocumentInformation} Document information.
      */
     public getDocumentInformation(): PdfDocumentInformation {
         const infoDict: _PdfDictionary = this._getInfoDictionary(false);
@@ -1379,9 +1380,6 @@ export class PdfDocument {
     /**
      * Sets the document information of the PDF.
      *
-     * @param {PdfDocumentInformation} information Fields to set.
-     * @returns {void} Returns nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1400,6 +1398,9 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfDocumentInformation} information Fields to set.
+     * @returns {void} Returns nothing.
      */
     public setDocumentInformation(information: PdfDocumentInformation): void {
         const infoDict: _PdfDictionary = this._getInfoDictionary(true);
@@ -1701,9 +1702,6 @@ export class PdfDocument {
     /**
      * Reorders the pages in the PDF document.
      *
-     * @param {number[]} orderArray The page sequence to arrange the pages.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1714,8 +1712,11 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number[]} orderArray The page sequence to arrange the pages.
+     * @returns {void} Nothing.
      */
-    reorderPages(orderArray: number[]): void {
+    public reorderPages(orderArray: number[]): void {
         orderArray.forEach((pageNumber: number) => {
             this._checkPageNumber(pageNumber);
         });
@@ -1869,8 +1870,6 @@ export class PdfDocument {
      * This method does **not** support embedding a timestamped digital signature.
      * To embed a timestamp from a trusted timestamp authority (TSA), use the asynchronous saveAsync() method.
      *
-     * @returns {Uint8Array} Saved PDF data as byte array.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1879,6 +1878,8 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Uint8Array} Saved PDF data as byte array.
      */
     public save(): Uint8Array
     /**
@@ -1888,9 +1889,6 @@ export class PdfDocument {
      * This method does **not** support embedding a timestamped digital signature.
      * To embed a timestamp from a trusted timestamp authority (TSA), use the asynchronous saveAsync(filename) method.
      *
-     * @param {string} filename Specifies the filename to save the output pdf document.
-     * @returns {void}
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1899,16 +1897,19 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename Specifies the filename to save the output pdf document.
+     * @returns {void}
      */
     public save(filename: string): void
     public save(filename?: string): Uint8Array | void {
         if (!this._isLoaded && this.pageCount === 0) {
             this.addSection().addPage();
         }
+        this._doPostProcess(this._flatten);
         if (!validateLicense('pdf')) {
             this._addWatermarkText();
         }
-        this._doPostProcess(this._flatten);
         if (typeof filename === 'string') {
             Save.save(filename, new Blob([this._crossReference._save()], { type: 'application/pdf' }));
         } else {
@@ -1917,8 +1918,6 @@ export class PdfDocument {
     }
     /**
      * Saves the PDF document asynchronously and returns the resulting bytes.
-     *
-     * @returns {Promise<Uint8Array>} The saved PDF data as a byte array.
      *
      * @example
      * ```typescript
@@ -1946,13 +1945,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Promise<Uint8Array>} The saved PDF data as a byte array.
      */
     public async saveAsync(): Promise<Uint8Array>
     /**
      * Saves the PDF document asynchronously to the specified filename.
-     *
-     * @param {string} filename The target filename to write the output PDF.
-     * @returns {Promise<void>} Resolves when the file has been saved.
      *
      * @example
      * ```typescript
@@ -1980,6 +1978,9 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename The target filename to write the output PDF.
+     * @returns {Promise<void>} Resolves when the file has been saved.
      */
     public async saveAsync(filename: string): Promise<void>
     public async saveAsync(filename?: string): Promise<void | Uint8Array> {
@@ -1999,8 +2000,6 @@ export class PdfDocument {
     /**
      * Saves the document to the specified output stream and return the stream as Blob.
      *
-     * @returns {Promise<{ blobData: Blob }>} Saved PDF data as `Blob`.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2009,6 +2008,8 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Promise<{ blobData: Blob }>} Saved PDF data as `Blob`.
      */
     public saveAsBlob(): Promise<{ blobData: Blob }> {
         return new Promise((resolve: Function) => {
@@ -2019,8 +2020,6 @@ export class PdfDocument {
     /**
      * Exports the annotations from the PDF document.
      *
-     * @returns {Uint8Array} Exported annotation data as byte array.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2029,13 +2028,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Uint8Array} Exported annotation data as byte array.
      */
     public exportAnnotations(): Uint8Array
     /**
      * Exports the annotations from the PDF document.
-     *
-     * @param {PdfAnnotationExportSettings} settings Annotation export settings.
-     * @returns {Uint8Array} Exported annotation data as byte array.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2050,13 +2048,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfAnnotationExportSettings} settings Annotation export settings.
+     * @returns {Uint8Array} Exported annotation data as byte array.
      */
     public exportAnnotations(settings: PdfAnnotationExportSettings): Uint8Array
     /**
      * Exports the annotations from the PDF document.
-     *
-     * @param {string} filename Output file name.
-     * @returns {void} Exports the annotations from the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2066,14 +2064,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename Output file name.
+     * @returns {void} Exports the annotations from the PDF document.
      */
     public exportAnnotations(filename: string): void
     /**
      * Exports the annotations from the PDF document.
-     *
-     * @param {string} filename Output file name.
-     * @param {PdfAnnotationExportSettings} settings Annotation export settings.
-     * @returns {void} Exports the annotations from the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2088,6 +2085,10 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename Output file name.
+     * @param {PdfAnnotationExportSettings} settings Annotation export settings.
+     * @returns {void} Exports the annotations from the PDF document.
      */
     public exportAnnotations(filename: string, settings: PdfAnnotationExportSettings): void
     public exportAnnotations(arg1?: string | PdfAnnotationExportSettings, arg2?: PdfAnnotationExportSettings): Uint8Array | void {
@@ -2124,8 +2125,6 @@ export class PdfDocument {
     /**
      * Exports the form data from the PDF document.
      *
-     * @returns {Uint8Array} Exported form data as byte array.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2134,13 +2133,12 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Uint8Array} Exported form data as byte array.
      */
     public exportFormData(): Uint8Array
     /**
      * Exports the form data from the PDF document.
-     *
-     * @param {PdfFormFieldExportSettings} settings Form field export settings.
-     * @returns {Uint8Array} Exported form data as byte array.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2155,13 +2153,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfFormFieldExportSettings} settings Form field export settings.
+     * @returns {Uint8Array} Exported form data as byte array.
      */
     public exportFormData(settings: PdfFormFieldExportSettings): Uint8Array
     /**
      * Exports the form data from the PDF document.
-     *
-     * @param {string} filename Output file name.
-     * @returns {void} Exports the form data from the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2173,14 +2171,13 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename Output file name.
+     * @returns {void} Exports the form data from the PDF document.
      */
     public exportFormData(filename: string): void
     /**
      * Exports the form data from the PDF document.
-     *
-     * @param {string} filename Output file name.
-     * @param {PdfFormFieldExportSettings} settings Form field export settings.
-     * @returns {void} Exports the form data from the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2195,6 +2192,10 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} filename Output file name.
+     * @param {PdfFormFieldExportSettings} settings Form field export settings.
+     * @returns {void} Exports the form data from the PDF document.
      */
     public exportFormData(filename: string, settings: PdfFormFieldExportSettings): void
     public exportFormData(arg1?: string | PdfFormFieldExportSettings, arg2?: PdfFormFieldExportSettings): Uint8Array | void {
@@ -2232,10 +2233,6 @@ export class PdfDocument {
     /**
      * Imports the annotations from the PDF document.
      *
-     * @param {string} data annotations data as base64 string.
-     * @param {DataFormat} dataFormat Data format of the input data.
-     * @returns {void} Imports the annotations to the PDF document.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2246,14 +2243,14 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} data annotations data as base64 string.
+     * @param {DataFormat} dataFormat Data format of the input data.
+     * @returns {void} Imports the annotations to the PDF document.
      */
     public importAnnotations(data: string, dataFormat: DataFormat): void
     /**
      * Imports the annotations from the PDF document.
-     *
-     * @param {Uint8Array} data annotations data as byte array.
-     * @param {DataFormat} dataFormat Data format of the input data.
-     * @returns {void} Imports the annotations to the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2265,6 +2262,10 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Uint8Array} data annotations data as byte array.
+     * @param {DataFormat} dataFormat Data format of the input data.
+     * @returns {void} Imports the annotations to the PDF document.
      */
     public importAnnotations(data: Uint8Array, dataFormat: DataFormat): void
     public importAnnotations(data: string | Uint8Array, dataFormat: DataFormat): void {
@@ -2282,10 +2283,6 @@ export class PdfDocument {
     /**
      * Imports the form data from the PDF document.
      *
-     * @param {string} data Form data as base64 string.
-     * @param {DataFormat} dataFormat Data format of the input data.
-     * @returns {void} Imports the form data to the PDF document.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2296,14 +2293,14 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} data Form data as base64 string.
+     * @param {DataFormat} dataFormat Data format of the input data.
+     * @returns {void} Imports the form data to the PDF document.
      */
     public importFormData(data: string, dataFormat: DataFormat): void
     /**
      * Imports the form data from the PDF document.
-     *
-     * @param {Uint8Array} data Form data as byte array.
-     * @param {DataFormat} dataFormat Data format of the input data.
-     * @returns {void} Imports the form data to the PDF document.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2315,6 +2312,10 @@ export class PdfDocument {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Uint8Array} data Form data as byte array.
+     * @param {DataFormat} dataFormat Data format of the input data.
+     * @returns {void} Imports the form data to the PDF document.
      */
     public importFormData(data: Uint8Array, dataFormat: DataFormat): void
     public importFormData(data: string | Uint8Array, dataFormat: DataFormat): void {
@@ -2341,14 +2342,14 @@ export class PdfDocument {
     /**
      * Disposes the current instance of `PdfDocument` class.
      *
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {void} Nothing.
      */
     public destroy(): void {
         if (this._crossReference) {
@@ -2616,7 +2617,6 @@ export class PdfDocument {
         const formatCenter: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
         let fontSize: number = 14;
         const graphics: PdfGraphics = page.graphics;
-        graphics.save();
         const clientSize: Size = graphics.clientSize;
         if (page.size.width < 400) {
             fontSize = page.size.width * 0.035;
@@ -2630,7 +2630,6 @@ export class PdfDocument {
         const textSize: Size = font.measureString(diagonalText, clientSize.width);
         const centerX: number = clientSize.width / 2;
         const centerY: number = clientSize.height / 2;
-        graphics.restore();
         graphics.save();
         if (!page._isNew && (page.rotation === PdfRotationAngle.angle90)) {
             graphics.translateTransform({ x: centerY, y: centerX });
@@ -2864,11 +2863,6 @@ export class PdfDocument {
     /**
      * Import the pages specified by the start and end index into the current document's pages collection.
      *
-     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
-     * @param {number} startIndex Start page index. The default value is 0.
-     * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
-     * @remarks The source document must be disposed of after the destination document is saved during the import function.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let destination: PdfDocument = new PdfDocument(data1);
@@ -2882,16 +2876,15 @@ export class PdfDocument {
      * destination.destroy();
      * sourceDocument.destroy();
      * ```
-     */
-    public importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number): void
-    /**
-     * Import the pages specified by start and end index into the current document's pages collection.
      *
      * @param {PdfDocument} sourceDocument PDF document to get pages to import.
      * @param {number} startIndex Start page index. The default value is 0.
      * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
-     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
      * @remarks The source document must be disposed of after the destination document is saved during the import function.
+     */
+    public importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number): void
+    /**
+     * Import the pages specified by start and end index into the current document's pages collection.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2910,6 +2903,12 @@ export class PdfDocument {
      * destination.destroy();
      * sourceDocument.destroy();
      * ```
+     *
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
+     * @param {number} startIndex Start page index. The default value is 0.
+     * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
+     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
      */
     public importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void
     public importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
@@ -3005,8 +3004,6 @@ export class PdfDocument {
     /**
      * Copy the specific page and insert it as the next page
      *
-     * @param {number} pageIndex Target page index to import.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let sourceDocument: PdfDocument = new PdfDocument(data1);
@@ -3017,13 +3014,12 @@ export class PdfDocument {
      * // Destroy the documents
      * sourceDocument.destroy();
      * ```
+     *
+     * @param {number} pageIndex Target page index to import.
      */
     public importPage(index: number): void
     /**
      * Copy the specific page and insert it at the specified target page index and page rotation.
-     *
-     * @param {number} pageIndex Target page index to import.
-     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -3042,14 +3038,13 @@ export class PdfDocument {
      * // Destroy the documents
      * sourceDocument.destroy();
      * ```
+     *
+     * @param {number} pageIndex Target page index to import.
+     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
      */
     public importPage(index: number, options: PdfPageImportOptions): void
     /**
      * Import the specified page into the current document pages collection as the last page
-     *
-     * @param {PdfPage} page Page to import.
-     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
-     * @remarks The source document must be disposed of after the destination document is saved during the import function.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -3066,15 +3061,14 @@ export class PdfDocument {
      * destination.destroy();
      * sourceDocument.destroy();
      * ```
+     *
+     * @param {PdfPage} page Page to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
      */
     public importPage(page: PdfPage, sourceDocument: PdfDocument): void
     /**
      * Create a new page with default settings and insert it into the collection at the specified page index.
-     *
-     * @param {PdfPage} page Page to import.
-     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
-     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
-     * @remarks The source document must be disposed of after the destination document is saved during the import function.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -3095,6 +3089,10 @@ export class PdfDocument {
      * destination.destroy();
      * sourceDocument.destroy();
      * ```
+     *
+     * @param {PdfPage} page Page to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
      */
     public importPage(page: PdfPage, sourceDocument: PdfDocument, options?: PdfPageImportOptions): void
     public importPage(arg1?: PdfPage | number, arg2?: PdfDocument | PdfPageImportOptions, options?: PdfPageImportOptions): void {
@@ -3113,7 +3111,6 @@ export class PdfDocument {
     /**
      * Splitting a PDF file into individual pages.
      *
-     * @returns {void} Nothing
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -3126,6 +3123,9 @@ export class PdfDocument {
      * }
      * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @returns {void} Nothing
      */
     public split(): void {
         this.splitByFixedNumber(1);
@@ -3133,8 +3133,6 @@ export class PdfDocument {
     /**
      * Splits the PDF document into parts, each containing a maximum number of pages specified.
      *
-     * @param {number} fixedNumber specifies the maximum number of pages in each split PDF. The default value is 1.
-     * @returns {void} Nothing
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -3147,6 +3145,10 @@ export class PdfDocument {
      * }
      * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @param {number} fixedNumber specifies the maximum number of pages in each split PDF. The default value is 1.
+     * @returns {void} Nothing
      */
     public splitByFixedNumber(fixedNumber: number): void {
         const pageCount: number = this.pageCount;
@@ -3165,9 +3167,6 @@ export class PdfDocument {
     /**
      * Splits the PDF document into multiple parts based on the specified page ranges.
      *
-     * @param {Array<number[]>} ranges The two dimensional number array specified for start and end page indexes to split PDF documents.
-     * @returns {void} Nothing
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -3180,6 +3179,10 @@ export class PdfDocument {
      * }
      * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @param {Array<number[]>} ranges The two dimensional number array specified for start and end page indexes to split PDF documents.
+     * @returns {void} Nothing
      */
     public splitByPageRanges(ranges: number[][]): void {
         const pageCount: number = this.pageCount;

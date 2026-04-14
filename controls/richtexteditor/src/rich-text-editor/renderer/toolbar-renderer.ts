@@ -357,6 +357,15 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     //Alignments preselect
                     let alignEle: Node = proxy.parent.getRange().startContainer;
+                    const selectedCell: Element = trow && trow.querySelector('.e-cell-select');
+                    const isTbalePopUpdropdown: boolean = proxy.parent.contentModule.getDocument() &&
+                        proxy.parent.quickToolbarModule && proxy.parent.quickToolbarModule.tableQTBar
+                        && proxy.parent.quickToolbarModule.tableQTBar.element &&
+                        (proxy.parent.contentModule.getDocument()
+                            .contains(proxy.parent.quickToolbarModule.tableQTBar.element));
+                    if (isTbalePopUpdropdown && !isNOU(tableEle) && !isNOU(selectedCell)) {
+                        alignEle = selectedCell;
+                    }
                     while (alignEle !== proxy.parent.inputElement && !isNOU(alignEle.parentElement)) {
                         if (alignEle.nodeName === '#text') {
                             alignEle = alignEle.parentElement;

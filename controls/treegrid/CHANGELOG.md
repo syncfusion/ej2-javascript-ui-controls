@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#F73428` - Fixed an issue where expand and collapse functionality did not work after clearing filters in the TreeGrid.
+- `#I824627` - Fixed an issue where drag and drop did not work when all records were collapsed, and dropping items on summary rows caused a script error.
 
 ## 33.1.46 (2026-03-31)
 

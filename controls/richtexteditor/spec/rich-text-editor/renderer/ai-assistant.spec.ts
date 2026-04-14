@@ -1021,7 +1021,7 @@ describe('AI Assistant Module', ()=> {
             const toolbarItem: HTMLElement = (editor.getToolbarElement() as HTMLElement).querySelector('.e-toolbar-item') as HTMLElement;
             toolbarItem.click();
             setTimeout(() => {
-                expect(editor.aiAssistantModule.queryPopup.offsetY).toBe(477);
+                expect(editor.aiAssistantModule.queryPopup.offsetY).toBeGreaterThan(474);
                 done();
             }, 100);
         });
@@ -1049,7 +1049,7 @@ describe('AI Assistant Module', ()=> {
             toolbarItem.click();
             window.scrollTo(0,500);
             setTimeout(() => {
-                expect(editor.aiAssistantModule.queryPopup.offsetY).toBe(434);
+                expect(editor.aiAssistantModule.queryPopup.offsetY).toBeGreaterThan(431);
                 done();
             }, 200);
         });

@@ -1620,9 +1620,6 @@ export abstract class PdfField {
     /**
      * Gets the field item as `PdfWidgetAnnotation` at the specified index.
      *
-     * @param {number} index Item index.
-     * @returns {PdfWidgetAnnotation} Loaded PDF form field item at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1637,6 +1634,9 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Item index.
+     * @returns {PdfWidgetAnnotation} Loaded PDF form field item at the specified index.
      */
     public itemAt(index: number): PdfWidgetAnnotation {
         let item: PdfWidgetAnnotation;
@@ -1661,9 +1661,6 @@ export abstract class PdfField {
     /**
      * Sets the flag to indicate the new appearance creation.
      *
-     * @param {boolean} value Set appearance.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1674,15 +1671,15 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {boolean} value Set appearance.
+     * @returns {void} Nothing.
      */
     public setAppearance(value: boolean): void {
         this._setAppearance = value;
     }
     /**
      * Gets the value associated with the specified key.
-     *
-     * @param {string} name Key.
-     * @returns {string} Value associated with the key.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1694,6 +1691,9 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Key.
+     * @returns {string} Value associated with the key.
      */
     public getValue(name: string): string {
         let value: string;
@@ -1714,10 +1714,6 @@ export abstract class PdfField {
     /**
      * Sets the value associated with the specified key.
      *
-     * @param {string} name Key.
-     * @param {string} value Value associated with the key..
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1730,6 +1726,10 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Key.
+     * @param {string} value Value associated with the key..
+     * @returns {void} Nothing.
      */
     public setValue(name: string, value: string): void {
         if (name && name !== '' && value && value !== '') {
@@ -1738,9 +1738,6 @@ export abstract class PdfField {
     }
     /**
      * Remove the form field item from the specified index.
-     *
-     * @param {number} index Item index to remove.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -1754,6 +1751,9 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Item index to remove.
+     * @returns {void} Nothing.
      */
     public removeItemAt(index: number): void {
         if (this._dictionary !== null && typeof this._dictionary !== 'undefined' && this._dictionary.has('Kids') && this.itemsCount > 0) {
@@ -1784,9 +1784,6 @@ export abstract class PdfField {
     /**
      * Remove the specified form field item.
      *
-     * @param {PdfWidgetAnnotation} item Item to remove.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1799,6 +1796,9 @@ export abstract class PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfWidgetAnnotation} item Item to remove.
+     * @returns {void} Nothing.
      */
     public removeItem(item: PdfWidgetAnnotation): void {
         if (item && item._ref) {
@@ -5134,8 +5134,6 @@ export class PdfCheckBoxField extends PdfField {
     /**
      * Gets the item at the specified index.
      *
-     * @param {number} index Index of the field item.
-     * @returns {PdfStateItem} Field item at the index.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -5152,6 +5150,9 @@ export class PdfCheckBoxField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Index of the field item.
+     * @returns {PdfStateItem} Field item at the index.
      */
     public itemAt(index: number): PdfStateItem {
         if (index < 0 || (index !== 0 && index >= this._kidsCount)) {
@@ -6171,8 +6172,6 @@ export class PdfRadioButtonListField extends PdfField {
     /**
      * Gets the item at the specified index.
      *
-     * @param {number} index Index of the field item.
-     * @returns {PdfRadioButtonListItem} Field item at the index.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -6189,6 +6188,9 @@ export class PdfRadioButtonListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Index of the field item.
+     * @returns {PdfRadioButtonListItem} Field item at the index.
      */
     public itemAt(index: number): PdfRadioButtonListItem {
         if (index < 0 || (index !== 0 && index >= this._kidsCount)) {
@@ -6217,8 +6219,6 @@ export class PdfRadioButtonListField extends PdfField {
     /**
      * Add list item to the field.
      *
-     * @param {PdfRadioButtonListItem} item List item.
-     * @returns {number} Index of the added item.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -6243,14 +6243,14 @@ export class PdfRadioButtonListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfRadioButtonListItem} item List item.
+     * @returns {number} Index of the added item.
      */
     public add(item: PdfRadioButtonListItem): number
     /**
      * Add list item to the field.
      *
-     * @param {string} value Name of the list item.
-     * @param {Rectangle} bounds Bounds of the list item.
-     * @returns {PdfRadioButtonListItem} Added item.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -6275,6 +6275,10 @@ export class PdfRadioButtonListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} value Name of the list item.
+     * @param {Rectangle} bounds Bounds of the list item.
+     * @returns {PdfRadioButtonListItem} Added item.
      */
     public add(value: string, bounds: Rectangle): PdfRadioButtonListItem
     public add(value?: string | PdfRadioButtonListItem,
@@ -6291,9 +6295,6 @@ export class PdfRadioButtonListField extends PdfField {
     /**
      * Remove the radio button list item from the specified index.
      *
-     * @param {number} index Item index to remove.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -6306,6 +6307,9 @@ export class PdfRadioButtonListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Item index to remove.
+     * @returns {void} Nothing.
      */
     public removeItemAt(index: number): void {
         const item: PdfRadioButtonListItem = this.itemAt(index);
@@ -6341,9 +6345,6 @@ export class PdfRadioButtonListField extends PdfField {
     /**
      * Remove the specified radio button list field item.
      *
-     * @param {PdfRadioButtonListItem} item Item to remove.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -6356,6 +6357,9 @@ export class PdfRadioButtonListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfRadioButtonListItem} item Item to remove.
+     * @returns {void} Nothing.
      */
     public removeItem(item: PdfRadioButtonListItem): void {
         if (item && item._ref) {
@@ -7334,8 +7338,6 @@ export abstract class PdfListField extends PdfField {
     /**
      * Gets the item at the specified index.
      *
-     * @param {number} index Index of the field item.
-     * @returns {PdfListFieldItem} Field item at the index.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -7356,6 +7358,9 @@ export abstract class PdfListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Index of the field item.
+     * @returns {PdfListFieldItem} Field item at the index.
      */
     public itemAt(index: number): PdfListFieldItem {
         let item: PdfListFieldItem;
@@ -7412,8 +7417,6 @@ export abstract class PdfListField extends PdfField {
     /**
      * Add list item.
      *
-     * @param {PdfListFieldItem} item Item to add.
-     * @returns {number} Index of the field item.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -7450,6 +7453,9 @@ export abstract class PdfListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListFieldItem} item Item to add.
+     * @returns {number} Index of the field item.
      */
     public addItem(item: PdfListFieldItem): number {
         this._addToOptions(item, this);
@@ -7458,8 +7464,6 @@ export abstract class PdfListField extends PdfField {
     /**
      * Remove the list item from the specified index.
      *
-     * @param {number} index Item index to remove.
-     * @returns {void} Nothing.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -7480,6 +7484,9 @@ export abstract class PdfListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Item index to remove.
+     * @returns {void} Nothing.
      */
     public removeItemAt(index: number): void {
         const item: PdfListFieldItem = this.itemAt(index);
@@ -7510,8 +7517,6 @@ export abstract class PdfListField extends PdfField {
     /**
      * Remove the list item.
      *
-     * @param {PdfListFieldItem} item Item to remove.
-     * @returns {void} Nothing.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -7532,6 +7537,9 @@ export abstract class PdfListField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfListFieldItem} item Item to remove.
+     * @returns {void} Nothing.
      */
     public removeItem(item: PdfListFieldItem): void {
         if (item && item.text) {
@@ -9231,8 +9239,6 @@ export class PdfSignatureField extends PdfField {
     /**
      * Gets the signature associated with the PDF signature field.
      *
-     * @returns {PdfSignature} - The signature instance.
-     *
      * ```typescript
      * // Load the document
      * let document: PdfDocument = new PdfDocument(data);
@@ -9251,6 +9257,8 @@ export class PdfSignatureField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfSignature} - The signature instance.
      */
     public getSignature(): PdfSignature {
         if (!this._signature && this._dictionary.has('V')) {
@@ -9260,9 +9268,6 @@ export class PdfSignatureField extends PdfField {
     }
     /**
      * Sets the signature for the PDF signature field.
-     *
-     * @param {PdfSignature} signature - The signature to assign to the field.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load the document
@@ -9284,6 +9289,9 @@ export class PdfSignatureField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfSignature} signature - The signature to assign to the field.
+     * @returns {void} Nothing.
      */
     public setSignature(signature: PdfSignature): void {
         if (this._crossReference) {
@@ -9304,8 +9312,6 @@ export class PdfSignatureField extends PdfField {
     }
     /**
      * Gets the appearance of the PDF signature field.
-     *
-     * @returns {PdfAppearance} - The appearance of the PDF signature field.
      *
      * ```typescript
      * // Load the document
@@ -9329,6 +9335,8 @@ export class PdfSignatureField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfAppearance} - The appearance of the PDF signature field.
      */
     public getAppearance(): PdfAppearance {
         if (this._isLoaded) {
@@ -9344,8 +9352,6 @@ export class PdfSignatureField extends PdfField {
     /**
      * Gets the revision index of the PDF signature field.
      *
-     * @returns {number} - The revision index of the signature.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -9358,6 +9364,8 @@ export class PdfSignatureField extends PdfField {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {number} - The revision index of the signature.
      */
     public getRevision(): number {
         if (this.isSigned && this._revision === -1) {
@@ -9606,8 +9614,15 @@ export class PdfSignatureField extends PdfField {
                 graphics.translateTransform({x: 0, y: template._size.width});
                 graphics.rotateTransform(270);
                 if (page._size.width > page._size.height && template._content && template._content.dictionary && template._content.dictionary.has('Matrix')) {
-                    x = -(page._size.width - bounds.x - template.size.width);
-                    y = bounds.y - bounds.height;
+                    const matrix: number[] = template._content.dictionary.get('Matrix');
+                    if (matrix[1] === -1 && matrix[2] === 1) {
+                        x = -(page._size.width - bounds.x - template.size.width);
+                        y = bounds.y - bounds.height;
+                    } else {
+                        x = -(page._size.width - bounds.x - bounds.width);
+                        y = bounds.y + bounds.x + template._size.width;
+                        return {x: x, y: y, width: bounds.height, height: bounds.width};
+                    }
                 } else {
                     x = -(page._size.width - bounds.x - bounds.width);
                     y = bounds.y;

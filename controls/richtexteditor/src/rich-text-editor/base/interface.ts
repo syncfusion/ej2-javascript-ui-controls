@@ -283,6 +283,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     isEntireRTEContentSelected(): boolean
     imageModule: Image;
     isRTEFocused: boolean;
+    isFullTableDeleted: boolean;
     isSelectAll: boolean
     getHtml(): string;
 }

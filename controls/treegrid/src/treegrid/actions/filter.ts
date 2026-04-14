@@ -106,22 +106,6 @@ export class Filter {
         if (this.flatFilteredData.length > 0 && this.isHierarchyFilter) {
             this.updateFilterLevel();
         }
-        if (hierarchyMode === 'None') {
-            for (let i: number = 0; i < this.filteredResult.length; i++) {
-                const record: ITreeData = this.filteredResult[parseInt(i.toString(), 10)] as ITreeData;
-                if (!isNullOrUndefined(record.parentItem)) {
-                    const parentUID: string = record.parentItem.uniqueID;
-                    const parentPresent: boolean = this.filteredResult.some((r: ITreeData) => {
-                        return !isNullOrUndefined((r as ITreeData).uniqueID) && (r as ITreeData).uniqueID === parentUID;
-                    });
-                    if (parentPresent) {
-                        setValue('isCollapsedChild', !getExpandStatus(this.parent, record, this.parent.parentData), record);
-                    } else {
-                        setValue('isCollapsedChild', false, record);
-                    }
-                }
-            }
-        }
         this.parent.notify('updateAction', { result: this.filteredResult });
     }
     private updateParentFilteredRecord(record: ITreeData): void {
@@ -240,9 +224,6 @@ export class Filter {
             if (fLevel || fLevel === 0 || !isNullOrUndefined(currentRecord.hasFilteredChildRecords)) {
                 currentRecord.hasFilteredChildRecords = null;
                 currentRecord.filterLevel = null;
-            }
-            if (!isNullOrUndefined(currentRecord.isCollapsedChild)) {
-                currentRecord.isCollapsedChild = null;
             }
         }
         this.filteredResult = [];

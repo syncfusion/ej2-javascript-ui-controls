@@ -1,6 +1,6 @@
 import { Workbook, CellModel, getCell, setCell, SheetModel, getSheet } from '../base/index';
 import { CellStyleModel, CheckCellValidArgs, DateFormatCheckArgs, FormatModel, SerializationOptions, checkDateFormat, executeTaskAsync, getAutoDetectFormatParser, isNumber } from '../common/index';
-import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, ExtendedRange } from '../common/index';
+import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, removeSortcol, ExtendedRange } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
 import { SaveCompleteEventArgs, ChartModel, updateSheetFromDataSource, BeforeSaveEventArgs } from '../common/index';
@@ -368,6 +368,7 @@ export class WorkbookSave extends SaveWorker {
         model: object, skipProp: string[] = [], sheetIdx?: number, autoDetectFormat?: boolean, isSaveAction?: boolean): string {
         if (sheetIdx === 0) {
             this.parent.notify(removeUniquecol, { clearAll: true });
+            this.parent.notify(removeSortcol, { clearAll: true });
         }
         if (isSaveAction) {
             this.parent.notify(events.setFilteredCollection, { sheetIdx: sheetIdx, isSaveAction: true, saveJson: this.saveJSON });

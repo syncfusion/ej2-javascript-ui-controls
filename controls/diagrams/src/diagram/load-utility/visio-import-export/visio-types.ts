@@ -2020,12 +2020,12 @@ export type Vec2 = Readonly<Point>;
  * - tint/shade: Lighten/darken
  * - alpha/alphaMod/alphaOff: Opacity adjustments
  *
- * @typedef Transform
+ * @typedef VisioColorTransform
  * @type {Object}
  *
  * @private
  */
-export type Transform =
+export type VisioColorTransform =
     | { type: 'lumMod'; val: number }
     | { type: 'lumOff'; val: number }
     | { type: 'satMod'; val: number }
@@ -2042,17 +2042,17 @@ export type Transform =
 /**
  * Flattened representation of transform operations.
  * Allows partial application of color transformations as a dictionary.
- * Use this as an alternative to Transform for easier manipulation of multiple transforms.
+ * Use this as an alternative to VisioColorTransform for easier manipulation of multiple transforms.
  *
  * @typedef FlatTransform
- * @type {Partial<Record<Transform['type'], number>>}
+ * @type {Partial<Record<VisioColorTransform['type'], number>>}
  *
  * @example
  * const transforms: FlatTransform = { tint: 0.3, satMod: 1.2 };
  *
  * @private
  */
-export type FlatTransform = Partial<Record<Transform['type'], number>>;
+export type FlatTransform = Partial<Record<VisioColorTransform['type'], number>>;
 
 /**
  * Visio diagram node with styling matrix references.

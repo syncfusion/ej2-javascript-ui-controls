@@ -1193,8 +1193,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                             let isReOrder: boolean = true;
                             if (!this.virtualSelectAll) {
-                                let newQueryWhereCount: number;
-                                let queryWhereCount: number;
+                                let newQueryWhereCount: number = 0;
+                                let queryWhereCount: number = 0;
                                 const newQuery: Query = query.clone();
                                 for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                     if (newQuery.queries[queryElements as number].fn === 'onWhere') {

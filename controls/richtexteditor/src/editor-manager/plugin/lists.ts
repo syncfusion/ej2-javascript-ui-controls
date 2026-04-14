@@ -491,6 +491,54 @@ export class Lists {
         }
     }
 
+    /* Shifts all child nodes of currentLiElement into the deepest last non-block descendant of targetLiElement, then removes currentLiElement from the DOM. */
+    private shiftNestedListChildren(currentLiElement: HTMLElement, targetLiElement: HTMLElement): void {
+        // Get the deepest last non-block descendant of targetLiElement
+        let insertionPoint: Node = this.parent.domNode.getDeepestLastInlineNode(targetLiElement);
+        const insertionParent: HTMLElement = insertionPoint.parentElement;
+        const isInsertionPointBR: boolean = insertionPoint.nodeName === 'BR' && insertionParent.textContent.length === 0;
+        // If the blockNodes root is not the current LI, move its children
+        this.moveBlockNodeChildrenToInsertionParent(currentLiElement, insertionParent);
+        // Move all child nodes from currentLiElement to insertionParent
+        while (!isNOU(currentLiElement.firstChild)) {
+            insertionParent.appendChild(currentLiElement.firstChild);
+        }
+        while (insertionPoint.hasChildNodes()) {
+            // to get last child node to place cursor point
+            insertionPoint = insertionPoint.lastChild;
+        }
+        if (isInsertionPointBR) {
+            // when br element is first child of li element
+            detach(insertionPoint);
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertionParent, 0);
+        } else {
+            this.parent.nodeSelection.setCursorPoint(
+                this.parent.currentDocument, insertionPoint as Element, insertionPoint.textContent.length);
+        }
+        // Remove currentLiElement from the DOM if it is now empty
+        if (!isNOU(currentLiElement.parentNode)) {
+            currentLiElement.parentNode.removeChild(currentLiElement);
+        }
+    }
+
+    /* Moves all children of the first block node (if not currentLiElement) to the insertion parent. */
+    private moveBlockNodeChildrenToInsertionParent(currentLiElement: HTMLElement, insertionParent: HTMLElement): void {
+        const blockNodes: Node[] = this.parent.domNode.blockNodes();
+        if (blockNodes[0] && blockNodes[0] !== currentLiElement) {
+            let rootBlock: HTMLElement = blockNodes[0] as HTMLElement;
+            if (rootBlock.textContent.length !== 0) {
+                const childNodes: Node[] = Array.from(rootBlock.childNodes);
+                for (let i: number = 0; i < childNodes.length; i++) {
+                    insertionParent.appendChild(childNodes[i as number]);
+                }
+            }
+            while (rootBlock.parentElement !== currentLiElement) {
+                rootBlock = rootBlock.parentElement;
+            }
+            currentLiElement.removeChild(rootBlock);
+        }
+    }
+
     private backspaceList(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
@@ -499,7 +547,7 @@ export class Lists {
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
         if (!isNOU(startNode) && startNode.closest('li')) {
             const listCursorInfo: ListCursorInfo = this.getListCursorInfo(range);
-            const isFirst: boolean = startNode.previousElementSibling === null;
+            const isFirst: boolean = startNode.closest('li').previousElementSibling === null;
             const allowedCursorSelections: ListCursorPosition[] = ['StartParent'];
             const allowedSelections: ListSelectionState[] = ['SingleFull', 'MultipleFull'];
             const blockNodes: HTMLElement[] = this.parent.domNode.blockNodes() as HTMLElement[];
@@ -548,46 +596,27 @@ export class Lists {
             isNOU(startNode.previousElementSibling)) {
             startNode.removeAttribute('style');
         }
-        if (startNode === endNode && startNode.textContent === '' && !this.hasMediaElement(startNode)) {
-            if (startNode.parentElement.tagName === 'LI' && endNode.parentElement.tagName === 'LI') {
-                detach(startNode);
-            } else if (startNode.closest('ul') || startNode.closest('ol')) {
-                const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-                if (parentList.firstElementChild === startNode && !isNOU(parentList.children[1]) &&
-                    (parentList.children[1].tagName === 'OL' || parentList.children[1].tagName === 'UL')) {
-                    if (parentList.tagName === parentList.children[1].tagName) {
-                        while (parentList.children[1].lastChild) {
-                            this.parent.domNode.insertAfter(parentList.children[1].lastChild as Element, parentList.children[1]);
-                        }
-                        detach(parentList.children[1]);
-                    } else {
-                        parentList.parentElement.insertBefore(parentList.children[1], parentList);
+        const closestListParent: HTMLElement = startNode.nodeType === Node.TEXT_NODE ? startNode.parentElement.closest('li') : startNode.closest('li');
+        const isRangeAtListStart: boolean = startNode === endNode && !isNOU(closestListParent) &&
+            this.isAtListStart(closestListParent, range) && !isNOU(closestListParent.querySelector('ul, ol'));
+        if (isRangeAtListStart) {
+            const previousLIElement: HTMLElement = !isNOU(closestListParent.previousSibling) && closestListParent.nodeName === 'LI' ?
+                closestListParent.previousElementSibling as HTMLElement : null;
+            if (!isNOU(previousLIElement)) {
+                e.event.preventDefault();
+                // to shift the cursor positioned li element child nodes to previous li element
+                this.shiftNestedListChildren(closestListParent, previousLIElement);
+            } else {
+                const currentList: Element | null = startNode.closest('ul, ol');
+                const parentListItem: HTMLElement | null = currentList.parentElement;
+                const prevSibling: Element | null = startNode.previousElementSibling;
+                const nestedList: HTMLElement | null = startNode.querySelector('ol, ul');
+                if (((!isNOU(parentListItem) && parentListItem.tagName === 'LI' && !isNOU(currentList.previousSibling)) || (!isNOU(prevSibling) && prevSibling.nodeName === 'LI'))) {
+                    if (!isNOU(nestedList) && (isNOU(prevSibling) || !isNOU(prevSibling))) {
+                        e.event.preventDefault();
+                        // Preventing a default content editable div behaviour and Handles rearrangement of nested lists when press the backspace while the cursor is at the nested list structure and also redistributes child nodes and maintains cursor position after rearrangement
+                        this.handleNestedListRearrangement(startNode, currentList, parentListItem, prevSibling, nestedList);
                     }
-                }
-            }
-        } else if (!isNOU(startNode.firstChild) && startNode.firstChild.nodeName === 'BR' &&
-        (!isNullOrUndefined(startNode.childNodes[1]) && (startNode.childNodes[1].nodeName === 'UL' ||
-        startNode.childNodes[1].nodeName === 'OL'))) {
-            const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
-            if (!isNOU(parentList) && parentList.tagName === startNode.childNodes[1].nodeName) {
-                while (startNode.childNodes[1].lastChild) {
-                    this.parent.domNode.insertAfter(startNode.children[1].lastChild as Element, startNode);
-                }
-                detach(startNode.childNodes[1]);
-            } else if (!isNOU(parentList)) {
-                parentList.parentElement.insertBefore(startNode.children[1], parentList);
-            }
-        }
-        if (startNode === endNode && startNode.tagName === 'LI' && this.isAtListStart(startNode, range) && !isNOU(startNode.closest('ul, ol'))) {
-            const currentList: Element | null = startNode.closest('ul, ol');
-            const parentListItem: HTMLElement | null = currentList.parentElement;
-            const prevSibling: Element | null = startNode.previousElementSibling;
-            const nestedList: HTMLElement | null = startNode.querySelector('ol, ul');
-            if ((!isNOU(parentListItem) && parentListItem.tagName === 'LI' && !isNOU(currentList.previousSibling)) || (!isNOU(prevSibling) && prevSibling.nodeName === 'LI')) {
-                if (!isNOU(nestedList) && (isNOU(prevSibling) || !isNOU(prevSibling))) {
-                    e.event.preventDefault();
-                    // Preventing a default content editable div behaviour and Handles rearrangement of nested lists when press the backspace while the cursor is at the nested list structure and also redistributes child nodes and maintains cursor position after rearrangement
-                    this.handleNestedListRearrangement(startNode, currentList, parentListItem, prevSibling, nestedList);
                 }
             }
         }
@@ -806,7 +835,7 @@ export class Lists {
             return element;
         }
         if (element.nodeName === 'BR') {
-            return element;
+            return element.parentElement;
         }
         for (let i: number = 0; i < element.childNodes.length; i++) {
             const firstTextNode: Node = this.getFirstTextNode(element.childNodes[i as number]);

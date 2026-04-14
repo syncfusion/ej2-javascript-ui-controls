@@ -126,12 +126,18 @@ export class VirtualScroll {
         const dm: DataManager = new DataManager(pageingDetails.result);
         const expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
         const parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
-        const isFiltering: Boolean = (pageingDetails.actionArgs.requestType === 'filtering' && (pageingDetails.actionArgs.action !== 'clear-filter' && pageingDetails.actionArgs.action !== 'clearFilter')) ||
-            (!isNullOrUndefined(this.parent['filterModule']) && (this.parent['filterModule'].filteredResult && (this.parent['filterModule'].filteredResult as any).length > 0));
-        const isFlatHierarchy: Boolean = this.parent.filterSettings.hierarchyMode === 'Child' ||
+        const isFiltering: boolean = (pageingDetails.actionArgs.requestType === 'filtering' && (pageingDetails.actionArgs.action !== 'clear-filter' && pageingDetails.actionArgs.action !== 'clearFilter')) ||
+            (!isNullOrUndefined(this.parent['filterModule']) && (this.parent['filterModule'].filteredResult && (this.parent['filterModule'].filteredResult as object[]).length > 0));
+        const isFlatHierarchy: boolean = this.parent.filterSettings.hierarchyMode === 'Child' ||
             this.parent.filterSettings.hierarchyMode === 'None';
         const visualData: ITreeData[] = isFiltering && isFlatHierarchy
-            ? parents
+            ? parents.filter((e: ITreeData) => {
+                if (isNullOrUndefined(e.parentItem)) {
+                    return true;
+                }
+                const hasParentInFilteredList: boolean = parents.some((p: ITreeData) => p.uniqueID === e.parentItem.uniqueID);
+                return hasParentInFilteredList ? getExpandStatus(this.parent, e, parents) : true;
+            })
             : parents.filter((e: ITreeData) => getExpandStatus(this.parent, e, parents));
         this.visualData = visualData;
         pageingDetails.count = visualData.length;
@@ -191,27 +197,10 @@ export class VirtualScroll {
                 endIndex = startIndex + this.parent.grid.pageSettings.pageSize;
             }
             if (!isNullOrUndefined(this.expandCollapseRec)) {
-                const resourceCount: number = this.parent.grid.pageSettings.pageSize;
-                let sIndex: number = visualData.indexOf(this.expandCollapseRec);
-                const tempdata: ITreeData[] = visualData.slice(sIndex, sIndex + resourceCount);
-                if (tempdata.length < resourceCount && sIndex >= 0 && startIndex !== 0) {
-                    sIndex = visualData.length - resourceCount;
-                    sIndex = sIndex > 0 ? sIndex : 0;
-                    endIndex = visualData.length;
-                    if (endIndex - startIndex < resourceCount) {
-                        const newRowsCount: number = sIndex - startIndex;
-                        startIndex = sIndex;
-                        if (visualData.indexOf(this.expandCollapseRec) > visualData.length - resourceCount / 2) {
-                            const newTranslateY: number = startIndex * this.parent.grid.getRowHeight();
-                            (this.parent.grid.contentModule as VirtualTreeContentRenderer)['translateY'] = newTranslateY;
-                            (this.parent.grid.contentModule as VirtualContentRenderer).virtualEle.adjustTable(0, newTranslateY);
-                        }
-                    }
-                } else if ( getValue('isCollapseAll', this.parent)) {
-                    startIndex = 0;
-                    endIndex = this.parent.grid.pageSettings.pageSize - 1;
-                    this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
-                }
+                const result: { startIndex: number, endIndex: number } =
+                    this.adjustRangeForExpandCollapse(startIndex, endIndex, visualData);
+                startIndex = result.startIndex;
+                endIndex = result.endIndex;
             }
             //}
             if (this.prevrequestType === 'collapseAll' && pageingDetails.actionArgs.requestType === 'virtualscroll'
@@ -240,6 +229,31 @@ export class VirtualScroll {
             this.prevrequestType = pageingDetails.actionArgs.requestType;
         }
         this.parent.notify('updateAction', pageingDetails);
+    }
+
+    private adjustRangeForExpandCollapse(startIndex: number, endIndex: number, visualData: ITreeData[]):
+    { startIndex: number, endIndex: number } {
+        const pageSize: number = this.parent.grid.pageSettings.pageSize;
+        const expandedRecordIndex: number = visualData.indexOf(this.expandCollapseRec);
+        const pageWindowRecords: ITreeData[] = visualData.slice(expandedRecordIndex, expandedRecordIndex + pageSize);
+        if (pageWindowRecords.length < pageSize && expandedRecordIndex >= 0 && startIndex !== 0) {
+            let startForLastPage: number = visualData.length - pageSize;
+            startForLastPage = startForLastPage > 0 ? startForLastPage : 0;
+            endIndex = visualData.length;
+            if (endIndex - startIndex < pageSize) {
+                startIndex = startForLastPage;
+                if (expandedRecordIndex > visualData.length - pageSize / 2) {
+                    const viewportTranslateY: number = startIndex * this.parent.grid.getRowHeight();
+                    (this.parent.grid.contentModule as VirtualTreeContentRenderer)['translateY'] = viewportTranslateY;
+                    (this.parent.grid.contentModule as VirtualContentRenderer).virtualEle.adjustTable(0, viewportTranslateY);
+                }
+            }
+        } else if (getValue('isCollapseAll', this.parent)) {
+            startIndex = 0;
+            endIndex = this.parent.grid.pageSettings.pageSize - 1;
+            this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
+        }
+        return { startIndex: startIndex, endIndex: endIndex };
     }
     /**
      * To destroy the virtualScroll module

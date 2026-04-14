@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I827842` - Issue with "applying a top border to a cell with font styles caused selection misalignment" has been resolved.
+
 ## 33.1.47 (2026-04-07)
 
 ### Spreadsheet

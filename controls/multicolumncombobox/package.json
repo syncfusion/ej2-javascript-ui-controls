@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-multicolumn-combobox",
-	"version": "33.1.44",
+	"version": "33.1.46",
 	"description": "Essential JS 2 Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -14,7 +14,7 @@
 		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.3",
+		"@syncfusion/ej2-staging": "^1.0.4",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

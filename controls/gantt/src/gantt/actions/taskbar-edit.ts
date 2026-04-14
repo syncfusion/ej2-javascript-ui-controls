@@ -2177,6 +2177,40 @@ export class TaskbarEdit extends DateProcessor {
         }
         return left;
     }
+    private getDSTTransitions(year: number): { dstStart: Date; dstEnd: Date } {
+        let dstStart: Date;
+        let dstEnd: Date;
+        const startMs: number = Date.UTC(year, 0, 1);
+        const endMs: number = Date.UTC(year + 1, 0, 1);
+        const HOUR_MS: number = 60 * 60 * 1000;
+        let prevOffset: number = new Date(startMs).getTimezoneOffset();
+        for (let time: number = startMs; time < endMs; time += HOUR_MS) {
+            const d: Date = new Date(time);
+            const offset: number = d.getTimezoneOffset();
+            if (offset !== prevOffset) {
+                if (offset < prevOffset) {
+                    dstStart = d;
+                } else {
+                    dstEnd = d;
+                }
+                prevOffset = offset;
+            }
+        }
+        return { dstStart, dstEnd };
+    }
+    private shouldAdjustForDst(
+        calculatedDate: Date,
+        timelineStartDate: Date,
+        pStartDate: Date
+    ): boolean {
+        if (!this.parent.isInDst(calculatedDate)) {
+            return false;
+        }
+        const transitions: { dstStart: Date; dstEnd: Date } = this.getDSTTransitions(pStartDate.getFullYear());
+        return (
+            timelineStartDate < transitions.dstStart
+        );
+    }
 
     /**
      * To get date by left value.
@@ -2188,7 +2222,8 @@ export class TaskbarEdit extends DateProcessor {
      * @private
      */
     public getDateByLeft(left: number, isMilestone?: boolean, property?: ITaskData): Date {
-        let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+        const timelineStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+        let pStartDate: Date = new Date(timelineStartDate);
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         let calculatedDate: Date = new Date(pStartDate); // Renamed from tempStartDate
         // while dragging to get date without weekends
@@ -2203,7 +2238,7 @@ export class TaskbarEdit extends DateProcessor {
             pStartDate = calculatedDate;
         }
         else {
-            if (this.parent.isInDst(calculatedDate)) {
+            if (this.shouldAdjustForDst(calculatedDate, timelineStartDate, pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() + ((left - (this.parent.perDayWidth / 24)) * milliSecondsPerPixel));
             } else {
                 pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));

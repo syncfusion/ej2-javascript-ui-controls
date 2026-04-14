@@ -227,9 +227,6 @@ export class PdfLayerCollection {
     /**
      * Gets the `PdfLayer` at the specified index.
      *
-     * @param {number} index Layer index.
-     * @returns {PdfLayer} Layer at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -242,6 +239,9 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Layer index.
+     * @returns {PdfLayer} Layer at the specified index.
      */
     public at(index: number): PdfLayer {
         return this._list[<number>index];
@@ -249,9 +249,6 @@ export class PdfLayerCollection {
     /**
      * Create a new `PdfLayer` with name
      * add it to the end of the collection.
-     *
-     * @param {string} name Name of the layer.
-     * @returns {PdfLayer} Layer with the name specified.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -265,15 +262,14 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Name of the layer.
+     * @returns {PdfLayer} Layer with the name specified.
      */
     public add(name: string): PdfLayer
     /**
      * Create a new `PdfLayer` with name and Boolean flag to set the visibility of layer
      * add it to the end of the collection.
-     *
-     * @param {string} name Name of the layer.
-     * @param {boolean} visible Visibility of the layer.
-     * @returns {PdfLayer} Layer with the name specified.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -287,6 +283,10 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Name of the layer.
+     * @param {boolean} visible Visibility of the layer.
+     * @returns {PdfLayer} Layer with the name specified.
      */
     public add(name: string, visible: boolean): PdfLayer
     public add(name: string, visible?: boolean): PdfLayer {
@@ -306,9 +306,6 @@ export class PdfLayerCollection {
     /**
      * Boolean indicating whether the specified layer exists or not.
      *
-     * @param {PdfLayer} layer The layer to be checked.
-     * @returns {boolean} Returns true, if the layer exists. Otherwise, false
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -323,13 +320,13 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfLayer} layer The layer to be checked.
+     * @returns {boolean} Returns true, if the layer exists. Otherwise, false
      */
     public contains(layer: PdfLayer): boolean
     /**
      * Boolean indicating whether the specified layer name exists or not.
-     *
-     * @param {string} name The layer name to be checked.
-     * @returns {boolean} Returns true, if the layer exists. Otherwise, false
      *
      * ```typescript
      * // Load an existing PDF document
@@ -345,6 +342,9 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name The layer name to be checked.
+     * @returns {boolean} Returns true, if the layer exists. Otherwise, false
      */
     public contains(name: string): boolean
     public contains(arg: PdfLayer | string): boolean {
@@ -363,8 +363,6 @@ export class PdfLayerCollection {
     /**
      * Remove all the layers.
      *
-     * @returns {void} Returns nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -377,6 +375,8 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {void} Returns nothing.
      */
     public clear(): void {
         for (let i: number = this._list.length - 1; i > -1; i--) {
@@ -387,9 +387,6 @@ export class PdfLayerCollection {
     }
     /**
      * Index of the specified layer.
-     *
-     * @param {PdfLayer} layer The layer to be checked.
-     * @returns {number} Index of the layer.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -405,6 +402,9 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfLayer} layer The layer to be checked.
+     * @returns {number} Index of the layer.
      */
     public indexOf(layer: PdfLayer): number {
         if (!layer) {
@@ -414,10 +414,6 @@ export class PdfLayerCollection {
     }
     /**
      * Move the `PdfLayer` into the collection at specified index.
-     *
-     * @param {number} index Index of the layer.
-     * @param {PdfLayer} layer Layer to move.
-     * @returns {void} Returns nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -435,6 +431,10 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Index of the layer.
+     * @param {PdfLayer} layer Layer to move.
+     * @returns {void} Returns nothing.
      */
     public move(index: number, layer: PdfLayer): void {
         if (index < 0 || index >= this._list.length) {
@@ -459,9 +459,6 @@ export class PdfLayerCollection {
     /**
      * Remove the `PdfLayer` at the specified index from the collection.
      *
-     * @param {number} index The index of the layer to be removed.
-     * @returns {void} Returns nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -474,14 +471,13 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The index of the layer to be removed.
+     * @returns {void} Returns nothing.
      */
     public removeAt(index: number): void
     /**
      * Remove the `PdfLayer` at the specified index from the collection.
-     *
-     * @param {number} index The index of the layer to be removed.
-     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
-     * @returns {void} Returns nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -495,6 +491,10 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index The index of the layer to be removed.
+     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
+     * @returns {void} Returns nothing.
      */
     public removeAt(index: number, removeGraphicalContent: boolean): void
     public removeAt(arg1: number, arg2?: boolean): void {
@@ -519,9 +519,6 @@ export class PdfLayerCollection {
     /**
      * Remove the `PdfLayer` with layer instance from the collection.
      *
-     * @param {PdfLayer} layer Layer to remove.
-     * @returns {void} Returns nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -536,14 +533,13 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfLayer} layer Layer to remove.
+     * @returns {void} Returns nothing.
      */
     public remove(layer: PdfLayer): void
     /**
      * Remove the `PdfLayer` with layer instance from the collection.
-     *
-     * @param {PdfLayer} layer Layer to remove.
-     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
-     * @returns {void} Returns nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -559,13 +555,14 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfLayer} layer Layer to remove.
+     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
+     * @returns {void} Returns nothing.
      */
     public remove(layer: PdfLayer, removeGraphicalContent: boolean): void
     /**
      * Remove the `PdfLayer` at the layer name from the collection.
-     *
-     * @param {string} name Layer name to remove.
-     * @returns {void} Returns nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -581,14 +578,13 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Layer name to remove.
+     * @returns {void} Returns nothing.
      */
     public remove(name: string): void
     /**
      * Remove the `PdfLayer` at the layer name from the collection.
-     *
-     * @param {string} name Layer name to remove.
-     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
-     * @returns {void} Returns nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -604,6 +600,10 @@ export class PdfLayerCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {string} name Layer name to remove.
+     * @param {boolean} removeGraphicalContent Remove graphical content, if true.
+     * @returns {void} Returns nothing.
      */
     public remove(name: string, removeGraphicalContent: boolean): void
     public remove(arg1: PdfLayer | string, arg2?: boolean): void {

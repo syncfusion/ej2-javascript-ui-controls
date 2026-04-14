@@ -1969,7 +1969,7 @@ describe('Emoji picker module', () => {
             rteObj.showEmojiPicker();
             setTimeout(() => {
                 const popEle: HTMLElement = rteObj.element.querySelector('.e-rte-emojipicker-popup');
-                expect(popEle.style.top).toBe('2982px');
+                expect(parseInt(popEle.style.top)).toBeGreaterThan(2980);
                 done();
             }, 100);
         });

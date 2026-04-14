@@ -8138,6 +8138,334 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
+    describe('Sort formula input validations ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SORT input validations', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('J2', '=SORT(A1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Item Name');
+            helper.edit('J2', '=SORT($B2)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('41684');
+            helper.edit('J2', '=SORT(C$5)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.266597222');
+            helper.edit('J2', '=SORT($D$7)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('40');
+            helper.edit('J2', '');
+            expect(spreadsheet.computeExpression('=SORT(D2)')).toBe('10');
+            expect(spreadsheet.computeExpression('=SORT(11)')).toBe('11');
+            expect(spreadsheet.computeExpression('=SORT("11")')).toBe('11');
+            expect(spreadsheet.computeExpression('=SORT(true)')).toBe('TRUE');
+            expect(spreadsheet.computeExpression('=SORT(False)')).toBe('FALSE');
+            expect(spreadsheet.computeExpression('=SORT(#REF)')).toBe('improper formula');
+            expect(spreadsheet.computeExpression('=SORT(#SPILL!)')).toBe('invalid expression');
+            expect(spreadsheet.computeExpression('=SORT("")')).toBe('0');
+            done();
+        });
+    });
+
+    describe('Perform Undo/Redo in sort formula ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Undo after SORT formula applied clears spill outputs->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[3].cells[11].value).toBe('20');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[3].cells[11].value).toBe('');
+            done();
+        });
+        it('Undo after re-edit of SORT formula restores previous spill state->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.edit('L1', '=SORT(E2:F11)');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('15');
+            done();
+        });
+        it('Undo after delete inside SORT spill restores #SPILL! on anchor->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.invoke('selectRange', ['L4']);
+            helper.edit('L4', '1');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('#SPILL!');
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('#SPILL!');
+            done();
+        });
+        it('Redo after undo of SORT formula re-applies spill outputs->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('I1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('10');
+            setTimeout(() => {
+                helper.click('#spreadsheet_undo'); setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[0].cells[8].formula).toBe('=SORT(D2:D11)');
+                        expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('10');
+                        expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('15');
+                        expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe('20');
+                        expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('20');
+                        done();
+                    });
+                });
+            });
+        });
+        it('Redo after undo of delete-spill restores recovered spill->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('A15', '=SORT(D2:D11)');
+            helper.invoke('selectRange', ['A17']);
+            helper.edit('A17', '1');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('#SPILL!');
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            setTimeout(() => {
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('#SPILL!');
+                    helper.invoke('selectRange', ['A15']);
+                    setTimeout(() => {
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].rows[14].cells[0].formula).toBe('=SORT(D2:D11)');
+                            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+                            expect(spreadsheet.sheets[0].rows[15].cells[0].value).toBe('15');
+                            expect(spreadsheet.sheets[0].rows[16].cells[0].value).toBe('20');
+                            expect(spreadsheet.sheets[0].rows[17].cells[0].value).toBe('20');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('Perform Edit operation in the sort formula ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply SORT formula produces ascending spill in anchor column->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('A1', '=SORT(D2:D11)')
+            expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('#SPILL!');
+            done();
+        });
+        it('Re-edit SORT anchor with new range clears old spill and applies new->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.edit('L1', '=SORT(F2:F11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(F2:F11)');
+            done();
+        });
+        it('Re-edit SORT anchor with same range clears old spill and cause SPILL->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('K1', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[10].value).toBe('10');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SORT(D2:D11)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SORT(D2:D11)';
+            helper.invoke('selectRange', ['K1']);
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('#SPILL!'); done();
+            });
+        });
+        it('Editing a spill cell directly causes anchor to show #SPILL!->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('A15', '=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            helper.edit('A16', '99');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('#SPILL!');
+            done();
+        });
+        it('Entering empty value in SORT anchor removes formula and clears all spill cells->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[4].cells[11].value).toBe('15');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '""';
+            helper.getElement('.e-spreadsheet-edit').textContent = '""';
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('');
+                expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('');
+                expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('');
+                expect(spreadsheet.sheets[0].rows[4].cells[11].value).toBe('');
+                done();
+            });
+        });
+        it('Clearallsortformulavalue method testing->', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.invoke('updateCell', [{ value: '10' }, 'I4']);
+            helper.invoke('updateCell', [{ formula: '=SORT(H2:H5)' }, 'I1']);
+            helper.getInstance().workbookFormulaModule.clearAllSortFormulaValue();
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=SORT(H2:H5)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('#SPILL!');
+                done();
+            });
+        });
+    });
+
+    describe('Perform Delete in the spill area of SORT formula ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete on SORT anchor clears formula and all spill outputs->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.invoke('selectRange', ['L1']);
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[3].cells[11].value).toBe('');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            done();
+        });
+        it('Delete on spill cell blocking SORT recovers anchor from #SPILL!->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('K1', '=SORT(D2:D11)');
+            helper.invoke('selectRange', ['K4']);
+            helper.edit('K4', '1');
+            expect(spreadsheet.sheets[0].rows[0].cells[10].value).toBe('#SPILL!');
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[0].cells[10].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[10].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].value).toBe('20');
+            done();
+        });
+    });
+
+    describe('Insert and Delete row in the sort formula spill area->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert 5 rows in the SORT formula spill area using context menu', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('A15', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[15].cells[0].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[16].cells[0].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[17].cells[0].value).toBe('20');
+            helper.invoke('selectRange', ['A16:A20']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(9, 0, [6, 1], true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[14].cells[0].formula).toBe('=SORT(D2:D11)');
+                expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+                expect(spreadsheet.sheets[0].rows[15].cells[0].value).toBe('15');
+                expect(spreadsheet.sheets[0].rows[16].cells[0].value).toBe('20');
+                expect(spreadsheet.sheets[0].rows[17].cells[0].value).toBe('20');
+                done();
+            });
+        });
+        it('Delete 5 rows in the SORT formula spill area using context menu', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('B15', '=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[14].cells[1].formula).toBe('=SORT(D2:D11)');
+            expect(spreadsheet.sheets[0].rows[14].cells[1].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[15].cells[1].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[16].cells[1].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[17].cells[1].value).toBe('20');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.invoke('selectRange', ['A16:A20']);
+            helper.openAndClickCMenuItem(1, 0, [7], true, false);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[14].cells[1].formula).toBe('=SORT(D2:D11)');
+                expect(spreadsheet.sheets[0].rows[14].cells[1].value).toBe('10');
+                expect(spreadsheet.sheets[0].rows[15].cells[1].value).toBe('15');
+                expect(spreadsheet.sheets[0].rows[16].cells[1].value).toBe('20');
+                expect(spreadsheet.sheets[0].rows[17].cells[1].value).toBe('20');
+                done();
+            });
+        });
+    });
+
+    describe('Clipboard based sort formula operation->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Pasting over SORT anchor clears old SORT range tracking->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBe('=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.invoke('selectRange', ['A2']);
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['L1']);
+                helper.invoke('paste', ['L1']);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[11].formula).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[1].cells[11].value).toBe('');
+                    expect(spreadsheet.sheets[0].rows[2].cells[11].value).toBe('');
+                    done();
+                });
+            });
+        });
+        it('Pasting into SORT spill area marks anchor as #SPILL! to prevent corruption->', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.edit('L1', '=SORT(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+            helper.invoke('selectRange', ['A2']);
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['L3']);
+                helper.invoke('paste', ['L3']);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[11].value).toBe('10');
+                    done();
+                });
+            });
+        });
+    });
+
     describe('Formula - Checking VIII ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -20721,8 +21049,8 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('G5', '');
             helper.edit('I21', '=MIN(SORT(G2:G10))');
             expect(helper.getInstance().sheets[0].rows[20].cells[8].value).toEqual('3');
-            helper.edit('I22', '=MAX(SORT(G2:G10))');
-            expect(helper.getInstance().sheets[0].rows[21].cells[8].value).toEqual('13');
+            helper.edit('J22', '=MAX(SORT(G2:G10))');
+            expect(helper.getInstance().sheets[0].rows[21].cells[9].value).toEqual('13');
             done();
         });
     });
@@ -22656,13 +22984,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [1, 11]).textContent).toBe('20');
             expect(helper.invoke('getCell', [10, 9]).textContent).toBe('500');
             expect(helper.invoke('getCell', [10, 11]).textContent).toBe('10');
-            helper.edit('J2', '=SORT(A2:D11,3,1,TRUE)');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.482314815');
-            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Casual Shoes');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0.001203704');
-            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('T-Shirts');
-            helper.edit('J2', '=SORT(A25:C34,1,1,0)');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
+            helper.edit('J15', '=SORT(A2:D11,3,1,TRUE)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('0.482314815');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('0.001203704');
+            expect(helper.invoke('getCell', [23, 12]).textContent).toBe('T-Shirts');
+            helper.edit('B15', '=SORT(A25:C34,1,1,0)');
+            expect(helper.invoke('getCell', [14, 1]).textContent).toBe('0');
             helper.edit('J2', '=SORT(A2:D11,1,1,TRUE)');
             expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.482314815');
             expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Casual Shoes');
@@ -22678,9 +23006,9 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [1, 12]).textContent).toBe('50');
             expect(helper.invoke('getCell', [10, 9]).textContent).toBe('Casual Shoes');
             expect(helper.invoke('getCell', [10, 12]).textContent).toBe('10');
-            helper.edit('J2', '=SORT(E2:E11,,,)');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('F15', '=SORT(E2:E11,,,)');
+            expect(helper.invoke('getCell', [14, 5]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [23, 5]).textContent).toBe('30');
             helper.edit('J2', '=SORT(E2:E11,A13,A13,A13)');
             expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
             helper.edit('J2', '=SORT(E2:E11,A13)');

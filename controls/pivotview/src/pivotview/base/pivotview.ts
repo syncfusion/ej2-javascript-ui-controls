@@ -1325,6 +1325,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public pivotDeferLayoutUpdate: boolean;
     /** @hidden */
     public isWindowResized: boolean;
+    /** @hidden */
+    public isModalDialog: boolean = false;
 
     //Property Declarations
 
@@ -3171,6 +3173,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 });
             }
             this.tooltip.isStringTemplate = true;
+            this.tooltip.isAngular = this.isModalDialog;
             this.tooltip.appendTo(this.element);
         } else if (this.tooltip) {
             this.tooltip.destroy();
@@ -3485,6 +3488,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private loadData(): void {
+        if (this.isAngular && !isNullOrUndefined(this.element.closest('.cdk-overlay-pane'))) {
+            this.isModalDialog = true;
+        }
         if (this.dataSourceSettings.formatSettings.length > 0) {
             const formatfield: FormatSettingsModel[] = this.dataSourceSettings.formatSettings;
             for (let i: number = 0; i < formatfield.length; i++) {
@@ -8111,6 +8117,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.virtualScrollDiv = null;
         this.virtualTableDiv = null;
         this.lastSelectedElement = null;
+        this.isModalDialog = false;
     }
 
     /**

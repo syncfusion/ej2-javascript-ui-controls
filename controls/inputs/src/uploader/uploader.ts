@@ -1281,7 +1281,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         }
         if (isNullOrUndefined(this.element.getAttribute('name'))) {
-            this.element.setAttribute('name', this.element.getAttribute('id'));
+            if (!isNullOrUndefined(this.element.getAttribute('id')) && this.element.getAttribute('id') !== '') {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            } else {
+                this.element.setAttribute('name', 'UploadFiles');
+            }
         }
         if (!this.element.hasAttribute('type')) {
             this.element.setAttribute('type', 'file');
@@ -3998,7 +4002,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.keyboardModule = null;
         this.clearButton = null;
         this.uploadButton = null;
-        setValue('ej2_instances', null, this.element);
+        if (this.element.tagName === 'EJS-UPLOADER') {
+            setValue('ej2_instances', null, this.element);
+        }
         super.destroy();
     }
 

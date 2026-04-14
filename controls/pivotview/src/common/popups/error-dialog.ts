@@ -64,6 +64,7 @@ export class ErrorDialog {
             close: this.removeErrorDialog.bind(this)
         });
         this.errorPopUp.isStringTemplate = true;
+        this.errorPopUp.isAngular = this.parent.control.isModalDialog;
         this.errorPopUp.appendTo(errorDialog);
     }
     private closeErrorDialog(): void {

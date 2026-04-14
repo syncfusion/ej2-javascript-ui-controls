@@ -26,6 +26,8 @@ export class Double {
     private paddingInterval: number;
     private isColumn: number = 0;
     private isStacking: boolean = false;
+    // Padding added to extend the computed max range to avoid axis clamping issues
+    private maxRangePadding: number = 0.15;
     /**
      * Constructor for the dateTime module.
      *
@@ -310,9 +312,15 @@ export class Double {
             maximum = (maximum + interval) - (maximum % interval);
         }
         axis.doubleRange = new DoubleRange(minimum, maximum);
+        // Prevent excessive rounding that can jump max to a much larger "nice" value
+        const maxCap: number = end + Math.abs(end - startValue) * this.maxRangePadding;
         if (minimum === 0 || (minimum < 0 && maximum < 0)) {
             interval = this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
             maximum = Math.ceil(maximum / interval) * interval;
+        }
+        // Clamp rounded maximum to cap (snap cap to interval)
+        if (maximum > maxCap) {
+            maximum = Math.ceil(maxCap / interval) * interval;
         }
         this.updateActualRange(axis, minimum, maximum, interval);
     }

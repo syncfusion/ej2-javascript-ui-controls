@@ -12409,7 +12409,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private nodePropertyChangeExtend(actualObject: Node, oldObject: Node, node: Node, update: boolean): boolean {
         if (node.style !== undefined && actualObject.shape.type !== 'Bpmn') {
-            updateStyle(node.style, actualObject.wrapper.children[0]);
+            //1020464 - Group style update is incorrectly applied to the first child node
+            const isGroupNode: boolean = actualObject.children && actualObject.children.length > 0;
+            const targetElement: DiagramElement = isGroupNode ? actualObject.wrapper : actualObject.wrapper.children[0];
+            updateStyle(node.style, targetElement);
             update = true;
         }
         if (node.shadow !== undefined) {

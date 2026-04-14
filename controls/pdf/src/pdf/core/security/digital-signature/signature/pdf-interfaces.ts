@@ -106,7 +106,7 @@ export interface _ISigner {
      * @private
      * @returns {Uint8Array} The computed signature.
      */
-    _generateSignature(): Uint8Array;
+    _generateSignature(): Uint8Array | null;
     /**
      * Resets the signer state and internal buffers.
      *

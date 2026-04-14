@@ -1054,4 +1054,21 @@ export class DOMNode {
         }
         return node;
     }
+
+    /**
+     * Returns the deepest last non-block descendant node of the given HTMLElement.
+     *
+     * @param {HTMLElement} BlockElement - The node to search from.
+     * @returns {Node} - The deepest last non-block descendant node.
+     * @hidden
+     * @private
+     */
+    public getDeepestLastInlineNode(BlockElement: HTMLElement): Node {
+        let lastChild: Node = BlockElement;
+        while (lastChild && lastChild.nodeType === Node.ELEMENT_NODE &&
+            this.isBlockNode(lastChild as Element) && lastChild.hasChildNodes()) {
+            lastChild = lastChild.lastChild;
+        }
+        return lastChild;
+    }
 }

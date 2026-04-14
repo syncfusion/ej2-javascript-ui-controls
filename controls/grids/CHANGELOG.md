@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I828949` -  Resolved an issue where a script error occurred while scrolling the grid when `ColumnChooser` was enabled along with `virtualization` and `AdaptiveUI`.
+
 ## 33.1.47 (2026-04-07)
 
 ### Grid

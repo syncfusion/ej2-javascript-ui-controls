@@ -2450,4 +2450,45 @@ describe('Cell Format ->', () => {
             done();
         });
     });
+    describe('EJ2- 1020492: Applying top border removes previous cells lineHeight causing alignment issues on import in Spreadsheet ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [
+                        {
+                            customHeight: true, height: 29,
+                            cells: [{ value: 'A1', style: { border: '1px solid rgb(0, 0, 0)', fontWeight: 'bold', fontSize: '28pt' } }]
+                        },
+                        {
+                            customHeight: true, height: 27,
+                            cells: [{ style: { fontWeight: 'bold', fontSize: '28pt' } }]
+                        },
+                        {
+                            customHeight: true, height: 29,
+                            cells: [{ value: 'A3', style: { border: '1px solid rgb(0, 0, 0)', fontWeight: 'bold', fontSize: '28pt' } }]
+                        },
+                        {
+                            customHeight: true, height: 27,
+                            cells: [{ style: { fontWeight: 'bold', fontSize: '28pt' } }]
+                        }
+                    ],
+                }],
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Line Height Should Not be Removed on Applying Top Border to the cell.', (done: Function) => {
+            helper.invoke('merge', ['A1:D1']);
+            helper.invoke('merge', ['B2:D2']);
+            helper.invoke('merge', ['A3:D3']);
+            let td: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(td.style.lineHeight).toBeDefined();
+            td = helper.invoke('getCell', [1, 0]);
+            expect(td.style.lineHeight).toBeDefined();
+            td = helper.invoke('getCell', [2, 0]);
+            expect(td.style.lineHeight).toBeDefined();
+            done();
+        });
+    });
 });

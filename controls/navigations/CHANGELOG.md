@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## 33.1.47 (2026-04-07)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I813436` - Resolved a memory leak in the Accordion component by ensuring header and item event listeners are fully removed during destroy, preventing retained DOM references.
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I813436` - Resolved a memory leak in the Breadcrumb component by properly removing the global resize event listener during destroy, preventing retained handlers and memory growth.
+
+### Stepper
+
+#### Bug Fixes
+
+- `#I813436` - Resolved a memory leak in the Stepper component by properly cleaning up global resize and click event handlers during destroy, preventing retained listeners across repeated renders.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I813436` - Resolved a memory leak in the TreeView component by ensuring all node level event listeners are properly removed during destroy, preventing retained DOM references and memory leaks.
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I813436` - Resolved a memory leak in the Sidebar component by ensuring resize and transition event listeners are properly detached during destroy, preventing orphaned callbacks and memory retention.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I821512` - Fixed a Toolbar memory leak by preserving bound event handler references in `initScroll` and properly removing all scroll related listeners and elements during destroy.
+
 ## 33.1.46 (2026-03-31)
 
 ### TreeView

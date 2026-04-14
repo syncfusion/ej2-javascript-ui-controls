@@ -4,6 +4,14 @@
 
 ## 33.1.47 (2026-04-07)
 
+### MaskedTextBox
+
+#### Bug Fixes
+
+- `#I818290` - Fixed an issue where refresh() destroyed the MaskedTextBox instance.
+
+## 33.1.44 (2026-03-16)
+
 ### Uploader
 
 #### Bug Fixes

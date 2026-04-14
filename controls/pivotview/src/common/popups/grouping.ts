@@ -302,6 +302,7 @@ export class Grouping implements IAction {
             cssClass: this.parent.cssClass
         });
         groupDialog.isStringTemplate = true;
+        groupDialog.isAngular = this.parent.isModalDialog;
         groupDialog.appendTo(groupDialogElement);
     }
     private createGroupOptions(fieldName: string, type: string): HTMLElement {

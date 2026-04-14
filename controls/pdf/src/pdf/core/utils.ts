@@ -43,16 +43,6 @@ export function _toSigned16(value: number): number {
     return (value << 16) >> 16;
 }
 /**
- * Gets the signed 32 bit value.
- *
- * @private
- * @param {number} value input value.
- * @returns {number} unsigned value.
- */
-export function _toSigned32(value: number): number {
-    return (value << 0);
-}
-/**
  * Copy values from one array to another.
  *
  * @private
@@ -5006,16 +4996,21 @@ export function _defineProperty(obj: any, prop: string, value: any, serializable
  * @returns {boolean} compressed string.
  */
 export function _compressStream(stream: _PdfBaseStream, isExport: boolean = false): string {
-    let value: string = stream.getString();
-    const byteArray: number[] = [];
-    for (let i: number = 0; i < value.length; i++) {
-        byteArray.push(value.charCodeAt(i));
+    let dataArray: Uint8Array;
+    if (stream instanceof _PdfStream && stream.bytes && stream.isImageStream) {
+        dataArray = stream.bytes;
+    } else {
+        const value: string = stream.getString();
+        const byteArray: number[] = [];
+        for (let i: number = 0; i < value.length; i++) {
+            byteArray.push(value.charCodeAt(i));
+        }
+        dataArray = new Uint8Array(byteArray);
     }
-    const dataArray: Uint8Array = new Uint8Array(byteArray);
     const sw: CompressedStreamWriter = new CompressedStreamWriter();
     sw.write(dataArray, 0, dataArray.length);
     sw.close();
-    value = sw.getCompressedString;
+    const value: string = sw.getCompressedString;
     stream.dictionary.update('Filter', _PdfName.get('FlateDecode'));
     if (isExport) {
         const buffer: number[] = [];

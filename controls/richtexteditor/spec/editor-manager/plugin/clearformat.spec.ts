@@ -4,7 +4,8 @@
 import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ClearFormat } from '../../../src/editor-manager/plugin/clearformat';
-import { selectTableCell, drawCellSelection } from "../../rich-text-editor/render.spec";
+import { selectTableCell, drawCellSelection, renderRTE, destroy } from "../../rich-text-editor/render.spec";
+import { RichTextEditor } from "../../../src/rich-text-editor/base/rich-text-editor";
 
 // describe('Clear multiple formats', () => {
 //     let innervalue: string = '<p>Th<strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span id="selectId" style="background-color: rgb(255, 255, 0);">is is a rich text editor content with style formats to be cleare</span></span></span></span></em></strong>d</p>'
@@ -526,5 +527,34 @@ describe('Clear Format tests', ()=> {
             expect(document.getElementById('divElement').innerHTML === `<p>First line</p>\n        <table data-mc-module-version="2019-10-22" data-muid="65921ceb-990e-4437-838c-c7b8ba7a420d" width="100%" cellspacing="0" cellpadding="0" border="0" data-type="text" role="module" class="e-rte-paste-table">\n        <tbody>\n            <tr>\n                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%">\n                    <p><br></p>\n                    <p>Thank you for choosing BoldDesk. We're happy to have you.</p>\n                    <p><br></p>\n                </td>\n            </tr>\n            <tr>\n                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%">\n                    <p><br></p>\n                    <p>Please verify your email address to activate your BoldDesk account.</p>\n                    <p><br></p>\n                </td>\n            </tr>\n        </tbody>\n        </table>\n        <p>Last line</p>`).toBe(true);
         });
     });
-
+describe('Bug 1020265: Clear Format Completely Converts Content to Plain Text without Preserving Hyperlinks in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let rteElement: HTMLElement;
+    const value = `<p><strong>Ticket</strong>: <a class="e-rte-anchor" href="https://support.syncfusion.com/agent/tickets/826956" title="https://support.syncfusion.com/agent/tickets/826956" target="_blank" aria-label="Open in new window">https://support.syncfusion.com/agent/tickets/826956</a></p>
+<p><strong>Sample</strong>: <a class="e-rte-anchor" href="https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools" title="https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools</a></p>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: value,
+            toolbarSettings: {
+                items: ['Bold', 'ClearFormat', 'Formats', 'Alignments', 'Indent', 'Outdent', 'OrderedList', 'UnorderedList']
+            }
+        });
+        controlId = rteObj.element.id;
+        rteElement = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Apply clearformat to the hyperlink and it should not remove', (done) => {
+        rteObj.focusIn();
+        rteObj.selectAll();
+        const clearFormatButton = rteElement.querySelector(`#${controlId}_toolbar_ClearFormat`) as HTMLElement;
+        let mouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+        clearFormatButton.dispatchEvent(mouseEvent);
+        clearFormatButton.click();
+        expect(rteObj.inputElement.innerHTML).toEqual('<p>Ticket: <a class="e-rte-anchor" href="https://support.syncfusion.com/agent/tickets/826956" title="https://support.syncfusion.com/agent/tickets/826956" target="_blank" aria-label="Open in new window">https://support.syncfusion.com/agent/tickets/826956</a></p><p>Sample: <a class="e-rte-anchor" href="https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools" title="https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com/angular/demos/#/tailwind3/rich-text-editor/tools</a></p>');
+        done();
+    });
+});
 }); // Do Not Add tests below this line.

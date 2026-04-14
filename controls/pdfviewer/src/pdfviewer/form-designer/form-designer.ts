@@ -4663,7 +4663,9 @@ export class FormDesigner {
      */
     public updateRadioButtonProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement, labelElement?: HTMLElement): void {
         const fillColor: string = '#daeaf7ff';
-        //(inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Radio Button' + this.setFormFieldIndex();
+        if (!obj.isUnisonSelected) {
+            (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Radio Button' + this.setFormFieldIndex();
+        }
         (inputElement as IElement).checked = obj.isSelected ? true : false;
         inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
         inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';

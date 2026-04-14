@@ -58,8 +58,8 @@ export class Toolbar {
     private createToolbar(): void {
         this.parent.isModified = false;
         this.renderDialog();
-        if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
-            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element) !== null) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element));
         }
         const element: HTMLElement = createElement( 'div', {
             id: this.parent.element.id + 'pivot-toolbar',
@@ -454,8 +454,8 @@ export class Toolbar {
     }
 
     private renderDialog(): void {
-        if (select('#' + this.parent.element.id + 'report-dialog', this.parent.element) !== null) {
-            remove(select('#' + this.parent.element.id + 'report-dialog', this.parent.element));
+        if (select('#' + this.parent.element.id + 'report-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'report-dialog', document));
         }
         const reportDialogElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'report-dialog',
@@ -497,12 +497,13 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         dialog.isStringTemplate = true;
+        dialog.isAngular = this.parent.isModalDialog;
         dialog.appendTo(reportDialogElement);
     }
 
     private renderMDXDialog(): void {
-        if (select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element) !== null) {
-            remove(select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element));
+        if (select('#' + this.parent.element.id + 'mdx-dialog', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'mdx-dialog', document));
         }
         const mdxDialogElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'mdx-dialog',
@@ -538,6 +539,7 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         mdxDialog.isStringTemplate = true;
+        mdxDialog.isAngular = this.parent.isModalDialog;
         mdxDialog.appendTo(mdxDialogElement);
     }
 
@@ -729,6 +731,7 @@ export class Toolbar {
             ]
         });
         confirmPopUp.isStringTemplate = true;
+        confirmPopUp.isAngular = this.parent.isModalDialog;
         confirmPopUp.appendTo(errorDialog);
         (confirmPopUp.element.querySelector('.e-dlg-header') as HTMLElement).innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(title) : title;
     }
@@ -890,20 +893,20 @@ export class Toolbar {
                 chartMenu.destroy();
                 chartMenu = null;
             }
-            chartMenu = new Menu(
-                {
-                    items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,
-                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                    select: this.menuItemClick.bind(this),
-                    beforeOpen: this.whitespaceRemove.bind(this),
-                    onClose: () => {
-                        this.focusToolBar();
-                    },
-                    beforeItemRender: this.multipleAxesCheckbox.bind(this)
-                });
+            chartMenu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this),
+                beforeOpen: this.whitespaceRemove.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                },
+                beforeItemRender: this.multipleAxesCheckbox.bind(this)
+            });
             chartMenu.isStringTemplate = true;
+            chartMenu.isAngular = this.parent.isModalDialog;
             chartMenu.appendTo(chartMenuElement);
         }
     }
@@ -948,17 +951,17 @@ export class Toolbar {
                     }
                 ]
             }];
-            const exportMenu: Menu = new Menu(
-                {
-                    items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
-                    onClose: () => {
-                        this.focusToolBar();
-                    }
-                });
+            const exportMenu: Menu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                }
+            });
             exportMenu.isStringTemplate = true;
+            exportMenu.isAngular = this.parent.isModalDialog;
             exportMenu.appendTo(exportMenuElement);
         }
         if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
@@ -1013,17 +1016,17 @@ export class Toolbar {
                     }
                 ]
             }];
-            const subTotalMenu: Menu = new Menu(
-                {
-                    items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
-                    onClose: () => {
-                        this.focusToolBar();
-                    }
-                });
+            const subTotalMenu: Menu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                }
+            });
             subTotalMenu.isStringTemplate = true;
+            subTotalMenu.isAngular = this.parent.isModalDialog;
             subTotalMenu.appendTo(subTotalMenuElement);
         }
         if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
@@ -1073,17 +1076,17 @@ export class Toolbar {
                     }
                 ]
             }];
-            const grandTotalMenu: Menu = new Menu(
-                {
-                    items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
-                    onClose: () => {
-                        this.focusToolBar();
-                    }
-                });
+            const grandTotalMenu: Menu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                }
+            });
             grandTotalMenu.isStringTemplate = true;
+            grandTotalMenu.isAngular = this.parent.isModalDialog;
             grandTotalMenu.appendTo(grandTotalMenuElement);
         }
         if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
@@ -1103,14 +1106,14 @@ export class Toolbar {
                     }
                 ]
             }];
-            const formattingMenu: Menu = new Menu(
-                {
-                    items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                    select: this.menuItemClick.bind(this)
-                });
+            const formattingMenu: Menu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this)
+            });
             formattingMenu.isStringTemplate = true;
+            formattingMenu.isAngular = this.parent.isModalDialog;
             formattingMenu.appendTo(formattingMenuElement);
         }
         const saveArgs: SaveReportArgs = {
@@ -1133,6 +1136,7 @@ export class Toolbar {
                 value: this.currentReport
             });
             reportList.isStringTemplate = true;
+            reportList.isAngular = this.parent.isModalDialog;
             reportList.appendTo(reportListElement);
         }
         this.updateItemElements();
@@ -1624,6 +1628,7 @@ export class Toolbar {
             close: this.removeDialog.bind(this)
         });
         chartTypesDialog.isStringTemplate = true;
+        chartTypesDialog.isAngular = this.parent.isModalDialog;
         chartTypesDialog.appendTo(chartDialog);
     }
 
@@ -1724,6 +1729,7 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         optionWrapper.isStringTemplate = true;
+        optionWrapper.isAngular = this.parent.isModalDialog;
         optionWrapper.appendTo(dropOptionDiv);
         mainWrapper.appendChild(optionWrapperDiv);
         const checkboxWrap: HTMLInputElement = createElement('input', {
@@ -1749,6 +1755,7 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         axisModeWrapper.isStringTemplate = true;
+        axisModeWrapper.isAngular = this.parent.isModalDialog;
         axisModeWrapper.appendTo(dropModeOptionDiv);
         return mainWrapper;
     }

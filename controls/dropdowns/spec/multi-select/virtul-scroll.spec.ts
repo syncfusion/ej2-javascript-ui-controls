@@ -15,6 +15,7 @@ import { MultiSelectHelper } from '../../helpers/e2e';
 MultiSelect.Inject(VirtualScroll);
 MultiSelect.Inject(CheckBoxSelection);
 ComboBox.Inject(VirtualScroll);
+let mouseEventArgs: any = { preventDefault: function () { }, target: null };
 let datasource: { [key: string]: Object }[]=[];
 for (let i = 1; i <= 150; i++) {
     let item: { [key: string]: Object } = {};
@@ -1242,6 +1243,246 @@ describe('MultiSelect_Virtualization', () => {
             listObj.keyboardEvent = keyEventArgs;
             (<any>listObj).previousFocusItem = listObj.liCollections[0];
             (<any>listObj).handleVirtualKeyboardActions(keyEventArgs,1);
+        });
+    });
+    // Bug 1018940: MultiSelect Select All selects only first 30 items with string array and virtualization
+    describe('EJ2-1018940 - Select All selects only first 30 items with string array and virtualization', () => {
+        let listObj: any;
+        let element: HTMLInputElement;
+        let stringRecords100: string[];
+        let stringRecords60: string[];
+        let objectRecords100: { [key: string]: Object }[];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            stringRecords100 = [];
+            for (let i: number = 1; i <= 100; i++) {
+                stringRecords100.push(i.toString());
+            }
+            stringRecords60 = [];
+            for (let i: number = 1; i <= 60; i++) {
+                stringRecords60.push(i.toString());
+            }
+            objectRecords100 = [];
+            for (let i: number = 1; i <= 100; i++) {
+                objectRecords100.push({ id: i.toString(), text: 'Item ' + i });
+            }
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940' });
+            document.body.appendChild(element);
+        });
+
+        afterAll(() => {
+            if (listObj) {
+                listObj.destroy();
+            }
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+
+        // AC1: 100 string items, virtualization, click Select All → all selected
+        it('Select All with 100-item string array and virtualization selects all items (mouse click)', (done) => {
+            listObj = new MultiSelect({
+                dataSource: stringRecords100,
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.isPopupOpen()).toBe(true);
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                expect(selectAllParent).not.toBeNull();
+                mouseEventArgs.target = selectAllParent;
+                mouseEventArgs.type = 'click';
+                (<any>listObj).selectAllItem(true, mouseEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).value).not.toBeNull();
+                    expect((<any>listObj).value.length).toBe(100);
+                    listObj.destroy();
+                    done();
+                }, 600);
+            }, 400);
+        });
+
+        // AC2: 60 string items (> 50, triggers else branch), virtualization, click Select All → all 60 selected
+        it('Select All with 60-item string array and virtualization selects all 60 items', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-60' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: stringRecords60,
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                mouseEventArgs.target = selectAllParent;
+                mouseEventArgs.type = 'click';
+                (<any>listObj).selectAllItem(true, mouseEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).value).not.toBeNull();
+                    expect((<any>listObj).value.length).toBe(60);
+                    listObj.destroy();
+                    done();
+                }, 600);
+            }, 400);
+        });
+
+        // AC2 keyboard: Tab + Space triggers virtualSelectionAll → same fix, no "No records found"
+        it('Select All via keyboard (Space) with string array and virtualization selects all items', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-kb' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: stringRecords100,
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                // Simulate keyboard Space on Select All (keyCode 32)
+                const spaceEvent: any = {
+                    preventDefault: function () { },
+                    altKey: false, ctrlKey: false, shiftKey: false,
+                    char: ' ', key: ' ', charCode: 32, keyCode: 32, which: 32, code: 32,
+                    target: selectAllParent
+                };
+                (<any>listObj).selectAllItem(true, spaceEvent);
+                setTimeout(() => {
+                    expect((<any>listObj).value).not.toBeNull();
+                    expect((<any>listObj).value.length).toBe(100);
+                    // Verify no "No records found" ghost — list should still have li items
+                    const listItems: NodeListOf<HTMLElement> = listObj.list.querySelectorAll('li.e-list-item');
+                    expect(listItems.length).toBeGreaterThan(0);
+                    listObj.destroy();
+                    done();
+                }, 600);
+            }, 400);
+        });
+
+        // AC3: Uncheck Select All deselects all items
+        it('Unchecking Select All with string array and virtualization deselects all items', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-desel' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: stringRecords100,
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                mouseEventArgs.target = selectAllParent;
+                mouseEventArgs.type = 'click';
+                // Select all first
+                (<any>listObj).selectAllItem(true, mouseEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).value.length).toBe(100);
+                    // Now deselect all
+                    (<any>listObj).selectAllItem(false, mouseEventArgs);
+                    setTimeout(() => {
+                        expect((<any>listObj).value === null || (<any>listObj).value.length === 0).toBe(true);
+                        listObj.destroy();
+                        done();
+                    }, 600);
+                }, 600);
+            }, 400);
+        });
+
+        // AC5 regression guard: object-array data source must remain unaffected
+        it('Select All with object array data source and virtualization is not regressed', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-obj' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: objectRecords100,
+                fields: { text: 'text', value: 'id' },
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                mouseEventArgs.target = selectAllParent;
+                mouseEventArgs.type = 'click';
+                (<any>listObj).selectAllItem(true, mouseEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).value).not.toBeNull();
+                    expect((<any>listObj).value.length).toBe(100);
+                    listObj.destroy();
+                    done();
+                }, 600);
+            }, 400);
+        });
+
+        // Regression guard: Select All without virtualization must still work
+        it('Select All with string array without virtualization is not regressed', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-novirt' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: stringRecords100,
+                enableVirtualization: false,
+                showSelectAll: true,
+                mode: 'CheckBox',
+                maximumSelectionLength: 200,
+                popupHeight: '200px'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                const selectAllParent: HTMLElement = listObj.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement;
+                mouseEventArgs.target = selectAllParent;
+                mouseEventArgs.type = 'click';
+                (<any>listObj).selectAllItem(true, mouseEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).value).not.toBeNull();
+                    expect((<any>listObj).value.length).toBe(100);
+                    listObj.destroy();
+                    done();
+                }, 400);
+            }, 400);
+        });
+
+        // Edge case: empty data source — clicking Select All must not throw
+        it('Select All with empty string array does not throw and selects zero items', (done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'ms-1018940-empty' });
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: [],
+                enableVirtualization: true,
+                showSelectAll: true,
+                mode: 'CheckBox'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(() => {
+                    (<any>listObj).selectAllItem(true, mouseEventArgs);
+                }).not.toThrow();
+                const val: any = (<any>listObj).value;
+                expect(val === null || (Array.isArray(val) && val.length === 0)).toBe(true);
+                listObj.destroy();
+                done();
+            }, 400);
         });
     });
 });

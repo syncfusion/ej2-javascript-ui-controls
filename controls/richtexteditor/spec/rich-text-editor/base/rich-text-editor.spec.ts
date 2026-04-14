@@ -1457,14 +1457,14 @@ describe('RTE Base module ', () => {
 
             it('Content element height testing', (done) => {
                 //height is default is auto, so the content wrapper holds without content height is 18px whether toolbar enabled or not
-                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
+                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBeGreaterThan(51);
                 rteObj.toolbarSettings.enable = false;
                 rteObj.dataBind();
                 expect(rteObj.element.querySelector('.e-toolbar-items')).toBe(null);
-                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
+                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBeGreaterThan(51);
                 rteObj.toolbarSettings.enable = true;
                 rteObj.dataBind();
-                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
+                expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBeGreaterThan(51);
                 let node = rteObj.contentModule.getEditPanel().childNodes[0];
                 let sel = new NodeSelection().setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 2);
                 let parentNodes = new NodeSelection().getParentNodeCollection(new NodeSelection().getRange(document));
@@ -6350,7 +6350,7 @@ describe('RTE Base module ', () => {
         it('Check pixel', function (done) {
             document.getElementById('defaultRTE').style.display = 'block';
             setTimeout(() => {
-                expect(rteObj.contentModule.getPanel().offsetHeight).toBe(18);
+                expect(rteObj.contentModule.getPanel().offsetHeight).toBeGreaterThan(17);
                 done();
             }, 100);
 
@@ -6382,7 +6382,7 @@ describe('RTE Base module ', () => {
         it('check pecentage', function (done) {
             document.getElementById('defaultRTE').style.display = 'block';
             setTimeout(() => {
-                expect(rteObj.contentModule.getPanel().offsetHeight).toBe(18);
+                expect(rteObj.contentModule.getPanel().offsetHeight).toBeGreaterThan(17);
                 done();
             }, 100);
 

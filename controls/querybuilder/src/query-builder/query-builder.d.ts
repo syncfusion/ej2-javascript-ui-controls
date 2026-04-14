@@ -352,6 +352,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isRuleClicked;
     private groupCloned;
     private isRequestSent;
+    private initialID;
     private ddTree;
     private boundResizeHandler;
     /**

@@ -143,6 +143,7 @@ export class AggregateMenu {
         this.parent.element.appendChild(contextMenu);
         this.menuInfo[isStringField as number] = new Menu(menuOptions);
         this.menuInfo[isStringField as number].isStringTemplate = true;
+        this.menuInfo[isStringField as number].isAngular = this.parent.isModalDialog;
         this.menuInfo[isStringField as number].appendTo(contextMenu);
     }
     private getMenuItem(isStringField: number): AggregateTypes[] {
@@ -215,6 +216,7 @@ export class AggregateMenu {
             cssClass: this.parent.cssClass
         });
         valueDialog.isStringTemplate = true;
+        valueDialog.isAngular = this.parent.isModalDialog;
         valueDialog.appendTo(valueDialogElement);
         // this.valueDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('valueFieldSettings');
     }
@@ -341,6 +343,7 @@ export class AggregateMenu {
             }
         });
         optionWrapper1.isStringTemplate = true;
+        optionWrapper1.isAngular = this.parent.isModalDialog;
         optionWrapper1.appendTo(dropOptionDiv1);
         const optionWrapper2: DropDownList = new DropDownList({
             dataSource: fieldDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
@@ -363,6 +366,7 @@ export class AggregateMenu {
             }
         });
         optionWrapper2.isStringTemplate = true;
+        optionWrapper2.isAngular = this.parent.isModalDialog;
         optionWrapper2.appendTo(dropOptionDiv2);
         const optionWrapper3: DropDownList = new DropDownList({
             dataSource: fieldItemDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
@@ -374,6 +378,7 @@ export class AggregateMenu {
             cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
         });
         optionWrapper3.isStringTemplate = true;
+        optionWrapper3.isAngular = this.parent.isModalDialog;
         optionWrapper3.appendTo(dropOptionDiv3);
         const inputObj1: MaskedTextBox = new MaskedTextBox({
             placeholder: 'Enter field caption',

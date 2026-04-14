@@ -85,6 +85,9 @@ export class Image {
     private timeoutIds: number[] = [];
     private onDocumentClickBoundFn: (e: MouseEvent) => void;
     private inputUrlHandler: (e: Event) => void;
+    // iOS-specific touchstart listener to suppress the native image callout / quick toolbar
+    private iOSTouchStartHandler: ((e: TouchEvent) => void) | null = null;
+    private iOSTouchStartTarget: HTMLElement | null = null;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -1011,6 +1014,43 @@ export class Image {
         this.cancelResizeAction();
     }
 
+    /*
+     * Adds a non-passive `touchstart` listener on the given image element so that
+     * `preventDefault()` can be called to suppress the native iOS image callout /
+     * browser quick-toolbar that appears when tapping and holding an image.
+     * Only attaches on iOS devices; a no-op on all other platforms.
+     */
+    private addIosTouchStartListener(target: HTMLElement): void {
+        if (!isIDevice()) {
+            return;
+        }
+        // Remove any previously attached listener before attaching to the new target
+        this.removeIosTouchStartListener();
+        this.iOSTouchStartHandler = this.iOSTouchStartHandlerFn.bind(this);
+        this.iOSTouchStartTarget = target;
+        target.addEventListener('touchstart', this.iOSTouchStartHandler as EventListener, { passive: false });
+    }
+
+    /*
+     * Removes the non-passive `touchstart` listener that was previously attached by
+     * `addIosTouchStartListener`. Restores the default browser behaviour for the image.
+     */
+    private removeIosTouchStartListener(): void {
+        if (this.iOSTouchStartTarget && this.iOSTouchStartHandler) {
+            this.iOSTouchStartTarget.removeEventListener('touchstart', this.iOSTouchStartHandler as EventListener);
+        }
+        this.iOSTouchStartHandler = null;
+        this.iOSTouchStartTarget = null;
+    }
+
+    /*
+     * Named function for handling iOS touchstart events.
+     * Prevents default behavior to suppress native iOS image callout.
+     */
+    private iOSTouchStartHandlerFn(e: TouchEvent): void {
+        e.preventDefault();
+    }
+
     private showImageQuickToolbar(e: IShowPopupArgs): void {
         if ((e.type !== 'Images' && e.type !== 'Replace') || isNOU(this.parent.quickToolbarModule) ||
             isNOU(this.parent.quickToolbarModule.imageQTBar) ||
@@ -1081,12 +1121,18 @@ export class Image {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.imageQTBar.showPopup(target as Element, e.args as MouseEvent);
+                    // On iOS, prevent the native browser callout/quick-toolbar from appearing
+                    // over the image while our custom quick toolbar is visible.
+                    this.addIosTouchStartListener(target);
                     if (this.parent.insertImageSettings.resize === true) {
                         this.resizeStart(e.args as PointerEvent, target);
                     }
                 }, this.parent.element.dataset.rteUnitTesting === 'true' ? 0 : 400);
             } else {
                 this.quickToolObj.imageQTBar.showPopup(target as Element, e.args as MouseEvent);
+                // On iOS, prevent the native browser callout/quick-toolbar from appearing
+                // over the image while our custom quick toolbar is visible.
+                this.addIosTouchStartListener(target);
             }
         }
     }
@@ -1098,6 +1144,10 @@ export class Image {
                 this.quickToolObj.imageQTBar.hidePopup();
             }
         }
+        // Restore default iOS browser behaviour: remove the touchstart listener that
+        // was suppressing the native image callout / quick toolbar.
+        this.removeIosTouchStartListener();
+        // Mark toolbar as not visible
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
@@ -2626,6 +2676,8 @@ export class Image {
         this.remainingPastedImages = 0;
         this.collectedImageElements = [];
         this.pendingImageQTArgs = null;
+        // Clean up the iOS touchstart listener if the component is destroyed while the QT is open
+        this.removeIosTouchStartListener();
         this.isDestroyed = true;
         this.onDocumentClickBoundFn = null;
     }

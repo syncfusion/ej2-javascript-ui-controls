@@ -3616,6 +3616,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                     maskTBody.appendChild(maskTBodyRow);
                 }
+                this.addMaskRows(maskTBody, rowCount / 2, rows[0], content, axisDirection);
                 if (addEditRow && addEditRow.classList.contains('e-editedrow') && addEditRowIndex < rowCount) {
                     const addEditMaskRow: HTMLElement = maskTBody.childNodes[parseInt(addEditRowIndex.toString(), 10)] as HTMLElement;
                     addEditMaskRow.style.height = this.getRowHeight() + 'px';
@@ -3654,6 +3655,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (maskTable as HTMLElement).style.transform = 'translate(0px,' + scrollTop + 'px)';
         }
         return maskTable;
+    }
+
+    private addMaskRows(maskTBody: Element, rowCount: number, referenceRow: Element, isContent: boolean, axisDirection: string): void {
+        if (this.isTreeGrid && this.enableVirtualization && isContent && axisDirection === 'Y') {
+            for (let i: number = 0; i < rowCount; i++) {
+                const cloneNode: Element = referenceRow.cloneNode(true) as Element;
+                const height: number = referenceRow.getBoundingClientRect().height;
+                const maskTBodyRow: Element = this.applyMaskRow(cloneNode, height);
+                maskTBody.appendChild(maskTBodyRow);
+            }
+        }
     }
 
     private applyMaskRow(row: Element, rowHeight: number): Element {

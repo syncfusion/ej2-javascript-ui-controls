@@ -101,7 +101,7 @@ export class ScrollElements {
         const scrollGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_' + scroll.axis.name,
             transform: 'translate(' + ((scroll.isVertical && isInverse) ? scroll.height : isInverse ?
-                scroll.width : '0') + ',' + (scroll.isVertical && isInverse ? '0' : isInverse ?
+                scroll.width + scroll.svgExtraWidth : '0') + ',' + (scroll.isVertical && isInverse ? '0' : isInverse ?
                 scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && isInverse ?
                 '90' : scroll.isVertical ? '270' : isInverse ? '180' : '0') + ')'
         });

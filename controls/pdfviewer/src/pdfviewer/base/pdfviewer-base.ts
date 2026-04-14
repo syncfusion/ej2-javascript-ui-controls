@@ -5291,7 +5291,8 @@ export class PdfViewerBase {
             case 9:
                 if (event.target && ((event.target as any).id || (event.target as any).tabIndex) && this.pdfViewer.formFieldCollections) {
                     {
-                        if ((event.target as any).className === 'e-pv-formfield-input' || (event.target as any).className === 'foreign-object' || (event.target as any).id === this.pdfViewer.element.id + '_viewerContainer') {
+                        if ((event.target as any).className === 'e-pv-formfield-input' || (event.target as any).className === 'foreign-object' ||
+                            (event.target as any).id === this.pdfViewer.element.id + '_viewerContainer' || (event.target as any).className === 'e-pv-buttonItem') {
                             let nextField: any;
                             let fieldIndex: any;
                             let currentTarget: any = event.target;

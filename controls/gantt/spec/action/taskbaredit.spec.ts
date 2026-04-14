@@ -9796,3 +9796,40 @@ describe('Code coverage-The taskbar edit action in RTL mode with Multitaskbar en
         }
     });
 });
+describe('getDSTTransitions1', () => {
+    Gantt.Inject(Edit, RowDD);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    'TaskId': 3, 'TaskName': 'Child task 2',
+                    'StartDate': new Date('10/24/2017'), 'Duration': 2, 'Progress': 65
+                }],
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                    cssClass: 'cusClass',
+                    dependency: 'predecessor'
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                }
+            }, done);
+    });
+    it('should detect DST start and end for 2018', () => {
+        const transitions: any = ganttObj.editModule.taskbarEditModule['getDSTTransitions'](2018)
+        expect(transitions.dstStart).toBeUndefined()
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

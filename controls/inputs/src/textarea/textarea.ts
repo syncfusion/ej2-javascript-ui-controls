@@ -765,7 +765,9 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             properties: this.properties
         }, this.clearButton);
         this.formElement = null;
-        setValue('ej2_instances', null, this.element);
+        if (this.element.tagName === 'EJS-TEXTAREA' || this.element.tagName === 'EJS-SMARTTEXTAREA') {
+            setValue('ej2_instances', null, this.element);
+        }
         super.destroy();
     }
 

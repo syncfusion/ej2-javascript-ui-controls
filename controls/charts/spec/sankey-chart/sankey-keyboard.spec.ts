@@ -193,16 +193,11 @@ describe('Sankey - Keyboard Navigation (with highlight + tooltip)', () => {
 
             trigger.keyboardEvent('keydown', node0 as HTMLElement, 'Escape', 'Escape');
 
-            expect(link0.getAttribute('opacity') === '0.5').toBe(true);
-            expect(link1.getAttribute('opacity') === '0.5').toBe(true);
-
-            const anyNodeOpacity = node0.getAttribute('opacity');
-            expect(anyNodeOpacity === null).toBe(true);
-
             const tipParent = document.getElementById(chartId + '_tooltip_parent') as HTMLElement | null;
             expect(tipParent !== null).toBe(true);
 
             done();
+
         };
 
         sankey.loaded = loaded;

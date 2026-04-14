@@ -215,10 +215,6 @@ export class PdfSignature {
     /**
      * Creates a new PDF signature using a callback function for external signing.
      *
-     * @param {Function} callBack - A callback function that computes the signed document hash for external signature.
-     * @param {PdfSignatureOptions} options - Configuration options for the signature.
-     * @returns {PdfSignature} - The created PDF signature instance.
-     *
      * @example
      * ```typescript
      * // Load the document
@@ -252,15 +248,14 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Function} callBack - A callback function that computes the signed document hash for external signature.
+     * @param {PdfSignatureOptions} options - Configuration options for the signature.
+     * @returns {PdfSignature} - The created PDF signature instance.
      */
     public static create(callBack: ExternalSignatureCallback, options: PdfSignatureOptions): PdfSignature
     /**
      * Creates a new PDF signature using a callback function for external signing.
-     *
-     * @param {Function} callBack - A callback function that computes the signed document hash for external signature.
-     * @param {Uint8Array[]} publicCertificates - An array of public certificates.
-     * @param {PdfSignatureOptions} options - Configuration options for the signature.
-     * @returns {PdfSignature} - The created PDF signature instance.
      *
      * @example
      * ```typescript
@@ -295,17 +290,17 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Function} callBack - A callback function that computes the signed document hash for external signature.
+     * @param {Uint8Array[]} publicCertificates - An array of public certificates.
+     * @param {PdfSignatureOptions} options - Configuration options for the signature.
+     * @returns {PdfSignature} - The created PDF signature instance.
      */
     public static create(callBack: ExternalSignatureCallback,
         publicCertificates: Uint8Array[],
         options: PdfSignatureOptions): PdfSignature
     /**
      * Creates a new PDF signature using PFX certificate data and a password.
-     *
-     * @param {Uint8Array | string} pfxData - The PFX certificate data.
-     * @param {string} password - The password for the certificate.
-     * @param {PdfSignatureOptions} options - Configuration options for the signature.
-     * @returns {PdfSignature} - The created PDF signature instance.
      *
      * @example
      * ```typescript
@@ -328,16 +323,15 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
-     */
-    public static create(pfxData: Uint8Array | string, password: string, options: PdfSignatureOptions): PdfSignature;
-    /**
-     * Creates a new PDF signature with timestamp using a PFX certificate and timestamp callback.
      *
      * @param {Uint8Array | string} pfxData - The PFX certificate data.
      * @param {string} password - The password for the certificate.
      * @param {PdfSignatureOptions} options - Configuration options for the signature.
-     * @param {Function} timestamp Callback function that accesses TSA server and returns timestamp response for the request bytes.
      * @returns {PdfSignature} - The created PDF signature instance.
+     */
+    public static create(pfxData: Uint8Array | string, password: string, options: PdfSignatureOptions): PdfSignature;
+    /**
+     * Creates a new PDF signature with timestamp using a PFX certificate and timestamp callback.
      *
      * @example
      * ```typescript
@@ -365,6 +359,12 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Uint8Array | string} pfxData - The PFX certificate data.
+     * @param {string} password - The password for the certificate.
+     * @param {PdfSignatureOptions} options - Configuration options for the signature.
+     * @param {Function} timestamp Callback function that accesses TSA server and returns timestamp response for the request bytes.
+     * @returns {PdfSignature} - The created PDF signature instance.
      */
     public static create(pfxData: Uint8Array | string, password: string, options: PdfSignatureOptions,
         timestamp: TimestampCallback): PdfSignature;
@@ -374,10 +374,6 @@ export class PdfSignature {
      * @remarks
      * This creates a timestamp signature (also known as a document timestamp) for the PDF document.
      * Callback function is used to obtain the timestamp from a trusted timestamp authority (TSA) server.
-     *
-     * @param {PdfSignatureOptions} options - Configuration options for the signature.
-     * @param {Function} timestampCallback Callback function that accesses TSA server and returns timestamp response for the request bytes.
-     * @returns {PdfSignature} - The created PDF signature instance.
      *
      * @example
      * ```typescript
@@ -405,6 +401,10 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfSignatureOptions} options - Configuration options for the signature.
+     * @param {Function} timestampCallback Callback function that accesses TSA server and returns timestamp response for the request bytes.
+     * @returns {PdfSignature} - The created PDF signature instance.
      */
     public static create(options: PdfSignatureOptions, timestampCallback: TimestampCallback): PdfSignature;
     public static create(arg1: Uint8Array | string | ExternalSignatureCallback | PdfSignatureOptions,
@@ -484,8 +484,6 @@ export class PdfSignature {
     /**
      * Gets the date when the PDF was signed.
      *
-     * @returns {Date} - The signed date.
-     *
      * ```typescript
      * // Load the document
      * let document: PdfDocument = new PdfDocument(data);
@@ -508,14 +506,14 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {Date} - The signed date.
      */
     public getSignedDate(): Date {
         return this._signedDate;
     }
     /**
      * Gets the certificate information associated with the PDF signature.
-     *
-     * @returns {PdfCertificateInformation} - The certificate information.
      *
      * ```typescript
      * // Load the document
@@ -539,14 +537,14 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfCertificateInformation} - The certificate information.
      */
     public getCertificateInformation() : PdfCertificateInformation {
         return this._certificateInfo;
     }
     /**
      * Gets the options for configuring a digital signature in a PDF document.
-     *
-     * @returns {PdfSignatureOptions} The options for configuring a digital signature in a PDF document.
      *
      * ```typescript
      * // Load the document
@@ -566,6 +564,8 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfSignatureOptions} The options for configuring a digital signature in a PDF document.
      */
     public getSignatureOptions(): PdfSignatureOptions {
         const options: PdfSignatureOptions = {
@@ -583,17 +583,6 @@ export class PdfSignature {
     }
     /**
      * Replaces an empty signature field in a PDF document with externally signed data.
-     *
-     * @param {Uint8Array} inputPdfData - The PDF document data.
-     * @param {string} signatureName - The name of the signature field to replace.
-     * @param {Uint8Array} signedData - The externally signed content to embed.
-     * @param {DigestAlgorithm} algorithm - The digest algorithm used to hash the PDF content.
-     * @param {Uint8Array[]} publicCertificates - Optional array of public certificate data used for signing.
-     * @param {object} options - Configuration options for signature replacement.
-     * @param {string} options.password - Optional password to open the PDF if it's encrypted.
-     * @param {Uint8Array} options.timestampData - Optional timestamp token data to embeded in the signature.
-     * @param {boolean} options.skipSignatureEncoding - Skips encoding the signature.
-     * @returns {Uint8Array} The modified PDF document as a byte array.
      *
      * @example
      * ```typescript
@@ -638,6 +627,17 @@ export class PdfSignature {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {Uint8Array} inputPdfData - The PDF document data.
+     * @param {string} signatureName - The name of the signature field to replace.
+     * @param {Uint8Array} signedData - The externally signed content to embed.
+     * @param {DigestAlgorithm} algorithm - The digest algorithm used to hash the PDF content.
+     * @param {Uint8Array[]} publicCertificates - Optional array of public certificate data used for signing.
+     * @param {object} options - Configuration options for signature replacement.
+     * @param {string} options.password - Optional password to open the PDF if it's encrypted.
+     * @param {Uint8Array} options.timestampData - Optional timestamp token data to embeded in the signature.
+     * @param {boolean} options.skipSignatureEncoding - Skips encoding the signature.
+     * @returns {Uint8Array} The modified PDF document as a byte array.
      */
     public static replaceEmptySignature(
         inputPdfData: Uint8Array,
@@ -651,18 +651,6 @@ export class PdfSignature {
     ): Uint8Array;
     /**
      * Replaces an empty signature field in a PDF document with externally signed data.
-     *
-     * @param {Uint8Array} inputPdfData - The PDF document data.
-     * @param {string} signatureName - The name of the signature field to replace.
-     * @param {Uint8Array} signedData - The externally signed content to embed.
-     * @param {DigestAlgorithm} algorithm - The digest algorithm used to hash the PDF content.
-     * @param {string} outputPdfName - The name of the output file where the signed PDF will be saved.
-     * @param {object} options - Configuration options for signature replacement.
-     * @param {string} options.password - Optional password to open the PDF if it's encrypted.
-     * @param {Uint8Array[]} options.publicCertificates - Optional array of public certificate data used for signing.
-     * @param {Uint8Array} options.timestampData - Optional timestamp token data to embed in the signature.
-     * @param {boolean} options.skipSignatureEncoding - If true, skips encoding the signature; defaults to false.
-     * @returns {void} Returns nothing.
      *
      * @example
      * ```typescript
@@ -706,6 +694,18 @@ export class PdfSignature {
      *                                    'signed_output.pdf'
      *                                    publicCertificates);
      * ```
+     *
+     * @param {Uint8Array} inputPdfData - The PDF document data.
+     * @param {string} signatureName - The name of the signature field to replace.
+     * @param {Uint8Array} signedData - The externally signed content to embed.
+     * @param {DigestAlgorithm} algorithm - The digest algorithm used to hash the PDF content.
+     * @param {Uint8Array[]} publicCertificates - Optional array of public certificate data used for signing.
+     * @param {string} outputPdfName - The name of the output file where the signed PDF will be saved.
+     * @param {object} options - Configuration options for signature replacement.
+     * @param {string} options.password - Optional password to open the PDF if it's encrypted.
+     * @param {Uint8Array} options.timestampData - Optional timestamp token data to embed in the signature.
+     * @param {boolean} options.skipSignatureEncoding - If true, skips encoding the signature; defaults to false.
+     * @returns {void} Returns nothing.
      */
     public static replaceEmptySignature(
         inputPdfData: Uint8Array,

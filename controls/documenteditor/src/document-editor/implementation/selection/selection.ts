@@ -5847,12 +5847,13 @@ export class Selection {
         //return start Element and selection start index
         let startLineObj: ElementInfo = this.getStartLineWidget(paragraph, start, startElement, selectionStartIndex);
         startElement = startLineObj.element;
-        if (isNullOrUndefined(startElement)) {
+        if (isNullOrUndefined(startElement) || (!isNullOrUndefined(startElement) && startElement instanceof TextElementBox && startElement.paragraph !== paragraph && startElement.text === "\u000b")) {
             startLineWidget = paragraph.childWidgets[0] as LineWidget;
+            selectionStartIndex = isNullOrUndefined(startElement) ? startLineObj.index : 0;
         } else {
             startLineWidget = startElement.line;
+            selectionStartIndex = startLineObj.index;
         }
-        selectionStartIndex = startLineObj.index;
         let endLineObj: ElementInfo = this.getEndLineWidget(end, endElement, selectionEndIndex);
         endElement = endLineObj.element;
         if (endElement) {

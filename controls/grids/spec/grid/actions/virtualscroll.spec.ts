@@ -26,8 +26,9 @@ import { largeDataset, employeeData, filterData } from '../base/datasource.spec'
 import * as events from '../../../src/grid/base/constant';
 import { EditEventArgs, NotifyArgs } from '../../../src';
 import { Freeze } from '../../../src/grid/actions/freeze';
+import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 
-Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze);
+Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze, ColumnChooser);
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
     let grid: Grid;
@@ -2470,5 +2471,34 @@ describe('EJ2-1017579-Edit dialog fails to close when virtualization is enabled 
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;
+    });
+});
+
+describe('EJ2-1020711: ColumnChooser with Virtualization and AdaptiveUI - Script Error Fix', () => {
+    let gridObj: Grid;
+    let columns: Column[] = largeDatasetColumns(5);
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: largeDataset.slice(0, 50),
+                columns: columns,
+                enableVirtualization: true,
+                enableAdaptiveUI: true,
+                showColumnChooser: true,
+                toolbar: ['ColumnChooser'],
+                height: 300,
+                width: 400
+            }, done);
+    });
+
+    it('should scroll grid vertically without throwing dlgDiv null reference error', (done: Function) => {
+        const content = gridObj.getContent().firstElementChild as HTMLElement;
+        content.scrollTop = 500;
+        setTimeout(done, 200);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

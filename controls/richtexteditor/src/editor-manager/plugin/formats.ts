@@ -452,10 +452,10 @@ export class Formats {
                 }
             } else if (parentNode && parentNode.tagName === 'PRE' && parentNode.firstChild && parentNode.firstChild.nodeName === 'CODE' && parentNode.hasAttribute('data-language')) {
                 replaceTag = this.parent.domNode.createTagString(
-                    replaceNode, null, replaceHTML.replace(/>\s+</g, '><'));
+                    replaceNode, null, replaceHTML);
             } else {
                 replaceTag = this.parent.domNode.createTagString(
-                    replaceNode, (e.subCommand.toLowerCase() === 'blockquote' ? null : parentNode), replaceHTML.replace(/>\s+</g, '><'));
+                    replaceNode, (e.subCommand.toLowerCase() === 'blockquote' ? null : parentNode), replaceHTML);
             }
             if (parentNode.tagName === 'LI') {
                 const firstchildNode: Element = parentNode.firstChild as Element;
@@ -502,7 +502,7 @@ export class Formats {
                 let blockquoteContent: string = blockquoteNode.innerHTML;
                 blockquoteContent = blockquoteContent.replace(/<span class="e-rte-blockquote-open"><\/span>/g, '<blockquote>');
                 blockquoteContent = blockquoteContent.replace(/<span class="e-rte-blockquote-close"><\/span>/g, '</blockquote>');
-                if (blockquoteElem[0].parentElement === blockquoteElem[1].parentElement) {
+                if (blockquoteElem[0] && blockquoteElem[1] && blockquoteElem[0].parentElement === blockquoteElem[1].parentElement) {
                     this.parent.domNode.replaceWith(
                         blockquoteNode,
                         this.parent.domNode.openTagString(blockquoteNode) +

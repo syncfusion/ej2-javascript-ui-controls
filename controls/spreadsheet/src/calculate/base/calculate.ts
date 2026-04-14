@@ -76,6 +76,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public uniqueRange: string[] = [];
     private uniqueCells: string[];
+    /** @hidden */
+    public sortRange: string[] = [];
+    private sortCells: string[];
 
     /**
      * @hidden
@@ -3878,6 +3881,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                     this.uniqueCells.splice(this.uniqueCells.indexOf(dCell), 1);
                                     if (!this.uniqueCells.length) {
                                         this.uniqueCells = null;
+                                    }
+                                } else {
+                                    continue;
+                                }
+                            } else if (cell && cell.formula && cell.formula.toLowerCase().includes('sort')) {
+                                if (!this.sortCells || this.sortCells.indexOf(dCell) === -1) {
+                                    if (!this.sortCells) {
+                                        this.sortCells = [];
+                                    }
+                                    this.sortCells.push(dCell);
+                                    calculateFormula(dCell, formulaInfo);
+                                    val = formulaInfo.getFormulaValue();
+                                    this.sortCells.splice(this.sortCells.indexOf(dCell), 1);
+                                    if (!this.sortCells.length) {
+                                        this.sortCells = null;
                                     }
                                 } else {
                                     continue;

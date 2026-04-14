@@ -1578,6 +1578,8 @@ export class BasicFormulas {
         }
         if (value && (value.toUpperCase().indexOf('UNIQUE') < 0 ||
             (formulaString && !formulaString.toUpperCase().includes('UNIQUE'))) &&
+            (value.toUpperCase().indexOf('SORT') < 0 ||
+                (formulaString && !formulaString.toUpperCase().includes('SORT'))) &&
             value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments]) {
             spill = true;
         }
@@ -1604,7 +1606,8 @@ export class BasicFormulas {
             this.parent.getFormulaInfoTable().get('!' + this.parent.getSheetID(this.parent.grid) + '!' + actCell).getFormulaText() : '';
         for (let i: number = actRowIdx; i <= rowDiff; i++) {
             for (let j: number = actColIdx; j <= colDiff; j++) {
-                if (this.parent.dependencyLevel > 0 || formulaText.indexOf('UNIQUE') > - 1) {
+                if (this.parent.dependencyLevel > 0 || formulaText.indexOf('UNIQUE') > -1
+                    || formulaText.indexOf('SORT') > - 1) {
                     if (this.parent.getValueFromArg('!' + this.parent.getSheetID(this.parent.grid) + '!' +
                         getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > - 1) {
                         return;
@@ -3769,8 +3772,26 @@ export class BasicFormulas {
         argArr[0] = argArr[0].split('$').join('');
         let cellCollection: string | string[]; const valueCollection: string[] = [];
         if (argArr[0].indexOf(':') > -1) {
+            if (isNullOrUndefined(argArr[0].match(/[0-9]/))) {
+                const splitArray: string[] = argArr[0].split(':');
+                argArr[0] = splitArray[0] + '1' + ':' + splitArray[1] + (this.parent.spreadSheetUsedRange[0] + 1);
+            } else if (isNullOrUndefined(argArr[0].toUpperCase().match(/[A-Z]/))) {
+                const splitArray: string[] = argArr[0].split(':');
+                argArr[0] = 'A' + splitArray[0] + ':' + getAlphalabel(this.parent.spreadSheetUsedRange[1] + 1) + splitArray[1];
+            }
             const rangeSplit: string[] = argArr[0].split(':');
             if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
+                const collection: string[] = this.parent.dependencyCollection;
+                for (let i: number = 0; i < collection.length && !nestedFormula; i++) {
+                    if (collection[i as number].split(':')[0] === argArr[0].split(':')[0]) {
+                        this.clearDependency(collection[i as number]);
+                    }
+                }
+                if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
+                    if (!nestedFormula) {
+                        this.parent.dependencyCollection.push(argArr[0]);
+                    }
+                } else { this.clearDependency(argArr[0]); }
                 const j: number = argArr[0].indexOf(':'); let swap: number;
                 let rowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], 0, j));
                 let colIdx: number = this.parent.colIndex(this.parent.substring(argArr[0], 0, j));
@@ -3890,6 +3911,33 @@ export class BasicFormulas {
                         }
                     }
                 }
+                let activeCell: string; let sortActCell: string;
+                activeCell = sortActCell = this.parent.actCell;
+                if (activeCell) {
+                    activeCell = activeCell.indexOf('!') > -1 ? activeCell.substring(activeCell.lastIndexOf('!') + 1) : activeCell;
+                } else { activeCell = this.parent.actCell; }
+                const actRowIdx: number = this.parent.rowIndex(activeCell);
+                const actColIdx: number = this.parent.colIndex(activeCell);
+                if (this.parent.dependencyLevel === 0) {
+                    let isSpill: boolean = false;
+                    const resultRows: number = (argArr[3] === 'TRUE') ? (eRowIdx - rowIdx + 1) : id.length;
+                    const resultCols: number = (argArr[3] === 'TRUE') ? id.length : (eColIdx - colIdx + 1);
+                    for (let rowOffset: number = 0; rowOffset < resultRows; rowOffset++) {
+                        for (let colOffset: number = 0; colOffset < resultCols; colOffset++) {
+                            if (this.checkSpill(actColIdx + colOffset, actRowIdx + rowOffset)) { isSpill = true; }
+                            if (rowOffset === resultRows - 1 && colOffset === resultCols - 1) {
+                                const endCell: string = getAlphalabel(actColIdx + colOffset) + (actRowIdx + rowOffset);
+                                if (this.parent.sortRange.indexOf(sortActCell + ':' + endCell) === -1) {
+                                    this.parent.sortRange.push(sortActCell + ':' + endCell);
+                                }
+                            }
+                        }
+                    }
+                    if (isSpill) { return this.parent.formulaErrorStrings[FormulasErrorsStrings.Spill]; }
+                } else if (this.parent.dependencyLevel > 0 &&
+                    this.parent.getValueFromArg(getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > -1) {
+                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.Spill];
+                }
                 if (argArr[3] === 'TRUE') {
                     for (let startRow: number = rowIdx, rowInc: number = 0; startRow <= eRowIdx; startRow++, rowInc++) {
                         for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
@@ -3939,6 +3987,17 @@ export class BasicFormulas {
                     result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(colIdx) + (id[0] + rowIdx));
                 }
             }
+        } else if (this.parent.isCellReference(argArr[0])) {
+            if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
+                if (!nestedFormula) {
+                    this.parent.dependencyCollection.push(argArr[0]);
+                }
+            } else { this.clearDependency(argArr[0]); }
+            result = this.parent.getValueFromArg(argArr[0]);
+        } else {
+            result = argArr[0].trim();
+            if (this.parent.getErrorStrings().indexOf(result) > -1) { return result; }
+            result = this.parent.removeTics(result);
         }
         if (nestedFormula) {
             return values.join(',');

@@ -40,14 +40,6 @@ export class Render {
         }
         const data: ITreeData = <ITreeData>args.data;
         const parentData: ITreeData = <ITreeData>data.parentItem;
-        if (!isNullOrUndefined(parentData) && (data as any).isCollapsedChild && !isNullOrUndefined(args.row)) {
-            this.parent['toggleRowVisibility'](<HTMLTableRowElement>args.row, 'e-childrow-hidden');
-            const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
-            if (!this.parent.grid.isFrozenGrid() && !isNullOrUndefined(args.row.getAttribute('data-uid'))) {
-                const row: any = rowsObj.filter((e: Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0];
-                if (row) { row.visible = false; }
-            }
-        }
         if (!isNullOrUndefined(data.parentItem) && !isFilterChildHierarchy(this.parent) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent))))  {

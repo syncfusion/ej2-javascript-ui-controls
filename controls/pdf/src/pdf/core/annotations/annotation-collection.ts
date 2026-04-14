@@ -86,9 +86,6 @@ export class PdfAnnotationCollection {
     /**
      * Gets the `PdfAnnotation` at the specified index.
      *
-     * @param {number} index Field index.
-     * @returns {PdfAnnotation} Annotation at the specified index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -101,6 +98,9 @@ export class PdfAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Field index.
+     * @returns {PdfAnnotation} Annotation at the specified index
      */
     public at(index: number): PdfAnnotation {
         if (index < 0 || index >= this._annotations.length) {
@@ -124,9 +124,6 @@ export class PdfAnnotationCollection {
     /**
      * Add a new `PdfAnnotation` into the collection.
      *
-     * @param {PdfAnnotation} annotation Annotation to add.
-     * @returns {number} Annotation index.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -139,6 +136,9 @@ export class PdfAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfAnnotation} annotation Annotation to add.
+     * @returns {number} Annotation index.
      */
     public add(annotation: PdfAnnotation): number {
         if (typeof annotation === 'undefined' || annotation === null) {
@@ -192,9 +192,6 @@ export class PdfAnnotationCollection {
     /**
      * Remove an annotation from the collection.
      *
-     * @param {PdfAnnotation} annotation Annotation to remove.
-     * @returns {void} Nothing.
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -209,6 +206,9 @@ export class PdfAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfAnnotation} annotation Annotation to remove.
+     * @returns {void} Nothing.
      */
     public remove(annotation: PdfAnnotation): void {
         if (annotation && annotation._ref) {
@@ -220,9 +220,6 @@ export class PdfAnnotationCollection {
     }
     /**
      * Remove an annotation from the collection at the specified index.
-     *
-     * @param {number} index Annotation index.
-     * @returns {void} Nothing.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -236,6 +233,9 @@ export class PdfAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Annotation index.
+     * @returns {void} Nothing.
      */
     public removeAt(index: number): void {
         if (index < 0 || index >= this._annotations.length) {
@@ -812,10 +812,6 @@ export class PdfPopupAnnotationCollection {
     /**
      * Gets the popup annotation at the specified index.
      *
-     * @private
-     * @param {number} index Index of the annotation
-     * @returns {number} Annotation at the specified index
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -830,6 +826,10 @@ export class PdfPopupAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @private
+     * @param {number} index Index of the annotation
+     * @returns {number} Annotation at the specified index
      */
     public at(index: number): PdfPopupAnnotation {
         if (index < 0 || index >= this._collection.length) {
@@ -839,9 +839,6 @@ export class PdfPopupAnnotationCollection {
     }
     /**
      * Add a new popup annotation into the collection
-     *
-     * @param {PdfPopupAnnotation} annotation Annotation to add
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -858,6 +855,9 @@ export class PdfPopupAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPopupAnnotation} annotation Annotation to add
+     * @returns {void} Nothing
      */
     public add(annotation: PdfPopupAnnotation): void {
         if (this._annotation._dictionary.get('F') === 30) {
@@ -883,9 +883,6 @@ export class PdfPopupAnnotationCollection {
     /**
      * Remove an annotation from the collection
      *
-     * @param {PdfPopupAnnotation} annotation Annotation to remove
-     * @returns {void} Nothing
-     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -902,6 +899,9 @@ export class PdfPopupAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {PdfPopupAnnotation} annotation Annotation to remove
+     * @returns {void} Nothing
      */
     public remove(annotation: PdfPopupAnnotation): void {
         const index: number = this._collection.indexOf(annotation);
@@ -911,9 +911,6 @@ export class PdfPopupAnnotationCollection {
     }
     /**
      * Remove an annotation from the collection at the specified index
-     *
-     * @param {number} index Annotation index to remove
-     * @returns {void} Nothing
      *
      * ```typescript
      * // Load an existing PDF document
@@ -929,6 +926,9 @@ export class PdfPopupAnnotationCollection {
      * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @param {number} index Annotation index to remove
+     * @returns {void} Nothing
      */
     public removeAt(index: number): void {
         if (index > -1 && index < this._collection.length) {

@@ -133,6 +133,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public isDeferLayoutUpdate: boolean;
     private isInitial: boolean = true;
+    /** @hidden */
+    public isModalDialog: boolean = false;
 
     //Property Declarations
     /**
@@ -1072,6 +1074,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private initialLoad(): void {
+        if (this.isAngular && !isNullOrUndefined(this.element.closest('.cdk-overlay-pane'))) {
+            this.isModalDialog = true;
+        }
         const loadArgs: LoadEventArgs = {
             dataSourceSettings: this.dataSourceSettings,
             defaultFieldListOrder: this.defaultFieldListOrder
@@ -2018,5 +2023,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             removeClass([this.element], cls.RTL);
             removeClass([this.element], cls.DEVICE);
         }
+        this.isModalDialog = false;
     }
 }

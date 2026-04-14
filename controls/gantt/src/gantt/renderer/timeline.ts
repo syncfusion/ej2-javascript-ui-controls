@@ -425,6 +425,8 @@ export class Timeline {
         if (!args.cancel) {
             this.parent['showLoadingIndicator']();
             this.changeTimelineSettings(newTimeline);
+            // Persist the custom zoom-to-fit timeline so it survives persistence reloads
+            this.parent.currentZoomingLevel = extend({}, {}, newTimeline, true);
             this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         }
         this.isZoomToFit = false;
@@ -601,16 +603,29 @@ export class Timeline {
             this.customTimelineSettings.bottomTier.unit : this.customTimelineSettings.topTier.unit;
         const tier: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
             'bottomTier' : 'topTier';
-        const zoomLevel: number = this.getCurrentZoomingLevel(unit, count, tier);
+        let zoomLevel: number = this.getCurrentZoomingLevel(unit, count, tier);
+        const persisted: ZoomTimelineSettings = this.parent.currentZoomingLevel;
+        if (persisted && !isNullOrUndefined(persisted.timelineUnitSize)) {
+            const matchingIndex: number = this.parent.zoomingLevels.findIndex((lvl: ZoomTimelineSettings) => {
+                return lvl.timelineUnitSize === persisted.timelineUnitSize;
+            });
+            if (matchingIndex === -1 && this.parent.isLoad) {
+                if (!isNullOrUndefined(persisted.level)) {
+                    zoomLevel = persisted.level;
+                }
+            } else {
+                this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel as number];
+            }
+        } else {
+            this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel as number];
+        }
         if (this.parent.toolbarModule) {
             if (zoomLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false);
             } else if (zoomLevel === this.parent.zoomingLevels[0].level) {
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false);
             }
-
         }
-        this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel as number];
         return zoomLevel;
     }
     /**

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I822861` - Now, the image quick toolbar opens as expected and does not conflict with the iOS Cut, Copy, and Paste pop-up in the Rich Text Editor.
+
+- `#I825108` - Now, the SVG element inside the Rich Text Editor will be removed properly on backspace.
+
+- `#I825149` - Now, the Rich Text Editor table quick toolbar displays the correct alignment based on the DOM output.
+
 ## 33.1.47 (2026-04-07)
 
 ### RichTextEditor
@@ -17,6 +29,8 @@
 - `#I822391` - Now, the `BulletFormatList`and `NumberFormatList` dropdown items correctly maintain their active state even when using custom list types.
 
 - `#I820760` - Now row/column insertion via quick-insert icons; table backspace removal now behaves consistently.
+
+- `#I823383` - Now, after pasting a nested list, pressing Enter and then Backspace does not break the nested list structure.
 
 ## 33.1.46 (2026-03-31)
 

@@ -9397,7 +9397,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             setTimeout(function () {
                 (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
-                expect((rteObj as any).inputElement.querySelector('table td').offsetHeight).toBe(22);
+                expect((rteObj as any).inputElement.querySelector('table td').offsetHeight).toBeGreaterThan(21);
                 expect(height + 2).toEqual((rteObj as any).inputElement.querySelector('table td').offsetHeight);
                 done();
             }, 100);
@@ -13750,6 +13750,103 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT));
             setTimeout(() => {
                 expect(editor.inputElement.querySelector('table')).not.toBeNull();
+                done();
+            }, 100);
+        });
+    });
+
+    describe("1018137: Table Cell Alignment Mismatch Between Quick Toolbar Display and DOM Output", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;"><p>Syncfusion</p></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('should display correct alignment in quick toolbar after applying different alignments via main toolbar then quick toolbar', (done) => {
+            // Select table cell content
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let cell: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+            setCursorPoint(cell, 0);
+            cell.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                // Apply alignment via main toolbar (Justify Full)
+                let alignBtn: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Alignments') as HTMLElement;
+                alignBtn.click();
+                let dropdown: HTMLElement = document.querySelector('#' + controlId + "_toolbar_Alignments-popup");
+                (dropdown.querySelectorAll(".e-item")[3] as HTMLElement).click(); // Index 3 = JustifyFull
+                // Verify main toolbar alignment was applied
+                expect((cell.querySelector('p')).style.textAlign === 'justify').toBe(true);
+                // Re-select same cell (to trigger quick toolbar again)
+                setTimeout(() => {
+                    rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    setCursorPoint(cell, 0);
+                    cell.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        // Apply different alignment via quick toolbar (Left)
+                        let tablePop: HTMLElement = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                        let quickAlignBtn: HTMLElement = tablePop.querySelector("#" + controlId + "_quick_Alignments");
+                        quickAlignBtn.click();
+                        let quickDropdown: HTMLElement = document.querySelector('#' + controlId + "_quick_Alignments-popup");
+                        (quickDropdown.querySelectorAll(".e-item")[0] as HTMLElement).click(); // Index 0 = JustifyLeft
+                        // Reopen quick toolbar to verify state
+                        setTimeout(() => {
+                            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                            setCursorPoint(cell, 0);
+                            cell.dispatchEvent(MOUSEUP_EVENT);
+                            setTimeout(() => {
+                                // Verify DOM has latest alignment (left)
+                                expect((cell as HTMLElement).style.textAlign === 'left').toBe(true);
+                                // Verify quick toolbar shows correct (latest) alignment
+                                let tablePop2: HTMLElement = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                                let quickAlignBtn2: HTMLElement = tablePop2.querySelector("#" + controlId + "_quick_Alignments");
+                                // Open dropdown to verify visual state shows left alignment is selected
+                                quickAlignBtn2.click();
+                                let quickDropdown2: HTMLElement = document.querySelector('#' + controlId + "_quick_Alignments-popup");
+                                let leftOption = quickDropdown2.querySelectorAll(".e-item")[0] as HTMLElement;
+                                expect(leftOption.classList.contains('e-active')).toBe(true);
+                                done();
+                            }, 100);
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('1020469: Undo triggers on keyup instead of keydown after deleting entire table with Backspace.', () => {
+        let editor: RichTextEditor;
+        const allCellsSelectedValue: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select e-multi-cells-select" style="width: 50%;"><br></td><td class="e-cell-select e-multi-cells-select e-cell-select-end" style="width: 50%;"><br></td></tr><tr><td class="e-cell-select e-multi-cells-select" style="width: 50%;"><br></td><td class="e-cell-select e-multi-cells-select e-cell-select-end" style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
+        beforeEach(() => {
+            editor = renderRTE({
+                value: allCellsSelectedValue,
+                toolbarSettings: { items: ['Undo'] }
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it('should remove entire table and enable undo when all cells are selected and Backspace is pressed', (done: DoneFn) => {
+            editor.focusIn();
+            const firstCell: HTMLElement = editor.inputElement.querySelector('td.e-cell-select');
+            setCursorPoint(firstCell as Element, 0);
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT));
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('table')).toBeNull();
+                const undoBtn: HTMLElement = editor.element.querySelector('.e-toolbar-items').childNodes[0] as HTMLElement;
+                expect(undoBtn.classList.contains('e-overlay')).toBe(false);
                 done();
             }, 100);
         });

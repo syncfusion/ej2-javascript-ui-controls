@@ -363,11 +363,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             case 'cssClass':
                 Input.updateCssClass(newProp.cssClass, oldProp.cssClass, this.textboxWrapper.container);
                 break;
-            case 'locale':
+            case 'locale': {
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                const currentPlaceholder: string = (this.l10n.getConstant('placeholder') === '' ? this.placeholder : this.l10n.getConstant('placeholder'));
+                this.setProperties({ placeholder: currentPlaceholder }, true);
                 Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            }
                 break;
             case 'prependTemplate':
                 this.updatePrependTemplate();
@@ -931,7 +933,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             floatLabelType: this.floatLabelType,
             properties: this.properties
         }, this.clearButton);
-        setValue('ej2_instances', null, this.element);
+        if (this.element.tagName === 'EJS-TEXTBOX') {
+            setValue('ej2_instances', null, this.element);
+        }
         super.destroy();
     }
 

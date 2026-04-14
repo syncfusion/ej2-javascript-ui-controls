@@ -74,9 +74,15 @@ export const aggregateComputation: string = 'aggregateComputation';
 /** @hidden */
 export const getUniqueRange: string = 'getUniqueRange';
 /** @hidden */
+export const getSortRange: string = 'getSortRange';
+/** @hidden */
 export const removeUniquecol: string = 'removeUniquecol';
 /** @hidden */
+export const removeSortcol: string = 'removeSortcol';
+/** @hidden */
 export const checkUniqueRange: string = 'checkUniqueRange';
+/** @hidden */
+export const checkSortRange: string = 'checkSortRange';
 /** @hidden */
 export const reApplyFormula: string = 'reApplyFormula';
 /** @hidden */

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.1.49 (2026-04-14)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#F198183` - Popup misalignment during filtering when the dropdown opens above the input in the MultiColumn ComboBox has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### MultiColumn ComboBox

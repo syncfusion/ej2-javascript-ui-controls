@@ -11876,10 +11876,19 @@ export class Layout {
                 if (block instanceof TableWidget) {
                     nextWidget = blocks[0] as TableWidget;
                 }
+            }     
+            //checking the section break countinue occur
+            let sectionBreakSkip: boolean = false;
+            if (nextWidget instanceof ParagraphWidget && nextWidget.isEmpty() && !nextWidget.isInsideTable
+                && nextWidget.previousWidget instanceof ParagraphWidget && nextWidget.nextRenderedWidget instanceof BlockWidget
+                && nextWidget === nextWidget.bodyWidget.lastChild
+                && nextWidget.bodyWidget.index !== nextWidget.nextRenderedWidget.bodyWidget.index
+                && nextWidget.nextRenderedWidget.bodyWidget.page === nextWidget.bodyWidget.page) {
+                sectionBreakSkip = true
             }
             if (!this.documentHelper.owner.editorModule.isFootnoteElementRemoved && currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(this.viewer.clientActiveArea.y, 2)) &&
-                isNullOrUndefined(nextWidget.nextWidget)) {
+                isNullOrUndefined(nextWidget.nextWidget) && !sectionBreakSkip) {
                 break;
             }
             if (!isNullOrUndefined((currentWidget as ParagraphWidget).floatingElements)) {
@@ -12709,7 +12718,7 @@ export class Layout {
                     shape.x = position.x;
                 }
                 if (shape instanceof ShapeElementBox || shape instanceof GroupShapeElementBox) {
-                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape);
+                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape, undefined, false, true);
                 }
             }
         }

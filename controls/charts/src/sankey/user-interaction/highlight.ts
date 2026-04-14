@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { Sankey } from '../sankey';
 import { SankeyLinkSettingsModel, SankeyNodeSettingsModel } from '../model/sankey-base-model';
 
@@ -8,6 +8,16 @@ import { SankeyLinkSettingsModel, SankeyNodeSettingsModel } from '../model/sanke
 export class SankeyHighlight {
     private chart: Sankey;
     private lastHoveredId: string | null = null;
+    private animationTimeoutId: number | null = null;
+
+    /** Default animation duration for highlight removal in milliseconds. */
+    private readonly DEFAULT_ANIMATION_DURATION: number = 400;
+
+    /** Minimum animation duration to ensure smooth transitions. */
+    private readonly MIN_ANIMATION_DURATION: number = 50;
+
+    /** Epsilon value for floating point opacity comparison. */
+    private readonly OPACITY_EPSILON: number = 0.001;
 
     /**
      * Constructor.
@@ -47,6 +57,17 @@ export class SankeyHighlight {
     }
 
     /**
+     * Retrieves all label elements from the chart's label collection.
+     *
+     * @returns {HTMLElement[]} - Array of label text elements, empty array if collection not found.
+     * @private
+     */
+    public getLabelElements(): HTMLElement[] {
+        const labelCollection: HTMLElement | null = document.getElementById(this.chart.element.id + '_label_collection');
+        return labelCollection ? Array.prototype.slice.call(labelCollection.querySelectorAll('text')) as HTMLElement[] : [];
+    }
+
+    /**
      * Clears active highlight when the pointer leaves the chart surface.
      *
      * @param {Event} _event - The leave event (unused).
@@ -59,6 +80,7 @@ export class SankeyHighlight {
 
     /**
      * Tracks pointer/touch movement to identify interactive nodes/links and apply the corresponding highlight.
+     * Uses debouncing to prevent duplicate highlight updates from multiple event sources.
      *
      * @param {PointerEvent | TouchEvent} event - The pointer or touch move event used to detect the hovered element.
      * @returns {void}
@@ -74,14 +96,24 @@ export class SankeyHighlight {
 
         if (hitElement.type === 'node' && hitElement.id) {
             if (this.lastHoveredId === 'node:' + hitElement.id) { return; }
+            if (this.animationTimeoutId !== null) {
+                clearTimeout(this.animationTimeoutId);
+                this.animationTimeoutId = null;
+            }
+            this.stopAllAnimations();
             this.lastHoveredId = 'node:' + hitElement.id;
             this.highlightForNode(hitElement.id);
         } else if (hitElement.type === 'link') {
             if (this.lastHoveredId === 'link:' + (hitElement.id)) { return; }
+            if (this.animationTimeoutId !== null) {
+                clearTimeout(this.animationTimeoutId);
+                this.animationTimeoutId = null;
+            }
+            this.stopAllAnimations();
             this.lastHoveredId = 'link:' + (hitElement.id);
             this.highlightForLink(hitElement.source, hitElement.target);
         } else {
-            this.clearHighlights();
+            this.clearHighlights(true);
         }
     }
 
@@ -154,10 +186,12 @@ export class SankeyHighlight {
         const chart: Sankey = this.chart;
         const linkCollection: HTMLElement | null = document.getElementById(chart.element.id + '_link_collection');
         const nodeCollection: HTMLElement | null = document.getElementById(chart.element.id + '_node_collection');
+        const labelCollection: HTMLElement | null = document.getElementById(chart.element.id + '_label_collection');
         if (!linkCollection || !nodeCollection) { return; }
 
         const linkElements: SVGElement[] = Array.prototype.slice.call(linkCollection.querySelectorAll('path')) as SVGElement[];
         const nodeElements: SVGElement[] = Array.prototype.slice.call(nodeCollection.querySelectorAll('rect')) as SVGElement[];
+        const labelElements: SVGElement[] = labelCollection ? Array.prototype.slice.call(labelCollection.querySelectorAll('text')) as SVGElement[] : [];
 
         // collect neighbor node ids connected to hovered node
         const neighborNodeMap: { [id: string]: boolean } = {};
@@ -190,6 +224,8 @@ export class SankeyHighlight {
                 nodeElement.setAttribute('opacity', String(nodeInactiveOpacity));
             }
         }
+
+        this.highlightLabelsForNodes([nodeId, ...Object.keys(neighborNodeMap)], labelElements, inactiveOpacity);
     }
 
     /**
@@ -204,10 +240,12 @@ export class SankeyHighlight {
         const chart: Sankey = this.chart;
         const linkCollection: HTMLElement | null = document.getElementById(chart.element.id + '_link_collection');
         const nodeCollection: HTMLElement | null = document.getElementById(chart.element.id + '_node_collection');
+        const labelCollection: HTMLElement | null = document.getElementById(chart.element.id + '_label_collection');
         if (!linkCollection || !nodeCollection) { return; }
 
         const linkElements: SVGElement[] = Array.prototype.slice.call(linkCollection.querySelectorAll('path')) as SVGElement[];
         const nodeElements: SVGElement[] = Array.prototype.slice.call(nodeCollection.querySelectorAll('rect')) as SVGElement[];
+        const labelElements: SVGElement[] = labelCollection ? Array.prototype.slice.call(labelCollection.querySelectorAll('text')) as SVGElement[] : [];
 
         const highlightOpacity: number = (chart.linkStyle && (chart.linkStyle as SankeyLinkSettingsModel).highlightOpacity);
         const inactiveOpacity: number = (chart.linkStyle && (chart.linkStyle as SankeyLinkSettingsModel).inactiveOpacity);
@@ -234,36 +272,231 @@ export class SankeyHighlight {
                 nodeElement.setAttribute('opacity', String(nodeInactiveOpacity));
             }
         }
+
+        const highlightedNodeIds: string[] = [];
+        if (source) { highlightedNodeIds.push(source); }
+        if (target) { highlightedNodeIds.push(target); }
+        this.highlightLabelsForNodes(highlightedNodeIds, labelElements, inactiveOpacity);
     }
 
     /**
      * Clears active node/link highlight and restores default link and node opacity values.
+     * Uses smooth animation for opacity transitions when truly leaving the chart.
+     * Set animate to false for immediate clearing (e.g., on chart destruction).
+     *
+     * @param {boolean} [animate=true] - Whether to use animation for the clear transition.
+     *                                    True: smooth fade over DEFAULT_ANIMATION_DURATION ms.
+     *                                    False: immediate opacity reset to defaults.
+     * @returns {void}
+     * @private
+     */
+    public clearHighlights(animate: boolean = true): void {
+        if (this.lastHoveredId === null) { return; }
+
+        this.lastHoveredId = null;
+
+        if (animate) {
+            this.performClearHighlightsWithAnimation();
+        }
+    }
+
+    /**
+     * Stops all ongoing animations on link, node, and label elements without changing their opacity.
+     * Used when switching between highlights to allow new highlight values to be applied immediately.
      *
      * @returns {void}
      * @private
      */
-    public clearHighlights(): void {
+    public stopAllAnimations(): void {
         const chart: Sankey = this.chart;
-        this.lastHoveredId = null;
 
         const linkCollection: HTMLElement | null = document.getElementById(chart.element.id + '_link_collection');
         const nodeCollection: HTMLElement | null = document.getElementById(chart.element.id + '_node_collection');
         if (!linkCollection || !nodeCollection) { return; }
 
-        const linkElements: SVGElement[] = Array.prototype.slice.call(linkCollection.querySelectorAll('path')) as SVGElement[];
-        const nodeElements: SVGElement[] = Array.prototype.slice.call(nodeCollection.querySelectorAll('rect')) as SVGElement[];
+        const linkElements: HTMLElement[] = Array.prototype.slice.call(linkCollection.querySelectorAll('path')) as HTMLElement[];
+        const nodeElements: HTMLElement[] = Array.prototype.slice.call(nodeCollection.querySelectorAll('rect')) as HTMLElement[];
+        const labelElements: HTMLElement[] = this.getLabelElements();
+
+        for (const linkElement of linkElements) {
+            if (linkElement.hasAttribute('e-animate')) {
+                linkElement.removeAttribute('e-animate');
+                Animation.stop(linkElement as HTMLElement);
+            }
+        }
+
+        for (const nodeElement of nodeElements) {
+            if (nodeElement.hasAttribute('e-animate')) {
+                nodeElement.removeAttribute('e-animate');
+                Animation.stop(nodeElement as HTMLElement);
+            }
+        }
+
+        for (const labelElement of labelElements) {
+            if (labelElement.hasAttribute('e-animate')) {
+                labelElement.removeAttribute('e-animate');
+                Animation.stop(labelElement as HTMLElement);
+            }
+        }
+    }
+
+    /**
+     * Performs the clearing of highlights with smooth animation for opacity values.
+     * Animates all link, node, and label opacity changes to the default values.
+     *
+     * @returns {void}
+     * @private
+     */
+    public performClearHighlightsWithAnimation(): void {
+        if (this.chart.isDestroyed) { return; }
+
+        const chart: Sankey = this.chart;
+
+        const linkCollection: HTMLElement | null = document.getElementById(chart.element.id + '_link_collection');
+        const nodeCollection: HTMLElement | null = document.getElementById(chart.element.id + '_node_collection');
+        if (!linkCollection || !nodeCollection) { return; }
+
+        const linkElements: HTMLElement[] = Array.prototype.slice.call(linkCollection.querySelectorAll('path')) as HTMLElement[];
+        const nodeElements: HTMLElement[] = Array.prototype.slice.call(nodeCollection.querySelectorAll('rect')) as HTMLElement[];
+        const labelElements: HTMLElement[] = this.getLabelElements();
 
         const defaultLinkOpacity: number = (chart.linkStyle && (chart.linkStyle as SankeyLinkSettingsModel).opacity);
         const defaultNodeOpacity: number = (chart.nodeStyle && (chart.nodeStyle as SankeyNodeSettingsModel).opacity);
 
         for (const linkElement of linkElements) {
-            linkElement.setAttribute('opacity', String(defaultLinkOpacity));
+            const currentOpacity: number = parseFloat(linkElement.getAttribute('opacity'));
+            if (currentOpacity && Math.abs(currentOpacity - defaultLinkOpacity) > this.OPACITY_EPSILON) {
+                this.animateOpacityChange(linkElement, currentOpacity, defaultLinkOpacity, this.DEFAULT_ANIMATION_DURATION);
+            }
         }
 
         for (const nodeElement of nodeElements) {
-            if (defaultNodeOpacity < 1) { nodeElement.setAttribute('opacity', String(defaultNodeOpacity)); }
-            else { nodeElement.removeAttribute('opacity'); }
+            const currentOpacity: number = parseFloat(nodeElement.getAttribute('opacity'));
+            if (currentOpacity && Math.abs(currentOpacity - defaultNodeOpacity) > this.OPACITY_EPSILON) {
+                this.animateOpacityChange(nodeElement, currentOpacity, defaultNodeOpacity, this.DEFAULT_ANIMATION_DURATION);
+            }
         }
+        for (const labelElement of labelElements) {
+            const currentOpacity: number = parseFloat(labelElement.getAttribute('opacity') || '1');
+            if (Math.abs(currentOpacity - 1) > this.OPACITY_EPSILON) {
+                this.animateOpacityChange(labelElement, currentOpacity, 1, this.DEFAULT_ANIMATION_DURATION, true);
+            }
+        }
+        if (this.DEFAULT_ANIMATION_DURATION > 0) {
+            this.animationTimeoutId = window.setTimeout(() => {
+                this.animationTimeoutId = null;
+            }, Math.max(this.DEFAULT_ANIMATION_DURATION, this.MIN_ANIMATION_DURATION));
+        }
+    }
+
+    /**
+     * Animates opacity change from start value to end value for an element.
+     * Includes proper cleanup on chart destruction.
+     *
+     * @param {HTMLElement} element - The element to animate.
+     * @param {number} startOpacity - The starting opacity value.
+     * @param {number} endOpacity - The ending opacity value.
+     * @param {number} duration - The animation duration in milliseconds.
+     * @param {boolean} removeAttribute - Whether to remove the opacity attribute at the end (for labels).
+     * @returns {void}
+     * @private
+     */
+    public animateOpacityChange(element: HTMLElement | null, startOpacity: number,
+                                endOpacity: number, duration: number, removeAttribute?: boolean): void {
+        if (!element) { return; }
+
+        const effectiveDuration: number = Math.max(duration, this.MIN_ANIMATION_DURATION);
+
+        if (duration === 0) {
+            if (removeAttribute) {
+                element.removeAttribute('opacity');
+            } else if (endOpacity < 1) {
+                element.setAttribute('opacity', String(endOpacity));
+            } else {
+                element.removeAttribute('opacity');
+            }
+            return;
+        }
+
+        element.setAttribute('e-animate', 'true');
+
+        new Animation({}).animate(element, {
+            duration: effectiveDuration,
+            progress: (args: AnimationOptions): void => {
+                // Stop animation if chart was destroyed
+                if (this.chart.isDestroyed) {
+                    Animation.stop(element as HTMLElement);
+                    return;
+                }
+                element.style.animation = '';
+                const progress: number = Math.min(args.timeStamp / args.duration, 1);
+                const currentOpacity: number = startOpacity + (endOpacity - startOpacity) * progress;
+                element.setAttribute('opacity', String(parseFloat(currentOpacity.toFixed(3))));
+            },
+            end: (): void => {
+                // Only apply final opacity if animation was not interrupted (e-animate marker exists)
+                if (element.hasAttribute('e-animate')) {
+                    if (removeAttribute) {
+                        element.removeAttribute('opacity');
+                    } else if (endOpacity < 1) {
+                        element.setAttribute('opacity', String(endOpacity));
+                    } else {
+                        element.removeAttribute('opacity');
+                    }
+                    element.removeAttribute('e-animate');
+                }
+            }
+        });
+    }
+
+    /**
+     * Highlights labels for the specified nodes and dims all other labels.
+     *
+     * @param {string[]} highlightedNodeIds - Array of node ids whose labels should be highlighted.
+     * @param {SVGElement[]} labelElements - Array of all label text elements in the chart.
+     * @param {number} inactiveOpacity - The opacity value to apply to non-highlighted labels.
+     * @returns {void}
+     * @private
+     */
+    public highlightLabelsForNodes(highlightedNodeIds: string[], labelElements: SVGElement[], inactiveOpacity: number): void {
+        for (const labelElement of labelElements) {
+            const labelElementId: string | null = labelElement.getAttribute('id');
+            if (!labelElementId) { continue; }
+            const nodeLabel: string | null = this.getNodeLabelFromLabelElement(labelElement);
+
+            if (nodeLabel && highlightedNodeIds.indexOf(nodeLabel) > -1) {
+                labelElement.removeAttribute('opacity');
+            } else {
+                labelElement.setAttribute('opacity', String(inactiveOpacity));
+            }
+        }
+    }
+
+    /**
+     * Extracts the node label/id from a label text element by finding the corresponding node.
+     *
+     * @param {SVGElement} labelElement - The label text element to extract the node id from.
+     * @returns {string | null} returns the node id if found, else null.
+     * @private
+     */
+    public getNodeLabelFromLabelElement(labelElement: SVGElement): string | null {
+        const labelElementId: string | null = labelElement.getAttribute('id');
+        if (!labelElementId) { return null; }
+        const match: RegExpMatchArray | null = labelElementId.match(/_label_level_(\d+)_(\d+)$/);
+        if (!match) { return null; }
+
+        const level: string = match[1];
+        const index: string = match[2];
+
+        const chartId: string = this.chart.element.id;
+        const nodeElementId: string = `${chartId}_node_level_${level}_${index}`;
+        const nodeElement: HTMLElement | null = document.getElementById(nodeElementId);
+
+        if (nodeElement) {
+            return nodeElement.getAttribute('aria-label');
+        }
+
+        return null;
     }
 
     /**
@@ -275,10 +508,16 @@ export class SankeyHighlight {
     public getModuleName(): string { return 'SankeyHighlight'; }
 
     /**
-     * Destroys the highlight module by unwiring events to release handlers.
+     * Destroys the highlight module by unwiring events and cleaning up any pending animations.
      *
      * @returns {void}
      * @private
      */
-    public destroy(): void { this.unwireEvents(); }
+    public destroy(): void {
+        if (this.animationTimeoutId !== null) {
+            clearTimeout(this.animationTimeoutId);
+            this.animationTimeoutId = null;
+        }
+        this.unwireEvents();
+    }
 }
