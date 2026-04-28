@@ -1,0 +1,259 @@
+import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue, ExtendedChartModel, ExtendedSheet } from '../common/index';
+import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId, getSheet } from '../base/index';
+import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, importModelUpdate } from '../common/event';
+import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
+
+/**
+ * The `WorkbookChart` module is used to handle chart action in Spreadsheet.
+ */
+export class WorkbookChart {
+    private parent: Workbook;
+
+    /**
+     * Constructor for WorkbookChart module.
+     *
+     * @param {Workbook} parent - Constructor for WorkbookChart module.
+     */
+    constructor(parent: Workbook) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+
+    private addEventListener(): void {
+        this.parent.on(setChart, this.setChartHandler, this);
+        this.parent.on(deleteChartColl, this.deleteChartColl, this);
+        this.parent.on(refreshChartSize, this.refreshChartSize, this);
+        this.parent.on(focusChartBorder, this.focusChartBorder, this);
+        this.parent.on(importModelUpdate, this.updateChartsFromSheet, this);
+    }
+
+    private removeEventListener(): void {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setChart, this.setChartHandler);
+            this.parent.off(deleteChartColl, this.deleteChartColl);
+            this.parent.off(refreshChartSize, this.refreshChartSize);
+            this.parent.off(focusChartBorder, this.focusChartBorder);
+            this.parent.off(importModelUpdate, this.updateChartsFromSheet);
+        }
+    }
+
+    private setChartHandler(args: {
+        chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isCut?: boolean, isPaste?: boolean,
+        dataSheetIdx?: number, range?: string, sheetId?: number, isUndo?: boolean, isRedo?: boolean
+    }): void {
+        args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
+        args.isUndoRedo = isNullOrUndefined(args.isUndoRedo) ? true : args.isUndoRedo;
+        args.isPaste = isNullOrUndefined(args.isPaste) ? false : args.isPaste;
+        let sheet: SheetModel; let chartModel: ExtendedChartModel; let chartLength: number;
+        const chart: ChartModel[] = args.chart; let i: number = 0;
+        while (i < chart.length) {
+            if (args.isCut === false) {
+                chart[i as number] = {
+                    range: chart[i as number].range, id: getUniqueID('e_spreadsheet_chart'), theme: chart[i as number].theme,
+                    isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type,
+                    markerSettings: chart[i as number].markerSettings,
+                    title: chart[i as number].title, legendSettings: chart[i as number].legendSettings,
+                    primaryXAxis: chart[i as number].primaryXAxis, primaryYAxis: chart[i as number].primaryYAxis,
+                    dataLabelSettings: chart[i as number].dataLabelSettings,
+                    height: chart[i as number].height, width: chart[i as number].width
+                };
+            }
+            if (document.getElementById(args.chart[i as number].id)) {
+                i++;
+                continue;
+            }
+            chartModel = chart[i as number];
+            chartModel.theme = chartModel.theme || 'Material';
+            chartModel.type = chartModel.type || 'Line';
+            chartModel.isSeriesInRows = chartModel.isSeriesInRows || false;
+            let range: string; let rangeSheetIdx: number = this.parent.activeSheetIndex;
+            if (isNullOrUndefined(chartModel.range)) {
+                sheet = this.parent.getActiveSheet();
+                range = sheet.selectedRange;
+            } else {
+                const tokenIdx: number = chartModel.range.lastIndexOf('!');
+                if (tokenIdx > 0) {
+                    rangeSheetIdx = getSheetIndex(this.parent, chartModel.range.substring(0, tokenIdx));
+                    sheet = getSheet(this.parent, rangeSheetIdx);
+                    range = chartModel.range.substring(tokenIdx + 1);
+                } else {
+                    range = chartModel.range;
+                    sheet = this.parent.getActiveSheet();
+                }
+            }
+            const rangeData: number[][] = [];
+            range.split(' ').forEach((individualRange: string) => {
+                const rangeArray: number[] = getSwapRange(getRangeIndexes(individualRange));
+                if (rangeArray[0] === 0 && rangeArray[2] === sheet.rowCount - 1 && rangeArray[2] > sheet.usedRange.rowIndex) {
+                    rangeArray[2] = sheet.usedRange.rowIndex;
+                }
+                if (rangeArray[1] === 0 && rangeArray[3] === sheet.colCount - 1 && rangeArray[3] > sheet.usedRange.colIndex) {
+                    rangeArray[3] = sheet.usedRange.colIndex;
+                }
+                rangeData.push(rangeArray);
+            });
+            rangeData.sort((a: number[], b: number[]) => chartModel.isSeriesInRows ? (
+                a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]) : (a[1] === b[1] ? a[0] - b[0] : a[1] - b[1]));
+            // Convert sorted range arrays back to strings
+            const sortedRanges: string[] = rangeData.map((rangeArray: number[]) => rangeArray.length && getRangeAddress(rangeArray));
+            if (chartModel.range !== '') {
+                chartModel.range = `${sheet.name}!${sortedRanges.join(' ')}`;
+            }
+            if (isNullOrUndefined(chartModel.id)) {
+                chartModel.id = getUniqueID('e_spreadsheet_chart');
+            }
+            if (chartModel.markerSettings && chartModel.markerSettings.visible) {
+                if (chartModel.markerSettings.isFilled === undefined) {
+                    chartModel.markerSettings.isFilled = true;
+                }
+                if (chartModel.markerSettings.shape === undefined) {
+                    chartModel.markerSettings.shape = 'Circle';
+                }
+            }
+            chartModel.height = chartModel.height || 290;
+            chartModel.width = chartModel.width || 480;
+            this.parent.notify(
+                initiateChart, { option: chartModel, isInitCell: args.isInitCell, triggerEvent: args.isUndoRedo, range: args.range,
+                    dataSheetIdx: args.dataSheetIdx, isPaste: args.isPaste });
+            if (this.parent.chartColl.every((chartobj: ChartModel) => chartobj.id !== chartModel.id)) {
+                this.parent.chartColl.push(chartModel);
+            }
+            if (!args.isInitCell || args.isPaste || args.isUndo || args.isRedo) {
+                let sheetIdx: number; let rowIdx: number; let colIdx: number;
+                if (args.range && (args.isUndo || args.isRedo)) {
+                    sheetIdx = getSheetIndex(this.parent, args.range.substring(0, args.range.lastIndexOf('!')));
+                    const range: number[] = getSwapRange(getRangeIndexes(args.range));
+                    rowIdx = range[0]; colIdx = range[1];
+                } else {
+                    sheetIdx = args.sheetId === undefined ? rangeSheetIdx : getSheetIndexFromId(this.parent, args.sheetId);
+                    const indexes: number[] = this.getIndexesFromChart(chartModel);
+                    rowIdx = indexes[0]; colIdx = indexes[1];
+                }
+                const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx as number];
+                const cell: CellModel = getCell(rowIdx, colIdx, sheet);
+                if (!this.parent.isPrintingProcessing) {
+                    chartModel.address = [rowIdx, colIdx];
+                    if (cell && cell.chart) {
+                        cell.chart.push(chartModel);
+                    } else {
+                        setCell(rowIdx, colIdx, sheet, { chart: [chartModel] }, true);
+                    }
+                }
+            } else {
+                const indexes: number[] = getRangeIndexes(args.range);
+                const chartIdxes: number[] = this.getIndexesFromChart(chartModel);
+                if (indexes[0] !== chartIdxes[0] || indexes[1] !== chartIdxes[1]) {
+                    chartLength = chart.length;
+                    const eventArgs: Object = { prevTop: chartModel.top, prevLeft: chartModel.left, prevRowIdx: indexes[0],
+                        prevColIdx: indexes[1], prevHeight: chartModel.height, prevWidth: chartModel.width, currentTop: chartModel.top,
+                        currentLeft: chartModel.left, currentRowIdx: chartIdxes[0], currentColIdx: chartIdxes[1], id: chartModel.id,
+                        currentHeight: chartModel.height, currentWidth: chartModel.width, requestType: 'chartRefreshOnInit' };
+                    this.parent.notify(refreshChartCellOnInit, eventArgs);
+                    i -= chartLength - chart.length;
+                }
+            }
+            i++;
+        }
+    }
+
+    private getIndexesFromChart(chart: ChartModel): number[] {
+        const chartRowIdx: { clientY: number, isImage?: boolean } = {
+            clientY: Number(addDPRValue(chart.top).toFixed(2)), isImage: true
+        };
+        const chartColIdx: { clientX: number, isImage?: boolean } = {
+            clientX: Number(addDPRValue(chart.left).toFixed(2)), isImage: true
+        };
+        this.parent.notify(getChartRowIdxFromClientY, chartRowIdx);
+        this.parent.notify(getChartColIdxFromClientX, chartColIdx);
+        return [chartRowIdx.clientY, chartColIdx.clientX];
+    }
+
+    private refreshChartSize(args: { height: string, width: string, overlayEle: HTMLElement }): void {
+        let chartCnt: number;
+        let j: number = 1;
+        const sheetCnt: number = this.parent.sheets.length + 1;
+        while (j < sheetCnt) {
+            const charts: ChartModel[] = this.parent.chartColl;
+            chartCnt = charts ? charts.length : 0;
+            if (chartCnt) {
+                while (chartCnt--) {
+                    const chart: ChartModel = this.parent.chartColl[chartCnt as number];
+                    if (args.overlayEle && !isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
+                        const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
+                        const excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart') || getComponent(chartObj, 'accumulationchart');
+                        if (excelFilter) {
+                            excelFilter.height = args.height;
+                            excelFilter.width = args.width;
+                        }
+                    }
+                }
+            }
+            j++;
+        }
+    }
+
+    private focusChartBorder(args: { id: string }): void {
+        for (let idx: number = 0; idx < this.parent.chartColl.length; idx++) {
+            const overlayEle: HTMLElement = document.getElementById(args.id);
+            const chartEle: HTMLElement = document.getElementById(this.parent.chartColl[idx as number].id);
+            if (overlayEle && chartEle && closest(chartEle, '.' + overlayEle.classList[1]) === overlayEle) {
+                this.parent.notify(initiateChart, {
+                    option: this.parent.chartColl[idx as number], isRefresh: true
+                });
+            }
+        }
+    }
+
+    private deleteChartColl(args: { id: string }): void {
+        for (let idx: number = 0; idx < this.parent.chartColl.length; idx++) {
+            if (this.parent.chartColl[idx as number].id + '_overlay' === args.id) {
+                this.parent.chartColl.splice(idx, 1);
+            }
+        }
+    }
+
+    private updateChartsFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.chartColl) {
+                sheet.chartColl.forEach((chartModel: ExtendedChartModel) => {
+                    if (isNullOrUndefined(chartModel.id)) {
+                        chartModel.id = getUniqueID('e_spreadsheet_chart');
+                    }
+                    const indexes: number[] = chartModel.address;
+                    const cell: CellModel = getCell(indexes[0], indexes[1], sheet, true);
+                    if (cell) {
+                        if (!cell.chart) {
+                            cell.chart = [];
+                        }
+                        cell.chart.push(chartModel);
+                    } else {
+                        setCell(indexes[0], indexes[1], sheet, { chart: [chartModel] });
+                    }
+                    if (this.parent.chartColl.every((chartobj: ChartModel) => chartobj.id !== chartModel.id)) {
+                        this.parent.chartColl.push(chartModel);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * To Remove the event listeners.
+     *
+     * @returns {void} - To Remove the event listeners.
+     */
+    public destroy(): void {
+        this.removeEventListener();
+        this.parent = null;
+    }
+
+    /**
+     * Get the workbook chart module name.
+     *
+     * @returns {string} - Get the workbook chart module name.
+     */
+    public getModuleName(): string {
+        return 'workbookChart';
+    }
+}
+

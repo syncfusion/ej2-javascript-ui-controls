@@ -1,0 +1,1050 @@
+import { addClass, Browser, L10n, removeClass, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler, detach } from '@syncfusion/ej2-base';
+import { closest} from '@syncfusion/ej2-base';
+import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode, Menu, KeyDownEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { MenuEventArgs as MenuBarItemSelectedArgs } from '@syncfusion/ej2-navigations';
+import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import * as classes from '../base/classes';
+import * as events from '../base/constant';
+import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_INLINE_DROPDOWN,
+    CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM } from '../base/classes';
+import { IRichTextEditor, IToolbarOptions, IRenderer, IMenuRenderArgs } from '../base/interface';
+import { IDropDownModel, IColorPickerEventArgs, IDropDownItemModel, ISplitButtonModel, IColorPickerModel } from '../../common/interface';
+import { ColorPicker, ModeSwitchEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
+import { ServiceLocator } from '../services/service-locator';
+import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
+import { IToolbarStatus } from '../../common/interface';
+import { ToolbarType } from '../../common/enum';
+
+/**
+ * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
+ *
+ * @hidden
+ * @deprecated
+ */
+export class ToolbarRenderer implements IRenderer {
+    private mode: OverflowMode;
+    private toolbarPanel: Element;
+    private itemValue: ItemModel[];
+    private lineHeightDropDown: DropDownButton;
+    private defaultColorPicker: string;
+    /**
+     *
+     * @hidden
+     * @private
+     */
+    public parent: IRichTextEditor;
+    private currentElement: HTMLElement;
+    private currentDropdown: DropDownButton;
+    private tooltip: Tooltip;
+    private l10n: L10n;
+    private tooltipTargetEle: Element;
+    public isDestroyed: boolean;
+    public isEscapeKey: boolean = false;
+    private rangeStore: boolean = false;
+    // Mapping of item names to their display labels for accessibility
+    private itemNameMap: { [key: string]: string } = {
+        'fontcolor': 'Font Color',
+        'backgroundcolor': 'Background Color',
+        'codeblock': 'Code Block',
+        'lineheight': 'Line Height',
+        'alignments': 'Alignments',
+        'bulletformatlist': 'Bullet Format List',
+        'numberformatlist': 'Number Format List',
+        'aicommands': 'Ai Commands',
+        'fontname': 'Font Name',
+        'fontsize': 'Font Size'
+    };
+
+    /**
+     * Constructor for toolbar renderer module
+     *
+     * @param {IRichTextEditor} parent - specifies the parent element.
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
+     */
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        this.parent = parent;
+        this.isDestroyed = false;
+        if (serviceLocator){
+            this.l10n = serviceLocator.getService<L10n>('rteLocale');
+        }
+        this.wireEvent();
+    }
+
+    private wireEvent(): void {
+        this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.destroyTooltip, this.destroyTooltip, this);
+        this.parent.on(events.closeTooltip, this.closeTooltip, this);
+    }
+
+    private destroyTooltip(): void {
+        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+            this.parent.contentModule.getDocument();
+        if (!isNullOrUndefined(currentDocument.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(currentDocument.querySelector( '[data-tooltip-id]'))) {
+            const tooltipTargetEle: HTMLElement = currentDocument.querySelector('[data-tooltip-id]');
+            const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
+            tooltipTargetEle.dispatchEvent(event);
+        }
+    }
+
+    private unWireEvent(): void {
+        this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.destroyTooltip, this.destroyTooltip);
+        this.parent.off(events.closeTooltip, this.closeTooltip);
+    }
+
+    private toolbarBeforeCreate(e: BeforeCreateArgs): void {
+        if (this.mode === 'Extended') {
+            e.enableCollision = false;
+        }
+    }
+
+    private toolbarCreated(): void {
+        this.parent.notify(events.toolbarCreated, this);
+        if (this.mode === 'Extended') {
+            const extendedToolbarElement: HTMLElement = this.toolbarPanel.querySelector('.e-expended-nav');
+            if (extendedToolbarElement) {
+                EventHandler.add(extendedToolbarElement, 'mousedown', this.extendedToolbarMouseDownHandler, this);
+            }
+        }
+    }
+
+    private extendedToolbarMouseDownHandler(): void {
+        if (this.parent.userAgentData.isSafari()) {
+            this.parent.notify(events.selectionSave, {});
+        }
+    }
+
+    private toolbarClicked(args: ClickEventArgs): void {
+        if ( !this.parent.enabled) {
+            return;
+        }
+        if (this.parent.toolbarSettings.type === ToolbarType.Popup) {
+            let command: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (args.item && (args.item as any).command) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                command = (args.item as any).command;
+            }
+            const commandsArray: string[] = ['Formats', 'Font', 'Alignments', 'EmojiPicker', 'Table', 'BulletFormatList', 'NumberFormatList', 'CodeBlock'];
+            const isPresent: boolean = !isNOU(command) &&  commandsArray.indexOf(command) !== -1;
+            if (isPresent) {
+                args.cancel = true;
+            }
+        }
+        const toolbarClickEventArgs: ClickEventArgs = { item: args.item, originalEvent: args.originalEvent, cancel: false };
+        this.parent.trigger('toolbarClick', toolbarClickEventArgs, (clickEventArgs: ClickEventArgs) => {
+            if ((!this.parent.readonly || isNullOrUndefined(args.item)) && !clickEventArgs.cancel) {
+                this.parent.notify(events.toolbarClick, clickEventArgs);
+            }
+        });
+    }
+
+    private dropDownSelected(args: MenuEventArgs): void {
+        this.parent.notify(events.dropDownSelect, { element: args.element, item: args.item, originalEvent: args.event });
+        this.destroyTooltip();
+    }
+
+    private beforeDropDownItemRender(args: MenuEventArgs): void {
+        if (this.parent.readonly || !this.parent.enabled) {
+            return;
+        }
+        this.parent.notify(events.beforeDropDownItemRender, args);
+    }
+
+    private tooltipBeforeRender(args: TooltipEventArgs): void {
+        if (!isNOU(args.target.getAttribute('title'))) {
+            const tooltipTarget: string = args.target.getAttribute('title');
+            let tooltipText: string;
+            switch (tooltipTarget) {
+            case 'Minimize':
+                tooltipText = this.l10n.getConstant('minimize');
+                args.target.setAttribute('title', tooltipText + ' (Esc)');
+                break;
+            case 'Maximize':
+                tooltipText = this.l10n.getConstant('maximize');
+                args.target.setAttribute('title', tooltipText + ' (Ctrl+Shift+F)');
+                break;
+            }
+        }
+        if (args.target.querySelector('.e-active')) {
+            args.cancel = true;
+            if (!isNOU(args.target.getAttribute('title'))) {
+                this.closeTooltip({ target: args.target, isTitle: true });
+            }
+        }
+    }
+
+    private dropDownOpen(args: MenuEventArgs): void {
+        const istableEditDialog: boolean = this.parent.tableModule && this.parent.tableModule.editdlgObj
+        && !isNOU(this.parent.tableModule.editdlgObj.element) && !isNOU(this.parent.tableModule.editdlgObj.element.querySelector('.e-rte-edit-tablecell-dialog,.e-rte-edit-table-content'));
+        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge'))) {
+            const listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll('li');
+            const selectedEles: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('.e-cell-select');
+            if (selectedEles.length === 1) {
+                addClass([listEle[0]], 'e-disabled');
+                removeClass([listEle[1], listEle[2]], 'e-disabled');
+            } else if (selectedEles.length > 1) {
+                if (!Array.from(selectedEles).every((element: HTMLElement) =>
+                    element.tagName.toLowerCase() === selectedEles[0].tagName.toLowerCase()
+                )) {
+                    addClass([listEle[0]], 'e-disabled');
+                } else {
+                    removeClass([listEle[0]], 'e-disabled');
+                }
+                addClass([listEle[1], listEle[2]], 'e-disabled');
+            }
+        }
+        if (!istableEditDialog) {
+            this.parent.notify(events.selectionSave, args);
+        }
+    }
+
+    private dropDownClose(args: MenuEventArgs): void {
+        if (this.parent.lineHeight.supportAllValues  && this.lineHeightDropDown) {
+            this.lineHeightDropDown.items = this.itemValue;
+            this.lineHeightDropDown.dataBind();
+        }
+        const istableEditDialog: boolean = this.parent.tableModule && this.parent.tableModule.editdlgObj &&
+         !isNOU(this.parent.tableModule.editdlgObj.element)
+                && !isNOU(this.parent.tableModule.editdlgObj.element.querySelector('.e-rte-edit-tablecell-dialog,.e-rte-edit-table-content'));
+        if (!this.isEscapeKey && !istableEditDialog)
+        {
+            this.parent.notify(events.selectionRestore, args);
+        }
+        this.isEscapeKey = false;
+    }
+
+    private dropDownBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        if (!isNOU(args.event) && (args.event as KeyboardEvent).key === 'Escape' && (args.event as KeyboardEvent).keyCode === 27) {
+            this.isEscapeKey = true;
+            this.parent.notify(events.preventQuickToolbarClose, args);
+        }
+    }
+    /**
+     * renderToolbar method
+     *
+     * @param {IToolbarOptions} args - specifies the arguments.
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderToolbar(args: IToolbarOptions): void {
+        const isBottomToolbar: boolean = this.parent.toolbarSettings && this.parent.toolbarSettings.position === 'Bottom';
+        this.setPanel(args.target);
+        this.renderPanel();
+        this.mode = args.overflowMode;
+        args.rteToolbarObj.toolbarObj = new Toolbar({
+            items: args.items,
+            width: '100%',
+            overflowMode: args.overflowMode,
+            beforeCreate: this.toolbarBeforeCreate.bind(this),
+            created: () => {
+                this.positionToolbar(isBottomToolbar);
+                this.toolbarCreated();
+            },
+            clicked: this.toolbarClicked.bind(this),
+            enablePersistence: args.enablePersistence,
+            enableRtl: args.enableRtl,
+            cssClass: args.cssClass
+        });
+        args.rteToolbarObj.toolbarObj.isStringTemplate = true;
+        args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
+        args.rteToolbarObj.toolbarObj.appendTo(args.target);
+        if (this.parent.showTooltip && args.type === 'toolbar') {
+            this.tooltip = new Tooltip({
+                target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
+                showTipPointer: true,
+                openDelay: 400,
+                opensOn: 'Hover',
+                beforeRender: this.tooltipBeforeRender.bind(this),
+                beforeOpen: this.tooltipBeforeOpen.bind(this),
+                cssClass: this.parent.getCssClass(),
+                windowCollision: true,
+                position: isBottomToolbar ? 'TopCenter' : 'BottomCenter'
+            });
+            this.tooltip.isAngular = this.parent.isModalDialog;
+            this.tooltip.appendTo(args.target.parentElement);
+        }
+    }
+
+    private positionToolbar(isBottomToolbar: boolean): void {
+        const rteContainer: HTMLElement = this.parent.element.querySelector('.e-rte-container') as HTMLElement;
+        const toolbarWrapper: HTMLElement = this.parent.element.querySelector('.e-toolbar-wrapper') as HTMLElement;
+        if (isBottomToolbar && rteContainer && toolbarWrapper) {
+            addClass([toolbarWrapper], 'e-rte-tb-bottom');
+        }
+    }
+
+    public tooltipBeforeOpen(args: TooltipEventArgs): void {
+        if (args.element) {
+            args.element.setAttribute('data-rte-id', this.parent.getID());
+        }
+    }
+
+    /**
+     * renderDropDownButton method
+     *
+     * @param {IDropDownModel} args - specifies the the arguments.
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderDropDownButton(args: IDropDownModel): DropDownButton {
+        let css: string;
+        const targetEle: HTMLElement = args.activeElement;
+        args.element.classList.add(CLS_DROPDOWN_BTN);
+        css = args.cssClass + ' ' + CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN_MENU;
+        if (this.parent.inlineMode.enable && Browser.isDevice) {
+            css = css + ' ' + CLS_INLINE_DROPDOWN;
+        }
+        let editTableBorder: boolean = false;
+        if (args.itemName === 'BorderStyle') {
+            editTableBorder = true;
+        }
+        const isTesting: boolean = this.parent.element && this.parent.element.dataset && this.parent.element.dataset.rteUnitTesting === 'true';
+        // eslint-disable-next-line
+        let proxy: this = this;
+        const dropDown: DropDownButton = new DropDownButton({
+            items: args.items,
+            iconCss: args.iconCss,
+            cssClass: css,
+            content: args.content,
+            enablePersistence: this.parent.enablePersistence,
+            enableRtl: this.parent.enableRtl,
+            select: this.dropDownSelected.bind(this),
+            animationSettings: isTesting ? { effect: 'None', duration: 0  } : { effect : 'None', duration: 400, easing: 'ease'},
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (proxy.parent.readonly || !proxy.parent.enabled) {
+                    args.cancel = true;
+                    return;
+                }
+                if (this.parent.userAgentData.isSafari() && args.event.type === 'keydown' && this.parent.formatter.editorManager.nodeSelection &&
+                    !this.parent.inputElement.contains(this.parent.getRange().startContainer) && !editTableBorder) {
+                    this.parent.notify(events.selectionRestore, args);
+                }
+                // Table styles dropdown preselect
+                if (proxy.parent.editorMode !== 'Markdown') {
+                    const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
+                    const tableEle: HTMLElement = startNode.closest('table');
+                    const trow: HTMLElement = startNode.closest('tr');
+                    if (!isNOU(tableEle) && tableEle.classList.contains('e-dashed-border')) {
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-dashed-borders')) {
+                                addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                    if (!isNOU(tableEle) && tableEle.classList.contains('e-alternate-rows') && window.getComputedStyle(trow).backgroundColor !== '') {
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-alternate-rows')) {
+                                addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                    // Table border styles dropdown preselect
+                    if (!isNOU(args.element.parentElement) && args.element.parentElement.classList.contains('e-border-style-btn')) {
+                        const borderStyleValue: string =
+                            (proxy.parent.contentModule.getDocument().activeElement as HTMLElement).innerText.toLowerCase();
+                        for (let i: number = 0; i < args.items.length; i++) {
+                            if (args.items[i as number].text.toLowerCase() === borderStyleValue) {
+                                addClass([args.element.childNodes[i as number]] as Element[], 'e-active');
+                                break;
+                            } else {
+                                removeClass([args.element.childNodes[i as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                    //Alignments preselect
+                    let alignEle: Node = proxy.parent.getRange().startContainer;
+                    const selectedCell: Element = trow && trow.querySelector('.e-cell-select');
+                    const isTbalePopUpdropdown: boolean = proxy.parent.contentModule.getDocument() &&
+                        proxy.parent.quickToolbarModule && proxy.parent.quickToolbarModule.tableQTBar
+                        && proxy.parent.quickToolbarModule.tableQTBar.element &&
+                        (proxy.parent.contentModule.getDocument()
+                            .contains(proxy.parent.quickToolbarModule.tableQTBar.element));
+                    if (isTbalePopUpdropdown && !isNOU(tableEle) && !isNOU(selectedCell)) {
+                        alignEle = selectedCell;
+                    }
+                    while (alignEle !== proxy.parent.inputElement && !isNOU(alignEle.parentElement)) {
+                        alignEle = this.parent.formatter.editorManager.domNode.getImmediateBlockNode(alignEle);
+                        const alignStyle: string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
+                        if (!isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Alignments') {
+                            if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
+                                addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[1 as number].text === 'Align Center' && alignStyle === 'center') {
+                                addClass([args.element.childNodes[1 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[2 as number].text === 'Align Right' && alignStyle === 'right') {
+                                addClass([args.element.childNodes[2 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[3 as number].text === 'Align Justify' && alignStyle === 'justify') {
+                                addClass([args.element.childNodes[3 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                        }
+                        alignEle = alignEle.parentElement;
+                    }
+                    //image preselect
+                    const closestNode: HTMLElement = startNode.closest('img');
+                    const imageEle: HTMLElement = closestNode ? closestNode : (targetEle ? targetEle : startNode.querySelector('img'));
+                    const isItemCommandImage: boolean = !isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Images';
+                    if (isItemCommandImage && !isNOU(imageEle)) {
+                        // If the image is wrapped in a caption container, use that container for class checks
+                        let classCheckEle: HTMLElement = imageEle;
+                        const captionWrapper: HTMLElement = imageEle.closest('.e-img-caption-container') as HTMLElement | null;
+                        if (!isNOU(captionWrapper)) {
+                            classCheckEle = captionWrapper;
+                        }
+                        let index: number;
+                        if ((args.items[0 as number] as IDropDownItemModel).subCommand === 'Inline' ||
+                            (args.items[0 as number] as IDropDownItemModel).subCommand === 'Break') {
+                            if (classCheckEle.classList.contains(classes.CLS_IMG_INLINE) ||
+                                classCheckEle.classList.contains(classes.CLS_IMAGE_LEFT_WRAP) ||
+                                classCheckEle.classList.contains(classes.CLS_IMAGE_RIGHT_WRAP)) {
+                                index = 0;
+                            } else if (classCheckEle.classList.contains(classes.CLS_IMG_CENTER) ||
+                                classCheckEle.classList.contains(classes.CLS_IMG_BREAK) ||
+                                classCheckEle.classList.contains(classes.CLS_IMG_LEFT) ||
+                                classCheckEle.classList.contains(classes.CLS_IMG_RIGHT)) {
+                                index = 1;
+                            }
+                        } else if ((args.items[0 as number] as IDropDownItemModel).subCommand === 'LeftWrap' ||
+                            (args.items[0 as number] as IDropDownItemModel).subCommand === 'RightWrap') {
+                            if (classCheckEle.classList.contains(classes.CLS_IMAGE_LEFT_WRAP)) {
+                                index = 0;
+                            } else if (classCheckEle.classList.contains(classes.CLS_IMAGE_RIGHT_WRAP)) {
+                                index = 1;
+                            }
+                        } else {
+                            if (classCheckEle.classList.contains(classes.CLS_IMG_LEFT)) {
+                                // need to check and remove the default left active adding use case
+                                index = 0;
+                            } else if (classCheckEle.classList.contains(classes.CLS_IMG_CENTER) ||
+                                classCheckEle.classList.contains(classes.CLS_IMG_BREAK)) {
+                                index = 1;
+                            } else if (classCheckEle.classList.contains(classes.CLS_IMG_RIGHT)) {
+                                index = 2;
+                            }
+                        }
+                        if (!isNOU(args.element.childNodes[index as number] as HTMLElement)) {
+                            addClass([args.element.childNodes[index as number] as Element], 'e-active');
+                        }
+                    }
+                    //Video preselect
+                    const videoClosestNode: HTMLElement = startNode.closest('.e-video-wrap') as HTMLElement | null;
+                    const videoEle: HTMLElement = videoClosestNode ? videoClosestNode : (targetEle ? targetEle : startNode.querySelector('video') as HTMLElement | null);
+                    if (!isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Videos') {
+                        if (!isNOU(videoEle)) {
+                            let index: number;
+                            if (videoEle.classList.contains('e-video-left') || videoEle.classList.contains('e-video-inline')) {
+                                index = 0;
+                            } else if (videoEle.classList.contains('e-video-center') || videoEle.classList.contains('e-video-break')) {
+                                index = 1;
+                            } else if (videoEle.classList.contains('e-video-right')) {
+                                index = 2;
+                            }
+                            if (!isNOU(args.element.childNodes[index as number] as HTMLElement)) {
+                                addClass([args.element.childNodes[index as number] as Element], 'e-active');
+                            }
+                        }
+                    }
+                    //Formats preselect
+                    if (!isNOU(args.items[0 as number]) && ((args.items[0 as number] as IDropDownItemModel).command === 'Formats' || (args.items[0 as number] as IDropDownItemModel).command === 'Font' || (args.items[0 as number] as IDropDownItemModel).command === 'LineHeight')) {
+                        const fontName: string[] = [];
+                        const formats: string[] = [];
+                        let hasUpdatedActive: boolean = false;
+                        this.parent.format.types.forEach((item: IDropDownItemModel): void => {
+                            formats.push(item.value.toLocaleLowerCase());
+                        });
+                        this.parent.fontFamily.items.forEach((item: IDropDownItemModel): void => {
+                            fontName.push(item.value);
+                        });
+                        const toolbarStatus: IToolbarStatus = ToolbarStatus.get(
+                            this.parent.contentModule.getDocument(),
+                            this.parent.contentModule.getEditPanel(),
+                            formats,
+                            null,
+                            fontName
+                        );
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            const htmlString: string = dropDown.content.trim();
+                            const styleMatch: string[] = htmlString.match(/style="([^"]*)"/);
+                            let styleValue: string = '';
+                            if (styleMatch) {
+                                styleValue = styleMatch[1];
+                            }
+                            const updatedHtml: string = htmlString.replace(/ style="([^"]*)"/, '');
+                            const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+                            divNode.innerHTML = updatedHtml;
+                            const spanElement: HTMLSpanElement = divNode.querySelector('span');
+                            if (spanElement) {
+                                spanElement.style.cssText = styleValue;
+                            }
+                            if (!hasUpdatedActive && ((divNode.textContent.trim() !== ''
+                                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
+                                (((args.items[0 as number] as IDropDownItemModel).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
+                                    || ((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontName' && (args.items[0 as number] as IDropDownItemModel).command === 'Font' && !isNOU(toolbarStatus.fontname) && !isNOU(this.parent.fontFamily.items[index as number]) && this.parent.fontFamily.items[index as number].value.toLowerCase() === toolbarStatus.fontname.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)))
+                                || ((((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontName') && this.parent.fontFamily.items[index as number].value === '' && isNullOrUndefined(toolbarStatus.fontname) && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)) ||
+                                    (((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontSize') && args.element.childNodes[index as number].textContent === 'Default' && divNode.textContent === 'Font Size' && this.parent.fontSize.items[index as number].value === '' && !isNullOrUndefined(toolbarStatus.fontsize))))
+                            ) {
+                                if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
+                                    addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                    hasUpdatedActive = true;
+                                }
+                            } else {
+                                removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                            if ((args.items[0 as number] as IDropDownItemModel).command === 'LineHeight') {
+                                const targetElement: HTMLElement = this.findFirstBlockElement();
+                                if (targetElement) {
+                                    const lineHeightStyle: string = targetElement.style.lineHeight;
+                                    const numericLineHeight: number = parseFloat(lineHeightStyle);
+                                    const dropdownVSelectedValue: string = (args.items[index as number] as IDropDownItemModel).value;
+                                    const dummyItem: ItemModel[] = args.items;
+                                    this.itemValue = dummyItem;
+                                    if (numericLineHeight === parseFloat(dropdownVSelectedValue)) {
+                                        addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                        hasUpdatedActive = true;
+                                    }
+                                } else {
+                                    removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                }
+                            }
+                        }
+                        if ((args.items[0 as number] as IDropDownItemModel).command === 'LineHeight') {
+                            const targetElement: HTMLElement = this.findFirstBlockElement();
+                            if (this.parent.lineHeight.supportAllValues && !hasUpdatedActive && !isNOU(targetElement) && targetElement.style.lineHeight !== '') {
+                                this.lineHeightDropDown = dropDown;
+                                hasUpdatedActive = true;
+                                const items: { text: string; value: string; }[] = [
+                                    { text: 'Custom: ' + targetElement.style.lineHeight, value: targetElement.style.lineHeight }
+                                ];
+                                dropDown.items = [...args.items, ...items];
+                                dropDown.dataBind();
+                                addClass([args.element.childNodes[(args.element.childNodes.length - 1) as number]] as Element[], 'e-active');
+                            }
+                            else if (!hasUpdatedActive) {
+                                dropDown.items.forEach((item: any, index: number) => {
+                                    const itemValue: number = parseFloat(item.value);
+
+                                    if (itemValue === parseFloat(this.parent.lineHeight.default)) {
+                                        const matchingChild: Element = args.element.childNodes[index  as number] as Element;
+                                        addClass([matchingChild], 'e-active');
+                                    }
+                                });
+                                if (isNOU(this.parent.lineHeight.default)) {
+                                    addClass([args.element.childNodes[(0) as number]] as Element[], 'e-active');
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (proxy.parent.editorMode === 'Markdown') {
+                    if ((args.items[0 as number] as IDropDownItemModel).command === 'Formats') {
+                        const formats: string[] = [];
+                        let hasUpdatedActive: boolean = false;
+                        this.parent.format.types.forEach((item: IDropDownItemModel): void => {
+                            formats.push(item.value.toLocaleLowerCase());
+                        });
+                        const childNodes: NodeListOf<ChildNode> = args.element.childNodes;
+                        for (let index: number = 0; index < childNodes.length; index++) {
+                            const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+                            divNode.innerHTML = dropDown.content.trim();
+                            if (!hasUpdatedActive && ((divNode.textContent.trim() !== '' && childNodes[index as number].textContent.trim() === divNode.textContent.trim()))) {
+                                if (!(childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
+                                    addClass([childNodes[index as number]] as Element[], 'e-active');
+                                    hasUpdatedActive = true;
+                                }
+                            } else {
+                                removeClass([childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                }
+                proxy.parent.notify(events.beforeDropDownOpen, args);
+            },
+            close: this.dropDownClose.bind(this),
+            beforeClose: this.dropDownBeforeClose.bind(this),
+            open: this.dropDownOpen.bind(this),
+            beforeItemRender: this.beforeDropDownItemRender.bind(this)
+        });
+        dropDown.isStringTemplate = true;
+        dropDown.createElement = proxy.parent.createElement;
+        dropDown.isAngular = proxy.parent.isModalDialog;
+        dropDown.appendTo(args.element);
+        args.element.tabIndex = -1;
+        const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        this.setAriaLabel(dropDown.element, args.itemName, popupElement);
+        popupElement.setAttribute('aria-owns', this.parent.getID());
+        return dropDown;
+    }
+
+    private setAriaLabel(dropDownElement: Element, itemName: string, popupElement?: Element): void {
+        const displayLabel: string = this.itemNameMap[itemName.toLowerCase()] || itemName;
+        if (dropDownElement) {
+            const currentLabel: string = dropDownElement.getAttribute('aria-label') || '';
+            const dropdownPlaceholders: string[] = ['', 'dropdownbutton'];
+            const splitPlaceholders: string[] = ['', 'splitbutton', 'colorpicker'];
+            if (dropdownPlaceholders.indexOf(currentLabel) !== -1) {
+                const specialDropdownItems: Set<string> = new Set([
+                    'backgroundcolor',
+                    'fontcolor',
+                    'bulletformatlist',
+                    'numberformatlist',
+                    'codeblock'
+                ]);
+                const ariaLabel: string = specialDropdownItems.has(itemName.toLowerCase())
+                    ? `More ${displayLabel} Options`
+                    : `${displayLabel}`;
+                dropDownElement.setAttribute('aria-label', ariaLabel);
+            } else if (splitPlaceholders.indexOf(currentLabel) !== -1) {
+                dropDownElement.setAttribute('aria-label', `${displayLabel}`);
+            }
+        }
+        if (popupElement) {
+            const currentPopupLabel: string = popupElement.getAttribute('aria-label') || '';
+            const popupPlaceholders: string[] = ['', 'dropdown menu'];
+
+            if (popupPlaceholders.indexOf(currentPopupLabel) !== -1) {
+                popupElement.setAttribute('aria-label', `${displayLabel} Menu`);
+            }
+        }
+    }
+    private findFirstBlockElement(): HTMLElement | null {
+        const range: Range = this.parent.getRange();
+        let targetElement: HTMLElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+            ? range.startContainer as HTMLElement
+            : (range.startContainer as HTMLElement).parentElement;
+        // Traverse up to find the closest non-inline element
+        while (!this.parent.formatter.editorManager.domNode.isBlockNode(targetElement)) {
+            targetElement = targetElement.parentElement;
+        }
+
+        return targetElement;
+    }
+
+    private mouseOutHandler (): void {
+        if (!isNOU(this.tooltipTargetEle)){
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        } else {
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
+            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        }
+        this.tooltipTargetEle.removeAttribute('data-title');
+        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
+    }
+    private closeTooltip(args: { [key: string]: HTMLElement | boolean }): void {
+        if (args.isTitle as boolean) {
+            this.tooltipTargetEle = args.target as HTMLElement;
+            this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+            this.tooltipTargetEle.removeAttribute('title');
+            EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+        } else {
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
+            this.tooltipTargetEle = closest(args.target as HTMLElement, '[data-tooltip-id]');
+            if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
+                this.destroyTooltip();
+                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+                this.tooltipTargetEle.removeAttribute('title');
+                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+            }
+        }
+    }
+    // Manages code block dropdown menu by detecting if selection is in a code block and highlighting the active language option
+    private handleCodeBlockDropdown(args: BeforeOpenCloseMenuEventArgs): void {
+        const range: Range = this.parent.getRange();
+        const startContainer: Element = this.parent.formatter.editorManager.codeBlockObj
+            .isValidCodeBlockStructure(range.startContainer);
+        const endContainer: Element = this.parent.formatter.editorManager.codeBlockObj.
+            isValidCodeBlockStructure(range.endContainer);
+        const codeBlock: boolean = !isNOU(startContainer) || !isNOU(endContainer);
+        const codeBlockElement: Element = startContainer || endContainer;
+        let currentLanguage: string = '';
+        if (codeBlock) {
+            currentLanguage = (codeBlockElement as Element).getAttribute('data-language') || '';
+            const listItems: NodeListOf<HTMLLIElement> = args.element.querySelectorAll('li');
+            for (let i: number = 0; i < listItems.length; i++) {
+                const itemLanguage: string = listItems[i as number].getAttribute('data-language') || listItems[i as number].textContent.toLowerCase();
+                if (currentLanguage.toLowerCase() === itemLanguage) {
+                    addClass([listItems[i as number] as HTMLElement], 'e-active');
+                } else {
+                    removeClass([listItems[i as number] as HTMLElement], 'e-active');
+                }
+            }
+        }
+    }
+    // Handles list formatting dropdown menu by checking current list type and highlighting the active list style option
+    private handleListsDropdown(args: BeforeOpenCloseMenuEventArgs): void {
+        // eslint-disable-next-line
+        const proxy: this = this;
+        if (proxy.parent.readonly || !proxy.parent.enabled) {
+            args.cancel = true;
+            return;
+        }
+        if (Browser.info.name === 'safari' && !proxy.parent.inputElement.contains(proxy.parent.getRange().startContainer)) {
+            proxy.parent.notify(events.selectionRestore, {});
+        }
+        if (proxy.parent.editorMode !== 'Markdown') {
+            const range: Range = proxy.parent.getRange();
+            if (isNOU(range)) { return; }
+            // Resolve element for start/end (account for text nodes)
+            const startEl: HTMLElement = (range.startContainer.nodeType === Node.ELEMENT_NODE
+                ? range.startContainer as Element : (range.startContainer as Node).parentElement) as HTMLElement | null;
+            const endEl: HTMLElement = (range.endContainer.nodeType === Node.ELEMENT_NODE
+                ? range.endContainer as Element : (range.endContainer as Node).parentElement) as HTMLElement | null;
+            if (isNOU(startEl) || isNOU(endEl)) { return; }
+            const isCaret: boolean = range.startOffset === range.endOffset && range.startContainer === range.endContainer;
+            const commonNode: HTMLElement = range.commonAncestorContainer as HTMLElement;
+            const commonIsListish: boolean = ['LI', 'UL', 'OL'].indexOf(commonNode.nodeName) >= 0;
+            const inSameLi: boolean = startEl.closest('li') === endEl.closest('li');
+            // Only proceed if the selection context is within a list or within a single LI or a cursor position
+            if (!(isCaret || commonIsListish || inSameLi)) { return; }
+            let currentLiElem: HTMLElement;
+            if (startEl.nodeName === 'UL' || startEl.nodeName === 'OL') {
+                currentLiElem = startEl;
+            } else {
+                const listElem: Element = startEl.closest('LI');
+                currentLiElem = !isNOU(listElem) ? listElem.parentElement : null;
+            }
+            const currentAction: string = (args.items[0 as number] as IDropDownItemModel).subCommand;
+            if (!isNOU(currentLiElem)) {
+                // Checks if current action matches the list type (numbered or bulleted)
+                const validNumberFormatAction: boolean  = (currentAction === 'NumberFormatList' && currentLiElem.nodeName === 'OL');
+                const validBulletFormatAction: boolean  = (currentAction === 'BulletFormatList' && currentLiElem.nodeName === 'UL');
+                if (validNumberFormatAction || validBulletFormatAction) {
+                    const currentListStyle: string = currentLiElem.style.listStyleType.split('-').join('').toLocaleLowerCase();
+                    // Match by item value (CSS list-style-type) not by rendered text, to support custom types.
+                    for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                        const itemValue: string = ((args.items[index as number] as IDropDownItemModel).value || '').split('-').join('').toLocaleLowerCase();
+                        if (currentListStyle !== '' && currentListStyle === itemValue) {
+                            // Marks the active list style in the dropdown by value match
+                            addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            break;
+                        } else if (currentListStyle === '' && (
+                            (validNumberFormatAction && itemValue === 'decimal') ||
+                            (validBulletFormatAction && itemValue === 'disc'))) {
+                            // Handles default list style case (no explicit list-style-type set)
+                            addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            break;
+                        } else {
+                            removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * renderSplitButton method
+     *
+     * @param {ISplitButtonModel} args - specifies the the arguments.
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderSplitButton(args: ISplitButtonModel): SplitButton {
+        const css: string = args.cssClass;
+        const splitButton: SplitButton = new SplitButton({
+            items: args.items,
+            cssClass: css,
+            iconCss: args.iconCss,
+            enablePersistence: this.parent.enablePersistence,
+            enableRtl: this.parent.enableRtl,
+            select: this.dropDownSelected.bind(this),
+            created: () => {
+                const splitBtnDiv: HTMLElement = (args.element.parentElement as HTMLElement);
+                if (!splitBtnDiv) { return; }
+                splitBtnDiv.tabIndex = -1;
+            },
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (this.parent.readonly || !this.parent.enabled) {
+                    args.cancel = true;
+                    return;
+                }
+                if (isNOU(args.items) || args.items.length === 0) { return; }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((args.items[0] as any).command === 'CodeBlock') {
+                    this.handleCodeBlockDropdown(args);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((args.items[0] as any).command === 'Lists') {
+                    this.handleListsDropdown(args);
+                }
+                this.currentElement = splitButton.element;
+                this.currentDropdown = splitButton;
+            },
+            close: this.dropDownClose.bind(this),
+            beforeClose: this.dropDownBeforeClose.bind(this),
+            open: this.dropDownOpen.bind(this),
+            beforeItemRender: this.beforeDropDownItemRender.bind(this)
+        });
+        splitButton.isAngular = this.parent.isModalDialog;
+        splitButton.appendTo(args.element);
+        const popupElement: Element = document.getElementById(splitButton.element.id + '_dropdownbtn-popup');
+        if (splitButton.element && splitButton.element.parentElement) {
+            const dropdownElement: HTMLElement = splitButton.element.parentElement.querySelectorAll('button')[1];
+            if (dropdownElement) {
+                this.setAriaLabel(dropdownElement, args.itemName);
+            }
+        }
+        this.setAriaLabel(splitButton.element, args.itemName, popupElement);
+        popupElement.setAttribute('aria-owns', this.parent.getID());
+        return splitButton;
+    }
+    /**
+     * renderColorPicker method
+     *
+     * @param {IColorPickerModel} args - specifies the arguments
+     * @param {string} item - specifies the string values
+     * @param {string} toolbarType - Specifies the type of toolbar triggering the color picker.
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderColorPicker(args: IColorPickerModel, item: string, toolbarType?: string): ColorPicker {
+        // eslint-disable-next-line
+        let proxy: this = this;
+        let colorValue: string;
+        let editTablecolorpicker: boolean = false;
+        if (item === 'bordercolor' || item === 'tablebackgroundcolor') {
+            colorValue = args.value;
+            editTablecolorpicker = true;
+        } else {
+            colorValue = (isNullOrUndefined(this.defaultColorPicker)) ?
+                (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default : this.defaultColorPicker;
+        }
+        const colorPicker: ColorPicker = new ColorPicker({
+            enableRtl: this.parent.enableRtl,
+            inline: false,
+            value: colorValue,
+            showButtons: false,
+            cssClass: args.cssClass,
+            disabled: !this.parent.enabled,
+            created: () => {
+                const colorPickerDiv: HTMLElement = (args.element.parentElement as HTMLElement);
+                if (!colorPickerDiv) { return; }
+                colorPickerDiv.tabIndex = -1;
+                const colorPickerSplitDiv: HTMLElement = (colorPickerDiv.childNodes[1] as HTMLElement);
+                if (!colorPickerSplitDiv) { return; }
+                colorPickerSplitDiv.classList.add(...args.cssClass.split(' '));
+                const colorPickerElem: HTMLElement = (colorPickerDiv.querySelector('.e-split-colorpicker') as HTMLElement);
+                if (!colorPickerElem) { return; }
+                colorPickerElem.classList.add(...args.cssClass.split(' '));
+                const dropdownBtn: HTMLElement = (colorPickerDiv.querySelector('.e-dropdown-btn') as HTMLElement);
+                if (dropdownBtn) {
+                    dropdownBtn.classList.add(...args.cssClass.split(' '));
+                }
+            },
+            mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
+            modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
+            showRecentColors: ((toolbarType === 'quick' && !editTablecolorpicker) ? false : (editTablecolorpicker) ? true : ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.showRecentColors : proxy.parent.fontColor.showRecentColors)),
+            presetColors: (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode : this.parent.fontColor.colorCode,
+            columns: (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns,
+            beforeTileRender: (args: PaletteTileEventArgs) => {
+                args.element.classList.add(classes.CLS_COLOR_PALETTE);
+                args.element.classList.add(CLS_CUSTOM_TILE);
+                if (!isNullOrUndefined(this.parent.cssClass)) {
+                    const allClassName: string[] = this.parent.getCssClass().split(' ');
+                    for (let i: number = 0; i < allClassName.length; i++) {
+                        if (allClassName[i as number].trim() !== '') {
+                            args.element.classList.add(allClassName[i as number]);
+                        }
+                    }
+                }
+                if (args.value === '') {
+                    args.element.classList.add(CLS_NOCOLOR_ITEM);
+                }
+            },
+            beforeOpen: () => {
+                if ((proxy.parent.userAgentData.isSafari() || !proxy.parent.userAgentData.isSafari()) &&
+                    this.parent.formatter.editorManager.nodeSelection &&
+                    this.parent.inputElement.contains(this.parent.getRange().startContainer) && !editTablecolorpicker) {
+                    proxy.parent.notify(events.selectionSave, {});
+                    this.rangeStore = true;
+                }
+                colorPicker.showButtons = colorPicker.mode === 'Picker' ? true : false;
+            },
+            change: (colorPickerArgs: IColorPickerEventArgs): void => {
+                if (this.rangeStore && !editTablecolorpicker) {
+                    proxy.parent.notify(events.selectionRestore, {});
+                    this.rangeStore = false;
+                }
+                if ((!proxy.parent.userAgentData.isSafari() ||
+                    (proxy.parent.userAgentData.isSafari() && this.parent.formatter.editorManager.nodeSelection &&
+                    this.parent.inputElement.contains(this.parent.getRange().startContainer))) && !editTablecolorpicker) {
+                    proxy.parent.notify(events.selectionSave, {});
+                }
+                const colorpickerValue: string = colorPickerArgs.currentValue.rgba;
+                colorPickerArgs.item = {
+                    command: args.command,
+                    subCommand: args.subCommand,
+                    value: colorpickerValue
+                };
+                if (!editTablecolorpicker) {
+                    proxy.parent.notify(events.selectionRestore, {});
+                }
+                const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+                const closestElement: Element = closest(range.startContainer.parentNode, 'table');
+                if (!editTablecolorpicker && (range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
+                    (range.startContainer.parentNode && closest(range.startContainer.parentNode, 'td,th'))) && range.collapsed && args.subCommand === 'BackgroundColor' && (closestElement && closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)
+                    && toolbarType === 'quick') {
+                    this.defaultColorPicker = colorPickerArgs.currentValue.hex;
+                    colorPickerArgs.name = 'tableColorPickerChanged';
+                    colorPickerArgs.item.command = 'Table';
+                    proxy.parent.formatter.process(this.parent, colorPickerArgs, colorPickerArgs.event, colorPickerArgs.item.value);
+                } else {
+                    proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);
+                }
+            },
+            beforeModeSwitch: (args: ModeSwitchEventArgs): void => {
+                colorValue = colorPicker.value;
+                if (colorValue === '') {
+                    colorPicker.setProperties({ value: ((args.mode === 'Picker') ? '#008000ff' : '') }, true);
+                }
+                colorPicker.showButtons = args.mode === 'Palette' ? false : true;
+            },
+            beforeClose: this.dropDownClose.bind(this)
+        });
+        colorPicker.isAngular = this.parent.isModalDialog;
+        colorPicker.isStringTemplate = true;
+        colorPicker.createElement = this.parent.createElement;
+        colorPicker.appendTo(args.element);
+        if (colorPicker.element && colorPicker.element.parentElement) {
+            const splitButton: Element = colorPicker.element.parentElement.querySelectorAll('button')[0];
+            const dropDownButton: Element = colorPicker.element.parentElement.querySelectorAll('button')[1];
+            if (splitButton) {
+                this.setAriaLabel(splitButton, item);
+            }
+            if (dropDownButton) {
+                const popupElement: Element = document.getElementById(dropDownButton.id + '-popup');
+                this.setAriaLabel(dropDownButton, item, popupElement);
+            }
+        }
+        this.setAriaLabel(colorPicker.element, item);
+        args.element.setAttribute('role', 'button');
+        return colorPicker;
+    }
+
+    public renderMenu(args: IMenuRenderArgs) : { menu: Menu, dropDownButton : DropDownButton} {
+        const dropDown: DropDownButton = new DropDownButton({
+            target: args.dropDownItems.target,
+            iconCss: !isNOU(args.dropDownItems.iconCss) ? args.dropDownItems.iconCss : '',
+            content: !isNOU(args.dropDownItems.content) ? args.dropDownItems.content : '',
+            cssClass: args.dropDownItems.cssClass,
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.menueDropDownBeforeOpen.bind(this),
+            beforeClose: this.menueDropDownBeforeClose.bind(this),
+            select: this.menuItemSelected.bind(this)
+        });
+        dropDown.isAngular = this.parent.isModalDialog;
+        dropDown.appendTo(args.dropDownRoot);
+        const menu: Menu = new Menu({
+            orientation: 'Vertical',
+            items: args.menuItems.items,
+            cssClass: 'e-rte-' + args.name + '-menu' + ' e-rte-menu ' + classes.CLS_RTE_ELEMENTS + this.parent.getCssClass(true),
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.menuBeforeOpen.bind(this),
+            beforeClose: this.menuBeforeClose.bind(this),
+            select: this.menuItemSelected.bind(this),
+            enablePersistence: this.parent.enablePersistence
+        });
+        if (this.parent.element.dataset.rteUnitTesting === 'true') {
+            menu.animationSettings = { effect: 'None', duration: 0 };
+            dropDown.animationSettings = { effect: 'None', duration: 0 };
+        }
+        menu.isAngular = this.parent.isModalDialog;
+        menu.appendTo(args.menuRoot);
+        const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        this.setAriaLabel(dropDown.element, args.name, popupElement);
+        return { menu: menu, dropDownButton : dropDown};
+    }
+
+    private menuItemSelected(args: MenuBarItemSelectedArgs) : void {
+        this.parent.notify(events.menuItemselected, { element: args.element, item: args.item, originalEvent: args.event });
+    }
+
+    private menuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionSave, args);
+        this.parent.notify(events.menuBeforeOpen, args);
+    }
+
+    private menuBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionRestore, args);
+        this.parent.notify(events.menuBeforeClose, args);
+    }
+
+    private menueDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionSave, args);
+        this.parent.notify(events.menuBeforeOpen, args);
+    }
+
+    private menueDropDownBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionRestore, args);
+        this.parent.notify(events.menuBeforeClose, args);
+    }
+
+    /**
+     * The function is used to render Rich Text Editor toolbar
+     *
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderPanel(): void {
+        this.getPanel().classList.add(CLS_TOOLBAR);
+    }
+
+    /**
+     * Get the toolbar element of RichTextEditor
+     *
+     * @returns {Element} - specifies the element.
+     * @hidden
+     * @deprecated
+     */
+    public getPanel(): Element {
+        return this.toolbarPanel;
+    }
+
+    /**
+     * Set the toolbar element of RichTextEditor
+     *
+     * @returns {void}
+     * @param  {Element} panel - specifies the element.
+     * @hidden
+     * @deprecated
+     */
+    public setPanel(panel: Element): void {
+        this.toolbarPanel = panel;
+    }
+
+    public destroy(): void {
+        if (this.isDestroyed) { return; }
+        if (this.tooltip && !this.tooltip.isDestroyed) {
+            this.tooltip.destroy();
+            const tooltipElements: NodeListOf<Element> = document.querySelectorAll('[data-rte-id="' + this.parent.getID() + '"]');
+            for (let i: number = 0; i < tooltipElements.length; i++) {
+                const tooltipEle: Element = tooltipElements[i as number] as Element;
+                if (this.parent.getID() === tooltipEle.getAttribute('data-rte-id') as string) {
+                    detach(tooltipEle);
+                }
+            }
+        }
+        this.unWireEvent();
+        this.mode = null;
+        this.defaultColorPicker = null;
+        this.toolbarPanel = null;
+        this.currentElement = null;
+        this.currentDropdown = null;
+        this.tooltip = null;
+        this.tooltipTargetEle = null;
+        this.isDestroyed = true;
+    }
+}
