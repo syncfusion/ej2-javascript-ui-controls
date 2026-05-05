@@ -501,7 +501,7 @@ export class PasteCleanupAction {
             allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
                 allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
             if (allowedStyleValue) {
-                currentStyleElem.style.cssText += allowedStyleValue;
+                currentStyleElem.setAttribute('style', allowedStyleValue);
             }
         }
         return clipBoardElem;

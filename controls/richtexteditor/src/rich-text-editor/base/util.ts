@@ -276,7 +276,7 @@ export function updateDropdownContent(dropDown: any, htmlString: string): void {
     dropDown.content = updatedHtml;
     dropDown.dataBind();
     if (dropDown.element.firstChild) {
-        (dropDown.element.firstChild as HTMLElement).style.cssText = styleValue;
+        (dropDown.element.firstChild as HTMLElement).setAttribute('style', styleValue);
     }
 }
 
@@ -630,7 +630,7 @@ export function parseHelper(value: string): string {
         });
         if (!isNOU(style) && style.trim() !== '') {
             style = style.replace(/;;+/g, ';');
-            span.style.cssText = style;
+            span.setAttribute('style', style);
         }
         span.innerHTML = font.innerHTML;
         if (!isNOU(font.parentNode)) {

@@ -120,6 +120,7 @@ export class Selection {
     private isSelectBookmark: boolean = false;
     private isHighlightContentControlEditRegionIn: boolean = true;
     private isPageUpAndDown: boolean = false; 
+    public isPageDown: boolean = false; 
     /**
      * @private
      * This will holds the selection html content to set data in clipboard. Avoid to use this field for other purpose.
@@ -2969,6 +2970,7 @@ export class Selection {
         let page: Page = this.end.paragraph.bodyWidget.page;
         let pageTop: number = this.getPageTop(page);
         let previousScrollTop: number = this.documentHelper.viewerContainer.scrollTop;
+        this.isPageDown = isPageDown;
         offsetY = (offsetY * this.documentHelper.zoomFactor) + (pageTop - previousScrollTop);
         offsetX = (offsetX * this.documentHelper.zoomFactor) + page.boundingRectangle.x;
         if (isPageDown) {
@@ -3006,6 +3008,7 @@ export class Selection {
             this.select({ x: offsetX, y: offsetY, extend: shiftKey });
         }
         this.isPageUpAndDown = true;
+        this.isPageDown = false;
     }
     // returns current field in FormFill mode
     private getFormFieldInFormFillMode(): FieldElementBox {
@@ -9638,7 +9641,9 @@ export class Selection {
             if (length === endPos.offset) {
                 if ((inline instanceof TextElementBox && !(inline instanceof FootnoteElementBox)) || inline instanceof FieldElementBox) {
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
-                    this.characterFormat.highlightColor = para.characterFormat.highlightColor;
+                    if (inline.characterFormat.highlightColor !== 'NoColor') {
+                        this.characterFormat.highlightColor = para.characterFormat.highlightColor;
+                    } 
                 } else if (!isNullOrUndefined(inline)) {
                     let isBookmark: boolean = false;
                     if (inline instanceof BookmarkElementBox && (inline as BookmarkElementBox).bookmarkType === 1) {

@@ -56,13 +56,12 @@ export class HeaderRender implements IRenderer {
         const headercelldiv: Element = element.querySelector('.e-headercelldiv') || element.querySelector('.e-stackedheadercelldiv');
         let col: Column;
         if (headercelldiv) {
-            if (element.querySelector('.e-stackedheadercelldiv')) {
+            col = gObj.getColumnByUid(headercelldiv.getAttribute('data-mappinguid'));
+            if (!col && element.querySelector('.e-stackedheadercelldiv') && !headercelldiv.innerHTML.includes('<')) {
                 col = gObj.getStackedHeaderColumnByHeaderText((headercelldiv as HTMLElement).innerText.trim(), <Column[]>gObj.columns);
-            } else {
-                col = gObj.getColumnByUid(headercelldiv.getAttribute('data-mappinguid'));
             }
             this.column = col;
-            if (this.column.lockColumn) {
+            if (!this.column || this.column.lockColumn) {
                 return false;
             }
             visualElement.setAttribute('data-mappinguid', this.column.uid);

@@ -2467,7 +2467,8 @@ export class ZoomPanTool extends ToolBase {
                 const focusPoint: PointModel = args.position;
                 // 927527: Diagram flickers while performing pinch zoom
                 if (scale !== 1) {
-                    this.commandHandler.zoom(scale, 0, 0, focusPoint);
+                    const isIpad: boolean = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                    this.commandHandler.zoom(scale, 0, 0, focusPoint, isIpad);
                 }
                 this.updateTouch(startTouch0, moveTouch0);
                 this.updateTouch(startTouch1, moveTouch1);

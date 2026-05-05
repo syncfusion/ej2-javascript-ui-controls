@@ -679,25 +679,31 @@ export class DataManager {
             return this.adaptor[dofetchRequest](req);
         } else if (!this.isCustomDataAdaptor(this.adaptor)) {
             const deff: Deferred = new Deferred();
-            const fetch: Fetch = new Fetch(req);
-            fetch.beforeSend = () => {
-                this.beforeSend(fetch.fetchRequest, fetch);
-            };
-            fetch.onSuccess = (data: string | Object, request: Fetch) => {
-                if (this.isGraphQLAdaptor(this.adaptor)) {
-                    // tslint:disable-next-line:no-string-literal
-                    if (!isNullOrUndefined(data['errors'])) {
+            let promise: Promise<Object> = (<Promise<Object>>this.useMiddleware(req));
+            let fetch: Fetch;
+            promise.then((response: any) => {
+                fetch = new Fetch(req);
+                fetch.beforeSend = () => {
+                    this.beforeSend(fetch.fetchRequest, fetch, response);
+                };
+                fetch.onSuccess = (data: string | Object, request: Fetch) => {
+                    if (this.isGraphQLAdaptor(this.adaptor)) {
                         // tslint:disable-next-line:no-string-literal
-                        fetch.onFailure(JSON.stringify(data['errors']));
+                        if (!isNullOrUndefined(data['errors'])) {
+                            // tslint:disable-next-line:no-string-literal
+                            fetch.onFailure(JSON.stringify(data['errors']));
+                        }
                     }
-                }
-                deff.resolve(this.adaptor.processResponse(
-                    data, this, null, request.fetchRequest, request, changes, args));
-            };
-            fetch.onFailure = (e: string) => {
-                deff.reject([{ error: e }]);
-            };
-            (<Promise<Response>>fetch.send()).catch((e: Error) => true); // to handle the failure requests.
+                    this.afterReponseRequest(data).then((responseData: Object) => {
+                        deff.resolve(this.adaptor.processResponse(
+                            responseData, this, null, request.fetchRequest, request, changes, args));
+                    }).catch((e: Error) => this.dataManagerFailure(e, deff, {} as Object));
+                };
+                fetch.onFailure = (e: string) => {
+                    deff.reject([{ error: e }]);
+                };
+                (<Promise<Response>>fetch.send()).catch((e: Error) => true); // to handle the failure requests.
+            }).catch((e: Error) => this.dataManagerFailure(e, deff, {} as Object));
             return deff.promise;
         } else {
             return this.dofetchRequest(req, (<{ options?: RemoteOptions }>this.adaptor).options.batchUpdate, changes);

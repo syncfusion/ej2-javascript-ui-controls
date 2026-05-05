@@ -3454,6 +3454,8 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 return 136;
             case 'CloudCallout':
                 return 137;
+            case 'LineCallout1NoBorder':
+                return 138;
             default:
                 return 0;
         }

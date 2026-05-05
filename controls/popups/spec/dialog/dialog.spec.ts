@@ -1056,7 +1056,7 @@ describe('Dialog Control', () => {
             dialog = new Dialog({ header: "Dialog" }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll(".e-dlg-header").length).toBe(1);
             expect(document.getElementById('dialog').getAttribute('aria-modal')).toEqual('false');
-            expect(document.getElementById('dialog').getAttribute('aria-describedby')).toEqual('dialog_title dialog_dialog-content');
+            expect(document.getElementById('dialog').getAttribute('aria-describedby')).toEqual('dialog_dialog-content');
         });
 
         it('position property offset value for x and y testing', () => {

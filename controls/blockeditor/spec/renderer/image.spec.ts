@@ -1914,4 +1914,252 @@ describe('Image Block', () => {
             }, 100);
         });
     });
+    
+    describe('File Paste Focus Handling - Auto-focus and paragraph creation', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+
+        beforeEach(() => {
+            editorElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(editorElement);
+        });
+
+        afterEach(() => {
+            if (editor) {
+                editor.destroy();
+            }
+            if (editorElement && editorElement.parentElement) {
+                document.body.removeChild(editorElement);
+            }
+        });
+
+        it('should create auto-focused Paragraph after file paste (screenshot) when at end of document', (done) => {
+            // Single block scenario - pasting file image at end should create paragraph after
+            const blocks: BlockModel[] = [
+                {
+                    id: 'paragraph1',
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'First paragraph' }]
+                }
+            ];
+            editor = createEditor({ blocks });
+            editor.appendTo('#editor');
+
+            const imageBlob = new Blob(['fake-image-data'], { type: 'image/png' });
+            
+            // Spy on URL.createObjectURL
+            spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-url');
+            
+            // Mock FileReader for testing base64 conversion
+            const mockFileReader = {
+                readAsDataURL: jasmine.createSpy('readAsDataURL').and.callFake(function() {
+                    setTimeout(() => {
+                        this.onload({ target: { result: 'data:image/png;base64,fakedata' } });
+                    }, 10);
+                }),
+                onload: null as ((event: any) => void) | null
+            };
+            spyOn(window as any, 'FileReader').and.returnValue(mockFileReader as any);
+            
+            // Set focused block to paragraph
+            const paragraphBlock = editorElement.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(paragraphBlock);
+
+            const initialBlockCount = editor.blocks.length;
+            
+            // Call handleFilePaste - this will trigger auto-focus handler
+            editor.blockManager.blockRenderer.imageRenderer.handleFilePaste(imageBlob).then(() => {
+                setTimeout(() => {
+                    // Should create image block + auto-created paragraph
+                    expect(editor.blocks.length).toBe(initialBlockCount + 2);
+                    expect(editor.blocks[1].blockType).toBe(BlockType.Image);
+                    expect(editor.blocks[2].blockType).toBe(BlockType.Paragraph);
+
+                    // Focus should be on the auto-created paragraph
+                    const lastBlock = editor.blocks[editor.blocks.length - 1];
+                    const focusedBlock = editor.blockManager.currentFocusedBlock;
+                    expect(focusedBlock.id).toBe(lastBlock.id);
+
+                    done();
+                }, 150);
+            }).catch((error: any) => {
+                done.fail(error);
+            });
+        });
+
+        it('should NOT create auto paragraph when next block exists after file paste', (done) => {
+            // Multiple blocks scenario - should focus on next block, not create new paragraph
+            const blocks: BlockModel[] = [
+                {
+                    id: 'paragraph1',
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'First' }]
+                },
+                {
+                    id: 'paragraph2',
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'Second' }]
+                }
+            ];
+            editor = createEditor({ blocks });
+            editor.appendTo('#editor');
+
+            const imageBlob = new Blob(['fake-image-data'], { type: 'image/png' });
+            
+            // Spy on URL.createObjectURL
+            spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-url');
+            
+            // Mock FileReader
+            const mockFileReader = {
+                readAsDataURL: jasmine.createSpy('readAsDataURL').and.callFake(function() {
+                    setTimeout(() => {
+                        this.onload({ target: { result: 'data:image/png;base64,fakedata' } });
+                    }, 10);
+                }),
+                onload: null as ((event: any) => void) | null
+            };
+            spyOn(window as any, 'FileReader').and.returnValue(mockFileReader as any);
+            
+            // Set focused block to first paragraph
+            const paragraphBlock = editorElement.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(paragraphBlock);
+
+            const initialBlockCount = editor.blocks.length;
+            
+            // Call handleFilePaste
+            editor.blockManager.blockRenderer.imageRenderer.handleFilePaste(imageBlob).then(() => {
+                setTimeout(() => {
+                    // Should only add image block, NO auto-created paragraph
+                    expect(editor.blocks.length).toBe(initialBlockCount + 1);
+                    expect(editor.blocks[1].blockType).toBe(BlockType.Image);
+
+                    // Focus should be on the next existing block (paragraph2)
+                    const focusedBlock = editor.blockManager.currentFocusedBlock;
+                    expect(focusedBlock.id).toBe('paragraph2');
+
+                    done();
+                }, 150);
+            }).catch((error: any) => {
+                done.fail(error);
+            });
+        });
+
+        it('should create auto-focused Paragraph after multiple image file pastes at end', (done) => {
+            // Empty editor - multiple file pastes should create images then one auto paragraph
+            const blocks: BlockModel[] = [
+                {
+                    id: 'paragraph1',
+                    blockType: BlockType.Paragraph,
+                    content: []
+                }
+            ];
+            editor = createEditor({ blocks });
+            editor.appendTo('#editor');
+
+            const imageBlob1 = new Blob(['fake-image-data1'], { type: 'image/png' });
+            const imageBlob2 = new Blob(['fake-image-data2'], { type: 'image/png' });
+            
+            // Spy on URL.createObjectURL
+            spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-url');
+            
+            // Mock FileReader
+            const mockFileReader = {
+                readAsDataURL: jasmine.createSpy('readAsDataURL').and.callFake(function() {
+                    setTimeout(() => {
+                        this.onload({ target: { result: 'data:image/png;base64,fakedata' } });
+                    }, 10);
+                }),
+                onload: null as ((event: any) => void) | null
+            };
+            spyOn(window as any, 'FileReader').and.returnValue(mockFileReader as any);
+            
+            // Set focused block
+            const paragraphBlock = editorElement.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(paragraphBlock);
+
+            // First image paste
+            editor.blockManager.blockRenderer.imageRenderer.handleFilePaste(imageBlob1).then(() => {
+                setTimeout(() => {
+                    // After first paste: paragraph + image + auto-created paragraph
+                    expect(editor.blocks[0].blockType).toBe(BlockType.Image);
+                    expect(editor.blocks[1].blockType).toBe(BlockType.Paragraph);
+
+                    // Now focus on the newly created paragraph and paste second image
+                    const newParagraph = editorElement.querySelector(`#${editor.blocks[1].id}`) as HTMLElement;
+                    editor.blockManager.setFocusToBlock(newParagraph);
+
+                    // Second image paste
+                    editor.blockManager.blockRenderer.imageRenderer.handleFilePaste(imageBlob2).then(() => {
+                        setTimeout(() => {
+                            // After second paste: paragraph + image1 + image2 + auto-created paragraph
+                            expect(editor.blocks.length).toBe(3);
+                            expect(editor.blocks[0].blockType).toBe(BlockType.Image);
+                            expect(editor.blocks[1].blockType).toBe(BlockType.Image);
+                            expect(editor.blocks[2].blockType).toBe(BlockType.Paragraph);
+
+                            done();
+                        }, 150);
+                    }).catch((error: any) => {
+                        done.fail(error);
+                    });
+                }, 150);
+            }).catch((error: any) => {
+                done.fail(error);
+            });
+        });
+
+        it('should handle file paste focus when pasting between blocks', (done) => {
+            // Paste image between two blocks - focus should move to next block
+            const blocks: BlockModel[] = [
+                {
+                    id: 'paragraph1',
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'Before' }]
+                },
+                {
+                    id: 'paragraph2',
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'After' }]
+                }
+            ];
+            editor = createEditor({ blocks });
+            editor.appendTo('#editor');
+
+            const imageBlob = new Blob(['fake-image-data'], { type: 'image/png' });
+            
+            // Mock setup
+            spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-url');
+            
+            const mockFileReader = {
+                readAsDataURL: jasmine.createSpy('readAsDataURL').and.callFake(function() {
+                    setTimeout(() => {
+                        this.onload({ target: { result: 'data:image/png;base64,fakedata' } });
+                    }, 10);
+                }),
+                onload: null as ((event: any) => void) | null
+            };
+            spyOn(window as any, 'FileReader').and.returnValue(mockFileReader as any);
+            
+            // Set focused block to first paragraph
+            const paragraphBlock = editorElement.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(paragraphBlock);
+
+            // Call handleFilePaste
+            editor.blockManager.blockRenderer.imageRenderer.handleFilePaste(imageBlob).then(() => {
+                setTimeout(() => {
+                    // Should have: paragraph1 + image + paragraph2
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[1].blockType).toBe(BlockType.Image);
+
+                    // Focus should be on the next block (paragraph2)
+                    const focusedBlock = editor.blockManager.currentFocusedBlock;
+                    expect(focusedBlock.id).toBe('paragraph2');
+
+                    done();
+                }, 150);
+            }).catch((error: any) => {
+                done.fail(error);
+            });
+        });
+    });
 });

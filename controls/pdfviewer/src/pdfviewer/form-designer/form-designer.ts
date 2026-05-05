@@ -1250,15 +1250,12 @@ export class FormDesigner {
                 if (actualObject.formFieldAnnotationType === 'RadioButton') {
                     const labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
                     const spanElement: Element = htmlElement.firstElementChild.firstElementChild.lastElementChild;
-                    if (element.actualSize.width > element.actualSize.height) {
-                        (htmlElement.firstElementChild as any).style.display = 'inherit';
-                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.height * zoomValue) + 'px';
-                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.height / 2) + 'px';
-                    } else {
-                        (htmlElement.firstElementChild as any).style.display = 'flex';
-                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.width * zoomValue) + 'px';
-                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.width / 2) + 'px';
-                    }
+                    (htmlElement.firstElementChild as any).style.display = 'flex';
+                    (htmlElement.firstElementChild as any).style.justifyContent = 'center';
+                    (htmlElement.firstElementChild as any).style.alignItems = 'center';
+                    const minDimension: number = Math.min(element.actualSize.width * zoomValue, element.actualSize.height * zoomValue);
+                    (labelContainer as any).style.width = (labelContainer as any).style.height = minDimension + 'px';
+                    (spanElement as any).style.width = (spanElement as any).style.height = (minDimension / 2) + 'px';
                     if (zoomValue < 1 && (labelContainer as any).style.width <= 20 && (labelContainer as any).style.height <= 20) {
                         (spanElement as any).style.margin = Math.round(parseInt((labelContainer as any).style.width, 10) / 3.5) + 'px';
                     }
@@ -1965,9 +1962,9 @@ export class FormDesigner {
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
             */
             element.style.display = 'flex';
+            element.style.justifyContent = 'center';
             element.style.alignItems = 'center';
             const bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds, isPrint);
-            element.style.display = bounds.display;
             labelElement = createElement('label', { className: 'e-pv-radiobtn-container' });
             labelElement.style.width = bounds.width + 'px';
             labelElement.style.height = bounds.height + 'px';
@@ -6333,6 +6330,7 @@ export class FormDesigner {
                                                       false, false, false, false, false, false, false, false,
                                                       false, false, false, false, false, oldValue, newValue);
             }
+            element.checked = selectedItem.isSelected;
         }
         if (!this.pdfViewer.designerMode || isUndoRedo) {
             element.checked = selectedItem.isSelected;

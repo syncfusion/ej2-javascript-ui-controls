@@ -1715,17 +1715,27 @@ export class DiagramEventHandler {
             cancel: false
         };
         this.diagram.triggerEvent(DiagramEvent.mouseWheel, arg);
-        if (!arg.cancel){
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const up: boolean = ((evt as any).wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
+        if (!arg.cancel) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let up: boolean = ((evt as any).wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
+            // ---- SAFARI TRACKPAD PINCH FIX (non-breaking) ----
+            const isSafari: boolean = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            // For macOS pinch zoom, Safari sends inverted wheelDelta but correct deltaY
+            // Safari trackpad zoom on Mac
+            if (isSafari && evt.ctrlKey && typeof evt.deltaY === 'number') {
+                // Standard rule:
+                // deltaY < 0 → zoom IN
+                // deltaY > 0 → zoom OUT
+                up = evt.deltaY < 0;
+            }
             const mousePosition: PointModel = this.getMousePosition(evt);
             this.diagram.tooltipObject.close();
             const ctrlKey: boolean = this.isMetaKey(evt);
             if (ctrlKey) {
-            // SF-362356 - Command below line to implement smooth scroll in diagram.
-            // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
-            // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and
-            // set it to zoomFactor args in zoomTo method.
+                // SF-362356 - Command below line to implement smooth scroll in diagram.
+                // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
+                // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and
+                // set it to zoomFactor args in zoomTo method.
                 const zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
                 if (up) {
                     this.diagram.zoomTo({ type: 'ZoomIn', zoomFactor: zoomFactor, focusPoint: mousePosition });
@@ -1840,7 +1850,7 @@ export class DiagramEventHandler {
                 }
                 this.diagram.scrollActions &= ~ScrollActions.Interaction;
                 if (horizontalOffset !== this.diagram.scroller.horizontalOffset
-                || verticalOffset !== this.diagram.scroller.verticalOffset) {
+                    || verticalOffset !== this.diagram.scroller.verticalOffset) {
                     evt.preventDefault();
                 }
             }

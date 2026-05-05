@@ -1298,6 +1298,22 @@ describe('Grid base module', () => {
                 (gridObj as any).mergeColumns(gridObj.columns, gridObj.columns);
                 (gridObj as any).leftrightColumnWidth('left');
             });
+
+            // code coverage
+            it('leftrightColumnWidth - else branch coverage when col.visible is false', () => {
+                const frozenLeftCols = gridObj.getFrozenLeftColumns();
+                frozenLeftCols.forEach((col: any) => {
+                    col.visible = false;
+                });
+                
+                const width = (gridObj as any).leftrightColumnWidth('left');
+                expect(width).toBe(0);
+                
+                frozenLeftCols.forEach((col: any) => {
+                    col.visible = true;
+                });
+            });
+
             afterAll(() => {
                 destroy(gridObj);
                 gridObj = selectionModule = rows = null;
@@ -1323,6 +1339,17 @@ describe('Grid base module', () => {
                 expect((persistData.columns[1] as Column).dataSource).toBe(undefined);
                 expect((persistData.columns[2] as Column).filter).toBe(undefined);
                 done();
+            });
+            it('getPersistColumns - else branch coverage when persistColumns is null', () => {
+                const originalAddOnPersist = (gridObj as any).addOnPersist;
+                (gridObj as any).addOnPersist = function(key: any) {
+                    return JSON.stringify({ columns: null });
+                };
+                
+                const result = (gridObj as any).getPersistColumns();
+                expect(result).toBe('');
+                
+                (gridObj as any).addOnPersist = originalAddOnPersist;
             });
             afterAll(() => {
                 destroy(gridObj);

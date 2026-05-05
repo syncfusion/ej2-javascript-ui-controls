@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, setValue } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, setValue, deleteObject } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
@@ -286,6 +286,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     });
                     setValue('ej2_instances', [this], this.element);
                 }
+            }
+            if (this.element.tagName === 'EJS-CHECKBOX') {
+                deleteObject(this.element, 'ej2_instances');
             }
         }
     }

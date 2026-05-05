@@ -423,6 +423,17 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         return modules;
     }
 
+    public getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
+    }
+
     private initialize(): void {
         this.element.id = this.element.id || getUniqueID('e-' + this.getModuleName());
         this.initializeLocale();
@@ -2265,6 +2276,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             enableRtl: this.enableRtl,
             enablePersistence: this.enablePersistence,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                const target: HTMLElement = this.getAppendToElement();
+                if (overflowDDB && overflowDDB.dropDown && !target.contains(overflowDDB.dropDown.element)) {
+                    target.appendChild(overflowDDB.dropDown.element);
+                }
                 const eventArgs: OverflowPopupEventArgs = { element: args.element, event: args.event, cancel: args.cancel };
                 this.trigger('overflowPopupOpen', eventArgs, (ribbonArgs: OverflowPopupEventArgs) => {
                     if (ribbonArgs.cancel) {

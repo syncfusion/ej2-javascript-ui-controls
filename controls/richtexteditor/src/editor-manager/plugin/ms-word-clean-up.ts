@@ -143,10 +143,10 @@ export class MsWordPaste {
                 if (isStartFragment) {
                     const paragraphElement: HTMLElement = createElement('p');
                     paragraphElement.innerHTML = '<br>';
-                    const parentStyles: string = newlineElement.parentElement.style.cssText;
+                    const parentStyles: string = newlineElement.parentElement.getAttribute('style');
                     const currentStyles: string = paragraphElement.getAttribute('style') || '';
                     const combinedStyles: string = currentStyles + parentStyles;
-                    paragraphElement.style.cssText = combinedStyles;
+                    paragraphElement.setAttribute('style', combinedStyles);
                     clipboardDataElement.insertBefore(paragraphElement, currentNode.nextSibling);
                     detach(newlineElement);
                     break;
@@ -798,7 +798,7 @@ export class MsWordPaste {
                 }
             }
             // Apply filtered styles back to the element
-            (currentElement as HTMLElement).style.cssText = filteredStyle;
+            currentElement.setAttribute('style', filteredStyle);
         }
     }
 
@@ -859,14 +859,14 @@ export class MsWordPaste {
                     this.removeOverlappingStyles(styleDeclarations, existingStyle);
                 }
                 const combinedStyle: string = styleDeclarations.join(';') + ';' + existingStyle;
-                (currentElement as HTMLElement).style.cssText = combinedStyle;
+                currentElement.setAttribute('style', combinedStyle);
             } else {
                 // Apply clean style
                 styleValue = styleValue
                     .replace(/text-indent:-.*?;?/g, '') // Remove 'text-indent'
                     .replace(/border:\s*none;?/g, '') // Remove 'border:none'
                     .trim();
-                (currentElement as HTMLElement).style.cssText = styleValue;
+                currentElement.setAttribute('style', styleValue);
             }
         }
     }
@@ -1168,7 +1168,7 @@ export class MsWordPaste {
     private fixOutlineLevel(node: Element): void {
         const style: string = node.getAttribute('style');
         if (style && style.indexOf('mso-outline-level') !== -1) {
-            (node as HTMLElement).style.cssText = style.replace('mso-outline-level', 'mso-outline');
+            node.setAttribute('style', style.replace('mso-outline-level', 'mso-outline'));
         }
     }
 
@@ -1257,7 +1257,7 @@ export class MsWordPaste {
     /* Updates node style */
     private updateNodeStyle(node: Element, style: string): string {
         if (!isNOU(node.getAttribute('style'))) {
-            (node as HTMLElement).style.cssText = style.replace('text-align:start;', '');
+            node.setAttribute('style', style.replace('text-align:start;', ''));
             (node as HTMLElement).style.textIndent = '';
             return node.getAttribute('style');
         }
@@ -1703,7 +1703,7 @@ export class MsWordPaste {
             return;
         }
         listItem.setAttribute('class', item.class);
-        listItem.style.cssText = !isNOU(item.listStyle) ? item.listStyle : '';
+        listItem.setAttribute('style', !isNOU(item.listStyle) ? item.listStyle : '');
     }
 
     /* Sets start attribute if needed */

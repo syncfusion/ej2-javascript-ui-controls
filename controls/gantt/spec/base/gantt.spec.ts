@@ -8013,3 +8013,102 @@ describe('CR1015593:Auto corrected task collection returns incorrectly when vali
         }
     });
 });
+
+describe('1021511 Parent taskbar startDate calculation not considering the unscheduled child tasks', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+  
+  {
+    TaskID: 4,
+    TaskName: 'Project 2 with mixed tasks',
+    subtasks: [
+      {
+        TaskID: 5,
+        TaskName: 'unscheduled Task 2.1',
+        Duration: 3,
+      },
+      {
+        TaskID: 6,
+        TaskName: 'Scheduled Task 2.2',
+        StartDate: new Date('04/02/2026'),
+        EndDate: new Date('04/03/2026'),
+      },
+    ],
+  },
+  
+];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                 dataSource: unscheduledData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    {field: 'TaskID', width: 75 },
+                    {field: 'TaskName', width: 80 },
+                    {field: 'StartDate', width: 120},
+                    {field: 'EndDate', width: 120 },
+                    {field: 'Duration', width: 90 },
+                ],
+                splitterSettings: {
+                    columnIndex: 4
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                searchSettings:
+                { fields: ['TaskName', 'Duration'] 
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/29/2026'),
+        projectEndDate: new Date('05/30/2026'),
+            }, done);
+    });
+    it('Unscheduled tasks ', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate)).toBe('3/29/2026');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.endDate)).toBe('4/3/2026');
+        expect(ganttObj.flatData[1].ganttProperties.duration).toBe(3);
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.endDate)).toBe('4/3/2026');
+
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

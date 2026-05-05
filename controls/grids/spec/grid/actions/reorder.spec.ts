@@ -1278,3 +1278,125 @@ describe('Reorder module', () => {
         });
     });
 });
+
+describe('Reorder Stacked Headers with Header Templates - Bug #1023422', () => {
+    let gridObj: Grid;
+    let columns: Column[];
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: data,
+            allowReordering: true,
+            columns: [
+                {
+                    headerText: 'Order Details',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        {
+                            field: 'OrderDate',
+                            headerText: 'Order Date',
+                            format: { skeleton: 'yMd', type: 'date' },
+                            type: 'date',
+                            headerTemplate: '<span class="e-icons e-calendar"></span> Date'
+                        }
+                    ]
+                },
+                { field: 'CustomerID', headerText: 'Customer ID' },
+                {
+                    headerText: 'Ship Details',
+                    headerTemplate: '<div class="e-template-header"><strong>Shipping</strong></div>',
+                    columns: [
+                        { field: 'ShipCity', headerText: 'Ship City' },
+                        {
+                            field: 'ShipCountry',
+                            headerText: 'Ship Country',
+                            headerTemplate: '<span>Country</span>'
+                        }
+                    ]
+                },
+                { field: 'Freight', headerText: 'Freight' }
+            ]
+        }, done);
+    });
+
+    it('should not throw script error when reorder stacked header group with header template', () => {
+        const orderDetailsColumn = (gridObj as any).columns[0];
+        const stackedHeaderCell: HTMLElement = gridObj.getHeaderTable().querySelector('.e-stackedheadercell') as HTMLElement;
+
+        const stackedHeaderDiv = stackedHeaderCell.querySelector('.e-stackedheadercelldiv') as HTMLElement;
+        const originalInnerText = stackedHeaderDiv.innerText;
+
+        stackedHeaderDiv.innerText = 'NonExistentHeaderText';
+
+        const dropClone = createElement('div', { attrs: { 'data-mappinguid': orderDetailsColumn.uid } });
+        document.body.appendChild(dropClone);
+
+        (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = stackedHeaderCell;
+
+        expect(() => {
+            (gridObj.headerModule as any).helper({
+                target: gridObj.getHeaderTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: stackedHeaderCell }
+            });
+        }).not.toThrow();
+
+        stackedHeaderDiv.innerText = originalInnerText;
+        dropClone.remove();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = columns = null;
+    });
+});
+
+describe('Coverage - Header renderer guard and target resolution', () => {
+    let gridObj: Grid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: data,
+            allowReordering: true,
+            columns: [
+                {
+                    headerText: 'Stack Group',
+                    columns: [
+                        { field: 'CustomerID', headerText: 'Customer ID' }
+                    ]
+                },
+                { field: 'OrderID', headerText: 'Order ID' }
+            ]
+        }, done);
+    });
+
+    it('should proceed when draggable target resolves to header cell and guard conditions are satisfied', () => {
+        var stackedHeaderCell = gridObj
+            .getHeaderTable()
+            .querySelector('.e-stackedheadercell');
+
+        (gridObj.renderModule as any)
+            .headerRenderer
+            .draggable
+            .currentStateTarget = stackedHeaderCell;
+        
+        const innerDiv = stackedHeaderCell.querySelector('.e-stackedheadercelldiv') as HTMLElement;
+        innerDiv.innerHTML = 'Stack Group';
+        innerDiv.removeAttribute('data-mappinguid');
+        
+        expect(() => {
+            (gridObj.headerModule as any).helper({
+                target: stackedHeaderCell,
+                sender: {
+                    clientX: 10,
+                    clientY: 10,
+                    target: stackedHeaderCell
+                }
+            });
+        }).not.toThrow();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

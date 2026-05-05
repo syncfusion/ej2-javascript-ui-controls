@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I829065` - Fixed Diagram Scroll bar flicker when scrolled rapidly with trackpad or mouseWheel where offset already at boundary.
+- `#I826568` -  Resolved zoom flicker during Mac trackpad zoom operations.
+
 ## 33.2.4 (2026-04-28)
 
 ### Diagram

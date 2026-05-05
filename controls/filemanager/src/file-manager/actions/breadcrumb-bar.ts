@@ -24,6 +24,10 @@ export class BreadCrumbBar {
     private searchTimer: number = null;
     private keyConfigs: { [key: string]: string };
     private searchWrapWidth: number = null;
+    private boundSearchChangeHandler: (args?: any) => void;
+    private boundOnKeyUp: (args?: any) => void;
+    private searchIcon: Element | null = null;
+    private searchSibling: Element | null = null;
     /**
      * constructor for addressbar module
      *
@@ -37,6 +41,8 @@ export class BreadCrumbBar {
         this.keyConfigs = {
             enter: 'enter'
         };
+        this.boundSearchChangeHandler = this.searchChangeHandler.bind(this);
+        this.boundOnKeyUp = this.onKeyUp.bind(this);
         this.render();
     }
     private onPropertyChanged(e: NotifyArgs): void {
@@ -139,9 +145,9 @@ export class BreadCrumbBar {
         const searchEle: Element = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
             this.parent.breadCrumbBarNavigation.appendChild(searchContainer);
-            const span: Element = createElement('span', { className: 'e-icons e-fe-search' });
-            EventHandler.add(span, 'click', this.onShowInput, this);
-            searchInput.parentElement.insertBefore(span, searchInput);
+            this.searchIcon = createElement('span', { className: 'e-icons e-fe-search' });
+            EventHandler.add(this.searchIcon, 'click', this.onShowInput, this);
+            searchInput.parentElement.insertBefore(this.searchIcon, searchInput);
             this.searchObj = new TextBox({
                 value: '',
                 showClearButton: true,
@@ -151,9 +157,9 @@ export class BreadCrumbBar {
             });
             this.searchObj.appendTo('#' + this.parent.element.id + CLS.SEARCH_ID);
             this.searchEventBind(this.parent.searchSettings.allowSearchOnTyping);
-            const search: Element = this.searchObj.element.nextElementSibling;
-            EventHandler.add(search, 'mousedown', this.searchChangeHandler.bind(this), this);
-            EventHandler.add(this.searchObj.element, 'keyup', this.onKeyUp.bind(this), this);
+            this.searchSibling = this.searchObj.element.nextElementSibling;
+            EventHandler.add(this.searchSibling, 'mousedown', this.boundSearchChangeHandler, this);
+            EventHandler.add(this.searchObj.element, 'keyup', this.boundOnKeyUp, this);
         }
         const searchWrap: HTMLElement = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
         breadCrumbBarWidth = breadCrumbBarWidth - (this.searchWrapWidth ? this.searchWrapWidth : searchWrap.offsetWidth);
@@ -384,6 +390,19 @@ export class BreadCrumbBar {
         this.parent.off(events.dropInit, this.onDropInit);
         this.parent.off(events.layoutRefresh, this.onResize);
         this.parent.off(events.dropPath, this.onPathChange);
+
+        if (this.parent.breadCrumbBarNavigation) {
+            EventHandler.remove(this.parent.breadCrumbBarNavigation, 'click', this.addressPathClickHandler);
+        }
+        if (this.searchIcon) {
+            EventHandler.remove(this.searchIcon, 'click', this.onShowInput);
+        }
+        if (this.searchSibling) {
+            EventHandler.remove(this.searchSibling, 'mousedown', this.boundSearchChangeHandler);
+        }
+        if (this.searchObj && this.searchObj.element) {
+            EventHandler.remove(this.searchObj.element, 'keyup', this.boundOnKeyUp);
+        }
     }
 
     /* istanbul ignore next */

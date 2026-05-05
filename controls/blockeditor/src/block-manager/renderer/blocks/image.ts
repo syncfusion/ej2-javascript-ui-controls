@@ -466,12 +466,20 @@ export class ImageRenderer {
             transformedParagraph = this.parent.getBlockElementById(addedBlock.id);
         }
 
+        const transformedBlock: BlockModel = getBlockModelById(transformedParagraph.id, this.parent.getEditorBlocks());
         this.parent.blockCommand.transformBlock({
-            block: getBlockModelById(transformedParagraph.id, this.parent.getEditorBlocks()),
+            block: transformedBlock,
             blockElement: transformedParagraph,
             newBlockType: BlockType.Image,
             props: { src: src, altText: fileName }
         });
+
+        // Handle auto-focus and paragraph creation after file paste (screenshots, right-click copy)
+        // Get the updated block model after transformation
+        const updatedBlock: BlockModel = getBlockModelById(transformedParagraph.id, this.parent.getEditorBlocks());
+        if (updatedBlock) {
+            this.parent.clipboardAction.handleAutoFocusAfterImagePaste([updatedBlock]);
+        }
     }
 
     private getImageSrcFromFile(file: File | Blob, saveFormat: SaveFormat): Promise<string> {

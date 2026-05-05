@@ -312,6 +312,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isVirtualTrackHeight: boolean = false;
     protected virtualSelectAll: boolean = false;
     protected isVirtualReorder: boolean = false;
+    protected isVirtualOrder: boolean = false;
     protected incrementalQueryString: string = '';
     protected incrementalEndIndex: number = 0;
     protected incrementalStartIndex: number = 0;
@@ -2054,6 +2055,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (this.getModuleName() === 'multiselect' && (this.virtualSelectAll && !isClearAll)) {
                 this.virtualSelectAllData = listData;
                 listData = listData.slice(this.virtualItemStartIndex, this.virtualItemEndIndex);
+                if (this.virtualSelectAllData.length < (this.itemCount * 2) && this.isCheckBoxSelection && this.isVirtualOrder) {
+                    listData = this.virtualSelectAllData;
+                }
             }
             ulElement = this.createListItems(listData, fields);
             if (this.isIncrementalRequest){
@@ -2076,6 +2080,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         }
                         else {
                             virtualUlElement.appendChild(ulElement);
+                        }
+                        if (this.getModuleName() === 'multiselect' && this.isCheckBoxSelection && !this.appendUncheckList && this.isVirtualOrder) {
+                            const selectedUlElement: Element = this.list.querySelector('.e-list-parent' + '.e-reorder');
+                            if (!isNullOrUndefined(selectedUlElement)) {
+                                virtualUlElement.removeChild(selectedUlElement);
+                            }
                         }
                     }
                     this.updateListElements(listData);

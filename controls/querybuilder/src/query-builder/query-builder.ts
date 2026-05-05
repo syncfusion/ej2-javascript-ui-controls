@@ -3708,7 +3708,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         const isTemplate: boolean = (typeof itemData.template === 'string');
                         if (rule.value && !isNullOrUndefined(format)) {
                             selVal = (length > 1) ? rule.value[i as number] as string : rule.value as string;
-                            selectedValue = this.parseDate(selVal, format) || new Date();
+                            if (selVal) {
+                                selectedValue = this.parseDate(selVal, format) || new Date();
+                            }
                         }
                         if (!isNullOrUndefined(itemData) && itemData.value && !isTemplate) {
                             const parsedDate: Date = this.parseDate(itemData.value.toString(), itemData.format);
@@ -5125,6 +5127,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((groupRule as any).properties) { groupRule = (groupRule as any).properties; }
                 const groupElem: HTMLElement = closest(targetGroup as Element, '.e-group-container') as HTMLElement;
+                const cloneGroupElem: HTMLElement = groupElem.cloneNode(true) as HTMLElement;
+                let isRuleArea: boolean = false;
+                if (closest(e.target as Element, '.e-group-container') && closest(e.target as Element, '.e-group-container').id === this.initialID + '_group0') {
+                    isRuleArea = true;
+                }
                 const nestGrpElem: NodeListOf<Element> = groupElem.querySelectorAll('.e-group-container');
                 nestGrpElem.forEach((ele: HTMLElement) => {
                     if (this.element.querySelector('#' + ele.id)) {
@@ -5141,10 +5148,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     ruleIds.push(ruleElems[i as number].id.split(this.element.id + '_')[1]);
                 }
                 this.deleteRules(ruleIds);
+                // Calculate index considering both groups and rules in the overall rules collection
+                let overallDropIndex: number = 0;
+                const ruleListElem: HTMLElement = cloneGroupElem.querySelector('.e-rule-list') as HTMLElement;
+                if (ruleListElem) {
+                    let droppedElement: Element;
+                    for (let j: number = 0; j < ruleListElem.children.length; j++) {
+                        const child: Element = ruleListElem.children[j as number];
+                        if (child.classList.contains('e-drag-rule-top-line') || child.classList.contains('e-drag-rule-bottom-line')) {
+                            droppedElement = child;
+                            overallDropIndex = j;
+                            break;
+                        }
+                    }
+                }
                 if (targetGroup.classList.contains('e-drag-rule-top-line')) {
-                    groupRule.rules.splice(dropInd, 0, rule);
+                    groupRule.rules.splice(isRuleArea ? overallDropIndex : dropInd, 0, rule);
                 } else {
-                    groupRule.rules.splice(dropInd + 1, 0, rule);
+                    groupRule.rules.splice(isRuleArea ? overallDropIndex + 1 : dropInd + 1, 0, rule);
                 }
                 groupRule.rules.forEach((rule: RuleModel) => {
                     if (this.enableSeparateConnector) {

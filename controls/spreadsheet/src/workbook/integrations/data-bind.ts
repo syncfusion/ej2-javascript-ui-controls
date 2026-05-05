@@ -54,8 +54,8 @@ export class DataBind {
      * @returns {void} - Update given data source to sheet.
      */
     private updateSheetFromDataSourceHandler(
-        args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-            sheetIndex?: number, loadFullData?: boolean, resolveAfterFullDataLoaded?: boolean,
+        args: { sheet: ExtendedSheet, indexes?: number[], promise?: Promise<CellModel>, rangeSettingCount?: number[],
+            formulaCellRef?: string, sheetIndex?: number, loadFullData?: boolean, resolveAfterFullDataLoaded?: boolean,
             loadComplete?: Function, loadFromStartCell?: boolean, autoDetectFormat?: boolean,
             updateDependentCellsCallback?: Function }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
@@ -404,17 +404,17 @@ export class DataBind {
                 });
                 range.info = null;
             }
-            const evtArgs: { sheet: ExtendedSheet, indexes: number[], loadFullData: boolean, promise: Promise<CellModel> } = {
-                sheet: <ExtendedSheet>sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], loadFullData: true,
-                promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
-            };
-            this.updateSheetFromDataSourceHandler(evtArgs);
-            evtArgs.promise.then(() => {
+            const loadCompleteHandler: Function = (): void => {
                 this.parent.trigger(
                     'dataSourceChanged', { data: args.changedData, action: 'dataSourceChanged', rangeIndex: args.rangeIdx,
                         sheetIndex: args.sheetIdx });
                 this.parent.notify(updateView, { sheetIndex: args.sheetIdx, checkWrap: true, checkCF: true });
-            });
+            };
+            const evtArgs: { sheet: ExtendedSheet, loadComplete: Function, loadFullData: boolean,
+                loadFromStartCell: boolean } = { sheet: <ExtendedSheet>sheet, loadComplete: loadCompleteHandler.bind(this),
+                loadFullData: true, loadFromStartCell: true
+            };
+            this.updateSheetFromDataSourceHandler(evtArgs);
         }
     }
 

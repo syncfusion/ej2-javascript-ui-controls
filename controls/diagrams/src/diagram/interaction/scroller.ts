@@ -28,6 +28,9 @@ export class DiagramScroller {
     private hOffset: number = 0;
     private vOffset: number = 0;
     private scrolled: boolean = false;
+    /**@private */
+    public suppressScrollSync: boolean = false;
+    private suppressScrollSyncTimer: ReturnType<typeof setTimeout> | null;
     /**
      * verticalOffset method \
      *
@@ -161,6 +164,7 @@ export class DiagramScroller {
     public scrollerWidth: number;
     private hScrollSize: number = 0;
     private vScrollSize: number = 0;
+    private isFitToPageAction: boolean = false;
     /** @private */
     public isNegativeOffset: boolean = false;
     constructor(diagram: Diagram) {
@@ -614,11 +618,12 @@ export class DiagramScroller {
      * @param {boolean} isBringIntoView - provide the isBringIntoView value.
      * @param {boolean} isTrackpadScroll - provide the isTrackpadScroll value.
      * @param {boolean} canZoomOut - provide the canZoomOut value.
+     * @param {boolean} isIpad - Indicates whether the runtime environment is iPad.
      *
      * @private
      */
     public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean,
-                isBringIntoView?: boolean, isTrackpadScroll?: boolean, canZoomOut?: boolean): void {
+                isBringIntoView?: boolean, isTrackpadScroll?: boolean, canZoomOut?: boolean, isIpad?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -669,6 +674,18 @@ export class DiagramScroller {
                 if (this.diagram.mode !== 'SVG' && !canVitualize(this.diagram)) {
                     this.diagram.refreshDiagramLayer();
                 }
+                if (isIpad) {
+                    // iPad pinch‑zoom fix: internal scrollLeft/Top changes can trigger async scroll events.
+                    // Suppress scroll sync briefly to prevent Safari clamping from corrupting zoom offsets.
+                    this.suppressScrollSync = true;
+                    if (this.suppressScrollSyncTimer) {
+                        clearTimeout(this.suppressScrollSyncTimer);
+                    }
+                    this.suppressScrollSyncTimer = setTimeout(() => {
+                        this.suppressScrollSync = false;
+                        this.suppressScrollSyncTimer = null;
+                    }, 120);
+                }
                 this.diagram.setOffset(-this.horizontalOffset - pageBounds.x, -this.verticalOffset - pageBounds.y);
                 updateRuler(this.diagram);
                 //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
@@ -693,6 +710,7 @@ export class DiagramScroller {
      * @private
      */
     public fitToPage(options?: IFitOptions): void {
+        this.isFitToPageAction = true;
         options = options || {};
         let mode: FitModes = options.mode;
         let region: DiagramRegions = options.region;
@@ -795,6 +813,7 @@ export class DiagramScroller {
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true, undefined, undefined, canZoomOut);
         }
         this.checkScroll(true);
+        this.isFitToPageAction = false;
     }
     /**
      * Checks and manages scrollbar visibility based on scroll settings and fit-to-page mode.
@@ -959,52 +978,130 @@ export class DiagramScroller {
             bounds = bounds || (isTrackpadScroll ? this.getPageBounds(false, undefined, true) : this.getPageBounds(true, undefined, true));
             // 939223: Unable to Pan to the Extreme End of the Diagram When Scroll Padding is Applied
             const eventHandler: string = 'eventHandler';
+            let isPanAction: boolean = false;
             if (this.diagram[`${eventHandler}`].currentAction === 'Pan' && this.diagram[`${eventHandler}`].inAction) {
                 bounds = this.getPageBounds(false, undefined, true);
+                isPanAction = true;
             }
-            bounds.x *= this.currentZoom;
-            bounds.y *= this.currentZoom;
-            bounds.width *= this.currentZoom;
-            bounds.height *= this.currentZoom;
-            if (isInteractiveZoomPan !== undefined){
+            if (this.diagram.views && (this.diagram.views as any).overview) {
+                const overview: any = (this.diagram.views as any).overview;
+                if (overview.actionName === 'pan' && overview.inAction) {
+                    isPanAction = true;
+                }
+            }
+
+            const zoom: number = this.currentZoom;
+
+            // Current scaled viewport
+            const scaledX: number = (this.horizontalOffset * -1) / zoom;
+            const scaledY: number = (this.verticalOffset * -1) / zoom;
+            const scaledWidth: number = this.viewPortWidth / zoom;
+            const scaledHeight: number = this.viewPortHeight / zoom;
+
+            // Floating-point safe comparison
+            const EPSILON: number = 0.01;
+
+            let skipHorizontal: boolean = Math.abs(this.horizontalOffset - hOffset) < EPSILON;
+            let skipVertical: boolean = Math.abs(this.verticalOffset - vOffset) < EPSILON;
+
+            if (!skipHorizontal && !this.isFitToPageAction && (isInteractiveZoomPan || isTrackpadScroll)) {
+                let newScaledX: number = (hOffset * -1) / zoom;
+                const diagramFitsHorizontally: boolean = (bounds.width + this.vScrollSize) <= scaledWidth;
+                if (isPanAction && diagramFitsHorizontally) {
+                    const minScaledX: number = bounds.right + this.vScrollSize - scaledWidth;
+                    const maxScaledX: number = bounds.left;
+                    newScaledX = Math.max(minScaledX, Math.min(newScaledX, maxScaledX));
+                }
+                else if (bounds.left >= scaledX && bounds.right <= scaledX + scaledWidth) {
+                    newScaledX = scaledX;
+                } else {
+                    if (this.diagram.scrollSettings.scrollLimit === 'Diagram' && bounds.x > 0) {
+                        bounds.width += bounds.x;
+                        bounds.x = 0;
+                    }
+
+                    const minX: number = bounds.left;
+                    const maxX: number = Math.max(minX, bounds.right + this.vScrollSize - scaledWidth);
+                    newScaledX = Math.max(minX, Math.min(newScaledX, maxX));
+                }
+
+                hOffset = (newScaledX * -1) * zoom;
+                skipHorizontal = Math.abs(this.horizontalOffset - hOffset) < EPSILON;
+            }
+
+            if (!skipVertical && !this.isFitToPageAction && (isInteractiveZoomPan || isTrackpadScroll)) {
+                let newScaledY: number = (vOffset * -1) / zoom;
+                const diagramFitsVertically: boolean = (bounds.height + this.hScrollSize) <= scaledHeight;
+                if (isPanAction && diagramFitsVertically) {
+                    const minScaledY: number = bounds.bottom + this.hScrollSize - scaledHeight;
+                    const maxScaledY: number = bounds.top;
+                    newScaledY = Math.max(minScaledY, Math.min(newScaledY, maxScaledY));
+                }
+                else if (bounds.top >= scaledY && bounds.bottom <= scaledY + scaledHeight) {
+                    newScaledY = scaledY;
+                } else {
+                    if (this.diagram.scrollSettings.scrollLimit === 'Diagram' && bounds.y > 0) {
+                        bounds.height += bounds.y;
+                        bounds.y = 0;
+                    }
+
+                    const minY: number = bounds.top;
+                    const maxY: number = Math.max(minY, bounds.bottom + this.hScrollSize - scaledHeight);
+                    newScaledY = Math.max(minY, Math.min(newScaledY, maxY));
+                }
+
+                vOffset = (newScaledY * -1) * zoom;
+                skipVertical = Math.abs(this.verticalOffset - vOffset) < EPSILON;
+            }
+
+            if (!isBringIntoView && !(isInteractiveZoomPan || isTrackpadScroll)) {
                 hOffset *= -1;
                 vOffset *= -1;
             }
-            // EJ2-69238 - Added below code to multiple the horizontal and vertical offset to bring the node in viewport
-            if (isBringIntoView) {
-                hOffset *= -1;
-                vOffset *= -1;
-            }
-            const allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
-            if (!isBringIntoView && !(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
-                hOffset >= bounds.right - this.viewPortWidth)
-                || hOffset >= bounds.x && (hOffset + this.viewPortWidth <= allowedRight))) {
-                //not allowed case
-                if (hOffset >= bounds.x) {
-                    hOffset = Math.max(
-                        bounds.x,
-                        Math.min(hOffset, hOffset - (hOffset + this.viewPortWidth - this.vScrollSize - allowedRight)));
-                } else {
-                    const allowed: number = bounds.right - this.viewPortWidth;
-                    hOffset = Math.min(allowed, bounds.x);
-                }
-            }
-            const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
-            // EJ2-69238 - Added below code to restrict the min value calculation for vertical offset in bringIntoview scenarion.
-            if (!isBringIntoView && !(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
-                || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
-                //not allowed case
-                if (vOffset >= bounds.y) {
-                    vOffset = Math.max(
-                        bounds.y,
-                        Math.min(vOffset, vOffset - (vOffset + this.viewPortHeight - this.hScrollSize - allowedBottom)));
-                } else {
-                    const allowed: number = bounds.bottom - this.viewPortHeight;
-                    vOffset = Math.min(bounds.y, allowed);
-                }
-            }
-            hOffset *= -1;
-            vOffset *= -1;
+
+            //bounds.x *= this.currentZoom;
+            //bounds.y *= this.currentZoom;
+            //bounds.width *= this.currentZoom;
+            //bounds.height *= this.currentZoom;
+            //if (isInteractiveZoomPan !== undefined){
+            //    hOffset *= -1;
+            //    vOffset *= -1;
+            //}
+            //// EJ2-69238 - Added below code to multiple the horizontal and vertical offset to bring the node in viewport
+            //if (isBringIntoView) {
+            //    hOffset *= -1;
+            //    vOffset *= -1;
+            //}
+            //const allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
+            //if (!skipHorizontal && !isBringIntoView && !(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
+            //    hOffset >= bounds.right - this.viewPortWidth)
+            //    || hOffset >= bounds.x && (hOffset + this.viewPortWidth <= allowedRight))) {
+            //    //not allowed case
+            //    if (hOffset >= bounds.x) {
+            //        hOffset = Math.max(
+            //            bounds.x,
+            //            Math.min(hOffset, hOffset - (hOffset + this.viewPortWidth - this.vScrollSize - allowedRight)));
+            //    } else {
+            //        const allowed: number = bounds.right - this.viewPortWidth;
+            //        hOffset = Math.min(allowed, bounds.x);
+            //    }
+            //}
+            //const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
+            //// EJ2-69238 - Added below code to restrict the min value calculation for vertical offset in bringIntoview scenarion.
+            //if (!skipVertical && !isBringIntoView && !(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
+            //    || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
+            //    //not allowed case
+            //    if (vOffset >= bounds.y) {
+            //        vOffset = Math.max(
+            //            bounds.y,
+            //            Math.min(vOffset, vOffset - (vOffset + this.viewPortHeight - this.hScrollSize - allowedBottom)));
+            //    } else {
+            //        const allowed: number = bounds.bottom - this.viewPortHeight;
+            //        vOffset = Math.min(bounds.y, allowed);
+            //    }
+            //}
+            //hOffset *= -1;
+            //vOffset *= -1;
         }
         return { x: hOffset, y: vOffset };
     }

@@ -3932,10 +3932,10 @@ export class TaskProcessor extends DateProcessor {
                     if (isUnscheduled && !(propertyWithValue === 'startDate' || propertyWithValue === 'endDate')) {
                         const formattedEndDate: Date = this.getDateFromFormat(endDate);
                         const formattedStartDate: Date = this.getDateFromFormat(startDate);
-                        if (formattedEndDate > maxEndDate) {
+                        if (isNullOrUndefined(maxEndDate) || formattedEndDate > maxEndDate) {
                             maxEndDate = formattedEndDate;
                         }
-                        if (formattedStartDate < minStartDate) {
+                        if (isNullOrUndefined(minStartDate) || formattedStartDate < minStartDate) {
                             minStartDate = formattedStartDate;
                         }
                     }

@@ -10193,6 +10193,44 @@ describe('DateRangePicker', () => {
             daterangepickerObj.destroy();
         });
     });
+    describe('1023207 - DateRangePicker start date not updated on first click when popup opened via input after icon usage', () => {
+        let dateRangePicker: any;
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+        };
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'daterangepicker' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('DateRangePicker start date not updated on first click when popup opened via input after icon usage', function () {
+            dateRangePicker = new DateRangePicker({
+                openOnFocus: true
+            });
+            dateRangePicker.appendTo('#daterangepicker');
+            dateRangePicker.isMobile = true;
+            // Step 1: Open popup via calendar icon
+            mouseEventArgs.target = '.e-input-group-icon .e-range-icon .e-icons';
+            mouseEventArgs.type = 'click';
+            dateRangePicker.rangeIconHandler(mouseEventArgs);
+            expect(dateRangePicker.isPopupOpen()).toBe(true);
+            expect(dateRangePicker.isRangeIconClicked).toBe(true);
+            // Step 2: Select initial date range (dates 1-5)
+            let firstClickDate = <HTMLElement>(dateRangePicker.tableBodyElement.querySelectorAll('tr td')[1]);
+            let secondClickDate = <HTMLElement>(dateRangePicker.tableBodyElement.querySelectorAll('tr td')[5]);
+            firstClickDate.dispatchEvent(clickEvent);
+            secondClickDate.dispatchEvent(clickEvent);
+            expect(dateRangePicker.isPopupOpen()).toBe(true);
+            // Step 3: Click Apply to close the popup
+            (dateRangePicker.applyButton.element).click();
+            expect(dateRangePicker.isPopupOpen()).toBe(false);
+            expect(dateRangePicker.isRangeIconClicked).toBe(false);
+            dateRangePicker.destroy();
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

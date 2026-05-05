@@ -654,9 +654,18 @@ export class UrlAdaptor extends Adaptor {
 
         const param: string = 'param';
         const req: { [key: string]: Object } = request1;
+        const moduleName: Function = (<{ getModuleName?: Function }>this).getModuleName;
         req[options.from] = query.fromTable;
         if (options.apply && query.distincts.length) {
-            req[options.apply] = 'onDistinct' in this ? DataUtil.callAdaptorFunction(this, 'onDistinct', query.distincts) : '';
+            req[options.apply] = '';
+            let applyQuery = '';
+            if (moduleName && moduleName() === 'ODataV4Adaptor' && ((request.filters && request.filters.length)
+                || (request.searches && request.searches.length))) {
+                const where = DataUtil.callAdaptorFunction(this, 'onWhere', request.filters, query);
+                applyQuery = "filter(" + where + ")/";
+            }
+            applyQuery += 'onDistinct' in this ? DataUtil.callAdaptorFunction(this, 'onDistinct', query.distincts) : '';
+            req[options.apply] = applyQuery;
         }
         if (!query.distincts.length && options.expand) {
             req[options.expand] = 'onExpand' in this && 'onSelect' in singles ?
@@ -674,8 +683,11 @@ export class UrlAdaptor extends Adaptor {
             DataUtil.callAdaptorFunction(this, 'onSkip', DataUtil.getValue(singles.onSkip.nos, query), query) : '';
         req[options.take] = 'onTake' in singles ?
             DataUtil.callAdaptorFunction(this, 'onTake', DataUtil.getValue(singles.onTake.nos, query), query) : '';
-        req[options.where] = request.filters.length || request.searches.length ?
-            DataUtil.callAdaptorFunction(this, 'onWhere', request.filters, query) : '';
+        if (!(options.apply && query.distincts.length && moduleName && moduleName() === 'ODataV4Adaptor'
+            && ((request.filters && request.filters.length) || (request.searches && request.searches.length)))) {
+            req[options.where] = request.filters.length || request.searches.length ?
+                DataUtil.callAdaptorFunction(this, 'onWhere', request.filters, query) : '';
+        }
         req[options.sortBy] = request.sorts.length ? DataUtil.callAdaptorFunction(this, 'onSortBy', request.sorts, query) : '';
         req[options.group] = request.groups.length ? DataUtil.callAdaptorFunction(this, 'onGroup', request.groups, query) : '';
         req[options.aggregates] = request.aggregates.length ?
@@ -2016,7 +2028,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
      */
     public onDistinct(distinctFields: string[]): Object {
         const fields: string = distinctFields.map((field: string) => ODataAdaptor.getField(field)).join(',');
-        return `groupby((${fields}))`;
+        return `groupby((${fields}), aggregate($count as groupCount))`;
     }
 
     /**

@@ -62,6 +62,139 @@ describe('Ribbon', () => {
             remove(ribbonEle);
             remove(containerEle);
         });
+        it('Dropdown popup should render inside CDK overlay pane when Ribbon is inside Angular CDK Dialog', (done) => {
+            const cdkOverlayPane = createElement('div', {
+                className: 'cdk-overlay-pane',
+                styles: 'position: fixed; z-index: 1000; top: 50px; left: 50px; width: 900px; height: 600px;'
+            });
+
+            const popoverEl = createElement('div', { attrs: { 'popover': '' } });
+            const ribbonEle2 = createElement('div', { id: 'ribbon-cdk-test' });
+
+            popoverEl.appendChild(ribbonEle2);
+            cdkOverlayPane.appendChild(popoverEl);
+            document.body.appendChild(cdkOverlayPane);
+
+            const cdkRibbon = new Ribbon({
+                tabs: [{
+                    id: 'tab1',
+                    header: 'tab1',
+                    groups: [{
+                        id: 'group1',
+                        header: 'group1Header',
+                        collections: [{
+                            items: [{
+                                id: 'ddTest',
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Options',
+                                    iconCss: 'e-icons e-edit',
+                                    items: [
+                                        { text: 'Cut' },
+                                        { text: 'Copy' },
+                                        { text: 'Paste' },
+                                        { text: 'Delete' }
+                                    ]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle2);
+
+            (cdkRibbon as any).isAngular = true;
+
+            const ddbElement = cdkRibbon.element.querySelector('#ddTest') as HTMLElement;
+            const dropDownInstance = getComponent(ddbElement, DropDownButton) as DropDownButton;
+
+            expect(dropDownInstance).toBeTruthy('DropDownButton instance should exist');
+
+            triggerMouseEvent(ddbElement, 'click');
+
+            setTimeout(() => {
+                const popupElement = dropDownInstance.dropDown ? dropDownInstance.dropDown.element : null;
+
+                expect(popupElement).toBeTruthy('Popup element should be created');
+
+                expect(cdkOverlayPane.contains(popupElement)).toBe(true,
+                    'Dropdown popup should be moved inside .cdk-overlay-pane');
+
+                expect(popupElement.parentElement).toBe(cdkOverlayPane,
+                    'Popup direct parent should be cdk-overlay-pane');
+
+                cdkRibbon.destroy();
+                remove(cdkOverlayPane);
+                done();
+            }, 250);
+        });
+
+        it('SplitButton popup should render inside CDK overlay pane when Ribbon is inside Angular CDK Dialog', (done) => {
+            const cdkOverlayPane = createElement('div', {
+                className: 'cdk-overlay-pane'
+            });
+            const popoverEl = createElement('div', { attrs: { 'popover': '' } });
+            const ribbonEle = createElement('div', { id: 'ribbon-split-cdk-test' });
+
+            popoverEl.appendChild(ribbonEle);
+            cdkOverlayPane.appendChild(popoverEl);
+            document.body.appendChild(cdkOverlayPane);
+
+            const cdkRibbon = new Ribbon({
+                tabs: [{
+                    id: 'tab1',
+                    header: 'tab1',
+                    groups: [{
+                        id: 'group1',
+                        header: 'group1Header',
+                        collections: [{
+                            items: [{
+                                id: 'splitTest',
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                splitButtonSettings: {
+                                    content: 'Split Options',
+                                    iconCss: 'e-icons e-edit',
+                                    items: [
+                                        { text: 'Cut' },
+                                        { text: 'Copy' },
+                                        { text: 'Paste' },
+                                        { text: 'Delete' }
+                                    ]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+
+            (cdkRibbon as any).isAngular = true;
+
+            const splitBtnElement = cdkRibbon.element.querySelector('#splitTest') as HTMLElement;
+            const splitButtonInstance = getComponent(splitBtnElement, SplitButton) as SplitButton;
+
+            expect(splitButtonInstance).toBeTruthy('SplitButton instance should exist');
+
+            const dropdownArrow = splitBtnElement.parentElement.querySelector('.e-dropdown-btn') as HTMLElement;
+            triggerMouseEvent(dropdownArrow || splitBtnElement, 'click');
+
+            setTimeout(() => {
+                const popupElement = splitButtonInstance.dropDown ? splitButtonInstance.dropDown.element : null;
+
+                expect(popupElement).toBeTruthy('SplitButton popup element should be created');
+
+                expect(cdkOverlayPane.contains(popupElement)).toBe(true,
+                    'SplitButton popup should be moved inside .cdk-overlay-pane');
+
+                expect(popupElement.parentElement).toBe(cdkOverlayPane,
+                    'SplitButton popup direct parent should be cdk-overlay-pane');
+
+                cdkRibbon.destroy();
+                remove(cdkOverlayPane);
+                done();
+            }, 450);
+        });
+
         it('Initial Rendering', () => {
             let ribbonEle1 = createElement('div', {});
             document.body.appendChild(ribbonEle1);

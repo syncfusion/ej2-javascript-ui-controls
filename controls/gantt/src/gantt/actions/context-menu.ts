@@ -413,7 +413,7 @@ export class ContextMenu {
         // Closed edited cell before opening context menu
         if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit && (target.parentElement.classList.contains('e-row') ||
-            target.parentElement.classList.contains('e-treecolumn-container'))) {
+                target.parentElement.classList.contains('e-treecolumn-container'))) {
             this.parent.treeGrid.endEdit();
         }
         if (!isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
@@ -425,6 +425,9 @@ export class ContextMenu {
         }
         args.gridRow = closest(target, '.e-row');
         args.chartRow = closest(target, '.e-chart-row');
+        const isEmptySpaceTarget: boolean = isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow) &&
+            (!isNullOrUndefined(closest(target, '.e-gridcontent')) || !isNullOrUndefined(closest(target, '.e-chart-scroll-container')) ||
+                !isNullOrUndefined(closest(target, '.e-chart-rows-container')));
         const menuElement: Element = closest(target, '.e-gantt');
         const editForm: Element = closest(target, cons.editForm);
         const editModule: Edit = this.parent.editModule;
@@ -441,7 +444,9 @@ export class ContextMenu {
             );
         }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {
-            if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement)) {
+            if (isEmptySpaceTarget) {
+                args.cancel = false;
+            } else if (!isNullOrUndefined(menuElement) && !isNullOrUndefined(args.parentItem)) {
                 args.cancel = false;
             } else {
                 args.cancel = true;
@@ -449,73 +454,81 @@ export class ContextMenu {
         }
         if (!args.cancel) {
             let rowIndex: number = -1;
-            if (args.gridRow) {
+            if (args.gridRow && !isEmptySpaceTarget) {
                 // eslint-disable-next-line
                 rowIndex = parseInt(args.gridRow.getAttribute('aria-rowindex'), 0) - 1;
-            } else if (args.chartRow) {
+            } else if (args.chartRow && !isEmptySpaceTarget) {
                 // eslint-disable-next-line
                 rowIndex = parseInt(args.chartRow.getAttribute('aria-rowindex'), 0) - 1;
             }
             if (this.parent.selectionModule && this.parent.allowSelection && !args.parentItem && !isNullOrUndefined(args.chartRow)) {
                 this.parent.selectionModule.selectRow(rowIndex);
             }
-            if (!args.parentItem) {
+            if (!args.parentItem && !isEmptySpaceTarget) {
                 this.rowData = this.parent.ganttChartModule.getRecordByTarget((args['event'] as PointerEvent));
             }
             this.isFromContextMenuBeforeOpen = true;
-            for (const item of args.items) {
-                // let target: EventTarget = target;
-                if (!item.separator) {
-                    let isInvalidSegmentSplit: boolean = false;
-                    let isSingleDayTask: boolean = false;
-                    if (item.text === this.getLocale('splitTask') && this.rowData) {
-                        const ganttProp: ITaskData = this.rowData.ganttProperties;
-                        if (this.parent.editModule && this.parent.editModule.taskbarEditModule) {
-                            const segmentIndex: number = this.parent.editModule.taskbarEditModule.segmentIndex;
-                            const customTimeline: TimelineSettingsModel = this.parent.timelineModule.customTimelineSettings;
-                            const tier: TimelineViewMode = customTimeline.bottomTier.unit === 'None' ?
-                                customTimeline.topTier.unit : customTimeline.bottomTier.unit;
-                            isInvalidSegmentSplit = ganttProp && ganttProp.segments &&
-                                ganttProp.segments.length > 1 && segmentIndex === -1;
-                            if (ganttProp.segments && segmentIndex !== -1 && ganttProp.segments[segmentIndex as number]) {
-                                const isMultiSegment: boolean = ganttProp.segments.length > 1;
-                                const isWiderThanUnit: boolean = ganttProp.segments[segmentIndex as number].width >
-                                    this.parent.timelineSettings.timelineUnitSize;
-                                isSingleDayTask = (!isMultiSegment && !isWiderThanUnit);
-                            }
-                            // Prevent "Split Task" context menu option when:
-                            // • Clicking exactly at the start boundary of the first segment- segment[0] with comparing units
-                            // • Or on a non-segmented task at its start point (no split makes sense)- First condition checks
-                            if ((isNullOrUndefined(ganttProp.segments) && !isNullOrUndefined(this.parent.taskFields.segments) &&
-                            !isNullOrUndefined(ganttProp.startDate)) || (segmentIndex === 0 &&
-                                !isNullOrUndefined(ganttProp.segments[segmentIndex as number].startDate))) {
-                                const contextMenuTargetDate: Date = this.getClickedDate(target as HTMLElement);
-                                if (!isNullOrUndefined(contextMenuTargetDate)) {
-                                    const segStart: Date = isNullOrUndefined(ganttProp.segments) ? ganttProp.startDate :
-                                        ganttProp.segments[segmentIndex as number].startDate;
-                                    const sameDay: boolean = segStart.getFullYear() === contextMenuTargetDate.getFullYear()
-                                        && segStart.getMonth() === contextMenuTargetDate.getMonth()
-                                        && segStart.getDate() === contextMenuTargetDate.getDate();
-                                    if (tier === 'Day' && sameDay) {
-                                        isSingleDayTask = true;
-                                    } else if (tier === 'Hour' && sameDay &&
-                                        segStart.getHours() === contextMenuTargetDate.getHours()) {
-                                        isSingleDayTask = true;
-                                    } else if (tier === 'Minutes' && sameDay &&
-                                        segStart.getHours() === contextMenuTargetDate.getHours()
-                                        && segStart.getMinutes() === contextMenuTargetDate.getMinutes()) {
-                                        isSingleDayTask = true;
+            if (isEmptySpaceTarget) {
+                for (const item of args.items) {
+                    if (!item.separator && this.getDefaultItems().indexOf(this.getKeyFromId(item.id)) !== -1) {
+                        this.hideItems.push(item.text);
+                    }
+                }
+            } else {
+                for (const item of args.items) {
+                    // let target: EventTarget = target;
+                    if (!item.separator) {
+                        let isInvalidSegmentSplit: boolean = false;
+                        let isSingleDayTask: boolean = false;
+                        if (item.text === this.getLocale('splitTask') && this.rowData) {
+                            const ganttProp: ITaskData = this.rowData.ganttProperties;
+                            if (this.parent.editModule && this.parent.editModule.taskbarEditModule) {
+                                const segmentIndex: number = this.parent.editModule.taskbarEditModule.segmentIndex;
+                                const customTimeline: TimelineSettingsModel = this.parent.timelineModule.customTimelineSettings;
+                                const tier: TimelineViewMode = customTimeline.bottomTier.unit === 'None' ?
+                                    customTimeline.topTier.unit : customTimeline.bottomTier.unit;
+                                isInvalidSegmentSplit = ganttProp && ganttProp.segments &&
+                                    ganttProp.segments.length > 1 && segmentIndex === -1;
+                                if (ganttProp.segments && segmentIndex !== -1 && ganttProp.segments[segmentIndex as number]) {
+                                    const isMultiSegment: boolean = ganttProp.segments.length > 1;
+                                    const isWiderThanUnit: boolean = ganttProp.segments[segmentIndex as number].width >
+                                        this.parent.timelineSettings.timelineUnitSize;
+                                    isSingleDayTask = (!isMultiSegment && !isWiderThanUnit);
+                                }
+                                // Prevent "Split Task" context menu option when:
+                                // • Clicking exactly at the start boundary of the first segment- segment[0] with comparing units
+                                // • Or on a non-segmented task at its start point (no split makes sense)- First condition checks
+                                if ((isNullOrUndefined(ganttProp.segments) && !isNullOrUndefined(this.parent.taskFields.segments) &&
+                                    !isNullOrUndefined(ganttProp.startDate)) || (segmentIndex === 0 &&
+                                        !isNullOrUndefined(ganttProp.segments[segmentIndex as number].startDate))) {
+                                    const contextMenuTargetDate: Date = this.getClickedDate(target as HTMLElement);
+                                    if (!isNullOrUndefined(contextMenuTargetDate)) {
+                                        const segStart: Date = isNullOrUndefined(ganttProp.segments) ? ganttProp.startDate :
+                                            ganttProp.segments[segmentIndex as number].startDate;
+                                        const sameDay: boolean = segStart.getFullYear() === contextMenuTargetDate.getFullYear()
+                                            && segStart.getMonth() === contextMenuTargetDate.getMonth()
+                                            && segStart.getDate() === contextMenuTargetDate.getDate();
+                                        if (tier === 'Day' && sameDay) {
+                                            isSingleDayTask = true;
+                                        } else if (tier === 'Hour' && sameDay &&
+                                            segStart.getHours() === contextMenuTargetDate.getHours()) {
+                                            isSingleDayTask = true;
+                                        } else if (tier === 'Minutes' && sameDay &&
+                                            segStart.getHours() === contextMenuTargetDate.getHours()
+                                            && segStart.getMinutes() === contextMenuTargetDate.getMinutes()) {
+                                            isSingleDayTask = true;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) ||
-                        (item.text === this.getLocale('mergeTask')))) || (isInvalidSegmentSplit || isSingleDayTask)) {
-                        this.hideItems.push(item.text);
-                    }
-                    else {
-                        this.updateItemStatus(item, target, rowIndex);
+                        if (((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) ||
+                            (item.text === this.getLocale('mergeTask')))) || (isInvalidSegmentSplit || isSingleDayTask)) {
+                            this.hideItems.push(item.text);
+                        }
+                        else {
+                            this.updateItemStatus(item, target, rowIndex);
+                        }
                     }
                 }
             }

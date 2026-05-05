@@ -3419,6 +3419,9 @@ export class DateRangePicker extends CalendarBase {
                     });
             }
         }
+        if (this.isRangeIconClicked && this.openOnFocus) {
+            this.isRangeIconClicked = false;
+        }
     }
     private onMouseClick(event: MouseEvent | KeyboardEventArgs, item?: Element): void {
         if (event.type === 'touchstart') {

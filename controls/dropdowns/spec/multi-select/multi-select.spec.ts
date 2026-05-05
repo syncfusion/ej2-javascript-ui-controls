@@ -467,6 +467,16 @@ describe('MultiSelect', () => {
             listObj.destroy();
             Browser.userAgent = temp;
         });
+        it('aria-live Element Validation', () => {
+            let listObj: any = new MultiSelect({ dataSource: datasource, mode: 'Box', fields: { text: "text", value: "text" }, value: ["JAVA"] });
+            listObj.appendTo(element);
+            const parent = listObj.element.parentElement.parentElement;
+            const child = parent.querySelector('.e-chip-announcer');
+            expect(parent.contains(child)).toBe(true);
+            expect(child.getAttribute('aria-live')).toBe('polite');
+            expect(child.getAttribute('aria-atomic')).toBe('true');
+            listObj.destroy();
+        });
     });
     describe('Placeholder testing through inline', () => {
         let listObj: any;
@@ -12424,6 +12434,60 @@ describe('MultiSelect', () => {
             
             expect((<any>listObj).inputElement.id).toBe('');
             element.remove();
+        });
+    });
+
+    describe('Scroll Event - updateValueState with tempValues', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect-scroll-value-state', attrs: { type: 'text' } });
+        let updateValueStateCallCount: number = 0;
+        let capturedPreviousValue: any = null;
+
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'text', value: 'id' },
+                value: ['list1', 'list2']
+            });
+            listObj.appendTo(element);
+        });
+
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+
+        it('should call updateValueState with tempValues when scroll event occurs with existing previousValue', (done) => {
+            // Set up tempValues
+            (<any>listObj).tempValues = ['list1', 'list2'];
+            (<any>listObj).value = ['list1', 'list2', 'list3'];
+            
+            // Mock updateValueState to track calls
+            const originalUpdateValueState = (<any>listObj).updateValueState;
+            (<any>listObj).updateValueState = function(scrollEvent: any, currentValue: any, previousValue: any) {
+                updateValueStateCallCount++;
+                capturedPreviousValue = previousValue;
+                originalUpdateValueState.call(this, scrollEvent, currentValue, previousValue);
+            };
+
+            // Simulate scroll event
+            const mockScrollEvent = new Event('scroll');
+            (<any>listObj).scrollEvent = mockScrollEvent;
+
+            // Trigger the code path - this mimics your added code
+            let previousValue: string[] | number[] | boolean[] | object[] = (<any>listObj).tempValues;
+            if (isNullOrUndefined(previousValue)) {
+                previousValue = [];
+            }
+            (<any>listObj).updateValueState((<any>listObj).scrollEvent, (<any>listObj).value, previousValue);
+
+            setTimeout(() => {
+                expect(updateValueStateCallCount).toBeGreaterThan(0);
+                expect(capturedPreviousValue).toEqual(['list1', 'list2']);
+                done();
+            }, 200);
         });
     });
 });

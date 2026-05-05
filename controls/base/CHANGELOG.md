@@ -2,12 +2,13 @@
 
 ## [Unreleased]
 
-## 33.2.4 (2026-04-28)
+## 33.2.3 (2026-04-21)
 
 ### Common
 
 #### Bug Fixes
 
+- `#768133` - Resolved an issue in garbage collection where DOM elements were accessed without null validation before removal.
 - `#787460` - The issue where "invalid CSS variables were generated in the Bootstrap 5.3 theme" has been resolved.
 
 ## 33.1.45 (2026-03-24)

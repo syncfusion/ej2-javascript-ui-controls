@@ -56,7 +56,16 @@ export class RibbonDropDown {
                 if (dropDownSettings.beforeClose) { dropDownSettings.beforeClose.call(this, e); }
             },
             beforeItemRender: dropDownSettings.beforeItemRender,
-            beforeOpen: dropDownSettings.beforeOpen,
+            beforeOpen: (e: BeforeOpenCloseMenuEventArgs) => {
+                const ddb: DropDownButton = getComponent(buttonEle, DropDownButton) as DropDownButton;
+                const target: HTMLElement = this.parent.getAppendToElement();
+                if (ddb && ddb.dropDown && !target.contains(ddb.dropDown.element)) {
+                    target.appendChild(ddb.dropDown.element);
+                }
+                if (dropDownSettings.beforeOpen) {
+                    dropDownSettings.beforeOpen.call(this, e);
+                }
+            },
             close: (e: OpenCloseMenuEventArgs) => {
                 if (dropDownSettings.close) { dropDownSettings.close.call(this, e); }
             },
@@ -152,6 +161,12 @@ export class RibbonDropDown {
             cssClass: VERTICAL_DDB + SPACE + RIBBON_GROUP_OVERFLOW_DDB,
             iconPosition: 'Top',
             content: name,
+            beforeOpen: () => {
+                const target: HTMLElement = this.parent.getAppendToElement();
+                if (dropdown && dropdown.dropDown && !target.contains(dropdown.dropDown.element)) {
+                    target.appendChild(dropdown.dropDown.element);
+                }
+            },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
                 args.cancel = !isNullOrUndefined(args.event && closest(args.event.target as HTMLElement, '.' + RIBBON_POPUP_CONTROL));
             }

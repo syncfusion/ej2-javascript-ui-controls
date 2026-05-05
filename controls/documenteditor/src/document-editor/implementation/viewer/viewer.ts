@@ -2916,6 +2916,8 @@ export class DocumentHelper {
                                     this.owner.renderPictureContentControlElement(this.owner, true, false, picturePositionY);
                                 }
                             }
+                        } else if (this.owner.selection.currentContentControl instanceof ContentControl && this.owner.selection.currentContentControl.contentControlProperties.type == 'Picture') {
+                            this.owner.renderPictureContentControlElement(this.owner, true, false, this.owner.picturePositionY);
                         } else {
                             this.owner.renderPictureContentControlElement(this.owner, false, false);
                         }
@@ -4135,6 +4137,16 @@ export class DocumentHelper {
                                     }
                                 }
                                 if (i == this.currentPage.bodyWidgets.length - 1) {
+                                    if (this.selection.isPageDown &&
+                                        this.currentPage.index < this.pages.length - 1 &&
+                                        cursorPoint.y > this.layout.getNextWidgetHeight(bodyWidget)) {
+                                        let nextPage: Page = this.pages[this.currentPage.index + 1];
+                                        if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length > 0) {
+                                            this.currentPage = nextPage;
+                                            bodyWidget = nextPage.bodyWidgets[0];
+                                            cursorPoint.y = bodyWidget.y;
+                                        }
+                                    }
                                     widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
                                     if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
                                         && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
@@ -4448,6 +4460,14 @@ export class DocumentHelper {
         }, 100);
         if (!isNullOrUndefined(this.selection) && !this.selection.caret.classList.contains("e-de-cursor-animation")) {
             this.selection.caret.classList.add("e-de-cursor-animation");
+        }
+        if (!isNullOrUndefined(this.owner.selection)) {
+            if (this.owner.selection.currentContentControl instanceof ContentControl && this.owner.selection.currentContentControl.contentControlProperties.type == 'Picture') {
+                this.owner.renderPictureContentControlElement(this.owner, true, false, this.owner.picturePositionY);
+            }
+            else {
+                this.owner.renderPictureContentControlElement(this.owner, false, false);
+            }
         }
     }
     /**

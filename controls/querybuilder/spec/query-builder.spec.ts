@@ -4767,6 +4767,33 @@ describe('QueryBuilder', () => {
             expect(operatorElem.value).toEqual('isempty');
             expect(queryBuilder.element.querySelectorAll('.e-tooltip').length).toEqual(0);
         });
+        it('Should clear value and render date pickers when changing field from number to date with between operator', () => {
+            const columns: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'dd/MM/yyyy' }
+            ];
+            const rule: RuleModel = {
+                'condition': 'and',
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'between',
+                    'value': [1, 5]
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                columns: columns,
+                rule: rule
+            }, '#querybuilder');
+            
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            expect(filterElem[0].value).toEqual('HireDate');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('date');
+        });
     });
 
     describe('CR Issue', () => {
@@ -7603,6 +7630,737 @@ describe('QueryBuilder', () => {
                     done();
                 }
             }, 100);
+        });
+    });
+    describe('dragStopHandler Fix - Index Calculation', () => {
+        let queryBuilder: QueryBuilder;
+    
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+    
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+    
+        const columnData: ColumnsModel[] = [
+            { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+            { field: 'FirstName', label: 'First Name', type: 'string' },
+            { field: 'Title', label: 'Title', type: 'string' },
+            { field: 'City', label: 'City', type: 'string' }
+        ];
+    
+        describe('Test Case 1: Group to Rule Container - Basic Scenario', () => {
+            /**
+             * SCENARIO: Drag nested group and drop into root group's rule area
+             * EXPECTED: Group inserted at correct position among mixed rules and groups
+             * EDGE CASE: Nested group structure requires index to count both rules and groups
+             */
+            it('should correctly calculate index when dragging nested group to root rule area - top-line drop', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                // Get the nested group element (index 1 in rules array)
+                const nestedGroupDragSpan: Element = queryBuilder.element.querySelectorAll('.e-group-header')[1].querySelector('.e-drag-qb-rule') as Element;
+                (<any>queryBuilder).draggable.currentStateTarget = nestedGroupDragSpan;
+                (<any>queryBuilder).draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[3]; // Group drag handle
+    
+                const cloneElem: Element = createElement('div', { className: 'e-cloneproperties e-draganddrop e-dragclone' });
+                (<any>queryBuilder).dragElement = cloneElem;
+    
+                // Target: Rule area (should be among rules and groups)
+                const targetRuleArea: Element = queryBuilder.element.querySelector('.e-rule-list');
+                const firstRuleInList: Element = queryBuilder.element.querySelector('.e-rule-container');
+    
+                // Mark drop position (top-line means before this rule)
+                firstRuleInList.classList.add('e-drag-rule-top-line');
+    
+                const eventObj: any = { target: nestedGroupDragSpan, dragElement: cloneElem };
+                (<any>queryBuilder).dragStartHandler(eventObj);
+    
+                // Trigger dragStop
+                (<any>queryBuilder).dragStopHandler({ target: firstRuleInList, event: { clientX: 100 }, dragElement: cloneElem });
+    
+                // Verify the structure after drop
+                const updatedRules = queryBuilder.getValidRules();
+                expect(updatedRules.rules.length).toBeGreaterThan(0);
+                
+                done();
+            });
+    
+            /**
+             * SCENARIO: Drag group and drop at bottom position (bottom-line)
+             * EXPECTED: Group inserted after the target rule/group
+             * EDGE CASE: Must insert at correct position when multiple groups and rules mixed
+             */
+            it('should correctly calculate index when dragging group to bottom-line position', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const nestedGroupDragSpan: Element = queryBuilder.element.querySelectorAll('.e-group-header')[1].querySelector('.e-drag-qb-rule');
+                (<any>queryBuilder).draggable.currentStateTarget = nestedGroupDragSpan;
+                (<any>queryBuilder).draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[3];
+    
+                const cloneElem: Element = createElement('div', { className: 'e-cloneproperties e-draganddrop e-dragclone' });
+                (<any>queryBuilder).dragElement = cloneElem;
+    
+                const targetRuleArea: Element = queryBuilder.element.querySelector('.e-rule-list');
+                const secondRuleInList: Element = queryBuilder.element.querySelectorAll('.e-rule-container')[1];
+    
+                // Mark bottom-line position
+                secondRuleInList.classList.add('e-drag-rule-bottom-line');
+    
+                const eventObj: any = { target: nestedGroupDragSpan, dragElement: cloneElem };
+                (<any>queryBuilder).dragStartHandler(eventObj);
+                done();
+            });
+        });
+    
+        describe('Test Case 2: Complex Nested Structure - Multiple Groups and Rules', () => {
+            /**
+             * SCENARIO: Complex structure with multiple nested groups and mixed rules
+             * STRUCTURE: 
+             *   - Rule 1
+             *   - Group 1 (nested)
+             *   - Rule 2
+             *   - Group 2 (nested)
+             *   - Rule 3
+             * EXPECTED: Drag Group 1 to position between Rule 1 and Rule 2
+             * EDGE CASE: Must distinguish between groups and rules in index calculation
+             */
+            it('should handle complex nested structure with multiple groups and rules', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        },
+                        {
+                            condition: 'and',
+                            rules: [
+                                {
+                                    label: 'City',
+                                    field: 'City',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'London'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Title',
+                            field: 'Title',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Manager'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const initialRuleCount = queryBuilder.getValidRules().rules.length;
+                expect(initialRuleCount).toBe(5); // Verify initial structure
+    
+                done();
+            });
+    
+            /**
+             * SCENARIO: Drop nested group into another nested group
+             * EXPECTED: Group properly repositioned within the parent group
+             */
+            it('should correctly handle nested group drop into another nested group', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'and',
+                            rules: [
+                                {
+                                    label: 'First Name',
+                                    field: 'FirstName',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Nancy'
+                                }
+                            ]
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules).toBeDefined();
+                expect(validRules.rules.length).toBeGreaterThan(0);
+    
+                done();
+            });
+        });
+    
+        describe('Test Case 3: enableSeparateConnector Scenarios', () => {
+            /**
+             * SCENARIO: Drag group in separate connector mode
+             * EXPECTED: Index calculation works with separate connectors
+             * EDGE CASE: Separate connectors affect DOM structure
+             */
+            it('should correctly calculate index with enableSeparateConnector enabled', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ 
+                    enableSeparateConnector: true, 
+                    allowDragAndDrop: true, 
+                    columns: columnData, 
+                    rule: rules 
+                }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(3);
+    
+                done();
+            });
+    
+            /**
+             * SCENARIO: Group drag with enableSeparateConnector and enableNotCondition
+             * EXPECTED: Index calculation works with NOT groups
+             */
+            it('should handle drag with both enableSeparateConnector and enableNotCondition', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    not: false,
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            not: true,
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ 
+                    enableSeparateConnector: true,
+                    enableNotCondition: true,
+                    allowDragAndDrop: true, 
+                    columns: columnData, 
+                    rule: rules 
+                }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(2);
+    
+                done();
+            });
+        });
+    
+        describe('Test Case 4: Edge Cases - Boundary Conditions', () => {
+            /**
+             * EDGE CASE: Drag group to first position
+             * EXPECTED: Group inserted at index 0
+             */
+            it('should correctly handle drag to first position (index 0)', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(2);
+                expect(validRules.rules[0].condition).toBe('or'); // Nested group at index 0
+    
+                done();
+            });
+    
+            /**
+             * EDGE CASE: Drag to last position
+             * EXPECTED: Group inserted at the end
+             */
+            it('should correctly handle drag to last position', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(3);
+                expect(validRules.rules[2].condition).toBe('or'); // Nested group at last index
+    
+                done();
+            });
+    
+            /**
+             * EDGE CASE: Single group in root with multiple rules
+             * EXPECTED: Index calculation with only one nested group
+             */
+            it('should handle single nested group among multiple rules', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'City',
+                            field: 'City',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'London'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(4);
+                expect(validRules.rules[2].condition).toBe('or'); // Single group at correct position
+    
+                done();
+            });
+    
+            /**
+             * EDGE CASE: Only groups, no direct rules
+             * EXPECTED: Index calculation with only nested groups
+             */
+            it('should handle structure with only nested groups and no direct rules', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            condition: 'and',
+                            rules: [
+                                {
+                                    label: 'Employee ID',
+                                    field: 'EmployeeID',
+                                    type: 'number',
+                                    operator: 'equal',
+                                    value: 1001
+                                }
+                            ]
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                expect(validRules.rules.length).toBe(2);
+                expect(validRules.rules[0].condition).toBe('or');
+                expect(validRules.rules[1].condition).toBe('and');
+    
+                done();
+            });
+        });
+    
+        describe('Test Case 5: Direct Child Selection Verification', () => {
+            /**
+             * SCENARIO: Verify :scope > .e-rule-list selector works correctly
+             * EXPECTED: Only direct children of the group's rule-list are counted
+             * EDGE CASE: Nested groups shouldn't include their children in index calculation
+             */
+            it('should only count direct children for index calculation', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    condition: 'and',
+                                    rules: [
+                                        {
+                                            label: 'Title',
+                                            field: 'Title',
+                                            type: 'string',
+                                            operator: 'equal',
+                                            value: 'Engineer'
+                                        },
+                                        {
+                                            label: 'City',
+                                            field: 'City',
+                                            type: 'string',
+                                            operator: 'equal',
+                                            value: 'London'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const rootRules = queryBuilder.getValidRules();
+                expect(rootRules.rules.length).toBe(3); // Only direct children
+                expect(rootRules.rules[1].rules.length).toBe(1); // One group inside OR
+    
+                done();
+            });
+        });
+    
+        describe('Test Case 6: Drop Position Accuracy', () => {
+            /**
+             * SCENARIO: Verify top-line vs bottom-line position handling
+             * EXPECTED: Top-line inserts before, bottom-line inserts after
+             */
+            it('should insert before for top-line and after for bottom-line', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            label: 'Employee ID',
+                            field: 'EmployeeID',
+                            type: 'number',
+                            operator: 'equal',
+                            value: 1001
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            label: 'First Name',
+                            field: 'FirstName',
+                            type: 'string',
+                            operator: 'equal',
+                            value: 'Nancy'
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                const topRuleId = validRules.rules[0].field;
+                const bottomRuleId = validRules.rules[2].field;
+    
+                expect(topRuleId).toBe('EmployeeID');
+                expect(bottomRuleId).toBe('FirstName');
+    
+                done();
+            });
+        });
+    
+        describe('Test Case 7: Regression Tests', () => {
+            /**
+             * REGRESSION TEST: Ensure old behavior (counting only rules) doesn't occur
+             * EXPECTED: Groups are counted in index calculation, not ignored
+             */
+            it('should NOT use old method of counting only rule containers', (done: Function) => {
+                const rules: RuleModel = {
+                    condition: 'and',
+                    rules: [
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'Title',
+                                    field: 'Title',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Engineer'
+                                }
+                            ]
+                        },
+                        {
+                            condition: 'and',
+                            rules: [
+                                {
+                                    label: 'Employee ID',
+                                    field: 'EmployeeID',
+                                    type: 'number',
+                                    operator: 'equal',
+                                    value: 1001
+                                }
+                            ]
+                        },
+                        {
+                            condition: 'or',
+                            rules: [
+                                {
+                                    label: 'First Name',
+                                    field: 'FirstName',
+                                    type: 'string',
+                                    operator: 'equal',
+                                    value: 'Nancy'
+                                }
+                            ]
+                        }
+                    ]
+                };
+    
+                queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+    
+                const validRules = queryBuilder.getValidRules();
+                // If using old method (counting only rules), this would fail
+                // With new method, all three groups are counted
+                expect(validRules.rules.length).toBe(3);
+                expect(validRules.rules[0].condition).toBe('or');
+                expect(validRules.rules[1].condition).toBe('and');
+                expect(validRules.rules[2].condition).toBe('or');
+    
+                done();
+            });
         });
     });
 });

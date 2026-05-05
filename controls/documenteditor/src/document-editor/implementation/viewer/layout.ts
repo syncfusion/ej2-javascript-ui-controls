@@ -2889,6 +2889,11 @@ export class Layout {
                     this.moveFromNextPage(line);
                 }
             }
+            if (element.nextElement && element.nextElement instanceof ShapeElementBox && element.nextElement.textWrappingStyle === 'Inline') {
+                if (element instanceof ShapeElementBox) {
+                    this.layoutShape(element);
+                }
+            }
             return;
         }
         if(element instanceof TextElementBox && element.characterFormat.highlightColor != "NoColor" && element.text.trim() != "" && element.text != element.text.trim()) {
@@ -4018,7 +4023,7 @@ export class Layout {
                                             this.isYPositionUpdated = true;
                                             rect.width = this.viewer.clientArea.width;
                                             rect.height -= (wrappingBounds.bottom + topMarginValue - rect.y);
-                                            if (!this.textWrappingBottom || this.textWrappingBottom == 0) {
+                                            if (!this.istableYpositionChange && this.documentHelper.compatibilityMode === 'Word2003') {
                                                 this.textWrappingBottom = rect.y;
                                                 this.istableYpositionChange = true;
                                             }
@@ -14456,7 +14461,7 @@ export class Layout {
                                         indentY = this.viewer.clientActiveArea.y - shapeHeight;
                                         break;
                                     case 'None':
-                                        indentY = Math.round(paragraph.y) + vertPosition;
+                                        indentY = this.viewer.clientActiveArea.y + vertPosition;
                                         break;
                                 }
                                 break;
@@ -14760,7 +14765,7 @@ export class Layout {
                                     indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
                                 } else {
                                     //Need to update this while layouting.**
-                                    indentX = this.viewer.clientArea.x + horzPosition;
+                                    indentX = this.viewer.clientActiveArea.x + horzPosition;
                                 }
                                 break;
                             case 'LeftMargin':

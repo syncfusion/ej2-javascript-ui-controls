@@ -116,7 +116,19 @@ export class TextHelper {
         if (text === '\r') {
             text = String.fromCharCode(182);
         }
-        textTrimEndWidth = this.getWidth(text, characterFormat, elementBox.scriptType);
+        const nextElement: TextElementBox = elementBox.nextElement as TextElementBox;
+        if (nextElement && elementBox.scriptType !== FontScriptType.Hebrew &&
+            this.documentHelper.render.checkFormatToCombineText(elementBox.characterFormat, nextElement.characterFormat)
+            && !HelperMethods.startsWith(elementBox.text, ' ') && !HelperMethods.endsWith(nextElement.text)
+            && elementBox.characterFormat.bidi && nextElement.characterFormat.bidi
+            && elementBox.characterRange === CharacterRangeType.RightToLeft
+            && nextElement.characterRange === CharacterRangeType.RightToLeft) {
+            text += '\u200D';
+            textTrimEndWidth = this.getWidthWithZWJ(text, '\u200D', nextElement.text, characterFormat, elementBox.scriptType);
+        }
+        else {
+            textTrimEndWidth = this.getWidth(text, characterFormat, elementBox.scriptType);
+        }
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.
         const textHelper: TextSizeInfo = this.getHeight(characterFormat, elementBox.scriptType);
@@ -203,6 +215,20 @@ export class TextHelper {
             text += 'A';
         }
         return Math.abs(this.context.measureText(text).width * scaleFactor);
+    }
+
+    public getWidthWithZWJ(firstText: string, zwj: string, nextText: string, characterFormat: WCharacterFormat,
+                           scriptType?: FontScriptType): number {
+        if (characterFormat.hidden)
+        {
+            return 0;
+        }
+        // Measure the combined text (accounts for proper Arabic shaping)
+        const combinedWidth: number = this.getWidth(firstText + zwj + nextText, characterFormat, scriptType);
+        // Measure only the next text in its isolated form
+        const nextTextWidth: number = this.getWidth(nextText, characterFormat, scriptType);
+        // The width of firstText + ZWJ is the difference // This accounts for the connection context
+        return combinedWidth - nextTextWidth;
     }
 
     public setText(textToRender: string, isBidi: boolean, bdo: BiDirectionalOverride, isRender?: boolean): string {

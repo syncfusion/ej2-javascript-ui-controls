@@ -491,6 +491,38 @@ describe('Spreadsheet formula bar module ->', () => {
         });
     });
 
+    describe('EJ2-1021475: Cell highlight maintained in the cell while selecting cells using namedRange', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Name box selection should not highlight by e-formularef-selection style', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({ name: 'testName', refersTo: "='Sheet1'!$A$5", scope: 'Workbook' });
+            const nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            setTimeout(() => {
+                const popup = document.getElementById(helper.id + '_name_box_popup')!;
+                const item = popup.querySelector('li:nth-child(1)') as HTMLElement;
+                item.click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A1']);
+                    setTimeout(() => {
+                        expect((helper.invoke('getCell', [4, 0]) as HTMLElement).classList.contains('e-formularef-selection')).toBeFalsy();
+                        expect((helper.invoke('getCell', [4, 0]) as HTMLElement).classList.contains('e-vborderright')).toBeFalsy();
+                        expect((helper.invoke('getCell', [4, 0]) as HTMLElement).classList.contains('e-vborderbottom')).toBeFalsy();
+                        done();
+                    }, 20);
+                }, 20);
+            }, 20);
+        });
+    });
+
     describe('Testing namebox open and close actions', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({

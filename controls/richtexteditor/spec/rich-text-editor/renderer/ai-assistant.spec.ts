@@ -1,6 +1,6 @@
 import { NodeSelection } from "../../../src/selection/selection";
 import { AIAssistantPromptRequestArgs, AIAssitantToolbarClickEventArgs, RichTextEditor } from "../../../src/rich-text-editor";
-import { ALT_ENTERKEY_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../constant.spec";
+import { ALT_ENTERKEY_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT, CONTROL_A_EVENT_INIT } from "../../constant.spec";
 import { destroy, renderRTE, setCursorPoint, setSelection } from "../render.spec";
 import { ActionBeginEventArgs } from "../../../src/common/interface";
 
@@ -2590,6 +2590,76 @@ describe('AI Assistant Module', ()=> {
                         setTimeout(() => {
                             expect(editor.inputElement.querySelectorAll('li').length).toBe(3);
                             done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('1020910 - Replace selected content with AI response when whole content is selected', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: '<p><strong>Editing and Improving</strong></p><p>In today\'s competitive landscape, effective marketing focuses on building lasting customer relationships rather than just selling products. Brands are expected to provide personalized experiences through data analytics and consumer insights. As expectations evolve, marketers must stay agile and proactive in their strategies.</p><p><strong>Grammar</strong></p><p>Strong leadership is more than directing a team—it\'s about inspiring people toward a common vision. Effective leaders cultivate transparency, empathy, and accountability within their organizations. They empower others by encouraging autonomy and providing opportunities for growth. In times of uncertainty or rapid change, it\'s the leaders who stay grounded and lead with clarity who build the most resilient and high-performing teams.</p>',
+                toolbarSettings: {
+                    items: ['aiquery', 'aicommands']
+                },
+                aiAssistantSettings: {
+                    commands: [{
+                        text: "Change Tone",
+                        items: [
+                            {
+                                text: "Professional",
+                                prompt: "Rewrite the following content in a professional tone:"
+                            }
+                        ]
+                    }]
+                },
+                aiAssistantPromptRequest: (args: AIAssistantPromptRequestArgs) => {
+                    editor.addAIPromptResponse('Demonstration of the AI Assistant Popup styling.', false);
+                    editor.addAIPromptResponse('Demonstration of the AI Assistant Popup styling.', true);
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should replace entire editor content with AI response when all text is selected and insert is clicked', (done: DoneFn) => {
+            // Focus editor and place cursor inside text
+            editor.focusIn();
+            setCursorPoint(editor.inputElement.querySelector('p').firstChild, 0);
+            // Open AICommands dropdown
+            const commandsButton: HTMLButtonElement = editor.getToolbarElement().querySelector('.e-ai-commands-tbar-btn');
+            commandsButton.click();
+            setTimeout(() => {
+                // Open submenu
+                const rootMenu: HTMLElement = document.querySelector('.e-dropdown-popup.e-ai-commands-tbar-btn .e-menu-parent') as HTMLElement;
+                rootMenu.querySelector('li').classList.add('e-focused');
+                const mouseOverEvent: MouseEvent = new MouseEvent('mouseover', BASIC_MOUSE_EVENT_INIT);
+                rootMenu.querySelector('li').dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const subMenu: HTMLElement = document.querySelectorAll('.e-menu-popup')[0] as HTMLElement;
+                    // Click the first AI command item
+                    subMenu.querySelector('li').click();
+                    setTimeout(() => {
+                        // Change the selection to choose all text content inside editor
+                        const firstNode: HTMLElement = editor.inputElement.firstChild as HTMLElement;
+                        const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', CONTROL_A_EVENT_INIT);
+                        firstNode.dispatchEvent(keyDownEvent);
+                        const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', CONTROL_A_EVENT_INIT);
+                        firstNode.dispatchEvent(keyUpEvent);
+                        setTimeout(() => {
+                            // Click the insert button
+                            const aiQueryPopup: HTMLElement = document.querySelector('.e-rte-aiquery-popup');
+                            const insertButton: HTMLElement = aiQueryPopup.querySelector('.e-check').parentElement.parentElement;
+                            insertButton.click();
+                            setTimeout(() => {
+                                // Check if the editor has only child element(s) with the replaced content
+                                const editorContent: string = editor.inputElement.innerHTML;
+                                expect(editorContent).toBe('<p>Demonstration of the AI Assistant Popup styling.</p>');
+                                done();
+                            }, 100);
                         }, 100);
                     }, 100);
                 }, 100);

@@ -19,7 +19,7 @@ import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, Be
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
 import { sanitizeHelper } from '../base/util';
-import { cleanHTMLString, scrollToCursor } from '../../common/util';
+import { cleanHTMLString, getStructuredHtml, scrollToCursor } from '../../common/util';
 import { PasteCleanupSettingsModel } from '../../models/models';
 import { PasteCleanupAction } from '../../editor-manager/plugin/paste-clean-up-action';
 import { PopupRootBound } from '../../rich-text-editor/base/interface';
@@ -238,12 +238,47 @@ export class PasteCleanup {
         } else if (value.length > 0) { // Handle non-empty HTML content
             processedValue = this.handleNonEmptyHtmlValue(e, value, args);
         }
+        processedValue = this.handleGoogleDocs(processedValue);
         // Remove base tags from content
         if (processedValue !== null && processedValue !== '') {
             processedValue = processedValue.replace(/<base[^>]*>/g, '');
         }
         this.prepareAndInsertContent(e, processedValue, args);
         return true;
+    }
+
+    // when google docs has b tags wrapped in default need to remove it
+    private handleGoogleDocs(processedValue: string): string {
+        // check if the content is pasted from google docs
+        if (processedValue && processedValue.indexOf('id="docs-internal-guid') >= 0) {
+            // remove the docs-internal-guid id attribute entirely
+            processedValue = processedValue.replace(/\s*id="docs-internal-guid[^"]*"/gi, '');
+            // check inside the b tags and do manipulation
+            processedValue = processedValue.replace(
+                /<b\b([^>]*)>([\s\S]*?)<\/b>/gi,
+                (match: string, attrs: string, inner: string) => {
+                    // Look inside the inner HTML for a span with font-weight:700
+                    const hasBoldSpan: boolean = /<span[^>]*style=["'][^"']*font-weight\s*:\s*700[^"']*["'][^>]*>/i.test(inner);
+                    // Look inside the inner HTML for a span with font-style:style
+                    const hasItalicSpan: boolean = /<span[^>]*style=["'][^"']*font-style\s*:\s*italic[^"']*["'][^>]*>/i.test(inner);
+                    if (hasBoldSpan && hasItalicSpan) {
+                        // Wrap with both <b> and <em>
+                        return `<b><em>${inner}</em></b>`;
+                    }
+                    if (hasBoldSpan && !hasItalicSpan) {
+                        // keep <b> if the nested span is bold but not italic
+                        return `<b>${inner}</b>`;
+                    }
+                    if (hasItalicSpan) {
+                        // convert to <em> if the nested span is italic
+                        return `<em>${inner}</em>`;
+                    }
+                    // otherwise unwrap <b>
+                    return inner;
+                }
+            );
+        }
+        return processedValue;
     }
 
     private findSource(element: HTMLElement): string {
@@ -399,6 +434,8 @@ export class PasteCleanup {
         });
         // Removes the \n from the value
         finalValue = cleanHTMLString(finalValue, this.parent.element);
+        finalValue = getStructuredHtml(finalValue,
+                                       this.parent.enterKey, this.parent.enableHtmlEncode, true);
         // Handle paste based on settings
         this.handlePasteBasedOnSettings(e, finalValue, args, isValueNotEmpty);
     }

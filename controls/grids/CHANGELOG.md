@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### Grid
+
+#### Bugs
+
+- `I833649` - Resolved a script error that occurred when reordering stacked header columns rendered using a header template.
+- `I827616` - Fixed an issue where the Excel filter dialog failed to load data after performing a grid search.
+
 ## 33.2.4 (2026-04-28)
 
 ### Grid

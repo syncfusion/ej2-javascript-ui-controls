@@ -382,7 +382,8 @@ export class AutoFill {
         }
 
         else if (idx.colIndex < aCell.colIndex) { // left
-            if ((idx.rowIndex - maxr > maxc - idx.colIndex) || ((idx.rowIndex - minr > maxc - idx.colIndex) && idx.rowIndex !== maxr)) {
+            if ((idx.rowIndex - maxr > maxc - idx.colIndex) || ((idx.rowIndex - minr > maxc - idx.colIndex) && idx.rowIndex !== maxr) ||
+                (idx.rowIndex - maxr >= 1 && idx.colIndex - minc >= 0)) {
                 return { startCell: minIdx, endCell: { rowIndex: idx.rowIndex, colIndex: maxc },
                     fillRange: [maxr + 1, minc, idx.rowIndex, maxc], direction: 'Down' };
             }

@@ -2,7 +2,7 @@
  * Gantt connector line spec
  */
 
-import { baselineData, connectorLineFFDatasource, connectorLineFSDatasource, connectorLineSFDatasource, connectorLineSSDatasource, data5, data6, data7, editingData1, predecessorData, projectNewData1, predcessor1, connectorLineData, CR909421, CR919774 } from '../base/data-source.spec';
+import { baselineData, connectorLineFFDatasource, connectorLineFSDatasource, connectorLineSFDatasource, connectorLineSSDatasource, data5, data6, data7, editingData1, predecessorData, projectNewData1, predcessor1, connectorLineData, CR909421, CR919774, CR1023089 } from '../base/data-source.spec';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ITaskbarEditedEventArgs, CriticalPath } from '../../src/index';
 
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
@@ -3185,5 +3185,41 @@ describe('CR-983909', () => {
     });
     afterAll(() => {
         destroyGantt(ganttObj);
+    });
+});
+describe('CR-1023089: Unscheduled tasks with predecessors cause exception on initial load', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: CR1023089,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true,
+                    mode: 'Auto',
+                },
+                allowUnscheduledTasks: true,
+                height: '550px',
+                projectStartDate: new Date('03/20/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('should render Gantt data on initial load without throwing exceptions', () => {
+        expect(ganttObj.currentViewData.length).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

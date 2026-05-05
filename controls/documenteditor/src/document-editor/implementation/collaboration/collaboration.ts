@@ -642,6 +642,7 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.documentHelper.owner.parser.parseRowFormat(rowData, (data.rowWidget as TableRowWidget).rowFormat, 0);
                         table.calculateGrid(false);
                         this.documentEditor.documentHelper.layout.reLayoutTable(table);
+                        this.documentEditor.editorModule.reLayout(this.documentEditor.selectionModule);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
                     if (op2.type === 'TableFormat') {
@@ -650,6 +651,7 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.documentHelper.owner.parser.parseTableFormat(table, tableData.tableWidget.tableFormat, 0);
                         tableData.tableWidget.calculateGrid(false);
                         this.documentEditor.documentHelper.layout.reLayoutTable(tableData.tableWidget);
+                        this.documentEditor.editorModule.reLayout(this.documentEditor.selectionModule);
                     }
                     if (op2.type === 'RowFormat') {
                         let rowData: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);

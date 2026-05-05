@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 33.2.4 (2026-04-28)
+## 33.2.5 (2026-05-05)
+
+### DataManager
+
+#### Bug Fixes
+
+- `I827616` - Fixed an issue where the Excel filter dialog failed to load data after performing a grid search.
+
+## 33.1.45 (2026-03-24)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I817121` - Fixed an issue where the `applyPreRequestMiddlewares` did not execute while deleting multiple records from a remote data source.
+
+## 33.1.44 (2026-03-16)
 
 ### DataManager
 

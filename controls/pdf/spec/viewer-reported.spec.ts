@@ -3453,4 +3453,34 @@ describe('Viewer Reported Issues', () => {
         expect(result[3]._operator).toEqual('Do');
         document.destroy();
     });
+    it('1023271 - Licensing Coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        document.addPage();
+        document._addWatermarkText();
+        let annot = document.getPage(0).annotations.at(0);
+        expect(annot.bounds).not.toBeUndefined();
+        expect(annot._dictionary.has('Rect')).toBeTruthy();
+        document.destroy();
+    });
+    it('1022887 - TextMarkup Bounds collection Issue Coverage', () => {
+        let document: PdfDocument = new PdfDocument(crossReferenceTable);
+        let page = document.getPage(0) as PdfPage;
+        page._pageDictionary.update('CropBox', [15, 0, 610, 842]);
+        page._pageDictionary.update('MediaBox', [15, 0, 610, 842]);
+        let textMarkupAnnot: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null as any,
+            { x: 0, y: 0, width: 0, height: 0 });
+        textMarkupAnnot.textMarkupType = PdfTextMarkupAnnotationType.highlight;
+        textMarkupAnnot.bounds = { x: 35, y: 49, width: 76, height: 13 };
+        textMarkupAnnot.boundsCollection = [{ x: 35, y: 49, width: 76, height: 13 }, {x: 20, y: 90, width: 100, height: 20}];
+        textMarkupAnnot.setAppearance(true);
+        page.annotations.add(textMarkupAnnot);
+        var savedDDoc = document.save();
+        document.destroy();
+        document = new PdfDocument(savedDDoc);
+        let newPage = document.getPage(0);
+        let newAnnot = newPage.annotations.at(0) as PdfTextMarkupAnnotation;
+        expect(newAnnot.bounds).toEqual({x: 20, y: 49, width: 100, height: 61});
+        expect(newAnnot.boundsCollection).toEqual([{x: 35, y: 49, width: 76, height: 13}, {x: 20, y: 90, width: 100, height: 20}]);
+        document.destroy();
+    });
 });

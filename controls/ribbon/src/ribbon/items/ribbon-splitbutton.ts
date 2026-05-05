@@ -51,7 +51,16 @@ export class RibbonSplitButton {
                 if (splitButtonSettings.beforeClose) { splitButtonSettings.beforeClose.call(this, e); }
             },
             beforeItemRender: splitButtonSettings.beforeItemRender,
-            beforeOpen: splitButtonSettings.beforeOpen,
+            beforeOpen: () => {
+                const popupEl: HTMLElement = splitbutton.dropDown.element;
+                const target: HTMLElement = this.parent.getAppendToElement();
+                if (popupEl && !target.contains(popupEl)) {
+                    target.appendChild(popupEl);
+                }
+                if (splitButtonSettings.beforeOpen){
+                    splitButtonSettings.beforeOpen.call(this);
+                }
+            },
             close: () => {
                 (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
                 if (splitButtonSettings.close) {

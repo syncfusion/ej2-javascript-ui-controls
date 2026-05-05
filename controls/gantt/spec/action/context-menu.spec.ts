@@ -5415,3 +5415,52 @@ describe('Content menu - Child', () => {
             expect(ganttObj.currentViewData.length).toBe(1);
         });
     });
+
+    describe('Empty content context menu', () => {
+        let emptyGanttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            emptyGanttObj = createGantt({
+                dataSource: [],
+                allowSelection: true,
+                enableContextMenu: true,
+                contextMenuItems: contextMenuItems as ContextMenuItem[],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate'
+                }
+            }, done);
+        });
+
+        afterAll(() => {
+            if (emptyGanttObj) {
+                destroyGantt(emptyGanttObj);
+            }
+        });
+
+        it('should render only custom items on empty content area', (done: Function) => {
+            const cmModule: any = emptyGanttObj.contextMenuModule;
+            const contentElement: HTMLElement = emptyGanttObj.treeGrid.element.querySelector('.e-content') as HTMLElement;
+            const args: any = {
+                event: { target: contentElement },
+                element: null,
+                items: cmModule.contextMenu.items,
+                parentItem: null
+            };
+
+            cmModule.contextMenuBeforeOpen(args);
+
+            setTimeout(() => {
+                const visibleItems: string[] = args.items.filter((item: any) => !item.separator &&
+                    args.hideItems.indexOf(item.text) === -1).map((item: any) => item.text);
+                expect(args.cancel).toBeFalsy();
+                expect(visibleItems).toEqual(['Collapse the Row', 'Expand the Row']);
+                expect(args.hideItems.indexOf('Add') > -1).toBe(true);
+                expect(args.hideItems.indexOf('Task Information') > -1).toBe(true);
+                expect(args.hideItems.indexOf('Delete Task') > -1).toBe(true);
+                done();
+            }, 0);
+        });
+    });

@@ -2254,6 +2254,37 @@ describe('Auto fill ->', () => {
                 done();
             });
         });
+        describe('EJ2-1023315', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Left autofill alters selection and performs incorrect autofill after right-direction autofill', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.edit('G17', '12');
+                helper.invoke('autoFill', ['H17:K17', 'G17', 'Right', 'FillSeries']);
+                expect(spreadsheet.sheets[0].rows[16].cells[10].value).toBe(16);
+                helper.invoke('selectRange', ['G17:K17']);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [16, 6]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.left, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 3, clientY: coords.bottom + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.bottom + 1 }, document, td);
+                const instance: any = helper.getInstance();
+                expect(instance.selectionModule.dAutoFillCell).toBe('G17:K17');
+                expect(helper.invoke('getCell', [17, 6]).textContent).toBe('13');
+                expect(helper.invoke('getCell', [17, 7]).textContent).toBe('14');
+                expect(helper.invoke('getCell', [17, 8]).textContent).toBe('15');
+                expect(helper.invoke('getCell', [17, 9]).textContent).toBe('16');
+                expect(helper.invoke('getCell', [17, 10]).textContent).toBe('17');
+                done();
+            });
+        });
     });
     describe('EJ2-66414', () => {
         beforeAll((done: Function) => {

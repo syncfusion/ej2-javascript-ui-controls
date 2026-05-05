@@ -8199,6 +8199,8 @@ export class WordExport {
             return 'wedgeRectCallout';
         case 137:
             return 'cloudCallout';
+        case 138:
+            return 'lineCallout1NoBorder';
         default:
             return value as ExportAutoShapeType;
         }
@@ -8485,6 +8487,8 @@ export class WordExport {
             return 136;
         case 'CloudCallout':
             return 137;
+        case 'LineCallout1NoBorder':
+            return 138;
         default:
             return 0;
         }

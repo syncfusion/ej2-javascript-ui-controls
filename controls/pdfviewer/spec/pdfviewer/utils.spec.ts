@@ -154,6 +154,28 @@ export function rightClickEvent(element: HTMLElement, cx: number, cy: number): v
     element.dispatchEvent(contextmenu);
 }
 
+export function mouseDoubleClickEvent(target: HTMLElement, x: number, y: number) {
+    const eventInit = {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: x,
+        clientY: y,
+        button: 0,
+        buttons: 1
+    };
+    // First click
+    target.dispatchEvent(new MouseEvent('mousedown', eventInit));
+    target.dispatchEvent(new MouseEvent('mouseup', eventInit));
+    target.dispatchEvent(new MouseEvent('click', eventInit));
+    // Second click
+    target.dispatchEvent(new MouseEvent('mousedown', eventInit));
+    target.dispatchEvent(new MouseEvent('mouseup', eventInit));
+    target.dispatchEvent(new MouseEvent('click', eventInit));
+    // Double click
+    target.dispatchEvent(new MouseEvent('dblclick', eventInit));
+}
+
 // Helper to export all annotations as an object from the viewer
 export async function exportAnnotationsHelper(viewer: any): Promise<any> {
     return await viewer.exportAnnotationsAsObject();

@@ -770,9 +770,10 @@ export function removeSelectionClassStates(element: HTMLElement): void {
  * @param {string} innerValue - The inner HTML content to be processed.
  * @param {string} enterKey - The key used for inserting line breaks.
  * @param {boolean} enableHtmlEncode - A flag indicating whether HTML encoding should be enabled.
+ * @param {boolean} isFromPaste - A flag indicating whether the content is from the paste operation.
  * @returns {string} - The structured HTML string.
  */
-export function getStructuredHtml(innerValue: string, enterKey: string, enableHtmlEncode: boolean): string {
+export function getStructuredHtml(innerValue: string, enterKey: string, enableHtmlEncode: boolean, isFromPaste?: boolean): string {
     // Early return for special cases
     if (enableHtmlEncode || enterKey.toLowerCase() === 'br' || isNullOrUndefined(innerValue)) {
         return innerValue;
@@ -784,8 +785,24 @@ export function getStructuredHtml(innerValue: string, enterKey: string, enableHt
     const allowedTags: string[] = ['div', 'p'];
     const parentElementLower: string = enterKey.toLowerCase();
     const parentElement: string = allowedTags.indexOf(parentElementLower) >= 0 ? parentElementLower : 'div';
+    // Build ignoreElements when content is from paste: collect initial inline/text children
+    let ignoreElements: Set<Node> | undefined;
+    if (isFromPaste) {
+        ignoreElements = new Set<Node>();
+        const children: Node[] = Array.from(tempDiv.childNodes);
+        for (const child of children) {
+            // If we encounter a block-level element, stop collecting for this run
+            if (child.nodeType === Node.ELEMENT_NODE && isBlockNode(child as Element)) {
+                break;
+            }
+            // Collect text nodes and non-block elements
+            if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.TEXT_NODE) {
+                ignoreElements.add(child);
+            }
+        }
+    }
     // Apply processing to the temporary div
-    wrapTextAndInlineNodes(tempDiv, parentElement);
+    wrapTextAndInlineNodes(tempDiv, parentElement, ignoreElements);
     // Extract and return processed HTML
     const value: string = tempDiv.innerHTML;
     tempDiv.remove();
@@ -818,9 +835,10 @@ export function isInSet (set: Set<string>, value: string): boolean {
  *
  * @param {Node} node - The DOM node whose child nodes are to be wrapped.
  * @param {string} parentElement - The parent element tag to use for wrapping.
+ * @param {Set<Node> | undefined} ignoreElements - An optional set of elements to ignore during wrapping.
  * @returns {void} - This function does not return anything.
  */
-export function wrapTextAndInlineNodes(node: Node, parentElement: string): void {
+export function wrapTextAndInlineNodes(node: Node, parentElement: string, ignoreElements?: Set<Node>): void {
     // Define HTML tag categories
     const recursiveBlockTags: Set<string> = new Set([
         'DIV', 'TH', 'TD', 'LI', 'BLOCKQUOTE', 'OL', 'UL',
@@ -840,6 +858,10 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
         }
         // Process text nodes
         if (child.nodeType === Node.TEXT_NODE) {
+            // Skip wrapping if this text node (or its parent element) is in ignoreElements
+            if (ignoreElements && ignoreElements.has(child)) {
+                continue;
+            }
             if (child.nodeValue && child.nodeValue.trim() && needTowrap) {
                 if (!currentWrapper) {
                     currentWrapper = document.createElement(parentElement);
@@ -865,11 +887,15 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
                     }
                 });
                 if (isInSet(recursiveBlockTags, tagName) && childElements.length > 0 && hasBlock) {
-                    wrapTextAndInlineNodes(childElement, parentElement);
+                    wrapTextAndInlineNodes(childElement, parentElement, ignoreElements);
                 }
             }
             // Handle inline elements
             else if (!isBlockNode(childElement) && !isInSet(inlineBlockTags, tagName) && !nonWrappableTags.has(tagName) && tagName !== 'HR') {
+                // Skip wrapping for elements present in ignoreElements
+                if (ignoreElements && ignoreElements.has(childElement)) {
+                    continue;
+                }
                 if (child.parentNode && needTowrap && child.parentNode.childNodes.length > 1) {
                     if (!currentWrapper) {
                         currentWrapper = document.createElement(parentElement);

@@ -2420,7 +2420,12 @@ private calculatePathBounds(data: string): Rect {
         return this.documentHelper.textHelper.isRTLText(nextElem.text);
     }
 
-    private checkFormatToCombineText(currentFormat: WCharacterFormat, previousFormat: WCharacterFormat): boolean {
+    /**
+     * 
+     * @private
+     * @returns {boolean}
+     */
+    public checkFormatToCombineText(currentFormat: WCharacterFormat, previousFormat: WCharacterFormat): boolean {
         return (currentFormat.fontSize === previousFormat.fontSize
             && currentFormat.fontFamily === previousFormat.fontFamily
             && currentFormat.bold === previousFormat.bold
@@ -2781,7 +2786,7 @@ private calculatePathBounds(data: string): Rect {
         }
         if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            let splittedText: any[] = checkText.split(/[()\s{}\[\]]+/);
+            let splittedText: any[] = checkText.split(/[()\/\s{}\[\]]+/);
             let markindex: number = elementBox.line.getOffset(elementBox, 0);
             let spaceValue: number = 1;
             if (splittedText.length > 1) {

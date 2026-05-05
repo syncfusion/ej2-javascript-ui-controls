@@ -2491,4 +2491,62 @@ describe('Cell Format ->', () => {
             done();
         });
     });
+    describe('EJ2-1021137: Values are not properly added to the cells while using updateRange method ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{}] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }, 'A1:F1');
+                    spreadsheet.cellFormat({ fontWeight: 'bold' }, 'E31:F31');
+                    spreadsheet.cellFormat({ textAlign: 'right' }, 'E31');
+                    spreadsheet.numberFormat('$#,##0.00', 'F2:F31');
+                    spreadsheet.numberFormat('m/d/yyyy', 'E2:E30');
+                    updateRange();
+                }
+            }, done);
+            let dataval = [{ 'Column 1': 'Data 1', 'Column 2': 'Data 2' }, { 'Column 1': 'Data 3', 'Column 2': "Data 4" }, { 'Column 1': 'Data 5', 'Column 2': "Data 6" }];
+            let cells = ['A1', 'C1', 'E1'];
+            function updateRange(): void {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                for (let i = 0; i < dataval.length; i++) {
+                    spreadsheet.updateRange({
+                        showFieldAsHeader: false,
+                        dataSource: dataval,
+                        startCell: cells[i]
+                    });
+                }
+            }
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Values should be properly added to the cells while using updateRange method', (done: Function) => {
+            let td: HTMLElement = helper.invoke('getCell', [0, 2]);
+            expect(td.textContent).toBe('Data 1');
+            td = helper.invoke('getCell', [0, 3]);
+            expect(td.textContent).toBe('Data 2');
+            td = helper.invoke('getCell', [0, 4]);
+            expect(td.textContent).toBe('Data 1');
+            td = helper.invoke('getCell', [0, 5]);
+            expect(td.textContent).toBe('Data 2');
+            td = helper.invoke('getCell', [1, 2]);
+            expect(td.textContent).toBe('Data 3');
+            td = helper.invoke('getCell', [1, 3]);
+            expect(td.textContent).toBe('Data 4');
+            td = helper.invoke('getCell', [1, 4]);
+            expect(td.textContent).toBe('Data 3');
+            td = helper.invoke('getCell', [1, 5]);
+            expect(td.textContent).toBe('Data 4');
+            td = helper.invoke('getCell', [2, 2]);
+            expect(td.textContent).toBe('Data 5');
+            td = helper.invoke('getCell', [2, 3]);
+            expect(td.textContent).toBe('Data 6');
+            td = helper.invoke('getCell', [2, 4]);
+            expect(td.textContent).toBe('Data 5');
+            td = helper.invoke('getCell', [2, 5]);
+            expect(td.textContent).toBe('Data 6');
+            done();
+        });
+    });
 });

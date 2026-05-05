@@ -73,6 +73,7 @@ export class CheckBoxFilterBase {
     private infiniteQuery: Query;
     private infiniteQueryExecutionPending: boolean = false;
     private infiniteSkipCnt: number = 0;
+    private infiniteOdataCount: number = 0;
     private infiniteScrollAppendDiff: number = 0;
     private prevInfiniteScrollDirection: string = '';
     private infiniteLoadedElem: HTMLElement[] = [];
@@ -1052,7 +1053,7 @@ export class CheckBoxFilterBase {
             const moduleName: Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
             if (moduleName && moduleName() && (moduleName() === 'ODataV4Adaptor' || moduleName() === 'WebApiAdaptor'
             || moduleName() === 'CustomDataAdaptor' || moduleName() === 'GraphQLAdaptor' || moduleName() === 'ODataAdaptor')) {
-                query.distinct(filteredColumn as string[]);
+                query.distinct([this.options.column.field] as string[]);
             }
         }
         return query;
@@ -1316,6 +1317,7 @@ export class CheckBoxFilterBase {
         }
     }
     private executeQueryOperations(query: Query, allPromise: Promise<Object>[], runArray: Function[]): void {
+        const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         allPromise.push((this.options.dataSource as DataManager).executeQuery(query));
         runArray.push(this.dataSuccess.bind(this));
         let i: number = 0;
@@ -1323,7 +1325,13 @@ export class CheckBoxFilterBase {
             this.infiniteQueryExecutionPending = this.infiniteRenderMod ? false : this.infiniteQueryExecutionPending;
             for (let j: number = 0; j < e.length; j++) {
                 this.infiniteDataCount = this.infiniteRenderMod && !this.infiniteDataCount ? e[j as number].count : this.infiniteDataCount;
-                runArray[i++](e[parseInt(j.toString(), 10)].result);
+                if (moduleName && moduleName() === 'ODataV4Adaptor' && this.searchInputArgs
+                    && this.searchInputArgs.element.value !== '' && !isNullOrUndefined(e[parseInt(j.toString(), 10)].actual)) {
+                    runArray[i++](e[parseInt(j.toString(), 10)].actual);
+                }
+                else {
+                    runArray[i++](e[parseInt(j.toString(), 10)].result);
+                }
             }
         }).catch(() => {
             if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
@@ -1707,6 +1715,7 @@ export class CheckBoxFilterBase {
     }
 
     private createFilterItems(data: Object[], isInitial?: boolean, args1?: CheckBoxBeforeRenderer): void {
+        const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         const cBoxes: Element = this.parent.createElement('div');
         let btn: Button; let disabled: boolean = false;
         if (!this.options.isResponsiveFilter) {
@@ -1721,6 +1730,12 @@ export class CheckBoxFilterBase {
             const val: string = getValue(key, data[parseInt(i.toString(), 10)]);
             if (val === '' || isNullOrUndefined(val)) {
                 nullCounter = nullCounter + 1;
+            }
+            if (moduleName && moduleName() === 'ODataV4Adaptor') {
+                const count: number = getValue('dataObj.groupCount', data[parseInt(i.toString(), 10)]);
+                if (!isNullOrUndefined(count)) {
+                    this.infiniteOdataCount += count;
+                }
             }
         }
         if (!this.infiniteRenderMod) {
@@ -1916,6 +1931,10 @@ export class CheckBoxFilterBase {
             this.cBox.style.marginTop = '0px';
         }
         hideSpinner(this.spinner);
+        if ((moduleName && moduleName() === 'ODataV4Adaptor') && this.infiniteOdataCount === this.options.parentTotalDataCount
+            && this.infiniteDataCount !== this.options.parentTotalDataCount) {
+            this.infiniteDataCount = this.infiniteLoadedElem.length;
+        }
     }
 
     private updateInfiniteUnLoadedCheckboxExistPred(value: string | number | Date, updatePredArr: Object[]): void {

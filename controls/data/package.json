@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-data",
-	"version": "0.16.4",
+	"version": "33.2.3",
 	"description": "Essential JS 2 DataManager",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -11,7 +11,7 @@
 		"@syncfusion/ej2-base": "*"
 	},
 	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.3",
+		"@syncfusion/ej2-staging": "^1.0.4",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",

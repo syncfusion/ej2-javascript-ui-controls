@@ -13002,27 +13002,40 @@ export class PdfTextMarkupAnnotation extends PdfComment {
      * ```
      */
     get boundsCollection(): Array<Rectangle> {
-        if (this._isLoaded) {
-            const collection: Array<Rectangle> = [];
-            if (this._dictionary.has('QuadPoints')) {
-                const points: number[] = this._dictionary.getArray('QuadPoints');
-                if (points && points.length > 0) {
-                    const count: number = points.length / 8;
-                    for (let i: number = 0; i < count; i++) {
-                        let x: number = points[4 + (i * 8)] - points[i * 8];
-                        let y: number = points[5 + (i * 8)] - points[1 + (i * 8)];
-                        const height: number = Math.sqrt((x * x) + (y * y));
-                        x = points[6 + (i * 8)] - points[4 + (i * 8)];
-                        y = points[7 + (i * 8)] - points[5 + (i * 8)];
-                        const width: number = Math.sqrt((x * x) + (y * y));
-                        const rect: number[] = [points[i * 8], this._page.size.height - points[1 + (i * 8)], width, height];
-                        collection.push({x: rect[0], y: rect[1], width: rect[2], height: rect[3]});
-                    }
-                }
-            }
+        if (!this._isLoaded) {
+            return this._boundsCollection;
+        }
+        const collection: Array<Rectangle> = [];
+        if (!this._dictionary.has('QuadPoints')) {
             return collection;
         }
-        return this._boundsCollection;
+        const points: number[] = this._dictionary.getArray('QuadPoints');
+        if (!points || points.length === 0) {
+            return collection;
+        }
+        const cropOrMediaBox: number[] = this._getMediaOrCropBox(this._page);
+        const cropX: number = cropOrMediaBox && cropOrMediaBox.length > 0 ? cropOrMediaBox[0] : 0;
+        const cropY: number = cropOrMediaBox && cropOrMediaBox.length > 1 ? cropOrMediaBox[1] : 0;
+        const pageHeight: number = this._page.size.height;
+        const count: number = points.length / 8;
+        for (let i: number = 0; i < count; i++) {
+            const base: number = i * 8;
+            let dx: number = points[base + 4] - points[<number>base];
+            let dy: number = points[base + 5] - points[base + 1];
+            const height: number = Math.sqrt((dx * dx) + (dy * dy));
+            dx = points[base + 6] - points[base + 4];
+            dy = points[base + 7] - points[base + 5];
+            const width: number = Math.sqrt((dx * dx) + (dy * dy));
+            const x: number = points[<number>base] - cropX;
+            const y: number = pageHeight - points[base + 1] - cropY;
+            collection.push({
+                x: x,
+                y: y,
+                width: width,
+                height: height
+            });
+        }
+        return collection;
     }
     /**
      * Sets the markup bounds collection of the annotation.

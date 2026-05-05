@@ -8266,12 +8266,14 @@ Remove terinal segment in initial
      * @param {number} scrollX - provide the target value.
      * @param {number} scrollY - provide the layoutOrientation value.
      * @param {PointModel} focusPoint - provide the layoutOrientation value.
+     * @param {boolean} isIpad - Indicates whether the runtime environment is iPad.
      *
      * @private
      */
-    public zoom(scale: number, scrollX: number, scrollY: number, focusPoint?: PointModel): void {
+    public zoom(scale: number, scrollX: number, scrollY: number, focusPoint?: PointModel, isIpad?: boolean): void {
         this.diagram.scroller.zoom(
-            scale, scrollX * this.diagram.scroller.currentZoom, scrollY * this.diagram.scroller.currentZoom, focusPoint);
+            scale, scrollX * this.diagram.scroller.currentZoom, scrollY * this.diagram.scroller.currentZoom, focusPoint,
+            undefined, undefined, undefined, undefined, isIpad);
     }
 }
 

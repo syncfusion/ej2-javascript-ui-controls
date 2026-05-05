@@ -10944,6 +10944,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public updateScrollOffset(): void {
+        // Ignore scroll events caused by internal zoom writes on iPad;
+        // allow only real user‑initiated scrolls after suppression window.
+        if (this.scroller && this.scroller.suppressScrollSync) {
+            return;
+        }
         this.scroller.setScrollOffset(this.diagramCanvas.scrollLeft, this.diagramCanvas.scrollTop);
         updateRuler(this);
         if (canVitualize(this)) {

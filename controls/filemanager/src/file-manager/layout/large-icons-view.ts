@@ -791,10 +791,14 @@ export class LargeIconsView {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
         if (this.listObj) {
             this.unWireEvents();
+        }
+        if (this.itemList) {
+            this.itemList.forEach((el: HTMLElement) => {
+                el.ondragstart = null;
+            });
         }
         this.startItem = null;
         this.listElements = null;

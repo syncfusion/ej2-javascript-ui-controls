@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#I831643` - Now the issue with Ribbon component popups render behind Angular CDK Dialog overlay has been resolved.
+
 ## 33.2.4 (2026-04-28)
 
 ### Ribbon

@@ -1616,7 +1616,7 @@ export class SpellChecker {
                         elementStart.setPositionParagraph(errorElement.line, offset);
                     }
                     if (elementStart) {
-                        const isExistBefore: boolean = start.isExistBefore(elementStart);
+                        const isExistBefore: boolean = start.isExistBefore(elementStart) || start.isAtSamePosition(elementStart);
                         if (isNullOrUndefined(nextErrorPosition)) {
                             if (isExistBefore) {
                                 element = { element: errorElement, text: errorWords.keys[i] };

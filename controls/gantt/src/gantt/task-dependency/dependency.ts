@@ -1782,7 +1782,8 @@ export class Dependency {
                     }
                 } else if (isNullOrUndefined(previousData)) {
                     calcEndDate = previousStartDate;
-                    if (childRecords[i as number].ganttProperties.startDate.getTime() <= calcEndDate.getTime()) {
+                    if (!isNullOrUndefined(childRecords[i as number].ganttProperties.startDate)
+                        && childRecords[i as number].ganttProperties.startDate.getTime() <= calcEndDate.getTime()) {
                         this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
                     }
                     if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {

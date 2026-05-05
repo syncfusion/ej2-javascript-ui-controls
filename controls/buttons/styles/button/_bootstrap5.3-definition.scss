@@ -329,20 +329,20 @@ $btn-outline-primary-active-border-color: $primary !default;
 
 //outlinesuccess
 $btn-outline-success-disabled-color: $success-bg-color-disabled !default;
-$btn-outline-success-disabled-border-color: rgba($btn-success-bgcolor, .65) !default;
+$btn-outline-success-disabled-border-color: rgba(var(--color-sf-success-shadow), .65) !default;
 $btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
 
 //outlineinfo
 $btn-outline-info-disabled-color: $info-bg-color-disabled !default;
-$btn-outline-info-disabled-border-color: rgba($btn-info-bgcolor, .65) !default;
+$btn-outline-info-disabled-border-color: rgba(var(--color-sf-info-shadow), .65) !default;
 
 //outlinewarning
 $btn-outline-warning-disabled-color: $warning-bg-color-disabled !default;
-$btn-outline-warning-disabled-border-color: rgba($btn-warning-bgcolor, .65) !default;
+$btn-outline-warning-disabled-border-color: rgba(var(--color-sf-warning-shadow), .65) !default;
 
 //outlinedanger
 $btn-outline-danger-disabled-color: $danger-bg-color-disabled !default;
-$btn-outline-danger-disabled-border-color: rgba($btn-danger-bgcolor, .65) !default;
+$btn-outline-danger-disabled-border-color: rgba(var(--color-sf-danger-shadow), .65) !default;
 
 //size
 $btn-box-shadow: $shadow-sm !default;

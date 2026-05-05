@@ -61,6 +61,7 @@ export class ShadingGroup {
         this.colorPicker = new ColorPicker({
             inline: true,
             value: this.currentShadingColor,
+            locale: this.container.locale,
             enableOpacity: false,
             change: (args: ColorPickerEventArgs) => {
                 this.currentShadingColor = args.currentValue.hex;

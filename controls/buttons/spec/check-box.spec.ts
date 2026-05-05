@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeEventArgs, createCheckBox } from './../src/common/common';
 import { CheckBox } from './../src/check-box/check-box';
-import { createElement, EventHandler, attributes, enableRipple } from '@syncfusion/ej2-base';
+import { createElement, EventHandler, attributes, enableRipple, getComponent } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
@@ -394,7 +394,44 @@ describe('CheckBox', () => {
             checkbox.click();
             checkbox.focusIn();
         });
+        it('Get component instance using getComponent', () => {
+            checkbox = new CheckBox({ label: 'Default' }, '#checkbox');
+            const comp: CheckBox = getComponent<CheckBox>(element, CheckBox);
+            expect(comp).toBeDefined();
+        });
+
+        it('PreRender method - getValue and setValue for ej2_instances', () => {
+            const { getValue, setValue } = require('@syncfusion/ej2-base');
+
+            // Create a fresh input element for this test
+            const testInput = createElement('input', { id: 'testCheckbox' }) as HTMLInputElement;
+            testInput.setAttribute('type', 'checkbox');
+            document.body.appendChild(testInput);
+
+            // Create checkbox instance
+            checkbox = new CheckBox({ checked: true, label: 'Test Instance' }, '#testCheckbox');
+
+            // Verify that the element has been transformed
+            expect(checkbox.element.parentElement.parentElement.classList.contains('e-checkbox-wrapper')).toEqual(true);
+
+            // Get the ej2_instances from the element
+            const ejInstances: any = getValue('ej2_instances', checkbox.element);
+
+            // Verify that ej2_instances contains the checkbox component
+            expect(ejInstances).toBeDefined();
+            expect(Array.isArray(ejInstances) || typeof ejInstances === 'object').toBe(true);
+
+            // Verify component properties are intact after preRender
+            expect(checkbox.checked).toEqual(true);
+            expect(checkbox.label).toEqual('Test Instance');
+            expect(checkbox.element.parentElement.children[2].textContent).toEqual('Test Instance');
+
+            // Clean up
+            checkbox.destroy();
+            testInput.remove();
+        });
     });
+
 
     describe('creation by util function', () => {
         it('', () => {

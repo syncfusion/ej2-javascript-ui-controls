@@ -806,7 +806,8 @@ export class OptionsPane {
      * @returns {void}
      */
     private onEnableDisableReplaceButton = (): void => {
-        if (this.searchInput.value.length !== 0) {
+        let allowReplacement: boolean = !this.documentHelper.owner.isReadOnlyMode || this.documentHelper.protectionType === "RevisionsOnly";
+        if (this.searchInput.value.length !== 0 && allowReplacement) {
             (this.replaceButton as HTMLButtonElement).disabled = false;
             (this.replaceAllButton as HTMLButtonElement).disabled = false;
         } else {
@@ -1325,9 +1326,10 @@ export class OptionsPane {
                     this.documentHelper.optionsPaneContainer.insertBefore(this.documentHelper.owner.optionsPaneModule.optionsPane, this.documentHelper.viewerContainer);
                 }
                 this.optionsPane.style.display = 'block';
-                if (this.documentHelper.owner.isReadOnlyMode) {
+                if((this.documentHelper.owner.isReadOnlyMode && this.documentHelper.protectionType === 'FormFieldsOnly') || this.documentHelper.owner.isReadOnly){
                     this.tabInstance.hideTab(2);
-                } else {
+                }
+                else {
                     this.tabInstance.hideTab(2, false);
                 }
                 if (this.isReplace && !this.documentHelper.owner.isReadOnlyMode && !this.isFind) {

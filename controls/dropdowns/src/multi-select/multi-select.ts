@@ -127,6 +127,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isFilteringAction: boolean = false;
     private headerTemplateHeight: number;
     private resizeHandler: () => void;
+    private scrollEvent: MouseEvent;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -789,6 +790,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private virtualCustomData: { [key: string]: string | Object };
     private isSelectAllLoop: boolean = false;
     private initialPopupHeight: number;
+    private chipAnnouncerLiveRegion: HTMLElement;
 
     private enableRTL(state: boolean): void {
         if (state) {
@@ -1228,7 +1230,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (isCheckbox) {
                 const startindex: number = this.viewPortInfo.startIndex;
                 const endindex: number = (((startindex + this.viewPortInfo.endIndex) <= (valuecheck.length)) &&
-                    valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) ? (startindex + this.viewPortInfo.endIndex)
+                    valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) &&
+                    (this.dataSource instanceof DataManager && this.totalItemCount !== 0 && this.totalItemCount > (this.itemCount * 2))
+                    ? (startindex + this.viewPortInfo.endIndex)
                     : (valuecheck.length);
                 for (let i: number = startindex; i < endindex; i++) {
                     const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
@@ -3035,6 +3039,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!isNullOrUndefined(this.value)) {
                 this.tempValues = this.allowObjectBinding ? this.value.slice() : <string[]>this.value.slice();
             }
+            const removedChipTitle: string | null = selectedElem.getAttribute('title');
             temp = selectedElem.nextElementSibling;
             if (temp !== null) {
                 this.removeChipSelection();
@@ -3046,6 +3051,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.removeValue(currentChip, e);
             this.updateDelimeter(this.delimiterChar, e);
             this.makeTextBoxEmpty();
+            if (removedChipTitle && this.chipAnnouncerLiveRegion) {
+                const remainingCount: number = this.value ? this.value.length : 0;
+                const announcement: string = `${removedChipTitle} removed from selection ${remainingCount} items selected`;
+                this.chipAnnouncerLiveRegion.textContent = announcement;
+            }
         }
         if (this.closePopupOnSelect) {
             this.hidePopup(e);
@@ -3236,6 +3246,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
             if (selectedChips && selectedChips.length === 1) {
                 selectedChips[0].removeAttribute('id');
+                selectedChips[0].removeAttribute('aria-hidden');
                 if (!isNullOrUndefined(this.inputElement) && this.inputElement.hasAttribute('aria-activedescendant')) {
                     this.inputElement.removeAttribute('aria-activedescendant');
                     if (!this.inputElement.hasAttribute('aria-describedby') && this.chipCollectionWrapper.id) {
@@ -3250,15 +3261,17 @@ export class MultiSelect extends DropDownBase implements IInput {
         addClass([element], CHIP_SELECTED);
         if (element) {
             element.setAttribute('id', this.element.id + '_chip_item');
+            element.setAttribute('aria-hidden', 'true');
+            const chipTitle: string | null = element.getAttribute('title');
+            if (chipTitle && this.chipAnnouncerLiveRegion) {
+                const announcement: string = `${chipTitle} focused. Press Backspace to remove`;
+                this.chipAnnouncerLiveRegion.textContent = announcement;
+            }
             if (!isNullOrUndefined(this.inputElement) && element.id) {
                 this.inputElement.setAttribute('aria-activedescendant', element.id);
                 if (this.inputElement.hasAttribute('aria-describedby')) {
                     this.inputElement.removeAttribute('aria-describedby');
                 }
-            }
-            const chipClose: HTMLElement = <HTMLElement>element.querySelector('span.' + CHIP_CLOSE.split(' ')[0]);
-            if (chipClose) {
-                chipClose.removeAttribute('aria-hidden');
             }
         }
         this.trigger('chipSelection', e);
@@ -3745,12 +3758,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
         if (Browser.isDevice) {
             for (let index: number = 0; index < closeElements.length; index++) {
-                closeElements[index as number].setAttribute('aria-hidden', 'true');
                 (<HTMLElement>closeElements[index as number]).style.display = 'none';
-            }
-        } else {
-            for (let index: number = 0; index < closeElements.length; index++) {
-                closeElements[index as number].setAttribute('aria-hidden', 'true');
             }
         }
 
@@ -3794,7 +3802,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         });
         let compiledString: Function;
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
-        const chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE, attrs: { 'aria-label': 'delete', 'aria-hidden': 'true', 'tabindex': '-1' } });
+        const chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE, attrs: { 'aria-hidden': 'true' } });
         if (this.mainData) {
             itemData = this.getDataByValue(value);
         }
@@ -4066,6 +4074,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }, targetExitViewport: () => {
                         if (!Browser.isDevice) {
                             this.hidePopup();
+                            let previousValue: string[] | number[] | boolean[] | object[] = this.tempValues;
+                            if (isNullOrUndefined(previousValue)) {
+                                previousValue = [];
+                            }
+                            this.updateValueState(this.scrollEvent, this.value, previousValue);
                         }
                     }
                 });
@@ -4342,6 +4355,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         EventHandler.add(this.componentWrapper, 'mouseout', this.mouseOut, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
         EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
+        EventHandler.add(document, 'wheel', this.onWheelScroll, this);
+        EventHandler.add(document, 'scroll', this.onWheelScroll, this);
     }
     private onInput(e: KeyboardEventArgs): void {
         if (this.keyDownStatus) {
@@ -4354,6 +4369,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (Browser.isDevice && Browser.info.name === 'mozilla') {
             this.search(e);
         }
+    }
+    private onWheelScroll(e: MouseEvent): void {
+        this.scrollEvent = e;
     }
     private pasteHandler (event: KeyboardEventArgs): void {
         setTimeout((): void => {
@@ -4876,7 +4894,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             } else {
                 this.updateDelimeter(this.delimiterChar, null, isInitialVirtualData);
             }
-            if (this.mode === 'CheckBox' && this.showSelectAll && (isNullOrUndefined(this.value) || !this.value.length)) {
+            if (this.mode === 'CheckBox' && this.showSelectAll && (isNullOrUndefined(this.value) || !this.value.length || (this.value.length !== this.listData.length))) {
                 this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
             }
             if (this.mode === 'Box' || (this.mode === 'Default' && this.inputFocus)) {
@@ -5690,6 +5708,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.inputElement)) {
             EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
         }
+        EventHandler.remove(document, 'wheel', this.onWheelScroll);
+        EventHandler.remove(document, 'scroll', this.onWheelScroll);
     }
     protected resizingWireEvent(): void {
         // Mouse events
@@ -6010,11 +6030,17 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.virtualSelectAllState = state;
                     this.virtualSelectAll = true;
                     this.CurrentEvent = event;
+                    if (this.mode === 'CheckBox' && this.value && Array.isArray(this.value) && this.value.length > 0 && this.enableSelectionOrder && this.targetElement().trim() === '' && this.viewPortInfo.startIndex < this.value.length) {
+                        this.isVirtualOrder = true;
+                    }
                     if (!this.virtualSelectAllData){
                         this.resetList(this.dataSource, this.fields, new Query());
                     }
                     if (this.virtualSelectAllData){
                         this.virtualSelectionAll(state, li, event);
+                    }
+                    if (this.mode === 'CheckBox' && this.value && Array.isArray(this.value) && this.value.length > 0 && this.enableSelectionOrder && this.targetElement().trim() === '' && this.viewPortInfo.startIndex < this.value.length) {
+                        this.isVirtualOrder = false;
                     }
                 }
                 else {
@@ -6304,7 +6330,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.fields.disabled) {
                     this.removeDisabledItemsValue(this.value);
                 }
-                this.updateVal(this.value, oldProp.value, 'value');
+                this.updateVal(this.value, oldProp.value, 'value', this.enableVirtualization);
                 this.addValidInputClass();
                 if (!this.closePopupOnSelect && this.isPopupOpen()) {
                     this.refreshPopup();
@@ -6505,8 +6531,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     private updateVal(
         newProp: string[] | boolean[] | number[] | object[],
         oldProp: string[] | boolean[] | number[] | object[],
-        prop: string): void {
-        if (!this.list) {
+        prop: string,
+        isVirtual: boolean = false): void {
+        if (!this.list || (isVirtual && prop === 'value' && ((isNullOrUndefined(oldProp) && !isNullOrUndefined(newProp)) || (!isNullOrUndefined(oldProp) && isNullOrUndefined(newProp)) || (this.validateValues(newProp, oldProp) && newProp.length > 0)))) {
             this.onLoadSelect();
             if (this.enableVirtualization) {
                 this.setProperties({ text: '' }, true);
@@ -7022,6 +7049,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
+        }
+        if (!this.chipAnnouncerLiveRegion) {
+            this.chipAnnouncerLiveRegion = this.createElement('div', {
+                attrs: { 'aria-live': 'polite', 'aria-atomic': 'true', 'class': 'e-chip-announcer' }
+            });
+            this.chipAnnouncerLiveRegion.style.position = 'absolute';
+            this.chipAnnouncerLiveRegion.style.left = '-10000px';
+            this.componentWrapper.appendChild(this.chipAnnouncerLiveRegion);
         }
         this.renderComplete();
     }
@@ -7673,6 +7708,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.mainListCollection = null;
         this.footer = null;
         this.selectAllEventEle = null;
+        this.chipAnnouncerLiveRegion = null;
         super.destroy();
     }
 }

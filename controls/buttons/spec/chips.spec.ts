@@ -1045,7 +1045,7 @@ describe('Chips', () => {
                 let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                 chips.select(chipCollection[1] , "index");
                 let selectedValule1: string | string[] = `${chips.selectedChips}`;
-                expect(selectedValule1).toBe('22');
+                expect(selectedValule1).toBe('1');
                 chips.select([11], "value");
                 selectedValule1 = `${chips.selectedChips}`;
                 expect(selectedValule1).toBe('11,22');
@@ -1978,6 +1978,199 @@ describe('Chips', () => {
             expect(active[1]).toBe(chipCollection[2]);
             const result = chips.getSelectedChips() as SelectedItems;
             expect(result.Indexes).toEqual([0, 2]);
+        });
+    });
+
+    describe('ChipList - Selection After Enable/Disable Toggle (Issue Fix)', () => {
+        let element: HTMLElement;
+        afterEach(() => {
+            if (chips) {
+                chips.destroy();
+            }
+            if (element) {
+                (element).remove();
+            }
+        });
+
+        // TEST 1: Index-based selection with value-based chips (reproduces the original bug)
+        it('should preserve index-based selectedChips after enabled toggle (value-based chips)', () => {
+            element = createElement('div', { id: 'chip-index-based' });
+            document.body.appendChild(element);
+
+            chips = new ChipList({
+                chips: [
+                    { text: 'Yes', value: '1' },
+                    { text: 'No', value: '2' },
+                    { text: 'Not', value: '3' }
+                ],
+                selection: 'Single',
+                selectedChips: 1,  // Index 1 (which has data-value="2")
+                enabled: true
+            });
+            chips.appendTo(element);
+
+            // Verify initial state
+            expect(chips.selectedChips).toBe(1);
+            let chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+            expect(chipElements[1].getAttribute('aria-selected')).toBe('true');
+            expect(chipElements[0].getAttribute('aria-selected')).toBe('false');
+            expect(chipElements[2].getAttribute('aria-selected')).toBe('false');
+
+            // Toggle enabled: false
+            chips.enabled = false;
+            chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+
+            // Toggle enabled: true
+            chips.enabled = true;
+            chipElements = element.querySelectorAll('.e-chip');
+
+            // CRITICAL: selectedChips must STILL be 1 (index), not "2" (value)
+            expect(chips.selectedChips).toBe(1, 'selectedChips should remain index 1 after enable toggle');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true, 'e-active should be on index 1 after toggle');
+            expect(chipElements[1].getAttribute('aria-selected')).toBe('true', 'aria-selected should be true on index 1');
+            expect(chipElements[0].getAttribute('aria-selected')).toBe('false', 'aria-selected should be false on index 0');
+            expect(chipElements[2].getAttribute('aria-selected')).toBe('false', 'aria-selected should be false on index 2');
+        });
+
+        // TEST 3: Index-based selection - Multiple mode
+        it('should preserve index-based multi-selection after enabled toggle', () => {
+            element = createElement('div', { id: 'chip-index-multi' });
+            document.body.appendChild(element);
+
+            chips = new ChipList({
+                chips: [
+                    { text: 'Item 1', value: 'a' },
+                    { text: 'Item 2', value: 'b' },
+                    { text: 'Item 3', value: 'c' },
+                    { text: 'Item 4', value: 'd' }
+                ],
+                selection: 'Multiple',
+                selectedChips: [0, 2],  // Indices 0 and 2
+                enabled: true
+            });
+            chips.appendTo(element);
+
+            // Verify initial state
+            expect(chips.selectedChips).toEqual([0, 2]);
+            let chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[0].classList.contains('e-active')).toBe(true);
+            expect(chipElements[2].classList.contains('e-active')).toBe(true);
+            expect(chipElements[1].classList.contains('e-active')).toBe(false);
+
+            // Toggle enabled
+            chips.enabled = false;
+            chips.enabled = true;
+
+            // Verify index-based selection preserved
+            expect(chips.selectedChips).toEqual([0, 2], 'selectedChips should remain [0, 2] indices after enable toggle');
+            chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[0].classList.contains('e-active')).toBe(true);
+            expect(chipElements[2].classList.contains('e-active')).toBe(true);
+            expect(chipElements[1].classList.contains('e-active')).toBe(false);
+            expect(chipElements[3].classList.contains('e-active')).toBe(false);
+        });
+        // TEST 5: String array chips (no data-values) - should continue to work
+        it('should preserve index selection with string array chips after enabled toggle', () => {
+            element = createElement('div', { id: 'chip-string-array' });
+            document.body.appendChild(element);
+
+            chips = new ChipList({
+                chips: ['Chip 1', 'Chip 2', 'Chip 3'],
+                selection: 'Single',
+                selectedChips: 1,
+                enabled: true
+            });
+            chips.appendTo(element);
+
+            // Verify initial state
+            expect(chips.selectedChips).toBe(1);
+            let chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+
+            // Toggle enabled
+            chips.enabled = false;
+            chips.enabled = true;
+
+            // Verify selection preserved
+            expect(chips.selectedChips).toBe(1);
+            chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+        });
+
+        // TEST 7: Mixed - index-based with string array plus data-value updates
+        it('should NOT convert index to value when chips have mixed data attributes', () => {
+            element = createElement('div', { id: 'chip-mixed' });
+            document.body.appendChild(element);
+
+            chips = new ChipList({
+                chips: [
+                    { text: 'First', value: '100' },
+                    { text: 'Second', value: '200' },
+                    { text: 'Third', value: '300' }
+                ],
+                selection: 'Multiple',
+                selectedChips: [0, 1],
+                enabled: true
+            });
+            chips.appendTo(element);
+
+            // Verify initial state
+            expect(Array.isArray(chips.selectedChips)).toBe(true);
+            const initialChips = chips.selectedChips as number[];
+            expect(initialChips[0]).toBe(0);
+            expect(initialChips[1]).toBe(1);
+
+            // Toggle enabled
+            chips.enabled = false;
+            chips.enabled = true;
+
+            // Verify indices preserved (not converted to values)
+            const afterToggle = chips.selectedChips as number[];
+            expect(afterToggle[0]).toBe(0, 'first selected index should be 0');
+            expect(afterToggle[1]).toBe(1, 'second selected index should be 1');
+            expect(typeof afterToggle[0]).toBe('number', 'selected chips should contain numbers, not strings');
+        });
+
+        // TEST 8: Real-world scenario from demo
+        it('Demo scenario - should work correctly after enabled toggle', () => {
+            element = createElement('div', { id: 'chip-demo' });
+            document.body.appendChild(element);
+
+            // Exact scenario from demos/chips/API/default.ts
+            const chips1 = [
+                { text: 'Yes', value: '1' },
+                { text: 'No', value: '2' },
+                { text: 'Not', value: '3' }
+            ];
+
+            chips = new ChipList({
+                chips: chips1,
+                selection: 'Single',
+                selectedChips: [1],
+                enabled: true
+            });
+            chips.appendTo(element);
+
+            // Initial: chip at index 1 should be selected
+            let chipElements = element.querySelectorAll('.e-chip');
+            expect(chipElements[1].textContent.trim()).toBe('No');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+
+            // Simulate button click: disable
+            chips.enabled = false;
+            expect(chipElements[1].classList.contains('e-active')).toBe(true);
+
+            // Simulate button click: enable
+            chips.enabled = true;
+            chipElements = element.querySelectorAll('.e-chip');
+
+            // After toggle: MUST still select chip at index 1 (No)
+            expect(chipElements[1].textContent.trim()).toBe('No', 'Same chip should be selected');
+            expect(chipElements[1].classList.contains('e-active')).toBe(true, 'Index 1 should still have e-active');
+            expect(chipElements[0].classList.contains('e-active')).toBe(false, 'Index 0 should not be active');
+            expect(chipElements[2].classList.contains('e-active')).toBe(false, 'Index 2 should not be active');
         });
     });
 });

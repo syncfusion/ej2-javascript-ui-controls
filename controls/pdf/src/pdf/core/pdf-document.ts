@@ -2854,6 +2854,7 @@ export class PdfDocument {
         linkAnnotation.border.hRadius = 0;
         linkAnnotation.border.vRadius = 0;
         page.annotations.add(linkAnnotation);
+        linkAnnotation._doPostProcess();
         if (page.rotation !== PdfRotationAngle.angle0 && page._isNew) {
             graphics.restore();
         } else {

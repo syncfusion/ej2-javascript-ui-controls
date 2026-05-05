@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */  
 import { LayoutViewer, SelectionSectionFormat } from '../index';
 import { Selection } from '../index';
 import { TextPosition, ImageSizeInfo } from '../selection/selection-helper';
@@ -1711,7 +1711,7 @@ export class Editor {
             this.unProtectDocument();
             return true;
         } else {
-            DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
+            DialogUtility.alert({title: localeValue.getConstant('Information'), content: localeValue.getConstant('The password is incorrect')});
             return false;
         }
     }
@@ -11195,6 +11195,7 @@ export class Editor {
             if (isHeader) {
                 headerOrFooter = page.headerWidgetIn;
                 page.headerWidget = hfWidget;
+                page.headerWidget.height = hfWidget.height
             } else {
                 headerOrFooter = page.footerWidgetIn;
                 page.footerWidget = hfWidget;
@@ -19071,6 +19072,9 @@ export class Editor {
             //     this.updateComplexHistory();
             // } else {
             this.reLayout(selection);
+            if (!isNullOrUndefined(selection.start.paragraph.previousRenderedWidget) && selection.start.paragraph.previousRenderedWidget.containerWidget instanceof BodyWidget && selection.start.paragraph.containerWidget instanceof BodyWidget && (selection.start.paragraph.previousRenderedWidget.containerWidget as BodyWidget).page.index !== (selection.start.paragraph.containerWidget as BodyWidget).page.index) {
+                this.documentHelper.layout.reLayoutParagraph(selection.start.paragraph, 0, 0);
+            }
             let currentPara: ParagraphWidget = this.selection.start.paragraph.containerWidget.firstChild as ParagraphWidget;
             if (!isNullOrUndefined(currentPara)) {
                 currentPara.isChangeDetected = false;
@@ -22311,6 +22315,7 @@ export class Editor {
             }
         }
         let listWholeWidth: number;
+        const listFormat: WListFormat = paragraph.paragraphFormat.listFormat;
         if (!isNullOrUndefined(element) && element.nextElement instanceof ListTextElementBox) {
             listWholeWidth = element.width + element.nextElement.width;
         }
@@ -22335,6 +22340,8 @@ export class Editor {
                     element.nextElement.width = (listWholeWidth - element.width);
                 }
             }
+        } else if (!isNullOrUndefined(listFormat) && listFormat.listId !== -1 && !isNullOrUndefined(element) && element.isVisible) {
+            this.documentHelper.layout.getListNumber(paragraph);
         }
     }
     /**

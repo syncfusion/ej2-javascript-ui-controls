@@ -514,6 +514,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private dragCollection: Draggable[];
     private dragIndicator: HTMLElement;
     private updatedInstance: HTMLElement;
+    private selectionType: string;
 
     /**
      * Initialize the event handler
@@ -1117,6 +1118,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let index: number;
         let chipNodes: HTMLElement;
         let chipValue: string | number | null = null;
+        this.selectionType = selectionType;
         if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 const chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
@@ -1360,19 +1362,30 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         const chipCollValue: string[] = [];
         let chip: string | number | null = null;
         let value: string | null = null;
+
+        const isValueBased: boolean = typeof this.selectedChips === 'string' || this.selectionType === 'value' ||
+                                      (Array.isArray(this.selectedChips) && this.selectedChips.length > 0 &&
+                                       typeof this.selectedChips[0] === 'string');
+
         for (let i: number = 0; i < chipListEle.length; i++) {
             const selectedEle: Element = this.element.querySelectorAll('.' + classNames.chip)[i as number];
             if (selectedEle.getAttribute('aria-selected') === 'true') {
                 value = selectedEle.getAttribute('data-value');
                 if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {
-                    chip = value ? value : i;
+                    chip = isValueBased && value ? value : i;
                     break;
                 } else {
-                    chip = value ? chipCollValue.push(value) : chipCollIndex.push(i);
+                    if (isValueBased && value) {
+                        chipCollValue.push(value);
+                    } else {
+                        chipCollIndex.push(i);
+                    }
                 }
             }
         }
-        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : value ? chipCollValue : chipCollIndex }, true);
+        this.setProperties({
+            selectedChips: this.selection === 'Single' ? chip : (chipCollValue.length > 0 ? chipCollValue : chipCollIndex)
+        }, true);
     }
 
     private deleteHandler(chipWrapper: HTMLElement, index: number): void {

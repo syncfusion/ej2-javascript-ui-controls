@@ -154,7 +154,7 @@ export class UnProtectDocumentDialog {
         if (!this.target) {
             this.initDialog(this.localObj);
         }
-        this.documentHelper.dialog.header = 'Unprotect Document';
+        this.documentHelper.dialog.header = this.localObj.getConstant('Unprotect Document');
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.content = this.target;
@@ -178,7 +178,7 @@ export class UnProtectDocumentDialog {
         const password: string = this.passwordTextBox.value;
         const empty: string = '';
         if (password.length === empty.length && password === empty) {
-            DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
+            DialogUtility.alert({title: this.localObj.getConstant('Information'), content: this.localObj.getConstant('The password is incorrect')});
             return;
         }
         this.viewer.owner.editorModule.stopProtection(password);

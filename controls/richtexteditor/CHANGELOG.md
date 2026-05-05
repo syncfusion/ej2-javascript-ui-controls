@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I825108` - Now, HTML content is restructured during paste to match the formatting and behavior of content loaded in the Rich Text Editor.
+
+- `#I818640` - Now, the AI response correctly replaces the manually selected content when inserted using the AI Assistant.
+
+- `#I828855` - Now, the adjacent text stays on the same line, and clear formatting works properly when removing bold formatting in the Rich Text Editor.
+
 ## 33.2.4 (2026-04-28)
 
 ### RichTextEditor

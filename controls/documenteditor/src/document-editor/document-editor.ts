@@ -2682,6 +2682,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let picturePositionY = this.picturePositionY;
         // to check whether the selection is empty =true, open the pic content control dialog 
         if (this.selection.isEmpty) {
+            this.editor.insertContentControl('Picture');
             this.renderPictureContentControlElement(this, showPicCCButton, pictureElement, picturePositionY);
         }
         // to check whether selected image have content control =false , apply content control    

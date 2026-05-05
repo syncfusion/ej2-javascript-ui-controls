@@ -2035,7 +2035,7 @@ describe('Selection commands', ()=> {
         });
         it('parse font tag into span tag', () => {
             const value: string = rteObj.htmlEditorModule.sanitizeHelper(`<span><font color="#0070c0">Sample4</font></span>`); 
-            expect(value).toEqual(`<span><span style="color: rgb(0, 112, 192);">Sample4</span></span>`);
+            expect(value).toEqual(`<span><span style="color:#0070c0;">Sample4</span></span>`);
         });
         it('Apply font family for the list while have multiple span', () => {
             let node1: Node = document.querySelector('ol');

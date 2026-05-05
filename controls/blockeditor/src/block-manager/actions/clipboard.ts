@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BeforePasteCleanupEventArgs, BlockModel, ContentModel, ITableBlockSettings, TableCellModel, TableRowModel } from '../../models/index';
 import { BlockType } from '../../models/enums';
-import { generateUniqueId, decoupleReference, getAbsoluteOffset, isNodeAroundSpecialElements } from '../../common/utils/common';
+import { decoupleReference, getAbsoluteOffset, isNodeAroundSpecialElements } from '../../common/utils/common';
 import { findCellById, getBlockContentElement, getBlockModelById, isAtStartOfBlock } from '../../common/utils/block';
 import { findClosestParent, isElementEmpty } from '../../common/utils/dom';
 import { convertHtmlElementToBlocks, getBlockDataAsHTML, convertInlineElementsToContentModels, renderElementWithWrapper, renderContentAsHTML } from '../../common/utils/html-parser';
@@ -473,9 +473,12 @@ export class ClipboardAction {
             }});
         }
 
+        // Generate new IDs for blocks before adding them
+        const blocksToAdd: BlockModel[] = blocks.slice(!isFirstBlkProcessed ? 0 : 1)
+            .map((block: BlockModel) => this.parent.blockService.generateNewIdsForBlock(block));
+
         this.parent.blockCommand.addBulkBlocks({
-            blocks: blocks.slice(!isFirstBlkProcessed ? 0 : 1)
-                .map((block: BlockModel) => this.parent.blockService.generateNewIdsForBlock(block)),
+            blocks: blocksToAdd,
             targetBlockId: cursorBlockElement.id,
             isUndoRedoAction: isUndoRedoAction,
             insertionType: 'blocks',
@@ -487,6 +490,11 @@ export class ClipboardAction {
         });
 
         this.parent.observer.notify('triggerBlockChange', this.parent.eventService.getChanges());
+
+        // Handle auto-focus after image paste
+        // Pass information about what was pasted (including first block if it was processed)
+        const allPastedBlocks: BlockModel[] = isFirstBlkProcessed ? [blocks[0], ...blocksToAdd] : blocksToAdd;
+        this.handleAutoFocusAfterImagePaste(allPastedBlocks);
     }
 
     private handleCodeBlockContentPaste(content: string, blockModel: BlockModel): void {
@@ -764,6 +772,106 @@ export class ClipboardAction {
             text = await (navigator as any).clipboard.readText();
         }
         this.performPasteOperation({ html, text, file: file as File});
+    }
+
+    /**
+     * Detects if all pasted blocks are image-only blocks.
+     *
+     * @param {BlockModel[]} blocks - The blocks to check
+     * @returns {boolean} True if all blocks are Image type
+     * @hidden
+     */
+    private isImageOnlyPaste(blocks: BlockModel[]): boolean {
+        if (!blocks || blocks.length === 0) {
+            return false;
+        }
+        return blocks.every((block: BlockModel) => block.blockType === BlockType.Image);
+    }
+
+    /**
+     * Checks if a block has a following block in the editor.
+     *
+     * @param {BlockModel} block - The block to check
+     * @returns {boolean} True if block has a next sibling block
+     * @hidden
+     */
+    private hasNextBlock(block: BlockModel): boolean {
+        const editorBlocks: BlockModel[] = this.parent.getEditorBlocks();
+        const blockIndex: number = editorBlocks.findIndex((b: BlockModel) => b.id === block.id);
+        return blockIndex !== -1 && blockIndex < editorBlocks.length - 1;
+    }
+
+    /**
+     * Creates an empty Paragraph block and adds it after the image block.
+     *
+     * @param {BlockModel[]} pastedBlocks - The blocks that were pasted
+     * @returns {void}
+     * @hidden
+     */
+    public handleAutoFocusAfterImagePaste(pastedBlocks: BlockModel[]): void {
+        if (!this.isImageOnlyPaste(pastedBlocks) || pastedBlocks.length === 0) {
+            return;
+        }
+
+        const editorBlocks: BlockModel[] = this.parent.getEditorBlocks();
+        const lastPastedBlock: BlockModel = pastedBlocks[pastedBlocks.length - 1];
+        const lastPastedBlockModel: BlockModel = getBlockModelById(lastPastedBlock.id, editorBlocks);
+
+        if (!lastPastedBlockModel) {
+            return;
+        }
+
+        // Check if there's a next block after the pasted image
+        const blockIndex: number = editorBlocks.findIndex((b: BlockModel) => b.id === lastPastedBlockModel.id);
+        let blockToFocus: BlockModel | null = null;
+        let shouldCreateParagraph: boolean = false;
+
+        if (blockIndex !== -1 && blockIndex < editorBlocks.length - 1) {
+            // There IS a next block
+            const nextBlock: BlockModel = editorBlocks[blockIndex + 1];
+            // If next block is an IMAGE, create a paragraph for typing
+            if (nextBlock.blockType === BlockType.Image) {
+                shouldCreateParagraph = true;
+            } else {
+                // Next block is not an image, just focus on it
+                blockToFocus = nextBlock;
+            }
+        } else {
+            // There is NO next block - create a new paragraph
+            shouldCreateParagraph = true;
+        }
+
+        // Create paragraph if needed (image pasted before another image, or at end of document)
+        if (shouldCreateParagraph) {
+            // Begin batch for undo/redo
+            this.parent.undoRedoAction.beginBatchTransform();
+
+            // Add the new Paragraph block after the last pasted image block
+            const targetBlockElement: HTMLElement = this.parent.getBlockElementById(lastPastedBlockModel.id);
+            blockToFocus = this.parent.blockCommand.addBlock({
+                targetBlock: targetBlockElement,
+                blockType: BlockType.Paragraph,
+                isAfter: true
+            });
+
+            // End batch for undo/redo
+            this.parent.undoRedoAction.endBatchTransform();
+        }
+
+        // Set focus to the target block
+        setTimeout(() => {
+            if (blockToFocus) {
+                const blockElement: HTMLElement = this.parent.getBlockElementById(blockToFocus.id);
+                if (blockElement) {
+                    this.parent.setFocusToBlock(blockElement);
+                    this.parent.togglePlaceholder(this.parent.currentFocusedBlock, true);
+                    const contentElement: HTMLElement = getBlockContentElement(blockElement);
+                    if (contentElement) {
+                        setCursorPosition(contentElement, 0);
+                    }
+                }
+            }
+        }, 0);
     }
 
     public destroy(): void {

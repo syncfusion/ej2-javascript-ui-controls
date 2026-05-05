@@ -2502,3 +2502,66 @@ describe('EJ2-1020711: ColumnChooser with Virtualization and AdaptiveUI - Script
         gridObj = null;
     });
 });
+
+describe('Coverage - VirtualScroll scrollListener - enableVirtualMaskRow and showAddNewRow coverage', () => {
+    let gridObj: Grid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualMaskRow: false,
+                enableVirtualization: true,
+                isVirtualAdaptive: true,
+                groupSettings: { columns: ['CustomerID'], enableLazyLoading: false },
+                editSettings: { allowEditing: true, allowAdding: true, showAddNewRow: true, newRowPosition: 'Top'},
+                columns: [
+                    { field: 'OrderID', headerText: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'CustomerID', width: 120 },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 130 }
+                ]
+            }, done);
+    });
+
+    it('scrollListener - else branch when enableVirtualMaskRow is false and if branch when showAddNewRow is true', () => {
+        expect(gridObj.enableVirtualMaskRow).toBe(false);
+        expect(gridObj.editSettings.showAddNewRow).toBe(true);
+
+        const contentModule = (gridObj as any).contentModule;
+        
+        let showMaskRowCalled = false;
+        let addShimmerEffectCalled = false;
+        let closeEditCalled = false;
+        
+        const originalShowMaskRow = gridObj.showMaskRow;
+        const originalAddShimmerEffect = gridObj.addShimmerEffect;
+        const originalCloseEdit = (gridObj as any).closeEdit;
+        
+        gridObj.showMaskRow = function() { showMaskRowCalled = true; };
+        gridObj.addShimmerEffect = function() { addShimmerEffectCalled = true; };
+        (gridObj as any).closeEdit = function() { closeEditCalled = true; };
+
+        const scrollArgs = {
+            direction: 'down',
+            sentinel: { 
+                axis: 'Y',
+                boundingClientRect: { top: 0, left: 0, bottom: 100, right: 100, width: 100, height: 100 }
+            },
+            offset: { top: 100, left: 0 }
+        };
+        contentModule.scrollListener(scrollArgs);
+        expect(showMaskRowCalled).toBe(false);
+        expect(addShimmerEffectCalled).toBe(false);
+        expect(closeEditCalled).toBe(true);
+        expect(gridObj.islazyloadRequest).toBe(false);
+        gridObj.showMaskRow = originalShowMaskRow;
+        gridObj.addShimmerEffect = originalAddShimmerEffect;
+        (gridObj as any).closeEdit = originalCloseEdit;
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

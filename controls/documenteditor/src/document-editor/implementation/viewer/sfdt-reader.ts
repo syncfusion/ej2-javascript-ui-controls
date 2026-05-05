@@ -4188,6 +4188,8 @@ export class SfdtReader {
                 return "RectangularCallout";
             case 137:
                 return 'CloudCallout';
+            case 138:
+                return 'LineCallout1NoBorder';
             default:
                 return autoShapeType as AutoShapeType;
         }

@@ -10,6 +10,8 @@
 
 - `#F198188` - An issue with range selection when using mouse dragging with mouse wheel scrolling in File Manager component has been resolved.
 
+- `#I825545` - An issue with detached event not released on destruction in File Manager component has been resolved.
+
 ## 33.1.47 (2026-04-07)
 
 ### FileManager

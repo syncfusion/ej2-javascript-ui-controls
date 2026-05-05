@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I830700` - Resolved an issue when pressing the cancel button in spell check dialog.
+
 ## 33.2.4 (2026-04-28)
 
 ### DocumentEditor

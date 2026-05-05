@@ -453,7 +453,7 @@ export class Render {
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);
         if (isTrigger) {
-            if (!this.parent.isInitialLoad) {
+            if (!this.parent.isInitialLoad && this.parent.focusModule) {
                 this.parent.focusModule.setFirstFocusableTabIndex();
             }
             this.parent.trigger(events.dataBound, {});
@@ -508,11 +508,11 @@ export class Render {
                 || ((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format &&
                 typeof (<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format === 'string'))) {
                 if (((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).skeleton
-                    || ((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format)
+                    || ((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format))
                     && isNullOrUndefined((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).type)
                     && (columns[parseInt(i.toString(), 10)].type === 'date'
-                    || columns[parseInt(i.toString(), 10)].type === 'datetime'))) {
-                    (<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).type = columns[parseInt(i.toString(), 10)].type;
+                    || columns[parseInt(i.toString(), 10)].type === 'datetime')) {
+                    (<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).type = columns[parseInt(i.toString(), 10)].type === 'date' ? 'date' : 'dateTime';
                 }
                 columns[parseInt(i.toString(), 10)].setFormatter(
                     valueFormatter.getFormatFunction(extend({}, columns[parseInt(i.toString(), 10)].format as DateFormatOptions)));
@@ -823,7 +823,7 @@ export class Render {
         }
         this.parent.currentViewData = [];
         this.renderEmptyRow();
-        if (!this.parent.isInitialLoad) {
+        if (!this.parent.isInitialLoad && this.parent.focusModule) {
             this.parent.focusModule.setFirstFocusableTabIndex();
         }
         this.parent.log('actionfailure', { error: e });

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.5 (2026-05-05)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed an issue where the hyperlink annotation bounds were undefined when licensing was enabled.
+- Fixed an issue where incorrect bounds collection values were retrieved from text markup annotations.
+
 ## 33.2.4 (2026-04-28)
 
 ### PDF

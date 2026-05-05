@@ -680,7 +680,9 @@ export class Selection {
                 range = this.parent.getActiveSheet().selectedRange;
             }
             const lastRange: string[] = range.split(' ');
-            this.parent.notify(addressHandle, { range: lastRange[lastRange.length - 1], isSelect: false });
+            this.parent.notify(addressHandle, {
+                range: getRangeAddress(getSwapRange(getRangeIndexes(lastRange[lastRange.length - 1] as string))), isSelect: false
+            });
         }
     }
 

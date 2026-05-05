@@ -386,7 +386,7 @@
 }
 
 @mixin outline-success-disabled {
-  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+  @if $skin-name == 'bootstrap5' {
     background: $btn-outline-success-disabled-border-color;
   }
   @else {
@@ -398,7 +398,7 @@
 }
 
 @mixin outline-info-disabled {
-  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+  @if $skin-name == 'bootstrap5' {
     background: $btn-info-disabled-border-color;
   }
   @else {
@@ -410,7 +410,7 @@
 }
 
 @mixin outline-warning-disabled {
-  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+  @if $skin-name == 'bootstrap5' {
     background: $btn-outline-warning-disabled-border-color;
   }
   @else {
@@ -422,7 +422,7 @@
 }
 
 @mixin outline-danger-disabled {
-  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+  @if $skin-name == 'bootstrap5' {
     background: $btn-outline-danger-disabled-border-color;
   }
   @else {

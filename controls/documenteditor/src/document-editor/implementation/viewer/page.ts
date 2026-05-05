@@ -2893,6 +2893,13 @@ export class TableWidget extends BlockWidget {
     public updateWidth(dragValue: number, isCurrentTableResizing?: boolean, isLastColumn?: boolean): void {
         let totalPreferredWidth: number = this.tableHolder.getTotalWidth(0);
         let ownerWidth: number = this.getOwnerWidth(true);
+        // Mirror the container used by buildTableColumns so the percent math stays consistent
+        // for percent-width tables rendered in Web layout.
+        if (!isNullOrUndefined(this.bodyWidget) && !isNullOrUndefined(this.bodyWidget.page)
+            && this.bodyWidget.page.viewer instanceof WebLayoutViewer && this.tableFormat.preferredWidthType === 'Percent'
+        && !this.isInsideTable && !(this.containerWidget instanceof TextFrame)) {
+            ownerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
+        }
         let containerWidth: number = this.getTableClientWidth(ownerWidth);
         // if (containerWidth <= totalPreferredWidth) {
         //     if (this.tableFormat.preferredWidthType === 'Auto') {
@@ -10539,7 +10546,7 @@ export class WTableHolder {
             for (let i: number = 0; i < this.columns.length; i++) {
                 let column: WColumn = this.columns[i];
                 if (column.widthType === 'Percent' && !isAutoWidth && !isAutoFit && totalColumnWidth > this.tableWidth) {
-                    if (i !== 0 && column.endOffset > this.tableWidth) {
+                    if (i !== 0 && HelperMethods.round(column.endOffset, 2) > HelperMethods.round(this.tableWidth, 2)) {
                         let totalCellWidth: number = this.getCellWidth(0, i + 1, preferredTableWidth);
                         if (totalCellWidth > this.tableWidth) {
                             column.preferredWidth -= (totalCellWidth - this.tableWidth);

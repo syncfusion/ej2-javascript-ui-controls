@@ -1689,7 +1689,7 @@ export class Edit {
         } else if (this.parent.activeSheetIndex === sheetIdx) {
             const editorContent: string = document.activeElement.classList.contains('e-formula-bar') ?
                 (document.activeElement as HTMLTextAreaElement).value : editorEle.textContent;
-            if (args.isNameBoxSelect) {
+            if (args.isNameBoxSelect && this.parent.isEdit) {
                 this.parent.notify(initiateFormulaReference, { range: editedValue + address, formulaSheetIdx: sheetIdx });
                 this.curStartPos = editedValue.length;
             }
@@ -1718,7 +1718,8 @@ export class Edit {
         const value: string = this.editCellData.value;
         const lastRange: string[] = this.parent.getActiveSheet().selectedRange.split(' ');
         let address: string = lastRange[lastRange.length - 1];
-        address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
+        address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] :
+            getRangeAddress(getSwapRange(getRangeIndexes(address)));
         address = this.getMergedAddress(address);
         const formulaBar: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
         if (value && checkIsFormula(value, true)) {

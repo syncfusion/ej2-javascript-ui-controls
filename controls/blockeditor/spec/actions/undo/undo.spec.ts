@@ -4730,129 +4730,201 @@ describe('UndoRedo', () => {
             remove(editorElement);
         });
 
-        // Helper to simulate HTML paste
-        function simulateHtmlPaste(html: string, targetBlockId: string = 'p1') {
-            const targetBlock = editorElement.querySelector(`#${targetBlockId}`) as HTMLElement;
-            const content = getBlockContentElement(targetBlock);
-            editor.blockManager.setFocusToBlock(targetBlock);
-            setCursorPosition(content, content.textContent.length);
+        // Helper to simulate HTML paste and wait for async operations to complete
+        function simulateHtmlPaste(html: string, targetBlockId: string = 'p1'): Promise<void> {
+            return new Promise((resolve) => {
+                const targetBlock = editorElement.querySelector(`#${targetBlockId}`) as HTMLElement;
+                const content = getBlockContentElement(targetBlock);
+                editor.blockManager.setFocusToBlock(targetBlock);
+                setCursorPosition(content, content.textContent.length);
 
-            const payload: IClipboardPayloadOptions = {
-                html,
-                text: '',
-                file: null,
-                blockeditorData: null
-            };
+                const payload: IClipboardPayloadOptions = {
+                    html,
+                    text: '',
+                    file: null,
+                    blockeditorData: null
+                };
 
-            editor.blockManager.clipboardAction.performPasteOperation(payload);
+                editor.blockManager.clipboardAction.performPasteOperation(payload);
+                
+                // Wait for async operations (setTimeout calls in rendering and handleAutoFocusAfterImagePaste)
+                setTimeout(() => {
+                    resolve();
+                }, 150);
+            });
         }
 
-        it('Paste image into empty paragraph, UNDO REDO', () => {
+        it('Paste image into empty paragraph, UNDO REDO', (done) => {
             const html = `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="transparent">`;
 
-            simulateHtmlPaste(html, 'p2');
+            simulateHtmlPaste(html, 'p2').then(() => {
+                // After paste: p2 block is transformed from Paragraph to Image
+                let imageBlock = editor.blocks.find(b => b.id === 'p2');
+                expect(imageBlock).not.toBeNull();
+                expect(imageBlock.blockType).toBe(BlockType.Image);
+                expect((imageBlock.properties as IImageBlockSettings).src).toContain('data:image/gif;base64,');
 
-            // After paste
-            let imageBlock = editor.blocks.find(b => b.id === 'p2');
-            expect(imageBlock.blockType).toBe(BlockType.Image);
-            expect((imageBlock.properties as IImageBlockSettings).src).toContain('data:image/gif;base64,');
+                // Image is wrapped in an e-image-container div within the block
+                const blockEl = editorElement.querySelector('#p2') as HTMLElement;
+                expect(blockEl).not.toBeNull();
+                const containerEl = blockEl.querySelector('.e-image-container') as HTMLElement;
+                expect(containerEl).not.toBeNull();
+                const imgEl = containerEl.querySelector('img.e-image-block') as HTMLImageElement;
+                expect(imgEl).not.toBeNull();
+                expect(imgEl.src).toContain('data:image/gif;base64,');
 
-            const imgEl = editorElement.querySelector('#p2 img') as HTMLImageElement;
-            expect(imgEl.src).toContain('data:image/gif;base64,');
+                // Wait a bit before UNDO to allow all operations to settle
+                // Using 200ms timeout (larger than internal 100ms setTimeout)
+                setTimeout(() => {
+                    // UNDO: should restore to empty paragraph
+                    triggerUndo(editorElement);
+                    triggerUndo(editorElement);
 
-            // UNDO
-            triggerUndo(editorElement);
+                    setTimeout(() => {
+                        const restoredBlock = editor.blocks.find(b => b.id === 'p2');
+                        expect(restoredBlock).not.toBeNull();
+                        expect(restoredBlock.blockType).toBe(BlockType.Paragraph);
+                        expect(restoredBlock.content[0].content).toBe(''); // empty paragraph restored
 
-            const restoredBlock = editor.blocks.find(b => b.id === 'p2');
-            expect(restoredBlock.blockType).toBe(BlockType.Paragraph);
-            expect(restoredBlock.content[0].content).toBe(''); // empty paragraph restored
+                        const restoredEl = editorElement.querySelector('#p2') as HTMLElement;
+                        expect(restoredEl).not.toBeNull();
+                        expect(restoredEl.querySelector('.e-image-container')).toBeNull();
+                        expect(restoredEl.querySelector('img')).toBeNull();
+                        expect(getBlockContentElement(restoredEl).textContent).toBe('');
 
-            const restoredEl = editorElement.querySelector('#p2') as HTMLElement;
-            expect(restoredEl.classList.contains('e-image-block')).toBe(false);
-            expect(restoredEl.querySelector('img')).toBeNull();
+                        // REDO: should restore image block
+                        triggerRedo(editorElement);
 
-            expect(getBlockContentElement(restoredEl).textContent).toBe('');
+                        setTimeout(() => {
+                            imageBlock = editor.blocks.find(b => b.id === 'p2');
+                            expect(imageBlock).not.toBeNull();
+                            expect(imageBlock.blockType).toBe(BlockType.Image);
+                            expect((imageBlock.properties as IImageBlockSettings).src).toContain('data:image/gif;base64,');
 
-            // REDO
-            triggerRedo(editorElement)
-
-            imageBlock = editor.blocks.find(b => b.id === 'p2');
-            expect(imageBlock.blockType).toBe(BlockType.Image);
-            expect((imageBlock.properties as IImageBlockSettings).src).toContain('data:image/gif;base64,');
-
-            const redoImgEl = editorElement.querySelector('#p2 img') as HTMLImageElement;
-            expect(redoImgEl.src).toContain('data:image/gif;base64,');
+                            const redoBlockEl = editorElement.querySelector('#p2') as HTMLElement;
+                            const redoContainerEl = redoBlockEl.querySelector('.e-image-container') as HTMLElement;
+                            expect(redoContainerEl).not.toBeNull();
+                            const redoImgEl = redoContainerEl.querySelector('img.e-image-block') as HTMLImageElement;
+                            expect(redoImgEl).not.toBeNull();
+                            expect(redoImgEl.src).toContain('data:image/gif;base64,');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 200);
+            });
         });
 
-        it('Paste image into non-empty paragraph, UNDO REDO', () => {
+        it('Paste image into non-empty paragraph, UNDO REDO', (done) => {
             const html = `<img src="https://picsum.photos/200/300" alt="Random photo">`;
 
-            simulateHtmlPaste(html, 'p1');
+            simulateHtmlPaste(html, 'p1').then(() => {
+                // After paste: new image block inserted after p1
+                const p1Index = editor.blocks.findIndex(b => b.id === 'p1');
+                const imageBlock = editor.blocks[p1Index + 1];
+                expect(imageBlock).not.toBeNull();
+                expect(imageBlock.blockType).toBe(BlockType.Image);
+                expect((imageBlock.properties as IImageBlockSettings).src).toBe('https://picsum.photos/200/300');
 
-            // After paste: new image block inserted after p1
-            const p1Index = editor.blocks.findIndex(b => b.id === 'p1');
-            const imageBlock = editor.blocks[p1Index + 1];
-            expect(imageBlock.blockType).toBe(BlockType.Image);
-            expect((imageBlock.properties as IImageBlockSettings).src).toBe('https://picsum.photos/200/300');
+                // Image block is next sibling of p1, wrapped in e-image-container
+                const imageBlockEl = editorElement.querySelector('#p1').nextElementSibling as HTMLElement;
+                expect(imageBlockEl).not.toBeNull();
+                const containerEl = imageBlockEl.querySelector('.e-image-container') as HTMLElement;
+                expect(containerEl).not.toBeNull();
+                const imgEl = containerEl.querySelector('img.e-image-block') as HTMLImageElement;
+                expect(imgEl).not.toBeNull();
+                expect(imgEl.src).toBe('https://picsum.photos/200/300');
 
-            const imageEl = editorElement.querySelector('#p1').nextElementSibling as HTMLElement;
-            expect(imageEl.querySelector('img').src).toBe('https://picsum.photos/200/300');
+                // Wait before UNDO (using 200ms timeout, larger than internal 100ms)
+                setTimeout(() => {
+                    // UNDO: should remove image block, p2 becomes next sibling
+                    triggerUndo(editorElement);
 
-            // UNDO
-            triggerUndo(editorElement);
+                    setTimeout(() => {
+                        expect(editor.blocks.length).toBe(2); // back to original
+                        expect(editor.blocks.find(b => b.blockType === BlockType.Image)).toBeUndefined();
 
-            expect(editor.blocks.length).toBe(2); // back to original
-            expect(editor.blocks.find(b => b.blockType === BlockType.Image)).toBeUndefined();
+                        // Verify no image elements exist
+                        expect(editorElement.querySelector('.e-image-container')).toBeNull();
+                        expect(editorElement.querySelector('img.e-image-block')).toBeNull();
+                        
+                        // Verify p2 is the next sibling of p1
+                        const p1NextSibling = editorElement.querySelector('#p1').nextElementSibling as HTMLElement;
+                        const p2 = editorElement.querySelector('#p2') as HTMLElement;
+                        expect(p1NextSibling.id).toBe(p2.id);
 
-            expect(editorElement.querySelector('.e-image-block')).toBeNull();
-            expect(editorElement.querySelector('#p1').nextElementSibling.id).toBe(editorElement.querySelector('#p2').id); // p2
+                        // REDO: image block should be restored between p1 and p2
+                        triggerRedo(editorElement);
 
-            // REDO
-            triggerRedo(editorElement)
+                        setTimeout(() => {
+                            const redoImageBlock = editor.blocks[p1Index + 1];
+                            expect(redoImageBlock).not.toBeNull();
+                            expect(redoImageBlock.blockType).toBe(BlockType.Image);
+                            expect((redoImageBlock.properties as IImageBlockSettings).src).toBe('https://picsum.photos/200/300');
 
-            const redoImageBlock = editor.blocks[p1Index + 1];
-            expect(redoImageBlock.blockType).toBe(BlockType.Image);
-            expect((redoImageBlock.properties as IImageBlockSettings).src).toBe('https://picsum.photos/200/300');
-
-            const redoImageEl = editorElement.querySelector('#p1').nextElementSibling as HTMLElement;
-            expect(redoImageEl.querySelector('img').src).toBe('https://picsum.photos/200/300');
+                            const redoImageBlockEl = editorElement.querySelector('#p1').nextElementSibling as HTMLElement;
+                            const redoContainerEl = redoImageBlockEl.querySelector('.e-image-container') as HTMLElement;
+                            expect(redoContainerEl).not.toBeNull();
+                            const redoImgEl = redoContainerEl.querySelector('img.e-image-block') as HTMLImageElement;
+                            expect(redoImgEl).not.toBeNull();
+                            expect(redoImgEl.src).toBe('https://picsum.photos/200/300');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 200);
+            });
         });
 
-        it('Paste multiple images in one paste, UNDO REDO', () => {
+        it('Paste multiple images in one paste, UNDO REDO', (done) => {
             const html = `
                 <img src="https://example.com/img1.jpg" alt="First">
                 <img src="https://example.com/img2.jpg" alt="Second">
             `;
 
-            simulateHtmlPaste(html);
+            simulateHtmlPaste(html).then(() => {
+                // After paste: two image blocks are inserted
+                const imageBlocks = editor.blocks.filter(b => b.blockType === BlockType.Image);
+                expect(imageBlocks.length).toBe(2);
+                expect((imageBlocks[0].properties as IImageBlockSettings).src).toContain('img1.jpg');
+                expect((imageBlocks[1].properties as IImageBlockSettings).src).toContain('img2.jpg');
 
-            // After paste
-            const imageBlocks = editor.blocks.filter(b => b.blockType === BlockType.Image);
-            expect(imageBlocks.length).toBe(2);
-            expect((imageBlocks[0].properties as IImageBlockSettings).src).toContain('img1.jpg');
-            expect((imageBlocks[1].properties as IImageBlockSettings).src).toContain('img2.jpg');
+                // Verify image elements are rendered in their containers
+                const imgContainers: NodeListOf<HTMLElement> = editorElement.querySelectorAll('.e-image-container');
+                expect(imgContainers.length).toBe(2);
+                const imgs: NodeListOf<HTMLImageElement> = editorElement.querySelectorAll('img.e-image-block');
+                expect(imgs.length).toBe(2);
+                expect(imgs[0].alt).toBe('First');
+                expect(imgs[1].alt).toBe('Second');
 
-            const imgs: NodeListOf<HTMLImageElement> = editorElement.querySelectorAll('img');
-            expect(imgs.length).toBe(2);
-            expect(imgs[0].alt).toBe('First');
-            expect(imgs[1].alt).toBe('Second');
+                // Wait before UNDO
+                setTimeout(() => {
+                    // UNDO - both images removed at once (batch operation)
+                    triggerUndo(editorElement);
 
-            // UNDO - both images removed at once
-            triggerUndo(editorElement);
+                    setTimeout(() => {
+                        expect(editor.blocks.filter(b => b.blockType === BlockType.Image).length).toBe(0);
+                        expect(editorElement.querySelector('.e-image-container')).toBeNull();
+                        expect(editorElement.querySelector('img.e-image-block')).toBeNull();
 
-            expect(editor.blocks.filter(b => b.blockType === BlockType.Image).length).toBe(0);
-            expect(editorElement.querySelector('.e-image-block')).toBeNull();
+                        // REDO - both images restored
+                        triggerRedo(editorElement);
 
-            // REDO - both restored
-            triggerRedo(editorElement)
+                        setTimeout(() => {
+                            const restoredImages = editor.blocks.filter(b => b.blockType === BlockType.Image);
+                            expect(restoredImages.length).toBe(2);
+                            expect((restoredImages[0].properties as IImageBlockSettings).src).toContain('img1.jpg');
+                            expect((restoredImages[1].properties as IImageBlockSettings).src).toContain('img2.jpg');
 
-            const restoredImages = editor.blocks.filter(b => b.blockType === BlockType.Image);
-            expect(restoredImages.length).toBe(2);
-            expect((restoredImages[0].properties as IImageBlockSettings).src).toContain('img1.jpg');
-
-            const restoredImgs: NodeListOf<HTMLImageElement> = editorElement.querySelectorAll('img');
-            expect(restoredImgs.length).toBe(2);
-            expect(restoredImgs[0].alt).toBe('First');
+                            const restoredContainers: NodeListOf<HTMLElement> = editorElement.querySelectorAll('.e-image-container');
+                            expect(restoredContainers.length).toBe(2);
+                            const restoredImgs: NodeListOf<HTMLImageElement> = editorElement.querySelectorAll('img.e-image-block');
+                            expect(restoredImgs.length).toBe(2);
+                            expect(restoredImgs[0].alt).toBe('First');
+                            expect(restoredImgs[1].alt).toBe('Second');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 200);
+            });
         });
     });
 

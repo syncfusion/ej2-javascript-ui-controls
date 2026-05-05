@@ -34,7 +34,9 @@ export function wrapperInitialize(
         element.classList.add(role);
         element.classList.remove(role);
         setValue('ej2_instances', ejInstance, input);
-        deleteObject(element, 'ej2_instances');
+        if (element.tagName !== 'EJS-CHECKBOX') {
+            deleteObject(element, 'ej2_instances');
+        }
     }
     return input;
 }

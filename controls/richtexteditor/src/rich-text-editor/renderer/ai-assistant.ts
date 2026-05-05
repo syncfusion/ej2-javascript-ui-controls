@@ -840,6 +840,13 @@ export class AIAssistant {
     }
 
     private handleInsertContent(response: string): void {
+        const range: Range = this.parent.getRange();
+        if (this.parent.isRTEFocused && this.parent.inputElement.contains(range.startContainer)) {
+            this.updateCurrentSelection();
+        }
+        if (this.parent.isSelectAll) {
+            this.isProcessWholeEditorContent = true;
+        }
         this.currentSelection.restore();
         const actionBeginArgs: ActionBeginEventArgs = {
             requestType: 'AIAssistant',
@@ -853,6 +860,7 @@ export class AIAssistant {
         this.parent.formatter.process(this.parent, actionBeginArgs, null, {
             selection: this.currentSelection
         });
+        this.isProcessWholeEditorContent = false;
     }
 
     private beforeMenuOpen(args: MenuOpenCloseEventArgs): void {
