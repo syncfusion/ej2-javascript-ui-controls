@@ -3918,6 +3918,9 @@ export class TaskProcessor extends DateProcessor {
                     const prop: ITaskData = parentRec ? parentRec.ganttProperties : ganttProp;
                     startDate = ((isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) && !isParentUnschecule) ?
                         ganttProp.startDate : this.getValidStartDate(rec.ganttProperties);
+                    if (isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) {
+                        this.parent.setRecordValue('left', this.getTaskLeft(startDate, false, rec.ganttProperties.calendarContext), rec.ganttProperties, true);
+                    }
                     if (parentData.hasChildRecords && !prop.isAutoSchedule
                         && !isNullOrUndefined(rec.ganttProperties.autoStartDate)) {
                         startDate = rec.ganttProperties.autoStartDate;
@@ -3925,6 +3928,9 @@ export class TaskProcessor extends DateProcessor {
                     endDate = ((isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) && !isParentUnschecule) ?
                         this.getEndDate(ganttProp.startDate, rec.ganttProperties.duration, rec.ganttProperties.durationUnit,
                                         rec.ganttProperties, false) : this.getValidEndDate(rec.ganttProperties);
+                    if (isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) {
+                        this.parent.setRecordValue('width', this.getTaskWidth(startDate, endDate, rec.ganttProperties), rec.ganttProperties, true);
+                    }
                     if (parentData.hasChildRecords && !prop.isAutoSchedule
                         && !isNullOrUndefined(rec.ganttProperties.autoEndDate)) {
                         endDate = rec.ganttProperties.autoEndDate;

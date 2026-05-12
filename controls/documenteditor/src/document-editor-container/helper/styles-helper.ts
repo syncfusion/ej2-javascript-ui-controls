@@ -192,13 +192,15 @@ export class StylesHelper {
         const characterFormat: any = documentEditor.selection.characterFormat;
         const paragraphFormat: any = documentEditor.selection.paragraphFormat;
         
-        if (paragraphFormat && paragraphFormat.styleName) {
+        if (characterFormat && characterFormat.styleName &&
+            characterFormat.styleName !== 'Default Paragraph Font') {
+            const localeValue: string = localObj.getConstant(characterFormat.styleName);
+            return (isNullOrUndefined(localeValue) || localeValue == '') ? characterFormat.styleName : localeValue;
+        }
+        else if (paragraphFormat && paragraphFormat.styleName) {
             const localeValue: string = localObj.getConstant(paragraphFormat.styleName);
             return (isNullOrUndefined(localeValue) || localeValue == '') ? paragraphFormat.styleName : localeValue;
-        } else if (characterFormat && characterFormat.styleName &&
-            characterFormat.styleName !== 'Default Paragraph Font') {
-            return localObj.getConstant(characterFormat.styleName);
-        }
+        } 
 
         return 'Normal';
     }

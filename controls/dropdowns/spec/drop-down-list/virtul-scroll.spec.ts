@@ -450,6 +450,34 @@ describe('DDList_Virtualization', () => {
                 }, 500);
             });
         });
+        describe('Virtualization Index', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let dropObj: any;
+            let ele: HTMLElement;
+            let data = [
+                        { text: 'Both', value: '0' },
+                        { text: 'Yes', value: '1' },
+                        { text: 'No', value: '2' },
+                        ];
+            beforeAll(() => {
+                ele = createElement('input', { id: 'DropDownList' });
+                document.body.appendChild(ele);
+                dropObj = new DropDownList({
+                    dataSource: data, popupHeight: '200px', enableVirtualization: true,  fields: { text: 'text', value: 'value' },
+                });
+                dropObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                dropObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('Index preselect', () => {
+                dropObj.index = 0;
+                dropObj.dataSource = data;
+                dropObj.dataBind();
+            });
+        });
         describe('Virtualization with clear value', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
             let dropObj: any;

@@ -3747,6 +3747,68 @@ describe("Accordion Testing", () => {
         });
     });
 
+    describe("Regression: Accordion Item expanded with headerTemplate", () => {
+        let accordion: Accordion;
+        let ele: HTMLElement = createElement('div', { id: 'accordion_expanded_headertemplate' });
+        beforeAll((done: Function): void => {
+            document.body.appendChild(ele);
+            // Test: Items with expanded: true should expand on initial render when using headerTemplate
+            accordion = new Accordion({
+                headerTemplate: '<span>${header}</span>',
+                items: [
+                    { header: 'User Profile', expanded: true, content: 'User profile information goes here' },
+                    { header: 'Settings', expanded: true, content: 'Application settings content goes here' },
+                    { header: 'Security', expanded: false, content: 'Security and privacy options go here' }
+                ]
+            });
+            accordion.appendTo(ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        it("Accordion items with expanded: true and headerTemplate should be expanded on initial render", () => {
+            // Item 0: Should be expanded
+            let item0: Element = ele.children[0];
+            expect(item0.classList.contains(CLS_ACTIVE)).toBe(true);
+            let content0: Element = item0.querySelector('.' + CLS_CONTENT);
+            expect(isNOU(content0)).toBe(false);
+            expect(isVisible(content0)).toBe(true);
+            expect(content0.classList.contains(CLS_CTNHIDE)).toBe(false);
+            
+            // Item 1: Should be expanded
+            let item1: Element = ele.children[1];
+            expect(item1.classList.contains(CLS_ACTIVE)).toBe(true);
+            let content1: Element = item1.querySelector('.' + CLS_CONTENT);
+            expect(isNOU(content1)).toBe(false);
+            expect(isVisible(content1)).toBe(true);
+            expect(content1.classList.contains(CLS_CTNHIDE)).toBe(false);
+            
+            // Item 2: Should NOT be expanded
+            let item2: Element = ele.children[2];
+            expect(item2.classList.contains(CLS_ACTIVE)).toBe(false);
+            let content2: Element = item2.querySelector('.' + CLS_CONTENT);
+            // Content may not be rendered yet since it's not expanded
+            
+            // Verify expandedIndices contains indices 0 and 1
+            expect(accordion.expandedIndices.indexOf(0) !== -1).toBe(true);
+            expect(accordion.expandedIndices.indexOf(1) !== -1).toBe(true);
+            expect(accordion.expandedIndices.indexOf(2) === -1).toBe(true);
+        });
+        it("Accordion items with expanded: true should have correct aria-expanded attribute with headerTemplate", () => {
+            let item0Header: Element = ele.children[0].children[0];
+            let item1Header: Element = ele.children[1].children[0];
+            let item2Header: Element = ele.children[2].children[0];
+            
+            expect(item0Header.getAttribute('aria-expanded')).toBe('true');
+            expect(item1Header.getAttribute('aria-expanded')).toBe('true');
+            expect(item2Header.getAttribute('aria-expanded')).toBe('false');
+        });
+        afterAll((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            ele.remove();
+        });
+    });
+
     describe("Accordion dataSource Public Method with addItem Expand Testing ", () => {
         let accordion: Accordion;
         let ele: HTMLElement = createElement('div', { id: 'accordion' });

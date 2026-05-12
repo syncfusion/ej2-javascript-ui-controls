@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### ProgressButton
+
+#### Bug Fixes
+
+- `#I831927` - Fixed an issue where the ProgressButton BDS theme incorrectly used the Material 3 skin name instead of Tailwind.
+
 ## 28.1.33 (2024-12-12)
 
 ### DropDownButton

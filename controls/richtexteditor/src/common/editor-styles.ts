@@ -349,9 +349,14 @@ th.e-multi-cells-select {
     user-select: none !important;
 }
 
-.e-rte-table.e-dashed-border > tbody > tr > td,
-.e-rte-table.e-dashed-border > tbody > tr > th {
-    border-style: dashed;
+.e-rte-table,
+.e-rte-paste-table {
+  &.e-dashed-border > tbody > tr {
+    > td,
+    > th {
+      border-style: dashed;
+    }
+  }
 }
 
 .e-rte-table.e-alternate-border > tbody > tr:nth-child(2n),

@@ -39,10 +39,8 @@
 
 @mixin active-editing-theme {
   @include bg-border($treeview-item-border-color, $treeview-item-border-color);
-  @if $skin-name == 'bootstrap' {
-    -webkit-box-shadow: none;
-    box-shadow: none;
-  }
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
 
 @mixin active-font-weight {
@@ -119,6 +117,29 @@
         }
       }
 
+      &.e-node-focus {
+        > .e-fullrow {
+          box-shadow: $treeview-focus-box-shadow;
+          border: none;
+          @if $skin-name == 'fluent2' {
+            background-color: $treeview-item-focus-bg;
+          }
+        }
+
+        > .e-text-content {
+          @if $skin-name == 'fluent2' {
+            .e-list-text {
+              color: $treeview-text-focus-color;
+            }
+ 
+            .e-icon-collapsible,
+            .e-icon-expandable {
+              color: $treeview-icon-focus-color;
+            }
+          }
+        }
+      }
+
       &.e-active {
         background: transparent;
 
@@ -180,6 +201,15 @@
 
           > .e-text-content {
             @include text-content($treeview-text-active-hover-color, $treeview-icon-active-hover-color);
+          }
+        }
+
+        &.e-node-focus {
+          > .e-fullrow {
+            @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+              -webkit-box-shadow: $treeview-focus-box-shadow;
+              box-shadow: $treeview-focus-box-shadow;
+            }
           }
         }
       }
@@ -283,6 +313,15 @@
               @include active-hover-theme;
             }
           }
+
+          &.e-node-focus {
+            > .e-text-content {
+              @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+                -webkit-box-shadow: $treeview-focus-box-shadow;
+                box-shadow: $treeview-focus-box-shadow;
+              }
+            }
+          }
         }
 
         &.e-editing {
@@ -291,6 +330,18 @@
           &.e-node-focus {
             > .e-text-content {
               @include active-editing-theme;
+            }
+          }
+        }
+
+        &.e-node-focus {
+          > .e-text-content {
+            box-shadow: $treeview-focus-box-shadow;
+            @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+              border: none;
+            }
+            @if $skin-name == 'fluent2' {
+              background-color: $treeview-item-focus-bg;
             }
           }
         }

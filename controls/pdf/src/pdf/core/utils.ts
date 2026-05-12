@@ -265,39 +265,65 @@ export function _stringToPdfString(value: string): string {
  * @param {number[]} destination Destination array.
  * @returns {number[] | Uint8Array} Byte array
  */
-export function _stringToBytes(value: string, isDirect: boolean = false,
-                               isPassword: boolean = false, destination?: number[]): number[] | Uint8Array {
-    let bytes: number[] = [];
-    if (destination) {
-        bytes = destination;
-    }
+export function _stringToBytes(value: string, isDirect: boolean = false, isPassword: boolean = false,
+                               destination?: number[]): number[] | Uint8Array {
     if (isPassword) {
-        for (let i: number = 0; i < value.length; i++) {
-            bytes.push(value.charCodeAt(i));
-        }
-    } else {
-        for (let i: number = 0; i < value.length; i++) {
-            let charCode: number = value.charCodeAt(i);
-            if (charCode < 0x80) {
-                bytes.push(charCode);
-            } else if (charCode < 0x800) {
-                bytes.push((charCode >> 6) | 0xC0);
-                bytes.push((charCode & 0x3F) | 0x80);
-            } else if (charCode < 0xD800 || charCode >= 0xE000) {
-                bytes.push((charCode >> 12) | 0xE0);
-                bytes.push(((charCode >> 6) & 0x3F) | 0x80);
-                bytes.push((charCode & 0x3F) | 0x80);
-            } else {
-                i++;
-                charCode = 0x10000 + (((charCode & 0x3FF) << 10) | (value.charCodeAt(i) & 0x3FF));
-                bytes.push((charCode >> 18) | 0xF0);
-                bytes.push(((charCode >> 12) & 0x3F) | 0x80);
-                bytes.push(((charCode >> 6) & 0x3F) | 0x80);
-                bytes.push((charCode & 0x3F) | 0x80);
+        const len: number = value.length;
+        if (destination) {
+            for (let i: number = 0; i < len; i++) {
+                destination.push(value.charCodeAt(i));
             }
+            return destination;
+        }
+        const out: Uint8Array = new Uint8Array(len);
+        for (let i: number = 0; i < len; i++) {
+            out[<number>i] = value.charCodeAt(i);
+        }
+        return isDirect ? Array.from(out) : out;
+    }
+    let byteLength: number = 0;
+    for (let i: number = 0; i < value.length; i++) {
+        const c: number = value.charCodeAt(i);
+        if (c < 0x80) {
+            byteLength += 1;
+        } else if (c < 0x800) {
+            byteLength += 2;
+        } else if (c < 0xD800 || c >= 0xE000) {
+            byteLength += 3;
+        } else {
+            i++;
+            byteLength += 4;
         }
     }
-    return isDirect ? bytes : new Uint8Array(bytes);
+    const buffer: Uint8Array = new Uint8Array(byteLength);
+    let offset: number = 0;
+    for (let i: number = 0; i < value.length; i++) {
+        let c: number = value.charCodeAt(i);
+        if (c < 0x80) {
+            buffer[offset++] = c;
+        } else if (c < 0x800) {
+            buffer[offset++] = (c >> 6) | 0xC0;
+            buffer[offset++] = (c & 0x3F) | 0x80;
+        } else if (c < 0xD800 || c >= 0xE000) {
+            buffer[offset++] = (c >> 12) | 0xE0;
+            buffer[offset++] = ((c >> 6) & 0x3F) | 0x80;
+            buffer[offset++] = (c & 0x3F) | 0x80;
+        } else {
+            i++;
+            c = 0x10000 + (((c & 0x3FF) << 10) | (value.charCodeAt(i) & 0x3FF));
+            buffer[offset++] = (c >> 18) | 0xF0;
+            buffer[offset++] = ((c >> 12) & 0x3F) | 0x80;
+            buffer[offset++] = ((c >> 6) & 0x3F) | 0x80;
+            buffer[offset++] = (c & 0x3F) | 0x80;
+        }
+    }
+    if (destination) {
+        for (let i: number = 0; i < buffer.length; i++) {
+            destination.push(buffer[<number>i]);
+        }
+        return destination;
+    }
+    return isDirect ? Array.from(buffer) : buffer;
 }
 /**
  * Check equal or not.
@@ -386,18 +412,19 @@ export function _arePointsNotEqual(value: Point[], current: Point[]): boolean {
  * @returns {string} String value processed from input bytes.
  */
 export function _bytesToString(bytes: Uint8Array, isJson: boolean = false): string {
-    const length: number = bytes.length;
-    const max: number = 8192;
-    const stringBuffer: string[] = [];
-    if (length < max) {
-        return (isJson ? _decodeUnicodeBytes(bytes) : String.fromCharCode.apply(null, bytes));
+    if (!bytes || bytes.length === 0) {
+        return '';
     }
-    for (let i: number = 0; i < length; i += max) {
-        const chunkEnd: number = Math.min(i + max, length);
-        const chunk: Uint8Array = bytes.subarray(i, chunkEnd);
-        stringBuffer.push(isJson ? _decodeUnicodeBytes(chunk) : String.fromCharCode.apply(null, chunk));
+    if (isJson) {
+        return _decodeUnicodeBytes(bytes);
     }
-    return stringBuffer.join('');
+    const chunk: number = 8192;
+    let result: string = '';
+    for (let i: number = 0; i < bytes.length; i += chunk) {
+        const end: number = i + chunk < bytes.length ? i + chunk : bytes.length;
+        result += String.fromCharCode.apply(null, bytes.subarray(i, end));
+    }
+    return result;
 }
 /**
  * Decodes encoded name values by converting hexadecimal Unicode escape sequences into corresponding characters.
@@ -433,21 +460,46 @@ export function _decodeName(name: string): string {
  * @returns {string} String value processed from input bytes.
  */
 export function _decodeUnicodeBytes(bytes: Uint8Array): string {
+    const len: number = bytes.length;
+    if (len === 0) {
+        return '';
+    }
+    const chunk: number = 4096;
     let result: string = '';
+    const codeUnits: Uint16Array = new Uint16Array(chunk);
     let i: number = 0;
-    while (i < bytes.length) {
-        const byte: number = bytes[i++];
-        if (byte < 0x80) {
-            result += String.fromCharCode(byte);
-        } else if (byte < 0xE0) {
-            result += String.fromCharCode(((byte & 0x1F) << 6) | (bytes[i++] & 0x3F));
-        } else if (byte < 0xF0) {
-            result += String.fromCharCode(((byte & 0x0F) << 12) | ((bytes[i++] & 0x3F) << 6) | (bytes[i++] & 0x3F));
+    let cuIndex: number = 0;
+    while (i < len) {
+        const byte1: number = bytes[i++];
+        if (byte1 < 0x80) {
+            codeUnits[cuIndex++] = byte1;
+        } else if (byte1 < 0xE0) {
+            codeUnits[cuIndex++] =
+                ((byte1 & 0x1F) << 6) |
+                (bytes[i++] & 0x3F);
+        } else if (byte1 < 0xF0) {
+            codeUnits[cuIndex++] =
+                ((byte1 & 0x0F) << 12) |
+                ((bytes[i++] & 0x3F) << 6) |
+                (bytes[i++] & 0x3F);
         } else {
-            const codePoint: number = ((byte & 0x07) << 18) | ((bytes[i++] & 0x3F) << 12) |
-                ((bytes[i++] & 0x3F) << 6) | (bytes[i++] & 0x3F) - 0x10000;
-            result += String.fromCharCode((codePoint >> 10) + 0xD800, (codePoint & 0x03FF) + 0xDC00);
+            const codePoint: number =
+                ((byte1 & 0x07) << 18) |
+                ((bytes[i++] & 0x3F) << 12) |
+                ((bytes[i++] & 0x3F) << 6) |
+                (bytes[i++] & 0x3F) -
+                0x10000;
+
+            codeUnits[cuIndex++] = (codePoint >> 10) + 0xD800;
+            codeUnits[cuIndex++] = (codePoint & 0x03FF) + 0xDC00;
         }
+        if (cuIndex >= chunk - 2) {
+            result += String.fromCharCode.apply(null, codeUnits.subarray(0, cuIndex));
+            cuIndex = 0;
+        }
+    }
+    if (cuIndex > 0) {
+        result += String.fromCharCode.apply(null, codeUnits.subarray(0, cuIndex));
     }
     return result;
 }
@@ -478,15 +530,20 @@ export function _stringToUnicodeArray(value: string): Uint8Array {
  * @returns {string} Hex string.
  */
 export function _byteArrayToHexString(byteArray: Uint8Array): string {
-    const stringBuffer: string[] = [];
-    byteArray.forEach((byte: number) => {
-        let nextHexByte: string = byte.toString(16).toUpperCase();
-        if (nextHexByte.length < 2) {
-            nextHexByte = '0' + nextHexByte;
-        }
-        stringBuffer.push(nextHexByte);
-    });
-    return stringBuffer.join('');
+    const hexArray = new Array(256); // eslint-disable-line
+    for (let i: number = 0; i < 256; i++) {
+        const h: string = i.toString(16).toUpperCase();
+        hexArray[<number>i] = h.length === 1 ? '0' + h : h;
+    }
+    const len: number = byteArray.length;
+    if (len === 0) {
+        return '';
+    }
+    const parts: string[] = new Array<string>(len);
+    for (let i: number = 0; i < len; i++) {
+        parts[<number>i] = hexArray[byteArray[<number>i]];
+    }
+    return parts.join('');
 }
 /**
  * Convert hex string to byte array.
@@ -497,13 +554,26 @@ export function _byteArrayToHexString(byteArray: Uint8Array): string {
  * @returns {Uint8Array | number[]} Byte array.
  */
 export function _hexStringToByteArray(hexString: string, isDirect: boolean = false): Uint8Array | number[] {
-    const array: number[] = [];
-    if (hexString) {
-        for (let i: number = 0; i < hexString.length; i += 2) {
-            array.push(parseInt(hexString.substring(i, i + 2), 16));
-        }
+    const hexTable: Int16Array = new Int16Array(256).fill(-1);
+    for (let i: number = 0; i < 10; i++) {
+        hexTable[48 + i] = i;
     }
-    return isDirect ? array : new Uint8Array(array);
+    for (let i: number = 0; i < 6; i++) {
+        hexTable[65 + i] = 10 + i;
+        hexTable[97 + i] = 10 + i;
+    }
+    if (!hexString) {
+        return isDirect ? [] : new Uint8Array(0);
+    }
+    const len: number = hexString.length >> 1;
+    const out: Uint8Array = new Uint8Array(len);
+    let j: number = 0;
+    for (let i: number = 0; i < len; i++) {
+        const high: number = hexTable[hexString.charCodeAt(j++)];
+        const low: number = hexTable[hexString.charCodeAt(j++)];
+        out[<number>i] = (high << 4) | low;
+    }
+    return isDirect ? Array.from(out) : out;
 }
 /**
  * Convert hex string to normal string.

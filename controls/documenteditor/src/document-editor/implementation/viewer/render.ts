@@ -289,9 +289,11 @@ export class Renderer {
             //Footer Widget
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
 
-            let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
-                /* eslint-disable-next-line max-len */
-                this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, Math.abs(HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin))));
+            let footerHeight: number = this.documentHelper.compatibilityMode === 'Word2013'
+            && page.footerWidgetIn.y +  page.footerWidgetIn.height > page.boundingRectangle.height ?
+                page.footerWidgetIn.y :  this.getScaledValue(page.boundingRectangle.height) - this.getScaledValue(
+                    Math.max(page.footerWidgetIn.height + footerDistance, Math.abs(HelperMethods.convertPointToPixel(
+                        page.footerWidgetIn.sectionFormat.bottomMargin))));
             //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);
@@ -1374,7 +1376,8 @@ private calculatePathBounds(data: string): Rect {
                 let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(widget) as ParagraphWidget;
                 let lastLine: LineWidget = lastPara.lastChild as LineWidget;
                 let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
-                this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
+                let yPosition: number = lastPara.y + lastLine.margin.top;
+                this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(yPosition, 2), this.getScaledValue(lastLine.height - (lastLine.margin.bottom + lastLine.margin.top)), 1);
             }
         }
     }

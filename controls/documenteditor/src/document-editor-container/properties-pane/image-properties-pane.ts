@@ -92,10 +92,10 @@ export class ImageProperties {
         this.outerDiv = createElement('div');
         this.imageDiv.appendChild(this.outerDiv);
         this.widthElement = this.createImagePropertiesDiv('_widthDiv', this.outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
-        this.widthNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
+        this.widthNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n2', decimals: 2 });
         this.widthNumericBox.appendTo(this.widthElement);
         this.heightElement = this.createImagePropertiesDiv('_heightDiv', this.outerDiv, '_heightInput', localObj.getConstant('H'), localObj.getConstant('Height'));
-        this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
+        this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n2', decimals: 2 });
         this.heightNumericBox.appendTo(this.heightElement);
         this.aspectRatioDiv = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
         this.aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));

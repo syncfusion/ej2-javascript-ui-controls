@@ -71,9 +71,50 @@ export class MouseEvents {
     }
 
     public mouseWheelEvent(element: Element, cx: number, cy: number, ctrlKey: boolean = false, shift: boolean = false, up: boolean = false): void {
-        let wheelEvent: MouseWheelEvent = document.createEvent('WheelEvent') as MouseWheelEvent;
-        wheelEvent.initMouseEvent('mousewheel', false, false, window, up? -1 : 1, 0, 0, cx, cy, ctrlKey, false, shift, false, 0, null);
-        element.dispatchEvent(wheelEvent);
+        // let wheelEvent: MouseWheelEvent = document.createEvent('WheelEvent') as MouseWheelEvent;
+        // wheelEvent.initMouseEvent('mousewheel', false, false, window, up? -1 : 1, 0, 0, cx, cy, ctrlKey, false, shift, false, 0, null);
+        // element.dispatchEvent(wheelEvent);
+        const delta = up ? -1 : 1;
+        let event: Event;
+        try {
+            // Modern correct way
+            event = new WheelEvent('wheel', {
+                deltaY: delta,
+                clientX: cx,
+                clientY: cy,
+                ctrlKey: ctrlKey,
+                shiftKey: shift,
+                bubbles: true,
+                cancelable: true
+            });
+        } catch {
+            // Fallback (older environments / test runners)
+            const evt = document.createEvent('MouseEvents');
+            evt.initMouseEvent(
+                'mousewheel',   // keep legacy event name
+                true,
+                true,
+                window,
+                delta,
+                0, 0,
+                cx, cy,
+                ctrlKey,
+                false,
+                shift,
+                false,
+                0,
+                null
+            );
+            // simulate wheel delta for legacy listeners
+            (evt as any).deltaY = delta;
+            (evt as any).wheelDelta = delta * -120;
+            event = evt;
+        }
+        // Add legacy properties manually (IMPORTANT)
+        Object.defineProperty(event, 'wheelDelta', {
+            value: delta * -120
+        });
+        element.dispatchEvent(event);
     }
 
     public dblclickEvent(element: Element, x: number, y: number, ctrl?: boolean, shift?: boolean): void {

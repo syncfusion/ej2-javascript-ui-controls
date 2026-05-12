@@ -9,6 +9,7 @@ import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, Zoom
 import { DataUtil } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from '../actions/taskbar-edit';
 import { getUniversalTime } from '../base/utils';
+import { CalendarContext } from '../base/calendar-context';
 /**
  * Configures the `Timeline` of the gantt.
  */
@@ -2191,6 +2192,7 @@ export class Timeline {
             || (this.parent.timelineSettings.viewStartDate !== 'auto' && this.parent.timelineSettings.viewEndDate === 'auto')) && !this.isZoomToFit) ?
             this.parent.cloneTimelineEndDate : this.parent.cloneProjectEndDate;
         const tierMode: string = this.topTier === 'None' ? this.bottomTier : this.topTier;
+        const calendarContext: CalendarContext = this.parent.defaultCalendarContext;
         if (this.parent.isTimelineRoundOff) {
             if (tierMode === 'Year') {
                 startDate = new Date(startDate.getFullYear(), 0, 1);
@@ -2221,6 +2223,8 @@ export class Timeline {
             } else {
                 startDate.setHours(0, 0, 0, 0);
             }
+            startDate = this.parent.dataOperation['getNextWorkingDay'](startDate, calendarContext);
+            endDate = this.parent.dataOperation['getNextWorkingDay'](endDate, calendarContext);
         }
         this.timelineStartDate = startDate;
         this.timelineEndDate = endDate;

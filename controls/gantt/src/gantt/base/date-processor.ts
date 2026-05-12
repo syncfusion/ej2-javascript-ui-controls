@@ -1438,7 +1438,7 @@ export class DateProcessor {
             }
         }
         const dayIndex: number = date.getDay();
-        if (this.parent.nonWorkingDayIndex.indexOf(dayIndex) !== -1) {
+        if (!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(dayIndex) !== -1) {
             date.setDate(date.getDate() + 1);
             date = this.getNextWorkingDay(date, calendarContext);
             return date;

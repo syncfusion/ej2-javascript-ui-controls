@@ -1790,11 +1790,15 @@ export class DocumentHelper {
                 this.triggerSpellCheckForHF = true;
                 this.owner.editorModule.handleTextInput(char);
                 this.triggerSpellCheckForHF = false;
+                // For synthetic composition sources like WordQ that don't fire compositionstart,
+                // update editable target position after each character input
+                this.positionEditableTarget();
             } else if (char === ' ') {
                 this.isSpellCheckPending = false;
                 this.triggerSpellCheck = true;
                 this.owner.editorModule.handleTextInput(' ');
                 this.triggerSpellCheck = false;
+                this.positionEditableTarget();
             }
             event.preventDefault();
         }
@@ -6019,14 +6023,10 @@ export abstract class LayoutViewer {
                 let isFirstItemBottomPositionUpdated: boolean = false;
                 //Need to handle sorting floating items.
                 // Sort based on Y position
-                bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+                // bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
                 // Sort based on X position
-                bodyWidget.floatingElements.sort(function (a, b) { return a.x - b.x; });
+                // bodyWidget.floatingElements.sort(function (a, b) { return a.x - b.x; });
                 let previousItem: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
-                if (previousItem && (previousItem instanceof TableWidget) && previousItem.wrapTextAround
-                    && !isEmptyPara && !paragraph.isContainsShapeAlone() && isWord2013 && rect.y < previousItem.y) {
-                    rect.y = previousItem.y;
-                }
                 for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
                     let floatingItem: ShapeBase | TableWidget = bodyWidget.floatingElements[i];
                     let isInsideHeaderFooter: boolean = false;
@@ -6059,6 +6059,10 @@ export abstract class LayoutViewer {
                             }
                             // Gets the value from right indent when it is negative, otherwise sets the value as zero.
                             rightIndent = rightIndent < 0 ? rightIndent : 0;
+                            if (floatingItem && (floatingItem instanceof TableWidget) && floatingItem.wrapTextAround
+                                && !isEmptyPara && !paragraph.isContainsShapeAlone() && isWord2013 && rect.y < textWrappingBounds.bottom) {
+                                rect.y = textWrappingBounds.bottom;
+                            }
                             if (rect.x < textWrappingBounds.x && rect.x > textWrappingBounds.x && textWrappingType !== 'Left') {
                                 if (rect.right > textWrappingBounds.x) {
                                     rect.width = rect.width - (rect.right - textWrappingBounds.right);

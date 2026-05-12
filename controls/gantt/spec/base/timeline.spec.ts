@@ -46,8 +46,8 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("MMM dd, yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/25/2018");
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/29/2018");
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/27/2018");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
             done();
         }
@@ -85,7 +85,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("MMM yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("MMM dd, yyyy");
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/1/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("4/1/2018");
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("4/3/2018");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
             done();
         }
@@ -2700,7 +2700,7 @@ describe('dependency rendering in RTL', () => {
         }
     });
     it('dependency object', () => {
-        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
+        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1188);
     });
 });
 describe('timeline virtualization for shimmer ', () => {
@@ -3753,7 +3753,7 @@ describe('dependency rendering in RTL', () => {
         }
     });
     it('dependency object', () => {
-        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
+        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1188);
     });
 });
 describe('Gantt base module', () => {

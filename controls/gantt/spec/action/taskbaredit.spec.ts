@@ -5873,7 +5873,7 @@ describe('Dragging taskbar to next timeline', () => {
     it('Checking end date', (done:Function) => {
         ganttObj.actionComplete = function (args: any): void {
             if (args.requestType === "save") {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'M/d/yyyy')).toBe('3/11/2019')
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'M/d/yyyy')).toBe('3/13/2019')
                 done()
             }
         };

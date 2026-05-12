@@ -11549,7 +11549,7 @@ export class Selection {
                 this.selectInternal(formField.line, formField, index, point);
             }
         }
-        if (!this.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode || this.isInlineFormFillMode() || (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.owner.editor.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked())) {
+        if (!this.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode || this.isInlineFormFillMode() || (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.owner.editor.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'ReadOnly')) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         } else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
             if (key === 9 || key === 32) {

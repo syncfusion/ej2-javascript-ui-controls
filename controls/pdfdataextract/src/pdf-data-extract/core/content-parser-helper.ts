@@ -4,7 +4,7 @@ import { _TextProcessingMode } from './enum';
 import { PdfRedactor } from './redaction/pdf-redactor';
 import { _GraphicState, _TextState } from './graphic-state';
 import { _FontStructure } from './text-extraction';
-import { _decodeEncodedText, _getXObject } from './utils';
+import { _decodeEncodedText, _getXObject, _isArrayEqual } from './utils';
 import { _PdfTextParser } from './pdf-text-parser';
 import { _PdfShapeParser } from './redaction/shape-parser-helper';
 import { _ImageStructure } from './image-extraction/image-structure';
@@ -642,6 +642,12 @@ export class _PdfContentParserHelper {
         case 're':
         {
             parser = new _PdfShapeParser();
+            const numberArray: number[] = element.map(function (value: string): number {
+                return Number(value);
+            });
+            if (_isArrayEqual(page.mediaBox, numberArray)) {
+                break;
+            }
             const records: _PdfRecord[] = parser._processRectangle(recordCollection, index, element);
             if (record && records.length > 0) {
                 recordCollection.splice(index--, 1, ...records);

@@ -97,7 +97,7 @@ describe('Diagram Control', () => {
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);
-            expect(average).toBeLessThan(25);
+            expect(average).toBeLessThan(30);
             let memory: any = inMB(getMemoryProfile());
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });

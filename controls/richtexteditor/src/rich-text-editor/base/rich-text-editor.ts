@@ -1640,6 +1640,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public isRTEFocused: boolean;
     public isSelectAll: boolean;
     public isFullTableDeleted: boolean;
+    private isLastCharInline: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -1649,6 +1650,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isSelectionStartInRTE = false;
         this.isRTEFocused = false;
         this.isFullTableDeleted = false;
+        this.isLastCharInline = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -2470,6 +2472,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
             const range: Range = this.getRange();
+            this.isLastCharInline = range.startContainer && range.startContainer.parentElement &&
+                !this.formatter.editorManager.domNode.isBlockNode(range.startContainer.parentElement) &&
+                range.startContainer.parentElement.textContent.length === 1;
             const startNode: Element = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
                 range.startContainer as Element;
             if (closest(startNode, 'pre') &&
@@ -2727,9 +2732,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     );
                     this.isCopyAll = false;
                 }
-                if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) && (range.startContainer as HTMLElement).innerHTML === '<br>' && (range.startContainer as HTMLElement).textContent === '') {
+                if (this.isLastCharInline) {
                     selection.removeAllRanges();
                     selection.addRange(currentRange);
+                    this.isLastCharInline = false;
                 }
             }
             if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer.nodeName === '#text' &&
@@ -3263,6 +3269,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isRTEFocused = false;
         this.isModalDialog = false;
         this.isFullTableDeleted = false;
+        this.isLastCharInline = false;
         super.destroy();
     }
 

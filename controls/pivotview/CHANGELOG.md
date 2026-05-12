@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 33.2.5 (2026-05-05)
+## 33.2.6 (2026-05-12)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I822874` - Fixed an issue where the TreeView in the Calculated Field dialog did not render properly when the Pivot Table was used inside Angular Material dialogs.
+
+## 33.2.4 (2026-04-28)
 
 ### Pivot Table
 

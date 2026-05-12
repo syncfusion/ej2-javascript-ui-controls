@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I835502` - Resolved an issue where text selection was incorrectly enabled in Pan mode during touch interaction.
+
 ## 33.2.4 (2026-04-28)
 
 ### PDF Viewer

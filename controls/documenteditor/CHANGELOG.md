@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I834582` - Fixed an issue where header and body content overlapped after pasting SFDT.
+`#I831706` - Fixed incorrect rendering size of bookmark square brackets.
+`#I826955` - Fixed an issue where ribbon styles were not updated after applying a style programmatically.
+`#I834593` - Fixed incorrect positioning of bullet arrows.
+`#I820015` - Fixed the floating table position issue.
+`#I827614` - Fixed cursor misalignment with pasted content inside the footer.
+`#I832429` - Resolved overlapping issue caused by `ShapeElementBox`.
+`#I821391` - Fixed an issue where vertically resizing a table caused content to shift or disappear during export.
+`#I834540` - Fixed an issue where the "Dialog failed to load" alert was displayed twice on document open.
+`#I835298` - Fixed an exception thrown during export for content control group type.
+`#F71684` - Fixed improper preservation of Hebrew content.
+`#I829713` - Fixed incorrect behaviour of table border styles.
+`#I834548` - Fixed an issue where image size fields did not retain decimal values.
+`#I817551` - Fixed an issue where using "Ignore Once" in spell check left a partial underline.
+
 ## 33.2.5 (2026-05-05)
 
 ### DocumentEditor

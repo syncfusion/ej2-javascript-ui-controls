@@ -301,7 +301,7 @@ describe('Milestone not rendered correctly with day working time', function () {
         }, done);
     });
     it('Check left value', () => {
-        expect(ganttObj.flatData[0].ganttProperties.left).toBe(148.5);
+        expect(ganttObj.flatData[0].ganttProperties.left).toBe(115.5);
     });
     afterAll(function () {
         if (ganttObj) {

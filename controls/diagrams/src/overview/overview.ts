@@ -675,8 +675,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             const bounds: Rect = this.scrollOverviewRect(
                 this.parent.scroller.horizontalOffset, this.parent.scroller.verticalOffset, this.parent.scroller.currentZoom, true);
             if (this.helper) {
-                const panel: SVGRectElement = this.element.getElementsByTagName('rect')[10];
-                const svgRect: SVGRect = panel.getBBox();
+                //1024983: Overview rectangle not updated when SVG node are availble in overview layer
+                const svgRect: SVGRect = (this.helper as SVGRectElement).getBBox();
                 bounds.x = svgRect.x;
                 bounds.y = svgRect.y;
             }
@@ -805,12 +805,11 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let widthratio: number = (Number(this.model.width) / this.contentWidth);
         const heightratio: number = (Number(this.model.height) / this.contentHeight);
         widthratio = Math.min(widthratio, heightratio);
-        const transform: TransformFactor = this.parent.scroller.transform;
-        const tx: number = transform.tx;
-        const ty: number = transform.ty;
-        this.nativeLayer.setAttribute('transform', 'translate('
-            + (tx * widthratio) + ',' + (ty * heightratio) + '),scale('
-            + widthratio + ')');
+        //1024983: Overview does not update SVG node positions correctly when panning/moving diagram.
+        if (!this.nativeLayer.style.transform) {
+            this.nativeLayer.style.transform = newTransform;
+            this.nativeLayer.style.webkitTransform = newTransform;
+        }
         this.context2d.setTransform(widthratio, 0, 0, widthratio, 0, 0);
         this.context2d.fillStyle = 'red';
         this.scrollOverviewRect(
@@ -974,7 +973,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
                     //let i: number = 0;
                 } else {
                     if (this.helper) {
-                        const bounds: SVGRect = (this.element.getElementsByTagName('rect')[10]).getBBox();
+                        //1024983: Overview rectangle not updated when SVG node are availble in overview layer
+                        const bounds: SVGRect = (this.helper as SVGRectElement).getBBox();
                         this.resizeDirection = this.resizeDirection || '';
                         const x: number = bounds.x;
                         const y: number = bounds.y;

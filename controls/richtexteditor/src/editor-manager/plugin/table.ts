@@ -4874,6 +4874,9 @@ export class TableCommand {
         if (target) {
             this.moveToTargetCell(target);
         }
+        if (this.parent.userAgentData.isSafari()) {
+            this.setupSelectionState();
+        }
     }
 
     /*

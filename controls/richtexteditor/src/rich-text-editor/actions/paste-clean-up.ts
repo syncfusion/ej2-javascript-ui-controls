@@ -227,16 +227,24 @@ export class PasteCleanup {
         elm.innerHTML = value;
         const source: string = this.findSource(elm);
         // Handle empty HTML content (plain text or image)
-        if (value.length === 0 || (!isNOU(files) && files.length > 0 && source === 'html')) {
+        if (source === 'html' && !isNOU(files) && files.length > 0 ) {
             const result: { value: string, shouldContinue: boolean } =
-                this.handleEmptyHtmlValue(e, value, args, allowedTypes, imageproperties);
+                this.handleFileDataPaste(e, value, args, allowedTypes, imageproperties);
             processedValue = result.value;
             shouldContinue = result.shouldContinue;
             if (!shouldContinue) {
                 return false; // Stop processing
             }
         } else if (value.length > 0) { // Handle non-empty HTML content
-            processedValue = this.handleNonEmptyHtmlValue(e, value, args);
+            processedValue = this.handleHtmlValuePaste(e, value, args);
+        } else if (value.length === 0) { // handle for the plain text case
+            const result: { value: string, shouldContinue: boolean } =
+            this.handlePlainTextPaste(e, value, args);
+            processedValue = result.value;
+            shouldContinue = result.shouldContinue;
+            if (!shouldContinue) {
+                return false;
+            }
         }
         processedValue = this.handleGoogleDocs(processedValue);
         // Remove base tags from content
@@ -295,11 +303,67 @@ export class PasteCleanup {
                 }
             }
         }
+        // Fallback: Check for Excel-specific patterns in HTML structure
+        if (this.isExcelContent(element) && (this.parent.userAgentData.getBrowser() === 'Safari')) {
+            return 'excel';
+        }
         return 'html';
     }
 
+    /* Detects Excel content by checking for Excel-specific HTML patterns */
+    private isExcelContent(element: HTMLElement): boolean {
+        // Check for Excel-specific table attributes and styles
+        const tables: NodeListOf<HTMLTableElement> = element.querySelectorAll('table');
+        if (tables.length > 0) {
+            const table: HTMLTableElement = tables[0];
+            // Check for Excel-specific style patterns
+            const style: string = (table.getAttribute('style') || '').toLowerCase();
+            if (style.indexOf('border-collapse') >= 0 || style.indexOf('mso-') >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /* Handles plain text paste with event notification and callback */
+    private handlePlainTextPaste(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs }
+    ): { value: string, shouldContinue: boolean } {
+        let processedValue: string = value || (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+        const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
+        // Trigger beforePasteCleanup event
+        this.parent.trigger(
+            events.beforePasteCleanup,
+            {value: processedValue},
+            (updatedArgs: PasteCleanupArgs) => { processedValue = updatedArgs.value; }
+        );
+
+        // Escape HTML characters
+        processedValue = processedValue.replace(/</g, '&lt;');
+        processedValue = processedValue.replace(/>/g, '&gt;');
+        // Mark as plain text content
+        this.plainTextContent = processedValue;
+        // Notify paste event with callback for custom handling
+        this.parent.notify(events.paste, {
+            file: null,
+            args: e.args,
+            text: processedValue,
+            callBack: (b: string | object) => {
+                if (typeof (b) === 'string') {
+                    processedValue = b;
+                }
+            }
+        });
+        // Format plain text with line breaks
+        if (!htmlRegex.test(processedValue)) {
+            const divElement: HTMLElement = this.parent.createElement('div');
+            divElement.innerHTML = this.pasteObj.splitBreakLine(processedValue);
+            processedValue = divElement.innerHTML;
+        }
+        return { value: processedValue, shouldContinue: true };
+    }
     /* Handles case when HTML value is empty but may contain plain text or images */
-    private handleEmptyHtmlValue(
+    private handleFileDataPaste(
         e: NotifyArgs, value: string,
         args: { [key: string]: string | NotifyArgs },
         allowedTypes: string[],
@@ -382,7 +446,7 @@ export class PasteCleanup {
     }
 
     /* Handles non-empty HTML content */
-    private handleNonEmptyHtmlValue(
+    private handleHtmlValuePaste(
         e: NotifyArgs, value: string,
         args: { [key: string]: string | NotifyArgs }
     ): string {

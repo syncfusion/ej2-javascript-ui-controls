@@ -4699,7 +4699,7 @@ export function _getSerifFonts(): { [key: string]: boolean } {
         Sylfaen : true,
         Times : true,
         Trajan : true,
-        Trinité : true,
+        'Trinité' : true,
         'Trump Mediaeval' : true,
         Utopia : true,
         'Vale Type' : true,

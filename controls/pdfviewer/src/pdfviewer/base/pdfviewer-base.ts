@@ -6826,6 +6826,10 @@ export class PdfViewerBase {
         event.preventDefault();
         if (this.pdfViewer.textSelectionModule) {
             const target: HTMLElement = event.target as HTMLElement;
+            if (this.isPanMode || this.isTextSelectionDisabled || !this.pdfViewer.enableTextSelection ||
+                this.getSelectTextMarkupCurrentPage() != null) {
+                return;
+            }
             if (target.classList.contains('e-pv-text-selection-none') && target.classList.contains('e-pv-text')) {
                 target.classList.remove('e-pv-text-selection-none');
                 if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {

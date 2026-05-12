@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Syncfusion&reg; JavaScript PDF library is a feature-rich and high-performance non-UI PDF library that is written natively in JavaScript. It enables you to seamlessly incorporate robust PDF functionalities into your JavaScript applications. The library allows users to extract text content from PDF documents with accuracy and efficiency.
+The Syncfusion&reg; [JavaScript PDF](https://www.syncfusion.com/document-sdk/javascript-pdf-library) library is a feature-rich and high-performance non-UI PDF library that is written natively in JavaScript. It enables you to seamlessly incorporate robust PDF functionalities into your JavaScript applications. The library allows users to extract text content from PDF documents with accuracy and efficiency in both Node.js and browser environments.
 
 ## Key Features
 

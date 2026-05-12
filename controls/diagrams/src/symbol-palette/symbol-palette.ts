@@ -1056,7 +1056,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.element.appendChild(paletteDiv);
         if (!isBlazor()) {
             const item: AccordionItemModel = {
-                header: symbolGroup.title, expanded: symbolGroup.expanded,
+                header: symbolGroup.title,
+                expanded: symbolGroup.expanded,
                 content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
             };
             this.accordionElement.items.push(item);

@@ -1327,6 +1327,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public isWindowResized: boolean;
     /** @hidden */
     public isModalDialog: boolean = false;
+    /** @hidden */
+    public dataManager: DataManager;
 
     //Property Declarations
 
@@ -2823,7 +2825,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.scrollerBrowserLimit = 15000000;
         }
         this.isTouchMode = closest(this.element, 'e-bigger') ? true : false;
-        if (this.isAngular && !isNullOrUndefined(this.element.closest('.cdk-overlay-pane'))) {
+        if (this.isAngular && !isNullOrUndefined(this.element.closest('mat-dialog-container'))) {
             this.isModalDialog = true;
         }
         this.initProperties();
@@ -7337,7 +7339,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.showWaitingPopup();
         }
         const pivot: PivotView = this as PivotView;
-        pivot.engineModule.data = (e.result as IDataSet[]);
+        this.dataManager = this.dataSourceSettings.dataSource as DataManager;
+        pivot.engineModule.data = e.result && (e.result as ReturnOption).result ?
+            ((e.result as ReturnOption).result as IDataSet[]) : (e.result as IDataSet[]);
         if (this.isEmptyGrid && !isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length === 0) {
             this.hideWaitingPopup();
         } else if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0) {

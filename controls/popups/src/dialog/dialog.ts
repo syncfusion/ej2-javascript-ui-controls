@@ -1110,6 +1110,40 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         buttonObj.element.focus();
                     }
                 }
+                let isCustomComponent: boolean = false;
+                if (this.contentEle.childNodes.length > 0) {
+                    for (let i: number = 0; i < this.contentEle.childNodes.length; i++) {
+                        const childNode: Node = this.contentEle.childNodes[i as number];
+                        if (childNode instanceof HTMLElement && childNode.classList && childNode.classList.contains('e-control')) {
+                            isCustomComponent = true;
+                        }
+                    }
+                }
+                if (isNullOrUndefined(this.btnObj) && isCustomComponent && buttonObj &&
+                    buttonObj.element && buttonObj.element.classList.contains('e-control')) {
+                    const focusableItems: NodeListOf<HTMLElement> = this.element.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR);
+                    if (focusableItems.length > 0) {
+                        const validFocusableItems: HTMLElement[] = [];
+                        for (let i: number = 0; i < focusableItems.length; i++) {
+                            if (!(focusableItems[i as number].hasAttribute('tabindex') &&
+                                focusableItems[i as number].getAttribute('tabindex') === '-1') &&
+                                !focusableItems[i as number].hasAttribute('disabled') &&
+                                (focusableItems[i as number] as HTMLElement).offsetHeight > 0) {
+                                validFocusableItems.push(focusableItems[i as number] as HTMLElement);
+                            }
+                        }
+                        if (validFocusableItems.length > 0) {
+                            const lastElement: HTMLElement = validFocusableItems[validFocusableItems.length - 1];
+                            if (event.shiftKey && document.activeElement === this.focusableElements(this.element)) {
+                                event.preventDefault();
+                                lastElement.focus();
+                            } else if (!event.shiftKey && document.activeElement === lastElement) {
+                                event.preventDefault();
+                                this.focusableElements(this.element).focus();
+                            }
+                        }
+                    }
+                }
             }
         }
         const element: HTMLElement = <HTMLElement>document.activeElement;

@@ -56,8 +56,8 @@ $treeview-icon-wrap-width: calc(100% - 32px) !default;
 $treeview-icon-img-wrap-width: calc(100% - 60px) !default;
 
 $treeview-big-item-height: 48px !default;
-$treeview-big-text-line-height: 46px !default;
-$treeview-big-text-min-height: 46px !default;
+$treeview-big-text-line-height: 48px !default;
+$treeview-big-text-min-height: 48px !default;
 $treeview-big-input-height: 40px !default;
 $treeview-big-text-padding: 0 12px !default;
 $treeview-big-input-padding: 0 9px !default;
@@ -89,6 +89,7 @@ $treeview-big-check-icon-wrap-width: calc(100% - 65px) !default;
 $treeview-big-check-icon-img-wrap-width: calc(100% - 101px) !default;
 $treeview-big-icon-wrap-width: calc(100% - 35px) !default;
 $treeview-big-icon-img-wrap-width: calc(100% - 71px) !default;
+$treeview-focus-box-shadow: inset 0 1px 2px 0 rgba(16, 24, 40, 0.05), inset 0 0 0 4px rgba(157, 118, 237, 0.24) !default;
 
 $treeview-font-family: $font-family !default;
 $treeview-drag-icon-font-size: $text-xl !default;

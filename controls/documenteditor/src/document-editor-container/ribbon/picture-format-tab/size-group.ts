@@ -187,7 +187,7 @@ export class SizeGroup {
             max: 23500,
             value: 0,
             showSpinButton: false,
-            format: 'n0',
+            format: 'n2',
             decimals: 2,
             width: '100px',
             change: this.onWidthChange.bind(this)
@@ -216,7 +216,7 @@ export class SizeGroup {
             max: 23500,
             value: 0,
             showSpinButton: false,
-            format: 'n0',
+            format: 'n2',
             decimals: 2,
             width: '100px',
             change: this.onHeightChange.bind(this)

@@ -356,7 +356,6 @@ describe('ListBox', () => {
 
         it('Listbox', () => {
             listObj = new ListBox({ dataSource: data, allowFiltering: true }, elem);
-            expect(listObj.element.getAttribute('tabindex')).toContain('0');
             expect(listObj.element.firstElementChild.classList).toContain('e-listbox-wrapper');
             expect(listObj.getComponent(listObj.getItems()[0])).toEqual(listObj);
         });

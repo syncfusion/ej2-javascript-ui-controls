@@ -3484,3 +3484,141 @@ describe('Viewer Reported Issues', () => {
         document.destroy();
     });
 });
+describe('1023771 - PdfForm internal methods coverage', () => {
+    let document: PdfDocument;
+    let form: any;
+    let crossRef: any;
+    beforeEach(() => {
+        document = new PdfDocument();
+        document.addPage();
+        form = document.form;
+        crossRef = document._crossReference;
+    });
+    afterEach(() => {
+        document.destroy();
+    });
+    it('compareWidgets - null input', () => {
+        const result = form._compareWidgets(null, null);
+        expect(result).toBe(false);
+    });
+    it('compareWidgets - Rect equal', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('Rect', [0, 0, 100, 100]);
+        a.set('Rect', [0, 0, 100, 100]);
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(true);
+    });
+    it('compareWidgets - TU fallback', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('TU', 'hint');
+        a.set('TU', 'hint');
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(true);
+    });
+    it('compareWidgets - FT mismatch', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('FT', _PdfName.get('Tx'));
+        a.set('FT', _PdfName.get('Btn'));
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(false);
+    });
+    it('compareWidgets - name mismatch', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('FT', _PdfName.get('Tx'));
+        a.set('FT', _PdfName.get('Tx'));
+        w.set('T', 'A');
+        a.set('T', 'B');
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(false);
+    });
+    it('compareWidgets - string value match', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('FT', _PdfName.get('Tx'));
+        a.set('FT', _PdfName.get('Tx'));
+        w.set('V', 'one');
+        a.set('V', 'two');
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(true);
+    });
+    it('compareWidgets - PdfName value match', () => {
+        const value = _PdfName.get('Yes');
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('FT', _PdfName.get('Btn'));
+        a.set('FT', _PdfName.get('Btn'));
+        w.set('V', value);
+        a.set('V', value);
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(true);
+    });
+    it('compareWidgets - fallback name match', () => {
+        const w = new _PdfDictionary(crossRef);
+        const a = new _PdfDictionary(crossRef);
+        w.set('FT', _PdfName.get('Tx'));
+        a.set('FT', _PdfName.get('Tx'));
+        w.set('T', 'Same');
+        a.set('T', 'Same');
+        const result = form._compareWidgets(w, a);
+        expect(result).toBe(true);
+    });
+    it('validateField - invalid inputs', () => {
+        const result = form._validateField(null, null, null, null);
+        expect(result).toBe(false);
+    });
+    it('validateField - P and Rect present', () => {
+        const dict = new _PdfDictionary(crossRef);
+        dict.set('P', {});
+        dict.set('Rect', [0, 0, 10, 10]);
+        const result = form._validateField(dict, new Map(), null, []);
+        expect(result).toBe(true);
+    });
+    it('validateField - widgetCollection hit', () => {
+        const dict = new _PdfDictionary(crossRef);
+        const ref = crossRef._getNextReference();
+        const result = form._validateField(dict, new Map(), ref, [ref]);
+        expect(result).toBe(true);
+    });
+    it('validateField - compareWidgets path pushes field', () => {
+        const widget = new _PdfDictionary(crossRef);
+        const annot = new _PdfDictionary(crossRef);
+        widget.set('Rect', [0, 0, 1, 1]);
+        annot.set('Rect', [0, 0, 1, 1]);
+        const ref = crossRef._getNextReference();
+        widget._reference = ref;
+        const map = new Map();
+        map.set(0, [widget]);
+        const result = form._validateField(annot, map, ref, []);
+        expect(result).toBe(false);
+        expect(form._fields.indexOf(ref) !== -1).toBe(true);
+    });
+    it('removeInvalidFields - null dictionary', () => {
+        const result = form._removeInvalidFields(null, new Map(), null, []);
+        expect(result).toBe(false);
+    });
+    it('removeInvalidFields - fallback validateField', () => {
+        const dict = new _PdfDictionary(crossRef);
+        let called = false;
+        form._validateField = function () {
+            called = true;
+            return true;
+        };
+        const result = form._removeInvalidFields(dict, new Map(), null, []);
+        expect(called).toBe(true);
+        expect(result).toBe(true);
+    });
+    it('removeInvalidFields - invalid child removed', () => {
+        const parent = new _PdfDictionary(crossRef);
+        const child = new _PdfDictionary(crossRef);
+        const childRef = crossRef._getNextReference();
+        crossRef._cacheMap.set(childRef, child);
+        parent.set('Kids', [childRef]);
+        const result = form._removeInvalidFields(parent, new Map(), null, []);
+        expect(result).toBe(false);
+        expect(parent.get('Kids').length).toBe(0);
+    });
+});

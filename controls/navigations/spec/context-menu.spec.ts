@@ -1364,7 +1364,7 @@ describe('ContextMenu', () => {
             document.body.appendChild(ul);
             contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
             const wrap: HTMLElement = contextMenu.getWrapper();
-            expect(wrap.children[0].getAttribute('role')).toEqual('menubar');
+            expect(wrap.children[0].getAttribute('role')).toEqual('menu');
         });
 
         it('EJ2-899285 - Context Menu was not opened while using animationSettings effect as none and open method', () => {

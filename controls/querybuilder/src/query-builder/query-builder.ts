@@ -5590,7 +5590,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (this.headerTemplate && isRoot) {
             this.isRoot = true;
         }
-        this.clearQBTemplate();
+        if (isNullOrUndefined(this.headerTemplate)) {
+            this.clearQBTemplate();
+        }
         this.reset();
         this.groupIdCounter = 1;
         this.ruleIdCounter = 0;

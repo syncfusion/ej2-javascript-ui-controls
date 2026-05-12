@@ -547,8 +547,17 @@ export class Video {
         const left: number = pos.left;
         const vidWid: string | number = e.getBoundingClientRect().width;
         const vidHgt: string | number = e.getBoundingClientRect().height;
-        const borWid: number = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
-            (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2; //span border width + video outline width
+        let borWid: number; //span border width + image outline width
+        // Special handling for Safari browser
+        if (this.parent.userAgentData.isSafari()) {
+            // window getcomputed style might cause UI Lag, Janky animation and high cpu usage while it is called frequently in resize of image
+            borWid = (Browser.isDevice) ?
+                (4 * parseInt(this.parent.inputElement.ownerDocument.defaultView.getComputedStyle(e).outlineWidth, 10)) + 2 :
+                (2 * parseInt(this.parent.inputElement.ownerDocument.defaultView.getComputedStyle(e).outlineWidth, 10)) + 2;
+        } else {
+            borWid = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
+                (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2;
+        }
         const devWid: number = ((Browser.isDevice) ? 0 : 2); // span border width
         // to remove the scroll bar width in RTL mode
         let right: number = 0;

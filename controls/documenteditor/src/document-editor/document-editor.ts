@@ -3797,7 +3797,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                             await this.processSfdt(sfdtText as string, true);
                             resolve();
                         } catch (error) {
-                            this.failureHandler('onError');
                             reject(error);
                         }
                     }, 50);

@@ -257,6 +257,7 @@ export class DateRangePicker extends CalendarBase {
     protected touchRangeStart: boolean;
     protected iconRangeRight: string;
     protected clearButton: HTMLElement;
+    private isIconClick: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -1573,6 +1574,9 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputBlurHandler(e: MouseEvent | KeyboardEvent): void {
+        if (this.isIconClick) {
+            e.stopImmediatePropagation();
+        }
         this.updateFloatLabelOverflowWidth();
         if (!this.enabled) {
             return;
@@ -3819,7 +3823,9 @@ export class DateRangePicker extends CalendarBase {
                 (<HTMLElement>this.inputWrapper.container).focus();
             } else {
                 this.preventBlur = true;
+                this.isIconClick = true;
                 (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
+                this.isIconClick = false;
             }
 
         }

@@ -8040,7 +8040,7 @@ describe('1021511 Parent taskbar startDate calculation not considering the unsch
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                 dataSource: unscheduledData,
+                dataSource: unscheduledData,
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -8095,12 +8095,10 @@ describe('1021511 Parent taskbar startDate calculation not considering the unsch
                 rowHeight: 40,
                 height: '550px',
                 allowUnscheduledTasks: true,
-            projectStartDate: new Date('03/29/2026'),
-        projectEndDate: new Date('05/30/2026'),
             }, done);
     });
     it('Unscheduled tasks ', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate)).toBe('3/29/2026');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate)).toBe('3/30/2026');
         expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.endDate)).toBe('4/3/2026');
         expect(ganttObj.flatData[1].ganttProperties.duration).toBe(3);
         expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.endDate)).toBe('4/3/2026');

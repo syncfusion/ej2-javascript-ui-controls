@@ -2931,7 +2931,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             } else if (this.enableVirtualization && this.getModuleName() !== 'autocomplete' && !this.isFiltering()) {
                 const value: string | number = this.getItemData().value;
-                this.activeIndex = this.getIndexByValue(value);
+                this.activeIndex = !isNullOrUndefined(value) ? this.getIndexByValue(value) : this.activeIndex;
                 let element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
                 this.selectedLI = element;
                 element = null;
@@ -4178,14 +4178,16 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.enableVirtualization){
                 this.listItemHeight = this.getListHeight();
                 this.getSkeletonCount();
+                this.skeletonCount = this.totalItemCount < (this.itemCount * 2) && ((!(this.dataSource instanceof DataManager)) ||
+                        ((this.dataSource instanceof DataManager) && (this.totalItemCount <= this.itemCount))) ? 0 : this.skeletonCount;
                 this.updateVirtualizationProperties(this.itemCount, this.allowFiltering);
-                if (this.index !== null){
-                    this.activeIndex = this.index + this.skeletonCount;
-                }
             }
             this.initValue();
             this.selectedValueInfo = this.viewPortInfo;
             if (this.enableVirtualization) {
+                if (this.index !== null){
+                    this.activeIndex = this.index + this.skeletonCount;
+                }
                 this.activeIndex = this.activeIndex + this.skeletonCount;
             }
         } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {

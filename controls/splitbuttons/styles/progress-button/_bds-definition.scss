@@ -4,7 +4,6 @@
 @forward 'ej2-buttons/styles/button/bds-definition';
 
 //layout variables
-$skin-name :'Material3';
 $progress-btn-circle-opacity: .8 !default;
 $progress-btn-transition: all .3s linear !default;
 $progress-btn-spinner-padding: 12px !default;
@@ -19,12 +18,12 @@ $progress-btn-color: $secondary-text-color !default;
 $progress-btn-bgcolor: rgba($icon-color, .2) !default;
 $progress-btn-bgcolor-normal: rgba($icon-color, .2) !default;
 $progress-btn-warning-progress-color: $progress-btn-bgcolor !default;
-$progress-btn-flat-primary-progress-color: rgba($primary-text-color, 1) !default;
-$progress-btn-flat-success-progress-color: rgba($success-text, 1) !default;
-$progress-btn-flat-info-progress-color: rgba($info-text, 1) !default;
-$progress-btn-flat-warning-progress-color: rgba($warning-text, 1) !default;
-$progress-btn-flat-danger-progress-color: rgba($danger-text, 1) !default;
-$btn-flat-primary-path-arc: $white;
+$progress-btn-flat-primary-progress-color: rgba($progress-btn-white, 1) !default;
+$progress-btn-flat-success-progress-color: rgba($progress-btn-white, 1) !default;
+$progress-btn-flat-info-progress-color: rgba($progress-btn-info, 1) !default;
+$progress-btn-flat-warning-progress-color: rgba($progress-btn-white, 1) !default;
+$progress-btn-flat-danger-progress-color: rgba($progress-btn-white, 1) !default;
+$btn-flat-primary-path-arc: $progress-btn-white !default;
 $fade-out: none !default;
 $progress-btn-zero-padding-margin: 0 !default;
 $progress-btn-line-height: 1 !default;
@@ -40,3 +39,11 @@ $progress-slidedown-to-top: 100px !default;
 $progress-slideup-to-top: -100px !default;
 $progress-zero-width: 0% !default;
 $progress-negative-full-width: -100% !default;
+$progress-btn-primary-color: $progress-btn-white !default;
+$progress-btn-success-color: $progress-btn-white !default;
+$progress-btn-info-color: $progress-btn-info !default;
+$progress-btn-warning-color: $progress-btn-white !default;
+$progress-btn-danger-color: $progress-btn-white !default;
+$progress-btn-primary-bgcolor: $progress-btn-primary-bg !default;
+$progress-btn-info-bgcolor: $progress-btn-info-bg !default;
+$progress-btn-link-color: $progress-btn-link !default;

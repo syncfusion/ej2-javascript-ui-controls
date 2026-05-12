@@ -126,12 +126,18 @@
         opacity: $tbar-btn-overlay-opacity;
         color: $tbar-default-icon-overlay;
 
-        .e-tbar-btn-text {
-          color: $tbar-default-font-overlay;
-        }
+        .e-tbar-btn {
+          background: $tbar-items-default-bg;
+          box-shadow: none;
+          border: none;
 
-        .e-icons {
-          color: $tbar-default-icon-overlay;
+          .e-tbar-btn-text {
+            color: $tbar-default-font-overlay;
+          }
+        
+          .e-icons {
+            color: $tbar-default-icon-overlay;
+          }
         }
       }
     }

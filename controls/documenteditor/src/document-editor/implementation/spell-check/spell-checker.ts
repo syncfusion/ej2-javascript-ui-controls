@@ -460,7 +460,7 @@ export class SpellChecker {
                 this.splitTextBoxElement(startInlineObj, inlineObj.index, errorElement.text.length + inlineObj.index);
             }
             const currentErrorElement: ElementBox = this.updateErroElement(errorElement);
-            if (currentErrorElement) {
+            if (currentErrorElement && (currentErrorElement as TextElementBox).text === errorElement.text) {
                 startInlineObj = currentErrorElement;
                 endInlineObj = currentErrorElement;
             }

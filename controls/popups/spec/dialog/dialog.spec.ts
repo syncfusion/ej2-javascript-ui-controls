@@ -4243,6 +4243,105 @@ describe('EJ2-46093 - Modal Dialog can still tab and select other elements issue
     });
 });
 
+describe('Dialog rendered inside custom components like FileManager with Tab focus management', () => {
+    let fileManagerContainer: HTMLElement;
+    let dialog: Dialog;
+    let dialogContainer: HTMLElement;
+
+    beforeEach(() => {
+        // Simulate FileManager component wrapper
+        fileManagerContainer = createElement('div', { id: 'fileManager', className: 'e-filemanager' });
+        fileManagerContainer.innerHTML = `
+            <div class="e-toolbar">
+                <button id="fileManagerBtn1" type="button">Upload</button>
+                <button id="fileManagerBtn2" type="button">Delete</button>
+            </div>
+            <div class="e-grid">
+                <table>
+                    <tr><td>File1.txt</td></tr>
+                    <tr><td>File2.txt</td></tr>
+                </table>
+            </div>
+        `;
+        document.body.appendChild(fileManagerContainer);
+
+        // Create Dialog inside FileManager
+        dialogContainer = createElement('div', { id: 'renameDialog' });
+        fileManagerContainer.appendChild(dialogContainer);
+
+        dialog = new Dialog({
+            header: 'Rename File',
+            showCloseIcon: true,
+            isModal: true,
+            buttons: [
+                {
+                    buttonModel: { content: 'OK', isPrimary: true },
+                    click: () => { }
+                },
+                {
+                    buttonModel: { content: 'Cancel' },
+                    click: () => { }
+                }
+            ],
+            content: '<div class="e-control"><label>File Name:</label><input id="fileNameInput" type="text" value="NewFileName.txt" /></div>'
+        });
+        dialog.appendTo(dialogContainer);
+    });
+
+    it('Tab key should keep focus inside dialog and not escape to FileManager elements', (done: Function) => {
+        setTimeout(() => {
+            const fileNameInput: any = document.getElementById('fileNameInput');
+            const fileManagerBtn1: any = document.getElementById('fileManagerBtn1');
+
+            if (fileNameInput) {
+                (fileNameInput as HTMLInputElement).focus();
+                expect(document.activeElement === fileNameInput).toBe(true);
+                expect(fileManagerBtn1).toBeDefined();
+                expect(dialog.element.classList.contains('e-dlg-modal')).toBe(true);
+                done();
+            } else {
+                done();
+            }
+        }, 150);
+    });
+
+    it('Dialog should trap focus when tab pressed from last focusable element', (done: Function) => {
+        setTimeout(() => {
+            const fileNameInput: any = document.getElementById('fileNameInput');
+            const dialogElement: any = dialog.element;
+
+            if (fileNameInput && dialogElement) {
+                // Get all focusable elements in the dialog
+                const focusableElements: NodeListOf<Element> = dialogElement.querySelectorAll(
+                    'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]'
+                );
+
+                expect(focusableElements.length).toBeGreaterThan(0);
+                let inputFound: boolean = false;
+                focusableElements.forEach((el: Element) => {
+                    if (el === fileNameInput) {
+                        inputFound = true;
+                    }
+                });
+
+                expect(inputFound).toBe(true);
+                done();
+            } else {
+                done();
+            }
+        }, 150);
+    });
+
+    afterEach(() => {
+        if (dialog) {
+            destroyDialog(dialog);
+        }
+        if (fileManagerContainer) {
+            detach(fileManagerContainer);
+        }
+    });
+});
+
 describe('EJ2-45604 - Dialogs primary button without flat appearance', () => {
     let dialog: Dialog;
     beforeEach(() => {

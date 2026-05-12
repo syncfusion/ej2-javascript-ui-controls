@@ -3624,7 +3624,7 @@ describe('Cr-885322 duration get deleted when start date empty', () => {
     it('Checking parent date', (done: Function) => {
         ganttObj.actionComplete = (args: any): void => {
             if(args.requestType === 'add') {
-                expect(args.data.ganttProperties.left).toBe(66);
+                expect(args.data.ganttProperties.left).toBe(33);
                 done();
             }
         }

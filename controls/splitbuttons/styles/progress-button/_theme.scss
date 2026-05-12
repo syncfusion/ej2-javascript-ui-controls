@@ -36,8 +36,11 @@
         stroke: $btn-primary-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-primary-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-primary-color, $alpha: -$progress-btn-circle-opacity);
           }
         }
 
@@ -102,8 +105,11 @@
         stroke: $btn-success-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-success-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-success-color, $alpha: -$progress-btn-circle-opacity);
           }
         }
 
@@ -170,8 +176,11 @@
         stroke: $btn-info-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-info-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-info-color, $alpha: -$progress-btn-circle-opacity);
           }
           @if $skin-name == 'fluent2' {
             stroke: color.adjust(#242424, $alpha: -$progress-btn-circle-opacity);
@@ -239,8 +248,11 @@
         stroke: $btn-warning-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-warning-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-warning-color, $alpha: -$progress-btn-circle-opacity);
           }
         }
 
@@ -305,8 +317,11 @@
         stroke: $btn-danger-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-danger-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-danger-color, $alpha: -$progress-btn-circle-opacity);
           }
         }
 
@@ -369,8 +384,11 @@
           stroke: $btn-primary-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-primary-bgcolor, $alpha: -$progress-btn-circle-opacity);
+            }
+            @else if $skin-name == 'tailwind' {
+              stroke: color.adjust($progress-btn-primary-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
@@ -402,8 +420,11 @@
           stroke: $btn-info-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-info-bgcolor, $alpha: -$progress-btn-circle-opacity);
+            }
+            @else if $skin-name == 'tailwind' {
+              stroke: color.adjust($progress-btn-info-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
@@ -454,8 +475,11 @@
         stroke: $btn-link-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             stroke: color.adjust($btn-link-color, $alpha: -$progress-btn-circle-opacity);
+          }
+          @else if $skin-name == 'tailwind' {
+            stroke: color.adjust($progress-btn-link-color, $alpha: -$progress-btn-circle-opacity);
           }
         }
 
@@ -544,8 +568,11 @@
   #{if(&, '&', '*')}.e-outline:not(:focus) {
     &.e-primary {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
           background: color.adjust($btn-primary-bgcolor, $alpha: -.8);
+        }
+        @else if $skin-name == 'tailwind' {
+          background: color.adjust($progress-btn-primary-bgcolor, $alpha: -.8);
         }
       }
     }
@@ -560,8 +587,11 @@
 
     &.e-info {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
           background: color.adjust($btn-info-bgcolor, $alpha: -.8);
+        }
+        @else if $skin-name == 'tailwind' {
+          background: color.adjust($progress-btn-info-bgcolor, $alpha: -.8);
         }
       }
     }
@@ -622,8 +652,11 @@
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       &.e-primary {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             background: color.adjust($btn-primary-bgcolor, $alpha: -.8);
+          }
+          @else if $skin-name == 'tailwind' {
+            background: color.adjust($progress-btn-primary-bgcolor, $alpha: -.8);
           }
         }
       }
@@ -638,8 +671,11 @@
 
       &.e-info {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             background: color.adjust($btn-info-bgcolor, $alpha: -.8);
+          }
+          @else if $skin-name == 'tailwind' {
+            background: color.adjust($progress-btn-info-bgcolor, $alpha: -.8);
           }
         }
       }

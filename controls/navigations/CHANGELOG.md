@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I831908` -Resolved a console error triggered when checking child node checkboxes in TreeView with remote data, ensuring proper parent and child state updates.
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I58588` - Resolved an initialization issue where Accordion items with `Expanded="true"` failed to expand on first render when a `HeaderTemplate` was used.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I824601` - The issue where the Context Menu items not announced by narrator on initial render after refresh has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I829643` - Resolved drag indicator visibility in Angular overlays by appending it to the correct overlay container.
+
 ## 33.2.4 (2026-04-28)
 
 ### Toolbar

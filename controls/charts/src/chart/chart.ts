@@ -2986,8 +2986,19 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 element.setAttribute('tabindex', this.titleStyle.accessibility.focusable ? String(this.titleStyle.accessibility.tabIndex) : '-1');
                 (element as HTMLElement).style.outline = 'none';
                 element.setAttribute('class', 'e-chart-focused');
-                element.setAttribute('role', this.titleStyle.accessibility.accessibilityRole);
-                element.setAttribute('aria-label', this.titleStyle.accessibility.accessibilityDescription);
+                element.setAttribute(
+                    'role',
+                    this.titleStyle.accessibility.accessibilityRole || 'heading'
+                );
+                element.setAttribute('aria-level', '1'); // adjust based on hierarchy
+
+                // Only add aria-label if visible text is not available
+                if (!element.textContent || !element.textContent.trim()) {
+                    element.setAttribute(
+                        'aria-label',
+                        this.titleStyle.accessibility.accessibilityDescription || this.title
+                    );
+                }
             }
             if (this.subTitle) {
                 this.renderSubTitle(options);
@@ -3061,8 +3072,19 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             element.setAttribute('tabindex', this.subTitleStyle.accessibility.focusable ? String(this.subTitleStyle.accessibility.tabIndex) : '-1');
             if (this.subTitleStyle.accessibility.focusable) { (element as HTMLElement).style.outline = 'none'; }
             element.setAttribute('class', 'e-chart-focused');
-            element.setAttribute('role', this.subTitleStyle.accessibility.accessibilityRole);
-            element.setAttribute('aria-label', this.subTitleStyle.accessibility.accessibilityDescription);
+            element.setAttribute(
+                'role',
+                this.subTitleStyle.accessibility.accessibilityRole || 'heading'
+            );
+            element.setAttribute('aria-level', '2'); // adjust based on hierarchy
+
+            // Only add aria-label if visible text is not available
+            if (!element.textContent || !element.textContent.trim()) {
+                element.setAttribute(
+                    'aria-label',
+                    this.subTitleStyle.accessibility.accessibilityDescription || this.subTitle
+                );
+            }
         }
     }
     private renderBorder(): void {

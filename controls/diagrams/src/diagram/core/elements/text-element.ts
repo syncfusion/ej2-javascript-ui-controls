@@ -60,7 +60,6 @@ export class TextElement extends DiagramElement {
     /** @private */
     public flipTransformOffset: PointModel;
 
-
     /**
      *   gets the content for the text element \
      *

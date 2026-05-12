@@ -122,6 +122,7 @@ export class Editor {
     private checkLastLetterSpace: string = '';
     private checkLastLetterSpaceDot: string = '';
     private pasteFootNoteType: string = '';
+    public hasShownRestrictPane: boolean = false;
     /**
      * @private
      */
@@ -1720,6 +1721,7 @@ export class Editor {
      * @returns {void}
      */
     public unProtectDocument(): void {
+        this.hasShownRestrictPane = false;
         this.documentHelper.owner.getSettingData('protection', false, this.currentHashValue);
         this.currentHashValue = null;
         let previousProtectionType: ProtectionType = this.documentHelper.protectionType;
@@ -2323,6 +2325,7 @@ export class Editor {
                     this.handleBackKey();
                     break;
                 case 9:
+                    this.checkAndShowRestrictPane();
                     if (this.owner.acceptTab) {
                         event.preventDefault();
                         this.selection.handleTabKey(true, false);
@@ -2395,6 +2398,7 @@ export class Editor {
      * @returns {void}
      */
     public handleBackKey(): void {
+        if (this.checkAndShowRestrictPane()) { return; }
         if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
         }
@@ -2408,6 +2412,7 @@ export class Editor {
      * @returns {void}
      */
     public handleDelete(): void {
+        if (this.checkAndShowRestrictPane()) { return; }
         if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
@@ -2420,6 +2425,7 @@ export class Editor {
      * @returns {void}
      */
     public handleEnterKey(): void {
+        if (this.checkAndShowRestrictPane()) { return; }
         let contentControl : ContentControl = this.documentHelper.owner.selection.currentContentControl;
         if ((!this.owner.isReadOnlyMode && !this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode() ||
             ((this.documentHelper.protectionType === 'FormFieldsOnly' || this.documentHelper.protectionType == 'NoProtection') && (contentControl.contentControlProperties.multiline && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()))
@@ -2486,6 +2492,7 @@ export class Editor {
      * @returns {void}
      */
     public handleTextInput(text: string): void {
+        if (this.checkAndShowRestrictPane()) { return; }
         if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             if (this.animationTimer) {
                 clearTimeout(this.animationTimer);
@@ -3736,6 +3743,26 @@ export class Editor {
             this.setPositionParagraph(line.paragraph, updatedOffset, true);
             selection.editPosition = selection.getHierarchicalIndex(line.paragraph, updatedOffset.toString());
         }
+    }
+    /**
+    * Shows the restrict editing pane only once when user tries to edit in a non editable region.
+    * @returns {boolean} - Returns true if the editing is restricted.
+    * @private
+    */
+    private checkAndShowRestrictPane(): boolean {
+        const isRestricted: boolean = this.owner.isReadOnly
+            || (this.documentHelper.protectionType === 'ReadOnly' &&
+                !this.selection.isSelectionInEditRegion())
+            || (this.documentHelper.protectionType === 'CommentsOnly' &&
+                !this.selection.isSelectionInEditRegion());
+        if (isRestricted) {
+            const pane = this.documentHelper.restrictEditingPane;
+            if (!this.hasShownRestrictPane && pane && !pane.isShowRestrictPane) {
+                this.hasShownRestrictPane = true;
+                pane.showHideRestrictPane(true);
+            }
+        }
+        return isRestricted;
     }
     /**
      * Inserts the specified text at cursor position
@@ -11300,18 +11327,21 @@ export class Editor {
                 if (isNotEmpty) {
                     top = Math.max(headerDistance + section.page.headerWidget.height, top);
                 }
-                if (firstBlock.y !== top && section.sectionFormat.breakCode !== "NoBreak") {
+                if (firstBlock.y !== top) {
                     this.owner.viewer.updateClientArea(section, section.page);
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
-                    if (prevWidget) {
+                    let isNoBreak: Boolean = section.sectionFormat.breakCode === "NoBreak";
+                    if (!isNoBreak && prevWidget) {
                         if (firstBlock.containerWidget.equals(prevWidget.containerWidget) && !(prevWidget.containerWidget.lastChild instanceof ParagraphWidget && (prevWidget.containerWidget.lastChild.isEndsWithPageBreak || prevWidget.containerWidget.lastChild.isEndsWithColumnBreak))) {
                             this.owner.viewer.cutFromTop(prevWidget.y + prevWidget.height);
 
                             this.documentHelper.layout.updateContainerWidget(firstBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
                         }
                     }
-                    this.documentHelper.blockToShift = firstBlock;
+                    if (!isNoBreak || !prevWidget) {
+                        this.documentHelper.blockToShift = firstBlock;
+                    }
                 }
             } else {
                 this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
@@ -23341,7 +23371,7 @@ export class Editor {
                     rowWidget.rowFormat.borders.right.clearFormat();
                     if (rowWidget.childWidgets) {
                         for (let j = 0; j < rowWidget.childWidgets.length; j++) {
-                            let isLastSelectedCol: boolean = ((rowWidget.childWidgets[j] as TableCellWidget).columnIndex + (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.columnSpan - 1) === (rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex;
+                            let isLastSelectedCol: boolean = (rowWidget.childWidgets[j] as TableCellWidget).columnIndex === (rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex;
                             if (isLastSelectedCol) {
                                 (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.right.clearFormat();
                             }
@@ -23626,8 +23656,10 @@ export class Editor {
         const cells: TableCellWidget[] = this.selection.getSelectedCells();
         const rightBorderCells: TableCellWidget[] = [];
         for (let i: number = 0; i < cells.length; i++) {
-            if ((cells[i].columnIndex + cells[i].cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex) {
-                rightBorderCells.push(cells[i] as TableCellWidget);
+            if (i < cells.length - 1 && cells[i].containerWidget === cells[i + 1].containerWidget) {
+                continue;
+            } else {
+                rightBorderCells.push(cells[i]);
             }
         }
         return rightBorderCells;

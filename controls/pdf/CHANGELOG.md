@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved a performance issue that occurred while importing annotations in JSON format.
+- Resolved an issue where form fields were not being retrieved correctly from a specific PDF document.
+
 ## 33.2.5 (2026-05-05)
 
 ### PDF

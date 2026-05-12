@@ -2137,7 +2137,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (isNOU(data) || isNOU(parentId)) {
             return [];
         }
-
+        if (!Array.isArray(data)) {
+            return [];
+        }
         if (this.dataType === 1) {
             const pidField: string = this.fields.parentID;
             const target: string = parentId.toString();
@@ -4516,7 +4518,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     const cNode: HTMLElement = this.createElement('span', { className: DROPCOUNT, innerHTML: '' + nLen });
                     virtualEle.appendChild(cNode);
                 }
-                document.body.appendChild(virtualEle);
+                const appendToElement: HTMLElement = this.getAppendToElement();
+                appendToElement.appendChild(virtualEle);
                 document.body.style.cursor = '';
                 this.dragData = this.getNodeData(this.dragLi);
                 return virtualEle;
@@ -4614,6 +4617,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         detach(virtualEle);
         removeClass([this.element], DRAGGING);
         this.dragStartAction = false;
+    }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
 
     private getOffsetX(event: MouseEvent | TouchEvent, target: HTMLElement): number {

@@ -822,6 +822,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const innerEle: HTEle = this.createElement('div', {
             className: CLS_ITEM, id: item.id || getUniqueID('acrdn_item')
         });
+        if (item.expanded && !isNOU(index) && (!this.enablePersistence)) {
+            if (this.initExpand.indexOf(index) === -1) {
+                this.initExpand.push(index);
+            }
+        }
         if (this.headerTemplate) {
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -844,11 +849,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             innerEle.appendChild(ctnEle);
         }
         let hdr: HTEle = <HTEle>select('.' + CLS_HEADER, innerEle);
-        if (item.expanded && !isNOU(index) && (!this.enablePersistence)) {
-            if (this.initExpand.indexOf(index) === -1) {
-                this.initExpand.push(index);
-            }
-        }
         if (item.cssClass) {
             addClass([innerEle], item.cssClass.split(' '));
         }

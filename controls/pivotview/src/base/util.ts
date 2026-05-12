@@ -1303,10 +1303,9 @@ export class PivotUtil {
      */
     public static getAppendToElement(pElement: HTMLElement, isAngular?: boolean): HTMLElement {
         if (isAngular) {
-            const cdkPane: HTMLElement = pElement.closest('.cdk-overlay-pane') as HTMLElement;
-            const popoverEl: HTMLElement = pElement.closest('[popover]') as HTMLElement;
-            if (cdkPane && popoverEl) {
-                return cdkPane;
+            const matDialog: HTMLElement = pElement.closest('mat-dialog-container') as HTMLElement;
+            if (matDialog) {
+                return matDialog;
             }
         }
         return document.body;

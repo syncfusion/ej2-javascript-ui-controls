@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.6 (2026-05-12)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I835347` - Fixed Overview does not updated correctly for SVG node positions when resized or diagram zoompan action.
+
 ## 33.2.5 (2026-05-05)
 
 ### Diagram

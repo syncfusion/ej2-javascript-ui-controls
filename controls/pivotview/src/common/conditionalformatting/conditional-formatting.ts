@@ -549,7 +549,7 @@ export class ConditionalFormatting {
             locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.backgroundColor[i as number].isStringTemplate = true;
-        this.fontColor[i as number].isAngular = this.parent.isModalDialog;
+        this.backgroundColor[i as number].isAngular = this.parent.isModalDialog;
         this.backgroundColor[i as number].appendTo(select('#' + this.parentID + 'backgroundcolor' + i, dialogElement) as HTMLElement);
         addClass([this.backgroundColor[i as number].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         const toggleBtn: Button = new Button({

@@ -12592,7 +12592,7 @@ describe('Add duration for unscheduled tasks', () => {
     it('Checking for unscheuled task left value', () => {
         ganttObj.actionComplete = function (args: any): void {
             if (args.requestType === "save") {
-                expect(ganttObj.flatData[2].ganttProperties.left).toBe(66);
+                expect(ganttObj.flatData[2].ganttProperties.left).toBe(33);
             }
         };
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;

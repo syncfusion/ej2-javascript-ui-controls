@@ -2,7 +2,7 @@
 
 # JavaScript PDF Library
 
-The Essential JavaScript PDF library is a lightweight, high-performance, and feature-rich non-UI solution written natively in JavaScript. It enables developers to seamlessly integrate robust PDF functionalities into their applications for creating, reading, and editing PDF documents without relying on Adobe Acrobat. Designed to work across JavaScript, TypeScript, Angular, React, Vue, ASP.NET Core, and ASP.NET MVC platforms, this library supports programmatic generation of PDF reports with rich content such as formatted text, images, shapes, hyperlinks, and lists. Built to comply with PDF 1.7 (ISO 32000-1) and the latest PDF 2.0 (ISO 32000-2) standards, it ensures compatibility and high-quality PDF document processing.
+The Syncfusion&reg; [JavaScript PDF](https://www.syncfusion.com/document-sdk/javascript-pdf-library) library is a lightweight, high-performance, and feature-rich non-UI solution written natively in JavaScript for generating PDF documents in both Node.js and browser environments. It enables developers to seamlessly integrate robust PDF functionality into their applications for creating, reading, and editing PDF documents without relying on Adobe Acrobat. Designed to work across JavaScript, TypeScript, Angular, React, Vue, ASP.NET Core, and ASP.NET MVC platforms, the library supports programmatic generation of PDF reports with rich content, including formatted text, images, shapes, hyperlinks, and lists, while complying with PDF 1.7 (ISO 32000-1) and the latest PDF 2.0 (ISO 32000-2) standards to ensure high-quality, compatible PDF document processing.
 
 ## Key features
 

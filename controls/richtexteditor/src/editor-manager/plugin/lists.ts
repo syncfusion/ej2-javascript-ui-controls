@@ -624,7 +624,6 @@ export class Lists {
             }
         }
         this.removeList(range, e);
-        this.firstListBackSpace(range, e);
     }
 
     private hasMediaElement(element: Element): boolean {
@@ -799,29 +798,6 @@ export class Lists {
                     listElements[i as number].previousElementSibling.appendChild(listElements[i as number]);
                 }
             }
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private firstListBackSpace(range: Range, _e: IHtmlKeyboardEvent): void {
-        const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-        const listItem: Element = startNode.closest('LI');
-        if (!isNOU(listItem) && !this.isAtListStart(listItem, range)) {
-            return;
-        }
-        if (!isNOU(startNode.closest('OL'))) {
-            this.commonLIParent = startNode.closest('OL');
-        } else if (!isNOU(startNode.closest('UL'))) {
-            this.commonLIParent = startNode.closest('UL');
-        }
-        if (!isNOU(listItem) && range.startOffset === 0 && range.endOffset === 0 &&
-        isNOU(startNode.previousSibling) && !isNOU(this.commonLIParent) && isNOU(this.commonLIParent.previousSibling) &&
-        (isNOU(this.commonLIParent.parentElement.closest('OL')) && isNOU(this.commonLIParent.parentElement.closest('UL')) &&
-        isNOU(this.commonLIParent.parentElement.closest('LI')))) {
-            const currentElem : HTMLElement = createElement('P');
-            currentElem.innerHTML = '&#8203;';
-            startNode.classList.add('removeList');
-            this.commonLIParent.parentElement.insertBefore(currentElem, this.commonLIParent);
         }
     }
 

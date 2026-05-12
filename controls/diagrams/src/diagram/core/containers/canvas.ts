@@ -234,6 +234,7 @@ export class Canvas extends GroupableView {
     private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
         x += child.margin.left - child.margin.right;
         y += child.margin.top - child.margin.bottom;
+
         switch (child.horizontalAlignment) {
         case 'Auto':
         case 'Left':

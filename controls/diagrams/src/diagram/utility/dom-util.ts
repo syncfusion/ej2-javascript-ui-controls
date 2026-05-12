@@ -343,7 +343,7 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         if (text.textAlign === 'left' || text.textAlign === 'justify') {
             txtWidth = 0;
         } else if (text.textAlign === 'center') {
-            if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
+            if (txtWidth > text.width && (text.textOverflow === 'Clip' || text.textOverflow === 'Ellipsis')) {
                 txtWidth = 0;
             } else {
                 txtWidth = -txtWidth / 2;

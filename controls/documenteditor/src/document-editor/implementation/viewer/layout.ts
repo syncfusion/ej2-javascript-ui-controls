@@ -1610,7 +1610,7 @@ export class Layout {
         return widget;
     }
 
-    private shiftChildLocation(shiftTop: number, bodyWidget: HeaderFooterWidget | FootNoteWidget): void {
+    private shiftChildLocation(shiftTop: number, bodyWidget: HeaderFooterWidget | FootNoteWidget): number {
         let widgetTop: number = bodyWidget.y + shiftTop;
         let footerMaxHeight: number = bodyWidget.page.boundingRectangle.height - (bodyWidget.page.boundingRectangle.height / 100) * 40;
         if (this.documentHelper.compatibilityMode === 'Word2003') {
@@ -1656,6 +1656,7 @@ export class Layout {
                 childTop += (childWidget as Widget).height;
             }
         }
+        return shiftTop;
     }
 
     private shiftChildLocationForTableWidget(tableWidget: TableWidget, shiftTop: number): void {
@@ -3010,7 +3011,7 @@ export class Layout {
             if (element.previousElement &&
                 (((element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox) && element.previousElement.textWrappingStyle === 'Inline') ||
                     !(element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox))) {
-                this.cutClientWidth(element.previousElement, undefined, (element instanceof TextElementBox && element.text === '\f') ? true : false);
+                this.cutClientWidth(element.previousElement, undefined, ((element instanceof TextElementBox && element.text === '\f') || element instanceof ImageElementBox) ? true : false);
             }
         }
         if ((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') {
@@ -4611,17 +4612,17 @@ export class Layout {
         let renderedElements: ElementBox[] = lineWidget.renderedElements;
         for (let i: number = 0; i < renderedElements.length; i++) {
             const element: ElementBox = renderedElements[i];
-            if (i === 0 && element instanceof ListTextElementBox || (paragraph.paragraphFormat.bidi && renderedElements[renderedElements.length - 1] instanceof ListTextElementBox)) {
+            if (element instanceof ListTextElementBox || (paragraph.paragraphFormat.bidi && renderedElements[renderedElements.length - 1] instanceof ListTextElementBox)) {
+                leftMargin = 0;
                 const textAlignment: TextAlignment = paragraph.paragraphFormat.textAlignment;
-                if (textAlignment === 'Right') {  //Aligns the text as right justified.
+                if (textAlignment === 'Right' && i === 0) {  //Aligns the text as right justified.
                     leftMargin = subWidth;
-                } else if (textAlignment === 'Center') { //Aligns the text as center justified.
+                } else if (textAlignment === 'Center' && i === 0) { //Aligns the text as center justified.
                     leftMargin = subWidth / 2;
                 }
                 element.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
                 element.line = lineWidget;
                 lineWidget.height = topMargin + height + bottomMargin;
-                break;
             }
         }
         lineWidget.margin = new Margin(0, topMargin, 0, bottomMargin);
@@ -6716,7 +6717,7 @@ export class Layout {
             }
             if (!isNullOrUndefined(top)) {
                 top = height - (widget.y + widget.height);
-                this.shiftChildLocation(top, widget);
+                top = this.shiftChildLocation(top, widget);
                 viewer.clientActiveArea.y += top;
             }
         }
@@ -7888,6 +7889,9 @@ export class Layout {
         let paragraph: ParagraphWidget = line.paragraph;
         let paraFormat: WParagraphFormat = paragraph.paragraphFormat;
         let textAlignment: TextAlignment = paraFormat.textAlignment;
+        if (paraFormat.bidi) {
+            paragraph.splitTextRangeByScriptType(line.indexInOwner);
+        }
         let isParagraphEnd: boolean = line.isLastLine();
         let firstLineIndent: number = 0;
         if (line.isFirstLine()) {
@@ -9952,6 +9956,7 @@ export class Layout {
             rowWidget = childWidget as TableRowWidget;
             // }
             const rowHeight: number = rowWidget.height;
+            let effectiveHeight: number = rowHeight;
             let existFootnoteHeight: number = this.existFootnoteHeight;
             if (bottom > rowBottom + rowHeight + existFootnoteHeight && isNullOrUndefined(splittedWidget)) {
                 for (let k: number = 0; k < rowWidget.childWidgets.length; k++) {
@@ -9963,7 +9968,21 @@ export class Layout {
                     existFootnoteHeight += this.getFootNoteHeight(footNoteCollection[j].bodyWidget);
                 }
             }
-            if (isMultiColumnSplit || bottom < rowBottom + rowHeight + existFootnoteHeight || !isNullOrUndefined(splittedWidget)) {
+            for (const childWidget of rowWidget.childWidgets) {
+                const cellWidget: TableCellWidget = childWidget as TableCellWidget;
+                const rowSpan: number = cellWidget.cellFormat.rowSpan;
+                if (!isNullOrUndefined(cellWidget.cellFormat) && rowSpan > 1) {
+                    let mergedCellHeight: number = rowHeight;
+                    for (const row of tableWidget.childWidgets.slice(i + 1, Math.min(i + rowSpan, tableWidget.childWidgets.length))) {
+                        const mergedRow: TableRowWidget = row as TableRowWidget;
+                        mergedCellHeight += mergedRow.height;
+                    }
+                    if (mergedCellHeight > effectiveHeight) {
+                        effectiveHeight = mergedCellHeight;
+                    }
+                }
+            }
+            if (isMultiColumnSplit || bottom < rowBottom + effectiveHeight + existFootnoteHeight || !isNullOrUndefined(splittedWidget)) {
                 //ToDo: Check whether row included in vertical merge or AllowRowSplitbyPage is true, if so split row.
                 //Checks if atleast first line fits in the client area.
                 let splittedRow: TableRowWidget = undefined;
@@ -10470,7 +10489,7 @@ export class Layout {
                     this.documentHelper.blockToShift = block;
                 } else if ((nextWidget as BlockWidget).bodyWidget) {
                     const floatingElementLength = (nextWidget as BlockWidget).bodyWidget.floatingElements.length;
-                    if (floatingElementLength > 0 || (floatingElementLength === 0 && isNullOrUndefined(this.documentHelper.blockToShift)
+                    if (floatingElementLength > 0 && this.owner.isShiftingEnabled || (floatingElementLength === 0 && isNullOrUndefined(this.documentHelper.blockToShift)
                         && isNextBlockToShift)) {
                         this.documentHelper.blockToShift = block;
                     }
@@ -14179,6 +14198,14 @@ export class Layout {
 
             let isRTLText: boolean = (textElement.characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft || textElement.characterRange == CharacterRangeType.Number;
             let isBidi: boolean = listElementsBidiValues[i];
+            const text: string = textElement.text;
+            if (!isNullOrUndefined(text) && (textElement.characterRange & CharacterRangeType.WordSplit) !== 0) {
+                const hasRLM: boolean = text.indexOf('\u200F') !== -1;
+                const normalized = text.replace(/[\u200E\u200F]/g, '').trim();
+                if (/[.,\u060C]/.test(normalized) && prevCharType !== CharacterRangeType.Number && hasRLM) {
+                    isRTLText = (prevCharType == CharacterRangeType.RightToLeft);
+                }
+            }
 
             ////If tab-stop is exist with in the line then we have to consider the below behaviours
             if (characterRangeTypes[i] == CharacterRangeType.Tab) {

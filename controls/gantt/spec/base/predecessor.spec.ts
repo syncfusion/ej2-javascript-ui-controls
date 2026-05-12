@@ -872,7 +872,7 @@ describe('CR:880619-Timeline does not render properly while predecessor offset v
             }, done);
     });
     it('Checking timeline start date', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("01/21/2024");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("01/22/2024");
     });
     afterAll(() => {
         if (ganttObj) {

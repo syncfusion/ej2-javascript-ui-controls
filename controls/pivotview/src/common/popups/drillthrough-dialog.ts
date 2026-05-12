@@ -11,6 +11,7 @@ import * as events from '../../common/base/constant';
 import { IOlapField, OlapEngine } from '../../base/olap/engine';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
+import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -402,6 +403,33 @@ export class DrillThroughDialog {
                             return;
                         }
                     }
+                    let primaryKeyColumn: ColumnModel;
+                    for (const column of this.drillThroughGrid.columns) {
+                        const col: ColumnModel = column as ColumnModel;
+                        if (col.isPrimaryKey && col.field !== '__index') {
+                            primaryKeyColumn = col;
+                            break;
+                        }
+                    }
+                    const primaryKeyField: string | undefined = !isNullOrUndefined(primaryKeyColumn) ? primaryKeyColumn.field : undefined;
+                    if (!isNullOrUndefined(this.parent.dataManager) && !isNullOrUndefined(primaryKeyField)) {
+                        const dataManager: DataManager = this.parent.dataManager;
+                        if (args.requestType === 'save' && args.action === 'add') {
+                            dataManager.insert(args.data);
+                        }
+                        else if (args.requestType === 'save' && args.action === 'edit') {
+                            dataManager.update(primaryKeyField, args.data as Object);
+                        }
+                        else if (args.requestType === 'delete') {
+                            const recordToDelete: { [key: string]: Object } = (args.data as Object[])[0] as { [key: string]: Object };
+                            const primaryKeyValue: Object = recordToDelete[primaryKeyField as string];
+                            if (!isNullOrUndefined(primaryKeyValue)) {
+                                dataManager.remove(primaryKeyField, primaryKeyValue);
+                            } else {
+                                this.parent.actionFailureMethod(new Error('Primary key value not found in record to delete'));
+                            }
+                        }
+                    }
                 };
                 if (this.parent.editSettings.allowCommandColumns) {
                     this.drillThroughGrid.editSettings.mode = 'Normal';
@@ -454,6 +482,7 @@ export class DrillThroughDialog {
         }
         PivotUtil.getAppendToElement(this.parent.element, this.parent.isAngular).appendChild(drillThroughGrid);
         this.drillThroughGrid.isStringTemplate = true;
+        this.drillThroughGrid.isAngular = this.parent.isModalDialog;
         this.drillThroughGrid.appendTo(drillThroughGrid);
         drillThroughBody.appendChild(drillThroughBodyHeader);
         drillThroughBody.appendChild(drillThroughGrid);

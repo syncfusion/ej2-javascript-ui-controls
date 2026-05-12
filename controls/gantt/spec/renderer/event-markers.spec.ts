@@ -286,4 +286,196 @@ describe('Gantt spec for Event-Marker', () => {
             }
         });
     });
+    describe('CR:1023884-When timezone is specified, the EventMarker date is rendered at an incorrect position', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    { TaskID: 1, TaskName: "Product concept", StartDate: new Date("03/31/2025"), EndDate: new Date("04/08/2025") },
+                    { TaskID: 2, TaskName: "Define the product usage", StartDate: new Date("03/31/2025"), EndDate: new Date("04/08/2025"), Duration: 1, Progress: 30, ParentId: 1 },
+                ],
+                height: '650px',
+                rowHeight: 46,
+                taskbarHeight: 25,
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId'
+                },
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'EEE MMM dd'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        format: ''
+                    }
+                },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                ],
+                timezone: "America/Phoenix",
+                eventMarkers: [
+                    {
+                        day: new Date("04/01/2025"),
+                        label: "Product Concept Analysis"
+                    },
+                    {
+                        day: new Date("04/07/2025"),
+                        label: "Research Phase"
+                    },
+                    {
+                        day: new Date("04/07/2025"),
+                        label: "Demand Analysis",
+                        top: '150px'
+                    },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                projectStartDate: new Date('03/26/2025'),
+                projectEndDate: new Date('07/20/2025')
+            }, done);
+        });
+        it('Checking event marker rendered left value in UI', () => {
+            expect(ganttObj.eventMarkerColloction.length).toBe(3);
+            expect(ganttObj.eventMarkerColloction[0].left).toBe(198);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Event Marker Date Format Scenarios', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    { TaskID: 1, TaskName: "Task 1", StartDate: new Date("03/31/2025"), EndDate: new Date("04/08/2025") },
+                ],
+                height: '650px',
+                rowHeight: 46,
+                taskbarHeight: 25,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId'
+                },
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'EEE MMM dd'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        format: ''
+                    }
+                },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                projectStartDate: new Date('03/26/2025'),
+                projectEndDate: new Date('07/20/2025')
+            }, done);
+        })
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Test ISO string format (YYYY-MM-DD)', () => {
+            ganttObj.eventMarkers = [
+                {
+                    day: "2025-04-01",
+                    label: "ISO String Format"
+                }
+            ];
+            ganttObj.dataBind();
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+        it('should handle space-separated date and time', () => {
+            ganttObj.eventMarkers = [
+                {
+                    day: "2025-04-01 14:30:00",
+                    label: "ISO String Format"
+                }
+            ];
+            ganttObj.dataBind();
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+        it('Test ISO Date object format (new Date("2025-04-01"))', () => {
+            ganttObj.eventMarkers = [
+                {
+                    day: new Date("2025-04-01"),
+                    label: "ISO Date Object Format"
+                }
+            ];
+            ganttObj.dataBind();
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+         it('should return true for string input with : and non-zero hour', () => {
+            const input = "2025-04-01T14:00:00";
+            const result = (ganttObj as any).dayMarkersModule.eventMarkerRender.hasExplicitTime(input);
+            expect(result).toBe(true);
+        });
+        it('Test ISO string with explicit time', () => {
+            ganttObj.eventMarkers = [
+                {
+                    day: "2025-04-01T14:30:00",
+                    label: "ISO String With Explicit Time"
+                }
+            ];
+            ganttObj.dataBind();
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+        it('Test ISO string fomrat - normalizeToTimezone call', () => {
+            let date: Date = new Date("2025-04-01");
+            let input: string = "2025-04-01";
+            (ganttObj as any).dayMarkersModule.eventMarkerRender.normalizeToTimezone(date, input);
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+        it('Test ISO object format - normalizeToTimezone call', () => {
+            let date: Date = new Date("2025-04-01");
+            let input: Date = new Date("2025-04-01");
+            (ganttObj as any).dayMarkersModule.eventMarkerRender.normalizeToTimezone(date, input);
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+        it('should return true for ISO Object format with UTC midnight time', () => {
+            const input = new Date("2025-04-01T00:00:00");
+            const dateObj = new Date("2025-04-01T00:00:00");
+            (ganttObj as any).dayMarkersModule.eventMarkerRender.isDateOnlyInput(input, dateObj);
+            expect(ganttObj.eventMarkerColloction.length).toBe(1);
+        });
+    });
 });

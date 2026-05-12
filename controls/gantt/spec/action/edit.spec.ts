@@ -536,7 +536,7 @@ describe('Gantt Edit support', () => {
             ganttObj.projectStartDate = null;
             ganttObj.projectEndDate = null;
             ganttObj.dataBind();
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('10/29/2017');
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('10/30/2017');
         });
     
         it('Datasource with P-P-unscheduled child', () => {

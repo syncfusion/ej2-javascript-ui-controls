@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 33.2.5 (2026-05-05)
+## 33.2.6 (2026-05-12)
 
 ### PDF Data Extract
 
 #### Bug Fixes
 
 - Fixed an issue that caused corruption when applying redaction within the selected region.
+- Fixed an issue where the document gets corrupted during redaction for a specific document.
+- Fixed an issue where an invalid or unexpected token exception occurs while adding accented character.
 
 ## 32.2.9 (2025-03-10)
 

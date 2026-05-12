@@ -5,9 +5,10 @@ import { createElement, remove, EmitType, isNullOrUndefined } from '@syncfusion/
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { BeginDrillThroughEventArgs, DrillThroughEventArgs } from '../../src/common/base/interface';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
-import { Grid } from '@syncfusion/ej2-grids';
 import { VirtualScroll } from '../../src/pivotview/actions';
 import { DrillThrough } from '../../src/pivotview/actions';
+import { ColumnModel, Grid } from '@syncfusion/ej2-grids';
+import { DataManager, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 describe('- Drill Through', () => {
@@ -585,6 +586,100 @@ describe('- Drill Through', () => {
             pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Include', items: ['Bike'] }];
         });
         it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- CRUD Operations with DataManager', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid_CRUD', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                adaptor: new ODataV4Adaptor(),
+                crossDomain: true
+            });
+
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, CalculatedField);
+
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: remoteData,
+                    expandAll: false,
+                    columns: [{ name: 'CustomerID', caption: 'Customer ID' }],
+                    rows: [{ name: 'ShipCountry', caption: 'Ship Country' }, { name: 'ShipCity', caption: 'Ship City' }],
+                    values: [{ name: 'Freight' }]
+                },
+                height: 300,
+                width: 800,
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Normal'
+                },
+                beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
+                    // Configure primary key
+                    if (args.gridObj) {
+                        for (let i = 0; i < args.gridObj.columns.length; i++) {
+                            if ((args.gridObj.columns[i] as ColumnModel).field === 'CustomerID') {
+                                (args.gridObj.columns[i] as ColumnModel).isPrimaryKey = true;
+                            }
+                        }
+                    }
+                },
+                showGroupingBar: true,
+                dataBound: dataBound,
+            });
+            pivotGridObj.appendTo('#PivotGrid_CRUD');
+        });
+
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+
+        it('Check if DataManager is attached', () => {
+            expect(pivotGridObj.dataManager).toBeDefined();
+        });
+
+        it('Check if drill-through dialog opens', (done: Function) => {
+            const event: MouseEvent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(event);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                expect(document.querySelectorAll('.e-drillthrough-grid').length).toBe(1);
+                (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                done();
+            }, 500);
+        });
+
+        it('Check if edit mode is properly set', () => {
+            expect(pivotGridObj.editSettings.mode).toBe('Normal');
+            expect(pivotGridObj.editSettings.allowEditing).toBe(true);
+            expect(pivotGridObj.editSettings.allowAdding).toBe(true);
+            expect(pivotGridObj.editSettings.allowDeleting).toBe(true);
+        });
+		it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);
             //Check average change in memory samples to not be over 10MB

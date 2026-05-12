@@ -61,7 +61,7 @@ export class TextHelper {
         String.fromCharCode(96), String.fromCharCode(123), String.fromCharCode(124), String.fromCharCode(125), String.fromCharCode(126),
         String.fromCharCode(1548), String.fromCharCode(1563), String.fromCharCode(8211), String.fromCharCode(8212),
         String.fromCharCode(8216), String.fromCharCode(8217), String.fromCharCode(8221), String.fromCharCode(12288),
-        String.fromCharCode(8207)];
+        String.fromCharCode(8207), String.fromCharCode(169), String.fromCharCode(160)];
 
     private static numberNonReversingCharacters: string[] = [String.fromCharCode(44), String.fromCharCode(46), String.fromCharCode(47),
         String.fromCharCode(58), String.fromCharCode(1548)];
