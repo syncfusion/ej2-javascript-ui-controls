@@ -813,7 +813,7 @@ export class FormFields {
                 formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ?
                 formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent :
                 formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
-            selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList,
+            selectedIndex: formField.selectedIndex ? [formField.selectedIndex] : formField.SelectedList,
             options: formField.options ? formField.options : textList ? textList : [], bounds: bounds,
             signatureType: formField.signatureType ? formField.signatureType : '', zIndex: formField.zIndex, tooltip: formField.tooltip ?
                 formField.tooltip : formField.ToolTip ? formField.ToolTip : '', signatureIndicatorSettings: formField.signatureIndicatorSettings ?
@@ -1756,6 +1756,11 @@ export class FormFields {
                                 currentData.selectedIndex = target.selectedIndex;
                             }
                         }
+                        const ddIndex: number = currentData.ComboBoxList ? currentData.ComboBoxList.findIndex((item: any) =>
+                            (item.itemValue) === target.value
+                        ) : 0;
+                        currentData.selectedIndex = ddIndex > -1 ? ddIndex : target.selectedIndex;
+                        currentData.SelectedList = [currentData.selectedIndex];
                     } else if (target.type === 'select-multiple' || target.size > 0) {
                         const currentValue: any = target.selectedOptions;
                         currentData.SelectedList = [];
@@ -1768,7 +1773,9 @@ export class FormFields {
                             }
                         }
                         currentData.SelectedValue = target.value;
-                        const index: number = currentData.TextList ? currentData.TextList.indexOf(target.value) : 0;
+                        const index: number = currentData.TextList ? currentData.TextList.findIndex((item: any) =>
+                            (item.itemValue) === target.value
+                        ) : 0;
                         currentData.selectedIndex = index > -1 ? index : 0;
                         currentData.SelectedList = [currentData.selectedIndex];
                     }

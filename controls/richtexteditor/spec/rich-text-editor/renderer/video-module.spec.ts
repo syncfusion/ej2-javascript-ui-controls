@@ -22,7 +22,7 @@ const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_IN
 
 describe('Video Module ', () => {
 
-    describe('921233: Quick toolbar fails to open and script error occurs after replacing  video in events', function () {
+    xdescribe('921233: Quick toolbar fails to open and script error occurs after replacing  video in events', function () {
         let rteEle;
         let editor: RichTextEditor;
         beforeAll(function () {

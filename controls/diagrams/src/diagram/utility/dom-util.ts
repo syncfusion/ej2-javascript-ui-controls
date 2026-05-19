@@ -343,7 +343,11 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         if (text.textAlign === 'left' || text.textAlign === 'justify') {
             txtWidth = 0;
         } else if (text.textAlign === 'center') {
-            if (txtWidth > text.width && (text.textOverflow === 'Clip' || text.textOverflow === 'Ellipsis')) {
+            const isOverflowType: boolean = text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip';
+            //1014378-newLine: Check if content has explicit newlines (multi-line content from \n)
+            // For Clip or Ellipsis with multi-line content, preserve center alignment instead of forcing left-align
+            const newLine: boolean = isOverflowType && childNodes.length > 1 && text.content && text.content.indexOf('\n') > -1;
+            if (txtWidth > text.width && isOverflowType && !newLine) {
                 txtWidth = 0;
             } else {
                 txtWidth = -txtWidth / 2;

@@ -1337,7 +1337,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         else {
             this.updateActionList(ulElement, list, e);
         }
-        if (this.dataSource instanceof DataManager && this.allowCustomValue && !this.isCustomRendered &&
+        if (this.dataSource instanceof DataManager && this.allowCustomValue && (!this.isCustomRendered || this.enableVirtualization) &&
             this.inputElement.value && this.inputElement.value !== '') {
             let query: Query = new Query();
             query = this.allowFiltering ? query.where(
@@ -1868,7 +1868,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.enableVirtualization) {
                     this.virtualCustomData = dataItem;
                     const tempData: { [key: string]: Object }[] = this.dataSource instanceof DataManager ?
-                        JSON.parse(JSON.stringify(this.listData)) : JSON.parse(JSON.stringify(this.dataSource));
+                        JSON.parse(JSON.stringify(this.mainData)) : JSON.parse(JSON.stringify(this.dataSource));
                     let totalData: { [key: string]: Object }[] = [];
                     if (this.virtualCustomSelectData && this.virtualCustomSelectData.length > 0){
                         totalData = tempData.concat(this.virtualCustomSelectData);
@@ -4843,7 +4843,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             )
                         )
                     ) {
-                        const indexItem: number = this.listData.length;
+                        const indexItem: number = this.dataSource instanceof DataManager ? this.totalItemCount : this.listData.length;
                         let newValue: { [key: string]: string | Object } = {};
                         setValue(this.fields.text, value, newValue);
                         setValue(this.fields.value, value, newValue);
@@ -6330,6 +6330,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.fields.disabled) {
                     this.removeDisabledItemsValue(this.value);
                 }
+                if (this.enableVirtualization && !isNullOrUndefined(oldProp.value) && !isNullOrUndefined(newProp.value)
+                && !this.validateValues(newProp.value, oldProp.value)) {
+                    return;
+                }
                 this.updateVal(this.value, oldProp.value, 'value', this.enableVirtualization);
                 this.addValidInputClass();
                 if (!this.closePopupOnSelect && this.isPopupOpen()) {
@@ -7303,6 +7307,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                                     this.isInitRemoteVirtualData = false;
                                 }, 100);
                                 this.initStatus = true;
+                            }
+                            else {
+                                this.initialValueUpdate(this.value, true, isInitialRender);
+                                this.initialUpdate();
                             }
                         });
                 }

@@ -117,7 +117,7 @@
         }
       }
 
-      &.e-node-focus {
+      &.e-focused {
         > .e-fullrow {
           box-shadow: $treeview-focus-box-shadow;
           border: none;
@@ -204,7 +204,7 @@
           }
         }
 
-        &.e-node-focus {
+        &.e-focused {
           > .e-fullrow {
             @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
               -webkit-box-shadow: $treeview-focus-box-shadow;
@@ -314,7 +314,7 @@
             }
           }
 
-          &.e-node-focus {
+          &.e-focused {
             > .e-text-content {
               @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
                 -webkit-box-shadow: $treeview-focus-box-shadow;
@@ -334,7 +334,7 @@
           }
         }
 
-        &.e-node-focus {
+        &.e-focused {
           > .e-text-content {
             box-shadow: $treeview-focus-box-shadow;
             @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {

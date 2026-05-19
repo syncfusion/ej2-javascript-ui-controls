@@ -7760,7 +7760,7 @@ export class Layout {
         let renderElementBox: ElementBox[] = lineWidget.renderedElements;
         for (let i: number = renderElementBox.length - 1; i >= 0; i--) {
             let element: ElementBox = renderElementBox[i];
-            if (element.width > 0 && element instanceof TextElementBox) {
+            if (element.width > 0 && element instanceof TextElementBox && (!this.isInitialLoad && element.characterFormat.bidi ? element.isWidthUpdated : true)) {
                 let elementText: string = (element as TextElementBox).text;
                 // Concatenate the current element's text to the beginning of lineText. This is done to build the text content of the line from right to left for RTL layout, or when handling specific conditions like text following a tab.
                 if (!justify || !this.isTextFollowWithtab(element) || isBidi) {
@@ -10830,6 +10830,8 @@ export class Layout {
             /* eslint-disable-next-line max-len */
             (this.viewer as PageLayoutViewer).updateHeaderFooterClientAreaWithTop(table.bodyWidget.sectionFormat, this.documentHelper.isBlockInHeader(table), bodyWidget.page);
         } else if (bodyWidget instanceof TextFrame) {
+            this.viewer.clientActiveArea.y = bodyWidget.containerShape.y;
+            this.viewer.clientActiveArea.x = bodyWidget.containerShape.x;
             this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
         } else {
             this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
@@ -14153,11 +14155,12 @@ export class Layout {
             if (characterRangeTypes[i] === CharacterRangeType.LeftToRight) {
                 endIndex--;
             }
-
-            for (let j: number = endIndex; j >= rtlStartIndex; j--) {
-                if (characterRangeTypes[j] != CharacterRangeType.WordSplit) {
-                    endIndex = j;
-                    break;
+            if (this.documentHelper.characterFormat.ligature !== 'StandardContextual') {
+                for (let j: number = endIndex; j >= rtlStartIndex; j--) {
+                    if (characterRangeTypes[j] != CharacterRangeType.WordSplit) {
+                        endIndex = j;
+                        break;
+                    }
                 }
             }
         }
@@ -14191,11 +14194,12 @@ export class Layout {
         let reorderedElements: ElementBox[] = [];
         let prevCharType: CharacterRangeType = CharacterRangeType.LeftToRight;
         let prevBidi: boolean = false;
+        
         for (let i = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
             let textElement = element as TextElementBox;
             textElement.characterRange = characterRangeTypes[i];
-
+       
             let isRTLText: boolean = (textElement.characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft || textElement.characterRange == CharacterRangeType.Number;
             let isBidi: boolean = listElementsBidiValues[i];
             const text: string = textElement.text;

@@ -128,9 +128,7 @@ export class _JsonDocument extends _ExportHelper {
                 for (let j: number = 0; j < value.length; j++) {
                     this._jsonData.push(this._doubleQuotes);
                     const entry: string = value[<number>j];
-                    for (let k: number = 0; k < entry.length; k++) {
-                        this._jsonData.push(entry.charCodeAt(k));
-                    }
+                    this._jsonData = _stringToBytes(entry, true, false, this._jsonData) as number[];
                     this._jsonData.push(this._doubleQuotes);
                     if (j < value.length - 1) {
                         this._jsonData.push(this._comma);

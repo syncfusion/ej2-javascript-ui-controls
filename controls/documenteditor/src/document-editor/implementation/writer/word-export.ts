@@ -320,6 +320,9 @@ export class WordExport {
     private enforcement: boolean;
     private hashValue: string;
     private saltValue: string;
+    private cryptAlgorithmSid: string;
+    private cryptAlgorithmType: string;
+    private cryptAlgorithmClass: string;
     private protectionType: any;
     private fileName: string;
     private spanCellFormat: any;
@@ -621,6 +624,9 @@ export class WordExport {
         this.enforcement = HelperMethods.parseBoolValue(document[enforcementProperty[this.keywordIndex]]);
         this.hashValue = document[hashValueProperty[this.keywordIndex]];
         this.saltValue = document[saltValueProperty[this.keywordIndex]];
+        this.cryptAlgorithmSid = document[cryptAlgorithmSidProperty[this.keywordIndex]];
+        this.cryptAlgorithmType = document[cryptAlgorithmTypeProperty[this.keywordIndex]];
+        this.cryptAlgorithmClass = document[cryptAlgorithmClassProperty[this.keywordIndex]];
         this.protectionType = document[protectionTypeProperty[this.keywordIndex]];
         this.formFieldShading = HelperMethods.parseBoolValue(document[formFieldShadingProperty[this.keywordIndex]]);
         this.trackChanges = HelperMethods.parseBoolValue(document[trackChangesProperty[this.keywordIndex]]);
@@ -7151,9 +7157,6 @@ export class WordExport {
             writer.writeAttributeString('w', 'edit', this.wNamespace, editMode);
         }
         writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
-        writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');
-        writer.writeAttributeString('w', 'cryptAlgorithmType', this.wNamespace, 'typeAny');
-        writer.writeAttributeString('w', 'cryptAlgorithmSid', this.wNamespace, '14');
         writer.writeAttributeString('w', 'cryptSpinCount', this.wNamespace, '100000');
         if (this.enforcement) {
             writer.writeAttributeString('w', 'enforcement', this.wNamespace, '1');
@@ -7163,6 +7166,24 @@ export class WordExport {
         }
         if (this.saltValue) {
             writer.writeAttributeString('w', 'salt', this.wNamespace, this.saltValue);
+        }
+        if (this.cryptAlgorithmSid) {
+            writer.writeAttributeString('w', 'cryptAlgorithmSid', this.wNamespace, this.cryptAlgorithmSid);
+        }
+        else{
+            writer.writeAttributeString('w', 'cryptAlgorithmSid', this.wNamespace, '14');
+        }
+        if (this.cryptAlgorithmType) {
+            writer.writeAttributeString('w', 'cryptAlgorithmType', this.wNamespace, this.cryptAlgorithmType);
+        }
+        else{
+            writer.writeAttributeString('w', 'cryptAlgorithmType', this.wNamespace, 'typeAny');
+        }
+        if (this.cryptAlgorithmClass) {
+            writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, this.cryptAlgorithmClass);
+        }
+        else{
+            writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');
         }
 
         writer.writeEndElement();

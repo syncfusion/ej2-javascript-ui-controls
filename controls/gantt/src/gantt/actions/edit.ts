@@ -2061,15 +2061,41 @@ export class Edit {
                     const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                     let crud: Promise<Object> = null;
                     const dataAdaptor: AdaptorOptions = data.adaptor;
-                    if (!(dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                    if (!(dataAdaptor instanceof WebApiAdaptor || dataAdaptor instanceof ODataAdaptor ||
+                        dataAdaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
                         crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     } else {
-                        const changedRecords: string = 'changedRecords';
-                        crud = data.update(this.parent.taskFields.id, updatedData[changedRecords as string],
-                                           null, query) as Promise<Object>;
+                        const changedRecordsKey: string = 'changedRecords';
+                        const records: any = updatedData[changedRecordsKey as string];
+                        if (records instanceof Array) {
+                            const idField: string = this.parent.taskFields.id as string;
+                            let chain: Promise<any> = Promise.resolve();
+                            const results: any[] = [];
+
+                            for (const record of records) {
+                                const key: any = record[idField as string];
+                                chain = chain.then(() => {
+                                    return (data.update(idField, record, key, query) as Promise<Object>)
+                                        .then((res: any) => {
+                                            results.push(res);
+                                            return res;
+                                        });
+                                });
+                            }
+                            chain.then(() => {
+                                this.dmSuccess({ changedRecords: results }, args);
+                            }).catch((err: any) => {
+                                this.dmFailure(err, args);
+                            });
+                        } else {
+                            const keyVal: any = records ? records[this.parent.taskFields.id] : null;
+                            crud = data.update(this.parent.taskFields.id, records, keyVal, query) as Promise<Object>;
+                        }
                     }
-                    crud.then((e: ReturnType) => this.dmSuccess(e, args))
-                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                    if (!isNullOrUndefined(crud)) {
+                        crud.then((e: ReturnType) => this.dmSuccess(e, args))
+                            .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                    }
                 } else {
                     this.saveSuccess(args);
                 }
@@ -2185,7 +2211,12 @@ export class Edit {
             editedRecord.ganttProperties['endDate'] = rec[fields.endDate];
         }
         if (fields.duration !== null) {
-            editedRecord.ganttProperties['duration'] = parseFloat(rec[fields.duration]);
+            const val: any = rec[fields.duration as string];
+
+            editedRecord.ganttProperties['duration'] =
+                (val !== null && val !== undefined && val !== '')
+                    ? parseFloat(val)
+                    : null;
         }
         if (fields.durationUnit !== null) {
             editedRecord.ganttProperties['durationUnit'] = rec[fields.durationUnit];
@@ -3247,7 +3278,8 @@ export class Edit {
                     };
                     const adaptor: AdaptorOptions = data.adaptor;
                     const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                    if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                    if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor ||
+                        adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
                         const crud: Promise<Object> = data.saveChanges(
                             updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                         crud.then(() => this.deleteSuccess(args))
@@ -3255,21 +3287,27 @@ export class Edit {
                     } else {
                         const deletedRecords: string = 'deletedRecords';
                         let deleteCrud: Promise<Object> = null;
+                        const keyField: string = this.parent.taskFields.id;
                         for (let i: number = 0; i < updatedData[deletedRecords as string].length; i++) {
-                            deleteCrud = data.remove(this.parent.taskFields.id, updatedData[deletedRecords as string][i as number],
-                                                     null, query) as Promise<Object>;
+                            const record: any = updatedData[deletedRecords as string][i as number];
+                            const keyVal: any = record[keyField as string];
+                            deleteCrud = data.remove(keyField, keyVal, null, query) as Promise<Object>;
                         }
                         deleteCrud.then(() => {
                             const changedRecords: string = 'changedRecords';
                             for (let i: number = updatedData[changedRecords as string].length - 1; i >= 0; i--) {
-                                if (updatedData['deletedRecords' as string].some((record: string) => record[this.parent.taskFields.id] === updatedData[changedRecords as string][i as number].taskId)) {
+                                if (updatedData['deletedRecords' as string].some((record: string) =>
+                                    record[this.parent.taskFields.id] ===
+                                    updatedData[changedRecords as string][i as number][keyField as string])) {
                                     updatedData[changedRecords as string].splice(i as number, 1);
                                 }
                             }
-                            const updateCrud: Promise<Object> =
-                                data.update(this.parent.taskFields.id, updatedData[changedRecords as string],
-                                            null, query) as Promise<Object>;
-                            updateCrud.then(() => this.deleteSuccess(args))
+                            let updatePromise: Promise<any> = Promise.resolve();
+                            for (let i: number = 0; i < updatedData[changedRecords as string].length; i++) {
+                                const record: any = updatedData[changedRecords as string][i as number];
+                                updatePromise = updatePromise.then(() => data.update(keyField, record, null, query) as Promise<Object>);
+                            }
+                            updatePromise.then(() => this.deleteSuccess(args))
                                 .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                         }).catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     }
@@ -3518,7 +3556,8 @@ export class Edit {
                 }
             }
         }
-        if (this.parent.columnByField[this.parent.taskFields.id].editType === 'stringedit') {
+        if (this.parent.columnByField[this.parent.taskFields.id].type === 'string' &&
+            this.parent.columnByField[this.parent.taskFields.id].editType === 'stringedit') {
             return newTaskId = newTaskId.toString();
         } else {
             return newTaskId;
@@ -4386,7 +4425,7 @@ export class Edit {
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
-                                if (e.addedRecords[0][this.parent.taskFields.id].toString() !== args.data['ganttProperties']['taskId']) {
+                                if (!isNullOrUndefined(e) && !isNullOrUndefined(e.addedRecords) && e.addedRecords[0][this.parent.taskFields.id].toString() !== args.data['ganttProperties']['taskId']) {
                                     const previousIDIndex: number = this.parent.ids.indexOf(processedID);
                                     args.data['ganttProperties']['taskId'] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.newTaskData[tempTaskID as string] = e.addedRecords[0][this.parent.taskFields.id].toString();
@@ -4407,7 +4446,8 @@ export class Edit {
                                     }
                                 }
                                 const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
-                                if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
+                                if (this.parent.taskFields.id && !isNullOrUndefined(e) && !isNullOrUndefined(e.addedRecords) &&
+                                    !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                                     e.addedRecords[0][this.parent.taskFields.id].toString() === prevID) {
                                     this.parent.setRecordValue(
                                         'taskId', e.addedRecords[0][this.parent.taskFields.id], (args.data as IGanttData).ganttProperties, true);
@@ -4433,7 +4473,7 @@ export class Edit {
                         } else {
                             const addedRecords: string = 'addedRecords';
                             const insertCrud: Promise<Object> = data.insert(
-                                updatedData[addedRecords as string], null, query) as Promise<Object>;
+                                updatedData[addedRecords as string][0], null, query) as Promise<Object>;
                             insertCrud.then((e: ReturnType) => {
                                 let addedRecords: Object;
                                 if (!isNullOrUndefined(e[0])) {

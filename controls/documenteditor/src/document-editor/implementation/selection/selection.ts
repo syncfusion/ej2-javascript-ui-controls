@@ -118,6 +118,7 @@ export class Selection {
     private isMoveDownOrMoveUp: boolean = false;
     private pasteDropDwn: DropDownButton;
     private isSelectBookmark: boolean = false;
+    private isArrowSelection: boolean = false;
     private isHighlightContentControlEditRegionIn: boolean = true;
     private isPageUpAndDown: boolean = false; 
     public isPageDown: boolean = false; 
@@ -2704,7 +2705,9 @@ export class Selection {
      */
     public handleLeftKey(): void {
         if (this.end.isCurrentParaBidi) {
+            this.isArrowSelection = true;
             this.moveNextPosition();
+            this.isArrowSelection = false;
         } else {
             this.movePreviousPosition();
         }
@@ -2734,7 +2737,9 @@ export class Selection {
      */
     public handleRightKey(): void {
         if (this.end.isCurrentParaBidi) {
+            this.isArrowSelection = true;
             this.movePreviousPosition();
+            this.isArrowSelection = false;
         } else {
             this.moveNextPosition();
         }
@@ -3911,7 +3916,11 @@ export class Selection {
      * @returns {ParagraphInfo}
      */
     public getParagraph(position: IndexInfo): ParagraphInfo {
-        const paragraph: ParagraphWidget = this.getParagraphInternal(this.getBodyWidget(position), position);
+        const bodyWidget: BodyWidget = this.getBodyWidget(position);
+        if (isNullOrUndefined(bodyWidget)) {
+            return undefined;
+        }
+        const paragraph: ParagraphWidget = this.getParagraphInternal(bodyWidget, position);
         return { paragraph: paragraph, offset: parseInt(position.index, 10) };
     }
     /**
@@ -3954,6 +3963,9 @@ export class Selection {
         if (footNote) {
             return page.footnoteWidget.bodyWidgets[index1];
         } else {
+            if (isNullOrUndefined(page) || isNullOrUndefined(page.endnoteWidget)) {
+                return undefined;
+            }
             return page.endnoteWidget.bodyWidgets[index1];
         }
     }
@@ -4052,7 +4064,9 @@ export class Selection {
                 const paraIndex: string = position.index.substring(0, position.index.indexOf(';'));
                 position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
                 let shape: ElementBox = (childWidget as ParagraphWidget).getInline(parseInt(indexInOwner), 0).element;
-                childWidget = (shape as ShapeElementBox).textFrame.childWidgets[paraIndex] as Widget;
+                if (!isNullOrUndefined((shape as ShapeElementBox).textFrame)) {
+                    childWidget = (shape as ShapeElementBox).textFrame.childWidgets[paraIndex] as Widget;
+                }
             }
             if (value === 'G') {
                 childWidget = this.getBlockFromGroup(childWidget, position);
@@ -7725,8 +7739,7 @@ export class Selection {
                                         left += prevWidth;
                                     }
                                     charIndex = i - 1;
-                                    if (i === 1 && element !== children[0] && !(children[0] instanceof ShapeBase &&
-                                        (children[0] as ShapeBase).textWrappingStyle !== 'Inline')) {
+                                    if (i === 1 && element !== children[0]) {
                                         let curIndex: number = children.indexOf(element);
                                         if (!(children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = children[curIndex - 1];
@@ -7788,7 +7801,7 @@ export class Selection {
                 if (element instanceof TextElementBox) {
                     top += element.margin.top > 0 ? element.margin.top : 0;
                 } else if (!((element instanceof BookmarkElementBox && element.indexInOwner === 0 && this.lineHasOnlyBookmarksAndEditRanges(element.line)) || element instanceof EditRangeStartElementBox
-                    || element instanceof EditRangeEndElementBox || element instanceof ImageElementBox)) {
+                    || element instanceof EditRangeEndElementBox || element instanceof ImageElementBox || element instanceof ShapeElementBox)) {
                     let textMetrics: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);     //for ascent and descent
                     let height: number = element.height;
                     if (element instanceof BookmarkElementBox && !this.documentHelper.layout.hasValidElement(element.line.paragraph)) {
@@ -8120,7 +8133,7 @@ export class Selection {
         let isRtlText: boolean = false;
         let isParaBidi: boolean = widget.paragraph.bidi;
         if (!isNullOrUndefined(elementBox)) {
-            isRtlText = elementBox.characterRange === CharacterRangeType.RightToLeft;
+            isRtlText = elementBox.characterRange === CharacterRangeType.RightToLeft || (elementBox.isRightToLeft && this.isArrowSelection);
             isParaBidi = elementBox.line.paragraph.paragraphFormat.bidi;
             left = (index === 0 && skipPadding) ? left + elementBox.margin.left : left + elementBox.margin.left + elementBox.padding.left;
             if (elementBox instanceof ShapeBase && !isParaBidi && !isNullOrUndefined(elementBox.nextElement)) {
@@ -8141,7 +8154,8 @@ export class Selection {
                 return left;
             }
             if (index === (elementBox as TextElementBox).length && !isRtlText) {
-                if (this.documentHelper.isTextInput ? !isParaBidi : true) {
+                let isExcludeRTL: Boolean = elementBox.characterRange === CharacterRangeType.LeftToRight || elementBox.characterRange === CharacterRangeType.Number;
+                if (this.documentHelper.isTextInput ? !(isParaBidi && !isExcludeRTL): true) {
                     left += elementBox.width;
                 }
             } else if (index > (elementBox as TextElementBox).length) {
@@ -11716,7 +11730,10 @@ export class Selection {
             const currentSectionFormat: WSectionFormat = currentHFWidget.sectionFormat;
             if (!isNullOrUndefined(parentSectionFormat) && !isNullOrUndefined(currentSectionFormat)) {
                 if (isHeader) {
-                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.headerDistance != currentSectionFormat.headerDistance) {
+                    const currentLen: number = currentHFWidget.childWidgets.length;
+                    const parentLen: number = parentHFWidget.childWidgets.length;
+                    const lastChildYChanged: boolean = currentLen > 0 && parentLen > 0 && (currentHFWidget.childWidgets[currentLen - 1] as Widget).y !== (parentHFWidget.childWidgets[parentLen - 1] as Widget).y;
+                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.headerDistance != currentSectionFormat.headerDistance || lastChildYChanged) {
                         isRelayout = true;
                     }
                 } else {

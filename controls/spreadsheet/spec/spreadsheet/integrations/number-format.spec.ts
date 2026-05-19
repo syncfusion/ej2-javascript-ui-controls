@@ -3122,4 +3122,33 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             done();
         });
     });
+    describe('EJ2-1025952: WorkbookNumberFormatdestroy Introduces script error by Resetting Global number formats ->', (): void => {
+        let spreadsheet1: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                created: (): void => {
+                    const div: HTMLElement = document.createElement('div');
+                    div.id = 'spreadsheet1';
+                    document.body.appendChild(div);
+                    spreadsheet1 = new Spreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] });
+                    spreadsheet1.appendTo('#spreadsheet1');
+                }
+            }, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('should render two spreadsheet div modules', (done: Function) => {
+            expect(document.getElementById('spreadsheet1')).not.toBeNull();
+            expect((spreadsheet1 as any).element.id).toBe('spreadsheet1');
+            spreadsheet1.destroy();
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('J2', '$ 12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe('$12');
+            done();
+        });
+    });
 });

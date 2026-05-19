@@ -1,7 +1,7 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfField, PdfTextBoxField, PdfButtonField, PdfCheckBoxField, PdfRadioButtonListField, PdfComboBoxField, PdfListBoxField, PdfSignatureField } from './field';
-import { _areArrayEqual, _getInheritableProperty, _getPageIndex, _isNullOrUndefined } from './../utils';
+import { _getInheritableProperty, _getPageIndex, _isNullOrUndefined } from './../utils';
 import { PdfFormFieldsTabOrder, PdfRotationAngle, _FieldFlag, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -1305,15 +1305,24 @@ export class PdfForm {
             return true;
         }
         let isValid: boolean = false;
-        pageWidgets.forEach((widgets: _PdfDictionary[], pageIndex: number) => { // eslint-disable-line
+        pageWidgets.forEach((widgets: _PdfDictionary[], pageIndex: number) => {
             if (widgets && widgets.length > 0) {
                 for (let j: number = 0; j < widgets.length; j++) {
                     const widget: _PdfDictionary = widgets[<number>j];
                     if (widget && this._compareWidgets(widget, fieldDictionary)) {
                         if (this._isValidKids) {
                             isValid = true;
+                            if (!fieldDictionary.has('P') && !widget.has('P')) {
+                                const page: PdfPage = widget._crossReference._document.getPage(pageIndex);
+                                fieldDictionary.update('P', page._ref);
+                            }
                             return;
                         } else if (this._fields.indexOf(widget._reference) === -1) {
+                            if (widget.has('FT') && widget.has('Type') && widget.get('Type').name === 'Annot' &&
+                                widget.has('Subtype') && widget.get('Subtype').name === 'Widget' && !widget.has('P')) {
+                                const page: PdfPage = widget._crossReference._document.getPage(pageIndex);
+                                widget.update('P', page._ref);
+                            }
                             this._fields.push(widget._reference);
                             return;
                         }
@@ -1324,60 +1333,85 @@ export class PdfForm {
         return isValid;
     }
     _compareWidgets(widget: _PdfDictionary, annotDictionary: _PdfDictionary): boolean {
-        if (!widget || !annotDictionary) {
-            return false;
-        }
-        const widgetRect: number[] = widget.get('Rect');
-        const annotRect: number[] = annotDictionary.get('Rect');
-        if (Array.isArray(widgetRect) && Array.isArray(annotRect) && _areArrayEqual(widgetRect, annotRect)) {
-            return true;
-        }
-        const hasAnyFieldEntry: boolean =
-            widget.has('FT') || annotDictionary.has('FT') ||
-            widget.has('T') || annotDictionary.has('T') ||
-            widget.has('V') || annotDictionary.has('V');
-        if (!hasAnyFieldEntry) {
-            if (widget.has('TU') && annotDictionary.has('TU')) {
-                if (widget.get('TU') === annotDictionary.get('TU')) {
-                    return true;
+        let isSame: boolean = false;
+        if (widget && annotDictionary) {
+            const wCount: number = widget.size;
+            const aCount: number = annotDictionary.size;
+            if (wCount === aCount || wCount + 1 === aCount || wCount === aCount + 1) {
+                const widgetType: _PdfName = widget.get('FT');
+                const annotType: _PdfName = annotDictionary.get('FT');
+                if (widgetType && annotType && widgetType.name === annotType.name) {
+                    const widgetName: string = widget.get('T');
+                    const annotName: string = annotDictionary.get('T');
+                    if (widgetName && annotName && widgetName === annotName) {
+                        const widgetValue: string = widget.get('V');
+                        const annotValue: string = annotDictionary.get('V');
+                        if (widgetValue && annotValue && widgetValue === annotValue) {
+                            isSame = true;
+                        } else {
+                            if (widget.has('Parent') && annotDictionary.has('Parent')) {
+                                const widgetHolder: _PdfReference = widget.getRaw('Parent');
+                                const annotHolder: _PdfReference = annotDictionary.getRaw('Parent');
+                                if (widgetHolder && annotHolder &&
+                                    widgetHolder === annotHolder) {
+                                    isSame = true;
+                                }
+                            } else if (widget.has('TU') && annotDictionary.has('TU')) {
+                                const widgetTU: string = widget.get('TU');
+                                const annotTU: string = annotDictionary.get('TU');
+                                if (widgetTU && annotTU && widgetTU === annotTU) {
+                                    isSame = true;
+                                }
+                            } else {
+                                if (widget.has('Rect') && annotDictionary.has('Rect')) {
+                                    const widgetArray: number[] = widget.get('Rect');
+                                    const annotArray: number[] = annotDictionary.get('Rect');
+                                    if (Array.isArray(widgetArray) && Array.isArray(annotArray) &&
+                                        widgetArray.length === annotArray.length) {
+                                        const w1: number = widgetArray[0];
+                                        const a1: number = annotArray[0];
+                                        const w2: number = widgetArray[1];
+                                        const a2: number = annotArray[1];
+                                        if (typeof w1 === 'number' && typeof a1 === 'number' &&
+                                            typeof w2 === 'number' && typeof a2 === 'number') {
+                                            if (w1 === a1 && w2 === a2) {
+                                                isSame = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (!widgetType && !annotType) {
+                    if (widget.has('TU') && annotDictionary.has('TU')) {
+                        const widgetTU: string = widget.get('TU');
+                        const annotTU: string = annotDictionary.get('TU');
+                        if (widgetTU && annotTU && widgetTU === annotTU) {
+                            isSame = true;
+                        }
+                    }
+                    if (widget.has('Rect') && annotDictionary.has('Rect')) {
+                        const widgetArray: number[] = widget.get('Rect');
+                        const annotArray: number[] = annotDictionary.get('Rect');
+                        if (Array.isArray(widgetArray) && Array.isArray(annotArray) &&
+                            widgetArray.length === annotArray.length) {
+                            const w1: number = widgetArray[0];
+                            const a1: number = annotArray[0];
+                            const w2: number = widgetArray[1];
+                            const a2: number = annotArray[1];
+                            if (typeof w1 === 'number' && typeof a1 === 'number' &&
+                                typeof w2 === 'number' && typeof a2 === 'number') {
+                                if (w1 === a1 && w2 === a2) {
+                                    isSame = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-        if (!(widget.has('FT') && annotDictionary.has('FT'))) {
-            return false;
-        }
-        const widgetType: _PdfName = widget.get('FT');
-        const annotType: _PdfName = annotDictionary.get('FT');
-        if (widgetType && annotType && widgetType.name !== annotType.name) {
-            return false;
-        }
-        let widgetName: string;
-        let annotName: string;
-        if (widget.has('T')) {
-            widgetName = widget.get('T');
-        }
-        if (annotDictionary.has('T')) {
-            annotName = annotDictionary.get('T');
-        }
-        if (widgetName && annotName && widgetName !== annotName) {
-            return false;
-        }
-        let widgetValue: any; // eslint-disable-line
-        let annotValue: any; // eslint-disable-line
-        if (widget.has('V')) {
-            widgetValue = widget.get('V');
-        }
-        if (annotDictionary.has('V')) {
-            annotValue = annotDictionary.get('V');
-        }
-        if (typeof widgetValue === 'string' && typeof annotValue === 'string') {
-            return true;
-        } else if (widgetValue instanceof _PdfName && annotValue instanceof _PdfName && widgetValue.name === annotValue.name) {
-            return true;
-        } else if (typeof widgetName === 'string' && typeof annotName === 'string' && widgetName === annotName) {
-            return true;
-        }
-        return false;
+        return isSame;
     }
     /**
      * Determines whether the provided `Kids` collection represents a non widget node

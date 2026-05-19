@@ -2937,6 +2937,7 @@ export class LabelResizeTool extends ToolBase {
         let object: NodeModel | ConnectorModel;
         object = ((args.source as Selector).nodes.length) ? (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         const textElement: DiagramElement = args.source.wrapper.children[0];
+        (textElement as TextElement).isLabelResizing = true;
         let deltaWidth: number; let deltaHeight: number;
         const center: PointModel = { x: textElement.offsetX, y: textElement.offsetY };
         let rotateAngle: number = textElement.rotateAngle;

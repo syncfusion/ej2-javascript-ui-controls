@@ -10,7 +10,8 @@ import {
     CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase,
     FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox,
     ContentControl,
-    GroupShapeElementBox
+    GroupShapeElementBox,
+    Margin
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
@@ -1847,6 +1848,9 @@ private calculatePathBounds(data: string): Rect {
                 }
             }
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && !HelperMethods.startsWith(elementBox.name, '_')) {
+                if (isNullOrUndefined(elementBox.line.margin)) {
+                    elementBox.line.margin = new Margin(0, 0, 0, 0);
+                }
                 var height = elementBox.line.height - (elementBox.line.margin.bottom + elementBox.line.margin.top);
                 let xLeft = left;
                 if (!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0) {
@@ -2546,7 +2550,7 @@ private calculatePathBounds(data: string): Rect {
         let isBetweenRTL: boolean = false;
         const prevElem: TextElementBox = elementBox.previousElement instanceof TextElementBox ? elementBox.previousElement as TextElementBox : undefined;
         const nextElem: TextElementBox = elementBox.nextElement instanceof TextElementBox ? elementBox.nextElement as TextElementBox : undefined;
-        isBetweenRTL = this.prevIsRTL(prevElem) && this.nextIsRTL(nextElem);
+        isBetweenRTL = this.prevIsRTL(prevElem) && (this.nextIsRTL(nextElem) || isNullOrUndefined(nextElem));
         if ((((characterRange == CharacterRangeType.WordSplit) ||
             (((characterRange & CharacterRangeType.WordSplit) == CharacterRangeType.WordSplit) &&
                 ((characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft))) && format.bidi ) ||  (this.documentHelper.characterFormat.ligature === "StandardContextual" && isBetweenRTL)) {

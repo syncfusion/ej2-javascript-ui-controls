@@ -396,7 +396,7 @@ export class FormFieldsBase {
                             fieldName = !isNullOrUndefined(JSON.parse(fieldName) [0]) ? JSON.parse(fieldName) [0].itemName.replace(/[^0-9a-zA-Z]+/g, '') : '';
                             const selectedIndexes: number[] = [];
                             for (let k: number = 0; k < count; k++) {
-                                const text: string = currentField.itemAt(k).text;
+                                const text: string = currentField.itemAt(k).text.replace(/[^0-9a-zA-Z]+/g, '');
                                 if (text === fieldName) {
                                     selectedIndexes.push(k);
                                 }

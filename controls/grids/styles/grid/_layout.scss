@@ -3731,9 +3731,11 @@
         padding: 0;
       }
 
-      .e-emptyindentcell {
-        transform: scale(0);
-        transform-origin: 0 0;
+      span.e-emptyindentcell {
+        position: absolute;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
       }
 
       .e-dialog .e-gridform .e-table .e-rowcell {

@@ -2542,6 +2542,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         if ((this as any).isReact && this.items[parseInt(index.toString(), 10)].template) {
                             this.clearToolbarTemplate(itemCol[parseInt(index.toString(), 10)]);
                         }
+                        if (this.element.closest('.e-richtexteditor')) {
+                            const btnItem: EJ2Instance = itemCol[parseInt(index.toString(), 10)].querySelector('.e-control.e-btn');
+                            if (!isNOU(btnItem) && !isNOU(btnItem.ej2_instances[0]) &&
+                                !((btnItem.ej2_instances[0] as Button).isDestroyed)) {
+                                (btnItem.ej2_instances[0] as Button).destroy();
+                            }
+                        }
                         EventHandler.remove(itemCol[parseInt(index.toString(), 10)], 'click', this.itemClick);
                         detach(itemCol[parseInt(index.toString(), 10)]);
                         this.tbarEle.splice(index, 1);

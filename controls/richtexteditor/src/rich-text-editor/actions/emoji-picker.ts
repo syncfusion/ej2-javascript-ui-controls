@@ -827,12 +827,7 @@ export class EmojiPicker {
     }
 
     private emojiBtnClick(e: Event | KeyboardEvent): void {
-        const event: MouseEvent = new MouseEvent('mouseleave', { bubbles: true, cancelable: true });
-        // Includes the emote button element tooltip and toolbar tooltip
-        const emotePickerTooltips: NodeList = this.parent.element.querySelectorAll('.e-rte-emojipicker-popup [data-tooltip-id]');
-        for (let i: number = 0; i < emotePickerTooltips.length; i++) {
-            emotePickerTooltips[i as number].dispatchEvent(event);
-        }
+        this.parent.notify(events.destroyTooltip, { args: event });
         const targetEle: HTMLElement = e.target as HTMLElement;
         if (targetEle.tagName !== 'BUTTON') {
             return;
@@ -887,11 +882,7 @@ export class EmojiPicker {
         }
         if (originalEvent.keyCode === 32 && isPrevColon && this.popupObj) {
             this.removeActiveClass();
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-                this.parent.contentModule.getDocument();
-            if (this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
-                this.parent.notify(events.destroyTooltip, { args: event });
-            }
+            this.parent.notify(events.destroyTooltip, { args: event });
             this.popupObj.hide();
         }
         if (this.popupObj && (originalEvent.keyCode === 37 || originalEvent.keyCode === 38 || originalEvent.keyCode === 39

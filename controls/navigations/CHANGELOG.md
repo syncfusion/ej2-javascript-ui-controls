@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I838036` - Resolved an issue where the TreeView component displayed an unwanted border outline during interaction.
+
 ## 33.2.6 (2026-05-12)
 
 ### TreeView

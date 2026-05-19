@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 33.2.6 (2026-05-12)
+## 33.2.7 (2026-05-19)
+
+### Grid
+
+#### Bugs
+
+- `I836076`  The issue where initial filtering with multiple predicates was not working for the Menu-type filter has been resolved.
+
+## 33.2.5 (2026-05-05)
 
 ### Grid
 

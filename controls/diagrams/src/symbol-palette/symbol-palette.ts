@@ -525,10 +525,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     const index: number = Number(i);
                     if (!isBlazor() && !this.accordionElement.items[parseInt(index.toString(), 10)]) {
                         this.accordionElement.items[parseInt(index.toString(), 10)] = {
-                            header: newProp.palettes[parseInt(index.toString(), 10)].title || '',
                             expanded: newProp.palettes[parseInt(index.toString(), 10)].expanded,
                             iconCss: newProp.palettes[parseInt(index.toString(), 10)].iconCss || ''
                         };
+                    }
+                    if (newProp.palettes[parseInt(index.toString(), 10)].title && this.headerTemplateFn) {
+                        const headerTemplate: string | Function = initializeCSPTemplate(this.headerTemplateFn, this);
+                        this.accordionElement.headerTemplate = headerTemplate;
                     }
                     if (newProp.palettes[parseInt(index.toString(), 10)].height) {
                         const paletteDiv: HTMLElement = document.getElementById((this.palettes[parseInt(index.toString(), 10)] as Palette).id + '_content');
@@ -649,8 +652,34 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         //create accordion element
         if (!isBlazor()) {
             const accordionDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_container' });
+            // 1023283: SymbolPalette palette fail under strict CSP while defining title for palette
+            const headerTemplateFunction: Function = function (data: any): string | Function {
+                let title: string = '';
+                if (data && data.content && typeof data.content === 'string') {
+                    const content: string = (data.content as string);
+                    const paletteId: string = content.charAt(0) === '#' ? content.substring(1) : content;
+                    if (this.palettes) {
+                        for (let i: number = 0; i < this.palettes.length; i++) {
+                            const currentPalette: PaletteModel = this.palettes[parseInt(i.toString(), 10)];
+                            if (currentPalette && (currentPalette.id === paletteId || ('#' + currentPalette.id) === content)
+                                || currentPalette.id === 'search_palette') {
+                                if (currentPalette.id === 'search_palette') {
+                                    title = data.header;
+                                } else {
+                                    title = currentPalette.title || '';
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                return title;
+            };
+            const headerTemplate: string | Function = initializeCSPTemplate(headerTemplateFunction, this) as string | Function;
+            this.headerTemplateFn = headerTemplateFunction;
             this.accordionElement = new Accordion({
-                expandMode: this.expandMode
+                expandMode: this.expandMode,
+                headerTemplate: headerTemplate
             });
             if (!this.enableAnimation) {
                 this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
@@ -1056,7 +1085,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.element.appendChild(paletteDiv);
         if (!isBlazor()) {
             const item: AccordionItemModel = {
-                header: symbolGroup.title,
                 expanded: symbolGroup.expanded,
                 content: '#' + symbolGroup.id, iconCss: symbolGroup.iconCss
             };

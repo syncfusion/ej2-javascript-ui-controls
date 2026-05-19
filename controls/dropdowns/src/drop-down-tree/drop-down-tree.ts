@@ -443,6 +443,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isFromFilterChange: boolean = false;
     private valueTemplateContainer: HTMLElement;
     private previousFilterText: string;
+    private fallbackValue: string[] = [];
 
     /**
      * Specifies the template that renders to the popup list content of the
@@ -2240,6 +2241,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setTreeValue(): void {
         if (this.value !== null && this.value.length !== 0) {
+            const dataReady: boolean = this.treeItems && this.treeItems.length > 0;
+            if (!dataReady && this.fallbackValue.length === 0) {
+                this.fallbackValue = this.value.slice();
+            }
             let data: { [key: string]: Object };
             if (this.showCheckBox || this.allowMultiSelection) {
                 for (let i: number = this.value.length - 1; i >= 0; i--) {
@@ -3875,7 +3880,16 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputEle); break;
             case 'cssClass': this.setCssClass(newProp.cssClass, oldProp.cssClass); break;
             case 'enableRtl': this.setEnableRTL(this.enableRtl); break;
-            case 'fields': this.setFields(); break;
+            case 'fields':
+                this.setFields();
+                setTimeout(() => {
+                    if (this.value.length === 0 && this.fallbackValue.length > 0) {
+                        this.value = this.fallbackValue;
+                        this.updateValue(this.fallbackValue);
+                        this.fallbackValue = [];
+                    }
+                }, 1);
+                break;
             case 'readonly': Input.setReadonly(newProp.readonly, this.inputEle); break;
             case 'enabled': this.setEnable(); break;
             case 'floatLabelType':

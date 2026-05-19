@@ -6432,6 +6432,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const keys: string[] = Object.keys(ruleColl[i as number]);
                 if (!isNullOrUndefined(ruleColl[i as number].rules) && keys.indexOf('rules') > -1 && (ruleColl[i as number].rules.length !== 0)) {
                     if (this.element.querySelectorAll('.e-group-container').length > this.maxGroupCount) { return null; }
+                    if (isNullOrUndefined(this.updatedRule) && this.allowDragAndDrop && this.dragElement &&
+                    this.dragElement.querySelector('.e-rule-list') && this.dragElement.querySelector('.e-rule-list').querySelector('.e-group-container')) {
+                        this.updatedRule = {
+                            isLocked: ruleColl[i as number].isLocked, condition: ruleColl[i as number].condition,
+                            not: ruleColl[i as number].not
+                        };
+                    }
                     parentElem = this.renderGroup(ruleColl[i as number], ruleColl[i as number].condition, parentElem,
                                                   ruleColl[i as number].not);
                     parentElem = this.importRules(ruleColl[i as number], parentElem, true);

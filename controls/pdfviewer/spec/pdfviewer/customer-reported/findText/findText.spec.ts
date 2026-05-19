@@ -4,7 +4,7 @@ import {
     TextSelection, TextSearch, Print, Annotation, FormFields, AnnotationDataFormat, FormDesigner, PageOrganizer
 } from "../../../../src/index";
 import { getTarget, mouseDownEvent, mouseMoveEvent, mouseUpEvent, waitFor } from "../../utils.spec";
-import { DOC_WITHOUT_SPACE, FAIL_PDF_B64, OLD_PDFVIEWER_JSON, PDF_WITH_EMPTYPAGE_B64 } from "../../Data/pdf-data.spec";
+import { DOC_WITHOUT_SPACE, FAIL_PDF_B64, OLD_PDFVIEWER_JSON, PDF_WITH_EMPTYPAGE_B64, TEXT_WITH_LINE_BREAK } from "../../Data/pdf-data.spec";
 
 /**
 * PdfViewer spec
@@ -198,3 +198,64 @@ describe('PDF_Viewer_findText_multiple_word', () => {
     });
 
 })
+
+describe('PDF_Viewer_findText_linebreak', () => {
+    let pdfviewer_findText_with_linebreak: PdfViewer = null;
+
+    PdfViewer.Inject(
+        Toolbar, Magnification, Navigation, LinkAnnotation, ThumbnailView, BookmarkView,
+        TextSelection, TextSearch, Print, Annotation, FormFields, FormDesigner, PageOrganizer
+    );
+
+    beforeAll((done) => {
+        const element: HTMLElement = createElement('div', { id: 'pdfviewer_findText_with_linebreak' });
+        document.body.appendChild(element);
+        pdfviewer_findText_with_linebreak = new PdfViewer({
+            resourceUrl: window.location.origin + '/base/src/pdfviewer/ej2-pdfviewer-lib',
+            documentPath: "data:application/pdf;base64," + TEXT_WITH_LINE_BREAK
+        });
+        pdfviewer_findText_with_linebreak.documentLoad = () => {
+            done();
+        }
+        pdfviewer_findText_with_linebreak.appendTo("#pdfviewer_findText_with_linebreak");
+    });
+
+    afterAll(() => {
+        if (pdfviewer_findText_with_linebreak) {
+            pdfviewer_findText_with_linebreak.destroy();
+            const el = document.getElementById('pdfviewer_findText_with_linebreak');
+            if (el && el.parentNode) { el.parentNode.removeChild(el); }
+            pdfviewer_findText_with_linebreak = null;
+        }
+    });
+
+    afterEach(() => {
+    });
+
+    it('1025263 - findText for the word with line break', function (done) {
+        try {
+            pdfviewer_findText_with_linebreak.extractTextCompleted = function () {
+                var results = pdfviewer_findText_with_linebreak.textSearchModule.findText('bolt rope', false);
+                var searchResults = Array.isArray(results) ? results : [];
+                expect(searchResults.length).toBeGreaterThan(0);
+                var bounds = searchResults.reduce(function (acc, r) {
+                    if (r && Array.isArray(r.bounds)) {
+                        acc.push.apply(acc, r.bounds);
+                    }
+                    return acc;
+                }, []);
+                expect(bounds.length).toBeGreaterThan(0);
+                expect(bounds[0].x).toBe(500.076171875);
+                expect(bounds[0].y).toBe(115.67596435546875);
+
+                expect(bounds[1].x).toBe(71.7719955444336);
+                expect(bounds[1].y).toBe(134.7439575195313);
+
+                done();
+            };
+        }
+        catch (e) {
+            done.fail(e);
+        }
+    });
+});

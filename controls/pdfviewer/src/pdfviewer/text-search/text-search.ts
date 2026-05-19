@@ -860,7 +860,7 @@ export class TextSearch {
                     matches.push(newIndex);
                 }
             }
-            if (matches.length === 0) {
+            if (matches.length === 0 || matchIndex === -1) {
                 multiSearchIndex = multiSearch.indexOf(inputString, multiSearchIndex + queryLength);
                 MultilineIndex = Multiline.indexOf(inputString, MultilineIndex + queryLength);
                 specialcharcterIndex = specialCharcterSearch.indexOf(inputString, specialcharcterIndex + queryLength);
@@ -933,9 +933,6 @@ export class TextSearch {
                         }
                     }
                 }
-                if (matches.length > 1) {
-                    matches.splice(1, matches.length);
-                }
             }
             const words: string[] = pageTextData.match(/[a-zA-Z]+|\d+/g);
             if (!isNullOrUndefined(words)) {
@@ -954,6 +951,8 @@ export class TextSearch {
                 this.adjustInputContainerWidth();
             }
             if (this.searchMatches && matches.length > 0) {
+                const getIndexValue: any = (value: any) => Array.isArray(value) ? value[0] : value;
+                matches.sort((a: any, b: any) => getIndexValue(a) - getIndexValue(b));
                 this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
             }
         }
@@ -1229,7 +1228,10 @@ export class TextSearch {
                         }
                     }
                 } else if (!this.searchMatches[this.searchPageIndex] && !this.isMessagePopupOpened) {
-                    if (this.pdfViewerBase.pageCount > 0) {
+                    if (this.searchCount === 0) {
+                        this.showLoadingIndicator(false);
+                        this.onMessageBoxOpen();
+                    } else if (this.pdfViewerBase.pageCount > 0) {
                         this.initSearch(this.searchPageIndex, false);
                     }
                 } else {
@@ -1531,7 +1533,7 @@ export class TextSearch {
                 matchIndex = matchIndex + unicodeLength;
             }
         }
-        if (matches.length === 0) {
+        if (matches.length === 0 || matchIndex === -1) {
             multiSearchIndex = multiSearch.indexOf(searchText, multiSearchIndex + queryLength);
             MultilineIndex = Multiline.indexOf(searchText, MultilineIndex + queryLength);
             specialcharcterIndex = specialCharcterSearch.indexOf(searchText, specialcharcterIndex + queryLength);
@@ -1602,13 +1604,11 @@ export class TextSearch {
                     }
 
                 }
-
-            }
-            if (matches.length > 1) {
-                matches.splice(1, matches.length);
             }
         }
         if (this.searchMatches && matches.length > 0) {
+            const getIndexValue: any = (value: any) => Array.isArray(value) ? value[0] : value;
+            matches.sort((a: any, b: any) => getIndexValue(a) - getIndexValue(b));
             this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
         }
         if (!isSinglePageSearch) {

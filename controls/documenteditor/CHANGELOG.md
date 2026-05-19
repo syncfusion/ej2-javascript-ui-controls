@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I830674` - Resolved an issue where content would disappear when reopening and editing a saved document.
+
 ## 33.2.6 (2026-05-12)
 
 ### DocumentEditor

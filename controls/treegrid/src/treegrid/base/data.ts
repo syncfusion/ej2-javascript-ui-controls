@@ -200,12 +200,10 @@ export class DataManipulation {
     // }
     private selfReferenceUpdate(selfData: ITreeData[]): ITreeData[] {
         const result: ITreeData[] = [];
-        while (this.hierarchyData.length > 0 && selfData.length > 0) {
-            const index: number = selfData.indexOf(this.hierarchyData[0]);
-            if ( index === -1) {
-                this.hierarchyData.shift();
-            } else {
-                result.push(this.hierarchyData.shift());
+        for (let i: number = 0; i < this.hierarchyData.length && selfData.length > 0; i++) {
+            const index: number = selfData.indexOf(this.hierarchyData[parseInt(i.toString(), 10)]);
+            if (index !== -1) {
+                result.push(this.hierarchyData[parseInt(i.toString(), 10)]);
                 selfData.splice(index, 1);
             }
         }

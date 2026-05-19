@@ -57,6 +57,7 @@ const CHECKBOXRIPPLE: string = 'e-ripple-container';
 const RIPPLE: string = 'e-ripple';
 const RIPPLEELMENT: string = 'e-ripple-element';
 const FOCUS: string = 'e-node-focus';
+const FOCUSED: string = 'e-focused';
 const IMAGE: string = 'e-list-img';
 const BIGGER: string = 'e-bigger';
 const SMALL: string = 'e-small';
@@ -3415,6 +3416,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const focusedNode: Element = this.getFocusedNode();
             if (focusedNode) {
                 removeClass([focusedNode], FOCUS);
+                removeClass([focusedNode], FOCUSED);
                 focusedNode.setAttribute('tabindex', '-1');
             }
             addClass([li], FOCUS);
@@ -4118,9 +4120,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setFocus(preNode: Element, nextNode: Element): void {
         removeClass([preNode], FOCUS);
+        removeClass([preNode], FOCUSED);
         preNode.setAttribute('tabindex', '-1');
         if (!nextNode.classList.contains('e-disable')) {
             addClass([nextNode], FOCUS);
+            addClass([nextNode], FOCUSED);
             nextNode.setAttribute('tabindex', '0');
             (<HTMLElement>nextNode).focus();
             EventHandler.add(nextNode, 'blur', this.focusOut, this);
@@ -4146,6 +4150,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             } else {
                 focusedElement.setAttribute('tabindex', '0');
                 addClass([focusedElement], FOCUS);
+                addClass([focusedElement], FOCUSED);
                 EventHandler.add(focusedElement, 'blur', this.focusOut, this);
             }
             this.mouseDownStatus = false;
@@ -4156,6 +4161,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const focusedElement: Element = this.getFocusedNode();
         if (event.target === focusedElement) {
             removeClass([focusedElement], FOCUS);
+            removeClass([focusedElement], FOCUSED);
             EventHandler.remove(focusedElement, 'blur', this.focusOut);
         }
     }

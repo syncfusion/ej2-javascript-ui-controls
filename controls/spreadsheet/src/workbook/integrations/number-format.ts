@@ -326,6 +326,9 @@ export class WorkbookNumberFormat {
         const cell: CellModel = args.cell || getCell(args.rowIndex, args.colIndex, sheet, false, true);
         let rightAlign: boolean = false;
         const intl: Internationalization = new Internationalization();
+        if (!numberFormatsCode) {
+            this.updateLocalizedFormats(IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject);
+        }
         if (!args.curSymbol) {
             args.curSymbol = getNumberDependable(this.parent.locale, defaultCurrencyCode);
         }
@@ -1196,6 +1199,9 @@ export class WorkbookNumberFormat {
             }
             let format: string = '';
             if (res.includes(options.args.curSymbol)) { // Auto detect 1000 separator format with currency symbol
+                if (!numberFormatsCode) {
+                    this.updateLocalizedFormats(IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject);
+                }
                 format = res.includes(this.localeObj.decimal) ? numberFormatsCode.currency[0] : numberFormatsCode.currency[1];
                 res = res.replace(options.args.curSymbol, '');
             }

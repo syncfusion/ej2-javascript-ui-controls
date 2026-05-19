@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I832062` - Now, the existing image will be removed when pasting new image after Ctrl + A selection.
+
+- `#I837714` - Now, New line creation in the Rich Text Editor is now restricted once the content reaches the `maxLength` API limit.
+
+- `#I835531` - Now, the `getCharCount()` public method will return proper value during change event in Code View Mode in RichTextEditor
+
 ## 33.2.6 (2026-05-12)
 
 ### RichTextEditor
@@ -16,7 +28,7 @@
 
 - `#I829393` - Now, table pasted from excel renders correctly in Safari browser while pasting in the Rich Text Editor.
 
-- `#I831970` - Now,the image resizing icons shown properly on Safari in RichTextEditor.
+- `#I831970` - Now, the image resizing icons shown properly on Safari in RichTextEditor.
 
 - `#I829371` - Now, table cells are selectable using keyboard shortcuts in the Rich Text Editor on Safari.
 

@@ -13167,4 +13167,280 @@ describe('Tab Control', () => {
             expect(tabObj.items[0].cssClass).toBe('');
         });
     });
+
+    describe('allowDragAndDrop cleanup and state management', () => {
+        let tab: Tab;
+        let element: HTMLElement;
+
+        beforeEach((): void => {
+            tab = undefined;
+            element = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(element);
+        });
+
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Draggable instances should be created when allowDragAndDrop is true', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            // Verify draggable instances are created
+            expect((tab as any).draggableItems.length).toBeGreaterThan(0);
+            expect((tab as any).draggableItems.length).toEqual(3);
+
+            // Verify all toolbar items have draggable class
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(true);
+            });
+        });
+
+        it('Draggable instances should be destroyed when allowDragAndDrop changes from true to false', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            // Verify draggable instances exist
+            expect((tab as any).draggableItems.length).toBeGreaterThan(0);
+            const initialCount = (tab as any).draggableItems.length;
+
+            // Disable drag and drop
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+
+            // Verify draggable instances are destroyed
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Verify toolbar items no longer have draggable class
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(false);
+            });
+        });
+
+        it('Draggable instances should be recreated when re-enabling allowDragAndDrop after disabling', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            // Initial state: draggable instances exist
+            expect((tab as any).draggableItems.length).toEqual(2);
+
+            // Disable drag and drop
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Re-enable drag and drop
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+
+            // Verify draggable instances are recreated
+            expect((tab as any).draggableItems.length).toEqual(2);
+
+            // Verify toolbar items have draggable class again
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(true);
+            });
+        });
+
+        it('Multiple enable/disable cycles should work correctly without orphaned instances', () => {
+            tab = new Tab({
+                allowDragAndDrop: false,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // First cycle: enable
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(3);
+
+            // First cycle: disable
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Second cycle: enable
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(3);
+
+            // Second cycle: disable
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Third cycle: enable
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(3);
+
+            // Verify no orphaned instances exist
+            expect((tab as any).draggableItems.length).toEqual(3);
+            expect((tab as any).draggableItems[0]).toBeDefined();
+            expect((tab as any).draggableItems[1]).toBeDefined();
+            expect((tab as any).draggableItems[2]).toBeDefined();
+        });
+
+        it('Disabling allowDragAndDrop immediately after initialization should prevent dragging', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            // Verify initial state
+            expect((tab as any).draggableItems.length).toEqual(2);
+
+            // Immediately disable before any drag occurs
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+
+            // Verify no draggable instances remain
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Verify toolbar items are not draggable
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(false);
+            });
+        });
+
+        it('Disabling and re-enabling drag while items are added should maintain correct state', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            expect((tab as any).draggableItems.length).toEqual(2);
+
+            // Disable drag
+            tab.allowDragAndDrop = false;
+            tab.dataBind();
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Add items while drag is disabled
+            tab.addTab([{ header: { "text": "item3" }, content: "Content3" }]);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Re-enable drag after adding items
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+
+            // Verify all 3 items are now draggable
+            expect((tab as any).draggableItems.length).toEqual(3);
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            expect(tbItems.length).toEqual(3);
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(true);
+            });
+        });
+
+        it('Changing dragArea while allowDragAndDrop is false should have no effect on draggable state', () => {
+            tab = new Tab({
+                allowDragAndDrop: false,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Try to change dragArea while disabled
+            tab.dragArea = '#custom-area';
+            tab.dataBind();
+
+            // Verify no draggable instances were created
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Now enable drag and set dragArea
+            tab.allowDragAndDrop = true;
+            tab.dataBind();
+
+            // Verify draggable instances are created
+            expect((tab as any).draggableItems.length).toEqual(2);
+        });
+
+        it('Default allowDragAndDrop property should be false with no draggable instances', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            // Verify default value is false
+            expect(tab.allowDragAndDrop).toBe(false);
+
+            // Verify no draggable instances are created
+            expect((tab as any).draggableItems.length).toEqual(0);
+
+            // Verify toolbar items are not draggable
+            const tbItems = element.querySelectorAll('.e-toolbar-item');
+            tbItems.forEach((item: HTMLElement) => {
+                expect(item.classList.contains('e-draggable')).toBe(false);
+            });
+        });
+
+        it('Destroying component while allowDragAndDrop is true should clean up all draggable instances', () => {
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+
+            expect((tab as any).draggableItems.length).toEqual(2);
+
+            // Destroy component
+            tab.destroy();
+
+            // Verify component is destroyed properly
+            expect((tab as any).draggableItems.length).toEqual(0);
+            expect(element.childNodes.length).toEqual(0);
+        });
+    });
 });

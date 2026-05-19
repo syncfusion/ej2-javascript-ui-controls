@@ -30,7 +30,10 @@ export class TablePropertiesDialog {
     private tableWidthType: DropDownList;
     private preferredWidth: HTMLInputElement;
     private rowHeightType: DropDownList;
-    private rowHeightCheckBox: CheckBox;
+    /**
+     * @private
+     */
+    public rowHeightCheckBox: CheckBox;
     private rowHeight: HTMLInputElement;
     private cellWidthType: DropDownList;
     private preferredCellWidthCheckBox: CheckBox;
@@ -1033,14 +1036,13 @@ export class TablePropertiesDialog {
     }
     private setTableRowProperties(): void {
         const rowFormat: SelectionRowFormat = this.documentHelper.selection.rowFormat;
-        let enableRowHeight: boolean = (rowFormat.height > 0 || rowFormat.heightType === 'Exactly');
+        const enableRowHeight: boolean = (rowFormat.height > 0 || rowFormat.heightType === 'Exactly');
         //instance of table row values
         if (enableRowHeight) {
             this.rowHeightCheckBox.checked = true;
         } else {
             if (rowFormat.heightType === undefined) {
                 this.rowHeightCheckBox.indeterminate = true;
-                enableRowHeight = true;
             } else {
                 this.rowHeightCheckBox.checked = false;
             }

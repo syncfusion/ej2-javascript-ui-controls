@@ -1,4 +1,4 @@
-import { addClass, attributes, Browser, closest, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { addClass, attributes, Browser, closest, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, createElement } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor, convertFontSize, isBlockNode } from '../../common/util';
 import { EditorManager } from '../../editor-manager';
@@ -961,13 +961,21 @@ export class HtmlEditor {
         }
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 &&
             currentRange.startContainer.nodeType !== Node.TEXT_NODE) {
-            const ChildNode: HTMLElement = !isNOU(currentRange.startContainer.childNodes[currentRange.startOffset - 1]) &&
+            const childNode: HTMLElement = !isNOU(currentRange.startContainer.childNodes[currentRange.startOffset - 1]) &&
                 !isNOU((currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable) &&
                 !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
                 currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement : null;
             const index: number = currentRange.startOffset > 1 ? currentRange.startOffset - 1 : 0;
-            if (ChildNode) {
-                ChildNode.remove();
+            const isMentionEle: boolean = !isNOU(childNode) && childNode.nodeType !== Node.TEXT_NODE && childNode.classList.contains('e-mention-chip');
+            if (isMentionEle) {
+                const rootBlockEle: HTMLElement =
+                    this.parent.formatter.editorManager.domNode.getImmediateBlockNode(childNode) as HTMLElement;
+                if ((childNode.previousSibling && childNode.previousSibling.nodeName === 'BR') ||
+                    (rootBlockEle.textContent.length - childNode.textContent.length) === 0) {
+                    childNode.parentElement.replaceChild(createElement('br'), childNode);
+                } else {
+                    childNode.remove();
+                }
                 (e.args as KeyboardEventArgs).preventDefault();
             } else if ((checkNode && checkNode.textContent.trim() === '') ||
                 (currentRange.startContainer.childNodes[index as number] &&

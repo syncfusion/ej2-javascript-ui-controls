@@ -777,6 +777,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.refreshActiveBorder();
             });
         }
+        if (this.isAngular && (this as any).registeredTemplate && !isNullOrUndefined((this as any).registeredTemplate.headerTemplate)){
+            setTimeout(() => {
+                this.refreshOverflow();
+                this.refreshActiveBorder();
+            }, 5);
+        }
     }
     private renderContainer(): void {
         const ele: HTEle = this.element;
@@ -1662,7 +1668,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             tbPopObj.show(config);
         }
     }
-    private bindDraggable(): void {
+    private bindDraggable(refreshDraggableItems?: boolean): void {
+        if (refreshDraggableItems && this.draggableItems.length > 0) {
+            for (let i: number = 0; i < this.draggableItems.length; i++) {
+                this.draggableItems[i].destroy();
+                this.draggableItems[i] = null;
+            }
+            this.draggableItems = [];
+        }
         if (this.allowDragAndDrop) {
             const tabHeader: Element = this.element.querySelector('.' + CLS_HEADER);
             if (tabHeader){
@@ -2710,7 +2723,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     }
                     break;
                 case 'allowDragAndDrop':
-                    this.bindDraggable();
+                    this.bindDraggable(true);
                     break;
                 case 'swipeMode':
                     if (this.touchModule) {

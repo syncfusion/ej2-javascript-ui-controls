@@ -863,8 +863,10 @@ export class Filter implements IAction {
                                  filterDate: string | number | boolean | Date | (string | number | boolean | Date)[]): boolean {
         if (isNullOrUndefined(colDate) && isNullOrUndefined(filterDate)) {
             return true;
-        }  else if (colDate instanceof Date && filterDate instanceof Date) {
+        } else if (colDate instanceof Date && filterDate instanceof Date) {
             return colDate.getTime() === filterDate.getTime();
+        } else if (typeof (colDate) === 'string' && typeof (filterDate) === 'string') {
+            return colDate === filterDate;
         }
         return false;
     }

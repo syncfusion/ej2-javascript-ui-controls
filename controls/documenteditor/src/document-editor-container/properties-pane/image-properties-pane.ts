@@ -233,6 +233,7 @@ export class ImageProperties {
             this.updateImageProperties();
         }
         if (!isShow && this.element.style.display === 'none' || (isShow && this.element.style.display === 'block')) {
+            this.documentEditor.resize();
             return;
         }
         this.element.style.display = isShow ? 'block' : 'none';

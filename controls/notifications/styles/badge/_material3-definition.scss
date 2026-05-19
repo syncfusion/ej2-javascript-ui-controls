@@ -82,3 +82,22 @@ $badge-warning-font-color: rgba($warning-text) !default;
 $badge-zero-padding-margin: 0 !default;
 $badge-notification-width: auto !default;
 $badge-button-nrml-line-height: .9 !default;
+
+//subtle
+$badge-primary-subtle-bg-color: rgba($primary-light) !default;
+$badge-secondary-subtle-bg-color: $content-bg-color-alt1 !default;
+$badge-success-subtle-bg-color: rgba($success-light) !default;
+$badge-danger-subtle-bg-color: rgba($danger-light) !default;
+$badge-warning-subtle-bg-color: rgba($warning-light) !default;
+$badge-info-subtle-bg-color: rgba($info-light) !default;
+$badge-light-subtle-bg-color: $content-bg-color-alt2 !default;
+$badge-dark-subtle-bg-color: rgba($inverse-surface) !default;
+
+$badge-primary-subtle-font-color: rgba($primary) !default;
+$badge-secondary-subtle-font-color: rgba($content-text-color) !default;
+$badge-success-subtle-font-color: rgba($success) !default;
+$badge-danger-subtle-font-color: rgba($danger) !default;
+$badge-info-subtle-font-color: rgba($info) !default;
+$badge-warning-subtle-font-color: rgba($warning) !default;
+$badge-light-subtle-font-color: rgba($content-text-color) !default;
+$badge-dark-subtle-font-color: rgba($content-text-color-inverse) !default;

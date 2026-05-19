@@ -1874,6 +1874,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.localizeDialogs();
                     break;
                 case 'isReadOnly':
+                    this.notify('isReadOnlyChanged', model);
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
                         this.documentHelper.updateFocus();

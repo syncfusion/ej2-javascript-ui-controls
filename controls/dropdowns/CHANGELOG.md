@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `F198294` - Fixed with "Tree selection loss by deferring value application until after data binding" has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#F198311` - The issue where the MultiSelect displayed “undefined” when virtualization was enabled along with custom preselected values has been resolved.
+
+- `#I837086` - The issue with "MultiSelect default height inconsistency in BDS theme" has been resolved.
+
 ## 33.2.6 (2026-05-12)
 
 ### DropdownList
@@ -10,13 +26,13 @@
 
 - `#I835445` - Fixed an issue where the Index property was not applied when virtualization was enabled.
 
-## 33.2.5 (2026-05-05)
-
 ### MultiSelect
 
 #### Bug Fixes
 
 - `#I828952, #I828480, #I828633` - The issue with MultiSelect, where inconsistencies occurred when enable Virtualization was used along with other APIs, has been resolved.
+
+## 33.2.5 (2026-05-05)
 
 ## 33.2.4 (2026-04-28)
 

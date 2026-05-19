@@ -1086,6 +1086,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
         this.documentEditor.on(trackChanges, this.onEnableTrackChanges, this);
         this.documentEditor.on(internalOptionPaneChange, this.onOptionPaneChange, this);
+        this.documentEditor.on('isReadOnlyChanged', this.onReadOnlyChanged, this)
     }
 
     private onWindowResize(): void {
@@ -1114,6 +1115,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
     }
 
+    private onReadOnlyChanged(model: DocumentEditorModel): void {
+        if(model.isReadOnly !== this.restrictEditing){
+            this.restrictEditing = model.isReadOnly;
+        }
+    }
     private triggerAutoResize(args: AutoResizeEventArgs): void {
         // Cancels the auto resize of the document editor.
         args.cancel = true;

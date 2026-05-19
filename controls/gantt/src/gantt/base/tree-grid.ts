@@ -1405,7 +1405,8 @@ export class GanttTreeGrid {
                 break;
             }
         }
-        if (typeof(taskIDName) === 'string' || isNullOrUndefined(taskIDName)) {
+        if (!isNullOrUndefined(column.type) && column.type === 'string'
+            && (typeof (taskIDName) === 'string' || isNullOrUndefined(taskIDName))) {
             if (this.parent.viewType === 'ResourceView') {
                 column.allowEditing = column.allowEditing ? column.allowEditing : false;
             } else {

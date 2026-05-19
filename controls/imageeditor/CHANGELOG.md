@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I837578` - Resolved an issue where the application could freeze when editing or moving text after adding multiple text elements.
+
 ## 33.1.44 (2026-03-16)
 
 ### Image Editor

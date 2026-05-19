@@ -1778,8 +1778,7 @@ export class ParagraphWidget extends BlockWidget {
                     isField = true;
                 } else if (elementBox instanceof FieldElementBox && elementBox.fieldType === 2) {
                     isField = false;
-                }
-
+                }                
                 if (textElement != undefined && !isField) {
                     let text: string = textElement.text;
                     let isTextBidi: boolean = textElement.characterFormat.bidi;
@@ -1787,8 +1786,7 @@ export class ParagraphWidget extends BlockWidget {
                     let charTypeIndex: number = characterRangeTypes.length;
                     if (isTextBidi) {
                         isRTLLang = textHelper.isRightToLeftLanguage(elementBox.characterFormat.localeIdBidi);
-                    }
-
+                    }     
                     ////Split the text as consicutive LTR and RTL
                     let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter);
 

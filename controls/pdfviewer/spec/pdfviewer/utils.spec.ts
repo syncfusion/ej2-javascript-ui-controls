@@ -268,3 +268,115 @@ function normalizeForComparison(obj: any): any {
     }
     return obj;
 }
+
+/**
+ * Triggers a custom event on a DOM element (generic or keyboard events)
+ * Automatically creates the appropriate event type (Event or KeyboardEvent)
+ * @param element - The DOM element on which to dispatch the event
+ * @param eventName - Name of the event to trigger (e.g., 'change', 'click', 'keydown', 'keyup')
+ * @param bubbles - Whether the event should bubble (default: true)
+ * @param options - Additional event options (key, code, cancelable, etc.)
+ */
+export function triggerEvent({
+    element,
+    eventName,
+    bubbles = true,
+    options = {}
+}: {
+    element: HTMLElement | null;
+    eventName: string;
+    bubbles?: boolean;
+    options?: Record<string, any>;
+}): void {
+    if (!element || !eventName) return;
+
+    let event: Event;
+
+    // Determine event type and create appropriate event object
+    if (eventName.includes('key')) {
+        // Keyboard events: keydown, keyup, keypress
+        // Extract cancelable with default value, spread remaining options
+        const { cancelable = true, ...restOptions } = options || {};
+        event = new KeyboardEvent(eventName, {
+            bubbles,
+            cancelable,
+            ...restOptions
+        });
+    } else {
+        // Generic events: change, click, input, etc.
+        event = new Event(eventName, {
+            bubbles,
+            ...options
+        });
+    }
+
+    element.dispatchEvent(event);
+}
+
+/**
+ * Simulates user typing text into an input element character by character
+ * Dispatches keydown, keyup, and input events for each character
+ * @param element - The input element to type into
+ * @param text - The text to type
+ * @param bubbles - Whether keyboard events should bubble (default: true)
+ */
+export function simulateTyping({
+    element,
+    text,
+    bubbles = true
+}: {
+    element: HTMLInputElement | null;
+    text: string;
+    bubbles?: boolean;
+}): void {
+    if (!element || !text) return;
+
+    let currentValue = '';
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+
+        currentValue += char;
+        element.value = currentValue;
+
+        // Use triggerEvent for keyboard events (more maintainable)
+        triggerEvent({ element, eventName: 'keydown', bubbles, options: { key: char } });
+        triggerEvent({ element, eventName: 'keyup', bubbles, options: { key: char } });
+        triggerEvent({ element, eventName: 'input', bubbles });
+    }
+}
+
+/**
+ * Simulates pressing a specific key (dispatches keydown and keyup events)
+ * Useful for non-text keys like Enter, Escape, Tab, etc.
+ * @param element - The element on which to simulate the key press
+ * @param key - The key to press (e.g., 'Enter', 'Escape', 'Tab')
+ * @param code - The code of the key (optional, defaults to key value)
+ * @param bubbles - Whether the event should bubble (default: true)
+ * @param cancelable - Whether the event is cancelable (default: true)
+ */
+export function pressKey({
+    element,
+    key,
+    code,
+    bubbles = true,
+    cancelable = true
+}: {
+    element: HTMLInputElement | HTMLElement | null;
+    key: string;
+    code?: string;
+    bubbles?: boolean;
+    cancelable?: boolean;
+}): void {
+    if (!element || !key) return;
+
+    const keyboardOptions = {
+        key,
+        code: code || key,
+        cancelable
+    };
+
+    // Use triggerEvent internally (DRY principle)
+    triggerEvent({ element, eventName: 'keydown', bubbles, options: keyboardOptions });
+    triggerEvent({ element, eventName: 'keyup', bubbles, options: keyboardOptions });
+}

@@ -250,13 +250,15 @@ export abstract class _ExportHelper {
      */
     _exportFormFieldsData(field: PdfField): string | string[] {
         let textValue: string = '';
+        let encodedValue: string;
         if (field !== null && typeof field !== 'undefined' && field.export) {
             const type: _PdfName = _getInheritableProperty(field._dictionary, 'FT', false, true, 'Parent');
             if (type && type.name !== null && typeof type.name !== 'undefined') {
                 const font: _PdfDictionary = this._getEncodedFontDictionary(field._dictionary);
                 let fieldName: string = field.name;
                 if (font !== null && typeof font !== 'undefined') {
-                    fieldName = this._getEncodedValue(fieldName, font);
+                    const encodedName: string = this._getEncodedValue(fieldName, font);
+                    fieldName = typeof encodedName === 'string' ? encodedName : fieldName;
                 }
                 let value: any; // eslint-disable-line
                 let selectedValue: string | string[];
@@ -264,7 +266,8 @@ export abstract class _ExportHelper {
                 case 'Tx':
                     textValue = _getInheritableProperty(field._dictionary, 'V', false, true, 'Parent');
                     if (textValue !== null && typeof textValue !== 'undefined') {
-                        textValue = this._getEncodedValue(textValue, font);
+                        encodedValue = this._getEncodedValue(textValue, font);
+                        textValue = typeof encodedValue === 'string' ? encodedValue : textValue;
                         this._table.set(fieldName, textValue);
                     } else if (this._exportEmptyFields) {
                         textValue = '';
@@ -281,13 +284,14 @@ export abstract class _ExportHelper {
                     }
                     if (selectedValue !== null && typeof selectedValue !== 'undefined') {
                         if (typeof selectedValue === 'string' && selectedValue !== '') {
-                            selectedValue = this._getEncodedValue(selectedValue, font);
-                            textValue = selectedValue;
+                            encodedValue = this._getEncodedValue(selectedValue, font);
+                            textValue = typeof encodedValue === 'string' ? encodedValue : selectedValue;
                             this._table.set(fieldName, textValue);
                         } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                             const values: string[] = [];
                             for (let i: number = 0; i < selectedValue.length; i++) {
-                                values.push(this._getEncodedValue(selectedValue[<number>i], font));
+                                encodedValue = this._getEncodedValue(selectedValue[<number>i], font);
+                                values.push(typeof encodedValue === 'string' ? encodedValue : selectedValue[<number>i]);
                             }
                             this._table.set(fieldName, values);
                             return values;
@@ -310,7 +314,8 @@ export abstract class _ExportHelper {
                                 (radioButton !== null &&
                                 typeof radioButton !== 'undefined'
                                 && radioButton.selectedIndex === -1)) {
-                                text = this._getEncodedValue(text, font);
+                                encodedValue = this._getEncodedValue(text, font);
+                                text = typeof encodedValue === 'string' ? encodedValue : text;
                                 textValue = text;
                                 this._table.set(fieldName, textValue);
                             } else {
@@ -331,7 +336,8 @@ export abstract class _ExportHelper {
                                             text = current;
                                         }
                                         if (text !== null && typeof text !== 'undefined' && text !== '') {
-                                            text = this._getEncodedValue(text, font);
+                                            encodedValue = this._getEncodedValue(text, font);
+                                            text = typeof encodedValue === 'string' ? encodedValue : text;
                                             textValue = text;
                                             this._table.set(fieldName, textValue);
                                         }
@@ -389,11 +395,14 @@ export abstract class _ExportHelper {
      */
     _exportFormFieldData(field: PdfField): void {
         const type: _PdfName = _getInheritableProperty(field._dictionary, 'FT', false, true, 'Parent');
+        let encodedName: string;
+        let encodedValue: string;
         if (type && type.name !== null && typeof type.name !== 'undefined') {
             const font: _PdfDictionary = this._getEncodedFontDictionary(field._dictionary);
             let fieldName: string = field.name;
             if (font !== null && typeof font !== 'undefined') {
-                fieldName = this._getEncodedValue(fieldName, font);
+                encodedName = this._getEncodedValue(fieldName, font);
+                fieldName = typeof encodedName === 'string' ? encodedName : fieldName;
             }
             let textValue: string;
             let value: any; // eslint-disable-line
@@ -409,7 +418,8 @@ export abstract class _ExportHelper {
                             this._table.set(fieldName, textValue);
                         }
                     } else if (textValue !== null && typeof textValue !== 'undefined') {
-                        textValue = this._getEncodedValue(textValue, font);
+                        encodedValue = this._getEncodedValue(textValue, font);
+                        textValue = typeof encodedValue === 'string' ? encodedValue : textValue;
                         let replaceValue: string = textValue;
                         if (field instanceof PdfTextBoxField && field.multiLine) {
                             replaceValue = replaceValue.replace('\n', '');
@@ -420,7 +430,8 @@ export abstract class _ExportHelper {
                     }
                 } else {
                     if (textValue !== null && typeof textValue !== 'undefined') {
-                        textValue = this._getEncodedValue(textValue, font);
+                        encodedValue = this._getEncodedValue(textValue, font);
+                        textValue = typeof encodedValue === 'string' ? encodedValue : textValue;
                         this._table.set(fieldName, textValue);
                     } else if (this._exportEmptyFields) {
                         this._table.set(fieldName, '');
@@ -435,18 +446,21 @@ export abstract class _ExportHelper {
                             this._table.set(fieldName, value);
                         } else {
                             if (typeof value === 'string') {
-                                value = this._getEncodedValue(value, font);
+                                encodedValue = this._getEncodedValue(value, font);
+                                value = typeof encodedValue === 'string' ? encodedValue : value;
                                 this._table.set(fieldName, value);
                             } else if ((value === null || typeof value === 'undefined') && field._dictionary.has('I')) {
                                 let selectedValue: string | string[] = field._obtainSelectedValue();
                                 if (selectedValue !== null && typeof selectedValue !== 'undefined') {
                                     if (typeof selectedValue === 'string' && selectedValue !== '') {
-                                        selectedValue = this._getEncodedValue(selectedValue, font);
+                                        encodedValue = this._getEncodedValue(selectedValue, font);
+                                        selectedValue = typeof encodedValue === 'string' ? encodedValue : selectedValue;
                                         this._table.set(fieldName, textValue);
                                     } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                                         const values: string[] = [];
                                         for (let i: number = 0; i < selectedValue.length; i++) {
-                                            values.push(this._getEncodedValue(selectedValue[<number>i], font));
+                                            encodedValue = this._getEncodedValue(selectedValue[<number>i], font);
+                                            values.push(typeof encodedValue === 'string' ? encodedValue : selectedValue[<number>i]);
                                         }
                                         this._table.set(fieldName, values);
                                     }
@@ -464,12 +478,14 @@ export abstract class _ExportHelper {
                     }
                     if (selectedValue !== null && typeof selectedValue !== 'undefined') {
                         if (typeof selectedValue === 'string' && selectedValue !== '') {
-                            selectedValue = this._getEncodedValue(selectedValue, font);
+                            encodedValue = this._getEncodedValue(selectedValue, font);
+                            selectedValue = typeof encodedValue === 'string' ? encodedValue : selectedValue;
                             this._table.set(fieldName, selectedValue);
                         } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                             const values: string[] = [];
                             for (let i: number = 0; i < selectedValue.length; i++) {
-                                values.push(this._getEncodedValue(selectedValue[<number>i], font));
+                                encodedValue = this._getEncodedValue(selectedValue[<number>i], font);
+                                values.push(typeof encodedValue === 'string' ? encodedValue : selectedValue[<number>i]);
                             }
                             this._table.set(fieldName, values);
                         } else if (this._exportEmptyFields) {
@@ -496,7 +512,8 @@ export abstract class _ExportHelper {
                             (radioButton !== null &&
                             typeof radioButton !== 'undefined'
                             && radioButton.selectedIndex === -1)) {
-                            text = this._getEncodedValue(text, font);
+                            encodedValue = this._getEncodedValue(text, font);
+                            text = typeof encodedValue === 'string' ? encodedValue : text;
                             this._table.set(fieldName, text);
                         } else {
                             if (field._dictionary.has('Opt')) {
@@ -516,7 +533,8 @@ export abstract class _ExportHelper {
                                         text = current;
                                     }
                                     if (text !== null && typeof text !== 'undefined' && text !== '') {
-                                        text = this._getEncodedValue(text, font);
+                                        encodedValue = this._getEncodedValue(text, font);
+                                        text = typeof encodedValue === 'string' ? encodedValue : text;
                                         this._table.set(fieldName, text);
                                     }
                                 }

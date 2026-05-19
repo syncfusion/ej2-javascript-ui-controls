@@ -2466,7 +2466,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             isCodeBlockEnter = this.formatter.editorManager.codeBlockObj.isCodeBlockEnterAction(range, e);
         }
         this.notify(events.keyDown, { member: 'keydown', args: e });
-        this.restrict(e);
+        if (this.restrict(e)) {
+            // to prevent enter key action when max length is reached
+            if (e.which === 13) {
+                return;
+            }
+        }
         if (this.editorMode === 'HTML') {
             this.cleanList(e);
         }
@@ -2703,6 +2708,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             // To prevent any editor content changes while uploading is happening
             e.preventDefault();
             return;
+        }
+        if (this.restrict(e)) {
+            // to prevent enter key action when max length is reached
+            if (e.which === 13) {
+                return;
+            }
         }
         if (this.inputElement.classList.contains('e-mention')) {
             const mentionPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_popup');
@@ -4567,7 +4578,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private updateValueOnIdle(): void {
         if (!isNOU(this.tableModule) && !isNOU(this.inputElement.querySelector('.e-table-box.e-rbox-select'))) { return; }
-        this.setProperties({ value: this.getUpdatedValue() }, true);
+        if (!this.rootContainer.classList.contains('e-source-code-enabled')) {
+            this.setProperties({ value: this.getUpdatedValue() }, true);
+        } else {
+            this.setProperties({ value: this.getUpdatedValue() });
+        }
         this.valueContainer.value = this.value;
         this.isValueChangeBlurhandler = false;
         this.invokeChangeEvent();
@@ -4973,20 +4988,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.bindEvents();
     }
-    private restrict(e: MouseEvent | KeyboardEvent): void {
-        if (this.maxLength >= 0) {
+    private restrict(e: MouseEvent | KeyboardEvent): boolean {
+        if (this.maxLength < 0) {
+            // return if max length is not set
+            return false;
+        } else {
             const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
                 (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
-            if (!element) { return; }
+            if (!element) { return false; }
             const array: number[] = [8, 9, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {
                 if ((e as MouseEvent).which === array[i as number]) {
                     if ((e as MouseEvent).ctrlKey && (e as MouseEvent).which === 65) {
-                        return;
+                        return false;
                     } else if ((e as MouseEvent).which !== 65) {
                         arrayKey = array[i as number];
-                        return;
+                        return false;
                     }
                 }
             }
@@ -4997,7 +5015,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             if ((elementLength >= this.maxLength && this.maxLength !== -1) && (e as MouseEvent).which !== arrayKey) {
                 (e as MouseEvent).preventDefault();
+                return true;
             }
+            return false;
         }
     }
     private beforeInputHandler(e: BeforeInputEvent): void {

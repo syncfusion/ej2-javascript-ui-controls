@@ -3543,7 +3543,7 @@ describe('1023771 - PdfForm internal methods coverage', () => {
         w.set('V', 'one');
         a.set('V', 'two');
         const result = form._compareWidgets(w, a);
-        expect(result).toBe(true);
+        expect(result).toBe(false);
     });
     it('compareWidgets - PdfName value match', () => {
         const value = _PdfName.get('Yes');
@@ -3554,7 +3554,7 @@ describe('1023771 - PdfForm internal methods coverage', () => {
         w.set('V', value);
         a.set('V', value);
         const result = form._compareWidgets(w, a);
-        expect(result).toBe(true);
+        expect(result).toBe(false);
     });
     it('compareWidgets - fallback name match', () => {
         const w = new _PdfDictionary(crossRef);
@@ -3564,7 +3564,7 @@ describe('1023771 - PdfForm internal methods coverage', () => {
         w.set('T', 'Same');
         a.set('T', 'Same');
         const result = form._compareWidgets(w, a);
-        expect(result).toBe(true);
+        expect(result).toBe(false);
     });
     it('validateField - invalid inputs', () => {
         const result = form._validateField(null, null, null, null);

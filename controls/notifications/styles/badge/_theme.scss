@@ -18,9 +18,8 @@
         border: $badge-secondary-border-color;
       }
       @if ($badge-theme == 'tailwind3') {
-        background-color: $badge-secondary-bg-color;
-        border: 1px solid $badge-secondary-border-color;
-        color: $badge-secondary-font-color;
+        background-color: $badge-secondary-font-color;
+        color: $badge-secondary-bg-color;
       }
     }
 
@@ -81,6 +80,78 @@
       @if ($badge-theme == 'tailwind3') {
         background-color: $content-text-color-alt3;
         color: $content-bg-color-alt1;
+      }
+    }
+
+    &.e-badge-primary-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-primary-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-primary-subtle-bg-color;
+        color: $badge-primary-subtle-font-color;
+      }
+    }
+
+    &.e-badge-secondary-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-secondary-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-secondary-subtle-bg-color;
+        color: $badge-secondary-subtle-font-color;
+      }
+      @if ($badge-theme == 'Material3'){
+        background: $badge-secondary-subtle-bg-color;
+        color: $badge-secondary-subtle-font-color;
+      }
+    }
+
+    &.e-badge-success-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-success-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-success-subtle-bg-color;
+        color: $badge-success-subtle-font-color;
+      }
+    }
+
+    &.e-badge-danger-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-danger-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-danger-subtle-bg-color;
+        color: $badge-danger-subtle-font-color;
+      }
+    }
+
+    &.e-badge-warning-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-warning-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-warning-subtle-bg-color;
+        color: $badge-warning-subtle-font-color;
+      }
+    }
+
+    &.e-badge-info-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-info-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-info-subtle-bg-color;
+        color: $badge-info-subtle-font-color;
+      }
+    }
+
+    &.e-badge-light-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-light-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-light-subtle-bg-color;
+        color: $badge-light-subtle-font-color;
+      }
+      @if ($badge-theme == 'Material3'){
+        background: $badge-light-subtle-bg-color;
+        color: $badge-light-subtle-font-color;
+      }
+    }
+
+    &.e-badge-dark-subtle:not(.e-badge-ghost):not([href]),
+    &.e-badge-dark-subtle[href]:not(.e-badge-ghost) {
+      @if ($badge-theme == 'tailwind3' or $badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark'or $badge-theme == 'bootstrap5.3' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'FluentUI'){
+        background-color: $badge-dark-subtle-bg-color;
+        color: $badge-dark-subtle-font-color;
       }
     }
 

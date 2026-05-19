@@ -422,6 +422,9 @@ export class SfdtExport {
         this.document[enforcementProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.isDocumentProtected, this.keywordIndex);
         this.document[hashValueProperty[this.keywordIndex]] = this.documentHelper.hashValue;
         this.document[saltValueProperty[this.keywordIndex]] = this.documentHelper.saltValue;
+        this.document[cryptAlgorithmSidProperty[this.keywordIndex]] = this.documentHelper.cryptAlgorithmSid;
+        this.document[cryptAlgorithmTypeProperty[this.keywordIndex]] = this.documentHelper.cryptAlgorithmType;
+        this.document[cryptAlgorithmClassProperty[this.keywordIndex]] = this.documentHelper.cryptAlgorithmClass;
         this.document[formattingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.restrictFormatting, this.keywordIndex);
         this.document[protectionTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getProtectionTypeEnumValue(this.documentHelper.protectionType) : this.documentHelper.protectionType;
         this.document[doNotUseHTMLParagraphAutoSpacingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.dontUseHtmlParagraphAutoSpacing, this.keywordIndex);
@@ -1216,10 +1219,11 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {
                 elementText = HelperMethods.removeInvalidXmlChars(elementText);
             }
-            if(this.isWriteInlinesFootNote
+            if (this.isWriteInlinesFootNote
                 && element.indexInOwner === 0
                 && element.line.indexInOwner === 0
                 && element.paragraph.indexInOwner == 0
+                && !element.paragraph.isInsideTable
                 && HelperMethods.checkTextFormat(elementText)) {
                 elementText = "\u0002";
             }

@@ -372,6 +372,10 @@ export class ContentRender implements IRenderer {
         const isFrozenLeft: boolean = false;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const registeredTemplates: any = (this.parent as any).registeredTemplate;
+        if (this.parent.isAngular && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache)
+            && registeredTemplates && registeredTemplates.detailTemplate && !args.isFrozen && !isFrozenLeft) {
+            this.parent.destroyTemplate(['detailTemplate']);
+        }
         if (!(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && registeredTemplates
             && registeredTemplates.template && !args.isFrozen && !isFrozenLeft) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

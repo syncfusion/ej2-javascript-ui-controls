@@ -299,6 +299,15 @@ export class SfdtReader {
         if (!isNullOrUndefined(data[saltValueProperty[this.keywordIndex]])) {
             this.documentHelper.saltValue = data[saltValueProperty[this.keywordIndex]];
         }
+        if (!isNullOrUndefined(data[cryptAlgorithmSidProperty[this.keywordIndex]])) {
+            this.documentHelper.cryptAlgorithmSid = data[cryptAlgorithmSidProperty[this.keywordIndex]];
+        }
+        if (!isNullOrUndefined(data[cryptAlgorithmTypeProperty[this.keywordIndex]])) {
+            this.documentHelper.cryptAlgorithmType = data[cryptAlgorithmTypeProperty[this.keywordIndex]];
+        }
+        if (!isNullOrUndefined(data[cryptAlgorithmClassProperty[this.keywordIndex]])) {
+            this.documentHelper.cryptAlgorithmClass = data[cryptAlgorithmClassProperty[this.keywordIndex]];
+        }
     }
     /**
      * @private

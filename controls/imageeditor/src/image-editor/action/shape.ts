@@ -1055,9 +1055,18 @@ export class Shape {
         if  (parent.activeObj.rotatedAngle !== 0) {
             parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
         }
+        let isDuplicate: boolean = false;
+        for (let i: number = 0; i < parent.objColl.length; i++) {
+            if (parent.objColl[i as number].currIndex === parent.activeObj.currIndex) {
+                isDuplicate = true;
+                break;
+            }
+        }
         if (allowUndoRedo) {
             this.apply(parent.activeObj.shape, parent.activeObj);
-            parent.objColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
+            if (!isDuplicate) {
+                parent.objColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
+            }
             parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
                 value: {operation: 'text', previousObj: prevObj, previousObjColl: prevObj.objColl,
                     previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
@@ -1065,7 +1074,9 @@ export class Shape {
                     currentText: parent.textArea.value, previousFilter: null, isCircleCrop: null}});
         } else {
             this.apply(parent.activeObj.shape, parent.activeObj);
-            parent.objColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
+            if (!isDuplicate) {
+                parent.objColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
+            }
         }
     }
 
@@ -2851,6 +2862,19 @@ export class Shape {
         parent.activeObj.redactPixelate = parent.tempRedactPixel;
     }
 
+    private removeDuplicates(collection: SelectionPoint[]): void {
+        for (let i: number = 0; i < collection.length; i++) {
+            const currentObj: SelectionPoint = collection[i as number];
+            for (let j: number = 0; j < i; j++) {
+                if (collection[j as number].currIndex === currentObj.currIndex) {
+                    collection.splice(i, 1);
+                    i--;
+                    break;
+                }
+            }
+        }
+    }
+
     private applyActObj(isMouseDown?: boolean): void {
         const parent: ImageEditor = this.parent;
         let isActObj: boolean = false;
@@ -2880,6 +2904,17 @@ export class Shape {
                     const splitWords: string[] = parent.activeObj.currIndex.split('_');
                     let tempObjColl: SelectionPoint[] = parent.objColl.splice(0, parseInt(splitWords[1], 10) - 1);
                     tempObjColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
+                    this.removeDuplicates(parent.objColl);
+                    this.removeDuplicates(tempObjColl);
+                    for (let i: number = 0; i < parent.objColl.length; i++) {
+                        const currentObj: SelectionPoint = parent.objColl[i as number];
+                        for (let j: number = 0; j < tempObjColl.length; j++) {
+                            if (tempObjColl[j as number].currIndex === currentObj.currIndex) {
+                                tempObjColl.splice(j, 1);
+                                j--;
+                            }
+                        }
+                    }
                     for (let i: number = 0; i < parent.objColl.length; i++) {
                         tempObjColl.push(parent.objColl[i as number]);
                     }
@@ -3768,7 +3803,9 @@ export class Shape {
         tempObjColl = extend([], parent.objColl, [], true) as SelectionPoint[];
         tempPointColl = extend([], parent.pointColl, [], true);
         parent.shapeColl = []; let order: number = 1; let isBreak: boolean; let isCrop: boolean = false;
-        while (tempObjColl.length !== 0 || tempPointColl.length !== 0) {
+        let count: number = 0;
+        while ((tempObjColl.length !== 0 || tempPointColl.length !== 0) && count < 100) {
+            count++;
             isBreak = isCrop = false;
             for (let i: number = 0; i < tempObjColl.length; i++) {
                 if (tempObjColl[i as number].order === order ||

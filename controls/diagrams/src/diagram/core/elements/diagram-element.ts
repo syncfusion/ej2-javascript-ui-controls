@@ -300,10 +300,10 @@ export class DiagramElement {
         }
         return undefined;
     }
-
     //private variables
-    private position: PointModel = undefined;
     private unitMode: UnitMode = undefined;
+    /**   @private  */
+    public position: PointModel = undefined;
     /**   @private  */
     public float: boolean = false;
     public get outerBounds(): Rect {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I831556` - Fixed an issue where TAB Focus Escapes from Modal Dialog When Using Interactive Components.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

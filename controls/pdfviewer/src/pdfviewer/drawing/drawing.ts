@@ -3309,7 +3309,7 @@ export class Drawing {
                 children.actualSize.height = actualObject.wrapper.desiredSize.height;
             }
         }
-        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && actualObject.subject === 'Text Box') {
+        if (actualObject && actualObject.shapeAnnotationType === 'FreeText') {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any = actualObject.wrapper.children;
                 if (children[1].childNodes.length >= 1) {

@@ -73,24 +73,12 @@ export class ToolbarRenderer implements IRenderer {
 
     private wireEvent(): void {
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.destroyTooltip, this.destroyTooltip, this);
-        this.parent.on(events.closeTooltip, this.closeTooltip, this);
-    }
-
-    private destroyTooltip(): void {
-        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-            this.parent.contentModule.getDocument();
-        if (!isNullOrUndefined(currentDocument.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(currentDocument.querySelector( '[data-tooltip-id]'))) {
-            const tooltipTargetEle: HTMLElement = currentDocument.querySelector('[data-tooltip-id]');
-            const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
-            tooltipTargetEle.dispatchEvent(event);
-        }
+        this.parent.on(events.destroyTooltip, this.closeTooltips, this);
     }
 
     private unWireEvent(): void {
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off(events.destroyTooltip, this.destroyTooltip);
-        this.parent.off(events.closeTooltip, this.closeTooltip);
+        this.parent.off(events.destroyTooltip, this.closeTooltips);
     }
 
     private toolbarBeforeCreate(e: BeforeCreateArgs): void {
@@ -119,6 +107,7 @@ export class ToolbarRenderer implements IRenderer {
         if ( !this.parent.enabled) {
             return;
         }
+        this.closeTooltips();
         if (this.parent.toolbarSettings.type === ToolbarType.Popup) {
             let command: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,7 +131,6 @@ export class ToolbarRenderer implements IRenderer {
 
     private dropDownSelected(args: MenuEventArgs): void {
         this.parent.notify(events.dropDownSelect, { element: args.element, item: args.item, originalEvent: args.event });
-        this.destroyTooltip();
     }
 
     private beforeDropDownItemRender(args: MenuEventArgs): void {
@@ -169,9 +157,6 @@ export class ToolbarRenderer implements IRenderer {
         }
         if (args.target.querySelector('.e-active')) {
             args.cancel = true;
-            if (!isNOU(args.target.getAttribute('title'))) {
-                this.closeTooltip({ target: args.target, isTitle: true });
-            }
         }
     }
 
@@ -315,6 +300,7 @@ export class ToolbarRenderer implements IRenderer {
             select: this.dropDownSelected.bind(this),
             animationSettings: isTesting ? { effect: 'None', duration: 0  } : { effect : 'None', duration: 400, easing: 'ease'},
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.closeTooltips();
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     args.cancel = true;
                     return;
@@ -628,36 +614,6 @@ export class ToolbarRenderer implements IRenderer {
         return targetElement;
     }
 
-    private mouseOutHandler (): void {
-        if (!isNOU(this.tooltipTargetEle)){
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
-        } else {
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-                this.parent.contentModule.getDocument();
-            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
-        }
-        this.tooltipTargetEle.removeAttribute('data-title');
-        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
-    }
-    private closeTooltip(args: { [key: string]: HTMLElement | boolean }): void {
-        if (args.isTitle as boolean) {
-            this.tooltipTargetEle = args.target as HTMLElement;
-            this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
-            this.tooltipTargetEle.removeAttribute('title');
-            EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
-        } else {
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-                this.parent.contentModule.getDocument();
-            this.tooltipTargetEle = closest(args.target as HTMLElement, '[data-tooltip-id]');
-            if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
-                this.destroyTooltip();
-                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
-                this.tooltipTargetEle.removeAttribute('title');
-                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
-            }
-        }
-    }
     // Manages code block dropdown menu by detecting if selection is in a code block and highlighting the active language option
     private handleCodeBlockDropdown(args: BeforeOpenCloseMenuEventArgs): void {
         const range: Range = this.parent.getRange();
@@ -765,6 +721,7 @@ export class ToolbarRenderer implements IRenderer {
                 splitBtnDiv.tabIndex = -1;
             },
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.closeTooltips();
                 if (this.parent.readonly || !this.parent.enabled) {
                     args.cancel = true;
                     return;
@@ -864,6 +821,7 @@ export class ToolbarRenderer implements IRenderer {
                 }
             },
             beforeOpen: () => {
+                this.closeTooltips();
                 if ((proxy.parent.userAgentData.isSafari() || !proxy.parent.userAgentData.isSafari()) &&
                     this.parent.formatter.editorManager.nodeSelection &&
                     this.parent.inputElement.contains(this.parent.getRange().startContainer) && !editTablecolorpicker) {
@@ -982,6 +940,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private menueDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.closeTooltips();
         this.parent.notify(events.selectionSave, args);
         this.parent.notify(events.menuBeforeOpen, args);
     }
@@ -1025,6 +984,17 @@ export class ToolbarRenderer implements IRenderer {
         this.toolbarPanel = panel;
     }
 
+    private closeTooltips(): void {
+        if (this.parent.showTooltip) {
+            if (!isNOU(this.tooltip)) {
+                this.tooltip.close();
+            }
+            if (!isNOU(this.parent.quickToolbarModule)) {
+                this.parent.quickToolbarModule.closeTooltip();
+            }
+        }
+    }
+
     public destroy(): void {
         if (this.isDestroyed) { return; }
         if (this.tooltip && !this.tooltip.isDestroyed) {
@@ -1035,6 +1005,12 @@ export class ToolbarRenderer implements IRenderer {
                 if (this.parent.getID() === tooltipEle.getAttribute('data-rte-id') as string) {
                     detach(tooltipEle);
                 }
+            }
+        }
+        if (this.mode === 'Extended') {
+            const extendedToolbarElement: HTMLElement = this.toolbarPanel.querySelector('.e-expended-nav');
+            if (extendedToolbarElement) {
+                EventHandler.remove(extendedToolbarElement, 'mousedown', this.extendedToolbarMouseDownHandler);
             }
         }
         this.unWireEvent();

@@ -1801,7 +1801,7 @@ describe('Emoji picker module', () => {
             destroy(rteObj);
             detach(defaultRTE);
         });
-        it('check the tooltip destroy when close the popup using space key', () => {
+        it('check the tooltip destroy when close the popup using space key', (done: DoneFn) => {
             const firstP: HTMLElement = (rteObj as any).inputElement.querySelector('#rte-p');
             setCursorPoint(firstP, 0);
             (<any>rteObj).keyDown(keyboardEventArgs);
@@ -1812,7 +1812,10 @@ describe('Emoji picker module', () => {
             let textNode: HTMLElement = (rteObj as any).inputElement.querySelector('#rte-p').childNodes[0];
             setCursorPoint(textNode, 1);
             rteObj.keyDown(spaceKeyEventArgs);
-            expect(rteObj.element.ownerDocument.querySelectorAll('.e-tooltip-wrap').length > 0).toBe(false);
+            setTimeout(() => {
+                expect(rteObj.element.ownerDocument.querySelectorAll('.e-tooltip-wrap').length > 0).toBe(false);
+                done();
+            }, 200);
         });
     });
 

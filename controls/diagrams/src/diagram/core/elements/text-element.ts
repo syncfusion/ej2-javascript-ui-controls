@@ -3,7 +3,7 @@ import { Size } from '../../primitives/size';
 import { DiagramElement } from './diagram-element';
 import { measureText } from './../../utility/dom-util';
 import { HyperlinkModel } from './../../objects/annotation-model';
-import { AnnotationConstraints, RotationReference } from '../../enum/enum';
+import { AnnotationConstraints, ParentType, RotationReference } from '../../enum/enum';
 import { SubTextElement, TextBounds } from '../../rendering/canvas-interface';
 import { PointModel } from '../../primitives/point-model';
 
@@ -59,6 +59,12 @@ export class TextElement extends DiagramElement {
 
     /** @private */
     public flipTransformOffset: PointModel;
+
+    /** @private */
+    public isLabelResizing: boolean = false;
+
+    /** @private */
+    public parentType: ParentType;
 
     /**
      *   gets the content for the text element \

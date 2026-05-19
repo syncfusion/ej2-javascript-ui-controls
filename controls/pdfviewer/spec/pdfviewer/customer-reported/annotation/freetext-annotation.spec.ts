@@ -5,7 +5,7 @@ import {
     AnnotationDataFormat
 } from "../../../../src/index";
 import { assertGeometryChanged, assertGeometryMatches, dblClickEvent, deleteAllAnnotationsHelper, exportAnnotationsHelper, focusOn, getTarget, importAnnotationsHelper, mouseDownEvent, mouseMoveEvent, mouseUpEvent, threePointCalibrate, waitFor } from "../../utils.spec";
-import { EMPTY_PDF_B64 } from "../../Data/pdf-data.spec";
+import { DOC_WITH_FREETEXT, EMPTY_PDF_B64 } from "../../Data/pdf-data.spec";
 
 describe('PDF_Viewer_Freetext', () => {
     let pdfviewer_freeText: PdfViewer = null;
@@ -102,4 +102,48 @@ describe('PDF_Viewer_Freetext', () => {
     });
 
 
+});
+
+describe('PDF_Viewer_Freetext_Alignment', () => {
+    let pdfviewer_freetext_align: PdfViewer = null;
+
+    // Inject required PdfViewer modules
+    PdfViewer.Inject(
+        Toolbar, Magnification, Navigation, LinkAnnotation, ThumbnailView, BookmarkView,
+        TextSelection, TextSearch, Print, Annotation, FormFields, FormDesigner, PageOrganizer
+    );
+
+    // Setup PdfViewer instance before running tests
+    beforeAll((done) => {
+        const element: HTMLElement = createElement('div', { id: 'pdfviewer_freetext_align' });
+        document.body.appendChild(element);
+        pdfviewer_freetext_align = new PdfViewer({
+            resourceUrl: window.location.origin + '/base/src/pdfviewer/ej2-pdfviewer-lib',
+            documentPath: "data:application/pdf;base64," + DOC_WITH_FREETEXT
+        });
+        pdfviewer_freetext_align.documentLoad = () => {
+            var col = pdfviewer_freetext_align.annotationCollection[0];
+            col.annotationSettings.isLock = true;
+            pdfviewer_freetext_align.annotation.editAnnotation(col);
+            done();
+        }
+        pdfviewer_freetext_align.appendTo('#pdfviewer_freetext_align');
+    });
+
+    // Cleanup PdfViewer instance after all tests complete
+    afterAll(() => {
+        if (pdfviewer_freetext_align) {
+            pdfviewer_freetext_align.destroy();
+            const el = document.getElementById('pdfviewer_freetext_align');
+            if (el && el.parentNode) { el.parentNode.removeChild(el); }
+            pdfviewer_freetext_align = null;
+        }
+    });
+
+    it('1025526 - Freetext alignment after loading the document', (done) => {
+        const target = getTarget('#pdfviewer_freetext_align_textLayer_0');
+        var alignment = (pdfviewer_freetext_align.nameTable as any)['freetext0'].wrapper.children[1].horizontalAlignment;
+        expect(alignment).toBe('Right');
+        done(); 
+    });
 });

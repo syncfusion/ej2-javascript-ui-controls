@@ -534,6 +534,18 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public cryptAlgorithmSid: string = '';
+    /**
+     * @private
+     */
+    public cryptAlgorithmType: string = '';
+    /**
+     * @private
+     */
+    public cryptAlgorithmClass: string = '';
+    /**
+     * @private
+     */
     public userCollection: string[] = [];
     /**
      * @private
@@ -5529,9 +5541,13 @@ export class DocumentHelper {
         if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
             domStyle += 'font-style:italic;';
         }
-        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
-        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
-        // }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+            if (styleObj.characterFormat.fontColor === '#00000000') {
+                domStyle += 'color: ' + '#000000' + ';';
+            } else {
+                domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+            }
+        }
         if (textDecoration.length > 1) {
             domStyle += 'text-decoration:' + textDecoration + ';';
         }

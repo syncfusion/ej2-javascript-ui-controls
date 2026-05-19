@@ -6096,4 +6096,67 @@ Strikethrough    Type ~~text~~`);
             expect(style === 'dashed').toBe(true);
         });
     });
+
+    describe('Image paste - range selection and unique image paste retains single image', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({});
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should paste unique image with image as start container', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 15%" class="e-rte-image e-img-inline"/></p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`;
+            const selection = new NodeSelection();
+            const startNode = rteObj.inputElement.children[0];
+            const endNode = rteObj.inputElement.children[1];
+            selection.setSelectionText(document, startNode, endNode, 0, 1);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const file: File = getImageUniqueFIle();
+            dataTransfer.items.add(file);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+                done();
+            }, 100);
+        });
+        it('should paste unique image with audio as start container', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<p><span class="e-audio-wrap" contenteditable="false" title="Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style=""><source src="blob:null/b49a5534-2f5a-49a8-be6e-dc8871861114" type="audio/wav"/></audio></span></span> </p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`;
+            const selection = new NodeSelection();
+            const startNode = rteObj.inputElement.children[0];
+            const endNode = rteObj.inputElement.children[1];
+            selection.setSelectionText(document, startNode, endNode, 0, 1);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const file: File = getImageUniqueFIle();
+            dataTransfer.items.add(file);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+                expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length === 0).toBe(true);
+                done();
+            }, 100);
+        });
+        it('should paste unique image with video as start container', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<p><span class="e-video-wrap" contenteditable="false" title="Video.mp4" style="cursor: pointer;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1841px; min-height: 90px; width: 406px; height: 203px;"><source src="blob:null/8f18bf8f-1207-47ca-8d08-75f5cb1c9bd0" type="video/mp4"/></video></span> </p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`;
+            const selection = new NodeSelection();
+            const startNode = rteObj.inputElement.children[0];
+            const endNode = rteObj.inputElement.children[1];
+            selection.setSelectionText(document, startNode, endNode, 0, 1);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const file: File = getImageUniqueFIle();
+            dataTransfer.items.add(file);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+                expect(rteObj.inputElement.querySelectorAll('.e-video-wrap').length === 0).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });// Add the spec above this.

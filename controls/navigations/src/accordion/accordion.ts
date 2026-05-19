@@ -822,11 +822,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const innerEle: HTEle = this.createElement('div', {
             className: CLS_ITEM, id: item.id || getUniqueID('acrdn_item')
         });
-        if (item.expanded && !isNOU(index) && (!this.enablePersistence)) {
-            if (this.initExpand.indexOf(index) === -1) {
-                this.initExpand.push(index);
-            }
-        }
         if (this.headerTemplate) {
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -835,9 +830,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             innerEle.appendChild(ctnEle);
             ctnEle.appendChild(this.toggleIconGenerate());
             this.add(innerEle, CLS_SLCT);
-            return innerEle;
         }
-        if (item.header && this.angularnativeCondiCheck(item, 'header')) {
+        else if (item.header && this.angularnativeCondiCheck(item, 'header')) {
             let header: string = item.header;
             if (this.enableHtmlSanitizer && typeof (item.header) === 'string') {
                 header = SanitizeHtmlHelper.sanitize(item.header);
@@ -849,6 +843,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             innerEle.appendChild(ctnEle);
         }
         let hdr: HTEle = <HTEle>select('.' + CLS_HEADER, innerEle);
+        if (item.expanded && !isNOU(index) && (!this.enablePersistence)) {
+            if (this.initExpand.indexOf(index) === -1) {
+                this.initExpand.push(index);
+            }
+        }
         if (item.cssClass) {
             addClass([innerEle], item.cssClass.split(' '));
         }
@@ -870,7 +869,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 hdr.insertBefore(hdrIcnEle, hdr.childNodes[0]);
             }
         }
-        if (item.content && this.angularnativeCondiCheck(item, 'content')) {
+        if (item.content && this.angularnativeCondiCheck(item, 'content') && !this.headerTemplate) {
             const hdrIcon: HTEle = this.toggleIconGenerate();
             if (isNOU(hdr)) {
                 hdr = this.headerEleGenerate();

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved a script error that occurred while exporting form fields to JSON format.
+- Fixed an issue where the form field page appeared as undefined during parsing of a specific PDF document.
+
 ## 33.2.6 (2026-05-12)
 
 ### PDF

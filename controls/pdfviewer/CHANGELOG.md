@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+`#I837168` - Fixed an issue where the `ListBox` `selectedIndex` and export values were not set correctly when the Form Designer module was not injected.
+`#I826675` - Fixed an issue where FreeText annotation text alignment was not preserved correctly after programmatic editing.
+`#I836939` - Fixed an issue where the text search loading spinner did not stop when searching for non-existent text and clicking the Next button.
+`#I837261` - Fixed an issue where the `findText` method did not work properly when the searched text appeared in both single-line and multi-line.
+
 ## 33.2.6 (2026-05-12)
 
 ### PDF Viewer

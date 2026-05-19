@@ -1,7 +1,7 @@
 import { Mention } from "@syncfusion/ej2-dropdowns";
 import { RichTextEditor } from "../../src";
 import { destroy, renderRTE, setCursorPoint } from "../rich-text-editor/render.spec";
-import { ARROW_DOWN_EVENT_INIT, AT_CHARACTER_KEY_EVENT_INIT, ENTERKEY_EVENT_INIT, TAB_KEY_EVENT_INIT } from "../constant.spec";
+import { ARROW_DOWN_EVENT_INIT, AT_CHARACTER_KEY_EVENT_INIT, ENTERKEY_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT } from "../constant.spec";
 
 export const email: Object[] = [
     { "Name": "Selma Rose", "Eimg": "3", "EmailId": "selma@gmail.com" }, 
@@ -407,6 +407,58 @@ describe('Mention integration tests', () => {
                     expect(range.startOffset).toBe(range.endOffset);
                     done();
                 }, 200);
+        });
+    });
+
+    describe('1015714: Backspace deletes second <br> after removing mention in empty table cell', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                height: 400
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Should replace the mention chip with a BR element when backspace is pressed after the chip in a table cell', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<table class="e-rte-table"><tbody><tr><td><br><span contenteditable="false" class="e-mention-chip"><a href="mailto:albert@gmail.com" title="albert@gmail.com">@Albert</a></span></td></tr></tbody></table>`;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const td: HTMLElement = rteObj.inputElement.querySelector('td') as HTMLElement;
+            setCursorPoint(td, 2);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-mention-chip')).toBeNull();
+                expect(td.querySelectorAll('br').length === 2).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Should remove the mention chip inside list in a table cell', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td><ul><li>test1</li><li><span contenteditable="false" class="e-mention-chip"><a href="mailto:albert@gmail.com" title="albert@gmail.com">@Albert</a></span></li><li>test3</li></ul></td><td><br/></td><td><br/></td></tr><tr><td><br/></td><td><br/></td><td><br/></td></tr></tbody></table><p class="e-rte-last-paragraph"><br/></p>`;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const li: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1] as HTMLElement;
+            setCursorPoint(li, 1);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-mention-chip')).toBeNull();
+                expect(rteObj.inputElement.querySelectorAll('li').length === 3).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Should replace the mention chip with BR element when root block element text content is zero', (done: DoneFn) => {
+            // Structure: table > td > mention-chip (no preceding br), cursor after the chip
+            rteObj.inputElement.innerHTML = `<p>welcome</p><p><strong><em><span contenteditable="false" class="e-mention-chip"><a href="mailto:albert@gmail.com" title="albert@gmail.com">@Albert</a></span></em></strong></p>`;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const em: HTMLElement = rteObj.inputElement.querySelector('em') as HTMLElement;
+            setCursorPoint(em, 1);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-mention-chip')).toBeNull();
+                expect(window.getSelection().getRangeAt(0).startContainer === em);
+                done();
+            }, 100);
         });
     });
 });

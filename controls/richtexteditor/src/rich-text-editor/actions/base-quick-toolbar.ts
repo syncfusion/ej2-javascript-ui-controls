@@ -35,7 +35,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
     private locator: ServiceLocator;
     private parent: IRichTextEditor;
     public toolbarElement: HTMLElement;
-    private tooltip: Tooltip;
+    public tooltip: Tooltip;
     private previousToolbarStatus: IToolbarStatus = {};
     /**
      * Specifies the Quick Toolbar type.
@@ -270,9 +270,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
     private tooltipBeforeRender(args: TooltipEventArgs): void {
         if (args.target.querySelector('.e-active')) {
             args.cancel = true;
-            if (!isNOU(args.target.getAttribute('title'))) {
-                this.parent.notify(events.closeTooltip, { target: args.target, isTitle: true });
-            }
         }
     }
 
@@ -286,13 +283,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const isSourceCodeEnabled: boolean = !isNOU(this.parent.rootContainer) && this.parent.rootContainer.classList.contains('e-source-code-enabled');
         if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
-        }
-        if (!isNOU(this.element.querySelectorAll('[data-title]'))) {
-            const removeHandEle: NodeListOf<Element> = this.element.querySelectorAll('[data-title]');
-            removeHandEle.forEach((e: Element) => {
-                const event: MouseEvent = new MouseEvent('mouseout', { bubbles: true, cancelable: true });
-                e.dispatchEvent(event);
-            });
         }
         const tooltipElement: HTMLElement = document.querySelector('.e-tooltip-wrap');
         if (!isNOU(tooltipElement)) {

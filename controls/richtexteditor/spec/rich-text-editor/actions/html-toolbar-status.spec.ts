@@ -5,7 +5,8 @@ import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from '../../../src/common/interface';
 import { RichTextEditor, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
-import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint, setSelection } from "./../render.spec";
+import { BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
 
 describe(' HTML editor update toolbar ', () => {
     let rteObj: RichTextEditor;
@@ -473,10 +474,9 @@ describe(' HTML editor update toolbar ', () => {
             })
             button.click();
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             detach(button);
             destroy(rteObj);
-            done();
         });
     });
     describe('The readOnly is true in the Rich Text Editor', function () {
@@ -491,7 +491,7 @@ describe(' HTML editor update toolbar ', () => {
         afterAll(function () {
             destroy(rteObj);
         });
-        it('The readOnly is true in the Rich Text Editor', function (done) {
+        it('The readOnly is true in the Rich Text Editor', function () {
             rteObj.focusIn();
             var tdElement = rteObj.contentModule.getDocument().querySelector("#tdElement");
             setCursorPoint(tdElement, 0);
@@ -499,43 +499,45 @@ describe(' HTML editor update toolbar ', () => {
             (rteObj as any).keyDown(keyBoardEvent);
             (rteObj as any).keyUp(keyBoardEvent);
             expect(rteObj.readonly).toBe(true);
-            done();
         });
     });
     describe('854829 - Quick toolbar tooltip is hidden behind popup while opening it ', () => {
         let rteObj: RichTextEditor;
-        beforeAll((done)=> {
+        beforeAll(()=> {
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: ['Bold','FontColor', 'FullScreen']
+                    items: ['Bold','FontColor', 'FullScreen'],
                 },
+                inlineMode: { enable: true },
                 value : "Rich Text Editor"
             });
-            done();
         });
         it('Check the Tooltip when click toolbar items', (done: Function) => {
-            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
-            let toolbarEle = document.querySelector('[title="Font Color"]')
-            toolbarEle.dispatchEvent(event);
-            expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
-            ((document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).querySelector('.e-dropdown-btn.e-rte-dropdown') as HTMLElement).click();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('p');
+            setSelection(target.firstChild, 1, 2);
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const mouseoverEvent: MouseEvent = new MouseEvent('mouseover', BASIC_MOUSE_EVENT_INIT);
+                let toolbarEle = document.querySelector('[title="Font Color"]')
+                toolbarEle.dispatchEvent(mouseoverEvent);
                 setTimeout( function () {
-                    expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
-                    toolbarEle = document.querySelector('[data-title]');
-                    event = new MouseEvent('mouseout', { bubbles: true, cancelable: true });
-                    toolbarEle.dispatchEvent(event);
+                    const tooltip: HTMLElement = document.body.querySelector('.e-tooltip-wrap');
+                    expect(tooltip.parentElement).toBe(document.body);
                     done();
                 },100)
+            }, 100);
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
        });
     });
 
     describe('HTML Editor coverage issue ', () => {
         let rteObj: RichTextEditor;
-        beforeAll((done: DoneFn)=> {
+        beforeAll(()=> {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['RemoveLink']
@@ -543,7 +545,6 @@ describe(' HTML editor update toolbar ', () => {
                 value : "<a>Link</a>",
                 saveInterval: 0
             });
-            done();
         });
         it('Click the toolbar button', (done: Function) => {
             rteObj.focusIn();
@@ -555,9 +556,8 @@ describe(' HTML editor update toolbar ', () => {
                 done();
             }, 100);
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
     });
 });

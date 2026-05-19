@@ -1486,11 +1486,13 @@ export class Editor {
                     this.currentProtectionType = protectionType;
                     const enforceProtectionHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
                     const passwordBase64: string = this.base64.encodeString(password);
+                    this.documentHelper.cryptAlgorithmSid = "14";
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     const formObject: any = {
                         passwordBase64: passwordBase64,
                         saltBase64: '',
-                        spinCount: 100000
+                        spinCount: 100000,
+                        algorithmSid: this.documentHelper.cryptAlgorithmSid
                     };
                     /* eslint-enable @typescript-eslint/no-explicit-any */
                     const url: string = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
@@ -1598,7 +1600,8 @@ export class Editor {
             const formObject: any = {
                 passwordBase64: passwordBase64,
                 saltBase64: this.documentHelper.saltValue,
-                spinCount: 100000
+                spinCount: 100000,
+                algorithmSid: this.documentHelper.cryptAlgorithmSid
             };
             unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
             unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
@@ -1643,7 +1646,8 @@ export class Editor {
                     const formObject: any = {
                         passwordBase64: passwordBase64,
                         saltBase64: this.documentHelper.saltValue,
-                        spinCount: 100000
+                        spinCount: 100000,
+                        algorithmSid: this.documentHelper.cryptAlgorithmSid
                     };
                     unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
                     unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
@@ -6941,7 +6945,7 @@ export class Editor {
                     this.copyInsertFormat(startParagraph.characterFormat, false);
                 }
                 let insertParaFormat: WParagraphFormat;
-                if (this.isInsertText && !this.selection.isEmpty) {
+                if (this.isInsertText) {
                     insertParaFormat = new WParagraphFormat();
                     insertParaFormat.copyFormat(this.selection.end.paragraph.paragraphFormat)
                 } else {
@@ -14322,6 +14326,12 @@ export class Editor {
     private applyParaFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
         this.setOffsetValue(this.selection);
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+        let listLevel: number = 0;
+        if (!isNullOrUndefined(paragraph.nextWidget) && paragraph.nextWidget instanceof ParagraphWidget && property === 'listFormat' && !isNullOrUndefined(value) && value instanceof WListFormat) {
+            if (paragraph.leftIndent < paragraph.nextWidget.leftIndent && paragraph.paragraphFormat.listFormat.listId === -1 && paragraph.nextWidget.paragraphFormat.listFormat.listId === -1) {
+                listLevel = value.listLevelNumber + Math.floor(paragraph.nextWidget.leftIndent / 36) - Math.floor(paragraph.leftIndent / 36)
+            }
+        }
         //Apply Paragraph Format for spitted paragraph
         this.applyParaFormatProperty(paragraph, property, value, update);
         this.isMeasureParaWidth = true;
@@ -14330,6 +14340,12 @@ export class Editor {
         this.getOffsetValue(this.selection);
         if (paragraph.equals(end.paragraph)) {
             return;
+        }
+        if (listLevel > 0 && value instanceof WListFormat) {
+            if (listLevel > 8) {
+                listLevel = 8
+            }
+            value.listLevelNumber = listLevel;
         }
         this.getNextParagraphForFormatting(paragraph, start, end, property, value, update);
     }
@@ -14340,7 +14356,8 @@ export class Editor {
         let isParaSelected: boolean = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
             && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
         if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
-            if (((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character')) {
+            if ((((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character'))
+                && value.name !== paragraph.paragraphFormat.baseStyle.name) {
                 let obj: WStyle = (value.type === 'Character') ? value : value.link;
                 this.updateSelectionCharacterFormatting(property, obj, update);
                 return true;
@@ -19140,8 +19157,6 @@ export class Editor {
             paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
             paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
             paragraph.characterFormat.removedIds = [];
-            paragraphAdv.paragraphFormat.clearFormat();
-            paragraphAdv.characterFormat.clearFormat();
             this.documentHelper.layout.reLayoutParagraph(paragraphAdv, 0, 0);
         }
     }
@@ -20611,7 +20626,7 @@ export class Editor {
                                     }
                                 }
                             }
-                            if (!isTrue || this.isRevisionMatched(elementBox, undefined)) {
+                            if (!isTrue || this.isRevisionMatched(elementBox, undefined) || !isNullOrUndefined(elementBox.commentType)) {
                                 elementBox.line.children.splice(elementBox.indexInOwner, 1);
                             } else if (isTrackingEnabled && !((elementBox.commentType === 0 && elementBox.nextElement === elementBox.comment.commentEnd) || 
                                 (elementBox.commentType === 1 && elementBox.previousElement === elementBox.comment.commentStart))) {
@@ -22417,6 +22432,9 @@ export class Editor {
      */
     public setPositionForCurrentIndex(textPosition: TextPosition, editPosition: string): void {
         const blockInfo: ParagraphInfo = this.selection.getParagraph({ index: editPosition });
+        if (isNullOrUndefined(blockInfo)) {
+            return;
+        }
         const lineInfo: LineInfo = this.selection.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
     }
@@ -24179,10 +24197,10 @@ export class Editor {
         if (format.hasValue('isHeader') && format.isHeader !== applyFormat.isHeader) {
             applyFormat.isHeader = format.isHeader;
         }
-        if (format.hasValue('heightType') && format.heightType !== applyFormat.heightType) {
+        if (format.hasValue('heightType') && format.heightType !== applyFormat.heightType && this.documentHelper.owner.tablePropertiesDialogModule.rowHeightCheckBox.checked) {
             applyFormat.heightType = format.heightType;
         }
-        if (format.hasValue('height') && format.height !== applyFormat.height) {
+        if (format.hasValue('height') && format.height !== applyFormat.height && this.documentHelper.owner.tablePropertiesDialogModule.rowHeightCheckBox.checked) {
             applyFormat.height = format.height;
         }
         this.updateGridForTableDialog((applyFormat.ownerBase as TableRowWidget).ownerTable, true);

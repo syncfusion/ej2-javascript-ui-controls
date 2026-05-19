@@ -10307,4 +10307,60 @@ Rich Text Editor 3`
             destroy(rteObj);
         });
     });
+
+    describe('Bug 1025950: RichTextEditor Allows New Line Creation Even After Reaching maxLength', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>tests</p>`,
+                maxLength: 5
+            });
+        });
+        it('enter key action should be prevented', (done: Function) => {
+            rteObj.focusIn();
+            setCursorPoint(document, rteObj.inputElement.querySelector('p').childNodes[0] as Element, 5);
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyUpEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML).toBe('<p>tests</p>');
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 1024197: getCharCount Method Returns Zero During Change Event in Code View Mode in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: { items: ['SourceCode'] },
+                value: ``,
+                change: ()=> {
+                    const count: number = rteObj.getCharCount();
+                    expect(count === 42);
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('switch to code view, paste html and expect char count 42 on change', (done: DoneFn) => {
+            rteObj.focusIn();
+            const codeViewBtn: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
+            codeViewBtn.click();
+            setTimeout(() => {
+                const textarea = rteObj.element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement;
+                const pasteContent: string = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
+                const dataTransfer: DataTransfer = new DataTransfer();
+                dataTransfer.setData('text/plain', pasteContent);
+                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer, bubbles: true, cancelable: true } as ClipboardEventInit);
+                textarea.dispatchEvent(pasteEvent);
+                done();
+            }, 100);
+        });
+    });
 });

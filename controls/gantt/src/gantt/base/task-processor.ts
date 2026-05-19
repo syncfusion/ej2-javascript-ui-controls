@@ -2,7 +2,7 @@ import { isNullOrUndefined, getValue, extend, setValue } from '@syncfusion/ej2-b
 import { getUid, ReturnType } from '@syncfusion/ej2-grids';
 import { IGanttData, ITaskData, IParent, IWorkTimelineRanges, IWorkingTimeRange, ITaskSegment, IPredecessor } from './interface';
 import { DataManager, Query, Group, ReturnOption } from '@syncfusion/ej2-data';
-import { getUniversalTime, isCountRequired, isScheduledTask } from './utils';
+import { getUniversalTime, isCountRequired, isScheduledTask, isRemoteData } from './utils';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel, ResourceFieldsModel, ProjectCalendarModel, DayWorkingTimeModel } from '../models/models';
@@ -2705,7 +2705,11 @@ export class TaskProcessor extends DateProcessor {
         const segments: ITaskSegment[] = data.ganttProperties.segments;
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (isNullOrUndefined(segments)) {
-            return null;
+            if (isRemoteData(this.parent.dataSource)) {
+                return [];
+            } else {
+                return null;
+            }
         }
         const taskData: Object[] = <Object[]>extend([], [], data.taskData[taskSettings.segments], true);
         for (let i: number = 0; i < segments.length; i++) {

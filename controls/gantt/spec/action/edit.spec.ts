@@ -6484,3 +6484,790 @@ describe('Code coverage- edit tool tip', () => {
         }
     });
 });
+
+describe('AddRecord method', () => {
+    let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                enableUndoRedo: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+
+    it('updateNewRecord - processes records with level === 0 (parentData & dataOperation.dataArray splice branch)', () => {
+        ganttObj.undoRedoModule['isUndoRedoPerformed'] = true;
+        ganttObj.undoRedoModule['currentAction'] = { deletedRecordsDetails: false }
+        const data = [
+            {
+                position: 'below',    // can be 'above' | 'below' | 'child'
+                id: 2,               // must match an entry in this.parent.taskIds
+                data: [
+                    { TaskID: 101, TaskName: 'New Resource Task', StartDate: new Date('2019-04-03'), Duration: 3 }
+                ]
+            }
+        ];
+        ganttObj.editModule.addRecord(data);
+    });
+    it('updateNewRecord - processes records with level === 0 (parentData & dataOperation.dataArray splice branch)', () => {
+        ganttObj.undoRedoModule['isUndoRedoPerformed'] = true;
+        ganttObj.undoRedoModule['currentAction'] = { deletedRecordsDetails: false }
+        const data = [
+            {
+                position: 'above',    // can be 'above' | 'below' | 'child'
+                id: 2,               // must match an entry in this.parent.taskIds
+                data: [
+                    { TaskID: 101, TaskName: 'New Resource Task', StartDate: new Date('2019-04-03'), Duration: 3 }
+                ]
+            }
+        ];
+        ganttObj.editModule.addRecord(data);
+    });
+    it('updateNewRecord - processes records with level === 0 (parentData & dataOperation.dataArray splice branch)', () => {
+        ganttObj.undoRedoModule['isUndoRedoPerformed'] = true;
+        ganttObj.undoRedoModule['currentAction'] = { deletedRecordsDetails: false }
+        const data = [
+            {
+                position: 'child',    // can be 'above' | 'below' | 'child'
+                id: 2,               // must match an entry in this.parent.taskIds
+                data: [
+                    { TaskID: 101, TaskName: 'New Resource Task', StartDate: new Date('2019-04-03'), Duration: 3 }
+                ]
+            }
+        ];
+        ganttObj.editModule.addRecord(data);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Add string type TaskID record for ResourceView', () => {
+let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: '1',
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: '2', TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false, type: 'string' },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                enableUndoRedo: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Add new string type TaskID record', () => {
+        const data = [
+            {
+                position: 'child',    // can be 'above' | 'below' | 'child'
+                id: 2,               // must match an entry in this.parent.taskIds
+                data: [
+                    { TaskID: '101', TaskName: 'New Resource Task', StartDate: new Date('2019-04-03'), Duration: 3 }
+                ]
+            }
+        ];
+        ganttObj.editModule.addRecord(data);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Add string type TaskID record for ProjectView', () => {
+let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: '1',
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: '2', TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false, type: 'string' },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                enableUndoRedo: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Add new string type TaskID record', () => {
+        const data = [
+            {
+                position: 'child',    // can be 'above' | 'below' | 'child'
+                id: 2,               // must match an entry in this.parent.taskIds
+                data: [
+                    { TaskID: '101', TaskName: 'New Resource Task', StartDate: new Date('2019-04-03'), Duration: 3 }
+                ]
+            }
+        ];
+        ganttObj.editModule.addRecord(data);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Code coverage- edit file', () => {
+    Gantt.Inject(Edit, VirtualScroll);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project Schedule',
+                    StartDate: new Date('02/04/2019'),
+                    EndDate: new Date('03/10/2019'),
+                },
+                {
+                    TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                    Duration: 10, Progress: '90'
+                },
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            gridLines: "Both",
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            highlightWeekends: true,
+            enableRtl: true,
+            enableMultiTaskbar: true,
+            splitterSettings: {
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    it('reUpdateEditModules - coverage', () => {
+        ganttObj.editModule.confirmDialog = null;
+        ganttObj.editSettings.mode = 'Dialog';
+        ganttObj.editSettings.allowEditing = false;
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Code coverage - edit', () => {
+    Gantt.Inject(Edit, VirtualScroll, UndoRedo);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                { TaskID: 1, TaskName: 'Task A - Concept', StartDate: '2025-04-01', EndDate: '2025-04-05', Duration: 5, Progress: 100 },
+                { TaskID: 2, TaskName: 'Task B - Design', StartDate: '2025-04-06', Duration: 4, Progress: 65, Predecessor: '1FS' },
+                { TaskID: 3, TaskName: 'Task C - Develop', StartDate: '2025-04-10', Duration: 7, Progress: 20, Predecessor: '2FS' }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+            },
+            gridLines: "Both",
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            enableUndoRedo: true,
+            highlightWeekends: true,
+            enableRtl: true,
+            enableMultiTaskbar: true,
+            splitterSettings: {
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    it('updateRecordByID - coverage', () => {
+        ganttObj.editModule.updateRecordByID({
+            TaskID: 3,
+            Predecessor: "2FS+3d"
+        });
+        ganttObj.undo();
+        ganttObj.enableImmutableMode = true;
+        ganttObj.editModule.updateRecordByID({
+            TaskID: 3,
+            Predecessor: "2FS+3d"
+        });
+
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('ValidateUpdateValues date conversion', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [{ TaskID: 1, TaskName: 'Task 1', StartDate: '2020-01-01T00:00:00', EndDate: '2020-01-02T00:00:00', Duration: 1 }],
+            taskFields: {
+                id: 'TaskID', name: 'TaskName', startDate: 'StartDate', endDate: 'EndDate', duration: 'Duration'
+            },
+            editSettings: { allowEditing: true }
+        }, done);
+    });
+
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+
+    it('should convert string start/end date in ganttData to Date when isFromDialog is true', () => {
+        const ganttdata: IGanttData = ganttObj.getRecordByID("1");
+        // ensure raw data fields are strings to exercise the conversion branch
+        (ganttdata as any)['StartDate'] = '2020-01-01T00:00:00';
+        (ganttdata as any)['EndDate'] = '2020-01-02T00:00:00';
+        const data: Object = { StartDate: '2020-01-01T00:00:00', EndDate: '2020-01-02T00:00:00' };
+
+        // call the method under test
+        ganttObj.editModule.validateUpdateValues(data, ganttdata, true);
+
+        expect((ganttdata as any)['StartDate'] instanceof Date).toBe(true);
+        expect((ganttdata as any)['EndDate'] instanceof Date).toBe(true);
+    });
+});
+
+describe('ValidateUpdateValues date conversion for baseline dates', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [{
+                TaskID: 1,
+                TaskName: 'Task 1',
+                StartDate: '2020-01-01T00:00:00',
+                EndDate: '2020-01-02T00:00:00',
+                Duration: 1,
+                BaselineStartDate: '2020-01-01T00:00:00',
+                BaselineEndDate: '2020-01-03T00:00:00'
+            }],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                baselineStartDate: 'BaselineStartDate',   // ← important
+                baselineEndDate: 'BaselineEndDate'        // ← important
+            },
+            editSettings: { allowEditing: true }
+        }, done);
+    });
+
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+
+    it('should convert string baselineStartDate/baselineEndDate in ganttData to Date when isFromDialog is true', () => {
+        const ganttData: IGanttData = ganttObj.getRecordByID("1");
+
+        (ganttData as any)['BaselineStartDate'] = '2020-01-01T00:00:00';
+        (ganttData as any)['BaselineEndDate'] = '2020-01-03T00:00:00';
+
+        // This is the object typically passed from the edit dialog
+        const dialogData: Object = {
+            BaselineStartDate: '2020-01-01T00:00:00',
+            BaselineEndDate: '2020-01-03T00:00:00'
+        };
+        // Call the method under test
+        ganttObj.editModule.validateUpdateValues(dialogData, ganttData, true);
+
+        // Verify that the values were converted to Date objects in the gantt record
+        expect((ganttData as any)['BaselineStartDate'] instanceof Date).toBe(true);
+        expect((ganttData as any)['BaselineEndDate'] instanceof Date).toBe(true);
+
+    });
+});
+
+describe('improve coverage', () => {
+    let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+
+    it('Update Record By ID with task type', () => {
+        ganttObj.taskType = 'FixedDuration';
+        (ganttObj as any).editModule.dialogModule = {
+            dialog: true,
+            currentResources: 'Fuller'
+        };
+        ganttObj.editModule.updateResourceRelatedFields(ganttObj.flatData[1], 'work');
+    })
+    it('Update Record By ID with task type', () => {
+        (ganttObj as any).isAutoSchedule = false;
+        ganttObj.taskType = 'FixedWork';
+        ganttObj.flatData[1].ganttProperties.taskType = 'FixedWork'
+        ganttObj.flatData[1].ganttProperties.isAutoSchedule = false;
+        (ganttObj as any).editModule.dialogModule = {
+            dialog: true,
+            currentResources: 'Fuller'
+        };
+        ganttObj.editModule.updateResourceRelatedFields(ganttObj.flatData[1], 'work');
+    })
+    it('Update Record By ID with task type', () => {
+        (ganttObj as any).isAutoSchedule = false;
+        ganttObj.taskType = 'FixedWork';
+        ganttObj.flatData[1].ganttProperties.taskType = 'FixedWork'
+        ganttObj.flatData[1].ganttProperties.isAutoSchedule = false;
+        (ganttObj as any).editModule.dialogModule = {
+            dialog: true,
+            currentResources: 'Fuller'
+        };
+        ganttObj.editModule.updateResourceRelatedFields(ganttObj.flatData[1], 'resource');
+    })
+    it('Update Record By ID with task type', () => {
+        (ganttObj as any).isAutoSchedule = false;
+        ganttObj.taskType = 'FixedWork';
+        ganttObj.flatData[1].ganttProperties.taskType = 'FixedWork'
+        ganttObj.flatData[1].ganttProperties.isAutoSchedule = false;
+        (ganttObj as any).editModule.dialogModule = {
+            dialog: true,
+            currentResources: []
+        };
+        ganttObj.editModule.updateResourceRelatedFields(ganttObj.flatData[1], 'work');
+    })
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('shouldShowDialog method', () => {
+    let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            Predecessor: '2FS',
+            subtasks: [
+                {
+                    TaskID: 1, TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20, Predecessor: '1FS',
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                enableUndoRedo: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('shouldShowDialog method', () => {
+        (ganttObj as any).editModule['shouldShowDialog']('', false);
+    });
+    it('shouldShowDialog method', () => {
+        (ganttObj as any).editModule['shouldShowDialog']('MustFinishOn', true);
+    });
+    it('shouldShowDialog method', () => {
+        (ganttObj as any).editModule['shouldShowDialog']('FinishNoLaterThan', true);
+    });
+    it('updateEditedTask method', () => {
+        ganttObj.autoCalculateDateScheduling = false;
+        ganttObj.flatData[1].ganttProperties.predecessorsName = 'FS'
+        ganttObj.flatData[0].ganttProperties.predecessorsName = 'FS'
+        ganttObj.flatData[0].ganttProperties.predecessor = [{ from: '1', to: '2' }]
+        ganttObj.flatData[0].ganttProperties.constraintType = 2;
+        ganttObj.flatData[0].ganttProperties.taskId = '1';
+        ganttObj.editedRecords = [ganttObj.flatData[0]]
+        const args = { data: ganttObj.flatData[1] }
+        ganttObj.editModule['updateEditedTask'](args)
+    });
+    it('shouldShowDialog method', function () {
+        (ganttObj as any).editModule['processStandardDateFields']('', '', '', '')
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('shouldShowDialog method', () => {
+    let ganttObj: Gantt;
+    const resourcesData: object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            Predecessor: '2FS',
+            subtasks: [
+                {
+                    TaskID: 1, TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20, Predecessor: '1FS',
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                enableUndoRedo: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('backUpAndPushNewlyAddedRecord  method', function () {
+        (ganttObj as any).editModule['backUpAndPushNewlyAddedRecord'](ganttObj.flatData[1], 'Bottom', '');
+    });
+});

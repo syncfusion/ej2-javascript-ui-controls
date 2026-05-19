@@ -14,7 +14,7 @@ import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
-import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation, SegmentThumbShapes, PortVisibility, ElementAction, AnnotationConstraints } from '../enum/enum';
+import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation, SegmentThumbShapes, PortVisibility, ElementAction, AnnotationConstraints, ParentType } from '../enum/enum';
 import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';
 import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel, BezierSettingsModel } from './connector-model';
 import { Rect } from '../primitives/rect';
@@ -1930,6 +1930,7 @@ export class Connector extends NodeBase implements IElement {
                 (textele as TextElement).hyperlink.link : annotation.content;
         }
         textele.constraints = annotation.constraints;
+        (textele as TextElement).parentType = ParentType.Connector;
         textele.visible = annotation.visibility;
         (textele as TextElement).annotationVisibility = textele.visible ? 'Visible' : 'Collapsed';
         textele.rotateAngle = annotation.rotateAngle;

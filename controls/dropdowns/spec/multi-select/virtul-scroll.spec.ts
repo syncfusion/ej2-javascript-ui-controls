@@ -3,7 +3,7 @@
  */
 import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/combo-box';
 import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor, Predicate } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor, Predicate, UrlAdaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs, SelectEventArgs } from '../../src/drop-down-base/drop-down-base';
@@ -1483,6 +1483,38 @@ describe('MultiSelect_Virtualization', () => {
                 listObj.destroy();
                 done();
             }, 400);
+        });
+    });
+    describe('Remote data binding - with initial Value with allow custom', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://services.syncfusion.com/js/production/api/VirtualDropdownData',
+            adaptor: new UrlAdaptor,
+            crossDomain: true
+        });
+        beforeAll((done) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            listObj = new MultiSelect({dataSource: remoteData, fields: { text: 'OrderID', value: 'OrderID' }, enableVirtualization: true, allowCustomValue: true, value: [57894]});
+            listObj.appendTo(element);
+            done();
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('with-out initial Value ', (done) => {
+            setTimeout(() => {
+                expect(listObj.value).toEqual([57894]);
+                listObj.destroy();
+                done();
+            }, 800);
         });
     });
 });

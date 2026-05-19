@@ -3042,3 +3042,17 @@ export type RotationReference =
     'Page' |
     /**parent - Annotation maintains its relative angle to the parent node during rotation. */
     'Parent';
+/**
+ * Enum for parent type of TextElement
+ * @private
+ */
+export enum ParentType {
+    /**
+     * Node parent
+     */
+    Node = 'Node',
+    /**
+     * Connector parent
+     */
+    Connector = 'Connector'
+}

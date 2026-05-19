@@ -252,11 +252,11 @@ export class BaseToolbar {
     public destroy(): void {
         if (this.isDestroyed) { return; }
         this.removeEventListener();
+        (this.toolbarRenderer as ToolbarRenderer).destroy();
         if (this.toolbarObj && !this.toolbarObj.isDestroyed) {
             this.toolbarObj.destroy();
             this.toolbarObj = null;
         }
-        (this.toolbarRenderer as ToolbarRenderer).destroy();
         this.toolbarRenderer = null;
         this.tools = {};
         this.isDestroyed = true;

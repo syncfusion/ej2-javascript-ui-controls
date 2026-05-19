@@ -3850,7 +3850,8 @@ export class DialogEdit {
                             tasksData[fieldName as string] = controlObj.value;
                         }
                     }
-                    if (this.parent.enableHtmlSanitizer && typeof (controlObj.value) === 'string') {
+                    if (this.parent.enableHtmlSanitizer && typeof (controlObj.value) === 'string'
+                        && this.parent.columnByField[fieldName as string].type === 'string') {
                         controlObj.value = SanitizeHtmlHelper.sanitize(controlObj.value);
                         tasksData[fieldName as string] = controlObj.value;
                     }

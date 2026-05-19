@@ -115,3 +115,22 @@ $badge-warning-font-color: $white !default;
 $badge-zero-padding-margin: 0 !default;
 $badge-notification-width: auto !default;
 $badge-button-nrml-line-height: .9 !default;
+
+//subtle
+$badge-primary-subtle-bg-color: $theme-lighter !default;
+$badge-secondary-subtle-bg-color: $content-bg-color-alt1 !default;
+$badge-success-subtle-bg-color: $info-light !default;
+$badge-danger-subtle-bg-color: $danger-light !default;
+$badge-warning-subtle-bg-color: $warning-light !default;
+$badge-info-subtle-bg-color: $info-light !default;
+$badge-light-subtle-bg-color: $content-bg-color !default;
+$badge-dark-subtle-bg-color: $content-text-color-alt2 !default;
+
+$badge-primary-subtle-font-color: $primary !default;
+$badge-secondary-subtle-font-color: $content-text-color-alt1 !default;
+$badge-success-subtle-font-color: $success !default;
+$badge-danger-subtle-font-color: $danger !default;
+$badge-warning-subtle-font-color: $warning !default;
+$badge-info-subtle-font-color: $info !default;
+$badge-light-subtle-font-color: $content-text-color-alt1 !default;
+$badge-dark-subtle-font-color: $content-bg-color-alt1 !default;

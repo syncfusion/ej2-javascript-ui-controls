@@ -366,7 +366,8 @@ export class Zoom {
                     argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
                 }
             }
-            if (parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
+            const isZoomOut: Boolean = (argsData.currentZoomFactor > argsData.previousZoomFactor);
+            if (!isZoomOut && parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
                 argsData.currentZoomFactor = argsData.previousZoomFactor;
                 argsData.currentZoomPosition = argsData.previousZoomPosition;
             }

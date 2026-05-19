@@ -60,6 +60,8 @@ export class InsertHtml {
         // Handle BR parent case
         if (closestParentNode && closestParentNode.nodeName === 'BR') {
             closestParentNode = closestParentNode.parentNode;
+        } else if (this.isStartContainerMediaEle(nodes[0] as HTMLElement)) {
+            closestParentNode = this.isStartContainerMediaEle(nodes[0] as HTMLElement).parentElement;
         }
         // Handling the table insertion inside list items
         if (closestParentNode && closestParentNode.nodeName === 'LI' && isInsertedNodeTable) {
@@ -861,6 +863,18 @@ export class InsertHtml {
             }
         }
         return lastSelectionNode;
+    }
+
+    //To remove any media element in range startContainer
+    private static isStartContainerMediaEle(startElem: HTMLElement): HTMLElement {
+        if (!startElem) { return null; }
+        startElem = startElem.nodeType === Node.ELEMENT_NODE ?
+            startElem : startElem.parentElement;
+        const mediaEle: HTMLElement = startElem.closest('img, .e-video-wrap, .e-embed-video-wrap, .e-audio-wrap') as HTMLElement;
+        if (mediaEle) {
+            return mediaEle;
+        }
+        return null;
     }
 
     // Handles content insertion when the cursor is placed in an inline context without initial selection.

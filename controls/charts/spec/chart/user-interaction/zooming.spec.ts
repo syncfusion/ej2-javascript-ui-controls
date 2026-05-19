@@ -2736,7 +2736,6 @@ describe('Checking Zooming Toolkit with fluent2 high contrast theme', () => {
     chartObj.loaded = loaded;
     chartObj.refresh();
     });
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

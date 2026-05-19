@@ -244,6 +244,30 @@ export class QuickToolbar implements IQuickToolbar {
         this.escapeKeyPressed = false;
     }
 
+    public closeTooltip(): void {
+        if (this.linkQTBar && this.linkQTBar.element && this.linkQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.linkQTBar.element)) {
+            this.linkQTBar.tooltip.close();
+        }
+        if (this.textQTBar && this.textQTBar.element && this.textQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.textQTBar.element)) {
+            this.textQTBar.tooltip.close();
+        }
+        if (this.imageQTBar && this.imageQTBar.element && this.imageQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.imageQTBar.element)) {
+            this.imageQTBar.tooltip.close();
+        }
+        if (this.audioQTBar && this.audioQTBar.element && this.audioQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.audioQTBar.element)) {
+            this.audioQTBar.tooltip.close();
+        }
+        if (this.videoQTBar && this.videoQTBar.element && this.videoQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.videoQTBar.element)) {
+            this.videoQTBar.tooltip.close();
+        }
+        if (this.tableQTBar && this.tableQTBar.element && this.tableQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.tableQTBar.element)) {
+            this.tableQTBar.tooltip.close();
+        }
+        if (this.inlineQTBar && this.inlineQTBar.element && this.inlineQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.inlineQTBar.element)) {
+            this.inlineQTBar.tooltip.close();
+        }
+    }
+
     private deBounce(x: number, y: number, target: HTMLElement, args: KeyboardEvent | MouseEvent): void {
         clearTimeout(this.deBouncer);
         this.deBouncer = window.setTimeout(() => {

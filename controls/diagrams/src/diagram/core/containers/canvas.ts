@@ -5,7 +5,7 @@
 import { GroupableView } from './container';
 import { DiagramElement } from '../elements/diagram-element';
 import { rotateSize } from '../../utility/base-util';
-import { Transform, ElementAction, FlipDirection } from '../../enum/enum';
+import { Transform, ElementAction, FlipDirection, ParentType } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
@@ -232,7 +232,11 @@ export class Canvas extends GroupableView {
 
     //Aligns the child elements based on a point
     private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
-        x += child.margin.left - child.margin.right;
+        const factor: number = (child instanceof TextElement && (child.margin.left !== 0 || child.margin.right !== 0) &&
+            child.horizontalAlignment === 'Center' && (child as TextElement).parentType !== ParentType.Connector &&
+            !child.isLabelResizing && ((child as TextElement).position.x === 0.5 && (child as TextElement).position.y === 0.5)) ? 0.5 : 1;
+
+        x += (child.margin.left - child.margin.right) * factor;
         y += child.margin.top - child.margin.bottom;
 
         switch (child.horizontalAlignment) {

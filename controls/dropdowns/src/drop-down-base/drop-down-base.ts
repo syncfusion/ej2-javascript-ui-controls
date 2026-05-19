@@ -2727,7 +2727,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             } else {
                 for (const item of this.listData) {
-                    if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
+                    if (!isNullOrUndefined(item) && (getValue((this.fields.value ? this.fields.value : 'value'), item) === value
+                || this.getModuleName() === 'multiselect' && this.isVirtualizationEnabled && this.properties.allowCustomValue && getValue((this.fields.value ? this.fields.value : 'value'), item) === value.toString())) {
                         return item;
                     }
                 }

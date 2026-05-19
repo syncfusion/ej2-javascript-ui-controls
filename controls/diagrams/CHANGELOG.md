@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.7 (2026-05-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I829704` - Fixed the SymbolPalette failed under strict CSP while defining title for palette.
+
 ## 33.2.6 (2026-05-12)
 
 ### Diagram
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - `#I835347` - Fixed Overview does not updated correctly for SVG node positions when resized or diagram zoompan action.
+- `#I816847` - Fixed annotation text overflow with uneven margins.
 
 ## 33.2.5 (2026-05-05)
 

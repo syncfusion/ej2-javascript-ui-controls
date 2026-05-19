@@ -1584,7 +1584,7 @@ export class SpellChecker {
                 if (errorElement instanceof ErrorTextElementBox || errorElement instanceof TextElementBox) {
                     if (errorElement instanceof ErrorTextElementBox) {
                         elementStart = errorElement.start;
-                        if ((isNullOrUndefined((errorElement as ErrorTextElementBox).start.paragraph) || (errorElement as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
+                        if ((isNullOrUndefined((errorElement as ErrorTextElementBox).start.paragraph) || (errorElement as ErrorTextElementBox).start.paragraph.indexInOwner === -1) || errorElement.indexInOwner === -1) {
                             errorElements.splice(j, 1);
                             j--;
                             if (errorElements.length === 0) {
@@ -1597,7 +1597,7 @@ export class SpellChecker {
                             continue;
                         }
                     } else {
-                        if (isNullOrUndefined((errorElement as TextElementBox).paragraph) || (errorElement as TextElementBox).paragraph.indexInOwner === -1) {
+                        if (isNullOrUndefined((errorElement as TextElementBox).paragraph) || (errorElement as TextElementBox).paragraph.indexInOwner === -1 || errorElement.indexInOwner === -1) {
                             errorElements.splice(j, 1);
                             j--;
                             if (errorElements.length === 0) {

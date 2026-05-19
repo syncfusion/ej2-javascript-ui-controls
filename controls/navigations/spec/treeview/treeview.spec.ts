@@ -2754,10 +2754,14 @@ describe('TreeView control', () => {
                 expect(li[0].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(false);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-focused')).toBe(false);
+                expect(li[1].classList.contains('e-focused')).toBe(false);
                 keyboardEventArgs.action = 'tab';
                 treeObj.focusIn();
                 expect(li[0].classList.contains('e-node-focus')).toBe(true);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-focused')).toBe(true);
+                expect(li[1].classList.contains('e-focused')).toBe(false);
             });
             it('down arrow key pressed', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -2765,12 +2769,16 @@ describe('TreeView control', () => {
                 expect(li[1].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(true);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-focused')).toBe(true);
+                expect(li[1].classList.contains('e-focused')).toBe(false);
                 keyboardEventArgs.action = 'moveDown';
                 treeObj.keyActionHandler(keyboardEventArgs);
                 expect(li[0].classList.contains('e-hover')).toBe(false);
                 expect(li[1].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(false);
                 expect(li[1].classList.contains('e-node-focus')).toBe(true);
+                expect(li[0].classList.contains('e-focused')).toBe(false);
+                expect(li[1].classList.contains('e-focused')).toBe(true);
                 treeObj.keyActionHandler(keyboardEventArgs);
                 treeObj.keyActionHandler(keyboardEventArgs);
                 treeObj.keyActionHandler(keyboardEventArgs);
@@ -2779,6 +2787,8 @@ describe('TreeView control', () => {
                 expect(li[4].classList.contains('e-hover')).toBe(false);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
                 expect(li[4].classList.contains('e-node-focus')).toBe(true);
+                expect(li[0].classList.contains('e-focused')).toBe(false);
+                expect(li[4].classList.contains('e-focused')).toBe(true);
             });
             it('up arrow key pressed', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -2786,12 +2796,16 @@ describe('TreeView control', () => {
                 expect(li[4].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(false);
                 expect(li[4].classList.contains('e-node-focus')).toBe(true);
+                expect(li[0].classList.contains('e-focused')).toBe(false);
+                expect(li[4].classList.contains('e-focused')).toBe(true);
                 keyboardEventArgs.action = 'moveUp';
                 treeObj.keyActionHandler(keyboardEventArgs);
                 expect(li[3].classList.contains('e-hover')).toBe(false);
                 expect(li[4].classList.contains('e-hover')).toBe(false);
                 expect(li[3].classList.contains('e-node-focus')).toBe(true);
                 expect(li[4].classList.contains('e-node-focus')).toBe(false);
+                expect(li[3].classList.contains('e-focused')).toBe(true);
+                expect(li[4].classList.contains('e-focused')).toBe(false);
                 treeObj.keyActionHandler(keyboardEventArgs);
                 treeObj.keyActionHandler(keyboardEventArgs);
                 treeObj.keyActionHandler(keyboardEventArgs);
@@ -2800,6 +2814,8 @@ describe('TreeView control', () => {
                 expect(li[1].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(true);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-focused')).toBe(true);
+                expect(li[1].classList.contains('e-focused')).toBe(false);
             });
             it('end key pressed', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
