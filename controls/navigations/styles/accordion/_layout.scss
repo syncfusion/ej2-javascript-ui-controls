@@ -76,6 +76,12 @@
         }
       }
 
+      &.e-focused {
+        >.e-acrdn-header {
+          box-shadow: $acrdn-item-header-focus-box-shadow;
+        }
+      }
+
       .e-acrdn-header {
         border-radius: $acrdn-item-hdr-border-radius;
         line-height: $acrdn-nrml-header-lineheight;
@@ -137,12 +143,12 @@
             padding: $acrdn-nest-nrml-content-padding;
           }
 
+          > .e-acrdn-content > .e-accordion > .e-acrdn-item.e-focused > .e-acrdn-header {
+            box-shadow: $acrdn-nested-item-header-focus-box-shadow;
+          }
+
           > .e-acrdn-content > .e-accordion > .e-acrdn-item > .e-acrdn-header {
             padding: $acrdn-nest-nrml-header-padding;
-
-            &:focus {
-              box-shadow: $acrdn-nested-item-header-focus-box-shadow;
-            }
           }
 
           > .e-acrdn-content {

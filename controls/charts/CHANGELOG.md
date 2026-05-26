@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+## 33.2.8 (2026-05-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I1026972` - Axis label tooltip now correctly interprets `<br>` tags as line breaks, improving readability instead of displaying raw HTML text.
+- `#I1026478` - The `legendClick` event in Accumulation Chart now triggers correctly when `legendSettings.toggleVisibility` is set to `false`, enabling custom legend interaction logic such as filtering and visibility updates.
+- `#FB73933` - Stacked labels now render correctly after legend toggling in grouped stacked series, without overlapping.
+- `#FB69182` - Column series now renders with the correct width when only a single data point is provided.
+- `#I835295` - Zoom out now works correctly after performing maximum zoom-in through all interaction modes.
+
 ## 33.2.4 (2026-04-28)
 
 ### Chart

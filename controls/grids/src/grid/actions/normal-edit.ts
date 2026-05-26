@@ -65,7 +65,8 @@ export class NormalEdit {
     protected dblClickHandler(e: MouseEvent): void {
         if (parentsUntil(e.target as Element, literals.rowCell) && this.parent.editSettings.allowEditOnDblClick &&
             (!this.parent.editSettings.showAddNewRow || (this.parent.editSettings.showAddNewRow &&
-            !parentsUntil(e.target as Element, 'e-addedrow')))) {
+            !parentsUntil(e.target as Element, 'e-addedrow'))) && !(e.target &&
+            ((e.target as Element).classList.contains('e-treegridcollapse') || (e.target as Element).classList.contains('e-treegridexpand')))) {
             this.parent.editModule.startEdit(parentsUntil(e.target as Element, literals.row) as HTMLTableRowElement);
         }
     }

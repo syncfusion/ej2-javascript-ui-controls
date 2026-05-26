@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I839614` - Fixed the trackpad zoom interaction is non linear issue.
+
 ## 33.2.7 (2026-05-19)
 
 ### Diagram

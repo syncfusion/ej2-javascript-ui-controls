@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where free text annotations using the Times New Roman font were not recognized in adobe.
+- Resolved an issue where document properties were missing when incremental update was set to false.
+- Resolved an issue where server-side exported annotations with custom data were not compatible.
+
 ## 33.2.7 (2026-05-19)
 
 ### PDF

@@ -4409,7 +4409,7 @@ export class WordExport {
             xmlWriter.writeEndElement(); // end of vMerge
         }
         xmlWriter.writeEndElement(); // end of tcPr
-        if (cell && cell[blocksProperty[this.keywordIndex]].length > 0) {
+        if (!this.isVerticalMergeCell && cell && cell[blocksProperty[this.keywordIndex]].length > 0) {
             let itemIndex: number = 0;
             let item: any = undefined;
             while (itemIndex < cell[blocksProperty[this.keywordIndex]].length) {
@@ -6520,18 +6520,255 @@ export class WordExport {
             writer.writeStartElement(undefined, 'lang', this.wNamespace);
             
             if (isLanguageId) {
-                let localeId: string= LocaleId[characterFormat[localeIdProperty[this.keywordIndex]]];
-                writer.writeAttributeString('w', 'val', undefined, localeId.replace('_', '-'));
+                let localeId: string = LocaleId[characterFormat[localeIdProperty[this.keywordIndex]]];
+                if(!isNullOrUndefined(localeId)){
+                    writer.writeAttributeString('w', 'val', undefined, localeId.replace('_', '-'));
+                } else {
+                    let langASCII: string = this.getLanguage(characterFormat[localeIdProperty[this.keywordIndex]]);
+                    writer.writeAttributeString('w', 'val', undefined, langASCII.replace('_', '-'));
+                }
             }
             if (isLanguageIdFarEast) {
                 let farEast: string = LocaleId[characterFormat[localeIdFarEastProperty[this.keywordIndex]]];
-                writer.writeAttributeString('w', 'eastAsia', undefined, farEast.replace('_', '-'));
+                if (isNullOrUndefined(farEast)) {
+                    writer.writeAttributeString('w', 'eastAsia', undefined, farEast.replace('_', '-'));
+                }
             }
             if (isLanguageIdBi) {
                 let bidi: string = LocaleId[characterFormat[localeIdBidiProperty[this.keywordIndex]]];
                 writer.writeAttributeString('w', 'bidi' , undefined, bidi.replace('_', '-'));
             }
             writer.writeEndElement();
+        }
+    }
+    private getLanguage(key: number): string {
+        switch (key) {
+            case 0:
+                return "x-none";
+            case 1:
+                return "ar";
+            case 2:
+                return "bg";
+            case 3:
+                return "ca";
+            case 4:
+                return "zh";
+            case 5:
+                return "cs";
+            case 6:
+                return "da";
+            case 7:
+                return "de";
+            case 8:
+                return "el";
+            case 9:
+                return "en";
+            case 10:
+                return "es";
+            case 11:
+                return "fi";
+            case 12:
+                return "fr";
+            case 13:
+                return "he";
+            case 14:
+                return "hu";
+            case 15:
+                return "is";
+            case 16:
+                return "it";
+            case 17:
+                return "ja";
+            case 18:
+                return "ko";
+            case 19:
+                return "nl";
+            case 20:
+                return "nb";
+            case 21:
+                return "pl";
+            case 22:
+                return "pt";
+            case 23:
+                return "rm";
+            case 24:
+                return "ro";
+            case 25:
+                return "ru";
+            case 26:
+                return "hr";
+            case 27:
+                return "sk";
+            case 28:
+                return "sq";
+            case 29:
+                return "sv";
+            case 30:
+                return "th";
+            case 31:
+                return "tr";
+            case 32:
+                return "ur";
+            case 33:
+                return "id";
+            case 34:
+                return "uk";
+            case 35:
+                return "be";
+            case 36:
+                return "sl";
+            case 37:
+                return "et";
+            case 38:
+                return "lv";
+            case 39:
+                return "lt";
+            case 40:
+                return "tg";
+            case 41:
+                return "fa";
+            case 42:
+                return "vi";
+            case 43:
+                return "hy";
+            case 44:
+                return "az";
+            case 45:
+                return "eu";
+            case 46:
+                return "hsb";
+            case 47:
+                return "mk";
+            case 50:
+                return "tn";
+            case 52:
+                return "xh";
+            case 53:
+                return "zu";
+            case 54:
+                return "af";
+            case 55:
+                return "ka";
+            case 56:
+                return "fo";
+            case 57:
+                return "hi";
+            case 58:
+                return "mt";
+            case 59:
+                return "smn";
+            case 62:
+                return "ms";
+            case 63:
+                return "kk";
+            case 64:
+                return "ky";
+            case 65:
+                return "sw";
+            case 66:
+                return "tk";
+            case 67:
+                return "uz";
+            case 68:
+                return "tt";
+            case 69:
+                return "bn";
+            case 70:
+                return "pa";
+            case 71:
+                return "gu";
+            case 72:
+                return "or";
+            case 73:
+                return "ta";
+            case 74:
+                return "te";
+            case 75:
+                return "kn";
+            case 76:
+                return "ml";
+            case 78:
+                return "mr";
+            case 79:
+                return "sa";
+            case 80:
+                return "mn";
+            case 81:
+                return "bo";
+            case 82:
+                return "cy";
+            case 84:
+                return "lo";
+            case 86:
+                return "gl";
+            case 87:
+                return "kok";
+            case 90:
+                return "syr";
+            case 91:
+                return "si";
+            case 92:
+                return "chr";
+            case 93:
+                return "iu";
+            case 94:
+                return "am";
+            case 97:
+                return "ne";
+            case 98:
+                return "fy";
+            case 99:
+                return "ps";
+            case 100:
+                return "fil";
+            case 101:
+                return "dv";
+            case 103:
+                return "ff";
+            case 104:
+                return "ha";
+            case 107:
+                return "quz";
+            case 108:
+                return "nso";
+            case 109:
+                return "ba";
+            case 110:
+                return "lb";
+            case 111:
+                return "kl";
+            case 112:
+                return "ig";
+            case 115:
+                return "ti";
+            case 117:
+                return "haw";
+            case 120:
+                return "ii";
+            case 122:
+                return "arn";
+            case 126:
+                return "br";
+            case 128:
+                return "ug";
+            case 129:
+                return "mi";
+            case 130:
+                return "oc";
+            case 131:
+                return "co";
+            case 132:
+                return "gsw";
+            case 133:
+                return "sah";
+            case 134:
+                return "qut";
+            case 135:
+                return "rw";
+            case 140:
+                return "prs";
+            default:
+                return "en-US";
         }
     }
     // Serializes the Character format

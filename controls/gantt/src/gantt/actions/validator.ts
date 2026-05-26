@@ -324,48 +324,76 @@ export class cyclicValidator {
             const k: string = keysInit[i as number];
             state.set(k, WHITE);
         }
-        const stack: string[] = [];
+        const path: string[] = [];
         const cycles: string[][] = [];
-        const dfs: any = (node: string): void => {
-            state.set(node, GRAY);
-            stack.push(node);
-            const neighbors: Set<string> | undefined = adj.get(node);
-            if (neighbors) {
-                const neighborArray: string[] = Array.from(neighbors);
-                for (let i: number = 0; i < neighborArray.length; i++) {
-                    const nb: string = neighborArray[i as number];
-                    const s: number = state.has(nb) ? state.get(nb)! : WHITE;
-                    if (s === WHITE) {
-                        dfs(nb);
-                    } else if (s === GRAY) {
-                        // Cycle detected
-                        let idx: number = -1;
-                        for (let j: number = 0; j < stack.length; j++) {
-                            if (stack[j as number] === nb) {
-                                idx = j;
-                                break;
-                            }
-                        }
-                        if (idx !== -1) {
-                            const cyclePath: string[] = [];
-                            for (let k: number = idx; k < stack.length; k++) {
-                                cyclePath.push(stack[k as number]);
-                            }
-                            cycles.push(cyclePath);
-                        }
-                    }
-                    // BLACK → do nothing
+        const frameStack: Array<{
+            entered: boolean;
+            neighbors: string[];
+            nextIndex: number;
+            node: string;
+        }> = [];
+        const captureCycle: any = (nb: string): void => {
+            let idx: number = -1;
+            for (let j: number = 0; j < path.length; j++) {
+                if (path[j as number] === nb) {
+                    idx = j;
+                    break;
                 }
             }
-            stack.pop();
-            state.set(node, BLACK);
+            if (idx !== -1) {
+                const cyclePath: string[] = [];
+                for (let k: number = idx; k < path.length; k++) {
+                    cyclePath.push(path[k as number]);
+                }
+                cycles.push(cyclePath);
+            }
         };
-        // Run DFS from all nodes
+        // Run DFS from all nodes using an explicit stack to avoid call-stack overflow.
         const keys: string[] = Array.from(adj.keys());
         for (let i: number = 0; i < keys.length; i++) {
             const node: string = keys[i as number];
-            if (state.get(node) === WHITE) {
-                dfs(node);
+            if (state.get(node) !== WHITE) {
+                continue;
+            }
+            frameStack.push({
+                entered: false,
+                neighbors: Array.from(adj.get(node) || []),
+                nextIndex: 0,
+                node: node
+            });
+            while (frameStack.length > 0) {
+                const frame: {
+                    entered: boolean;
+                    neighbors: string[];
+                    nextIndex: number;
+                    node: string;
+                } = frameStack[frameStack.length - 1];
+                if (!frame.entered) {
+                    frame.entered = true;
+                    state.set(frame.node, GRAY);
+                    path.push(frame.node);
+                }
+                if (frame.nextIndex < frame.neighbors.length) {
+                    const nb: string = frame.neighbors[frame.nextIndex];
+                    frame.nextIndex++;
+                    const s: number = state.has(nb) ? state.get(nb)! : WHITE;
+                    if (s === WHITE) {
+                        frameStack.push({
+                            entered: false,
+                            neighbors: Array.from(adj.get(nb) || []),
+                            nextIndex: 0,
+                            node: nb
+                        });
+                    } else if (s === GRAY) {
+                        // Cycle detected
+                        captureCycle(nb);
+                    }
+                    // BLACK → do nothing
+                } else {
+                    frameStack.pop();
+                    path.pop();
+                    state.set(frame.node, BLACK);
+                }
             }
         }
         // Deduplicate cycles using canonical rotation

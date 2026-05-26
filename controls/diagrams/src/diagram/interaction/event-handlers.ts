@@ -1736,7 +1736,13 @@ export class DiagramEventHandler {
                 // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
                 // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and
                 // set it to zoomFactor args in zoomTo method.
-                const zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
+                // 1026985: Trackpad zoom interaction is non‑linear and uncontrollable in Diagram component
+                // Detect trackpad vs mouse wheel for Ctrl+scroll zoom
+                const normalizedDeltaY: number = evt.deltaY !== undefined ? evt.deltaY : 0;
+                const isTrackpadZoom: boolean = evt.isTrusted && Math.abs(normalizedDeltaY) < 95;
+                // Use zoomfactor/6 for trackpad for more linear zooming action.
+                const zoomFactor: number = isTrackpadZoom ? (this.diagram.scrollSettings.zoomFactor / 6)
+                    : this.diagram.scrollSettings.zoomFactor;
                 if (up) {
                     this.diagram.zoomTo({ type: 'ZoomIn', zoomFactor: zoomFactor, focusPoint: mousePosition });
                 }

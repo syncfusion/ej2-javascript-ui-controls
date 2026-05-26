@@ -71,6 +71,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private firstRender: boolean;
     private documentClickContext: EventListenerObject = this.documentclickHandler.bind(this);
     private resizeHandler: EventListener = this.resize.bind(this);
+    private preventClose: boolean = false;
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -462,6 +463,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     setTimeout((): void => this.setTimeOut(), 50);
                 }
                 EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+                this.preventClose = false;
+            }
+            else {
+                this.preventClose = true;
             }
         });
     }
@@ -709,9 +714,12 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             case 'type':
                 this.checkType(false);
                 removeClass([this.element], [VISIBILITY]);
-                this.addClass();
+                if (!this.preventClose) {
+                    this.addClass();
+                }
                 addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
                     ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                this.setType(this.type);
                 break;
             case 'position':
                 this.element.style.transform = '';

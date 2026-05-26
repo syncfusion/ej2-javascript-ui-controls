@@ -207,7 +207,7 @@ describe('RTE Base module ', () => {
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
             setTimeout(() => {
-                expect((rteObj as any).inputElement.innerHTML).toBe(`<p>The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content<b class="focusNode">Toolbar</b></p>`);
+                expect((rteObj as any).inputElement.innerHTML).toBe(`<p>            The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid             <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or             <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content        <b class="focusNode">Toolbar</b></p>`);
                 done();
             }, 100);
         });
@@ -617,7 +617,7 @@ describe('RTE Base module ', () => {
             (rteObj as any).keyDown(keyBoardEvent);
             setTimeout(() => {
                 expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(4);
-                expect((rteObj as any).inputElement.innerHTML === `<p><b>Functional Specifications/Requirements:</b></p><ol><li>Provide the tool bar support, it’s also customizable.</li><li>Options to get the HTML elements with styles.</li><li>Support to insert image from a defined path.</li><li>Footer elements and styles(tag / Element information , Action button (Upload, Cancel))</li></ol><p><br></p>`).toBe(true);
+                expect((rteObj as any).inputElement.innerHTML === `<p><b>Functional             Specifications/Requirements:</b></p><ol><li>Provide             the tool bar support, it’s also customizable.</li><li>Options             to get the HTML elements with styles.</li><li>Support             to insert image from a defined path.</li><li>Footer             elements and styles(tag / Element information , Action button (Upload, Cancel))</li></ol><p><br></p>`).toBe(true);
                 done();
             }, 100);
         });
@@ -3130,7 +3130,7 @@ describe('RTE Base module ', () => {
                 });
             });
             it('checking when being added in the editor', () => {
-                let expectedValue: string = `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila Hendriksma</a></span> en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley Andela</a></span> kwam ook nog even langs. <br/></p><p><br/></p>`;
+                let expectedValue: string = `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila  Hendriksma</a></span>  en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley  Andela</a></span>  kwam ook nog even langs. <br/></p><p><br/></p>`;
                 expect(rteObj.value === expectedValue).toBe(true);
             });
             afterAll(() => {
@@ -9909,7 +9909,7 @@ Rich Text Editor 3`
         });
         it('Should not remove the backward slash from pre-line', (done: Function) => {
             const result = rteObj.inputElement.innerHTML;
-            const expected = `<p>\n <strong>hello</strong>\n <span>world</span>\n</p>`;
+            const expected = `<p>\n     <strong>hello</strong>\n     <span>world</span>\n</p>`;
             expect(result === expected).toBe(true);
             done();
         });
@@ -10022,7 +10022,7 @@ Rich Text Editor 3`
             rteObj.value = `<p>   Text 1   </p> <p>   text 2   </p>`;
             rteObj.dataBind();
             const result = rteObj.inputElement.innerHTML;
-            const expected = `<p>Text 1</p><p>text 2</p>`;
+            const expected = `<p>  Text 1  </p><p>  text 2  </p>`;
             expect(result === expected).toBe(true);
             rteObj.value = ``;
             done();
@@ -10031,7 +10031,7 @@ Rich Text Editor 3`
             rteObj.value = `<p><span>   Text 1   </span> <span>   text 2   </span></p>`;
             rteObj.dataBind();
             const result = rteObj.inputElement.innerHTML;
-            const expected = `<p><span>Text 1 </span> <span> text 2 </span></p>`;
+            const expected = `<p><span>  Text 1   </span> <span>   text 2   </span></p>`;
             expect(result === expected).toBe(true);
             rteObj.value = ``;
             done();
@@ -10359,6 +10359,25 @@ Rich Text Editor 3`
                 dataTransfer.setData('text/plain', pasteContent);
                 const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer, bubbles: true, cancelable: true } as ClipboardEventInit);
                 textarea.dispatchEvent(pasteEvent);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Bug 1027571: Multiple white spaces turns into single space in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Hello    World</p>`,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Should not remove the white spaces before charcters', (done: DoneFn) => {
+            rteObj.focusIn();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p>Hello    World</p>');
                 done();
             }, 100);
         });

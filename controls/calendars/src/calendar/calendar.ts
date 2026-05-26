@@ -688,7 +688,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 this.getCultureValues())), this.firstDayOfWeek) : null;
         if (!isNullOrUndefined(shortNames)) {
             for (let days: number = 0; days <= daysCount; days++) {
-                html += '<th  class="">' + this.toCapitalize(shortNames[days as number]) + '</th>';
+                html += '<th aria-hidden="true" class="">' + this.toCapitalize(shortNames[days as number]) + '</th>';
             }
         }
         html = '<tr>' + html + '</tr>';
@@ -1355,7 +1355,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             value = date.valueOf();
         }
         const attrs: Object = {
-            className: CELL, attrs: { 'id': '' + getUniqueID('' + value)}
+            className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false' }
         };
         return this.createElement('td', attrs);
     }

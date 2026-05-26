@@ -1084,7 +1084,7 @@ describe('RTE CR issues ', () => {
             expect(allText.indexOf('tag contains additional tags. - 150 links') >= 0).toBe(true);
             expect(allText.indexOf('Missing') >= 0).toBe(true);
             expect(allText.indexOf('tag- 137 links') >= 0).toBe(true);
-            expect(allText.indexOf('tags - 100 links') >= 0).toBe(true);
+            expect(allText.indexOf('tags  - 100 links') >= 0).toBe(true);
             expect(editPanel.querySelectorAll('title').length).toBe(0);
         });
     });
@@ -1399,7 +1399,7 @@ describe('RTE CR issues ', () => {
         (rteObj as any).keyDown(keyBoardEvent);
         setTimeout(() => {
             let value=rteObj.inputElement.querySelector('#ol');
-            expect(value.innerHTML=== `<li>Provide the tool bar support, it’s also customizable.</li><li id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</li>`).toBe(true);
+            expect(value.innerHTML=== `<li>Provide         the tool bar support, it’s also customizable.</li><li id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;Cancel))</li>`).toBe(true);
         rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li id='two'><p>Options to get the HTML elements with styles.</p></li></ol>`;
             rteObj.dataBind();
             startElement = rteObj.inputElement.querySelector('#one');

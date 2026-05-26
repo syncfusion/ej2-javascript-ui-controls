@@ -236,7 +236,6 @@
         &:focus {
           border: $acrdn-item-header-focus-border;
           background: $acrdn-item-header-focus-bg;
-          @include acrdn-item-header-focus-box-shadow;
 
           &:active {
 
@@ -247,7 +246,6 @@
             }
           }
         }
-        @include acrdn-item-header-focus-visible-box-shadow;
       }
 
       &.e-select {
@@ -356,9 +354,7 @@
           &:focus {
             position: relative;
             z-index: 2;
-            @include acrdn-item-header-focus-box-shadow;
           }
-          @include acrdn-item-header-focus-visible-box-shadow;
         }
 
         + .e-selected {

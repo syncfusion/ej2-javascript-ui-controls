@@ -1187,7 +1187,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 let bookmarkName: string = element.name.replace('-', '_');
                 element.name = bookmarkName;
             }
-            inline[nameProperty[this.keywordIndex]] = element.name;
+            inline[nameProperty[this.keywordIndex]] = element.name.replace(/ /g, '_');
             if (!isNullOrUndefined(element.properties)) {
                 let properties: any = {};
                 if (!isNullOrUndefined(element.properties['isAfterParagraphMark']) && isNullOrUndefined(element.nextElement)) {

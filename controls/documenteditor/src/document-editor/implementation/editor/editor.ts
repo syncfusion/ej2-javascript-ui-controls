@@ -36,7 +36,7 @@ import {
     nsidProperty,
     customXmlProperty,
     BeforePasteEventArgs,
-    beforePaste
+    beforePaste, headersFootersProperty
 } from '../../base/index';
 import { SelectionCharacterFormat, SelectionParagraphFormat } from '../index';
 import { Action } from '../../index';
@@ -420,6 +420,8 @@ export class Editor {
     private previousSectionFormat: WSectionFormat = undefined;
     private currentPasteOptions: PasteOptions | TablePasteOptions;
     private pasteTextPosition: PositionInfo = undefined;
+    private capturedOriginalHeaderFooters: any = null;
+    private isCurrentWholeDocumentPaste: boolean = false;
     //public isSkipHistory: boolean = false;
     /**
      * @private
@@ -538,7 +540,12 @@ export class Editor {
             }
             else {
                 if (isNullOrUndefined(result)) {
-                    if (fieldCode.substring(0, 10) === 'MERGEFIELD') {
+                    if (fieldCode.substring(0, 11) === 'DOCVARIABLE') {
+                        fieldCode = fieldCode.substring(11).trim();
+                        const index: number = fieldCode.indexOf('\\*');
+                        result = '«' + fieldCode.substring(0, index).trim() + '»';        
+                    }
+                    else if (fieldCode.substring(0, 10) === 'MERGEFIELD') {
                         fieldCode = fieldCode.substring(10).trim();
                         const index: number = fieldCode.indexOf('\\*');
                         result = '«' + fieldCode.substring(0, index).trim() + '»';
@@ -4019,7 +4026,7 @@ export class Editor {
                     isRtl = this.documentHelper.textHelper.getRtlLanguage(inline.text).isRtl;
                     isTextContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(text);
                 }
-                if ((!isBidi && inline.characterFormat.bidi && (inlineLangId !== 0 || (isTextContainsSpecChar && isRtl)))
+                if ((!isBidi && (inline.characterFormat.bidi && this.selection.characterFormat.bidi) && (inlineLangId !== 0 || (isTextContainsSpecChar && isRtl)))
                     || (text === ' ' && this.selection.characterFormat.bidi)) {
                     isBidi = true;
                 }
@@ -6914,6 +6921,7 @@ export class Editor {
 
     public getBlocks(pasteContent: any, isPaste: boolean, sections?: BodyWidget[], comments?: CommentElementBox[], revision?: Revision[], isContextBasedPaste?: boolean): BodyWidget[] {
         let widgets: BodyWidget[] = [];
+        this.documentHelper.copiedHeaderFooterData = [];
         if (typeof (pasteContent) === 'string') {
             let startParagraph: ParagraphWidget = this.selection.start.paragraph;
             if (!this.selection.isForward) {
@@ -7057,6 +7065,15 @@ export class Editor {
                         && pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]][numberOfColumnsProperty[this.keywordIndex]] > 1) || (pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]]
                             && pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]] === 'NoBreak')) {
                     parser.parseSectionFormat(this.keywordIndex, pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]], bodyWidget.sectionFormat);
+                }
+                // Parse and apply headers and footers from paste content
+                if (isPaste && !isContextBasedPaste && !isNullOrUndefined(pasteContent[sectionsProperty[this.keywordIndex]][i][headersFootersProperty[this.keywordIndex]])) {
+                    const headerFooterData: any = pasteContent[sectionsProperty[this.keywordIndex]][i][headersFootersProperty[this.keywordIndex]];
+                    if (headerFooterData && Object.keys(headerFooterData).length > 0) {
+                        const parsedHeaderFooters: any = parser.parseHeaderFooter(headerFooterData, this.documentHelper.headersFooters);
+                        // Add the parsed headers/footers to the document's headersFooters collection at the appropriate index
+                        this.documentHelper.copiedHeaderFooterData.push(parsedHeaderFooters);
+                    }
                 }
                 if (isPaste && !this.isRemoteAction && !isNullOrUndefined(comments)) {
                     let existingCommentIds: string[] = [];
@@ -7368,6 +7385,34 @@ export class Editor {
             }
             let pastedComments: CommentElementBox[] = [];
             const widgets: BodyWidget[] = this.getBlocks(content, true, undefined, pastedComments);
+            this.capturedOriginalHeaderFooters = [];
+            this.isCurrentWholeDocumentPaste = false;
+            let originalHeaderFooters: HeaderFooters[] = this.documentHelper.headersFooters.slice();
+            if (this.documentHelper.copiedHeaderFooterData.length > 0 && !this.selection.start.paragraph.isInHeaderFooter &&
+              isNullOrUndefined(this.selection.start.paragraph.bodyWidget.nextRenderedWidget) &&
+              this.selection.start.paragraph.bodyWidget.page.headerWidget.isEmpty &&
+              this.selection.start.paragraph.bodyWidget.page.footerWidget.isEmpty &&
+              this.selection.start.paragraph.bodyWidget.childWidgets[0] && this.isSectionEmpty(this.selection)) {
+                if (this.documentHelper.headersFooters.length == 1) {
+                    this.documentHelper.headersFooters = this.documentHelper.copiedHeaderFooterData;
+                     this.isCurrentWholeDocumentPaste = true;
+                } else if (this.documentHelper.headersFooters.length > 1 && this.documentHelper.headersFooters.length ==
+                  this.selection.start.paragraph.bodyWidget.sectionIndex + 1) {
+                    this.documentHelper.headersFooters.pop();
+                    this.documentHelper.headersFooters.push(...this.documentHelper.copiedHeaderFooterData);
+                    this.documentHelper.copiedHeaderFooterData = this.documentHelper.headersFooters.slice();
+                    this.isCurrentWholeDocumentPaste = true;
+                } else if (this.documentHelper.headersFooters.length > 1 && this.documentHelper.headersFooters.length <
+                  this.selection.start.paragraph.bodyWidget.sectionIndex + 1) {
+                    this.documentHelper.headersFooters.push(...this.documentHelper.copiedHeaderFooterData);
+                    this.documentHelper.copiedHeaderFooterData = this.documentHelper.headersFooters.slice();
+                    this.isCurrentWholeDocumentPaste = true;
+                }
+            }
+            if (this.isCurrentWholeDocumentPaste) {
+                this.documentHelper.layout.layoutWholeDocument(true);
+                this.capturedOriginalHeaderFooters = originalHeaderFooters;
+            }
             this.pasteContentsInternal(widgets, true, currentFormat, pasteOptions, pastedComments);
             if (!isNullOrUndefined(pastedComments) && pastedComments.length > 0) {
                 this.documentHelper.layout.layoutComments(pastedComments);
@@ -7495,6 +7540,10 @@ export class Editor {
                 if (this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                     if (this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex) {
                         this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex = undefined;
+                    }
+                    if (this.isCurrentWholeDocumentPaste && this.capturedOriginalHeaderFooters.length > 0) {
+                        this.editorHistory.currentBaseHistoryInfo.isWholeDocumentPaste = true;
+                        this.editorHistory.currentBaseHistoryInfo.originalHeaderFooters = this.capturedOriginalHeaderFooters;
                     }
                     let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.insertPosition);
                     let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.endPosition);
@@ -13325,6 +13374,8 @@ export class Editor {
                 && (this.selection.start.paragraph.firstChild as LineWidget).children[0] instanceof ListTextElementBox)) {
                 format.bold = value as boolean;
             }
+        } else if (property === 'bidi') {
+            format.bidi = value as boolean;
         } else if (property === 'italic') {
             if (this.isRTLFormat(format)) {
                 format.italicBidi = format.italic == format.italicBidi ? value as boolean : !value as boolean;
@@ -14357,7 +14408,7 @@ export class Editor {
             && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
         if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
             if ((((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character'))
-                && value.name !== paragraph.paragraphFormat.baseStyle.name) {
+                && (isNullOrUndefined(paragraph.paragraphFormat.baseStyle) || value.name !== paragraph.paragraphFormat.baseStyle.name)) {
                 let obj: WStyle = (value.type === 'Character') ? value : value.link;
                 this.updateSelectionCharacterFormatting(property, obj, update);
                 return true;
@@ -16629,10 +16680,6 @@ export class Editor {
         let index: number;
         let blockCollection: IWidget[];
         let containerWidget: Widget;
-        let isSkipClientPosition: boolean = false;
-        if (block instanceof ParagraphWidget && block.indexInOwner === 0 && block.containerWidget.indexInOwner === 0 && !block.isInsideTable && !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === "Delete") {
-            isSkipClientPosition = true;
-        }
         if (!skipElementRemoval) {
             this.removeFieldInBlock(block);
             this.removeFieldInBlock(block, true);
@@ -16668,7 +16715,7 @@ export class Editor {
             if (!isNullOrUndefined(containerWidget.containerWidget) && containerWidget.containerWidget instanceof FootNoteWidget) {
                 containerWidget.containerWidget.height -= block.height;
             }
-            this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting, isSelectionInsideTable, isSkipClientPosition);
+            this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting, isSelectionInsideTable);
         }
     }
     private checkToCombineRevisionsInPane(block: BlockWidget): void {

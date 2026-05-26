@@ -2698,12 +2698,44 @@ export class Selection {
         this.checkForCursorVisibility();
     }
     /**
+     * Handles bullet selection for left and right key navigation
+     *
+     * @private
+     * @param isLeftKey - boolean to determine if left key is pressed (true for left, false for right)
+     * @returns {void}
+     */
+    private handleBulletSelection(widget: LineWidget, contextTypeInternal: string, offset: number, isLeftKey: boolean): void {
+        let shouldSelectBullet: boolean = false;
+        if (isLeftKey) {
+            if (isNullOrUndefined(widget.paragraph.previousRenderedWidget) && contextTypeInternal === "List") {
+                contextTypeInternal = 'Text';
+            }
+            if (offset === 0 && widget.children[0] instanceof ListTextElementBox && contextTypeInternal !== "List") {
+                shouldSelectBullet = true;
+            }
+        } else {
+            if (widget.paragraph !== this.end.currentWidget.paragraph && this.end.currentWidget.children[0] instanceof ListTextElementBox) {
+                shouldSelectBullet = true;
+                widget = this.end.currentWidget;
+            }
+        }
+        if (shouldSelectBullet) {
+            this.documentHelper.selectionLineWidget = widget;
+            this.selectListText();
+        } else {
+            this.documentHelper.isListTextSelected = false;
+        }
+    }
+    /**
      * Handles left key.
      *
      * @private
      * @returns {void}
      */
     public handleLeftKey(): void {
+        let widget: LineWidget = this.end.currentWidget;
+        let contextTypeInternal: string = this.contextTypeInternal;
+        let offset: number = this.start.offset;
         if (this.end.isCurrentParaBidi) {
             this.isArrowSelection = true;
             this.moveNextPosition();
@@ -2715,7 +2747,7 @@ export class Selection {
         {
             this.checkForCursorVisibility();
         }
-        
+        this.handleBulletSelection(widget, contextTypeInternal, offset, true);
     }
     /**
      * Handles up key.
@@ -2736,6 +2768,9 @@ export class Selection {
      * @returns {void}
      */
     public handleRightKey(): void {
+        let widget: LineWidget = this.end.currentWidget;
+        let contextTypeInternal: string = this.contextTypeInternal;
+        let offset: number = this.start.offset;
         if (this.end.isCurrentParaBidi) {
             this.isArrowSelection = true;
             this.movePreviousPosition();
@@ -2747,6 +2782,7 @@ export class Selection {
         {
             this.checkForCursorVisibility();
         }
+        this.handleBulletSelection(widget, contextTypeInternal, offset, false);
     }
     /**
      * Handles end key.
@@ -5625,6 +5661,11 @@ export class Selection {
             }
             hiddenTextLength = 0;
             if (offset <= count + inline.length) {
+                // Skip BookmarkEnd while moving right to left.
+                // BookmarkEnd should not be treated as a valid cursor position.
+                if (inline instanceof BookmarkElementBox && (inline as BookmarkElementBox).bookmarkType === 1) {
+                    return this.getPreviousValidOffset(line, count);
+                }
                 return offset - 1 === count ? validOffset : offset - 1;
             }
             if (inline instanceof TextElementBox || inline instanceof ContentControl || inline instanceof ImageElementBox || inline instanceof CommentCharacterElementBox || inline instanceof BookmarkElementBox || inline instanceof GroupShapeElementBox
@@ -6628,7 +6669,7 @@ export class Selection {
         const margin: Margin = element.margin;
         let top: number = 0;
         let left: number = 0;
-        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode) && !this.owner.editorModule.handledEnter) {
+        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && !this.owner.editorModule.handledEnter) {
             lineWidget = this.getNextLineWidget(element.line.paragraph, element);
             index = 0;
         } else {
@@ -8423,7 +8464,8 @@ export class Selection {
         this.updateContentControlHighlightSelection();
         this.documentHelper.clearSelectionHighlight();
         this.hideToolTip();
-        if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
+        if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled
+            && (isNullOrUndefined(this.owner.editor) || !this.owner.editor.restrictLayout)) {
             this.highlightSelection(true, isBookmark);
         }
         if (this.documentHelper.restrictEditingPane.isShowRestrictPane && !this.skipEditRangeRetrieval) {

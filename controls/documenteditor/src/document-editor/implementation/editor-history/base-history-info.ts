@@ -146,6 +146,15 @@ export class BaseHistoryInfo {
      * @private
      */
     public pastedComments: CommentElementBox[] = [];
+    /**
+     * @private
+     */
+    public isWholeDocumentPaste: boolean = false;
+
+    /**
+     * @private
+     */
+    public originalHeaderFooters: any = undefined;
     //Properties
     //gets owner control
     public get owner(): DocumentEditor {
@@ -657,6 +666,17 @@ export class BaseHistoryInfo {
             this.revertIgnoreOnce();
             return;
         }
+        if (this.action === 'Paste' && this.isWholeDocumentPaste && this.originalHeaderFooters) {
+        if (this.editorHistory.isUndoing) {
+            // RESTORE ORIGINAL HEADERS/FOOTERS
+            this.owner.documentHelper.headersFooters = this.originalHeaderFooters;
+            this.owner.documentHelper.layout.layoutWholeDocument(true);
+        } else if (this.editorHistory.isRedoing) {
+            // RESTORE NEW HEADERS/FOOTERS (from copiedHeaderFooterData)
+            this.owner.documentHelper.headersFooters = this.owner.documentHelper.copiedHeaderFooterData;
+            this.owner.documentHelper.layout.layoutWholeDocument(true);
+        }
+    }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {
             this.owner.selectionModule.isModifyingSelectionInternally = true;
         }

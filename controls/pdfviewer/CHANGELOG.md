@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+`#I838614` - Fixed a script error that occurred when repeatedly focusing on form fields programmatically.
+`#I842122` - Resolved the issue where grouped radio buttons and checkboxes were not working in server-side rendering mode without the Form Designer module.
+
 ## 33.2.7 (2026-05-19)
 
 ### PDF Viewer

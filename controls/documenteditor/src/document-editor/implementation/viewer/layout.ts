@@ -1631,7 +1631,12 @@ export class Layout {
                         const element: ElementBox = widget.children[k];
                         if (element instanceof ShapeBase && element.textWrappingStyle !== "Inline") {
                             if (element.verticalOrigin === "Paragraph" || element.verticalOrigin === "Line") {
-                                element.y = (childWidget as Widget).y + element.verticalPosition;
+                                if (this.documentHelper.compatibilityMode === 'Word2013' && (childWidget.y + childWidget.height - element.y !== Math.abs(element.verticalPosition))) {
+                                    element.y += shiftTop;
+                                }
+                                else {
+                                    element.y = (childWidget as Widget).y + element.verticalPosition;
+                                }
                                 if (element.verticalOrigin === "Paragraph" && element.textWrappingStyle == "TopAndBottom") {
                                     const shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
                                     const paraRect: Rect = new Rect(childWidget.x, childWidget.y, childWidget.width, childWidget.height);
@@ -10501,8 +10506,10 @@ export class Layout {
             }
             updateNextBlockList = true;
             if ((viewer.owner.isShiftingEnabled && (this.documentHelper.fieldStacks.length === 0 || this.viewer.owner.editorModule.isInsertingTOC)) || (this.isIFfield && !this.checkBlockHasField(block))) {
-                this.documentHelper.blockToShift = block;
-                break;
+                if (!block.isFieldCodeBlock) {
+                    this.documentHelper.blockToShift = block;
+                    break;
+                }
             } else if (isNullOrUndefined(this.viewer.owner.editorModule) || !this.viewer.owner.editorModule.isInsertingTOC) {
                 block = block.combineWidget(this.viewer) as BlockWidget;
                 //let paragraph: ParagraphWidget;
@@ -10987,7 +10994,7 @@ export class Layout {
     }
 
     /* eslint-disable-next-line max-len */
-    public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean, isSelectionInsideTable?: boolean, isSkipClientPosition?: boolean): void {
+    public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean, isSelectionInsideTable?: boolean): void {
         if ((!isNullOrUndefined(block) && block.isFieldCodeBlock)) {
             return;
         }
@@ -11073,7 +11080,7 @@ export class Layout {
                     }
                     if (!(isNullOrUndefined(prevWidget) || prevWidget instanceof ParagraphWidget) ||
                         (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak) {
-                        if (isNullOrUndefined(isSkipShifting) && curretBlock.containerWidget !== prevWidget.containerWidget) {
+                        if (!isSkipShifting && curretBlock.containerWidget !== prevWidget.containerWidget) {
                             /* eslint-disable-next-line max-len */
                             const prevBodyWidget: BodyWidget = curretBlock.containerWidget as BodyWidget;
                             const newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
@@ -11101,9 +11108,7 @@ export class Layout {
                                 this.layoutParagraph(prevPara, 0);
                                 this.viewer.updateClientArea(prevPara.bodyWidget, prevPara.bodyWidget.page, true);
                             }
-                            if (!isSkipClientPosition) {
-                                this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                            } 
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
                         }
                     } else if (prevWidget instanceof ParagraphWidget && (prevWidget.isEndsWithPageBreak || prevWidget.isEndsWithColumnBreak) &&
                         prevWidget.containerWidget === curretBlock.containerWidget) {

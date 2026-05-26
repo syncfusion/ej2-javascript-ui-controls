@@ -355,6 +355,10 @@ export class DocumentHelper {
      * @private
      */
     public headersFooters: HeaderFooters[];
+    /**
+     * @private
+     */
+    public copiedHeaderFooterData: HeaderFooters[];
     private fieldSeparator: FieldElementBox;
     /**
      * @private
@@ -1870,6 +1874,7 @@ export class DocumentHelper {
             this.dialogInternal = new Dialog({
                 target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
+                locale: this.owner.locale,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
             });
@@ -2216,11 +2221,11 @@ export class DocumentHelper {
                 showSpinner(this.owner.commentReviewPane.reviewPane);
             }
         }
-        if (this.owner.selectionModule) {
-            if (this.isDocumentProtected) {
-                this.restrictEditingPane.showHideRestrictPane(true);
-            }
-        }
+        // if (this.owner.selectionModule) {
+        //     if (this.isDocumentProtected) {
+        //         this.restrictEditingPane.showHideRestrictPane(true);
+        //     }
+        // }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
         }
@@ -3987,7 +3992,7 @@ export class DocumentHelper {
             }
         } else {
             // As per MS Word behaviour, update vertical scroll bar using static value while navigate bookmark
-            this.viewerContainer.scrollTop = y - 96;
+            this.viewerContainer.scrollTop = y - (96 * this.zoomFactor);
         }
         if (!skipCursorUpdate) {
             this.selection.updateCaretToPage(startPosition, endPage);
@@ -7154,6 +7159,9 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateScrollBars();
     }
     public updateScrollBars(): void {
+        if(!isNullOrUndefined(this.owner.editor) && this.owner.editor.restrictLayout){
+            return;
+        }
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
         let containerWidth: number = (updatePositionObj.width * this.documentHelper.zoomFactor) + (this.pageLeft * 2);
@@ -7366,6 +7374,9 @@ export class WebLayoutViewer extends LayoutViewer {
         return width;
     }
     public updateScrollBars(): void {
+        if(!isNullOrUndefined(this.owner.editor) && this.owner.editor.restrictLayout){
+            return;
+        }
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
         let containerWidth: number = this.getContentWidth() * this.documentHelper.zoomFactor;

@@ -1834,8 +1834,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         window.crypto.getRandomValues(array);
         return array[0] / (0xFFFFFFFF + 1);
     }
+
+    private isInvalidString(value: string): boolean {
+        return !value || value.trim().length === 0;
+    }
+
     private checkForCustomValue(query?: Query, fields?: FieldSettingsModel): void {
-        const dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase);
+        const dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase) &&
+        !this.isInvalidString(this.inputElement.value);
         const field: FieldSettingsModel = fields ? fields : this.fields;
         this.isCustomReset = true;
         if (this.allowCustomValue && dataChecks) {
@@ -5546,12 +5552,24 @@ export class MultiSelect extends DropDownBase implements IInput {
                         temp = this.viewWrapper.innerHTML;
                         this.updateWrapperText(this.viewWrapper, data);
                     }
+                    let display: string;
+                    let topElement: HTMLElement;
+                    if (this.componentWrapper.offsetWidth === 0 && this.componentWrapper.parentElement) {
+                        topElement = this.componentWrapper.parentElement.parentElement as HTMLElement;
+                        if (!isNullOrUndefined(topElement) && topElement.style.display === 'none') {
+                            display = topElement.style.display;
+                            topElement.style.display = 'block';
+                        }
+                    }
                     wrapperleng = this.viewWrapper.offsetWidth +
                         parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10)  +
                         parseInt(window.getComputedStyle(this.viewWrapper).paddingLeft, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
+                    if (!isNullOrUndefined(display) && display === 'none' && !isNullOrUndefined(topElement)) {
+                        topElement.style.display = 'none';
+                    }
                     if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;

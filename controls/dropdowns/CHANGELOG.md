@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I840154` - Fixed an issue where the MultiSelect displayed "N selected" instead of the selected item when initialized before layout completion.
+
+- `823331` - Resolved an issue where the MultiSelect component accepted whitespace as a custom value, leading to invalid numeric values.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I838922` - Fixed an issue where Change event not fired when AutoFill is enabled and item is selected via mouse has been resolved.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I839712` - Fixed an issue where mention filtering failed to update correctly when characters were deleted.
+
 ## 33.2.7 (2026-05-19)
 
 ### DropDownTree

@@ -2266,6 +2266,19 @@ class _PdfMainObjectCollection {
                 foundCatalog = true;
             }
         });
+        if (collection._trailer && collection._trailer.has('Info')) {
+            const infoRef: any = collection._trailer.getRaw('Info'); // eslint-disable-line
+            if (infoRef && infoRef instanceof _PdfReference) {
+                const infoDict: _PdfDictionary = collection._fetch(infoRef);
+                if (infoDict && infoDict instanceof _PdfDictionary) {
+                    infoDict._updated = true;
+                    this._addToMainObjectCollection(infoRef, infoDict);
+                }
+            } else if (infoRef && infoRef instanceof _PdfDictionary) {
+                infoRef._updated = true;
+                this._addToMainObjectCollection(this._crossReference._getNextReference(), infoRef);
+            }
+        }
         this._parseObjectCollection();
     }
     /**

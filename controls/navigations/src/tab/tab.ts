@@ -716,6 +716,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public refreshOverflow(): void {
         if (!isNOU(this.tbObj)) {
             this.tbObj.refreshOverflow();
+            this.updatePopupIconAriaLabel();
         }
     }
 
@@ -886,6 +887,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.hdrEle.setAttribute('aria-labelledby', this.element.getAttribute('aria-labelledby'));
             this.element.removeAttribute('aria-labelledby');
         }
+        this.updatePopupIconAriaLabel();
         this.setCloseButton(this.showCloseButton);
         const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
         if (!isNOU(toolbarHeader)) {
@@ -893,6 +895,22 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
             }
         }
+    }
+
+    private updatePopupIconAriaLabel(): void {
+        if (isNOU(this.hdrEle) || isNOU(this.tbObj) || this.tbObj.overflowMode !== 'Popup') {
+            return;
+        }
+        const nav: HTEle = this.hdrEle.querySelector('.' + CLS_HOR_NAV) as HTEle;
+        if (isNOU(nav)) {
+            return;
+        }
+        const raw: string = window.getComputedStyle(nav, '::before').getPropertyValue('content');
+        const beforeText: string = (raw || '').trim().replace(/^['"]|['"]$/g, '').replace(/\\(["'])/g, '$1').replace(/\\\\/g, '\\');      
+        const label: string = (beforeText && beforeText !== 'none' && beforeText !== 'normal')
+            ? beforeText
+            : 'overflow';
+        nav.setAttribute('aria-label', label);
     }
 
     private createContentElement(index: number): Node {
@@ -2280,10 +2298,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.trigger('adding', addArgs, (tabAddingArgs: AddEventArgs) => {
                 if (!tabAddingArgs.cancel) {
                     this.addingTabContent(items, index);
+                    this.updatePopupIconAriaLabel();
                 }
             });
         } else {
             this.addingTabContent(items, index);
+            this.updatePopupIconAriaLabel();
         }
         if (this.isReact) {
             this.renderReactTemplates();
@@ -2712,6 +2732,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.tbObj.overflowMode = newProp.overflowMode;
                     this.tbObj.dataBind();
                     this.refreshActiveTabBorder();
+                    this.updatePopupIconAriaLabel();
                     break;
                 case 'heightAdjustMode':
                     this.setContentHeight(false);
@@ -2870,5 +2891,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.select(this.getEleIndex(<HTEle>activeEle));
         }
         this.refreshActiveBorder();
+        this.updatePopupIconAriaLabel();
     }
 }

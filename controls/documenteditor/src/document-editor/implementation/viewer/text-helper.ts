@@ -614,7 +614,7 @@ export class TextHelper {
     /**
      * @private
      */
-    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: LtrRtlTextInfo, hasRTLCharacter: LtrRtlTextInfo): string[] {
+    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: LtrRtlTextInfo, hasRTLCharacter: LtrRtlTextInfo, isPrevLTRBidi: LtrRtlTextInfo): string[] {
         let charTypeIndex: number = characterRangeTypes.length;
         let splittedText: string[] = [];
         if (isNullOrUndefined(text) || text === '') {
@@ -626,12 +626,13 @@ export class TextHelper {
         let rtlText: string = '';
         let wordSplitChars: string = '';
         let numberText: string = '';
+        let hasNumberWithSeparatorPattern: boolean = !isNullOrUndefined(isPrevLTRText.value) && isPrevLTRText.value && isTextBidi && /^\d+(\.\d+)+$/.test(text);
 
         for (let i: number = 0; i < text.length; i++) {
             let currentCharacterType: number = 0;
             let separateEachWordSplitChars: boolean = false;
 
-            if ((!isNullOrUndefined(isPrevLTRText.value) ? !isPrevLTRText.value : isTextBidi) && this.isNumber(text[i])) {
+            if ((!isNullOrUndefined(isPrevLTRText.value) ? (!isPrevLTRText.value || (!isNullOrUndefined(isPrevLTRBidi.value) && !isPrevLTRBidi.value && isTextBidi && !hasNumberWithSeparatorPattern)) : isTextBidi) && this.isNumber(text[i])) {
                 numberText += text[i];
                 currentCharacterType = 4;
             } else if (this.isWordSplitChar(text[i])) {
@@ -648,6 +649,7 @@ export class TextHelper {
                 currentCharacterType = 1;
             } else {
                 isPrevLTRText.value = true;
+                isPrevLTRBidi.value = isTextBidi;
                 ltrText += text[i];
             }
 

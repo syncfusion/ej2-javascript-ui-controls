@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I836843` - Now, the multiple white spaces in between text content will not be reverted to a single space in the RichTextEditor.
+
 ## 33.2.7 (2026-05-19)
 
 ### RichTextEditor

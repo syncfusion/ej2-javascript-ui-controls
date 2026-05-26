@@ -366,8 +366,8 @@ export class Zoom {
                     argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
                 }
             }
-            const isZoomOut: Boolean = (argsData.currentZoomFactor > argsData.previousZoomFactor);
-            if (!isZoomOut && parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
+            const isZoomOut: boolean = argsData.currentZoomFactor > argsData.previousZoomFactor;
+            if ((parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) && !isZoomOut) {
                 argsData.currentZoomFactor = argsData.previousZoomFactor;
                 argsData.currentZoomPosition = argsData.previousZoomPosition;
             }
@@ -474,7 +474,8 @@ export class Zoom {
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
-                    if (parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
+                    const isZoomOut: boolean = zoomFactor > argsData.previousZoomFactor;
+                    if ((parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) && !isZoomOut) {
                         argsData.currentZoomFactor = argsData.previousZoomFactor;
                         argsData.currentZoomPosition = argsData.previousZoomPosition;
                     }

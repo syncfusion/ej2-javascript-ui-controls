@@ -15664,8 +15664,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (color) {
             textMarkUpColor = [color.r, color.g, color.b];
         }
+        const fontName: string = font._metrics._name.includes('Times') ? 'Times' : font._metrics._name;
         const ds: string = 'font:' +
-            font._metrics._name +
+            fontName +
             ' ' +
             font.size +
             'pt;style:' + _reverseMapPdfFontStyle(font.style) +
@@ -15673,7 +15674,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
             this._colorToHex(textMarkUpColor);
         this._dictionary.update('DS', ds);
         const body: string = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" style="font:'
-            + font._metrics._name + ' ' + font.size + 'pt;font-weight:'
+            + fontName + ' ' + font.size + 'pt;font-weight:'
             + (font.isBold ? 'bold' : 'normal') + ';color:' + this._colorToHex(textMarkUpColor) + '"><p dir="ltr">';
         let textAlignment: string;
         let alignmentText: string;

@@ -78,9 +78,10 @@ export class RibbonContextualTabManager {
     public updateContextualTabs(ribbon: EJ2Ribbon): void {
         if (!this.container.documentEditor || !this.container.documentEditor.selection ||
             (!isNullOrUndefined(this.container.documentEditor.selection) &&
-            this.container.documentEditor.selection.contextType === this.ribbonDocumentEditor.previousContext &&
-            this.container.documentEditor.selection.isEmpty) || (!isNullOrUndefined(this.container.documentEditor.editor)
-            && this.container.documentEditor.editor.isInsertingTOC)) {
+                this.container.documentEditor.selection.contextType === this.ribbonDocumentEditor.previousContext)
+            || (!isNullOrUndefined(this.container.documentEditor.editor)
+                && this.container.documentEditor.editor.isInsertingTOC)) {
+            this.ribbonDocumentEditor.tabManager.tableLayoutTab.onTableLayoutChange();
             return;
         }
 
@@ -91,8 +92,7 @@ export class RibbonContextualTabManager {
         if ((selectedTab === this.container.ribbon.localObj.getConstant('Header & Footer')
             || selectedTab === this.container.ribbon.localObj.getConstant('Table Design')
             || selectedTab === this.container.ribbon.localObj.getConstant('Table Layout'))
-            && !(currentContext === 'HeaderText' || currentContext === 'HeaderImage' || currentContext === 'HeaderTableText' || currentContext === 'HeaderTableImage'
-            || currentContext === 'FooterText' || currentContext === 'FooterImage' || currentContext === 'FooterTableText' || currentContext === 'FooterTableImage')) {
+            && !(currentContext.indexOf('Header') >= 0 || currentContext.indexOf('Footer') >= 0 || currentContext.indexOf('Table') >= 0)) {
             ribbon.selectTab(ribbonId + HOME_TAB_ID);
         }
         this.updateTableContextualTabs(ribbon, currentContext);

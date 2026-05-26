@@ -23,6 +23,7 @@ const CLS_ACRDN_ROOT: Str = 'e-acrdn-root';
 const CLS_ROOT: Str = 'e-accordion';
 const CLS_ITEM: Str = 'e-acrdn-item';
 const CLS_ITEMFOCUS: Str = 'e-item-focus';
+const CLS_KEYBOARDFOCUS: Str = 'e-focused';
 const CLS_ITEMHIDE: Str = 'e-hide';
 const CLS_HEADER: Str = 'e-acrdn-header';
 const CLS_HEADERICN: Str = 'e-acrdn-header-icon';
@@ -277,6 +278,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private headerTemplateFn: Function;
     private itemTemplateFn: Function;
     private removeRippleEffect: () => void;
+    private isKeyboardNavigation: boolean = false;
     /**
      * Contains the keyboard configuration of the Accordion.
      */
@@ -524,6 +526,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private unWireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
+        EventHandler.remove(document, 'keydown', this.keyDownHandler);
+        EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
         if (!isNOU(this.keyModule)) {
             this.keyModule.destroy();
         }
@@ -534,6 +539,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private wireEvents(): void {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
         if (!this.isNested && !this.isDestroy) {
             this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + CLS_HEADER });
         }
@@ -578,10 +586,27 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return this.itemTemplateFn;
     }
     private focusIn(e: FocusEvent): void {
-        (<HTEle>e.target).parentElement.classList.add(CLS_ITEMFOCUS);
+        const targetItem: HTEle = (<HTEle>e.target).parentElement;
+        targetItem.classList.add(CLS_ITEMFOCUS);
+        if (this.isKeyboardNavigation) {
+            targetItem.classList.add(CLS_KEYBOARDFOCUS);
+            this.isKeyboardNavigation = false;
+        }
     }
     private focusOut(e: FocusEvent): void {
-        (<HTEle>e.target).parentElement.classList.remove(CLS_ITEMFOCUS);
+        const targetItem: HTEle = (<HTEle>e.target).parentElement;
+        targetItem.classList.remove(CLS_ITEMFOCUS);
+        targetItem.classList.remove(CLS_KEYBOARDFOCUS);
+    }
+    private keyDownHandler(e: KeyboardEvent): void {
+        if (e.key === 'Tab' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            this.isKeyboardNavigation = true;
+        }
+    }
+    private mouseDownHandler(e: MouseEvent): void {
+        this.isKeyboardNavigation = false;
+        const targetItem: HTEle = (<HTEle>e.target).parentElement;
+        targetItem.classList.remove(CLS_KEYBOARDFOCUS);
     }
     private ctrlTemplate(): void {
         this.ctrlTem = <HTEle>this.element.cloneNode(true);

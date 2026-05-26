@@ -806,14 +806,16 @@ export class OptionsPane {
      * @returns {void}
      */
     private onEnableDisableReplaceButton = (): void => {
+        const hasSearchTerm: boolean = this.searchInput.value.length !== 0;
         let allowReplacement: boolean = !this.documentHelper.owner.isReadOnlyMode || this.documentHelper.protectionType === "RevisionsOnly";
-        if (this.searchInput.value.length !== 0 && allowReplacement) {
-            (this.replaceButton as HTMLButtonElement).disabled = false;
-            (this.replaceAllButton as HTMLButtonElement).disabled = false;
-        } else {
-            (this.replaceButton as HTMLButtonElement).disabled = true;
-            (this.replaceAllButton as HTMLButtonElement).disabled = true;
+        // Check if current result is in editable region
+        let isCurrentResultEditable: boolean = true;
+        if (hasSearchTerm && allowReplacement && !isNullOrUndefined(this.results) && !isNullOrUndefined(this.results.currentSearchResult)) {
+            isCurrentResultEditable = this.isResultInEditableRegion(this.results.currentSearchResult);
         }
+        const shouldEnable: boolean = hasSearchTerm && (allowReplacement && isCurrentResultEditable);
+        (this.replaceButton as HTMLButtonElement).disabled = !shouldEnable;
+        (this.replaceAllButton as HTMLButtonElement).disabled = !shouldEnable;
         if (!isNullOrUndefined(this.searchInput.value) && this.searchInput.value.match(/[!\@\#$%\^&*\(\)_\-+\=\[\]\{\};:"\|,.<>\/?`~\s\\؟°÷×،؛]/) && this.searchInput.value !== "") {
             this.wholeWord.checked = false;
             this.wholeWord.disabled = true;
@@ -821,6 +823,24 @@ export class OptionsPane {
             this.wholeWord.disabled = false;
         }
     }
+    /**
+     * Checks if a search result is located in an editable region.
+     * Uses the same editability rules as the replace operation for consistency.
+     * 
+     * @param result - The TextSearchResult to check
+     * @returns {boolean} true if result is in editable region; false if in protected/locked region
+     * @private
+     */
+    private isResultInEditableRegion(result: TextSearchResult): boolean {
+        if (isNullOrUndefined(result) || isNullOrUndefined(result.start)) {
+            return false;
+        }
+        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.editorModule.canEditContentControl) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Enable replace pane only.
      *
@@ -840,13 +860,8 @@ export class OptionsPane {
         let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.isOptionsPane = false;
-        if (this.searchInput.value.length !== 0) {
-            (this.replaceButton as HTMLButtonElement).disabled = false;
-            (this.replaceAllButton as HTMLButtonElement).disabled = false;
-        } else {
-            (this.replaceButton as HTMLButtonElement).disabled = true;
-            (this.replaceAllButton as HTMLButtonElement).disabled = true;
-        }
+        // Re-validate button state when Replace tab becomes active
+        this.onEnableDisableReplaceButton();
         this.focusedElement = [];
         this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
         this.focusedIndex = 1;
@@ -971,6 +986,7 @@ export class OptionsPane {
                         this.documentHelper.owner.findResultsList = [];
                         if (!isNullOrUndefined(this.results) && this.results.innerList.length > 0) {
                             this.navigateSearchResult(true);
+                            this.onEnableDisableReplaceButton();
                         } else {
                             this.resultsListBlock.innerHTML = '';
                         }
@@ -1013,13 +1029,12 @@ export class OptionsPane {
             let index: string = endSelection.getHierarchicalIndexInternal();
             let results: TextSearchResults = this.documentHelper.owner.searchModule.textSearch.findAll(pattern, this.findOption, index);
             let replace: string = isNullOrUndefined(replaceText) ? '' : replaceText;
-            let count: number = isNullOrUndefined(results) ? 0 : results.length;
-            this.documentHelper.owner.searchModule.replaceAll(replace, results);
+            const actualCount: number = this.documentHelper.owner.searchModule.replaceAll(replace, results);
             this.documentHelper.layout.isReplacingAll = false;
             this.matchDiv.style.display = 'block';
             this.matchDiv.innerHTML = this.localeValue.getConstant('All Done') + '!';
             this.occurrenceDiv.style.display = 'block';
-            this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + count + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
+            this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + actualCount + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
         }
     }
     private hideMatchDiv(): void {
@@ -1118,6 +1133,7 @@ export class OptionsPane {
             }
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             this.updateListItems(nextResult);
+            this.onEnableDisableReplaceButton();
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
         }
     }
@@ -1167,6 +1183,7 @@ export class OptionsPane {
             }
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             this.updateListItems(previousResult);
+            this.onEnableDisableReplaceButton();
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToPreviousResult);
         }
     }
@@ -1295,6 +1312,7 @@ export class OptionsPane {
         this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (index + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
         this.documentHelper.owner.searchModule.navigate(currentelement);
         this.documentHelper.owner.searchModule.highlight(this.results);
+        this.onEnableDisableReplaceButton();
         if (list) {
             list.focus();
         }

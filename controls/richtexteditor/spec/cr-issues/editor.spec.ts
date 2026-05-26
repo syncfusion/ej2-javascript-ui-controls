@@ -1533,9 +1533,9 @@ describe('Editor specs', ()=> {
             keyBoardEvent.code = 'Shift';
             let style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
             expect( style == "line-through" ).toBe( true );
-            expect( defaultRTE.inputElement.textContent.length ).toBe( 339 );
+            expect( defaultRTE.inputElement.textContent.length ).toBe(423);
             ( defaultRTE as any ).keyDown( keyBoardEvent );
-            expect( defaultRTE.inputElement.textContent.length ).toBe( 339 );
+            expect( defaultRTE.inputElement.textContent.length ).toBe(423);
             style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
             expect( style == "line-through" ).toBe( true );
         } );

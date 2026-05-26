@@ -293,14 +293,14 @@ export function showTooltip(
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
-        tooltip.innerText = text;
+        tooltip.innerText = text.replace(/&lt;br\/?&gt;/gi, '\n');
         element.appendChild(tooltip);
         const left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
         if (left < 0) {
             tooltip.style.left = '0px';
         }
     } else {
-        tooltip.innerText = text;
+        tooltip.innerText = text.replace(/&lt;br\/?&gt;/gi, '\n');
         tooltip.style.top = (y).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
@@ -1097,13 +1097,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
             });
             xValues.sort((first: Object, second: Object) => { return <number>first - <number>second; });
             if (xValues.length === 1 && allSeriesXvalueLen) {
-                if (axis.valueType === 'Category') {
-                    const minValue: number = series.xAxis.visibleRange.min;
-                    const delta: number = <number>xValues[0] - minValue;
-                    if (delta !== 0) {
-                        minDelta = Math.min(minDelta, delta);
-                    }
-                } else if (axis.valueType === 'DateTime') {
+                if (axis.valueType === 'DateTime') {
                     const timeOffset: number = seriesCollection.length === 1 ? 25920000 : 2592000000;
                     seriesMin = (series.xMin === series.xMax) ? (series.xMin - timeOffset) : series.xMin;
                     minVal = <number>xValues[0] - (!isNullOrUndefined(seriesMin) ? seriesMin : axis.visibleRange.min);

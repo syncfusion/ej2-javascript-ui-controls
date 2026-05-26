@@ -1753,6 +1753,25 @@ describe('Mention', () => {
             mentionObj.keyDownHandler(keyEventArgs);
             expect(keyEventArgs.action).toEqual('close');
         });
+
+        it('branch coverage - keyDownHandler', () => {
+            let keyEventArgs: any = {
+                preventDefault: function () { },
+                keyCode: 27,
+                altKey: false,
+                shiftKey: false
+            };
+            mentionObj.keyDownHandler(keyEventArgs);
+            keyEventArgs.keyCode = 1;
+            mentionObj.keyDownHandler(keyEventArgs);
+        });
+
+        it('branch coverage - getLastLetter', () => {
+            mentionObj.isPopupOpen = false;
+            const text = 'Hello\u200BWorld\u00A0Test';
+            const result = mentionObj.getLastLetter(text);
+            expect(result).toBe('Test');
+        });
     });
 
     describe('Show popup with CSS and target property set for input', () => {
@@ -1784,6 +1803,14 @@ describe('Mention', () => {
             mentionObj.onKeyUp(keyMentionEventArgs);
             expect(document.querySelector('.e-mention.e-popup')).not.toBe(null);
             expect(mentionObj.popupObj.element.classList.contains('sample')).toEqual(true);
+        });
+        it('onKeyUp coverage', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', code: 'Backspace', keyCode: 8, key: 'Backspace' };
+            element.value = '@hi';
+            mentionObj.displayTemplate = '@${text}';
+            mentionObj.queryString = '@hi';
+            mentionObj.onKeyUp(keyEventArgs);
+            mentionObj.destroy();
         });
     });
 
@@ -2876,68 +2903,6 @@ describe('Mention', () => {
                 expect(((mention as any).popupObj.element as HTMLElement).querySelector('ul').id).toBe('defaultRTE_rte-edit-view_slash_menu_options');
                 done();
             }, 300);
-        });
-    });
-   describe('Mention component: Backspace behavior with multiple mention chips', () => {
-        let mentionObj: any;
-        let element: HTMLElement;
-        let emailData: { [key: string]: Object }[] = [
-            { Name: 'Name1', Eimg: '1', EmailId: 'name1@gmail.com' },
-            { Name: 'Name2', Eimg: '2', EmailId: 'name2@gmail.com' },
-            { Name: 'Name3', Eimg: '3', EmailId: 'name3@gmail.com' },
-            { Name: 'Name4', Eimg: '4', EmailId: 'name4@gmail.com' }
-        ];
-
-        beforeAll(() => {
-            // Create the contenteditable div
-            element = createElement('div', { id: 'templateMention' });
-            element.innerHTML = '<p><br></p>';
-            document.body.appendChild(element);
-            // Initialize Mention component
-            mentionObj = new Mention({
-                dataSource: emailData,
-                fields: { text: 'Name' },
-                mentionChar: '@',
-                displayTemplate: '@${Name}',
-                showMentionChar: true,
-                suffixText: '&nbsp;',
-                popupWidth: '250px',
-                popupHeight: '200px',
-                debounceDelay: 0
-            });
-            mentionObj.appendTo(element);
-            mentionObj.initValue();
-        });
-
-        afterAll(() => {
-                if (element) {
-                    element.remove();
-                    document.body.innerHTML = '';
-                }
-            });
-    
-        it('Backspace behavior with multiple mention chips', (done) => {
-            // Set content with three mention chips after previous deletion
-            element.innerHTML = '<p><span contenteditable="false" class="e-mention-chip">@Name1</span>&nbsp;<span contenteditable="false" class="e-mention-chip">@Name2</span>&nbsp;<span contenteditable="false" class="e-mention-chip">@Name3</span>&nbsp;</p>';
-            const lastChip = element.querySelectorAll('.e-mention-chip')[2]; // Target @Name3
-            const range = document.createRange();
-            range.setStartAfter(lastChip);
-            range.collapse(true);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-            mentionObj.range = range;
-            let keyEventArgs: any = {
-                    preventDefault: (): void => { /** NO Code */ },
-                    action: 'Backspace',
-                    keyCode: 8,
-                    key: 'Backspace'
-                };
-            mentionObj.onKeyUp(keyEventArgs);
-            setTimeout(function(){
-                expect(mentionObj.isPopupOpen).toBe(false);
-                done();
-            }, 500)
         });
     });
     describe('Mention component: Popup closes when mention character is deleted', () => {

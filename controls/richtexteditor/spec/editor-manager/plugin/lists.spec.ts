@@ -4825,7 +4825,7 @@ describe('978845 - List formatting fails when applied to indented checklist item
         let endNode = editorObj.inputElement.querySelector('.end');
         editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, 3);
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0] as HTMLElement).click();
-        expect(editorObj.inputElement.innerHTML === `<ul><li>text1<ol><li class="start">text2</li></ol></li></ul><ol><li class="end">text3</li></ol>`).toBe(true);
+        expect(editorObj.inputElement.innerHTML === `<ul><li>text1      <ol><li class="start">text2</li></ol></li></ul><ol><li class="end">text3</li></ol>`).toBe(true);
         done();
     });
     it('Should convert the UnorderedList into an ordered list', (done) => {

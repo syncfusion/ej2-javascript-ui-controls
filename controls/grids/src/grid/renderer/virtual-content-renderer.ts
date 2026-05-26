@@ -487,7 +487,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             blocks.length === 2 && e.requestType === 'delete') {
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
         }
-        if ((this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
+        if (lastPage !== 1 && (this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
             this.isBottom = true;
             setTimeout(() => {
                 const scrollElement: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
@@ -1181,6 +1181,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (!args.cancel) {
             this.parent.notify(events.refreshVirtualFrozenRows, args);
+        } else if (args.requestType === 'beginEdit') {
+            this.virtualData = {};
         }
     }
 

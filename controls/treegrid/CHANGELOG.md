@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I840376` - Resolved a script error that occurred when double-clicking the expand icon while virtualization was enabled.
+- `#F74107` - Fixed an issue where editing was restricted for certain rows when the virtualization feature was enabled.
+- `#I837003` - Addressed an issue where records on the first page were not displayed after adding new records at the bottom of the TreeGrid with virtualization enabled.
+
 ## 33.1.49 (2026-04-14)
 
 ### Tree Grid

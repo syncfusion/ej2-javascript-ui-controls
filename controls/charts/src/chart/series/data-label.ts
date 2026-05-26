@@ -380,14 +380,18 @@ export class DataLabel {
                 for (let groupIndex: number = 0; groupIndex < keys.length; groupIndex++) {
                     positivePoints = {};
                     negativePoints = {};
-                    const count: number = groupingValues[keys[groupIndex as number]][groupingValues[keys[groupIndex as number]].length - 1]
-                        .index;
-                    for (let seriesIndex: number = count; seriesIndex >= 0; seriesIndex--) {
-                        const series: Series = this.chart.visibleSeries[seriesIndex as number];
+                    const seriesInGroup: Series[] = groupingValues[keys[groupIndex as number]];
+                    if (!seriesInGroup || seriesInGroup.length === 0) {
+                        continue;
+                    }
+                    // Iterate series in reverse to preserve stacking order
+                    for (let seriesIndex: number = seriesInGroup.length - 1; seriesIndex >= 0; seriesIndex--) {
+                        const series: Series = seriesInGroup[seriesIndex as number];
+                        if (!series || !series.visible) { continue; }
                         if (!this.chart.enableCanvas && series.animation.enable && this.chart.animateSeries) {
                             stackLabelGroup.setAttribute('visibility', 'hidden');
                         }
-                        if (series.visible && series.points && series.points.length > 0) {
+                        if (series.points && series.points.length > 0) {
                             for (let pointIndex: number = 0; pointIndex < series.points.length; pointIndex++) {
                                 const point: Points = series.points[pointIndex as number];
                                 const pointXValueAsKey: string = String(point.x);

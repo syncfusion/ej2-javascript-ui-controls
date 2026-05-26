@@ -1469,6 +1469,11 @@ export class TextPosition {
                         endSelection = false;
                         return;
                     }
+                    if (wordStartIndex === 0 && span instanceof ListTextElementBox && txt === "-") {
+                        const offset: number = span.line.getOffset(span, 0);
+                        endPosition.setPositionParagraph(span.line, offset);
+                        return;
+                    }
                     while (wordStartIndex > 0 && endSelection && txt[wordStartIndex] !== ' '
                         && (HelperMethods.wordSplitCharacters.indexOf(txt[wordStartIndex - 1])) !== -1) {
                         wordStartIndex--;
@@ -1949,7 +1954,8 @@ export class TextPosition {
                 incrementValue = 2;
             }
         }
-        if ((this.offset + incrementValue === endOffset || this.offset === endOffset + 1) && isNullOrUndefined(this.currentWidget.nextLine)) {
+        const adjustedIncrement: number = (type === 2) ? 0 : incrementValue;
+        if ((this.offset + adjustedIncrement === endOffset || this.offset === endOffset + 1) && isNullOrUndefined(this.currentWidget.nextLine)) {
             if (this.offset === endOffset && type !== 0) {
                 this.setPositionParagraph(this.currentWidget, endOffset + 1);
             } else {

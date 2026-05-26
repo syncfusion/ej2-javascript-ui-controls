@@ -49,6 +49,8 @@ export class HtmlEditor {
     public isCopyAll: boolean;
     private isSlashMenuOpen: boolean;
     private isPreviousNodeBrAfterBackSpace: boolean;
+    //Condition validation for nbsp adding scenario in enter key press
+    private isContainsEmptySpace: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -60,6 +62,7 @@ export class HtmlEditor {
         this.isCopyAll = false;
         this.isSlashMenuOpen = false;
         this.isPreviousNodeBrAfterBackSpace = false;
+        this.isContainsEmptySpace = false;
     }
     /**
      * Destroys the Markdown.
@@ -83,6 +86,7 @@ export class HtmlEditor {
         this.nodeSelectionObj = null;
         this.isCopyAll = null;
         this.isSlashMenuOpen = null;
+        this.isContainsEmptySpace = false;
         if (this.rangeCollection.length > 0) {
             this.rangeCollection = [];
         }
@@ -416,7 +420,7 @@ export class HtmlEditor {
                 isAllowed = true;
             }
         }
-        if (currentText && isCursor && currentText.textContent[range.startOffset] === ' ' && isAllowed) {
+        if (currentText && isCursor && currentText.textContent[range.startOffset] === ' ' && isAllowed && !this.isContainsEmptySpace) {
             const textContentArray: string[] = Array.from(currentText.textContent);
             textContentArray[range.startOffset] = textContentArray[range.startOffset].replace(/^\s/, '\u00A0');
             currentText.textContent = textContentArray.join('');
@@ -424,6 +428,7 @@ export class HtmlEditor {
                 this.parent.contentModule.getDocument(), currentText, cursorpointer
             );
         }
+        this.isContainsEmptySpace = false;
     }
     private afterKeyDown(e: NotifyArgs): void {
         if ((e.args as KeyboardEvent).which === 13) {
@@ -437,7 +442,18 @@ export class HtmlEditor {
         else if (!(((e.args as KeyboardEventArgs).key === 'Backspace' || (e.args as KeyboardEventArgs).key === 'Delete') && this.isCopyAll)){
             this.isCopyAll = false;
         }
-        let currentRange: Range;
+        let currentRange: Range = this.parent.getRange();
+        const isCursor: boolean = currentRange.startContainer === currentRange.endContainer &&
+            currentRange.startOffset === currentRange.endOffset;
+        if (isCursor && currentRange.startContainer.nodeName === '#text' && (e.args as KeyboardEvent).which === 13) {
+            //Condition validation for nbsp adding scenario in enter key press
+            const textContentArray: string[] = Array.from(currentRange.startContainer.textContent);
+            const isPrevTextEmpty: boolean = !isNOU(textContentArray[currentRange.startOffset - 1]) && textContentArray[currentRange.startOffset - 1] === ' ';
+            const isDoubleEmptySpace: boolean = !isNOU(textContentArray[currentRange.startOffset]) &&
+                !isNOU(textContentArray[currentRange.startOffset + 1]) && textContentArray[currentRange.startOffset] === ' ' &&
+                textContentArray[currentRange.startOffset + 1] === ' ';
+            this.isContainsEmptySpace = isPrevTextEmpty && isDoubleEmptySpace;
+        }
         const args: KeyboardEvent = e.args as KeyboardEvent;
         if (this.parent.inputElement.querySelectorAll('.e-cell-select:not(table)').length > 1 &&
             (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13 || args.keyCode === 46)) {

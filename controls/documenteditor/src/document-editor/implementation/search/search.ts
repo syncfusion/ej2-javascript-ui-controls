@@ -212,6 +212,7 @@ export class Search {
             this.owner.editorHistoryModule.initComplexHistory(this.owner.selectionModule, 'ReplaceAll');
         }
         const count: number = results.length;
+        let replacedCount: number = 0;
         this.viewer.owner.isLayoutEnabled = false;
         const text: string = results.innerList[0].text;
         for (let i: number = count - 1; i >= 0; i--) {
@@ -224,6 +225,7 @@ export class Search {
                 if (this.viewer.owner.isReadOnlyMode || !this.viewer.owner.editorModule.canEditContentControl) {
                     continue;
                 }
+                replacedCount++;
                 let allowLayout: boolean = true;
                 if (i > 0) {
                     const previousResult: TextSearchResult = results.innerList[i - 1];
@@ -246,7 +248,7 @@ export class Search {
         }
         this.searchResults.clear();
         this.documentHelper.layout.isReplacingAll = false;
-        return count;
+        return replacedCount;
     }
     /**
      * Find the textToFind string in current document and replace the specified string.

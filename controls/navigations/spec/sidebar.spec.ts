@@ -2435,5 +2435,117 @@ describe("Sidebar enableGestures testing with SwipeEventArgs in the close event 
         sidebar.enableGestureHandler(touch);
         expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
     });
+    describe("Sidebar type change with close event cancellation", () => {
+        let sidebar: any;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            let sibin: HTMLElement = document.createElement("div");
+            ele.innerHTML = "<h3>Testing of Sidebar</h3>";
+            sibin.innerHTML = "Side bar";
+            sibin.className = 'e-content-section';
+            ele.id = "sidebar";
+            ele.style.width = "300px";
+            ele.style.height = "100%";
+            document.body.style.margin = "0px";
+            let div: any = document.createElement('div');
+            let span: any = document.createElement('span');
+            div.className = 'e-context-element';
+            div.appendChild(span);
+            document.body.appendChild(div);
+            document.body.appendChild(ele);
+            document.body.appendChild(sibin);
+        });
+        afterEach((): void => {
+            if (sidebar) { sidebar.destroy(); }
+            document.body.innerHTML = "";
+        });
 
+        it("Changing type from Over to Push with close event cancellation should respect preventClose flag", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let closeEventCalled: boolean = false;
+
+            sidebar = new Sidebar({
+                type: 'Over',
+                close: function (args) {
+                    closeEventCalled = true;
+                    args.cancel = true;
+                }
+            }, ele);
+
+            sidebar.show();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            expect(closeEventCalled).toBe(false);
+            sidebar.type = 'Push';
+            sidebar.dataBind();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            expect(closeEventCalled).toBe(true);
+        });
+
+        it("Changing type from Over to Push without close event cancellation should allow close", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let closeEventCalled: boolean = false;
+
+            sidebar = new Sidebar({
+                type: 'Over',
+                close: function (args) {
+                    closeEventCalled = true;
+                }
+            }, ele);
+
+            sidebar.show();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            sidebar.type = 'Push';
+            sidebar.dataBind();
+            expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+            expect(closeEventCalled).toBe(true);
+        });
+
+        it("Changing type from Slide to Push with close event cancellation", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let closeEventCalled: boolean = false;
+
+            sidebar = new Sidebar({
+                type: 'Slide',
+                close: function (args) {
+                    closeEventCalled = true;
+                    args.cancel = true;
+                }
+            }, ele);
+
+            sidebar.show();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+
+            sidebar.type = 'Push';
+            sidebar.dataBind();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            expect(closeEventCalled).toBe(true);
+        });
+
+        it("Sidebar type change with multiple property modifications and close event cancellation", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let closeEventCalled: number = 0;
+
+            sidebar = new Sidebar({
+                type: 'Over',
+                position: 'Left',
+                width: '250px',
+                close: function (args) {
+                    closeEventCalled++;
+                    args.cancel = true;
+                }
+            }, ele);
+
+            sidebar.show();
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            expect(closeEventCalled).toBe(0);
+
+            sidebar.type = 'Push';
+            sidebar.position = 'Right';
+            sidebar.width = '300px';
+            sidebar.dataBind();
+
+            expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+            expect(closeEventCalled).toBe(1);
+        });
+    });
 });

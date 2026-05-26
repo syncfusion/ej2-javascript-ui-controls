@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I835140` - Issue with "Sidebar closes when switching the type values, even when close event cancellation is applied" has been resolved.
+
 ## 33.2.7 (2026-05-19)
 
 ### TreeView
@@ -9,6 +17,8 @@
 #### Bug Fixes
 
 - `#I838036` - Resolved an issue where the TreeView component displayed an unwanted border outline during interaction.
+
+- `#I837716` - Resolved the TreeView node text font size inconsistency across themes by aligning it with `Figma` design specifications.
 
 ## 33.2.6 (2026-05-12)
 

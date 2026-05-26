@@ -1093,9 +1093,12 @@ export function cleanHTMLString(htmlString: string, editNode: Element): string {
             if (nodeType === 3) { // Node.TEXT_NODE
                 let nodeValue: string = child.nodeValue;
                 if (hasPreLine) {
-                    nodeValue = nodeValue.replace(/[\t]/g, ' ').replace(/[ ]{2,}/g, ' ');
+                    nodeValue = nodeValue.replace(/[\t]/g, ' ');
                 } else {
-                    nodeValue = nodeValue.replace(/[\n\r\t]/g, ' ').replace(/[ ]{2,}/g, ' ');
+                    nodeValue = nodeValue.replace(/[\n\r\t]/g, ' ');
+                }
+                if (nodeValue.replace(/[ ]{2,}/g, ' ').length === 1) {
+                    nodeValue = nodeValue.replace(/[ ]{2,}/g, ' ');
                 }
                 if (child.nodeValue !== nodeValue) {
                     child.nodeValue = nodeValue;

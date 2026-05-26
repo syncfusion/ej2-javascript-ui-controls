@@ -582,7 +582,7 @@ export class AccumulationLegend extends BaseLegend {
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 const pointIndex: number = parseInt(targetId.split(id)[1], 10);
-                if ((this.chart as AccumulationChart).legendSettings.toggleVisibility && !isNaN(pointIndex)) {
+                if (!isNaN(pointIndex)) {
                     const currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
                     const point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
                     const legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
@@ -592,31 +592,33 @@ export class AccumulationLegend extends BaseLegend {
                         name: legendClick, cancel: false
                     };
                     this.chart.trigger(legendClick, legendClickArgs);
-                    if (!legendClickArgs.cancel) {
-                        point.visible = !point.visible;
-                        legendOption.visible = point.visible;
-                        currentSeries.sumOfPoints += point.visible ? point.y : -point.y;
-                        chart.redraw = chart.enableAnimation;
-                        this.sliceVisibility(pointIndex, point.visible);
-                        chart.removeSvg();
-                        //To remove the blazor templates
-                        (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
-                        (<AccumulationChart>this.chart).calculateBounds();
-                        const borderElement: Element = document.getElementById(this.chart.element.id + 'PointHover_Border');
-                        if (borderElement) {
-                            (<AccumulationChart>this.chart).pieSeriesModule.removeBorder(borderElement, 0);
+                    if ((this.chart as AccumulationChart).legendSettings.toggleVisibility) {
+                        if (!legendClickArgs.cancel) {
+                            point.visible = !point.visible;
+                            legendOption.visible = point.visible;
+                            currentSeries.sumOfPoints += point.visible ? point.y : -point.y;
+                            chart.redraw = chart.enableAnimation;
+                            this.sliceVisibility(pointIndex, point.visible);
+                            chart.removeSvg();
+                            //To remove the blazor templates
+                            (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
+                            (<AccumulationChart>this.chart).calculateBounds();
+                            const borderElement: Element = document.getElementById(this.chart.element.id + 'PointHover_Border');
+                            if (borderElement) {
+                                (<AccumulationChart>this.chart).pieSeriesModule.removeBorder(borderElement, 0);
+                            }
+                            if ((<AccumulationChart>this.chart).accumulationTooltipModule) {
+                                (<AccumulationChart>this.chart).accumulationTooltipModule.removeTooltip(0);
+                            }
+                            (<AccumulationChart>this.chart).renderElements();
                         }
-                        if ((<AccumulationChart>this.chart).accumulationTooltipModule) {
-                            (<AccumulationChart>this.chart).accumulationTooltipModule.removeTooltip(0);
-                        }
-                        (<AccumulationChart>this.chart).renderElements();
+                    } else if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
+                        (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
+                            <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
+                    } else if ((<AccumulationChart>this.chart).accumulationHighlightModule) {
+                        (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection(
+                            <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
                     }
-                } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {
-                    (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
-                        <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
-                } else if ((<AccumulationChart>this.chart).accumulationHighlightModule && !isNaN(pointIndex)) {
-                    (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection(
-                        <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
                 }
             }
         }

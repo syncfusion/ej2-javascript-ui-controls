@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### Grid
+
+#### Bugs
+
+- `I838244` - The issue where editing a new row using a column template button caused a script error when another row was already in edit mode has been resolved.
+- `I835370` - The script error that occurred when clearing the persisted filter in Adaptive UI within the EJ2 Grid has been resolved.
+- `I839347` - The issue where the scrollbar jumped to the top during virtual scrolling when the data count was less than the page size has been resolved.
+
 ## 33.2.7 (2026-05-19)
 
 ### Grid

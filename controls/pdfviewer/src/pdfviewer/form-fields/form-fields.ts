@@ -334,7 +334,10 @@ export class FormFields {
                 if ((this.pdfViewerBase.focusField.type === 'SignatureField' || this.pdfViewerBase.focusField.type === 'InitialField')  && this.pdfViewer.formDesignerModule) {
                     const y: number = this.pdfViewerBase.focusField.bounds.y;
                     const height: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
-                    this.pdfViewer.bookmark.goToBookmark(this.pdfViewerBase.focusField.pageIndex, height - y);
+                    const focusedIndex: number = this.pdfViewerBase.focusField.pageIndex;
+                    this.pdfViewerBase.isFocusField = false;
+                    this.pdfViewerBase.focusField = [];
+                    this.pdfViewer.bookmark.goToBookmark(focusedIndex, height - y);
                 } else {
                     currentField.focus();
                 }
@@ -876,9 +879,9 @@ export class FormFields {
             currentField = currentData.Text;
             break;
         case 'SignatureField':
+        case 'RadioButton':
             currentField = currentData.Value;
             break;
-        case 'RadioButton':
         case 'CheckBox':
             currentField = currentData.Selected;
             break;
@@ -1624,6 +1627,62 @@ export class FormFields {
                     }
                 }
             }
+        } else if (currentTarget.type === 'radio') {
+            const data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+            if (data && !this.pdfViewer.formDesignerModule) {
+                const targetId: string = currentTarget.id;
+
+                // Find the clicked radio button in the form field collections
+                const matchedFields: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
+                    (field: FormFieldModel) => field.id === targetId
+                );
+
+                if (matchedFields.length > 0) {
+                    const selectedName: string = matchedFields[0].name;
+                    const selectedValue: any = matchedFields[0].value;
+                    const FormFieldsData: any = JSON.parse(data);
+
+                    // Get all radio buttons with the same name and value from UI collection
+                    const groupRadioButtonsSameName: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
+                        (radioField: FormFieldModel) =>
+                            radioField.name === selectedName &&
+                            radioField.value === selectedValue &&
+                            radioField.type === 'RadioButton'
+                    );
+
+                    if (groupRadioButtonsSameName.length > 0) {
+                        // Update session storage data
+                        FormFieldsData.forEach((field: any) => {
+                            if (field.Name === 'RadioButton' &&
+                                (field.GroupName === selectedName || field.FieldName === selectedName)) {
+
+                                // Determine if this radio button should be selected
+                                const shouldBeSelected: boolean = field.Value === selectedValue;
+                                field.Selected = shouldBeSelected;
+
+                                // Update UI only if element exists and state differs
+                                if (!shouldBeSelected) {
+                                    const radioElement: HTMLInputElement = document.getElementById(field.uniqueID) as HTMLInputElement;
+                                    if (radioElement) {
+                                        radioElement.checked = false;
+                                    }
+                                }
+                            }
+                        });
+
+                        // Update UI for all radio buttons with same name and value
+                        groupRadioButtonsSameName.forEach((currentRadioButton: FormFieldModel) => {
+                            const targetRadioButton: HTMLInputElement = document.getElementById(currentRadioButton.id) as HTMLInputElement;
+                            if (targetRadioButton) {
+                                targetRadioButton.checked = true;
+                            }
+                        });
+
+                        // Save updated data back to session storage
+                        this.pdfViewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
+                    }
+                }
+            }
         }
         this.updateDataInSession(currentTarget);
     }
@@ -2213,7 +2272,9 @@ export class FormFields {
         else if (type === 'checkbox' && !printContainer){
             inputField.style.webkitAppearance = 'none';
         }
-        inputField.name = data.GroupName;
+        if (type === 'checkbox') {
+            inputField.name = data.GroupName;
+        }
         inputField.value = data.Value;
         return inputField;
     }

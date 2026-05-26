@@ -185,4 +185,261 @@
       left: 14px;
     }
   }
+
+  .e-de-vertical-line {
+    position: absolute;
+    width: 1px;
+    height: 80px;
+    left: 39px;
+    top: -1px;
+  }
+
+  .e-de-horizontal-line {
+    width: 80px;
+    height: 1px;
+    position: absolute;
+    left: -1px;
+    top: 49px;
+  }
+
+  .e-de-compact-top {
+    margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-preview-line {
+    position: absolute;
+    width: 1px;
+    height: 111px;
+    left: 38px;
+    top: -17px;
+  }
+
+  .e-de-preview-rot-up {
+    transform: rotate(135deg);
+  }
+
+  .e-de-preview-rot-down {
+    transform: rotate(45deg);
+  }
+
+  .e-de-dlg-mid-height {
+    height: 270px !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-list-reset {
+    display: block;
+    outline: 0;
+  }
+
+  .e-de-find-list-reset {
+    list-style: none;
+    padding: 0;
+  }
+
+  .e-de-list-inline {
+    display: block;
+  }
+
+  .e-de-list-align-left {
+    display: block;
+    float: left;
+  }
+
+  .e-de-bullet-none-label {
+    font-size: 9px;
+    text-align: center;
+    top: 13px;
+    left: -2px;
+    line-height: normal;
+    position: relative;
+  }
+
+  .e-de-relative-container {
+    position: relative;
+    height: auto;
+  }
+
+  .e-de-vertical-spacing-sm {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .e-de-table-compact {
+    width: 96%;
+  }
+
+  .e-de-col-label {
+    width: 20%;
+    display: table-cell !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-col-width,
+  .e-de-col-spacing {
+    width: 40%;
+    display: table-cell !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-scroll-area {
+    width: 100%;
+    height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .e-de-table-full,
+  .e-de-full-width-btn {
+    width: 100% !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-full-height {
+    height: 100%;
+  }
+
+  .e-de-square-btn {
+    width: 40px !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-inline-actions {
+    display: inline-flex;
+  }
+
+  .e-de-fixed-width {
+    width: 400px;
+  }
+
+  .e-de-dropdown-fixed {
+    width: 170px;
+  }
+
+  .e-de-gap-top-sm {
+    padding-top: 12px;
+  }
+
+  .e-de-style-row-spacing {
+    margin-bottom: 14px !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-style-format-dropdown-height {
+    height: 31px;
+  }
+
+  .e-de-style-font-color-picker {
+    margin-right: 4px;
+  }
+
+  .e-de-options-col {
+    display: flex;
+    flex-direction: column;
+    width: 33.333%;
+  }
+
+  .e-de-tab-action-cell {
+    width: 33.33%;
+    display: table-cell;
+  }
+
+  .e-de-tab-button,
+  .e-de-layout-row,
+  .e-de-style-row,
+  .e-de-options-group,
+  .e-de-flex-row {
+    display: flex;
+  }
+
+  .e-de-full-width {
+    width: 100%;
+  }
+
+  .e-de-table-spacing {
+    height: 30px;
+  }
+
+  .e-de-table-spacing-inputcell {
+    padding-left: 25px;
+  }
+
+  .e-de-cell-options-button {
+    float: right;
+  }
+
+  .e-de-toc-general-heading-gap {
+    margin-bottom: 13px !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-toc-styles-table {
+    margin-top: 3px;
+  }
+
+  .e-de-toc-styles-leftcol {
+    width: 120px;
+    padding-left: 10px;
+  }
+
+  .e-de-flex {
+    display: flex;
+  }
+
+  .e-de-resolve-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .e-de-resolve-mark {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    margin-right: 6px;
+  }
+
+  .e-de-unprotect-title {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .e-de-op-scroll {
+    height: 400px;
+    overflow: auto;
+  }
+
+  .e-de-display-block {
+    display: block;
+  }
+
+  .e-de-op-result {
+    width: 85%;
+    display: block;
+  }
+
+  .e-de-dlg-footer-right {
+    text-align: right;
+  }
+
+  .e-de-hidden-space {
+    display: none;
+    padding-top: 10px;
+  }
+
+  .e-de-options-list-reset {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .e-de-op {
+    display: inline-block;
+  }
+
+  .e-de-scrollable {
+    overflow: auto;
+  }
+
+  .e-de-close-container {
+    position: relative;
+    z-index: 99;
+    float: right;
+  }
 }

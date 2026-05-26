@@ -3,9 +3,11 @@
   .e-de-toolbar {
     height: $e-de-toolbar-height;
   }
+
   .e-documenteditorcontainer {
     display: block;
   }
+
   .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
     height: $e-de-text-wrap-height;
     @if $skin-name == 'tailwind' {
@@ -98,5 +100,133 @@
         padding-left: $de-tbl-merge-cell !important; /* stylelint-disable-line declaration-no-important */
       }
     }
+  }
+
+  .e-de-statusbar-section {
+    padding-left: 16px;
+  }
+
+  .e-de-statusbar-item-gap {
+    margin-right: 6px;
+  }
+
+  .e-de-pagenumber-container {
+    display: inline-flex;
+  }
+
+  .e-de-toolbar-textbtn {
+    width: auto;
+  }
+
+  .e-de-splitbtn-min-content {
+    width: min-content;
+  }
+
+  .e-de-header-row {
+    padding-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
+    height: 29px;
+  }
+
+  .e-de-close-button {
+    display: inline-block;
+    cursor: pointer;
+    float: right;
+  }
+
+  .e-de-prop-label-height {
+    height: 20px;
+  }
+
+  .e-de-section-spacing {
+    margin-bottom: 14px;
+  }
+
+  .e-de-sub-label-block {
+    display: block;
+  }
+
+  .e-de-hidden {
+    display: none;
+  }
+
+  .e-de-segment-full {
+    position: relative;
+    width: 100%;
+  }
+
+  .e-de-full-height {
+    height: 100% !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-overflow-auto {
+    overflow: auto !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-inline-flex {
+    display: inline-flex;
+  }
+
+  .e-de-grp-btn-size {
+    width: min-content;
+    height: 126px;
+  }
+
+  .e-de-margin-top-medium {
+    margin-top: 14px;
+  }
+
+  .e-de-dropdown-list-item {
+    display: block;
+    outline: 0;
+    width: 126px;
+    height: auto;
+  }
+
+  .e-de-list-item-block {
+    display: block;
+  }
+
+  .e-de-cell-text-box-50 {
+    width: 50px;
+    float: left;
+  }
+
+  .e-de-no-border-bottom {
+    border-bottom-width: 0 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-splitbtn-min-content {
+    width: min-content;
+  }
+
+  .e-de-flex {
+    display: flex;
+  }
+
+  .e-de-display-inherit {
+    display: inherit;
+  }
+
+  .e-de-list-presetmenu-small {
+    font-size: 8px !important; /* stylelint-disable-line declaration-no-important */
+    text-align: center;
+    top: 8px;
+    line-height: normal !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-de-toc-close-button {
+    cursor: pointer;
+    display: inline-block;
+    color: $de-font-color;
+    float: right;
+    margin-right: 7px;
+  }
+
+  .e-de-section-spacing-lg {
+    margin-bottom: 36px;
+  }
+
+  .e-de-align-right-btn {
+    float: right;
   }
 }

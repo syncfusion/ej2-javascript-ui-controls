@@ -2077,6 +2077,9 @@ export class DropDownList extends DropDownBase implements IInput {
             (this.previousValue != null && this.isObjectInArray(this.previousValue, [(this as any).allowCustom &&
                 this.isObjectCustomValue ? this.value ? this.value : dataItem : dataItem.value ?
                     this.getDataByValue(dataItem.value) : dataItem])))) {
+            if (this.getModuleName() === 'combobox' && this.autoFill && e && (e.type === 'click' || e.action === 'enter')) {
+                return false;
+            }
             this.isSelected = false;
             return true;
         } else {

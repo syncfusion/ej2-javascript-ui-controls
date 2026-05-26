@@ -3776,9 +3776,17 @@ export class DialogEdit {
             gridObj.endEdit();
         }
         if (isEdit && gridObj.currentViewData.length !== gridObj.dataSource['length']) {
-            dataSource = <ITaskSegment[]>gridObj.dataSource;
+            dataSource = (gridObj.dataSource as ITaskSegment[]).map((item: any) => {
+                const copy: any = { ...item } as any;
+                delete copy[this.parent.taskFields.id as string];
+                return copy as ITaskSegment;
+            });
         } else {
-            dataSource = <ITaskSegment[]>gridObj.currentViewData;
+            dataSource = (gridObj.currentViewData as ITaskSegment[]).map((item: any) => {
+                const copy: any = { ...item } as any;
+                delete copy[this.parent.taskFields.id as string];
+                return copy as ITaskSegment;
+            });
         }
         this.updateSegmentTaskData(dataSource);
     }

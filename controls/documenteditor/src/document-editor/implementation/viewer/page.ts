@@ -1758,6 +1758,7 @@ export class ParagraphWidget extends BlockWidget {
      */
     public splitLtrAndRtlText(lineIndex: number): void {
         let isPrevLTRText: LtrRtlTextInfo = { value: null };
+        let isPrevLTRBidi: LtrRtlTextInfo = { value: null };
         let iIncrementer: number = 1;
         let hasRTLCharacter: LtrRtlTextInfo = { value: null };
         let characterRangeTypes: CharacterRangeType[] = [];
@@ -1788,7 +1789,7 @@ export class ParagraphWidget extends BlockWidget {
                         isRTLLang = textHelper.isRightToLeftLanguage(elementBox.characterFormat.localeIdBidi);
                     }     
                     ////Split the text as consicutive LTR and RTL
-                    let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter);
+                    let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter, isPrevLTRBidi);
 
                     if (splitedTextCollection.length > 1) {
                         for (let j = 0; j < splitedTextCollection.length; j++) {

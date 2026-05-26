@@ -4268,4 +4268,51 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             }, 450)
         });
     });
+
+    describe('ComboBox autofill - change event trigger (public API)', () => {
+        let listObj1: ComboBox;
+        let element: HTMLInputElement;
+        let isChangeTriggered: boolean = false;
+        let empList = [
+            { id: 'level1', country: 'American Football' },
+            { id: 'level2', country: 'Badminton' },
+            { id: 'level3', country: 'Basketball' },
+            { id: 'level4', country: 'Cricket' }
+        ];
+
+        beforeAll(() => {
+
+            element = createElement('input', { id: 'list' }) as HTMLInputElement;
+            document.body.appendChild(element);
+
+            listObj1 = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'country', value: 'id' },
+                autofill: true,
+                change: () => {
+                    isChangeTriggered = true;
+                }
+            });
+
+            listObj1.appendTo('#list');
+        });
+
+        afterAll(() => {
+            listObj1.destroy();
+            element.remove();
+        });
+
+        it('should trigger change event when autofill is true on value selection', (done) => {
+            element.value = 'C';
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+            element.dispatchEvent(new Event('change', { bubbles: true }));
+            element.dispatchEvent(new Event('blur', { bubbles: true }));
+            setTimeout(() => {
+                expect(isChangeTriggered).toBe(true);
+                done();
+            }, 300);
+
+        });
+
+    });
 });

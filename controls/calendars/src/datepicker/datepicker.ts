@@ -1014,6 +1014,21 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
 
+    private getDeviceType(): string {
+        const userAgent: string = navigator.userAgent || navigator.vendor;
+        if (/android/i.test(userAgent)) {
+            return 'Android';
+        }
+        if (/iPhone/i.test(userAgent)) {
+            return 'iPhone';
+        }
+        if (/iPad/i.test(userAgent)) {
+            return 'iPad';
+        }
+        return 'Unknown';
+    }
+
+
     protected updateHtmlAttributeToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
@@ -1470,7 +1485,7 @@ export class DatePicker extends Calendar implements IInput {
                             });
                     }
                 }
-                if (Browser.isDevice && this.allowEdit && !this.readonly && Browser.isIos) {
+                if (Browser.isDevice && this.allowEdit && !this.readonly && Browser.isIos && this.getDeviceType() !== 'iPhone') {
                     this.inputElement.blur();
                 }
             }, close: () => {

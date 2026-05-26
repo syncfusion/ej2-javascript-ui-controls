@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 33.2.8 (2026-05-26)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I837840` - Fixed an issue where paragraph spacing changes unexpectedly after delete.
+`#I836137` - Fixed an issue where `DocVariable` field value are not proper while exporting as Docx document.
+`#I840522` - Resolved the DOCX export crashes on language-only locale during serialize language issue.
+`#I837789` - Resolved the partial word selected when double clicking in bullet list issue.
+`#I838868` - Fixed an issue where tooltip "Close" text not localized in style dialog.
+`#I839007` - Resolved font size is not applied when selecting the same size consecutively on different text selections using ribbon issue.
+`#I837850` - Fixed unexpected content movement after delete at end of page issue.
+`#I837816` - Resolved the issue where cursor moves to wrong line after shift enter.
+`#I826551` - Fixed panel flickers when opening document using `openAsync` API issue.
+`#I835355` - Fixed an issue where extra left arrow key press needed near bookmarked text
+`#I830757` - Resolved the issue where footer image not rendered properly in floating case.
+`#I827659` - Resolved the ribbon tab switches to home tab after applying table properties issue.
+`#I831675` - Fixed an issue where table design panel not updated after formatting in ribbon.
+`#I835579` - Fixed enable single-commit rendering for bookmarks in batch edit operations.
+`#I839294` - Resolved replace buttons not dynamically updating in read-only documents with editable regions issue.
+`#I839296` - Resolved replace All count includes locked region matches in read-only documents issue.
+`#I828908` - Fixed an issue where form field values are not properly updated.
+`#I839040` - Fixed bookmark visibility issue when zoom set to fit width or higher
+`#I804199` - Resolved spell check selected word not highlighted during ignore or change issue.
+`#I832141` - Resolved header and footer content not preserved after copy and paste from MS Word issue.
+
 ## 33.2.7 (2026-05-19)
 
 ### DocumentEditor

@@ -1492,7 +1492,19 @@ export class _JsonDocument extends _ExportHelper {
                 break;
             default:
                 if (this._document._allowImportCustomData && key !== 'type' && key !== 'page') {
-                    this._addString(dictionary, key, typeof value === 'string' ? value : JSON.stringify(value));
+                    let customValue: string;
+                    if (typeof value === 'string' && value.indexOf(':') !== -1 && !value.startsWith('{')
+                       && !value.endsWith('}')) {
+                        const parts: string[] = value.split(':');
+                        if (Array.isArray(parts) && parts.length === 2) {
+                            customValue = JSON.stringify({ [parts[0]] : parts[1] });
+                        } else {
+                            customValue = value;
+                        }
+                    } else {
+                        customValue = typeof value === 'string' ? value : JSON.stringify(value);
+                    }
+                    this._addString(dictionary, key, customValue);
                 }
                 break;
             }

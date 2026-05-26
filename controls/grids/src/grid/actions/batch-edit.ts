@@ -1005,6 +1005,10 @@ export class BatchEdit {
         }
         this.preventSaveCell = true;
         const args: CellSaveArgs = this.generateCellArgs();
+        if (!args.cell) {
+            this.preventSaveCell = false;
+            return;
+        }
         const tr: Element = args.cell.parentElement;
         const col: Column = args.column;
         args.cell.removeAttribute('aria-label');

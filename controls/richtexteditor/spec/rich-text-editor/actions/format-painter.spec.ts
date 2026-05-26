@@ -974,7 +974,7 @@ describe('Format Painter Module', () => {
             rteObject.selectRange(range);
             rteObject.keyDown(pasteKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelector('.goalParent');
-            const content: string = '<span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode"> "Put your heart, mind, intellect, and soul even to your sma</u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);">llest acts. This is the secret of success." - - Swami Sivananda</strong></span></span></span>';
+            const content: string = '<span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">                                     "Put your heart, mind, </u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);">intellect, and soul even to your smallest acts. This is the secret of success." -                                      - Swami Sivananda</strong></span></span></span>';
             expect(startElement.innerHTML).toEqual(content);
             expect(startElement.nodeName).toEqual('BLOCKQUOTE');
             expect(startElement.className).toEqual('goalParent');
@@ -993,7 +993,7 @@ describe('Format Painter Module', () => {
             rteObject.selectRange(range);
             rteObject.keyDown(pasteKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelectorAll('.sourceParent')[1];
-            const content: string = '<span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode"> "Put your heart, mind, intellect, and soul even to your smallest acts. This is the secret of success." - - Swami Sivananda</u></b></span></span></span>';
+            const content: string = '<span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">                                     "Put your heart, mind, intellect, and soul even to your smallest acts. This is the secret of success." -                                      - Swami Sivananda</u></b></span></span></span>';
             expect(startElement.innerHTML.trim()).toEqual(content);
             expect(startElement.nodeName).toEqual('H2');
             expect(startElement.className).toEqual('sourceParent');
@@ -1007,12 +1007,12 @@ describe('Format Painter Module', () => {
             rteObject.selectRange(range);
             rteObject.keyDown(copyKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelector('.goalformatnode');
-            setCursorPoint(startElement.firstChild as Element, 53);
+            setCursorPoint(startElement.firstChild as Element, 90);
             rteObject.keyDown(pasteKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelectorAll('.sourceformatnode')[1];
             expect(startElement.innerHTML).toEqual('your');
             startElement = rteObject.inputElement.querySelectorAll('.sourceParent')[1];
-             const content: string = '<span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);"> "Put your heart, mind, intellect, and soul even to </strong></span></span></span><span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">your</u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);"> smallest acts. This is the secret of success." - - Swami Sivananda</strong></span></span></span>';
+             const content: string = '<span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);">                                     "Put your heart, mind, intellect, and soul even to </strong></span></span></span><span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">your</u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);"> smallest acts. This is the secret of success." -                                      - Swami Sivananda</strong></span></span></span>';
             expect(startElement.nodeName).toEqual('H2');
             expect(startElement.className).toEqual('sourceParent');
             expect(startElement.innerHTML).toEqual(content);
@@ -1400,7 +1400,7 @@ describe('Format Painter Module', () => {
             range.setEnd(endElement, 1);
             rteObject.selectRange(range);
             rteObject.keyDown(pasteKeyBoardEventArgs);
-            const correctInnerHTML: string  = `<p class="sourceformatnode">How to use the format painter:</p><p class="sourceformatnode">List 1 content.</p><p class="sourceformatnode">List 2 content.</p><p class="sourceformatnode">List 3 content.</p><p class="sourceformatnode">Sub List 1 content.</p><p class="sourceformatnode">Sub List 2 content.</p><p class="sourceformatnode">Sub List 2 content.</p><p class="sourceformatnode">List 4 content.</p><p class="sourceformatnode">List 5 content.</p>`;
+            const correctInnerHTML: string  = `<p class="sourceformatnode">How to use the format painter:</p><p class="sourceformatnode">List 1 content.</p><p class="sourceformatnode">List 2 content.</p><p class="sourceformatnode">                                        List 3 content.                                        </p><p class="sourceformatnode">Sub List 1 content.</p><p class="sourceformatnode">Sub List 2 content.</p><p class="sourceformatnode">Sub List 2 content.</p><p class="sourceformatnode">List 4 content.</p><p class="sourceformatnode">List 5 content.</p>`;
             expect(rteObject.inputElement.innerHTML).toEqual(correctInnerHTML);
         });
     });
@@ -1486,7 +1486,7 @@ describe('Format Painter Module', () => {
             range.setEnd(endElement.lastElementChild, 1);
             rteObject.selectRange(range);
             rteObject.keyDown(pasteKeyBoardEventArgs);
-            const correctInnerHTML: string  = `<p class="sourceformatnode">Getting started with format painter</p><p class="sourceformatnode">Getting started with Format  Painter.</p><p class="sourceformatnode">  FORMAT PAINTER:</p><p class="sourceformatnode"> Getting started with the format painter:</p><p class="sourceformatnode">The format painter toolbar button allows you to copy the formatting of a selected text or object and apply it to another text or object. This is a quick and easy way to ensure consistent formatting throughout your document or website.</p><p class="sourceformatnode">By copying inline styles, you can easily transfer the font style, size, color, and other properties from one element to another without having to manually adjust each property individually. This saves you time and ensures that your design is consistent and professional.</p><p class="sourceformatnode"> "Put your heart, mind, intellect, and soul even to your smallest acts. This is the secret of success." - - Swami Sivananda</p><p class="sourceformatnode">This block content is of type    &lt;div&gt;  element with font size of 24 pts. </p>`;
+            const correctInnerHTML: string  = `<p class="sourceformatnode">Getting started with format painter</p><p class="sourceformatnode">Getting started with Format  Painter.</p><p class="sourceformatnode">  FORMAT PAINTER:</p><p class="sourceformatnode"> Getting started with the format painter:</p><p class="sourceformatnode">The format painter toolbar button allows you to copy the formatting of a selected text or object and              apply it to another text or object.              This is a quick and easy way to ensure consistent formatting throughout your document or website.        </p><p class="sourceformatnode">By copying inline styles, you can easily transfer the font style, size, color,              and other properties from one element to another without having to manually adjust each property individually.              This saves you time and ensures that your design is consistent and professional.        </p><p class="sourceformatnode">             "Put your heart, mind, intellect, and soul even to your smallest acts. This is the secret of success." -              - Swami Sivananda</p><p class="sourceformatnode">This block content is of type     &lt;div&gt;                       element with font size of 24 pts.                 </p>`;
             expect(rteObject.inputElement.innerHTML).toEqual(correctInnerHTML);
         });
         it('Case 3 FULL NODE Copying without inline styles and painting to full text node, should remove the old styles', () => {

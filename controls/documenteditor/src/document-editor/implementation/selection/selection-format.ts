@@ -44,6 +44,7 @@ export class SelectionCharacterFormat {
     private renderedFontFamilyIn: string;
     private fontColorIn: string = undefined;
     private allCapsIn: boolean = undefined;
+    private bidiIn: boolean = undefined;
     /**
      * @private
      */
@@ -67,7 +68,7 @@ export class SelectionCharacterFormat {
     /**
      * @private
      */
-    public bidi: boolean = undefined;
+    // public bidi: boolean = undefined;
     /**
      * @private
      */
@@ -158,6 +159,26 @@ export class SelectionCharacterFormat {
         }
         this.boldIn = value;
         this.notifyPropertyChanged('bold');
+    }
+    /**
+     * Gets or Sets the bidirectional property for selected contents.
+     *
+     * @aspType bool
+     */
+    public get bidi(): boolean{
+        return this.bidiIn;
+    }
+    /**
+     * Sets the bidirectional property for selected contents.
+     *
+     * @aspType bool
+     */
+    public set bidi(value: boolean) {
+        if (value === this.bidiIn) {
+            return;
+        }
+        this.bidiIn = value;
+        this.notifyPropertyChanged('bidi');
     }
     /**
      * Gets or sets the italic formatting of selected contents.
@@ -272,6 +293,8 @@ export class SelectionCharacterFormat {
     }
     private getPropertyValue(property: string): Object {
         switch (property) {
+            case 'bidi':
+                return this.bidi;
             case 'bold':
                 return this.bold;
             case 'italic':

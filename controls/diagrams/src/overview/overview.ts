@@ -669,7 +669,10 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         const viewwidth: number = (width / offwidth) * this.contentWidth;
         const viewheight: number = (height / offheight) * this.contentHeight;
         const zoom: number = Math.max(this.parent.scroller.viewPortWidth / viewwidth, this.parent.scroller.viewPortHeight / viewheight);
-        if (zoom >= 0.25 && zoom <= 30) {
+        //1027706: overview rect does not resize correctly when diagram zoom level with respect to viewport beyond minzom and maxzoom
+        const minZoom: number = this.parent.scrollSettings.minZoom;
+        const maxZoom: number = this.parent.scrollSettings.maxZoom;
+        if (zoom >= minZoom && zoom <= maxZoom) {
             const point: PointModel = { x: 0, y: 0 };
             this.updateParentView(zoom, x, y, width, height, point);
             const bounds: Rect = this.scrollOverviewRect(

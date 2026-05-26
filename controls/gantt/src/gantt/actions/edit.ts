@@ -5,7 +5,7 @@ import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent,
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowDropEventArgs } from '../base/interface';
 import { ColumnModel, Column as GanttColumn } from '../models/column';
 import { ColumnModel as GanttColumnModel } from '../models/column';
-import { DataManager, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor, ODataV4Adaptor, GraphQLAdaptor } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex, isCountRequired, updateDates } from '../base/utils';
 import { ConstraintType, RowPosition, ViolationType } from '../base/enum';
@@ -271,6 +271,11 @@ export class Edit {
             ganttColumn.edit = column.edit;
         }
     }
+
+    private resolveFallback<T>(primary: T | undefined | null, fallback: T): T {
+        return primary ? primary : fallback;
+    }
+
     /**
      * Method to create task type custom editor
      *
@@ -1355,20 +1360,17 @@ export class Edit {
     }
 
     private processSuccessorChainAndChildren(currentParent: IGanttData): void {
-        const getTaskId: any = (rec: IGanttData): string =>
-            this.parent.viewType === 'ResourceView'
-                ? rec.ganttProperties.taskId.toString()
-                : rec.ganttProperties.rowUniqueID.toString();
         interface ISuccessorLink {
             from: string;
             to: string;
         }
-        const taskId: string = getTaskId(currentParent);
-        const queue: ISuccessorLink[] = [];
-        const directSuccessors: ISuccessorLink[] = (currentParent.ganttProperties.predecessor || [])
-            .filter((data: IPredecessor) => data.from === taskId)
-            .map((data: IPredecessor) => ({ from: data.from, to: data.to }));
-        queue.push(...directSuccessors);
+        const taskId: string = this.getTaskId(currentParent);
+        let queue: ISuccessorLink[] = [];
+        const directSuccessors: ISuccessorLink[] = this.resolveFallback<IPredecessor[]>(
+            currentParent.ganttProperties.predecessor,
+            []
+        ).filter((data: IPredecessor) => data.from === taskId).map((data: IPredecessor) => ({ from: data.from, to: data.to }));
+        queue = queue.concat(directSuccessors);
         const visitedSuccessors: Set<string> = new Set<string>();
         while (queue.length > 0) {
             const successor: ISuccessorLink = queue.shift()!;
@@ -1393,7 +1395,7 @@ export class Edit {
                 let parent: IGanttData | null = this.parent.getRecordByID(record.parentItem.taskId);
                 while (parent) {
                     if (parent.ganttProperties.predecessor && parent.ganttProperties.predecessor.length) {
-                        const parentId: string = getTaskId(parent);
+                        const parentId: string = this.getTaskId(parent);
                         for (const link of parent.ganttProperties.predecessor) {
                             if (link.from === parentId) {
                                 const toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.to) as IGanttData;
@@ -1409,42 +1411,52 @@ export class Edit {
             }
             // Walk down all children (BFS)
             if (record.hasChildRecords) {
-                const childQueue: IGanttData[] = [...record.childRecords];
-                const visitedChildren: Set<string> = new Set<string>();
-                while (childQueue.length > 0) {
-                    const child: IGanttData = childQueue.shift()!;
-                    const childId: string = getTaskId(child);
-                    if (visitedChildren.has(childId)) {
-                        continue;
-                    }
-                    visitedChildren.add(childId);
-                    if (child.ganttProperties.predecessor) {
-                        for (const link of child.ganttProperties.predecessor) {
-                            if (link.from === childId) {
-                                const toRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.to) as IGanttData;
-                                if (toRec) {
-                                    const fromRec: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from) as IGanttData;
-                                    this.parent.predecessorModule['validateChildGanttRecord'](fromRec, toRec);
-                                    if (toRec.hasChildRecords) {
-                                        this.parent.predecessorModule['updateChildItems'](toRec);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (child.hasChildRecords) {
-                        childQueue.push(...child.childRecords);
-                    }
-                }
+                this.updateSuccessorChildren(record.childRecords);
             }
             // Add next level successors
             if (record.ganttProperties.predecessor) {
-                const currentId: string = getTaskId(record);
+                const currentId: string = this.getTaskId(record);
                 for (const link of record.ganttProperties.predecessor) {
                     if (link.from === currentId) {
                         queue.push({ from: link.from, to: link.to });
                     }
                 }
+            }
+        }
+    }
+
+    private getTaskId(rec: IGanttData): string {
+        return this.parent.viewType === 'ResourceView'
+            ? rec.ganttProperties.taskId.toString()
+            : rec.ganttProperties.rowUniqueID.toString();
+    }
+
+    private updateSuccessorChildren(record?: IGanttData[]): void {
+        let childQueue: IGanttData[] = Object.assign([], record);
+        const visitedChildren: Set<string> = new Set<string>();
+        while (childQueue.length > 0) {
+            const child: IGanttData = childQueue.shift()!;
+            const childId: string = this.getTaskId(child);
+            if (visitedChildren.has(childId)) {
+                continue;
+            }
+            visitedChildren.add(childId);
+            if (child.ganttProperties.predecessor) {
+                for (const link of child.ganttProperties.predecessor) {
+                    if (link.from === childId) {
+                        const toRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.to) as IGanttData;
+                        if (toRec) {
+                            const fromRec: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from) as IGanttData;
+                            this.parent.predecessorModule['validateChildGanttRecord'](fromRec, toRec);
+                            if (toRec.hasChildRecords) {
+                                this.parent.predecessorModule['updateChildItems'](toRec);
+                            }
+                        }
+                    }
+                }
+            }
+            if (child.hasChildRecords) {
+                childQueue = childQueue.concat(child.childRecords);
             }
         }
     }
@@ -1615,15 +1627,7 @@ export class Edit {
                 const parentGanttRecord: IGanttData = pairedPredecessorTask || args.data;
                 if (isNullOrUndefined(this.parent.constraintViolationType) || this.parent.constraintViolationType === '') {
                     const constraintType: ConstraintType = modifiedTask.ganttProperties.constraintType;
-                    if (constraintType === ConstraintType.MustStartOn) {
-                        this.parent.constraintViolationType = 'MustStartOn';
-                    } else if (constraintType === ConstraintType.MustFinishOn) {
-                        this.parent.constraintViolationType = 'MustFinishOn';
-                    } else if (constraintType === ConstraintType.StartNoLaterThan) {
-                        this.parent.constraintViolationType = 'StartNoLaterThan';
-                    } else if (constraintType === ConstraintType.FinishNoLaterThan) {
-                        this.parent.constraintViolationType = 'FinishNoLaterThan';
-                    }
+                    this.updateConstraintViolationType(constraintType);
                 }
                 const validationResult: IValidateArgs = this.parent.editModule['validateConstraintViolation'](args);
                 if (validationResult.violationType) {
@@ -1647,6 +1651,18 @@ export class Edit {
             } else {
                 this.initiateSaveAction(args);
             }
+        }
+    }
+
+    private updateConstraintViolationType(constraintType: ConstraintType): void {
+        if (constraintType === ConstraintType.MustStartOn) {
+            this.parent.constraintViolationType = 'MustStartOn';
+        } else if (constraintType === ConstraintType.MustFinishOn) {
+            this.parent.constraintViolationType = 'MustFinishOn';
+        } else if (constraintType === ConstraintType.StartNoLaterThan) {
+            this.parent.constraintViolationType = 'StartNoLaterThan';
+        } else if (constraintType === ConstraintType.FinishNoLaterThan) {
+            this.parent.constraintViolationType = 'FinishNoLaterThan';
         }
     }
 
@@ -2061,8 +2077,9 @@ export class Edit {
                     const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                     let crud: Promise<Object> = null;
                     const dataAdaptor: AdaptorOptions = data.adaptor;
-                    if (!(dataAdaptor instanceof WebApiAdaptor || dataAdaptor instanceof ODataAdaptor ||
-                        dataAdaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
+                    if (!(dataAdaptor instanceof WebApiAdaptor || dataAdaptor instanceof ODataAdaptor
+                        || dataAdaptor instanceof ODataV4Adaptor || dataAdaptor instanceof GraphQLAdaptor)
+                        || data.dataSource.batchUrl) {
                         crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     } else {
                         const changedRecordsKey: string = 'changedRecords';
@@ -2075,7 +2092,7 @@ export class Edit {
                             for (const record of records) {
                                 const key: any = record[idField as string];
                                 chain = chain.then(() => {
-                                    return (data.update(idField, record, key, query) as Promise<Object>)
+                                    return (data.update(idField, record, null, query) as Promise<Object>)
                                         .then((res: any) => {
                                             results.push(res);
                                             return res;
@@ -2168,6 +2185,7 @@ export class Edit {
         for (let i: number = 0; i < eLength; i++) {
             if (e.changedRecords) {
                 rec = e.changedRecords[parseInt(i.toString(), 10)];
+                rec = (rec && !isNullOrUndefined((rec as any).result)) ? (rec as any).result : rec;
             }
             else {
                 rec = e[parseInt(i.toString(), 10)];
@@ -3278,8 +3296,9 @@ export class Edit {
                     };
                     const adaptor: AdaptorOptions = data.adaptor;
                     const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                    if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor ||
-                        adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
+                    if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor
+                        || adaptor instanceof ODataV4Adaptor || adaptor instanceof GraphQLAdaptor)
+                        || data.dataSource.batchUrl) {
                         const crud: Promise<Object> = data.saveChanges(
                             updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                         crud.then(() => this.deleteSuccess(args))
@@ -4418,8 +4437,9 @@ export class Edit {
                         /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: AdaptorOptions = data.adaptor;
-                        if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor ||
-                            adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
+                        if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor
+                            || adaptor instanceof ODataV4Adaptor || adaptor instanceof GraphQLAdaptor)
+                            || data.dataSource.batchUrl) {
                             const processedID: string  = args.data['ganttProperties']['taskId'];
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
@@ -5138,19 +5158,45 @@ export class Edit {
             const queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
             let crud: Promise<Object> = null;
             const adaptor: AdaptorOptions = data.adaptor;
-            if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+            if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor
+                || adaptor instanceof ODataV4Adaptor || adaptor instanceof GraphQLAdaptor)
+                || data.dataSource.batchUrl) {
                 crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
             } else {
-                const changedRecords: string = 'changedRecords';
-                crud = data.update(this.parent.taskFields.id, updatedData[changedRecords as string], null, queryValue) as Promise<Object>;
+                const changedRecordsKey: string = 'changedRecords';
+                const records: any = updatedData[changedRecordsKey as string];
+                if (records instanceof Array) {
+                    const idField: string = this.parent.taskFields.id as string;
+                    let chain: Promise<any> = Promise.resolve();
+                    const results: any[] = [];
+
+                    for (const record of records) {
+                        const key: any = record[idField as string];
+                        chain = chain.then(() => {
+                            return (data.update(idField, record, null, queryValue) as Promise<Object>)
+                                .then((res: any) => {
+                                    results.push(res);
+                                    return res;
+                                });
+                        });
+                    }
+                    chain.then(() => {
+                        this.indentSuccess({ changedRecords: results }, args, isDrag);
+                    }).catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
+                } else {
+                    const keyVal: any = records ? records[this.parent.taskFields.id] : null;
+                    crud = data.update(this.parent.taskFields.id, records, keyVal, queryValue) as Promise<Object>;
+                }
             }
-            crud.then((e: ReturnType) => this.indentSuccess(e, args, isDrag))
-                .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
+            if (!isNullOrUndefined(crud)) {
+                crud.then((e: ReturnType) => this.indentSuccess(e, args, isDrag))
+                    .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
+            }
         } else {
             this.indentOutdentSuccess(args, isDrag);
         }
     }
-    private indentSuccess(e: ReturnType, args: RowDropEventArgs, isDrag: boolean): void {
+    private indentSuccess(e: any, args: RowDropEventArgs, isDrag: boolean): void {
         this.updateEditedFields(e);
         this.indentOutdentSuccess(args, isDrag);
     }

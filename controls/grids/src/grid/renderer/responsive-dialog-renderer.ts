@@ -350,7 +350,11 @@ export class ResponsiveDialogRenderer implements IAction {
                     if (col.filter.type === 'Menu' || (!col.filter.type && gObj.filterSettings.type === 'Menu')) {
                         this.isDialogClose = true;
                     }
-                    this.parent.filterModule.filterModule.clearCustomFilter(col);
+                    if (!isNullOrUndefined(this.parent.filterModule.filterModule)) {
+                        this.parent.filterModule.filterModule.clearCustomFilter(col);
+                    } else {
+                        this.parent.filterModule.clearFiltering([field]);
+                    }
                     this.removeCustomDlgFilterEle(target);
                 }
             }

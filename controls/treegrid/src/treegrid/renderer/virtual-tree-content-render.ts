@@ -760,7 +760,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             let index: number = scrolledRows + visibleRows - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`] &&
-                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop) && !this.parent.allowRowDragAndDrop) {
+                (this.parent.rowHeight && ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop)) &&
+                !this.parent.allowRowDragAndDrop) {
                 index = this[`${selectedRowIndex}`];
             }
             this.startIndex = index;
