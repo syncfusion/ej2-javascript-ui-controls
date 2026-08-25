@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 34.2.4 (2026-08-18)
-
 ### PDF Data Extract
 
 #### Bug Fixes
