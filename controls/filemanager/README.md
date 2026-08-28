@@ -2,12 +2,12 @@
 
 # JavaScript File Manager Control
 
-The [JavaScript File Manager](https://www.syncfusion.com/javascript-ui-controls/js-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm) control is a graphical user interface that allows users to manage their file system in an intuitive and efficient manner. With this component, you can easily access, edit, upload, download, and organize files and folders. It also offers a convenient way to browse and select items from the file system.
+The [JavaScript File Manager](https://www.syncfusion.com/javascript-ui-controls/js-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm) control is a graphical user interface that allows users to manage their file system in an intuitive and efficient manner. With this component, you can easily access, edit, upload, download, and organize files and folders. It also offers a convenient way to browse and select items from the file system.
 
 <p align="center">
-  <a href="https://ej2.syncfusion.com/documentation/file-manager/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm#/material/file-manager/overview.html">Online demos</a> .
-  <a href="https://www.syncfusion.com/javascript-ui-controls/js-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm">Learn more</a>
+  <a href="https://ej2.syncfusion.com/documentation/file-manager/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm">Getting Started</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#/bootstrap5/file-manager/overview.html">Online demos</a> .
+  <a href="https://www.syncfusion.com/javascript-ui-controls/js-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm">Learn more</a>
 </p>
 
 <p align="center">
@@ -33,13 +33,13 @@ npm install @syncfusion/ej2-filemanager
 
 The JavaScript File Manager control is also offered in following list of frameworks,
 
-| [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)&nbsp;&nbsp; | 
 | :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase samples
 
-* Expense Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm#/dashboard)
-* Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm)
+* Expense Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#/dashboard)
+* Loan Calculator - [Source](https://github.com/syncfusion/ej2-showcase-ts-loan-calculator?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#/home)
 
 ## Key features
  
@@ -49,42 +49,42 @@ The JavaScript File Manager control is also offered in following list of framewo
 * [Search functionality](https://ej2.syncfusion.com/documentation/file-manager/file-operations/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#search): The component includes a search feature that allows users to easily locate specific files within their file system.
 * [Customizable interface](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#/bootstrap5/file-manager/custom-thumbnail.html): The component's interface can be customized to fit the needs and preferences of users, allowing for a personalized experience.
 * [Responsive design](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#/bootstrap5/file-manager/overview.html): The component is designed to be responsive, ensuring that it works seamlessly across a range of devices and screen sizes.
-* [Easy integration](https://ej2.syncfusion.com/documentation/file-manager/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component is easy to integrate into existing projects, making it a convenient and straightforward solution for file management.
-* [Context menu](https://ej2.syncfusion.com/documentation/file-manager/user-interface/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#context-menu): The component includes a context menu that allows users to quickly and easily access file management options.
-* [Toolbar](https://ej2.syncfusion.com/documentation/file-manager/user-interface/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#toolbar): The component's toolbar provides a flexible way to manage file operations, making it easy for users to perform common tasks.
-* [Access control](https://ej2.syncfusion.com/documentation/file-manager/access-control/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component allows users to define a set of access rules for their folders and files, giving them control over who can access specific resources.
-* [Multiple file selection](https://ej2.syncfusion.com/documentation/file-manager/multiple-selection/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component supports the selection of multiple files, making it easy for users to perform bulk operations.
-* [Localization](https://ej2.syncfusion.com/documentation/file-manager/localization/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component supports localization, allowing it to be used in a variety of languages and regions.
-* [Accessibility](https://ej2.syncfusion.com/documentation/file-manager/accessibility/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component is designed with accessibility in mind, ensuring that it is usable by users with disabilities.
+* [Easy integration](https://ej2.syncfusion.com/documentation/file-manager/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component is easy to integrate into existing projects, making it a convenient and straightforward solution for file management.
+* [Context menu](https://ej2.syncfusion.com/documentation/file-manager/user-interface?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#context-menu): The component includes a context menu that allows users to quickly and easily access file management options.
+* [Toolbar](https://ej2.syncfusion.com/documentation/file-manager/user-interface?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm#toolbar): The component's toolbar provides a flexible way to manage file operations, making it easy for users to perform common tasks.
+* [Access control](https://ej2.syncfusion.com/documentation/file-manager/access-control?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component allows users to define a set of access rules for their folders and files, giving them control over who can access specific resources.
+* [Multiple file selection](https://ej2.syncfusion.com/documentation/file-manager/multiple-selection?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component supports the selection of multiple files, making it easy for users to perform bulk operations.
+* [Localization](https://ej2.syncfusion.com/documentation/file-manager/localization?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component supports localization, allowing it to be used in a variety of languages and regions.
+* [Accessibility](https://ej2.syncfusion.com/documentation/file-manager/accessibility?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm): The component is designed with accessibility in mind, ensuring that it is usable by users with disabilities.
 
 ## Resources
 
-* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [Custom Resource Generator](https://crg.syncfusion.com/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
-* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
-* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [Custom Resource Generator](https://crg.syncfusion.com/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
 
 ## Support
 
 Product support is available through following mediums.
 
-* [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm)
-* [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new)
-* [Request feature or report bug](https://www.syncfusion.com/feedback/javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm)
+* [Support ticket](https://support.syncfusion.com/support/tickets/create?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
+* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm)
 * Live chat
 
 ## Changelog
 
-Check the changelog [here]( https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/filemanager/CHANGELOG.md?utm_source=npm&utm_campaign=filemanager). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
+Check the changelog [here]( https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/filemanager/CHANGELOG.md?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 140+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/license/studio/33.2.3/syncfusion_essential_studio_eula.pdf?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm). To acquire a license for 155+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm), you can [purchase](https://www.syncfusion.com/sales/pricing?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm).
 
-> A free community [license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+> A free community [license](https://www.syncfusion.com/products/communitylicense?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
-See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=filemanager) for more info.
+See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-manager-npm) for more info.
 
 &copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
