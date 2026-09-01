@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 34.2.6 (2026-09-01)
+
 ### Chat UI
 
 #### Features
