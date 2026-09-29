@@ -1,4 +1,5 @@
 export {ViewDirective,ViewsDirective} from './ai-assistview/views.directive';
+export {MentionDirective,MentionsDirective} from './ai-assistview/mentions.directive';
 export { AIAssistViewComponent} from './ai-assistview/aiassistview.component';
 export { AIAssistViewModule } from './ai-assistview/aiassistview.module';
 export { AIAssistViewAllModule, AssistThinkingService } from './ai-assistview/aiassistview-all.module';

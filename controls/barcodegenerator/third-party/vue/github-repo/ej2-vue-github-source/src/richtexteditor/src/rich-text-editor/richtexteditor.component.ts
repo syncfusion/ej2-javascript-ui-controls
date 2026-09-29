@@ -15,7 +15,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ejs-richtexteditor` represents the VueJS RichTextEditor Component.
- * ```vue
+ * ```ts
  * <ejs-richtexteditor></ejs-richtexteditor>
  * ```
  */

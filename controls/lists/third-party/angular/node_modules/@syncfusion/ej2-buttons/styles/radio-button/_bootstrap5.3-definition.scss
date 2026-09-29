@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap5.3' as *;
-@forward 'ej2-base/styles/definition/bootstrap5.3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $radio-btn-border: 1px solid !default;
 $radio-btn-bigger-font-size: $text-base !default;
 $radio-btn-bigger-height: 16px !default;

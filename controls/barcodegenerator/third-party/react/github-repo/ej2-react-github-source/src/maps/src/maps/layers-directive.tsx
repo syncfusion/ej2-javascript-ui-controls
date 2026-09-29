@@ -4,7 +4,7 @@ import { LayerSettingsModel } from '@syncfusion/ej2-maps';
 
 /**
  * Represents the directive to define the layer of the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective></LayerDirective>

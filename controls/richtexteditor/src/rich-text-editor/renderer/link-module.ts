@@ -1,4 +1,4 @@
-import { detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
+import { detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU, EventHandler,  initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IImageNotifyArgs, ICssClassArgs, IQuickToolbar, IRenderer } from './../base/interface';
 import {  } from './../base/interface';
@@ -36,6 +36,7 @@ export class Link {
     private linkQTPopupTime: number;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Link', 'RichTextEditor');
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');

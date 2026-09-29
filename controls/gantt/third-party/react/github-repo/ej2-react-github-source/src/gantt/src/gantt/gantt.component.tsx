@@ -5,6 +5,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 export interface GanttTypecast {
     parentTaskbarTemplate?: string | Function | any;
+    toolbarTemplate?: string | Function | any;
     timelineTemplate?: string | Function | any;
     milestoneTemplate?: string | Function | any;
     baselineTemplate?: string | Function | any;

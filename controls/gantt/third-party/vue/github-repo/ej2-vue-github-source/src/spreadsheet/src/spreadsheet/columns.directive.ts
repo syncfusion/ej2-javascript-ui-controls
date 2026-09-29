@@ -34,7 +34,7 @@ export const ColumnsPlugin = {
 /**
  * `e-column` directive represent a column of the VueJS Spreadsheet.
  * It must be contained in a `e-sheet` directive.
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-sheets>
  *    <e-sheet>

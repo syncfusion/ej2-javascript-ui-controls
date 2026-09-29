@@ -24,9 +24,15 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-treegrid>e-columns>e-column>e-stacked-columns>e-stacked-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template'),
+        headerTemplate: new ContentChild('headerTemplate'),
+        filter_itemTemplate: new ContentChild('filterItemTemplate'),
+        filterTemplate: new ContentChild('filterTemplate'),
+        commandsTemplate: new ContentChild('commandsTemplate'),
+        editTemplate: new ContentChild('editTemplate')
     }
 })
 export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> {
@@ -38,32 +44,32 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
      * Defines the type of data stored in the column, which may be string, number, date, or other types.
      * @default null
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Controls whether editing is permitted for the column. By default, all columns are editable.
      * @default true
      */
-    public allowEditing: any;
+    public declare allowEditing: any;
     /** 
      * Controls whether the column supports filtering. If set to false, users cannot filter data by this column.
      * @default true
      */
-    public allowFiltering: any;
+    public declare allowFiltering: any;
     /** 
      * Enables or disables the reordering of this column via drag-and-drop. Allows for dynamic column adjustments.
      * @default true
      */
-    public allowReordering: any;
+    public declare allowReordering: any;
     /** 
      * Determines if this column can be resized. If false, the column size is fixed.
      * @default true
      */
-    public allowResizing: any;
+    public declare allowResizing: any;
     /** 
      * Specifies whether sorting is enabled for this column. Set to false to prevent sort actions.
      * @default true
      */
-    public allowSorting: any;
+    public declare allowSorting: any;
     /** 
      * Determines how overflow content is handled within a cell. Options include: 
      * * `Clip`: Truncates the content. 
@@ -73,12 +79,12 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
      * @isenumeration true
      * @asptype Syncfusion.EJ2.Grids.ClipMode
      */
-    public clipMode: any;
+    public declare clipMode: any;
     /** 
      * Allows for the creation of stacked headers by using multiple rows in the grid's header.
      * @default null
      */
-    public columns: any;
+    public declare columns: any;
     /** 
      * Provides built-in command button options for cells. Options include Edit, Delete, Save, and Cancel. 
      * Custom command button implementations are possible.
@@ -106,58 +112,58 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
      *     
      * @default null
      */
-    public commands: any;
+    public declare commands: any;
     /** 
      * Enables the addition of CSS styles and attributes for the content cells in a particular column.
      * @default null
      */
-    public customAttributes: any;
+    public declare customAttributes: any;
     /** 
      * Sets default values when new records are added to the TreeGrid involving this column.
      * @default null
      */
-    public defaultValue: any;
+    public declare defaultValue: any;
     /** 
      * If set to `true`, the HTML content within header and content cells is encoded to prevent injection attacks.
      * @default true
      */
-    public disableHtmlEncode: any;
+    public declare disableHtmlEncode: any;
     /** 
      * Displays the column value as a checkbox instead of a Boolean value when set to `true`.
      * @default false
      */
-    public displayAsCheckBox: any;
+    public declare displayAsCheckBox: any;
     /** 
      * Allows customizing the default edit cell through the `IEditCell` object for more control over editing.
      * @default {}
      */
-    public edit: any;
+    public declare edit: any;
     /** 
      * Specifies the component type used for editing cells within this column.
      * @default 'stringedit'
      */
-    public editType: any;
+    public declare editType: any;
     /** 
      * Allows treegrid to perform column spanning on the specified column.
      * @default true
      */
-    public enableColumnSpan: any;
+    public declare enableColumnSpan: any;
     /** 
      * Allows treegrid to perform row spanning on the specified column.
      * @default true
      */
-    public enableRowSpan: any;
+    public declare enableRowSpan: any;
     /** 
      * Specifies the field name in the data source to which the column is bound. This field is used for operations like sorting and filtering. 
      * The field name must be a valid JavaScript identifier, beginning with a letter and avoiding spaces and special characters.
      * @default 'undefined'
      */
-    public field: any;
+    public declare field: any;
     /** 
      * Customizes filter options for the column, enabling specialized filtering functionality.
      * @default null
      */
-    public filter: any;
+    public declare filter: any;
     /** 
      * Allows for a custom component within the filter bar, facilitating advanced filter interfaces. 
      * Includes create and read functions for custom component management.
@@ -193,33 +199,33 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
      *     
      * @default null
      */
-    public filterBarTemplate: any;
+    public declare filterBarTemplate: any;
     /** 
      * Formats the displayed value of the column without affecting the underlying data. Supports standard and custom formats for numbers and dates.
      * 
-     * References for [number](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
+     * References for [number](https://ej2.syncfusion.com/documentation/common/internationalization#supported-format-string)
      *and [date](https://ej2.syncfusion.com/documentation/common/internationalization#date-formatting) formats.     
      * @default null
      * @asptype string
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Allows for custom cell content formatting using an external method, executed prior to rendering.
      * @default null
      */
-    public formatter: any;
+    public declare formatter: any;
     /** 
      * Determines which side (left, right, or center) the column should be frozen on.
      * @default Syncfusion.EJ2.Grids.FreezeDirection.None
      * @isenumeration true
      * @asptype Syncfusion.EJ2.Grids.FreezeDirection
      */
-    public freeze: any;
+    public declare freeze: any;
     /** 
      * Specifies the text displayed in the column header. If omitted, the `field` value is used as the header text.
      * @default 'undefined'
      */
-    public headerText: any;
+    public declare headerText: any;
     /** 
      * Aligns the text in the column header. By default, the alignment corresponds to other content alignments.
      * @default null
@@ -227,130 +233,94 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
      * @isenumeration true
      * @asptype Syncfusion.EJ2.Grids.TextAlign
      */
-    public headerTextAlign: any;
+    public declare headerTextAlign: any;
     /** 
      * Adjusts column visibility based on [Media Queries](http://cssmediaqueries.com/what-are-css-media-queries.html). Accepts valid CSS media query strings for responsive adjustments.
      * @default 'undefined'
      */
-    public hideAtMedia: any;
+    public declare hideAtMedia: any;
     /** 
      * Allows the column to be frozen, keeping it stationary while scrolling horizontally through the grid.
      * @default false
      */
-    public isFrozen: any;
+    public declare isFrozen: any;
     /** 
      * Identifies the column as an identity column in database terms, if set to `true`.
      * @default false
      */
-    public isIdentity: any;
+    public declare isIdentity: any;
     /** 
      * Identifies the column as a primary key if set to `true`, enforcing uniqueness.
      * @default false
      */
-    public isPrimaryKey: any;
+    public declare isPrimaryKey: any;
     /** 
      * Prevents column reordering when set to true, locking the column into a set position.
      * @default false
      */
-    public lockColumn: any;
+    public declare lockColumn: any;
     /** 
      * Defines the maximum allowable width of the column in pixels or as a percentage, preventing resizing beyond this limit.
      * @default 'undefined'
      */
-    public maxWidth: any;
+    public declare maxWidth: any;
     /** 
      * Determines the minimum width of the column in pixels or percentage. This ensures the column does not shrink below this size.
      * @default 'undefined'
      */
-    public minWidth: any;
+    public declare minWidth: any;
     /** 
      * Displays checkboxes in the column when enabled, allowing for selections and certain operations.
      * @default false
      */
-    public showCheckbox: any;
+    public declare showCheckbox: any;
     /** 
      * Decides if the column menu should be available, providing options for column customization.
      * @default true
      */
-    public showColumnMenu: any;
+    public declare showColumnMenu: any;
     /** 
      * Determines whether the column should appear in the Column Chooser. Set to false to exclude it.
      * @default true
      */
-    public showInColumnChooser: any;
+    public declare showInColumnChooser: any;
     /** 
      * Provides a custom sort comparer property to control how sorting is handled for this column's data.
      * @default 'undefined'
      */
-    public sortComparer: any;
+    public declare sortComparer: any;
     /** 
      * Specifies the horizontal alignment for the column content and header. Options include alignment to the left, center, or right.
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isenumeration true
      * @asptype Syncfusion.EJ2.Grids.TextAlign
      */
-    public textAlign: any;
+    public declare textAlign: any;
     /** 
      * Retrieves the unique identifier for the column. This UID is used internally to reference and manipulate the column.
      * @default 'undefined'
      */
-    public uid: any;
+    public declare uid: any;
     /** 
      * Establishes validation rules to ensure data integrity during creation and updates.
      * @default null
      */
-    public validationRules: any;
+    public declare validationRules: any;
     /** 
      * Applies custom cell values using an external function, allowing for dynamic display adjustments.
      * @default null
      */
-    public valueAccessor: any;
+    public declare valueAccessor: any;
     /** 
      * Toggles the visibility of the column. Set to false to hide the column from view. Columns are visible by default.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Sets the column's width in pixels or as a percentage. This defines how the column will occupy space in the grid.
      * @default 'undefined'
      */
-    public width: any;
-    /** 
-     * Customizes the rendering of cell content using either a template string or HTML element ID.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
-    /** 
-     * Customizes the header content with a template, defined as a string or an HTML element ID.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
-    @ContentChild('filterItemTemplate')
-    @Template()
-    public filter_itemTemplate: any;
-    /** 
-     * Specifies a custom template or UI for filtering within this column, utilizing either string templates or HTML element IDs.
-     * @aspignore 
-     */
-    @ContentChild('filterTemplate')
-    @Template()
-    public filterTemplate: any;
-    @ContentChild('commandsTemplate')
-    @Template()
-    public commandsTemplate: any;
-    /** 
-     * Provides a template for editing cells in this column, supporting either a template string or an HTML element ID.
-     * @aspignore 
-     */
-    @ContentChild('editTemplate')
-    @Template()
-    public editTemplate: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -359,6 +329,12 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
         this.directivePropList = input;
     }
 }
+Template()(StackedColumnDirective.prototype, 'template');
+Template()(StackedColumnDirective.prototype, 'headerTemplate');
+Template()(StackedColumnDirective.prototype, 'filter_itemTemplate');
+Template()(StackedColumnDirective.prototype, 'filterTemplate');
+Template()(StackedColumnDirective.prototype, 'commandsTemplate');
+Template()(StackedColumnDirective.prototype, 'editTemplate');
 
 /**
  * StackedColumn Array Directive
@@ -366,6 +342,7 @@ export class StackedColumnDirective extends ComplexBase<StackedColumnDirective> 
  */
 @Directive({
     selector: 'ejs-treegrid>e-columns>e-column>e-stacked-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(StackedColumnDirective)
     },

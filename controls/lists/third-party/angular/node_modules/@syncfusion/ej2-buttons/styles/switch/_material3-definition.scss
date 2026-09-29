@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material3' as *;
-@forward 'ej2-base/styles/definition/material3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $switch-wrapper-width: 48px !default;
 $switch-wrapper-height: 24px !default;
 $switch-inner-width: 100% !default;

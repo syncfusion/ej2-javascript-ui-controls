@@ -298,3 +298,75 @@ describe('Gantt delete support', () => {
         });
     });
 });
+describe('Delete child records should update datasource hierarchy', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Project',
+                        StartDate: null,
+                        EndDate: null,
+                        subtasks: [
+                            {
+                                TaskID: 2,
+                                TaskName: 'Task',
+                                Duration: 4,
+                                StartDate: null,
+                                EndDate: null,
+                                subtasks: [
+                                    {
+                                        TaskID: 3,
+                                        TaskName: 'Subtask 1',
+                                        Duration: 4,
+                                        StartDate: null,
+                                        EndDate: null
+                                    },
+                                    {
+                                        TaskID: 4,
+                                        TaskName: 'Subtask 2',
+                                        Duration: 2,
+                                        StartDate: null,
+                                        EndDate: null
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowDeleting: true
+                }
+            },
+            done
+        );
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('should remove deleted child records from parent datasource', () => {
+        const records: IGanttData[] = ganttObj.flatData.filter((x: IGanttData) => {
+            const taskData: any = x.taskData;
+            return taskData.TaskID === 3 || taskData.TaskID === 4;
+        });
+        expect(records.length).toBe(2);
+        ganttObj.deleteRecord(records);
+        expect((ganttObj.dataSource as any)[0].subtasks[0].subtasks).toEqual([]);
+
+    });
+});

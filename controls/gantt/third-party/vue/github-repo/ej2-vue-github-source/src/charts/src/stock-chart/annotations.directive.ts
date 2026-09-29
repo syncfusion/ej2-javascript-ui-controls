@@ -34,7 +34,7 @@ export const StockChartAnnotationsPlugin = {
 /**
  * `e-annotation` directive represent a annotation of the VueJS Chart. 
  * It must be contained in a Chart component(`ejs-chart`). 
- * ```vue
+ * ```
  * <ejs-stockchart> 
  *   <e-stockchart-annotations>
  *    <e-annotation content='ID' />

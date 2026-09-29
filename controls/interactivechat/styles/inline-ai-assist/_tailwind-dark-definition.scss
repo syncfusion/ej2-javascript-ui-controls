@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/tailwind-dark' as *;
-@forward 'ej2-base/styles/definition/tailwind-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $inline-ai-assist-bg: $flyout-bg-color !default;
 $inline-ai-assist-popup-border-radius: 4px !default;
 $inline-ai-assist-content-padding: 12px 12px 16px 12px !default;
@@ -25,6 +25,7 @@ $inline-ai-assist-send-font-size: 14px !default;
 $inline-ai-assist-popup-border: 1px solid $border-light !default;
 $inline-ai-assist-response-text-color: $content-text-color !default;
 $inline-ai-assist-textarea-placeholder-color: $placeholder-text-color !default;
+$inline-ai-assist-textarea-color: $content-text-color !default;
 $inline-ai-assist-footer-focused-border-color: rgba(97, 97, 97, 1) !default;
 $inline-ai-assist-send-color: $secondary-text-color-focus !default;
 $inline-ai-assist-send-disabled-color: $secondary-text-color-disabled !default;
@@ -39,7 +40,7 @@ $inline-ai-assist-text-selection-color: $primary-text-color !default;
 
 $inline-ai-assist-bigger-send-size: 16px !default;
 $inline-ai-assist-bigger-bottom-icons-wrapper-padding: 8px 12px !default;
-$inline-ai-assist-bigger-footer-icons-wrapper-padding: 8px 12px 8px 0 !default;
+$inline-ai-assist-bigger-footer-icons-wrapper-padding: 5px 12px 5px 0 !default;
 $inline-ai-assist-bigger-footer-tbar-min-height: 38px !default;
 $inline-ai-assist-bigger-assist-textarea-min-height: 48px !default;
 $inline-ai-assist-bigger-assist-textarea-line-height: 24px !default;

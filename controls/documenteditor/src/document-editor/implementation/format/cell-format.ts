@@ -78,6 +78,12 @@ export class WCellFormat {
     public set preferredWidthType(value: WidthType) {
         this.setPropertyValue('preferredWidthType', value);
     }
+    public get verticallyMergedCellsKeepWithNext(): boolean {
+        return this.getPropertyValue('verticallyMergedCellsKeepWithNext') as boolean;
+    }
+    public set verticallyMergedCellsKeepWithNext(value: boolean) {
+        this.setPropertyValue('verticallyMergedCellsKeepWithNext', value);
+    }
 
     public constructor(node?: Object) {
         this.ownerBase = node;
@@ -122,6 +128,7 @@ export class WCellFormat {
         this.addUniqueCellFormat('preferredWidth', property, propValue, uniqueCellFormatTemp);
         this.addUniqueCellFormat('verticalAlignment', property, propValue, uniqueCellFormatTemp);
         this.addUniqueCellFormat('preferredWidthType', property, propValue, uniqueCellFormatTemp);
+        this.addUniqueCellFormat('verticallyMergedCellsKeepWithNext', property, propValue, uniqueCellFormatTemp);
         this.uniqueCellFormat = WCellFormat.uniqueCellFormats.addUniqueFormat(uniqueCellFormatTemp, WCellFormat.uniqueFormatType);
     }
 
@@ -164,6 +171,9 @@ export class WCellFormat {
         case 'preferredWidthType':
             value = 'Point';
             break;
+        case 'verticallyMergedCellsKeepWithNext':
+            value = false;
+            break;
         }
         return value;
     }
@@ -197,6 +207,7 @@ export class WCellFormat {
         format.bottomMargin = this.bottomMargin;
         format.preferredWidth = this.preferredWidth;
         format.preferredWidthType = this.preferredWidthType;
+        format.verticallyMergedCellsKeepWithNext = this.verticallyMergedCellsKeepWithNext;
         format.cellWidth = this.cellWidth;
         format.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         format.shading = isNullOrUndefined(this.shading) ? undefined : this.shading.cloneFormat();
@@ -222,6 +233,7 @@ export class WCellFormat {
                 this.rowSpan = format.rowSpan;
                 this.preferredWidthType = format.preferredWidthType;
                 this.verticalAlignment = format.verticalAlignment;
+                this.verticallyMergedCellsKeepWithNext = format.verticallyMergedCellsKeepWithNext;
             }
             if (!isNullOrUndefined(format.shading)) {
                 this.shading = new WShading(this);

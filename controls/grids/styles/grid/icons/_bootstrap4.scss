@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('grid-bootstrap4-icons') {
 
   .e-icon-check::before {
@@ -261,6 +261,10 @@
     .e-menu-icon {
       &.e-columnchooser::before {
         content: '\e9d2';
+      }
+
+      &.e-find-icon::before {
+        content: '\e724';
       }
 
       &.e-pdfexport::before {

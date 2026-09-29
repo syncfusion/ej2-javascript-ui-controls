@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/fabric-dark' as *;
-@forward 'ej2-base/styles/definition/fabric-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $btn-border: 1px solid !default;

@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bds' as *;
-@forward 'ej2-base/styles/definition/bds';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $fab-offset: 16px !default;
 
 $fab-border-radius: 9999px !default;

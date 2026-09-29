@@ -1,5 +1,19 @@
 # ej2-vue-popups
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/vue/llms.txt](https://ai.syncfusion.com/vue/llms.txt)
+
 The popup components such as dialog and tooltip are used to display information in a popup to users. The dialog component provides modal/non-modal (modeless), built-in buttons, positioning, animation, draggable, and template features and helps to create alert, prompt, and confirmation dialogs easily. The tooltip component is used to display a popup that contains some information or message when you hover, click, focus, or touch an element. The information displayed in the tooltip can include simple text, images, hyperlinks, or custom templates.
 
 ![Popup](https://ej2.syncfusion.com/products/images/popup/readme.png)

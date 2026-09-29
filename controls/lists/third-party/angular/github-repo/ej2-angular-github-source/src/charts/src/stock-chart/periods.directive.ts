@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-stockchart-indicators>e-stockchart-period',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StockChartPeriodDirective extends ComplexBase<StockChartPeriodDirective> {
@@ -30,22 +30,22 @@ export class StockChartPeriodDirective extends ComplexBase<StockChartPeriodDirec
      * Count value for the button.
      * @default 1
      */
-    public interval: any;
+    public declare interval: any;
     /** 
      * IntervalType of button.
      * @default 'Years'
      */
-    public intervalType: any;
+    public declare intervalType: any;
     /** 
      * To select the default period.
      * @default false
      */
-    public selected: any;
+    public declare selected: any;
     /** 
      * Text to be displayed on the button.
      * @default null
      */
-    public text: any;
+    public declare text: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -61,6 +61,7 @@ export class StockChartPeriodDirective extends ComplexBase<StockChartPeriodDirec
  */
 @Directive({
     selector: 'ejs-stockchart>e-stockchart-periods',
+    standalone: true,
     queries: {
         children: new ContentChildren(StockChartPeriodDirective)
     },

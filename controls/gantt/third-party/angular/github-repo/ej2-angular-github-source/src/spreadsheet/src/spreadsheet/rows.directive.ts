@@ -23,7 +23,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-rows>e-row',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childCells: new ContentChild(CellsDirective)
     }
@@ -31,46 +32,46 @@ let outputs: string[] = [];
 export class RowDirective extends ComplexBase<RowDirective> {
     public directivePropList: any;
 	
-    public childCells: any;
+    public declare childCells: any;
     public tags: string[] = ['cells'];
     /** 
      * Specifies cell and its properties for the row.
      * @default []
      */
-    public cells: any;
+    public declare cells: any;
     /** 
      * specifies custom height of the row.
      * @default false
      */
-    public customHeight: any;
+    public declare customHeight: any;
     /** 
      * Specifies format of the row.
      * @default {}
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Specifies height of the row.
      * @default 20
      * @asptype double
      * @aspdefaultvalue 20.0
      */
-    public height: any;
+    public declare height: any;
     /** 
      * To hide/show the row in spreadsheet.
      * @default false
      */
-    public hidden: any;
+    public declare hidden: any;
     /** 
      * Specifies the index to the row. Based on the index, row properties are applied.
      * @default 0
      * @asptype int
      */
-    public index: any;
+    public declare index: any;
     /** 
      * Represents whether a row in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
      * @default false
      */
-    public isReadOnly: any;
+    public declare isReadOnly: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -86,6 +87,7 @@ export class RowDirective extends ComplexBase<RowDirective> {
  */
 @Directive({
     selector: 'e-sheet>e-rows',
+    standalone: true,
     queries: {
         children: new ContentChildren(RowDirective)
     },

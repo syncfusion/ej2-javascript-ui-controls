@@ -20,20 +20,20 @@ export const twoWays: string[] = ['transcript'];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class SpeechToTextComponent extends SpeechToText implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	created: any;
-	onError: any;
-	onStart: any;
-	onStop: any;
-	transcriptChanged: any;
-	public transcriptChange: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare created: any;
+	declare onError: any;
+	declare onStart: any;
+	declare onStop: any;
+	declare transcriptChanged: any;
+	public declare transcriptChange: any;
 
 
 
@@ -65,7 +65,7 @@ export class SpeechToTextComponent extends SpeechToText implements IComponentBas
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

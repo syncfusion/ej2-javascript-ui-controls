@@ -1,0 +1,158 @@
+@use 'variables' as *;
+@include export-module('dropdownbase-layout') {
+  .e-dropdownbase {
+    display: block;
+    height: $ddl-full-height;
+    min-height: $ddl-base-min-height;
+    position: relative;
+    width: $ddl-full-width;
+    @at-root {
+      & .e-list-parent {
+        margin: $ddl-list-zero-padding;
+        padding: $ddl-list-zero-padding;
+      }
+
+      & .e-list-group-item,
+      & .e-fixed-head {
+        cursor: default;
+      }
+
+      & .e-list-item {
+        cursor: pointer;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: $ddl-full-width;
+      }
+
+      & .e-list-item .e-list-icon {
+        font-size: $ddl-nrml-list-item-icon-font-size;
+        vertical-align: middle;
+      }
+
+      & .e-fixed-head {
+        position: absolute;
+        top: $ddl-zero-spacing;
+      }
+    }
+  }
+
+  .e-dropdownbase.e-content {
+    overflow: auto;
+    position: relative;
+    @if $skin-name == 'tailwind3' {
+      border-radius: $dropdownbase-content-border-radius;
+    }
+  }
+
+  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata,
+  #{&}.e-popup.e-mention .e-dropdownbase.e-nodata {
+    color: $ddl-nodata-font-color;
+    cursor: default;
+    font-family: $ddl-list-font-family;
+    font-size: $ddl-list-nodata-font-size;
+    padding: $ddl-list-nodata-padding;
+    text-align: center;
+  }
+
+  .e-mention.e-popup {
+    background: $mention-popup-bg-color;
+    box-shadow: 0 2px 3px 1px $mention-list-box-shadow-color;
+    margin-top: $mention-popup-margin-top;
+    position: absolute;
+    @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' or $skin-name == 'bootstrap5.3' {
+      border: $mention-popup-border;
+      border-radius: $mention-popup-border-radius;
+      padding: $mention-popup-padding;
+    }
+    @else {
+      border: 0;
+    }
+    @if $skin-name == 'Material3' {
+      border-radius: $mention-popup-border-radius;
+      padding: $mention-popup-padding;
+    }
+  }
+
+  .e-mention.e-popup .e-dropdownbase {
+    min-height: $ddl-list-line-height;
+  }
+
+  .e-mention .e-dropdownbase .e-list-item .e-highlight {
+    display: inline;
+    font-weight: bold;
+    vertical-align: baseline;
+  }
+
+  .e-mention .e-mention-chip,
+  .e-mention .e-mention-chip:hover {
+    @if $skin-name != 'Material3' {
+      background: $mention-chip-bg-color;
+    }
+    border-radius: $mention-chip-border-radius;
+    border: $mention-chip-border;
+    color: $mention-active-font-color;
+    cursor: default;
+    @if $skin-name == 'tailwind3' {
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  .e-mention.e-editable-element {
+    border: $ddl-two-width solid $ddl-list-border-color;
+    height: $ddl-auto-height;
+    min-height: $ddl-mention-editable-min-height;
+    width: $ddl-full-width;
+  }
+
+  .e-form-mirror-div {
+    white-space: pre-wrap;
+  }
+
+  .e-small.e-ddl .e-dropdownbase.e-nodata,
+  .e-small .e-ddl .e-dropdownbase.e-nodata {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
+      font-size: $ddl-small-list-nodata-font-size;
+    }
+  }
+
+  .e-rtl .e-dropdownbase.e-dd-group .e-list-item {
+    padding-right: $ddl-group-list-padding-left;
+  }
+
+  .e-dropdownbase.e-dd-group .e-list-item {
+    padding-left: $ddl-group-list-padding-left;
+    text-indent: $ddl-zero-spacing;
+  }
+
+  .e-small .e-dropdownbase.e-dd-group .e-list-item {
+    padding-left: $ddl-group-list-small-padding-left;
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+      text-indent: $ddl-zero-spacing;
+    }
+  }
+
+  .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
+    text-indent: $ddl-group-list-item-text-intent;
+  }
+
+  .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
+    cursor: pointer;
+    font-weight: normal;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: $ddl-full-width;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' {
+      font-weight: $popup-multi-select-font-size;
+    }
+  }
+
+  .e-rtl.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-item {
+    padding-right: $ddl-group-list-padding-left;
+  }
+}

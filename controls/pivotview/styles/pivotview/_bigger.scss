@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin button-wrap-styles {
   /* stylelint-disable */
   font-size: $pivotgrid-bigger-button-icon-size !important;
@@ -111,6 +111,10 @@
             }
           }
         }
+      }
+
+      .e-append-checkbox-container .e-append-checkbox {
+        height: $pivotgrid-add-filter-selection-bigger-height;
       }
 
       &.e-node-limit.e-excel-filter .e-excelfilter .e-member-editor-container-outer-div {

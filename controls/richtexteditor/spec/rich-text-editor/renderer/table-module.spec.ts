@@ -14108,7 +14108,266 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
         });
     });
+    describe(' EJ2-27026  -  Issue on pressing the Tab key with Table module', () => {
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <table>
+                <tbody>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="defaultRTE">
+                            </div>
+    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                ` });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+        })
+        afterAll(() => {
+            destroy(rteObj);
+            detach(element);
+        });
 
+        it(' press the tab key from edit area ', (done) => {
+            rteObj.focusIn();
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(document.activeElement!== rteObj.inputElement).toBe(false);
+                done();
+            }, 100)
+        });
+    });
+    describe('BLAZ-5932 - Cannot set font-style after inserting a table', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 13, which: 13, shiftKey: false
+        };
+        it(' Empty container with table insert after font style apply check ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                }
+            });
+            rteEle = rteObj.element;
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj.tableModule as any).tableObj.tableCellSelect(event);
+            (rteObj.tableModule as any).tableObj.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBe(null);
+            expect(table.querySelectorAll('tr').length === 2).toBe(true);
+            expect(table.querySelectorAll('td').length === 8).toBe(true);
+            let brTag: Element = document.createElement('br');
+            rteObj.contentModule.getEditPanel().appendChild(brTag);
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.contentModule.getEditPanel(), 1);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 1).toBe(true);
+        });
+        it(' Text container with table insert after font style apply check ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p>Sample content</p>'
+            });
+            rteEle = rteObj.element;
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj.tableModule as any).tableObj.tableCellSelect(event);
+            (rteObj.tableModule as any).tableObj.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBe(null);
+            expect(table.querySelectorAll('tr').length === 2).toBe(true);
+            expect(table.querySelectorAll('td').length === 8).toBe(true);
+            let brTag: Element = document.createElement('br');
+            rteObj.contentModule.getEditPanel().insertBefore(brTag, rteObj.contentModule.getEditPanel().querySelector('p'));
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.contentModule.getEditPanel(), 1);
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyUpEvent);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 2).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().childNodes[1].textContent === '').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[0].textContent === '').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[1].textContent === 'Sample content').toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 3 Table Element' , () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class=""><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>';
+        beforeAll( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+        })
+        afterAll( () => {
+            destroy( rteObject );
+        })
+        it('should add span element with font size to around the span node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('span[style="text-decoration: underline;"],span[style="text-decoration: line-through;"]');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    });
+    describe('854639 - Need to remove the max row count for the table in the Rich Text Editor.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('table creation of row more than 50 ', (done: DoneFn) => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            rteEle.querySelector('.e-table-row').setAttribute('aria-valuenow','51');
+            rteEle.querySelector('.e-table-row').setAttribute('value','51');
+            rteEle.querySelector('.e-table-row').setAttribute('aria-valuenow', '51');
+            rteEle.querySelector('.e-table-row').setAttribute('value', '51');
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).value = '51';
+            rteEle.querySelectorAll('.e-numeric-hidden')[1].setAttribute('value', '51');
+            (rteEle.querySelectorAll('.e-numeric-hidden')[1] as HTMLInputElement).value = '51';
+            rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                expect(table.querySelectorAll('tr').length === 51).toBe(true);
+                done();
+            }, 200);
+        }, 550);
+    });
+
+    describe("855947 - Table creation popup doesn't get closed when clicking Esc key in RichTextEditor", () => {
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="MsoNormal"><b><span lang="EN-IN"><a href="https://en.wikipedia.org/wiki/Forest_ecology"><i><span class="targetSpan"style="font-size: 10.5pt; line-height: 107%; font-family: Arial, sans-serif; color: rgb(51, 102, 204); background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;">Forest ecology</span></i></a><o:p></o:p></span></b></p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>  `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: innerHTML,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the create table popup open', (done: DoneFn) => {
+            (document.querySelector('[title="Create Table (Ctrl+Shift+E)"]') as HTMLElement).click();
+            setTimeout(() => {
+                const insertButton: HTMLButtonElement = rteObj.element.querySelector('.e-rte-table-popup button');
+                const escapeKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ESCAPE_KEY_EVENT_INIT);
+                const escapeKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ESCAPE_KEY_EVENT_INIT);
+                insertButton.dispatchEvent(escapeKeyDownEvent);
+                insertButton.dispatchEvent(escapeKeyUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.element.querySelector('.e-rte-table-popup')).toBe(null);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe("881308: Script error throws when inserting table into the RichTextEditor", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: '<p>test<a class="e-rte-anchor" href="http://link" title="http://link" target="_blank" aria-label="Open in new window">link</a></p><p>test</p><p><br></p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' insert table ', (done) => {
+            rteObj.focusIn();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let node: Element[] = (rteObj as any).inputElement.querySelectorAll("p");
+            setCursorPoint(node[2], 0);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(function () {
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                    target.dispatchEvent(clickEvent);
+                    setTimeout(() => {
+                        let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                        expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                        expect(table.querySelectorAll('td').length === 9).toBe(true);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+    });
     describe('Bug 1029229: Backspace deletes entire editor content when table cell is selected using Ctrl+A', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -14139,6 +14398,299 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 setTimeout(() => {
                     expect(rteObj.inputElement.querySelector('table') !== null).toBe(true);
                     done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('Bug 940154: Pressing backspace twice inside a table removes the entire table in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><ul><li>Hi<br></li><li class="startNode">Hello<br></li><li class="endNode">Bye</li></ul></td><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>',
+            });
+        });
+        it('Should show the Quick toolbar in View port', (done) => {
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 1, 3);
+            const target: HTMLElement = rteObj.inputElement.firstChild as HTMLElement;
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            target.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('table')).not.toBe(null);
+                done();
+            }, 100);
+        });
+        it(' pressing backspace twice in list inside a table , should not remove the entire table', (done: DoneFn) => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode').firstChild as Element;
+            const endNode: Element = rteObj.inputElement.querySelector('.endNode').firstChild as Element;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, startNode.textContent.length)
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('table')).not.toBe(null);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 980247: Script error throws when hovering over the Table in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<table cellspacing="0" cellpadding="0"><tbody><tr><td colspan="1" width="5%" align="right" valign="top"> B </td><td colspan="11" width="95%"> B </td></tr><tr><td colspan="1" width="5%" align="right" valign="top"> C </td><td colspan="11" width="95%"> C </td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should create column resize icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const colResizeIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize');
+                expect(colResizeIcons.length).toBeGreaterThan(0);
+                // Check icon attributes
+                const resizeIcon = rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+                expect(resizeIcon.getAttribute('data-col')).toBe('12');
+                done();
+            }, 100);
+        });
+    });
+    describe('Bug 995639: Script error throws when using RichTextEditor inside a Table', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            const tableHTML = `
+        <table>
+        <tr>
+            <td>
+            <div id="defaultRTE"></div>
+            </td>
+        </tr>
+        </table>
+    `;
+            const container = document.createElement('div');
+            container.innerHTML = tableHTML;
+            document.body.appendChild(container);
+            rteObj = new RichTextEditor({});
+            rteObj.appendTo("#defaultRTE");
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            const container = document.querySelector('table').parentElement;
+            if (container) {
+                container.remove();
+            }
+        });
+        it('rte should render inside the table, hover over the rte and no script error should thrown', (done: Function) => {
+            rteObj.focusIn();
+            // Check script error when calling resizeHelper method
+            expect(() => {
+                (rteObj.tableModule as any).tableObj.resizeHelper({
+                    target: rteObj.inputElement,
+                    preventDefault: function () { }
+                });
+            }).not.toThrow();
+            done();
+        });
+    });
+    describe('888656 - Script error throws when we insert table into the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('table using quick toolbar ', (done: DoneFn) => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe('968252 - Table is inserted along with placeholder text in Rich Text Editor when not focused', () => {
+        let rteObj: RichTextEditor;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                height: 400,
+                width: 200,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Check if the table is inserted properly after undoing the already inserted table', () => {
+            const createTableBtn = rteObj.element.querySelector('.e-create-table') as HTMLElement;
+            expect(createTableBtn).not.toBeNull();
+            createTableBtn.click();
+            const insertTableButton = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton.click();
+            const insertButton = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton.click();
+            const insertedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+            expect(insertedTable).not.toBeNull();
+            expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+            (<any>rteObj).formatter.editorManager.undoRedoManager.keyUp({ event: keyboardEventArgs });
+            (<any>rteObj).formatter.editorManager.execCommand("Actions", 'Undo', null);
+            expect(rteObj.element.querySelector('.e-rte-table')).toBeNull();
+            const createTableBtn1 = rteObj.element.querySelector('.e-create-table') as HTMLElement;
+            expect(createTableBtn1).not.toBeNull();
+            createTableBtn.click();
+            const insertTableButton1 = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton1.click();
+            const insertButton1 = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton1.click();
+            const insertedTable1 = rteObj.contentModule.getEditPanel().querySelector('table');
+            expect(insertedTable1).not.toBeNull();
+            expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+        });
+    });
+
+    describe("Bug 1049938: Vertical Align selected state is not maintained in Rich Text Editor table quick toolbar", function () {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableCellVerticalAlign', 'TableCell']
+                },
+                value: `<p><b>Description:</b></p>
+                        <p>The Rich Text Editor (RTE) control is easy to render on the client side.</p>
+                        <table class="e-rte-table" style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td class="e-cell-select">Cell 1</td>
+                                    <td>Cell 2</td>
+                                    <td>Cell 3</td>
+                                </tr>
+                                <tr>
+                                    <td>Cell 4</td>
+                                    <td>Cell 5</td>
+                                    <td>Cell 6</td>
+                                </tr>
+                            </tbody>
+                        </table>`
+            });
+            rteEle = rteObj.element as HTMLElement;
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should mark the Top, Middle and Bottom items active when the respective vertical alignment is applied', (done: DoneFn) => {
+            const firstCell: HTMLTableCellElement = rteEle.querySelector('.e-rte-table td') as HTMLTableCellElement;
+            // Select the first table cell to open the quick toolbar.
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            setCursorPoint(firstCell.firstChild, 0);
+            firstCell.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                // Apply Top vertical alignment via the quick toolbar dropdown.
+                let tablePop: HTMLElement = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                let vAlignBtn: HTMLElement = tablePop.querySelector('#' + controlId + '_quick_TableCellVerticalAlign');
+                vAlignBtn.click();
+                let dropdown: HTMLElement = document.querySelector('#' + controlId + '_quick_TableCellVerticalAlign-popup');
+                (dropdown.querySelectorAll('.e-item')[0] as HTMLElement).click(); // Index 0 = Align Top
+                // Re-select the same cell to reopen the quick toolbar.
+                setTimeout(() => {
+                    rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                    setCursorPoint(firstCell.firstChild, 0);
+                    firstCell.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        // Top item should be active, then apply Middle vertical alignment.
+                        tablePop = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                        vAlignBtn = tablePop.querySelector('#' + controlId + '_quick_TableCellVerticalAlign');
+                        vAlignBtn.click();
+                        dropdown = document.querySelector('#' + controlId + '_quick_TableCellVerticalAlign-popup');
+                        expect((dropdown.querySelectorAll('.e-item')[0] as HTMLElement).classList.contains('e-active')).toBe(true);
+                        (dropdown.querySelectorAll('.e-item')[1] as HTMLElement).click(); // Index 1 = Align Middle
+                        // Re-select the same cell to reopen the quick toolbar.
+                        setTimeout(() => {
+                            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                            setCursorPoint(firstCell.firstChild, 0);
+                            firstCell.dispatchEvent(MOUSEUP_EVENT);
+                            setTimeout(() => {
+                                // Middle item should be active, then apply Bottom vertical alignment.
+                                tablePop = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                                vAlignBtn = tablePop.querySelector('#' + controlId + '_quick_TableCellVerticalAlign');
+                                vAlignBtn.click();
+                                dropdown = document.querySelector('#' + controlId + '_quick_TableCellVerticalAlign-popup');
+                                expect((dropdown.querySelectorAll('.e-item')[1] as HTMLElement).classList.contains('e-active')).toBe(true);
+                                (dropdown.querySelectorAll('.e-item')[2] as HTMLElement).click(); // Index 2 = Align Bottom
+                                // Re-select the same cell to reopen the quick toolbar.
+                                setTimeout(() => {
+                                    rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                                    setCursorPoint(firstCell.firstChild, 0);
+                                    firstCell.dispatchEvent(MOUSEUP_EVENT);
+                                    setTimeout(() => {
+                                        // Bottom item should be active.
+                                        tablePop = document.querySelectorAll('.e-rte-quick-popup')[0] as HTMLElement;
+                                        vAlignBtn = tablePop.querySelector('#' + controlId + '_quick_TableCellVerticalAlign');
+                                        vAlignBtn.click();
+                                        dropdown = document.querySelector('#' + controlId + '_quick_TableCellVerticalAlign-popup');
+                                        expect((dropdown.querySelectorAll('.e-item')[2] as HTMLElement).classList.contains('e-active')).toBe(true);
+                                        done();
+                                    }, 100);
+                                }, 100);
+                            }, 100);
+                        }, 100);
+                    }, 100);
                 }, 100);
             }, 100);
         });

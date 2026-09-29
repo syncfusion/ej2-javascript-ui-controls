@@ -20,7 +20,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ribbon-contextual-tab',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childTabs: new ContentChild(RibbonTabsDirective)
     }
@@ -28,24 +29,24 @@ let outputs: string[] = [];
 export class RibbonContextualTabDirective extends ComplexBase<RibbonContextualTabDirective> {
     public directivePropList: any;
 	
-    public childTabs: any;
+    public declare childTabs: any;
     public tags: string[] = ['tabs'];
     /** 
      * Specifies whether the contextual tab is selected.
      * @default false
      */
-    public isSelected: any;
+    public declare isSelected: any;
     /** 
      * Defines the tab groups to be rendered in ribbon.
      * @default []
      * @asptype List<RibbonTab>
      */
-    public tabs: any;
+    public declare tabs: any;
     /** 
      * Specifies whether the contextual tab is visible.
      * @default false
      */
-    public visible: any;
+    public declare visible: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -61,6 +62,7 @@ export class RibbonContextualTabDirective extends ComplexBase<RibbonContextualTa
  */
 @Directive({
     selector: 'e-ribbon-contextual-tabs',
+    standalone: true,
     queries: {
         children: new ContentChildren(RibbonContextualTabDirective)
     },

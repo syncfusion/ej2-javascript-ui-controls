@@ -2441,7 +2441,77 @@ describe('Link Module', () => {
             }, 200);
         });
     });
-
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 4 Link Element' , () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string = '<p><span><a classname="e-rte-anchor" href="https://syncfusion.atlassian.net/browse/EJ2-65567" title="https://syncfusion.atlassian.net/browse/EJ2-65567" target="_blank"><span style="text-decoration: underline;">https://syncfusion.atlassian.net/browse/EJ2-65567</span> </a></span><br></p>';
+        beforeAll( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+        })
+        afterAll( () => {
+            destroy( rteObject );
+        })
+        it( 'should add span element with font size to around the span node', ( done: Function ) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('a');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem, 1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            expect((range.startContainer.childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    });
+    describe('854718 - Need to add the aria label attribute to the link in the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '' });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('link with the aria-label attribute', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Rich Text Editor';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
+            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            event = { preventDefault: function () { } };
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            selectParent = new NodeSelection().getParentNodeCollection(range);
+            selectNode = new NodeSelection().getNodeCollection(range);
+            evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
+                selectParent: selectParent
+            };
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
+            (<any>rteObj).linkModule.editLink(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Rich Text Editor';        
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector("a.e-rte-anchor").hasAttribute("aria-label")).toBe(true);
+        });
+    });
     describe('Bug 1026149: Hyperlink Text Duplicates When Pasted from Word into Angular RichTextEditor', () => {
         let rteObj: any;
         let initialInner: string = `<p style='margin:0in;font-size:12.0pt;font-family:"Aptos",sans-serif;'><b><i><span style='font-size:11.0pt;font-family:"Calibri",sans-serif;'><a href="https://www.syncfusion.com/feedback/74036/richtexteditor-allows-new-line-creation-even-after-reaching-maxlength" title="" target="_blank" aria-label="Open in new window"><span style="color: blue; background: transparent; text-decoration: underline;">APR 135</span><span style="color: blue; background: transparent; text-decoration: underline;"><span style="font-weight:normal;font-style:normal;">-</span></span><span style="color: blue; background: transparent; text-decoration: underline;">Lobbying and Related Activities (U.S.)</span></a></span></i></b></p>`;
@@ -2491,6 +2561,95 @@ describe('Link Module', () => {
                     }, 100);
                 }, 100);
             }, 100);
+        });
+    });
+    describe('Bug 1032432: Insert-Link Dialog Disappears When Scrolling Using Scrollbar in Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Link dialog should remain in DOM when scrollbar is clicked and scrolled', (done: Function) => {
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                const dialogElement = document.querySelector('.e-rte-link-dialog') as HTMLElement;
+                expect(dialogElement).not.toBeNull();
+                expect(dialogElement.style.display).not.toBe('none');
+                const scrollbarClickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    clientX: window.innerWidth - 10, // Click near the right edge (scrollbar area)
+                    clientY: 100
+                });
+                const scrollEvent = new Event('scroll', {
+                    bubbles: true
+                });
+                document.dispatchEvent(scrollbarClickEvent);
+                window.dispatchEvent(scrollEvent);
+                setTimeout(() => {
+                    const dialogElementAfterScroll = document.querySelector('.e-rte-link-dialog') as HTMLElement;
+                    expect(dialogElementAfterScroll).not.toBeNull();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('966050 - Modified aria-label value gets reverted after reloading in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        const initialValue = `<p><a class="e-rte-anchor" href="https://ftngd" title="https://ftngd" target="_blank" aria-label="Open in new window">Link</a></p>`;
+        const modifiedLabel = 'Modified';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: initialValue
+            });
+        });
+        it('should change aria-label and persist after reload', (done: DoneFn) => {
+            const linkElement = rteObj.element.querySelector('a.e-rte-anchor');
+            expect(linkElement.getAttribute('aria-label')).toBe('Open in new window');
+            linkElement.setAttribute('aria-label', modifiedLabel);
+            localStorage.setItem('editorValue', rteObj.getHtml());
+            const storedValue = localStorage.getItem('editorValue');
+            rteObj.value = storedValue;
+            rteObj.dataBind();
+            rteObj.refresh();
+            const refreshedLinkElement = rteObj.element.querySelector('a.e-rte-anchor');
+            expect(refreshedLinkElement.getAttribute('aria-label')).toBe(modifiedLabel);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            localStorage.removeItem('editorValue');
+        });
+    });
+    describe('912385 - Prevent inserting link when input contains only empty space', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Checking for insert link when input contains only empty space', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = ' ';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            target.click();
+            expect(rteEle.innerText === 'syncfusion\n\nInsert Link\nWeb address\nDisplay text\nTitle\nOpen link in new window\nInsertCancel').toBe(true);    
         });
     });
 });

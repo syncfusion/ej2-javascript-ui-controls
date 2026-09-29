@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, removeClass, addClass, extend, L10n, EventHandler } from '@syncfusion/ej2-base';
-import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, classList, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DetailExpandCollapseArgs, DetailTemplateDetachArgs, IGrid, InfiniteScrollArgs, NotifyArgs, EJ2Intance } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren, isComplexField, getObject } from '../base/util';
@@ -38,6 +38,7 @@ export class DetailRow {
      * @hidden
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
+        initializeTelemetryFeature('DetailRow', 'DataGrid');
         this.parent = parent;
         this.serviceLocator = locator;
         this.focus = locator.getService<FocusStrategy>('focus');

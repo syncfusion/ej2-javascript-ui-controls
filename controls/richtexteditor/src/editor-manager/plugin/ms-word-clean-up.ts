@@ -243,10 +243,11 @@ export class MsWordPaste {
     private imageConversion(clipboardDataElement: HTMLElement, rtfData: string): void {
         this.checkVShape(clipboardDataElement);
         // First pass: Mark unsupported images and remove v:shapes attribute
-        let imageElements: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('img');
-        this.markUnsupportedImages(imageElements);
+        const vShapedImageElements: HTMLImageElement[] =
+            Array.from(clipboardDataElement.querySelectorAll('img')).filter((img: HTMLElement) => img.hasAttribute('v:shapes'));
+        this.markUnsupportedImages(vShapedImageElements);
         // Second pass: Process supported images
-        imageElements = clipboardDataElement.querySelectorAll('img');
+        const imageElements: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('img');
         if (imageElements.length === 0) {
             return;
         }
@@ -265,37 +266,11 @@ export class MsWordPaste {
     }
 
     /* Marks unsupported images and removes v:shapes attribute */
-    private markUnsupportedImages(imageElements: NodeListOf<HTMLImageElement>): void {
+    private markUnsupportedImages(imageElements: HTMLImageElement[]): void {
         for (let i: number = 0; i < imageElements.length; i++) {
-            const currentImage: HTMLImageElement = imageElements[i as number];
-            const shapesAttribute: string = currentImage.getAttribute('v:shapes');
-            if (!isNOU(shapesAttribute)) {
-                const isUnsupported: boolean = this.isUnsupportedImageShape(shapesAttribute);
-                if (isUnsupported) {
-                    currentImage.classList.add('e-rte-image-unsupported');
-                }
-                currentImage.removeAttribute('v:shapes');
-            }
+            // const currentImage: HTMLImageElement = imageElements[i as number];
+            (imageElements[i as number] as HTMLImageElement).removeAttribute('v:shapes');
         }
-    }
-
-    /* Determines if an image shape is unsupported */
-    private isUnsupportedImageShape(shapesValue: string): boolean {
-        const supportedShapes: string[] = [
-            'Picture', 'Chart', '圖片', '图片', 'Grafik', 'image', 'Graphic',
-            '_x0000_s', '_x0000_i', 'img1', 'Immagine'
-        ];
-        for (let i: number = 0; i < supportedShapes.length; i++) {
-            const shape: string = supportedShapes[i as number];
-            if (shape === 'image') {
-                if (shapesValue.toLowerCase().indexOf(shape) >= 0) {
-                    return false;
-                }
-            } else if (shapesValue.indexOf(shape) >= 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /* Extracts image information from image elements */
@@ -354,7 +329,15 @@ export class MsWordPaste {
         for (let i: number = 0; i < imageElements.length; i++) {
             const currentImage: HTMLImageElement = imageElements[i as number];
             const currentSource: string = imageSources[i as number];
-            if (currentSource.match(linkRegex)) {
+            if (currentSource.toLowerCase().startsWith('file:')) {
+                const currentBase64: { [key: string]: string | boolean } = base64Sources[i as number];
+                if (!isNOU(currentBase64) && !isNOU(currentBase64.base64Data)) {
+                    currentImage.setAttribute('src', currentBase64.base64Data as string);
+                } else {
+                    currentImage.removeAttribute('src');
+                    currentImage.classList.add('e-rte-image-unsupported');
+                }
+            } else if (currentSource.match(linkRegex)) {
                 currentImage.setAttribute('src', currentSource);
             } else {
                 const currentBase64: { [key: string]: string | boolean } = base64Sources[i as number];
@@ -1496,7 +1479,7 @@ export class MsWordPaste {
         listElement.appendChild(listItem);
         rootElement.appendChild(listElement);
         listElement.setAttribute('level', item.nestedLevel.toString());
-        if (item.class !== 'msolistparagraph') {
+        if (item.class.toLowerCase().includes('msolistparagraph')) {
             listElement.style.marginLeft = item.styleMarginLeft;
         } else {
             addClass([listElement], 'marginLeftIgnore');
@@ -1785,13 +1768,17 @@ export class MsWordPaste {
 
     /* Cleans up list order element */
     private cleanupListOrder(firstChild: Element): Element {
-        const listOrderCleanup: Element = firstChild.querySelector('span[style*="mso-list"]');
+        const listOrderCleanup: Element = firstChild.matches('span[style*="mso-list"]') ?
+            firstChild : firstChild.querySelector('span[style*="mso-list"]');
         if (listOrderCleanup) {
             let style: string = listOrderCleanup.getAttribute('style');
             if (style) {
                 style = style.replace(/\s*:\s*/g, ':');
                 listOrderCleanup.setAttribute('style', style);
             }
+        }
+        if (!isNOU(listOrderCleanup) && listOrderCleanup.getAttribute('style') === 'mso-list:Ignore') {
+            return listOrderCleanup;
         }
         return firstChild.querySelector('span[style="mso-list:Ignore"]');
     }

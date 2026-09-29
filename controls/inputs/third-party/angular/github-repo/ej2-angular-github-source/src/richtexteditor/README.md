@@ -1,12 +1,12 @@
 # Angular Rich Text Editor | Angular Markdown Editor
 
-The [Angular RichTextEditor](https://www.syncfusion.com/angular-ui-components/angular-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The component provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
+The [Angular RichTextEditor](https://www.syncfusion.com/rich-text-editor-sdk/angular-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The component provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
 
 <div align="center">
     <h4>
-        <a href="https://ej2.syncfusion.com/angular/documentation/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm">📖Getting started</a> &#x2022;
+        <a href="https://help.syncfusion.com/rich-text-editor-sdk/angular/rich-text-editor/getting-started">📖Getting started</a> &#x2022;
         <a href="https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm#/tailwind3/rich-text-editor/tools">🚀Online demos</a> &#x2022; 
-        <a href="https://www.syncfusion.com/angular-components/angular-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm">🌐Learn more</a>
+        <a href="https://www.syncfusion.com/rich-text-editor-sdk/angular-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm">🌐Learn more</a>
     </h4>
 </div>
 
@@ -151,10 +151,10 @@ Rich Text Editor component is also offered in following list of frameworks.
 
 ## 📚 Resources
 
-* [Documentation](https://ej2.syncfusion.com/angular/documentation/rich-text-editor/getting-started)
+* [Documentation](https://help.syncfusion.com/rich-text-editor-sdk/angular/rich-text-editor/getting-started)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/angular?utm_medium=listing&utm_source=github)
-* [Road Map](https://www.syncfusion.com/products/roadmap/angular)
+* [What's New](https://www.syncfusion.com/products/whatsnew/rich-text-editor-sdk)
+* [Road Map](https://www.syncfusion.com/products/roadmap/rich-text-editor-sdk)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=angular&type=all)
 
 ## 🤝 Support
@@ -162,7 +162,7 @@ Rich Text Editor component is also offered in following list of frameworks.
 Product support is available through the following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/angular-js2?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm)
+* [Community forum](https://www.syncfusion.com/forums/rich-text-editor-sdk)
 * [GitHub issues](https://github.com/syncfusion/ej2-angular-ui-components/issues/new)
 * [Request feature or report bug](https://www.syncfusion.com/feedback/angular?utm_source=npm&utm_medium=listing&utm_campaign=angular-rich-text-editor-npm)
 * Live chat

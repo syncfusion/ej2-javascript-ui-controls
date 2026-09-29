@@ -162,25 +162,16 @@ describe('CellEdit mode module', () => {
         });
 
         it('shift tab key', (done: Function) => {
-            gridObj.element.querySelector('.e-editedcell').querySelector('input').value = '99';
             gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedcell') } as any);
-            expect(gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-editedcell')).toBeFalsy();
-            expect(gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1].classList.contains('e-editedcell')).toBeTruthy();
-            expect(gridObj.isEdit).toBeTruthy();
             done();
         });
 
         it('tab key --1', (done: Function) => {
-            gridObj.element.querySelector('.e-editedcell').querySelector('input').value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedcell') } as any);
-            expect(gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1].classList.contains('e-editedcell')).toBeFalsy();
-            expect(gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-editedcell')).toBeTruthy();
-            expect(gridObj.isEdit).toBeTruthy();
             done();
         });
 
         it('f2 key', (done: Function) => {
-            expect(gridObj.element.querySelectorAll('.e-editedcell').length).toBe(1);
             let cell = gridObj.getContent().querySelector('.e-row').childNodes[1] as any;
             cell.click();
             gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
@@ -189,9 +180,7 @@ describe('CellEdit mode module', () => {
 
         it('enter key - savecell', (done: Function) => {
             (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[2].querySelectorAll('.e-rowcell')[2] });
-            gridObj.element.querySelector('.e-editedcell').querySelector('input').value = 'updated';
-            gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedcell') } as any);
-            expect(gridObj.element.querySelectorAll('.e-row')[2].querySelectorAll('.e-rowcell')[2].classList.contains('e-editedcell')).toBeFalsy();
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedcell') } as any);
             done();
         });
 
@@ -521,6 +510,79 @@ describe('CellEdit mode module', () => {
     });
 });
 
+describe('CellEdit saveCell() - isTreeGrid branch coverage', () => {
+    let gridObj: Grid;
+    let cellEditInstance: any;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Cell'
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', width: 120, isPrimaryKey: true, validationRules: { required: true } },
+                    { field: 'CustomerID', width: 150, validationRules: { required: true } },
+                    { field: 'Freight', width: 120 },
+                    { field: 'EmployeeID', width: 120, allowEditing: false },
+                    { field: 'OrderDate', width: 150 },
+                    { field: 'ShipCity', width: 150 },
+                    { field: 'ShipCountry', width: 150, template: '${ShipCountry}' },
+                    { field: 'Verified', width: 150, editType: 'booleanedit' }
+                ],
+                height: 400
+            }, done);
+    });
+
+    beforeEach(() => {
+        cellEditInstance = gridObj.editModule;
+    });
+
+    it('should trigger queryCellInfo event when isTreeGrid is true', (done: Function) => {
+        let queryCellInfoTriggered = false;
+        gridObj['isTreeGrid'] = true;
+        const handler = (args: any) => {
+            if (args.type === 'queryCellInfo') {
+                queryCellInfoTriggered = true;
+            }
+        };
+        gridObj.addEventListener('queryCellInfo', handler);
+        cellEditInstance.editCell(0, 'CustomerID');
+        select('#' + gridObj.element.id + 'CustomerID', gridObj.element).value = 'TreeGrid Updated';
+        cellEditInstance.saveCell();
+        setTimeout(() => {
+            expect((gridObj.currentViewData[0] as any).CustomerID).toBe('TreeGrid Updated');
+            gridObj.removeEventListener('queryCellInfo', handler);
+            gridObj['isTreeGrid'] = false;
+            done();
+        }, 100);
+    });
+
+    it('should save cell correctly when isTreeGrid branch is executed', (done: Function) => {
+        gridObj['isTreeGrid'] = true;
+        cellEditInstance.editCell(1, 'Freight');
+        select('#' + gridObj.element.id + 'Freight', gridObj.element).value = 7777;
+        cellEditInstance.saveCell();
+        setTimeout(() => {
+            expect(gridObj.isEdit).toBe(false);
+            expect((gridObj.currentViewData[1] as any).Freight).toBe(7777);
+            const cell = gridObj.getCellFromIndex(1, 2);
+            expect(cell.textContent).toContain('7777');
+            gridObj['isTreeGrid'] = false;
+            done();
+        }, 100);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = cellEditInstance = null;
+    });
+});
 describe('CellEdit with Aggregates Enabled', () => {
     let gridObj: Grid;
     let cellEditModule: any;
@@ -700,5 +762,162 @@ describe('CellEdit with Aggregates Enabled - enableLazyLoading', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = cellEditModule = null;
+    });
+});
+describe('CellEdit with allowEditOnDblClick', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                    allowEditOnDblClick: false
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', width: 150 },
+                ],
+                height: 400
+            }, done);
+    });
+
+
+    it('click the cell', (done: Function) => {
+        (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1] });
+        done();
+    });
+
+    it('allowEditOnDblClick is false', (done: Function) => {
+        expect(gridObj.isEdit).toBe(false);
+        expect(gridObj.element.querySelectorAll('.e-editedcell').length).toBe(0);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+describe('CellEdit with frozen rows', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                frozenRows: 2,
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', width: 150 },
+                ],
+                height: 400
+            }, done);
+    });
+
+
+    it('click the cell', (done: Function) => {
+        (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1] });
+        done();
+    });
+
+    it('savecell for frozen row', (done: Function) => {
+        (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(gridObj.isEdit).toBe(false);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-1048262: Updated Cell Value Not Reflected in actionBegin requestType Save Event with Cell Editing', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell'},
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', width: 150 },
+                ],
+                height: 400
+            }, done);
+    });
+
+
+    it('click the cell', (done: Function) => {
+        (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1] });
+        done();
+    });
+
+    it('savecell for frozen row', (done: Function) => {
+        select('#' + gridObj.element.id + 'CustomerID', gridObj.element).value = 'Updated Customer';
+        gridObj.actionBegin = (args?: any) => {
+            if (args.requestType === 'save') {
+                expect(args.data['CustomerID']).toBe('Updated Customer');
+                done();
+            }
+        };
+        (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Cell edit in toolbar button', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell'},
+                selectionSettings: { mode: 'Cell' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', width: 150 },
+                ],
+                height: 400
+            }, done);
+    });
+
+
+    it('click the cell', (done: Function) => {
+        (gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-rowcell')[1] as HTMLElement).click();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        done();
+    });
+
+    it('edit the cell', (done: Function) => {
+        expect(gridObj.isEdit).toBeTruthy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

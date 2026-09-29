@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin chat-display-alignment($chat-display, $chat-align-items) {
   display: $chat-display;
   align-items: $chat-align-items;
@@ -59,6 +59,12 @@
       gap: $chat-header-gap;
       align-items: center;
     }
+    .e-message-wrapper .e-chat-message-toolbar {
+      position: absolute;
+    }
+    .e-message-wrapper > .e-chat-message-toolbar {
+      position: fixed;
+    }
     .e-message-wrapper {
       gap: $message-wrapper-gap;
       width: 100%;
@@ -75,20 +81,9 @@
       &::-webkit-scrollbar-thumb {
         border-radius: $scrollbar-thumb-border-radius;
       }
-    }
-    .e-message-group {
-      max-width: 75%;
-      margin: $message-group-margin;
-    }
-    .e-message-item {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      margin-bottom: $message-item-bottom;
       .e-chat-message-toolbar {
         border-radius: $chat-message-toolbar-radius;
         display: none;
-        position: absolute;
         height: $chat-message-toolbar-height !important; /* stylelint-disable-line declaration-no-important */
         min-height: 32px;
         z-index: 10;
@@ -113,6 +108,16 @@
           }
         }
       }
+    }
+    .e-message-group {
+      max-width: 75%;
+      margin: $message-group-margin;
+    }
+    .e-message-item {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin-bottom: $message-item-bottom;
       .e-forwarded-indicator {
         font-size: $forwarded-indicator-font-size;
         display: flex;
@@ -227,10 +232,12 @@
           &::after {
             right: 50%;
           }
-          &.e-footer-focused::before {
+          &.e-footer-focused::before,
+          &.e-upload-drag-hover::before {
             width: 50%;
           }
-          &.e-footer-focused::after {
+          &.e-footer-focused::after,
+          &.e-upload-drag-hover::after {
             width: 50%;
           }
         }
@@ -645,10 +652,9 @@
           display: inline-block;
           font-size: $pinned-file-name-font-size;
         }
-        .e-chat-file-icon {
-          font-size: $pin-file-icon-size;
-          line-height: $pin-file-icon-height;
-          font-weight: $pin-file-icon-weight;
+        .e-chat-file-icon-svg svg {
+          width: $pin-file-icon-size;
+          height: $pin-file-icon-size;
         }
       }
     }
@@ -670,10 +676,9 @@
           max-width: 120px;
           @include chat-text-ellipses(hidden, nowrap, ellipsis);
         }
-        .e-chat-file-icon {
-          font-size: $reply-file-icon-size;
-          line-height: $reply-file-icon-height;
-          font-weight: $reply-file-icon-weight;
+        .e-chat-file-icon-svg svg {
+          width: $reply-file-icon-size;
+          height: $reply-file-icon-size;
         }
       }
     }
@@ -743,8 +748,9 @@
         border: $preview-file-border solid;
         overflow-y: auto;
         scrollbar-width: thin;
-        .e-file-document {
-          font-size: $file-document-font-size;
+        .e-chat-file-icon-svg svg {
+          width: 100px;
+          height: 100px;
         }
         .e-preview-file-text {
           font-size: $no-preview-text-size;
@@ -850,10 +856,6 @@
         }
       }
 
-      .e-chat-file-icon {
-        padding: $chat-file-format-icon-padding;
-        font-size: $chat-file-document-icon-font-size;
-      }
       .e-chat-file-details {
         display: flex;
         flex-direction: column;
@@ -914,6 +916,20 @@
 
     .e-left .e-text .e-chat-mention-user-chip {
       font-weight: $mentioned-left-user-font-weight;
+    }
+
+    .e-chat-uploaded-file-item,
+    .e-attached-file {
+      .e-chat-file-icon-svg {
+        padding: 3px;
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    }
+    .e-chat-file-icon-svg svg {
+      display: block;
     }
   }
 

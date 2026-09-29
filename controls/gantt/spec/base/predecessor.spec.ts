@@ -5,7 +5,9 @@ import { createElement, remove, L10n } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { destroyGantt, createGantt, triggerMouseEvent } from './gantt-util.spec';
 import { ContextMenuClickEventArgs} from './../../src/gantt/base/interface';
-import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection, cr969720, editingResources, cr786381, projectNewDataTimezone, emptyDataSource } from './data-source.spec';
+import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection, cr969720, editingResources, cr786381, projectNewDataTimezone, emptyDataSource,
+    allTypeAllowedData, virtualData2, depSegmentData, revSegmentData, resourceCollection, depRstrcitResourcesData
+ } from './data-source.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 
@@ -2901,6 +2903,13 @@ describe('generatePredecessorValue - direct invocation coverage', () => {
         depModule.generatePredecessorValue({ offset: 5, offsetUnit: 'minute' }, '1FS');
         depModule.generatePredecessorValue({ offset: 1, offsetUnit: 'minute' }, '1FS');
     });
+    it('week and month units', () => {
+        const depModule: any = (ganttObj as any).predecessorModule;
+        depModule.generatePredecessorValue({ offset: 3, offsetUnit: 'week' }, '1FS');
+        depModule.generatePredecessorValue({ offset: 1, offsetUnit: 'week' }, '1FS');
+        depModule.generatePredecessorValue({ offset: 2, offsetUnit: 'month' }, '1FS');
+        depModule.generatePredecessorValue({ offset: 1, offsetUnit: 'month' }, '1FS');
+    });
     afterAll(() => {
         if (ganttObj) {
             ganttObj.destroy();
@@ -2988,3 +2997,1646 @@ describe('Dialog-edit offset duration unit handling', () => {
         }
     });
 });
+describe('T1042999-Allow Dependency type improvement -All case restrict coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: [],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe('5FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(3);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement -No case restricted coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowedDependencyTypes: ['FS', 'SS','SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes empty[] -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].type).toBe('FF');
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe('5FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(3);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement -FS allowed coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowedDependencyTypes: ['FS', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes -FS -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].type).toBe('FF');
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe('5FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement -SF allowed coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowedDependencyTypes: ['SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes -SF -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].type).toBe('FF');
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe('5FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement -SS allowed coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowedDependencyTypes: ['SS'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes -SS -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].type).toBe('SS');
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement -FF allowed coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                allowedDependencyTypes: ['FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes -FF -initial load case', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].type).toBe('FF');
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe('5FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement-cell edit coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: ['FS', 'SS','SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false }
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -cell edit case', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '2FS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        //checking dependency values for task which have allowedDependencyTypes:
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(4);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- toolbar add coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: ['FS', 'SS','SF', 'FF'],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search'
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false }
+                ],
+                editDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                addDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -toolbar add actn', () => {
+        ganttObj.openAddDialog();
+        let addIcon: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems').querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_add') as HTMLElement;
+        triggerMouseEvent(addIcon, 'click');
+        let inputElement: HTMLElement = document.getElementById(ganttObj.element.id + 'DependencyTabContainername') as HTMLElement;
+        if (inputElement) {
+            let input :any = (inputElement as any).ej2_instances[0];
+            input.value = "3-Defining target audience";
+            input.dataBind();
+            let idInput: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainerid') as any).ej2_instances[0];
+            idInput.value = "2";
+            idInput.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        }
+        //checking dependency values for task which have allowDependencyTypes:
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- edit dialog case coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: ['FS', 'SS','SF', 'FF'],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search'
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false }
+                ],
+                editDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                addDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -edit dialog actn', () => {
+        ganttObj.openEditDialog(3);
+        let addIcon: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems').querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_add') as HTMLElement;
+        triggerMouseEvent(addIcon, 'click');
+        let inputElement: HTMLElement = document.getElementById(ganttObj.element.id + 'DependencyTabContainername') as HTMLElement;
+        if (inputElement) {
+            let input :any = (inputElement as any).ej2_instances[0];
+            input.value = "3-Defining target audience";
+            input.dataBind();
+            let idInput: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainerid') as any).ej2_instances[0];
+            idInput.value = "2";
+            idInput.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        }
+        //checking dependency values for task which have allowedDependencyTypes:
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(4);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe('3FS');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- addPredecessor method coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: ['FS'],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search'
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false }
+                ],
+                editDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                addDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -by update addPredecessor method actn', () => {
+        ganttObj.addPredecessor(Number(ganttObj.flatData[1].ganttProperties.taskId), '4SS');
+        //checking dependency values for task which have allowedDependencyTypes:
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(1);
+        expect(ganttObj.currentViewData[1]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- removePredecessor method coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: allTypeAllowedData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                allowedDependencyTypes: ['FS'],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search'
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false }
+                ],
+                editDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                addDialogFields: [
+                    { type: 'Dependency' }
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('With allowedDependencyTypes all types included -by update addPredecessor method actn', () => {
+        ganttObj.removePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId));
+        //checking dependency values for task which have allowedDependencyTypes:
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(1);
+        expect(ganttObj.currentViewData[2]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- addPredecessor method-Virtual mode coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData2,
+                treeColumnIndex: 1,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                enableVirtualization: true,
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '550px',
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowedDependencyTypes: ['FS']
+            }, done);
+    });
+    it('check with addPredecessor/removePredecessor method -virtualmode', () => {
+        ganttObj.addPredecessor(Number(ganttObj.flatData[30].ganttProperties.taskId), '32SS');
+        //checking dependency values for task which have allowedDependencyTypes:
+        expect(ganttObj.flatData[30].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(1);
+        expect(ganttObj.flatData[30]['Predecessor']).toBe('30FS');
+
+        ganttObj.removePredecessor(Number(ganttObj.flatData[30].ganttProperties.taskId));
+        expect(ganttObj.flatData[30].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.allowedDependencyTypes.length).toBe(1);
+        expect(ganttObj.flatData[30]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- removePredecessor method-virtual mode-cell edit coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData2,
+                treeColumnIndex: 1,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                enableVirtualization: true,
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '550px',
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor'},
+                ],
+                allowedDependencyTypes: ['SS']
+            }, done);
+    });
+    it('virtual mode-cell edit', () => {
+        ganttObj.ganttChartModule.scrollObject.setScrollTop(560);
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(23) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '143SF';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(25) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.flatData[143].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.flatData[143]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+//Split task
+describe('T1042999-Restrict Dependency type improvement- split task load coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['FS', 'SS'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Split-task initial load', () => {
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe("3FS,5FS");
+        expect(ganttObj.currentViewData[6].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[6]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- split task-cell edit coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['FS', 'SS'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('split task -cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '3SF';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[4]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- split task load coverage -SF, FF', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: revSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Split-task initial load', () => {
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- split task-cell edit coverage- SF, FF', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('split task -cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '3SS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[4]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[3]['Predecessor']).toBe("3FF");
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- split task load coverage -SF, FF prevent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: revSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['SF', 'FF'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Split-task cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '5FF';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[2]['Predecessor']).toBe("5FF");
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- split task-cell edit coverage- FS, SS prevent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depSegmentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                allowedDependencyTypes: ['FS', 'SS'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 90 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '140' },
+                    { field: 'Predecessor' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "26%",
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('split task -cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '3SS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe("3SS");
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+//Resource view:
+describe('T1042999-Restrict Dependency type improvement- resource view load coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['FS', 'SS'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Resource view initial load', () => {
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[4]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe(null);
+        expect(ganttObj.currentViewData[13].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[13]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- resource view-cell edit coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['FS', 'SS'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('resource view-cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(9) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '11FF';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[8].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[8]['Predecessor']).toBe('9SS');
+        expect(ganttObj.currentViewData[6].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[2]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- resource view load coverage -SF, FF', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['SF', 'FF'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Resource view- initial load', () => {
+        expect(ganttObj.currentViewData[6].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[6]['Predecessor']).toBe('6FF');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(1);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe("3FF");
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- resource view-cell edit coverage- SF, FF', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['SF', 'FF'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('resource view-cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '2SS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessor.length).toBe(2);
+        expect(ganttObj.currentViewData[4]['Predecessor']).toBe('6FF');
+        expect(ganttObj.currentViewData[9].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[9]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement-Resource view load coverage -SF, FF prevent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['SF', 'FF'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Resource view-load time', () => {
+        expect(ganttObj.currentViewData[11].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[11]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('T1042999-Restrict Dependency type improvement- Resource view-cell edit coverage- FS, SS prevent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: depRstrcitResourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                allowedDependencyTypes: ['FS', 'SS'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Resource view-cell edit', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(10) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '9SF';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(8) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor.length).toBe(0);
+        expect(ganttObj.currentViewData[5]['Predecessor']).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.destroy();
+        }
+    });
+});
+describe('Predecessor offset vs durationUnit', () => {
+        let ganttObj: Gantt;
+        let ds: any[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Project Initiation',
+                StartDate: new Date('04/14/2024'),
+                EndDate: new Date('04/14/2024'),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: 'Identify Site location',
+                        StartDate: new Date('04/14/2024'),
+                        Duration: 2,
+                        Progress: 50
+                    }
+                ]
+            },
+            {
+                TaskID: 3,
+                TaskName: 'Project Estimation',
+                StartDate: new Date('04/12/2024'),
+                EndDate: new Date('04/12/2024')
+            },
+            {
+                TaskID: 4,
+                TaskName: 'Develop floor plan for estimation',
+                StartDate: new Date('04/12/2024'),
+                Duration: 3,
+                Progress: 50,
+                Predecessor: '1FS+2',
+                ParentID: 3
+            }
+        ];
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: ds,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        parentID: 'ParentID'
+                    }
+                },
+                done
+            );
+        });
+
+        it('Predecessor with days offset remains days when durationUnit changed to hours', () => {
+            ganttObj.durationUnit = 'Hour';
+            ganttObj.dataBind();
+            expect(ganttObj.flatData[3].ganttProperties.predecessorsName).toBe('1FS+2 days');
+        });
+
+        afterAll(() => {
+            if (ganttObj) {
+                ganttObj.destroy();
+            }
+        });
+    });

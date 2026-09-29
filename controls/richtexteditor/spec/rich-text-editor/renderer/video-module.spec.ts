@@ -5567,4 +5567,75 @@ describe('962339: Script error and improper video selection removal after alignm
             }, 100);
         });
     });
+    describe('892829 - Setting layoutOption Break and width 100 percent in insertVideoSettings not working properly in RichTextEditor', () => {
+            let rteEle: HTMLElement;
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Video', 'Bold']
+                    },
+                    insertVideoSettings: {
+                        layoutOption: 'Break',
+                        width: '100%',
+                        height: 'auto',
+                    }
+                });
+                rteEle = rteObj.element;
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it('Check the iframe video element that has applied the styles and classes.', (done: Function) => {
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                setTimeout(() => {
+                    let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                    (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/fTHVMInCEjg?si=kO_-qNSeCNfvYGps" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                    (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                    setTimeout(() => {
+                        (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                        setTimeout(() => {
+                            expect((rteObj.inputElement.querySelector('.e-embed-video-wrap') as HTMLElement).style.display === 'block').toBe(true);
+                            expect(rteObj.inputElement.querySelector('iframe').classList.contains("e-video-break")).toBe(true);
+                            done();
+                        }, 500);
+                    }, 100);
+                }, 100);
+            });
+        });
+    describe('Bug 936820: Duplication of Video When Pressing Shift Enter After Selecting Inserted Video', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: '200px',
+                value: `<p><video controls style="width: 30%;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p><p>Testing</p>`
+            });
+        });
+        it('Video get duplicated after the shift + enter is pressed', function (done: DoneFn): void {
+            const nodetext: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            const sel: void = new NodeSelection().setSelectionText(
+                document, nodetext, nodetext, 0, 1);
+            rteObj.inputElement.dispatchEvent(keyboardEventArgs);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-video-wrap" contenteditable="false"><video controls="" style="width: 30%;" class="e-rte-video e-video-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4"></video></span><br></p><p><br></p><p>Testing</p>');
+                done();
+            }, 100);
+        });
+        it('Audio get duplicated after the shift + enter is pressed', function (done: DoneFn): void {
+            rteObj.value = `<p><audio controls><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"></audio></p>`;
+            const nodetext: any = rteObj.inputElement.childNodes[0];
+            const sel: void = new NodeSelection().setSelectionText(
+                document, nodetext, nodetext, 0, 0);
+            rteObj.inputElement.dispatchEvent(keyboardEventArgs);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-audio-wrap" contenteditable="false" style="width: 300px; margin: 0px auto;"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"></audio></span></span><br></p>');
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

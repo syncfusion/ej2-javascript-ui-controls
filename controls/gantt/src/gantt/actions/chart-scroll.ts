@@ -323,7 +323,6 @@ export class ChartScroll {
         this.parent.isToolBarClick = true;
         scrollArgs.requestType = 'scroll';
         this.parent.trigger('actionComplete', scrollArgs);
-        this.parent.isVirtualScroll = false;
         this.parent.timelineModule.isZoomOut = false;
     }
     /**

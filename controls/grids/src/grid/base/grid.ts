@@ -3,19 +3,20 @@ import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, 
 import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
-import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';
+import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor, Predicate as DataPredicate } from '@syncfusion/ej2-data';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
-import { GridModel, ResizeSettingsModel } from './grid-model';
+import { createSpinner, hideSpinner, showSpinner, Tooltip, DialogModel } from '@syncfusion/ej2-popups';
+import { RuleModel, QueryBuilderModel } from '@syncfusion/ej2-querybuilder';
+import { FormulaSettingsModel, GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData, getScrollBarWidth, setEnableSeamlessScrolling } from './util';
 import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberFormat, getTransformValues } from './util';
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges, RowSelectable, PinRow, SetRowHeight } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs, AdvancedFilterOpenEventArgs, AdvancedFilterCloseEventArgs, AdvancedFilterBeginArgs, AdvancedFilterCompleteEventArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
-import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, CellFocusEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
+import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, CellFocusEventArgs, ParentDetails, ContextMenuItemModel, FormulaDefinitionModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportDetailTemplateEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
@@ -31,10 +32,10 @@ import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEv
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
-import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, FilterMode } from './enum';
+import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, FilterMode, FormulaCalculationMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, ClipMode, freezeMode, IndicatorType } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';
-import { ColumnQueryModeType, RowRenderingDirection, AdaptiveMode  } from './enum';
+import { ColumnQueryModeType, RowRenderingDirection, AdaptiveMode, EmptyRecordMode } from './enum';
 import { Data } from '../actions/data';
 import { Cell } from '../models/cell';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -46,7 +47,7 @@ import { RendererFactory } from '../services/renderer-factory';
 import { ColumnWidthService } from '../services/width-controller';
 import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
-import { SortSettingsModel, SelectionSettingsModel, FilterSettingsModel, SearchSettingsModel, EditSettingsModel } from './grid-model';
+import { SortSettingsModel, SelectionSettingsModel, FilterSettingsModel, SearchSettingsModel, EditSettingsModel, AdvancedFilterSettingsModel } from './grid-model';
 import { SortDescriptorModel, PredicateModel, RowDropSettingsModel, GroupSettingsModel, TextWrapSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { InfiniteScrollSettingsModel, DomVirtualizationSettingsModel } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';
@@ -71,6 +72,7 @@ import { AggregateRow } from '../models/aggregate';
 import { Edit } from '../actions/edit';
 import { Row } from '../models/row';
 import { ColumnChooser } from '../actions/column-chooser';
+import { AdvancedFilter } from '../actions/advanced-filter';
 import { ExcelExport } from '../actions/excel-export';
 import { PdfExport } from '../actions/pdf-export';
 import { Clipboard } from '../actions/clipboard';
@@ -83,11 +85,12 @@ import { ILogger, Logger } from '../actions/logger';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
-import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper, initializeTelemetry } from '@syncfusion/ej2-base';
 import * as literals from '../base/string-literals';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { HeaderCellRenderer } from '../renderer/header-cell-renderer';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import { CustomFunction, Formula, FormulaValue } from '../actions';
 
 /**
  * Represents the field name and direction of sort column.
@@ -498,6 +501,31 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      */
     @Property(false)
     public showFilterBarOperator: boolean;
+
+}
+
+/**
+ * Configures the advanced filtering behavior of the Grid.
+ *
+ * @default {}
+ */
+export class AdvancedFilterSettings extends ChildProperty<AdvancedFilterSettings> {
+    /**
+     * Specifies whether hidden columns are included in the Advanced Filter builder.
+     * Set this property to true to allow filtering hidden columns.
+     *
+     * @default false
+     */
+    @Property(false)
+    public includeHiddenColumns: boolean;
+
+    /**
+     * Defines the QueryBuilder options used to customize the Advanced Filter dialog.
+     *
+     * @default {}
+     */
+    @Property({})
+    public queryBuilderSettings: QueryBuilderModel;
 }
 
 /**
@@ -934,6 +962,41 @@ export class EditSettings extends ChildProperty<EditSettings> {
 }
 
 /**
+ * Configures the formula cell support for the Grid.
+ *
+ * Formula cells allow users to enter formulas that dynamically calculate values based on other cells.
+ * Example: `=SUM(A1:A5)`, `=IF(B1>100, "High", "Low")`, `=A1 + B2 * 2`
+ */
+export class FormulaSettings extends ChildProperty<FormulaSettings> {
+    /**
+     * If `allowBuiltInFunctions` is set to true, built-in functions such as SUM, AVERAGE,
+     * MIN, MAX, IF, AND, OR, NOT, CONCAT, LEN, TODAY, and other supported functions
+     * can be used in formula expressions.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowBuiltInFunctions: boolean;
+    /**
+     * Defines the collection of custom formula functions that can be used within
+     * Grid formula expressions.
+     *
+     * @default {}
+     */
+    @Property({})
+    public customFunctions: Record<string, CustomFunction>;
+    /**
+     * Defines when formula values should be recalculated. The available modes are:
+     * * Automatic
+     * * Manual
+     *
+     * @default Automatic
+     */
+    @Property('Automatic')
+    public calculationMode: FormulaCalculationMode;
+}
+
+/**
  * Configures the Loading Indicator of the Grid.
  */
 export class LoadingIndicator extends ChildProperty<LoadingIndicator> {
@@ -979,6 +1042,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private inViewIndexes: number[] = [];
     private mediaCol: Column[];
     private getShowHideService: ShowHide;
+    /** @hidden */
+    public rowOffsetHeight: number;
     private keyA: boolean = false;
     /** @hidden */
     public frozenRightCount: number = 0;
@@ -1030,6 +1095,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public recordsCount: number;
     /** @hidden */
     public isVirtualAdaptive: boolean = false;
+    /** @hidden */
+    public isFormulaRefreshSuspended: boolean = false;
     /** @hidden */
     /**
      * * If `requireTemplateRef` is set to false in the load event, then the template element can't be accessed in grid queryCellInfo, and rowDataBound events.
@@ -1121,6 +1188,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     ];
     /** @hidden */
     public pinnedTopRecords: Object[] = [];
+    /** @hidden */
+    public pinnedDataCount: number = 0;
     /** @hidden */
     public pinnedTopRowKeys: { [key: number]: boolean } = {};
     /** @hidden */
@@ -1301,6 +1370,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * The `editModule` is used to handle Grid content manipulation.
      */
     public editModule: Edit;
+    /**
+     * The `formulaModule` is used to manage formula parsing, evaluation, and caching in the Grid.
+     *
+     */
+    public formulaModule: Formula;
 
     /**
      * `clipboardModule` is used to handle Grid copy action.
@@ -1314,6 +1388,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public columnChooserModule: ColumnChooser;
+
+    /**
+     * Provides the Advanced Filter module for creating and applying complex multi-condition filters.
+     *
+     * @hidden
+     */
+    public advancedFilterModule: AdvancedFilter;
 
     /**
      * The `aggregateModule` is used to manipulate aggregate functionality in the Grid.
@@ -1646,6 +1727,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public allowFiltering: boolean;
 
     /**
+     * Defines whether Advanced Filtering is enabled for the Grid.
+     * When enabled, users can create complex filtering conditions across multiple columns
+     * using the Advanced Filter dialog.
+     *
+     *
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowAdvancedFiltering: boolean;
+
+    /**
+     * Configures the Advanced Filter behavior of the Grid.
+     *
+     *
+     * @default {}
+     */
+    @Complex<AdvancedFilterSettingsModel>({}, AdvancedFilterSettings)
+    public advancedFilterSettings: AdvancedFilterSettingsModel;
+
+    /**
      * Defines the grid row elements rendering direction. The available directions are,
      * * `Horizontal`: Renders the grid row elements in the horizontal direction
      * * `Vertical`: Renders the grid row elements in the vertical direction
@@ -1797,6 +1899,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public editSettings: EditSettingsModel;
 
     /**
+     * Configures the formula settings of the Grid.
+     * It enables spreadsheet-like formula support including cell references,
+     * range references, built-in functions, custom functions, dependency tracking,
+     * automatic recalculation, and formula editor features.
+     *
+     * @default { allowBuiltInFunctions: true, customFunctions: [],  calculationMode: 'Automatic' }
+     */
+    @Complex<FormulaSettingsModel>({}, FormulaSettings)
+    public formulaSettings: FormulaSettingsModel;
+
+    /**
      * Configures the Grid aggregate rows.
      * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
      * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
@@ -1889,6 +2002,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public emptyRecordTemplate: string | Function;
 
     /**
+     * Defines how the empty record content is rendered when the Grid contains no records.
+     * The options are:
+     * * Normal - Renders the empty record content as a table row (default).
+     * * Sticky - Renders the empty record content as a fixed overlay that remains stationary during content scrolling.
+     *
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public emptyRecordMode: EmptyRecordMode;
+
+    /**
      * The detail template allows you to show or hide additional information about a particular row.
      *
      * > It accepts either the [template string](../../common/template/) or the HTML element ID.
@@ -1969,6 +2093,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(null)
     public rowHeight: number;
+
+    /**
+     * Defines the height of Grid header row.
+     *
+     * @default null
+     */
+    @Property(null)
+    public headerRowHeight: number;
 
     /**
      * Defines the height of Grid footer rows.
@@ -2936,6 +3068,39 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public beforeCustomFilterOpen: EmitType<BeforeCustomFilterOpenEventArgs>;
 
     /**
+     * Triggers when the Advanced Filter dialog is opened.
+     *
+     * @event advancedFilterOpen
+     */
+    @Event()
+    public advancedFilterOpen: EmitType<AdvancedFilterOpenEventArgs>;
+
+    /**
+     * Triggers when the Advanced Filter dialog is closed.
+     *
+     * @event advancedFilterClose
+     */
+    @Event()
+    public advancedFilterClose: EmitType<AdvancedFilterCloseEventArgs>;
+
+    /**
+     * Triggers before advanced filter apply or clear operations.
+     * Set cancel to true to prevent the filter operation.
+     *
+     * @event advancedFilterBegin
+     */
+    @Event()
+    public advancedFilterBegin: EmitType<AdvancedFilterBeginArgs>;
+
+    /**
+     * Triggers after advanced filter apply or clear operations complete and data is bound to the grid.
+     *
+     * @event advancedFilterComplete
+     */
+    @Event()
+    public advancedFilterComplete: EmitType<AdvancedFilterCompleteEventArgs>;
+
+    /**
      * Constructor for creating the component
      *
      * @param {GridModel} options - specifies the options
@@ -2944,6 +3109,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     constructor(options?: GridModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        initializeTelemetry('DataGrid');
         Grid.Inject(Selection);
         setValue('mergePersistData', this.mergePersistGridData, this);
     }
@@ -3008,6 +3174,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 member: 'filter',
                 args: [this, this.filterSettings, this.serviceLocator],
                 name: 'Filter'
+            });
+        }
+        if (this.allowAdvancedFiltering) {
+            modules.push({
+                member: 'advancedFilter',
+                args: [this, this.serviceLocator],
+                name: 'AdvancedFilter'
             });
         }
         if (this.allowExcelExport) {
@@ -3169,6 +3342,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (!isNullOrUndefined(this.columns as Column[]) && this.isForeignKeyEnabled(this.columns as Column[])) {
             modules.push({ member: 'foreignKey', args: [this, this.serviceLocator], name: 'ForeignKey' });
+        }
+        if (!isNullOrUndefined(this.columns as Column[]) && this.isFormulaColumnEnabled(this.columns as Column[])) {
+            modules.push({ member: 'formula', args: [this, this.serviceLocator], name: 'Formula' });
         }
         if (this.enableLogger) {
             modules.push({ member: 'logger', args: [this], name: 'Logger' });
@@ -3388,6 +3564,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             UnpinRow: 'Unpin Row',
             Undo: 'Undo',
             Redo: 'Redo',
+            AdvancedFilter: 'Advanced Filter',
+            ApplyAdvancedFilter: 'Apply',
+            CancelAdvancedFilter: 'Cancel',
             ...this.defaultChartLocale
         };
         this.keyConfigs = {
@@ -3495,6 +3674,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 setEnableSeamlessScrolling(this.enableSeamlessScrolling);
             } else {
                 this.trigger(events.load);
+            }
+        }
+        if (this.advancedFilterModule && this.advancedFilterSettings && this.advancedFilterSettings.queryBuilderSettings
+            && this.advancedFilterSettings.queryBuilderSettings.rule) {
+            const configuredRule: RuleModel = this.advancedFilterSettings.queryBuilderSettings.rule;
+            const predicate: DataPredicate | null = this.getPredicateFromRule(configuredRule);
+            if (predicate) {
+                const baseQuery: Query = this.query ? this.query.clone() : new Query();
+                this.advancedFilterModule.baseQuery = baseQuery.clone();
+                this.query = baseQuery.clone().where(predicate);
+                this.advancedFilterModule.setRule(configuredRule);
             }
         }
         if (typeof this.isRowSelectable === 'string') {
@@ -3625,7 +3815,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.enableVirtualization || this.enableColumnVirtualization) {
                 content = content.querySelector('.e-virtualtable');
             }
-            if (!isNullOrUndefined(content.querySelector('tbody'))) {
+            if (!isNullOrUndefined(content.querySelector('tbody')) && !(axisDirection === 'X' && this.emptyRecordMode === 'Sticky' && this.currentViewData.length === 0)) {
                 this.contentMaskTable = this.createMaskTable(content, this.getContentMaskColumns(), axisDirection);
             }
         }
@@ -3740,7 +3930,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const tbody: Element = table.querySelector('tbody');
         if (content || header) {
             const rowCountElement: Element = gridContent;
-            let rowCount: number = Math.ceil(rowCountElement.getBoundingClientRect().height / this.getRowHeight());
+            const isParent: boolean = this.isTreeGrid ? false : true;
+            const rowHeight: number = this.getRowHeight(false, isParent);
+            const contentHeight: number = rowCountElement.getBoundingClientRect().height;
+            const pageSize: number = !isNullOrUndefined(this.pageSettings) ? this.pageSettings.pageSize : 0;
+            let rowCount: number = rowHeight > 0 ? Math.ceil( contentHeight / rowHeight) : pageSize > 0 ? pageSize : 12;
             if (this.allowPaging && this.pageSettings.pageSize !== this.currentViewData.length &&
                 this.pagerModule.pagerObj.totalPages !== this.pageSettings.currentPage) {
                 const row: Element = this.createMaskRow(maskColgroup, columns);
@@ -4522,6 +4716,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.notify(events.inBoundModelChanged, { module: 'selection', properties: newProp.selectionSettings }); break;
         case 'editSettings':
             this.notify(events.inBoundModelChanged, { module: 'edit', properties: newProp.editSettings }); break;
+        case 'emptyRecordMode':
+            if (this.currentViewData && this.currentViewData.length === 0) {
+                if (this.isEdit) {
+                    this.closeEdit();
+                }
+                this.renderModule.renderEmptyRow();
+            }
+            break;
         case 'allowTextWrap':
         case 'textWrapSettings':
             if (this.allowTextWrap) {
@@ -5393,6 +5595,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.isReact && td.getAttribute('tabindex') === '0' && td.classList.contains('e-focused')) {
                     (td as HTMLElement).focus();
                 }
+                if (this.isAngular) {
+                    const col: Column = this.getColumnByField(field);
+                    if (col.template) {
+                        this.refreshColumnTemplates();
+                    }
+                }
             }
         } else {
             return;
@@ -5489,6 +5697,39 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
             isChildRow = false;
+        }
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public refreshColumnTemplates(): void {
+        if (this.isAngular) {
+            this.refreshAngularColumnTemplates();
+        }
+    }
+
+    private refreshAngularColumnTemplates(): void {
+        const registeredTemplate: any = (this as any).registeredTemplate;
+        if (registeredTemplate && registeredTemplate.template && registeredTemplate.template.length) {
+            this.clearTemplate(['template']);
+            const rows: Element[] = this.getDataRows();
+            const indent: number = this.getIndentCount();
+            for (let rowIndex: number = 0; rowIndex < rows.length; rowIndex++) {
+                const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[parseInt(rowIndex.toString(), 10)].getAttribute('data-uid'));
+                if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) &&
+                    !rows[parseInt(rowIndex.toString(), 10)].classList.contains('e-editedrow')) {
+                    for (let cellIndex: number = 0; cellIndex < rowsObj.cells.length; cellIndex++) {
+                        const cell: Cell<Column> = rowsObj.cells[parseInt(cellIndex.toString(), 10)];
+                        if (cell.isTemplate) {
+                            const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                            cellRenderer.refreshTD(this.getCellFromIndex(rowIndex, cellIndex - indent), cell,
+                                                   rowsObj.data, { index: rowsObj.index });
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -5626,6 +5867,79 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } catch (error) {
                 reject(error);
             }
+        });
+    }
+
+    /**
+     * Updates one or more fields across multiple records in bulk.
+     *
+     * @param {Object} changedData - Field names and their new values to apply to all matching records.
+     * @param {Object[]} [rowData] - Optional records to update. Falls back to selected records.
+     * @param {Function} [callback] - Optional callback invoked with the result after the changes are saved.
+     *
+     * @returns {void}
+     */
+    public saveBulkChanges(changedData: Object, rowData?: Object[], callback?: Function): void {
+        const primaryKey: string = this.getPrimaryKeyFieldNames()[0];
+        const records: Object[] = rowData && rowData.length ? rowData : this.getSelectedRecords();
+        const fields: string[] = Object.keys(changedData);
+        if (!primaryKey || !fields.length || !records.length) {
+            return;
+        }
+        const changes: BatchChanges = { addedRecords: [], deletedRecords: [], changedRecords: [] };
+        const original: BatchChanges = { addedRecords: [], deletedRecords: [], changedRecords: [] };
+        for (const record of records) {
+            original.changedRecords.push(extend({}, {}, record, true) as Object);
+            for (const field of fields) {
+                if (field === primaryKey || isNullOrUndefined(this.getColumnByField(field))) {
+                    continue;
+                }
+                const cellValue: string | number | boolean | Date = getValue(field, changedData);
+                setValue(field, cellValue, record);
+            }
+            changes.changedRecords.push(extend({}, {}, record, true) as Object);
+        }
+
+        const promise: Object = this.getDataModule().saveChanges(changes, primaryKey, original);
+        const triggerCallback: Function = (args: Object) => {
+            if (!isNullOrUndefined(callback) && typeof callback === 'function') {
+                callback(args);
+            }
+        };
+
+        if (this.getDataModule().isRemote()) {
+            (promise as Promise<Object>).then((e: Object) => {
+                triggerCallback(e);
+            }).catch((e: Object) => {
+                triggerCallback({ error: e });
+            });
+        } else {
+            triggerCallback(promise);
+        }
+    }
+
+    /**
+     * Updates one or more fields across multiple records in bulk and resolves when the changes are saved.
+     *
+     * @param {Object} changedData - Field names and their new values to apply to all matching records.
+     * @param {Object[]} [rowData] - Optional records to update. Falls back to selected records.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the save result once the operation completes.
+     */
+    public saveBulkChangesAsync(changedData: Object, rowData?: Object[]): Promise<Object | void> {
+        const records: Object[] = rowData && rowData.length ? rowData : this.getSelectedRecords();
+        const fields: string[] = Object.keys(changedData);
+        if (!this.getPrimaryKeyFieldNames()[0] || !fields.length || !records.length) {
+            return Promise.resolve();
+        }
+        return new Promise<Object>((resolve: (args: Object) => void, reject: (reason?: Object) => void) => {
+            this.saveBulkChanges(changedData, rowData, (args: Object): void => {
+                if (args && (<{ error?: Object }>args).error) {
+                    reject(args);
+                } else {
+                    resolve(args);
+                }
+            });
         });
     }
 
@@ -6174,6 +6488,171 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getDataModule(): Data {
         return this.renderModule.data;
+    }
+
+    /**
+     * Gets a formula from a cell. Returns the formula text if the cell contains a formula, undefined otherwise.
+     *
+     * @param {number|string} primaryKeyValue - The row index (0-based) or primary key value of the row.
+     * @param {string} field - The field name of the column.
+     *
+     * @returns {string | undefined} The formula text (with or without leading '='), or undefined if no formula exists.
+     */
+    public getCellFormula(primaryKeyValue: number | string, field: string): string | undefined {
+        if (this.formulaModule) {
+            return this.formulaModule.getCellFormula(primaryKeyValue, field);
+        }
+        return null;
+    }
+    /**
+     * Gets the evaluated value (result) of a formula in a cell.
+     *
+     * @param {number|string} primaryKeyValue - The row index (0-based) or primary key value of the row.
+     * @param {string} field - The field name of the column.
+     *
+     * @returns {any} The evaluated value, error code, or undefined if no formula is present.
+     */
+    public getFormulaValue(primaryKeyValue: number | string, field: string): FormulaValue | undefined {
+        if (this.formulaModule) {
+            return this.formulaModule.getFormulaValue(primaryKeyValue, field);
+        }
+        return null;
+    }
+
+    /**
+     * Sets a formula for a cell. When the formula is set, it is parsed, validated, and evaluated.
+     * If the formula contains errors, they are stored and returned on evaluation.
+     *
+     * @param {number|string} primaryKeyValue - The row index (0-based) or primary key value of the row.
+     * @param {string} field - The field name of the column.
+     * @param {string|undefined} formula - The formula text (can start with '=' or not). Pass undefined or empty string to clear the formula.
+     *
+     * @returns {void}
+     */
+    public setCellFormula(primaryKeyValue: number | string, field: string, formula: string | undefined): void {
+        if (this.formulaModule) {
+            this.formulaModule.setCellFormula(primaryKeyValue, field, formula);
+        }
+    }
+
+    /**
+     * Refreshes formulas for all rows (full recalculation if no parameter provided).
+     *
+     * @returns {void}
+     */
+    public refreshFormulas(): void {
+        const formulaColumns: Column[] = this.getColumns().filter((column: Column) => column.allowFormula);
+        const cellRenderer: CellRenderer = new CellRenderer(this, this.serviceLocator);
+        const formulaColumnIndexes: number[] = formulaColumns.map((column: Column) => this.getColumnIndexByField(column.field));
+        const renderedRowElements: HTMLTableRowElement[] = this.getRows() as HTMLTableRowElement[];
+        renderedRowElements.forEach((rowElement: HTMLTableRowElement) => {
+            const rowObject: Row<Column> = this.getRowObjectFromUID(rowElement.getAttribute('data-uid'));
+            if (rowObject) {
+                formulaColumnIndexes.forEach((columnIndex: number) => {
+                    const cellElement: HTMLTableCellElement = rowElement.cells[parseInt(columnIndex.toString(), 10)];
+                    cellRenderer.refreshTD(cellElement, rowObject.cells[parseInt(columnIndex.toString(), 10)], rowObject.data,
+                                           { index: columnIndex });
+                });
+            }
+        });
+    }
+
+    /**
+     * Suspends formula refresh to prevent automatic recalculation.
+     *
+     * @returns {void}
+     */
+    public suspendFormulaRefresh(): void {
+        if (!this.isFormulaRefreshSuspended) {
+            this.isFormulaRefreshSuspended = true;
+        }
+    }
+
+    /**
+     * Resumes formula refresh to enable automatic recalculation and refreshes all formulas.
+     *
+     * @returns {void}
+     */
+    public resumeFormulaRefresh(): void {
+        if (this.isFormulaRefreshSuspended) {
+            this.isFormulaRefreshSuspended = false;
+            this.refreshFormulas();
+        }
+    }
+
+    /**
+     * Refreshes the formula for a specific row.
+     *
+     * @param {number} rowIndex - The index of the row to refresh formulas for.
+     * @returns {void}
+     */
+    public refreshFormula(rowIndex: number): void {
+        const formulaColumns: Column[] = this.getColumns().filter((column: Column) => column.allowFormula);
+        const cellRenderer: CellRenderer = new CellRenderer(this, this.serviceLocator);
+        const formulaColumnIndexes: number[] = formulaColumns.map((column: Column) => this.getColumnIndexByField(column.field));
+        const renderedRowElements: HTMLTableRowElement[] = this.getRows() as HTMLTableRowElement[];
+        if (rowIndex >= 0 && rowIndex < renderedRowElements.length) {
+            const rowElement: HTMLTableRowElement = renderedRowElements[parseInt(rowIndex.toString(), 10)];
+            const rowObject: Row<Column> = this.getRowObjectFromUID(rowElement.getAttribute('data-uid'));
+            if (rowObject) {
+                formulaColumnIndexes.forEach((columnIndex: number) => {
+                    const cellElement: HTMLTableCellElement = rowElement.cells[parseInt(columnIndex.toString(), 10)];
+                    cellRenderer.refreshTD(cellElement, rowObject.cells[parseInt(columnIndex.toString(), 10)], rowObject.data,
+                                           { index: columnIndex });
+                });
+            }
+        }
+    }
+
+    /**
+     * Gets all formulas defined in the grid.
+     *
+     * @returns {FormulaDefinitionModel[]} Array of formula definitions with their values.
+     */
+    public getFormulas(): FormulaDefinitionModel[] {
+        if (this.formulaModule) {
+            return this.formulaModule.getFormulas();
+        }
+        return [];
+    }
+
+    /**
+     * Checks if a formula exists for the specified cell.
+     *
+     * @param {number} primaryKeyValue - The row index of the cell.
+     * @param {string} field - The field name of the cell.
+     * @returns {boolean} True if a formula exists for the cell, otherwise false.
+     */
+    public hasFormula(primaryKeyValue: number, field: string): boolean {
+        if (this.formulaModule) {
+            return this.formulaModule.hasFormula(primaryKeyValue, field);
+        }
+        return false;
+    }
+
+    /**
+     * Adds a custom formula function.
+     *
+     * @param {string} name - The name of the custom formula function.
+     * @param {Function} handler - The handler function for the custom formula.
+     * @returns {void}
+     */
+    public addFormula(name: string, handler: Function): void {
+        if (this.formulaModule) {
+            this.formulaModule.addFormula(name, handler);
+        }
+    }
+
+    /**
+     * Removes a custom formula function.
+     *
+     * @param {string} name - The name of the custom formula function to remove.
+     * @returns {void}
+     */
+    public removeFormula(name: string): void {
+        if (this.formulaModule) {
+            this.formulaModule.removeFormula(name);
+        }
     }
 
     /**
@@ -6991,6 +7470,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.setProperties({ sortSettings: { columns: [] } }, true);
         this.setProperties({ filterSettings: { columns: [] } }, true);
         this.setProperties({ searchSettings: { key: '' } }, true);
+        if (this.isRowPinned || this.pinnedTopRecords.length || Object.keys(this.pinnedTopRowKeys).length
+            || this.pinnedDataCount || this.pinnedTopRowModels.length) {
+            this.pinnedTopRecords = [];
+            this.pinnedTopRowKeys = {};
+            this.pinnedDataCount = 0;
+            this.pinnedTopRowModels = [];
+            this.pinnedRowIndexes = {};
+            this.contentRowIndexes = {};
+            if (this.getDataModule() && this.getDataModule().pinnedData) {
+                this.getDataModule().pinnedData = new DataManager([]);
+            }
+        }
         if (this.allowGrouping) {
             this.setProperties({ groupSettings: { columns: [] } }, true);
         }
@@ -7178,6 +7669,121 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public removeFilteredColsByField(field: string, isClearFilterBar?: boolean): void {
         if (this.filterModule) {
             this.filterModule.removeFilteredColsByField(field, isClearFilterBar);
+        }
+    }
+
+    /**
+     * Opens the Advanced Filter dialog.
+     * Triggers the `advancedFilterOpen` event when the dialog is opened.
+     *
+     * @returns {void}
+     */
+    public openAdvancedFilterDialog(): void {
+        if (this.advancedFilterModule) {
+            this.advancedFilterModule.openDialog();
+        }
+    }
+
+    /**
+     * Closes the Advanced Filter dialog.
+     * Triggers the `advancedFilterClose` event when the dialog is closed.
+     *
+     * @returns {void}
+     */
+    public closeAdvancedFilterDialog(): void {
+        if (this.advancedFilterModule) {
+            this.advancedFilterModule.closeDialog();
+        }
+    }
+
+    /**
+     * Applies an Advanced Filter rule to the Grid.
+     * Composes the rule predicate with the existing Grid query and refreshes the Grid.
+     * Triggers the cancellable `advancedFilterBegin` event before applying and the
+     * `advancedFilterComplete` event after applying.
+     *
+     * @param {RuleModel} rule - The filter rule from QueryBuilder.
+     *                     Contains nested conditions with fields, operators, and values.
+     * @returns {void}
+     */
+    public applyAdvancedFilter(rule?: RuleModel): void {
+        if (this.advancedFilterModule) {
+            this.advancedFilterModule.applyFilter(rule);
+        }
+    }
+
+    /**
+     * Converts the specified advanced filter rule into a Query predicate.
+     *
+     * @param {RuleModel} rule - The filter rule from QueryBuilder.
+     * @returns {Predicate | null} The generated query predicate or null when the rule is invalid.
+     */
+    public getPredicateFromRule(rule: RuleModel): DataPredicate | null {
+        if (this.advancedFilterModule && typeof this.advancedFilterModule.getPredicateFromRule === 'function') {
+            return this.advancedFilterModule.getPredicateFromRule(rule);
+        }
+        return null;
+    }
+
+    /**
+     * Clears the applied Advanced Filter from the Grid.
+     * Restores the base query captured before the filter was applied.
+     * Triggers the cancellable `advancedFilterBegin` event before clearing and the
+     * `advancedFilterComplete` event after clearing.
+     *
+     * @returns {void} Clears the currently applied advanced filter.
+     */
+    public clearAdvancedFilter(): void {
+        if (this.advancedFilterModule) {
+            this.advancedFilterModule.clearFilter();
+        }
+    }
+
+    /**
+     * Returns the currently applied Advanced Filter rule.
+     *
+     * @returns {RuleModel | null} The current rule or null when no advanced filter is active.
+     */
+    public getAdvancedFilter(): RuleModel | null {
+        if (this.advancedFilterModule) {
+            return this.advancedFilterModule.getRule();
+        }
+        return null;
+    }
+
+    /**
+     * Sets the specified rule as the current Advanced Filter configuration.
+     *
+     * @param {RuleModel} rule - Specifies the rule collection.
+     * @returns {void}
+     */
+    public setAdvancedFilter(rule: RuleModel): void {
+        if (this.advancedFilterModule) {
+            this.advancedFilterModule.setRule(rule);
+        }
+    }
+
+    /**
+     * Returns whether an Advanced Filter is currently applied to the Grid.
+     *
+     * @returns {boolean} True when a rule is currently applied; otherwise, false.
+     */
+    public isAdvancedFilterApplied(): boolean {
+        if (this.advancedFilterModule) {
+            return !!this.advancedFilterModule.getRule();
+        }
+        return false;
+    }
+
+    /**
+     * Refreshes the Advanced Filter metadata and updates the available columns in the QueryBuilder.
+     *
+     * @returns {void} Refreshes the rule state and rebuilds the QueryBuilder content.
+     * @hidden
+     */
+    private refreshAdvancedFilter(): void {
+        if (this.advancedFilterModule && typeof this.advancedFilterModule.refresh === 'function') {
+            this.advancedFilterModule.refresh();
         }
     }
 
@@ -7729,18 +8335,25 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public recalcIndentWidth(): void {
-        if (!this.getHeaderTable().querySelector('.e-emptycell')) {
+        const isRowNumber: Column = this.getColumns().find((col: Column) => col.type === 'rownumber');
+        const headerTable: Element = this.getHeaderTable();
+        const emptyCell: HTMLElement = headerTable.querySelector('.e-emptycell');
+        const rowNumberCell: HTMLElement = headerTable.querySelector('.e-header-rownumber-cell');
+        if (!emptyCell && !isRowNumber) {
             return;
         }
-        if ((!this.groupSettings.columns.length && !this.isDetail() && !this.isRowDragable()) ||
-            this.getHeaderTable().querySelector('.e-emptycell.e-indentRefreshed') ||
-            !this.getContentTable()) {
+        if ((!this.groupSettings.columns.length && !this.isDetail() && !this.isRowDragable() && !isRowNumber) ||
+            headerTable.querySelector('.e-emptycell.e-indentRefreshed') ||
+            !this.getContentTable() || headerTable.querySelector('.e-header-rownumber-cell.e-indentRefreshed')) {
             return;
         }
-        let indentWidth: number = (this.getHeaderTable().querySelector('.e-emptycell').parentElement as HTMLElement).offsetWidth;
-        const headerCol: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector(literals.colGroup).childNodes);
+        let indentWidth: number = 0;
+        if (emptyCell) {
+            indentWidth = (emptyCell.parentElement as HTMLElement).offsetWidth;
+        }
+        const headerCol: HTMLElement[] = [].slice.call(headerTable.querySelector(literals.colGroup).childNodes);
         const contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector(literals.colGroup).childNodes);
-        const perPixel: number = indentWidth / 30;
+        const perPixel: number = indentWidth ? indentWidth / 30 : 0;
         let i: number = this.getFrozenMode() === 'Right' ? this.groupSettings.columns.length + this.getColumns().length : 0;
         const parentOffset: number =  this.element.offsetWidth;
         const applyWidth: Function = (index: number, width: number) => {
@@ -7774,8 +8387,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isRowDragable()) {
             applyWidth(i, indentWidth);
         }
+        if (isRowNumber) {
+            let rowNumberCellWidth: number = rowNumberCell.offsetWidth;
+            const rownumberPerPixel: number = rowNumberCellWidth / parseInt(isRowNumber.width.toString(), 10);
+            const colIndex: number = this.getNormalizedColumnIndex(isRowNumber.uid);
+            if (rownumberPerPixel >= 1) {
+                rowNumberCellWidth = parseInt(isRowNumber.width.toString(), 10) / rownumberPerPixel;
+                applyWidth(colIndex, rowNumberCellWidth);
+                if (rowNumberCell) {
+                    rowNumberCell.classList.add('e-indentRefreshed');
+                }
+            }
+        }
         this.isAutoGen = false;
-        this.getHeaderTable().querySelector('.e-emptycell').classList.add('e-indentRefreshed');
+        if (emptyCell) {
+            emptyCell.classList.add('e-indentRefreshed');
+        }
     }
 
     /**
@@ -8110,6 +8737,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private processModel(): void {
+        const validGroupColumns: string[] = this.groupSettings.columns.filter((field: string) => {
+            const column: Column = this.getColumnByField(field);
+            if (column && column.allowGrouping === false) {
+                this.log('action_disabled_column', {
+                    moduleName: 'group',
+                    columnName: column.headerText
+                });
+                return false;
+            }
+            return true;
+        });
+        if (validGroupColumns.length !== this.groupSettings.columns.length) {
+            this.setProperties({
+                groupSettings: {
+                    columns: validGroupColumns
+                }
+            }, true);
+        }
         const gCols: string[] = this.groupSettings.columns;
         const sCols: SortDescriptorModel[] = this.sortSettings.columns;
         let flag: boolean;
@@ -8773,6 +9418,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
     }
 
+    private isFormulaColumnEnabled(columns: Column[]): boolean {
+        return columns.some((col: Column) => {
+            if (col.columns) {
+                return this.isFormulaColumnEnabled(col.columns as Column[]);
+            }
+            return !!col.allowFormula;
+        });
+    }
+
     private keyPressHandler(e: KeyboardEventArgs): void {
         const presskey: KeyboardEventArgs = <KeyboardEventArgs>extend(e, { cancel: false });
         this.trigger('keyPressed', presskey);
@@ -8883,10 +9537,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * @hidden
      * @param {boolean} accurateHeight - Defines the accurate row height
+     * @param {boolean} isParent - Defines the is parent
      * @returns {number} Returns row height
      */
-    public getRowHeight(accurateHeight?: boolean): number {
-        return this.rowHeight ? this.rowHeight : getRowHeight(this.element, accurateHeight);
+    public getRowHeight(accurateHeight?: boolean, isParent?: boolean): number {
+        return this.rowHeight ? this.rowHeight : getRowHeight(this.element, accurateHeight, isParent ? this : null);
     }
 
     /**

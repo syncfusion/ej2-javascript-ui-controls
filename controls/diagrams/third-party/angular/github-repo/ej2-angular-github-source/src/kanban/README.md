@@ -1,22 +1,33 @@
 # Angular Kanban Component
 
-The [Angular Kanban](https://www.syncfusion.com/angular-components/angular-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm) Board component is a popular tool for visualizing and managing work in a variety of contexts, including software development, project management, and personal productivity. The control supports necessary features to design task scheduling applications. The key features are swimlanes, customizable cards, binding from local and remote data sources, columns mapping, stacked headers, WIP validation, templating, responsiveness, filtering, and editing.
+The [Angular Kanban](https://www.syncfusion.com/gantt-sdk/angular-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm) Board component is a popular tool for visualizing and managing work in a variety of contexts, including software development, project management, and personal productivity. The control supports necessary features to design task scheduling applications. The key features are swimlanes, customizable cards, binding from local and remote data sources, columns mapping, stacked headers, WIP validation, templating, responsiveness, filtering, and editing.
 
 <p align="center">
-    <a href="https://ej2.syncfusion.com/angular/documentation/kanban/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm">Getting started</a> . 
+    <a href="https://help.syncfusion.com/gantt-sdk/angular/kanban/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm">Getting started</a> . 
     <a href="https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#/bootstrap5/kanban/overview">Online demos</a> . 
-    <a href="https://www.syncfusion.com/angular-components/angular-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm">Learn more</a>
+    <a href="https://www.syncfusion.com/gantt-sdk/angular-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm">Learn more</a>
 </p>
 <p align="center">
    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/angular/angular-kanban.png" alt="Angular Kanban Component"/>
 </p>
 
 <p align="center">
-Trusted by the world's leading companies
+Trusted by the world's leading companies<br>
   <a href="https://www.syncfusion.com">
     <img src="https://ej2.syncfusion.com/home/images/trusted_companies.png" alt="Bootstrap logo">
   </a>
 </p>
+
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch and follow the official instructions at https://ai.syncfusion.com/agent-setup/prompt.md, then report the detected platform, installed skill pack, MCP status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
 
 ## Setup
 
@@ -57,11 +68,13 @@ In **src/app/app.component.ts**, use `<ejs-kanban>` selector in `template` attri
 
 ```typescript
 import { Component } from '@angular/core';
-import { CardSettingsModel } from '@syncfusion/ej2-angular-kanban';
+import { CardSettingsModel, KanbanModule } from '@syncfusion/ej2-angular-kanban';
 
 @Component({
     selector: 'app-root',
-    template: `<ejs-kanban [dataSource]='data' [cardSettings]='cardSettings'>
+    imports: [ KanbanModule ],
+    standalone: true,
+    template: `<ejs-kanban [dataSource]='data' [cardSettings]='cardSettings' keyField="Status">
                     <e-columns>
                         <e-column headerText='To do' keyField='Open'></e-column>
                         <e-column headerText='In Progress' keyField='InProgress'></e-column>
@@ -90,7 +103,7 @@ export class AppComponent {
 
 The Kanban component is also offered in the following list of frameworks.
 
-| [<img src="https://ej2.syncfusion.com/github/images/js.svg" height="50" />](https://www.syncfusion.com/javascript-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| [<img src="https://ej2.syncfusion.com/github/images/js.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/javascript-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[JavaScript](https://www.syncfusion.com/gantt-sdk/javascript-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/gantt-sdk/react-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/gantt-sdk/react-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/vue-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/gantt-sdk/vue-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/aspnet-core-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/gantt-sdk/aspnet-core-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/aspnet-mvc-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/gantt-sdk/aspnet-mvc-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)&nbsp;&nbsp; | 
 | :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase samples
@@ -110,14 +123,14 @@ The Kanban component is also offered in the following list of frameworks.
 * [Stacked headers](https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#/material/kanban/stacked-header) - To add additional column headers in a stacked manner, which can be useful for displaying additional information or for organizing the columns in a more visually appealing way.
 * [Card tooltip](https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#/material/kanban/tooltip-template) - To display the information for a card using a tooltip template, which can be a convenient way for users to view and interact with the data without having to open a separate dialog or window.
 * [Templates](https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#/material/kanban/card-template) - Templates to customize the appearance and behavior of the key elements, such as cards, column headers, swimlanes, and tooltips. This can be useful for embedding any kind of HTML element or CSS style, and for creating a more personalized and interactive user experience.
-* [Responsive rendering](https://ej2.syncfusion.com/angular/documentation/kanban/responsive-mode/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#responsive-mode) - A Kanban board can be designed to adapt to different form-factors, such as mobile and desktop, in order to provide an optimal user experience across different devices and screen sizes.
-* [Localization support](https://ej2.syncfusion.com/angular/documentation/kanban/localization/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#globalization) - To localize the static text content to any desired language in order to make the control more accessible and user-friendly for international users.
-* [RTL support](https://ej2.syncfusion.com/angular/documentation/kanban/localization/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#right-to-left-rtl) - To display the control contents from right to left (RTL) in order to support languages that are written in this direction, such as Arabic or Hebrew.
+* [Responsive rendering](https://help.syncfusion.com/gantt-sdk/angular/kanban/responsive-mode/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#responsive-mode) - A Kanban board can be designed to adapt to different form-factors, such as mobile and desktop, in order to provide an optimal user experience across different devices and screen sizes.
+* [Localization support](https://help.syncfusion.com/gantt-sdk/angular/kanban/localization/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#globalization) - To localize the static text content to any desired language in order to make the control more accessible and user-friendly for international users.
+* [RTL support](https://help.syncfusion.com/gantt-sdk/angular/kanban/localization#right-to-left-rtl/?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm#right-to-left-rtl) - To display the control contents from right to left (RTL) in order to support languages that are written in this direction, such as Arabic or Hebrew.
 
 ## Resources
 
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/angular?utm_medium=listing&utm_source=github)
+* [What's New](https://www.syncfusion.com/products/whatsnew/gantt-sdk?utm_medium=listing&utm_source=github)
 * [Road Map](https://www.syncfusion.com/products/roadmap/angular)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=angular&type=all)
 
@@ -126,9 +139,9 @@ The Kanban component is also offered in the following list of frameworks.
 Product support is available through the following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/angular-js2?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)
+* [Community forum](https://www.syncfusion.com/forums/gantt-sdk?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)
 * [GitHub issues](https://github.com/syncfusion/ej2-angular-ui-components/issues/new)
-* [Request feature or report bug](https://www.syncfusion.com/feedback/angular?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/gantt-sdk?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm)
 * Live chat
 
 ## Changelog
@@ -137,10 +150,10 @@ Check the changelog [here](https://github.com/syncfusion/ej2-angular-ui-componen
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 140+ [Angular UI components](https://www.syncfusion.com/angular-components), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/license/studio/33.2.3/syncfusion_essential_studio_eula.pdf?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm). To acquire a license for 150+ [Angular UI components](https://www.syncfusion.com/angular-components?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm), you can [purchase](https://www.syncfusion.com/sales/pricing?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm) or [start a free 30-day trial](https://www.syncfusion.com/downloads/angular?tag=es-seo-ft-angular-banner-trial).
 
 > A free community [license](https://github.com/syncfusion/ej2-angular-ui-components/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-angular-ui-components/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=angular-kanban-npm) for more info.
 
-&copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+&copy; Copyright 2026 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.

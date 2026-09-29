@@ -16,7 +16,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents the Vue TreeMap component. It is used to visualize both hierarchical and flat data.
- * ```vue
+ * ```
  * <ejs-treemap></ejs-treemap>
  * ```
  */

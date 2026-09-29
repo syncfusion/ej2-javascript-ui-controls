@@ -1248,3 +1248,91 @@ export interface IErEntityChangedEventArgs {
     /** Set to true to cancel the entity change. */
     cancel?: boolean;
 }
+
+/**
+ * Defines the event arguments for the `beforeWebMcpToolExecute` event.
+ * Provides access to the tool name and its input arguments before execution,
+ * and allows the application to inspect, modify, or cancel the operation.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /**
+     * Specifies whether the tool execution should be cancelled.
+     * Set to `true` to prevent the tool from executing.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the base name of the WebMCP tool being executed
+     * (e.g. `'createDiagramNode'`, `'deleteFromDiagram'`).
+     * This value never includes the prefix applied during registration, so a comparison such as
+     * `args.toolName === 'deleteFromDiagram'` works regardless of how the tools were registered.
+     */
+    toolName?: string;
+    /**
+     * Specifies the name the tool was registered under on `document.modelContext`, including any
+     * prefix applied by `registerWebMcpTools` (e.g. `'myApp_deleteFromDiagram'`).
+     */
+    registeredName?: string;
+    /**
+     * Specifies the arguments passed to the tool.
+     * The shape of this object matches the tool's `inputSchema` as defined in the tool registry.
+     */
+    toolArgs?: object;
+    /**
+     * Set to `true` to display a confirmation dialog to the user before the tool executes.
+     * Execution proceeds only if the user confirms.
+     */
+    showConfirmationDialog?: boolean;
+    /**
+     * Specifies a custom response message to send back to the AI when tool execution is cancelled,
+     * either by setting `cancel` to `true` or when the user dismisses the confirmation dialog.
+     * When not provided, a default cancellation message is sent to the AI.
+     */
+    cancellationResponse?: string;
+}
+
+/**
+ * Defines the structure of a WebMCP tool, including its name, description,
+ * and input/output JSON schemas used for tool registration and execution.
+ */
+export interface WebMcpTool {
+    /**
+     * The unique identifier name of the WebMCP tool (e.g., 'createDiagramNode', 'deleteFromDiagram').
+     */
+    name: string;
+    /**
+     * A description of the tool's functionality and purpose.
+     */
+    description: string;
+    /**
+     * The JSON schema object that defines the expected input parameters for the tool.
+     */
+    inputSchema: object;
+    /**
+     * The JSON schema object that defines the structure of the tool's output response.
+     */
+    outputSchema: object;
+    /**
+     * The behavioural hints an MCP client uses to decide how to present the tool, such as
+     * `readOnlyHint`, `destructiveHint` and `idempotentHint`.
+     */
+    annotations: object;
+    /**
+     * A function that executes the tool's logic when invoked.
+     */
+    execute?: Function;
+}
+
+/**
+ * Defines the result returned by a WebMCP tool execution,
+ * containing the response content array and an optional error flag.
+ */
+export interface WebMcpToolResponse {
+    /**
+     * The response content blocks returned to the AI client.
+     */
+    content: { type: string; text: string }[];
+    /**
+     * Set to `true` when the tool failed, so the AI client surfaces the content as an error.
+     */
+    isError?: boolean;
+}

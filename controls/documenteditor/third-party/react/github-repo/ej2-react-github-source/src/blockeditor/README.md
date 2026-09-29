@@ -1,55 +1,119 @@
 # React Block Editor Component
 
-This [React Block Editor](https://www.syncfusion.com/react-components/react-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm) is a modern, block-based editor for composing rich, structured documents. It’s ideal for document editing, knowledge bases, note-taking, and content creation tools. The editor provides an intuitive UI with mobile support and modular architecture. It offers multiple block types, inline content (mentions, links, labels), slash commands, and contextual menus, returning well-structured content models and valid HTML when needed.
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion® code, ask your AI coding agent to run the Syncfusion® setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion® before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion® skill pack. No Syncfusion® account or MCP key is required to install or read Syncfusion® agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/react/llms.txt](https://ai.syncfusion.com/react/llms.txt)
+
+The Syncfusion [React Block Editor](https://www.syncfusion.com/rich-text-editor-sdk/react-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm) is a modern, block-based editor for creating rich and structured content. It is ideal for document editing, knowledge bases, note-taking, and content creation applications. The editor features an intuitive user interface, mobile support, and a modular architecture. It supports a variety of block types, inline elements such as mentions, links, and labels, slash commands, contextual menus, and real-time collaboration for simultaneous multi-user editing. The editor also provides well-structured content models and can generate valid HTML when required.
 
 <p align="center">
-  <a href="https://ej2.syncfusion.com/react/documentation/block-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Getting Started</a> .
+  <a href="https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Getting Started</a> .
   <a href="https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#/bootstrap5/block-editor/overview">Online demos</a> .
-  <a href="https://www.syncfusion.com/react-components/react-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Learn more</a>
+  <a href="https://www.syncfusion.com/rich-text-editor-sdk/react-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Learn more</a>
 </p>
 
 <p align="center">
-<img alt="React Block Editor Component" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/react/react-blockeditor.png">
+<img alt="React Block Editor Component" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/react/react-blockeditor.webp">
 </p>
 </p>
 
 ## ⚡️ Quick Start
 
-The React Block Editor is easy to set up. Install the package, add a container, import the editor, and initialize it.
+This guide uses Vite as the bundler and development environment for the React Block Editor. Install [Node.js](https://nodejs.org/) 24.13.0 or higher before proceeding. For detailed information about Vite's capabilities and configuration options, refer to the [Vite documentation](https://vitejs.dev/).
 
-### Installation
+### Create a React application
 
-Install via npm:
+To set up a React application, run the following command.
 
 ```sh
-npm install @syncfusion/ej2-react-blockeditor
+npm create vite@latest my-app -- --template react-ts
 ```
 
-### Add the Editor Element
+This command prompts you to configure the React application. As Syncfusion packages are not installed yet, select the `No` option when prompted.
 
-```html
-  <BlockEditorComponent id='block-editor' height="500px"></BlockEditorComponent>
+Then, navigate to the project directory and install the dependencies:
+
+```sh
+cd my-app
+npm install
 ```
+
+### Install the Block Editor package
+
+```sh
+npm install @syncfusion/ej2-react-blockeditor --save
+```
+
+### Add the CSS reference
+
+Install the Syncfusion<sup>®</sup> [Tailwind 3](https://www.npmjs.com/package/@syncfusion/ej2-tailwind3-theme) theme package:
+
+```sh
+npm install @syncfusion/ej2-tailwind3-theme --save
+```
+
+Then add the following CSS reference to the `src/App.css` file:
+
+```css
+@import '../node_modules/@syncfusion/ej2-tailwind3-theme/styles/blockeditor/index.css';
+```
+
+### Add the Block Editor component to your application
+
+Add the Block Editor component to the `src/App.tsx` file:
+
+```typescript
+import './App.css';
+import { BlockEditorComponent } from '@syncfusion/ej2-react-blockeditor';
+
+function App() {
+  return (
+    <>
+      <BlockEditorComponent id="block-editor" height="500px"/>
+    </>
+  );
+}
+
+export default App;
+```
+
+### Run the application
+
+```sh
+npm run dev
+```
+
+Now, open your project in a browser, and the Block Editor will be displayed! 🚀
 
 <blockquote>
     <p>ℹ️ <b>Note:</b></p>
-    <span>For more information on using Block Editor with Syncfusion, refer to our <a href="https://ej2.syncfusion.com/react/documentation/block-editor/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Documentation</a>.</span>
+    <span>For more information on using Block Editor with Syncfusion, refer to our <a href="https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm">Documentation</a>.</span>
 </blockquote>
 
 ## ✨ Key features
 
-* [Real-time collaboration](https://ej2.syncfusion.com/react/documentation/block-editor/collaborative-editing): Real-time collaboration enables multiple users to create and edit content simultaneously with synchronized updates across all connected clients. It helps teams work together efficiently while maintaining content consistency and reducing editing conflicts.
-* [Multiple block types](https://ej2.syncfusion.com/react/documentation/block-editor/built-in-blocks/built-in-blocks?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#block-types): Includes Heading levels 1-4, Table, Paragraph, Table, Lists, Checklist, Quote, Callout, Divider, Code block, and more.
-* [Slash commands](https://ej2.syncfusion.com/react/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#slash-command-menu): Interactive `/` commands to insert or transform content blocks, with filtering and keyboard shortcuts.
-* [Drag and drop](https://ej2.syncfusion.com/react/documentation/block-editor/drag-drop?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Reorder blocks effortlessly with built-in drag-and-drop support.
-* [Rich text formatting](https://ej2.syncfusion.com/react/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#inline-toolbar): Apply styles such as Bold, Italic, Underline, Strikethrough, Uppercase and more.
-* [Action menu](https://ej2.syncfusion.com/react/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#block-action-menu): Perform block-level operations such as Move, Delete, and Duplicate.
-* [Contextmenu support](https://ej2.syncfusion.com/react/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#context-menu): Right-click context menus for quick block actions.
-* [Inline content support](https://ej2.syncfusion.com/react/documentation/block-editor/built-in-blocks/inline-content?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Insert inline elements like Links, Labels and Mention directly within blocks.
-* [Undo/Redo operations](https://ej2.syncfusion.com/react/documentation/block-editor/undo-redo?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Undo and redo support for the user interactions.
-* [Events for Customization](https://ej2.syncfusion.com/react/documentation/block-editor/events?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): The Block Editor includes a rich set of events such as block addition, removal, update, selection change, command execution, paste, and mention selection allowing developers to customize and extend functionality easily.
-* **Accessibility & WCAG 2.0 Compliance**: Accessibility support for assistive technologies and keyboard navigation.
-* [Keyboard Navigation](https://ej2.syncfusion.com/react/documentation/block-editor/keyboard-shortcuts?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Navigate and manage blocks efficiently using intuitive keyboard shortcuts for a faster editing experience.
+* [Real-time collaboration](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/real-time-collaboration?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Real-time collaboration enables multiple users to create and edit content simultaneously with synchronized updates across all connected clients. It helps teams work together efficiently while maintaining content consistency and reducing editing conflicts.
+* [Multiple block types](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/built-in-blocks/built-in-blocks?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#block-types): Includes Heading levels 1-4, Table, Paragraph, Table, Lists, Checklist, Quote, Callout, Divider, Code block, and more.
+* [Slash commands](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#slash-command-menu): Interactive `/` commands to insert or transform content blocks, with filtering and keyboard shortcuts.
+* [Drag and drop](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/drag-drop?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Reorder blocks effortlessly with built-in drag-and-drop support.
+* [Rich text formatting](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#inline-toolbar): Apply styles such as Bold, Italic, Underline, Strikethrough, Uppercase and more.
+* [Action menu](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#block-action-menu): Perform block-level operations such as Move, Delete, and Duplicate.
+* [Contextmenu support](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm#context-menu): Right-click context menus for quick block actions.
+* [Inline content support](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/built-in-blocks/inline-content?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Insert inline elements like Links, Labels and Mention directly within blocks.
+* [Undo/Redo operations](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/undo-redo?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Undo and redo support for the user interactions.
+* [Events for Customization](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/events?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): The Block Editor includes a rich set of events such as block addition, removal, update, selection change, command execution, paste, and mention selection allowing developers to customize and extend functionality easily.
+* [Accessibility & WCAG 2.0 Compliance](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/accessibility?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Accessibility support for assistive technologies and keyboard navigation.
+* [Keyboard Navigation](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/keyboard-shortcuts?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm): Navigate and manage blocks efficiently using intuitive keyboard shortcuts for a faster editing experience.
 
 <p align="center">
 Trusted by the world's leading companies
@@ -67,11 +131,12 @@ Input components are also offered in following list of frameworks.
 
 ## 🏗️ Showcase samples
 
+* Real-Time Collaborative Editing - [Live Demo](https://ej2.syncfusion.com/showcase/react/blockeditor-collaborative-editing/)
 * Cloud Pricing - [Live Demo](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=slider#/bootstrap5/range-slider/azure-pricing)
 
 ## 📚 Resources
 
-* [Documentation](https://ej2.syncfusion.com/react/documentation/block-editor/getting-started)
+* [Documentation](https://help.syncfusion.com/rich-text-editor-sdk/react/block-editor/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm)
 * [AI Coding Assistant](https://ej2.syncfusion.com/react/documentation/ai-coding-assistants/overview)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
 * [What's New](https://www.syncfusion.com/products/whatsnew/react?utm_medium=listing&utm_source=github)
@@ -83,9 +148,9 @@ Input components are also offered in following list of frameworks.
 Product support is available through following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm)
+* [Community forum](https://www.syncfusion.com/forums/rich-text-editor-sdk/?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm)
 * [GitHub issues](https://github.com/syncfusion/ej2-react-ui-components/issues/new)
-* [Request feature or report bug](https://www.syncfusion.com/feedback/react?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/rich-text-editor-sdk?utm_source=npm&utm_medium=listing&utm_campaign=react-blockeditor-npm)
 * Live chat
 
 ## 🔄 Changelog

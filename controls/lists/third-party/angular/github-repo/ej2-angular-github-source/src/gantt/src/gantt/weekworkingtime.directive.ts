@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-gantt>e-week-working-times>e-week-working-time',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class WeekWorkingTimeDirective extends ComplexBase<WeekWorkingTimeDirective> {
@@ -34,14 +34,14 @@ export class WeekWorkingTimeDirective extends ComplexBase<WeekWorkingTimeDirecti
      * Defines the day of the week to apply customized working time.
      * @default null
      */
-    public dayOfWeek: any;
+    public declare dayOfWeek: any;
     /** 
      * Defines the time range for each day of the week.
      * @default []
      * @asptype List<GanttDayWorkingTime>
 
      */
-    public timeRange: any;
+    public declare timeRange: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -57,6 +57,7 @@ export class WeekWorkingTimeDirective extends ComplexBase<WeekWorkingTimeDirecti
  */
 @Directive({
     selector: 'ejs-gantt>e-week-working-times',
+    standalone: true,
     queries: {
         children: new ContentChildren(WeekWorkingTimeDirective)
     },

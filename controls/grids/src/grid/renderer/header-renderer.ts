@@ -73,7 +73,7 @@ export class HeaderRender implements IRenderer {
                     extend({ 'index': colIndex }, col), gObj, 'headerTemplate', null, null, null, null, gObj.root);
                 const isReactCompiler: boolean = gObj.isReact && typeof (col.headerTemplate) !== 'string';
                 const isReactChild: boolean = gObj.parentDetails && gObj.parentDetails.parentInstObj &&
-                 gObj.parentDetails.parentInstObj.isReact;
+                gObj.parentDetails.parentInstObj.isReact;
                 if (isReactCompiler || isReactChild) {
                     gObj.renderTemplates();
                 }
@@ -372,8 +372,11 @@ export class HeaderRender implements IRenderer {
         }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[parseInt(i.toString(), 10)], columns);
-            if (this.parent.rowHeight && headerRow.querySelector('.e-headercell')) {
-                (headerRow as HTMLElement).style.height = this.parent.rowHeight + 'px';
+            const height: number | null = this.parent.headerRowHeight != null
+                ? this.parent.headerRowHeight
+                : this.parent.rowHeight;
+            if (!isNullOrUndefined(height) && height > 0 && headerRow.querySelector('.e-headercell')) {
+                (headerRow as HTMLElement).style.height = height + 'px';
             }
             addFixedColumnBorder(headerRow);
             thead.appendChild(headerRow);
@@ -516,7 +519,7 @@ export class HeaderRender implements IRenderer {
                 const stackedLockColsCount: number = this.getStackedLockColsCount(cols, 0);
                 const isStackedLockColumn: boolean = this.parent.lockcolPositionCount === 0
                 || (!this.lockColsRendered && stackedLockColsCount !== 0)
-                    || (this.lockColsRendered && (colSpan - stackedLockColsCount) !== 0);
+                || (this.lockColsRendered && (colSpan - stackedLockColsCount) !== 0);
                 if (isStackedLockColumn) {
                     rows[parseInt(index.toString(), 10)].cells.push(new Cell<Column>(<{ [x: string]: Object }>{
                         cellType: CellType.StackedHeader, column: cols,

@@ -1,5 +1,6 @@
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-navigations/styles/treeview/highcontrast-definition' as *;
+
 $field-list-skin: 'highcontast' !default;
 $field-list-active-color: $selection-bg !default;
 $field-list-default-font-color: $content-font !default;
@@ -109,6 +110,9 @@ $field-list-border: $field-list-default-border-color !default;
 $field-list-cal-button-text-color: $field-list-default-font-color !default;
 $field-list-calc-expand-icon-padding: 8px !default;
 $field-list-search-padding-size: 10px $field-list-title-padding-size !default;
+$field-list-add-filter-selection-margin: 18px !default;
+$field-list-add-filter-selection-bigger-height: $treeview-big-item-height !default;
+$field-list-add-filter-selection-height: $treeview-item-height !default;
 $field-list-member-prompt-padding-size: 25px 12px !default;
 $field-list-static-field-table-height: 210px !default;
 $field-list-static-field-table-outer-div-height: 180px !default;

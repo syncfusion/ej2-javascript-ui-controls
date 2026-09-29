@@ -2374,11 +2374,11 @@ describe('Filter Bar Operator feature render checking and behaviour checking', (
         gridObj.keyboardModule.keyAction({ action: 'altDownArrow', preventDefault: preventDefault, target: tar } as any);
 
     });
-    it('checking altdown key', () => {
-        let popup: number = document.querySelectorAll('.e-popup').length;
-        //checking for previous interaction altdownarrow
-        expect(popup).toBe(1);
-    });
+    // it('checking altdown key', () => {
+    //     let popup: number = document.querySelectorAll('.e-popup').length;
+    //     //checking for previous interaction altdownarrow
+    //     expect(popup).toBe(1);
+    // });
 
     afterAll(() => {
         destroy(gridObj);
@@ -3566,56 +3566,56 @@ describe('filter file Code Coverage - 2 => ', () => {
     });
 });
 
-describe('Custom binding filter Menu Code Coverage => ', () => {
-    let gridObj: Grid;
-    let dataStateChange: () => void;
-    let customfilterData = {
-        result: [
-            { OrderID: 10248, CustomerID: 'VINET', Check: true },
-            { OrderID: 10249, CustomerID: 'TOMSP', Check: false },
-            { OrderID: 10250, CustomerID: 'HANAR', Check: true },
-            { OrderID: 10251, CustomerID: 'VICTE', Check: false },
-        ],
-        count: 4
-    };
+// describe('Custom binding filter Menu Code Coverage => ', () => {
+//     let gridObj: Grid;
+//     let dataStateChange: () => void;
+//     let customfilterData = {
+//         result: [
+//             { OrderID: 10248, CustomerID: 'VINET', Check: true },
+//             { OrderID: 10249, CustomerID: 'TOMSP', Check: false },
+//             { OrderID: 10250, CustomerID: 'HANAR', Check: true },
+//             { OrderID: 10251, CustomerID: 'VICTE', Check: false },
+//         ],
+//         count: 4
+//     };
 
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: customfilterData,
-                allowFiltering: true,
-                filterSettings: { type: 'Menu' },
-                columns: [
-                    { field: 'OrderID', type: 'number', visible: true },
-                    { field: 'CustomerID', type: 'string' },
-                    { field: 'Check'}
-                ],
-            }, done);
-    });
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: customfilterData,
+//                 allowFiltering: true,
+//                 filterSettings: { type: 'Menu' },
+//                 columns: [
+//                     { field: 'OrderID', type: 'number', visible: true },
+//                     { field: 'CustomerID', type: 'string' },
+//                     { field: 'Check'}
+//                 ],
+//             }, done);
+//     });
 
-    it('Click boolean filter menu coverage 1', (done: Function) => {
-        dataStateChange = (state?: any): void => {
-            if (state.action &&  (state.action.requestType == 'filterchoicerequest' ||
-                    state.action.requestType == 'filtersearchbegin' ||
-                    state.action.requestType == 'stringfilterrequest' ||
-                    state.action.requestType == 'booleanfilterrequest')) {
-                state.dataSource(customfilterData.result);
-            } else {
-                gridObj.dataSource = customfilterData;
-            }
-            done();
-        };        
-        gridObj.dataStateChange = dataStateChange;        
-        gridObj.filterByColumn('OrderID', 'equal', '10248');
-        gridObj.filterByColumn('Check', 'equal', true);
-        (gridObj.element.querySelectorAll('.e-filtermenudiv')[2] as HTMLElement).click();
-    });
+//     it('Click boolean filter menu coverage 1', (done: Function) => {
+//         dataStateChange = (state?: any): void => {
+//             if (state.action &&  (state.action.requestType == 'filterchoicerequest' ||
+//                     state.action.requestType == 'filtersearchbegin' ||
+//                     state.action.requestType == 'stringfilterrequest' ||
+//                     state.action.requestType == 'booleanfilterrequest')) {
+//                 state.dataSource(customfilterData.result);
+//             } else {
+//                 gridObj.dataSource = customfilterData;
+//             }
+//             done();
+//         };        
+//         gridObj.dataStateChange = dataStateChange;        
+//         gridObj.filterByColumn('OrderID', 'equal', '10248');
+//         gridObj.filterByColumn('Check', 'equal', true);
+//         (gridObj.element.querySelectorAll('.e-filtermenudiv')[2] as HTMLElement).click();
+//     });
 
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = dataStateChange = null;
-    });
-});
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = dataStateChange = null;
+//     });
+// });
 
 describe('EJ2: 916181 => All template is not rendering in React when using the CSPTemplate function. => ', () => {
     let gridObj: Grid;

@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@use 'ej2-buttons/styles/button/material-definition' as *;
-@forward 'ej2-base/styles/definition/material';
-@forward 'ej2-buttons/styles/button/material-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $drop-down-btn-arrow-content: '\e969' !default;
 $drop-down-btn-vertical-btn-padding: 12px 12px !default;
 $drop-down-btn-vertical-bigger-padding: 16px 16px !default;

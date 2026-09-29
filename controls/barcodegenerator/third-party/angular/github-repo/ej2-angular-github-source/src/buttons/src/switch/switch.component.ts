@@ -21,6 +21,7 @@ export const twoWays: string[] = ['checked'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,23 +30,22 @@ export const twoWays: string[] = ['checked'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class SwitchComponent extends Switch implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	beforeChange: any;
-	change: any;
-	created: any;
-	public checkedChange: any;
+    public declare tagObjects: any;
+	declare beforeChange: any;
+	declare change: any;
+	declare created: any;
+	public declare checkedChange: any;
 
 
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -87,7 +87,7 @@ export class SwitchComponent extends Switch implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

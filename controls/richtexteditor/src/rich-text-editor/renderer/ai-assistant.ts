@@ -6,7 +6,7 @@ import { Popup, Tooltip } from '@syncfusion/ej2-popups';
 import { AIAssistView, PromptModel, PromptRequestEventArgs, ToolbarItemClickedEventArgs } from '@syncfusion/ej2-interactive-chat';
 import { ActionBeginEventArgs, IToolbarItemModel, NotifyArgs } from '../../common';
 import { MenuEventArgs as MenuBarItemSelectedArgs } from '@syncfusion/ej2-navigations';
-import { detach, Draggable, extend, formatUnit, getComponent, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, select} from '@syncfusion/ej2-base';
+import { detach, Draggable, extend, formatUnit, getComponent, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, select, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../selection/selection';
 import { AssistantPromptToolbarItems, AssistantResponseToolbarItems, AssistantToolbarType, AssitantHeaderToolbarItems } from '../base/types';
 import { BeforePopupOpenCloseEventArgs, IMenuRenderArgs, RenderType, RichTextEditorModel } from '../base';
@@ -46,6 +46,7 @@ export class AIAssistant {
     private isProcessWholeEditorContent: boolean;
     private shouldProcessResponse: boolean = false;
     constructor(parent: IRichTextEditor, serviceLocator: ServiceLocator) {
+        initializeTelemetryFeature('AIAssistant', 'RichTextEditor');
         this.parent = parent;
         this.locator = serviceLocator;
         this.rendererFactory = this.locator.getService<RendererFactory>('rendererFactory');

@@ -1853,6 +1853,13 @@ describe('Remote Data Filtering', () => {
 describe('disableHtmlEncode Property', () => {
     let ddtreeObj: DropDownTree;
     let ele = createElement('input', { id: 'ddtree' }) as HTMLInputElement;
+    const sampleData = [
+        { id: '1', name: 'Australia', hasChild: true },
+        { id: '2', name: 'New South Wales', pid: '1' },
+        { id: '3', name: 'Victoria', pid: '1' },
+        { id: '4', name: 'South Australia', pid: '1', hasChild: true },
+        { id: '5', name: 'Adelaide', pid: '4' }
+    ];
     beforeAll(() => {
         document.body.appendChild(ele);
     });

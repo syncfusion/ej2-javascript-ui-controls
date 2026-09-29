@@ -7,13 +7,13 @@ import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SummaryTypes } from './types';
 import { IOlapCustomProperties, IOlapField, IOlapFieldListOptions, OlapEngine } from './olap/engine';
-import { HeadersSortEventArgs } from '../common/base/interface';
+import { HeadersSortEventArgs, PivotActionInfo } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
 import { PivotChart } from '../pivotchart/base/pivotchart';
 import * as cls from '../common/base/css-constant';
 import { DrillOptionsModel } from '../model/datasourcesettings-model';
-
+import * as events from '../common/base/constant';
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
  *
@@ -1309,5 +1309,55 @@ export class PivotUtil {
             }
         }
         return document.body;
+    }
+
+    /**
+     * Invokes the actionBeginMethod or actionCompleteMethod on the parent based on the actionEvent.
+     * This method centralizes the common pattern of setting actionObj.actionName,
+     * actionObj.actionInfo, actionObj.fieldInfo, and then calling actionBeginMethod() or actionCompleteMethod().
+     *
+     * @param {PivotView | PivotFieldList} parent - The parent control instance.
+     * @param {string} actionEvent - The event type to determine which method to invoke (events.actionBegin or events.actionComplete).
+     * @param {string} actionName - The action name to set on the parent actionObj (e.g., events.hideSubTotals).
+     * @param {PivotActionInfo} actionInfo - The action info to set on the parent actionObj (optional).
+     * @param {FieldItemInfo} fieldInfo - The field information to set on the parent actionObj (optional).
+     * @returns {boolean | void} - Returns true if actionBeginMethod was invoked and returned true (action should be cancelled), void otherwise.
+     * @hidden
+     */
+    public static invokeActionMethod(
+        parent: PivotView | PivotFieldList,
+        actionEvent: string,
+        actionName: string,
+        actionInfo?: PivotActionInfo,
+        fieldInfo?: FieldItemInfo
+    ): boolean | void {
+        parent.actionObj.actionName = actionName;
+        if (actionInfo) {
+            parent.actionObj.actionInfo = actionInfo;
+        }
+        if (fieldInfo) {
+            parent.actionObj.fieldInfo = fieldInfo;
+        }
+        if (actionEvent === events.actionBegin) {
+            return parent.actionBeginMethod();
+        } else if (actionEvent === events.actionComplete) {
+            parent.actionCompleteMethod();
+        }
+    }
+
+    /**
+     * To convert hex to RGB.
+     *
+     * @param {string} hex - The hex color value.
+     * @returns { { r: number, g: number, b: number } | null } - The RGB triplet, or null if the input is not a valid 6-digit hex.
+     * @hidden
+     */
+    public static hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+        const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 }

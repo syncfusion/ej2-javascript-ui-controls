@@ -15,6 +15,7 @@ import { AriaService } from '../services/aria-service';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
 import { isGroupAdaptive, addFixedColumnBorder } from '../base/util';
+import { applyStickyLeftRightPosition } from '../base/util';
 import { Grid } from '../base/grid';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { ColumnWidthService } from '../services/width-controller';
@@ -363,6 +364,7 @@ export class ContentRender implements IRenderer {
             const query: Query = new Query();
             const dataModule: Data = this.parent.getDataModule();
             const pinnedData: Object[] = dataModule.pinnedData.executeLocal(dataModule.pinnedDataQuery(query));
+            gObj.pinnedDataCount = pinnedData.length;
             gObj.pinnedTopRowModels = this.generator.generatePinnedTopRows(pinnedData);
         }
         if (!this.isAddRows && !this.useGroupCache) {
@@ -407,9 +409,14 @@ export class ContentRender implements IRenderer {
             const pinRow: Element = row.render(gObj.pinnedTopRowModels[parseInt(i.toString(), 10)], columns);
             addFixedColumnBorder(pinRow);
             pinRow.classList.add('e-grid-pin-row');
-            const gCells: Element[] = [].slice.call(pinRow.getElementsByClassName('e-grouptopleftcell'));
-            if (gCells.length) {
-                gCells[gCells.length - 1].classList.add('e-lastgrouptopleftcell');
+            const pIndentCells: Element[] = [].slice.call(pinRow.querySelectorAll('.e-pindentcell'));
+            for (let c: number = 0; c < pIndentCells.length; c++) {
+                pIndentCells[parseInt(c.toString(), 10)].classList.add('e-leftfreeze');
+                applyStickyLeftRightPosition(
+                    pIndentCells[parseInt(c.toString(), 10)] as HTMLElement, c * 30, gObj.enableRtl, 'Left');
+                if (c === pIndentCells.length - 1) {
+                    pIndentCells[parseInt(c.toString(), 10)].classList.add('e-lastpindentcell');
+                }
             }
             hdrfrag.appendChild(pinRow);
         }
@@ -478,8 +485,9 @@ export class ContentRender implements IRenderer {
             (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
                 this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage] = [];
         }
+        const isRowPinAction: boolean = args.requestType === 'pin-row' || args.requestType === 'unpin-row';
         if ((this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'delete')
-            || infiniteDetailModified) {//  || (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache))
+            || infiniteDetailModified || (this.parent.enableInfiniteScrolling && isRowPinAction)) {//  || (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache))
             this.visibleRows = [];
         }
         if (args.requestType === 'paging' && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length) {

@@ -22,7 +22,7 @@ import { PdfList } from './pdf-list';
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export class PdfListItem {
     /**
@@ -102,7 +102,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     public constructor(text: string, settings?: {font?: PdfFont, format?: PdfStringFormat, brush?: PdfBrush, pen?: PdfPen}) {
         if (text === null || typeof text === 'undefined') {
@@ -149,7 +149,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get brush(): PdfBrush {
         return this._brush;
@@ -179,7 +179,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set brush(value: PdfBrush) {
         this._brush = value;
@@ -209,7 +209,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get pen(): PdfPen {
         return this._pen;
@@ -239,7 +239,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set pen(value: PdfPen) {
         this._pen = value;
@@ -269,7 +269,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get font(): PdfFont {
         return this._font;
@@ -299,7 +299,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set font(value: PdfFont) {
         this._font = value;
@@ -329,7 +329,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get stringFormat(): PdfStringFormat {
         return this._stringFormat;
@@ -359,7 +359,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set stringFormat(value: PdfStringFormat) {
         this._stringFormat = value;
@@ -417,7 +417,7 @@ export class PdfListItem {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set text(value: string) {
         this._text = value;
@@ -562,7 +562,7 @@ export class PdfListItem {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export class PdfListItemCollection {
     /**
@@ -600,7 +600,7 @@ export class PdfListItemCollection {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     public constructor()
     /**
@@ -743,7 +743,7 @@ export class PdfListItemCollection {
      * // Add the items to list item collection by passing the array of products
      * let itemCollection: PdfListItemCollection = new PdfListItemCollection(products);
      * // Retrieve a specific item from the list collection at a particular index
-     * let item: PdflistItem = list.itemCollection.itemAt(1);
+     * let item: PdfListItem = list.itemCollection.itemAt(1);
      * // Draw the list items on the page at specified coordinates and dimensions
      * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
@@ -777,7 +777,7 @@ export class PdfListItemCollection {
      *   'PDF is a file format designed to present documents consistently across devices and platforms.',
      *   'Excel is a widely used spreadsheet application developed by Microsoft.',
      *   'PDF stands for Portable Document Format.',
-     *   'PowerPoint is a presentation program developed by Microsoft for creating slideshows.',
+     *   'PowerPoint is a presentation program developed by Microsoft for creating presentations.',
      *   'PowerPoint is widely used in business settings for creating presentations.'
      * ];
      * // Add the items to list item collection by passing the array of products
@@ -827,7 +827,7 @@ export class PdfListItemCollection {
      *   'PDF is a file format designed to present documents consistently across devices and platforms.',
      *   'Excel is a widely used spreadsheet application developed by Microsoft.',
      *   'PDF stands for Portable Document Format.',
-     *   'PowerPoint is a presentation program developed by Microsoft for creating slideshows.',
+     *   'PowerPoint is a presentation program developed by Microsoft for creating presentations.',
      *   'PowerPoint is widely used in business settings for creating presentations.'
      * ];
      * // Add the items to list item collection by passing the array of products
@@ -866,7 +866,7 @@ export class PdfListItemCollection {
      *   'PDF is a file format designed to present documents consistently across devices and platforms.',
      *   'Excel is a widely used spreadsheet application developed by Microsoft.',
      *   'PDF stands for Portable Document Format.',
-     *   'PowerPoint is a presentation program developed by Microsoft for creating slideshows.',
+     *   'PowerPoint is a presentation program developed by Microsoft for creating presentations.',
      *   'PowerPoint is widely used in business settings for creating presentations.'
      * ];
      * // Add the items to list item collection by passing the array of products
@@ -901,7 +901,7 @@ export class PdfListItemCollection {
      *   'PDF is a file format designed to present documents consistently across devices and platforms.',
      *   'Excel is a widely used spreadsheet application developed by Microsoft.',
      *   'PDF stands for Portable Document Format.',
-     *   'PowerPoint is a presentation program developed by Microsoft for creating slideshows.',
+     *   'PowerPoint is a presentation program developed by Microsoft for creating presentations.',
      *   'PowerPoint is widely used in business settings for creating presentations.'
      * ];
      * // Add the items to list item collection by passing the array of products
@@ -950,7 +950,7 @@ export class PdfListItemCollection {
      *   'PDF is a file format designed to present documents consistently across devices and platforms.',
      *   'Excel is a widely used spreadsheet application developed by Microsoft.',
      *   'PDF stands for Portable Document Format.',
-     *   'PowerPoint is a presentation program developed by Microsoft for creating slideshows.',
+     *   'PowerPoint is a presentation program developed by Microsoft for creating presentations.',
      *   'PowerPoint is widely used in business settings for creating presentations.'
      * ];
      * // Add the items to list item collection by passing the array of products

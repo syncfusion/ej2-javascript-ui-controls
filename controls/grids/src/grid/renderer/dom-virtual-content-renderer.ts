@@ -41,6 +41,7 @@ export class DomVirtualElementHandler {
 
     public renderVerticalScrollbar(): void {
         this.verticalScrollbar = createElement('div', { className: 'e-virtual-vertical-scrollbar e-dom-virtual-vertical-scrollbar' });
+        this.gridContent.style.position = 'relative';
         this.gridContent.appendChild(this.verticalScrollbar);
         this.verticalScrollerContainer = createElement('div', { className: 'e-virtual-vertical-track e-dom-virtual-vertical-track' });
         this.verticalScrollbar.appendChild(this.verticalScrollerContainer);
@@ -266,6 +267,7 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
             const pageHeight: number = this.storedVirtualHeight > 0 ? this.storedVirtualHeight
                 : this.content.clientHeight * 2;
             this.observer.setPageHeight(pageHeight);
+            window.addEventListener('resize', this.updateScrollbarOnResize.bind(this));
             this.observer.observe(
                 (scrollArgs: ScrollArg) => this.domScrollListener(scrollArgs),
                 this.onEntered()
@@ -536,6 +538,24 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
                 updateCSSText(this.virtualEle.verticalScrollerContainer, `height: ${totalHeight}px;`);
             }
         }
+        this.adjustVerticalScrollbarOverflow();
+    }
+
+    private adjustVerticalScrollbarOverflow(): void {
+        if (!this.virtualEle.verticalScrollbar || !this.content) {
+            return;
+        }
+        const hasHorizontalScroll: boolean = this.content.scrollWidth > this.content.clientWidth;
+        const overflowX: string = hasHorizontalScroll ? 'scroll' : 'hidden';
+        updateCSSText(this.virtualEle.verticalScrollbar, `overflow-x: ${overflowX};`);
+    }
+
+    private updateScrollbarOnResize(): void {
+        if (this.parent.isRowDomVirtualization() && !isNullOrUndefined(this.virtualEle.verticalScrollbar)
+            && !isNullOrUndefined(this.content)) {
+            updateCSSText(this.virtualEle.verticalScrollbar, `width: ${getScrollBarWidth(true) + 1}px;`);
+            this.adjustVerticalScrollbarOverflow();
+        }
     }
 
     public getRowTopOffset(dataRowIndex: number): number {
@@ -578,6 +598,7 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
     }
 
     public removeEventListeners(): void {
+        window.removeEventListener('resize', this.updateScrollbarOnResize.bind(this));
         this.observer = null as unknown as InterSectionObserver;
     }
 

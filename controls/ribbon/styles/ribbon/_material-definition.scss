@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ribbon-border: none !default;
 $ribbon-border-radius: unset !default;
 $ribbon-disabled-opacity: .35 !default;

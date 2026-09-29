@@ -378,9 +378,12 @@ export class _PdfRedactionProcessor {
                     const polygon: PdfPolygonAnnotation = (annotation as PdfPolygonAnnotation);
                     const polygonPoints: Point[] = polygon._getLinePoints();
                     const polygonPointsToArray: number[] = _convertPointToNumberArray(polygonPoints);
-                    polygonPointsToArray.forEach((element: any) => { // eslint-disable-line
-                        newPoints.push(element[0], -element[1]);
-                    });
+                    for (let i: number = 0; i < polygonPointsToArray.length; i += 2) {
+                        newPoints.push(
+                            polygonPointsToArray[<number>i],
+                            -polygonPointsToArray[i + 1]
+                        );
+                    }
                     inkBounds = this._getBoundsFromPoints(newPoints, page);
                     bounds = inkBounds.bounds;
                     isValidAnnotation = inkBounds.isValidAnnotation;
@@ -391,9 +394,12 @@ export class _PdfRedactionProcessor {
                     const polyLine: PdfPolyLineAnnotation = (annotation as PdfPolyLineAnnotation);
                     const polyLinePoints: Point[] = polyLine._getLinePoints();
                     const polyLinePointsToArray: number[] = _convertPointToNumberArray(polyLinePoints);
-                    polyLinePointsToArray.forEach((element: any) => { // eslint-disable-line
-                        newPoints.push(element[0], -element[1]);
-                    });
+                    for (let i: number = 0; i < polyLinePointsToArray.length; i += 2) {
+                        newPoints.push(
+                            polyLinePointsToArray[<number>i],
+                            -polyLinePointsToArray[i + 1]
+                        );
+                    }
                     inkBounds = this._getBoundsFromPoints(newPoints, page);
                     bounds = inkBounds.bounds;
                     isValidAnnotation = inkBounds.isValidAnnotation;

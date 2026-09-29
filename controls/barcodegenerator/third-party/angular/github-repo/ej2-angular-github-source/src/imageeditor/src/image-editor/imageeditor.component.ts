@@ -20,56 +20,41 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        toolbarTemplate: new ContentChild('toolbarTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ImageEditorComponent extends ImageEditor implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeSave: any;
-	click: any;
-	created: any;
-	cropping: any;
-	destroyed: any;
-	editComplete: any;
-	fileOpened: any;
-	finetuneValueChanging: any;
-	flipping: any;
-	frameChange: any;
-	imageFiltering: any;
-	panning: any;
-	quickAccessToolbarItemClick: any;
-	quickAccessToolbarOpen: any;
-	resizing: any;
-	rotating: any;
-	saved: any;
-	selectionChanging: any;
-	shapeChange: any;
-	shapeChanging: any;
-	toolbarCreated: any;
-	toolbarItemClicked: any;
-	toolbarUpdating: any;
-	public zooming: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeSave: any;
+	declare click: any;
+	declare created: any;
+	declare cropping: any;
+	declare destroyed: any;
+	declare editComplete: any;
+	declare fileOpened: any;
+	declare finetuneValueChanging: any;
+	declare flipping: any;
+	declare frameChange: any;
+	declare imageFiltering: any;
+	declare panning: any;
+	declare quickAccessToolbarItemClick: any;
+	declare quickAccessToolbarOpen: any;
+	declare resizing: any;
+	declare rotating: any;
+	declare saved: any;
+	declare selectionChanging: any;
+	declare shapeChange: any;
+	declare shapeChanging: any;
+	declare toolbarCreated: any;
+	declare toolbarItemClicked: any;
+	declare toolbarUpdating: any;
+	public declare zooming: any;
 
 
-    /** 
-     * Specifies a custom template for the toolbar of an image editor control. 
-     * A string that specifies a custom template for the toolbar of the image editor. If this property is defined, the 'toolbar' property will not have any effect.
-     * 
-     * {% codeBlock src='image-editor/toolbarTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @remarks Use this property if you want to customize the entire toolbar in your own way. The template should be a string that contains the HTML markup for the custom toolbar.
-
-     * @default null
-     * @asptype string
-
-
-     */
-    @ContentChild('toolbarTemplate')
-    @Template()
-    public toolbarTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -99,7 +84,9 @@ export class ImageEditorComponent extends ImageEditor implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ImageEditorComponent.prototype, 'toolbarTemplate');
+
 

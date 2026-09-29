@@ -5,7 +5,7 @@ import { MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Template } from '@syncfusion/ej2-angular-base';
 
 
-export const inputs: string[] = ['actionFailureTemplate','addTagOnBlur','allowCustomValue','allowFiltering','allowObjectBinding','allowResize','changeOnBlur','closePopupOnSelect','cssClass','dataSource','debounceDelay','delimiterChar','enableGroupCheckBox','enableHtmlSanitizer','enablePersistence','enableRtl','enableSelectionOrder','enableVirtualization','enabled','fields','filterBarPlaceholder','filterType','floatLabelType','footerTemplate','groupTemplate','headerTemplate','hideSelectedItem','htmlAttributes','ignoreAccent','ignoreCase','isDeviceFullScreen','itemTemplate','locale','maximumSelectionLength','mode','noRecordsTemplate','openOnClick','placeholder','popupHeight','popupWidth','query','readonly','selectAllText','showClearButton','showDropDownIcon','showSelectAll','sortOrder','text','unSelectAllText','value','valueTemplate','width','zIndex'];
+export const inputs: string[] = ['actionFailureTemplate','addTagOnBlur','allowCustomValue','allowFiltering','allowObjectBinding','allowResize','changeOnBlur','closePopupOnSelect','cssClass','dataSource','debounceDelay','delimiterChar','enableGroupCheckBox','enableHtmlSanitizer','enablePersistence','enableRtl','enableSelectionOrder','enableVirtualization','enabled','fields','filterBarPlaceholder','filterType','floatLabelType','footerTemplate','groupTemplate','headerTemplate','hideSelectedItem','htmlAttributes','ignoreAccent','ignoreCase','isDeviceFullScreen','itemTemplate','locale','maximumSelectionLength','mode','noRecordsTemplate','openOnClick','placeholder','popupHeight','popupWidth','query','readonly','selectAllText','showClearButton','showDropDownIcon','showSelectAll','sortOrder','summaryTagCount','summaryTagTemplate','text','unSelectAllText','value','valueTemplate','width','zIndex'];
 export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','beforeOpen','beforeSelectAll','blur','change','chipSelection','close','created','customValueSelection','dataBound','destroyed','filtering','focus','open','removed','removing','resizeStart','resizeStop','resizing','select','selectedAll','tagging','valueChange'];
 export const twoWays: string[] = ['value'];
 
@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,114 +30,47 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        footerTemplate: new ContentChild('footerTemplate'),
+        headerTemplate: new ContentChild('headerTemplate'),
+        valueTemplate: new ContentChild('valueTemplate'),
+        itemTemplate: new ContentChild('itemTemplate'),
+        groupTemplate: new ContentChild('groupTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate'),
+        actionFailureTemplate: new ContentChild('actionFailureTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class MultiSelectComponent extends MultiSelect implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforeOpen: any;
-	beforeSelectAll: any;
-	blur: any;
-	change: any;
-	chipSelection: any;
-	close: any;
-	created: any;
-	customValueSelection: any;
-	dataBound: any;
-	destroyed: any;
-	filtering: any;
-	focus: any;
-	open: any;
-	removed: any;
-	removing: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	select: any;
-	selectedAll: any;
-	tagging: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforeOpen: any;
+	declare beforeSelectAll: any;
+	declare blur: any;
+	declare change: any;
+	declare chipSelection: any;
+	declare close: any;
+	declare created: any;
+	declare customValueSelection: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare filtering: any;
+	declare focus: any;
+	declare open: any;
+	declare removed: any;
+	declare removing: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare select: any;
+	declare selectedAll: any;
+	declare tagging: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Accepts the template design and assigns it to the footer container of the popup list. 
-     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the header container of the popup list. 
-     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the selected list item in the input element of the component. 
-     * For more details about the available template options refer to 
-     * [`Template`](../../multi-select/templates) documentation.
-     * 
-     * We have built-in `template engine`
-     *which provides options to compile template string into a executable function.
-     *For EX: We have expression evolution as like ES6 expression string literals.
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('valueTemplate')
-    @Template()
-    public valueTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to each list item present in the popup. 
-     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
-     * 
-     * We have built-in `template engine`
-     *which provides options to compile template string into a executable function.
-     *For EX: We have expression evolution as like ES6 expression string literals.
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the group headers present in the MultiSelect popup list.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('groupTemplate')
-    @Template()
-    public groupTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to popup list of MultiSelect component 
-     * when no data is available on the component.
-     * @default 'No records found'
-     * @asptype string
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No records found')
-    public noRecordsTemplate: any;
-    /** 
-     * Accepts the template and assigns it to the popup list content of the MultiSelect component 
-     * when the data fetch request from the remote server fails.
-     * @default 'Request failed'
-     * @asptype string
-     */
-    @ContentChild('actionFailureTemplate')
-    @Template('Request failed')
-    public actionFailureTemplate: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -192,7 +126,14 @@ export class MultiSelectComponent extends MultiSelect implements IComponentBase 
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MultiSelectComponent.prototype, 'footerTemplate');
+Template()(MultiSelectComponent.prototype, 'headerTemplate');
+Template()(MultiSelectComponent.prototype, 'valueTemplate');
+Template()(MultiSelectComponent.prototype, 'itemTemplate');
+Template()(MultiSelectComponent.prototype, 'groupTemplate');
+Template('No records found')(MultiSelectComponent.prototype, 'noRecordsTemplate');
+Template('Request failed')(MultiSelectComponent.prototype, 'actionFailureTemplate');
 

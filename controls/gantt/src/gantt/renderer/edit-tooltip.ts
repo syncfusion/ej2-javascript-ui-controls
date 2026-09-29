@@ -127,6 +127,9 @@ export class EditTooltip {
      * @private
      */
     public updateTooltip(segmentIndex: number): void {
+        if (isNullOrUndefined(this.taskbarEdit.taskBarEditRecord)) {
+            return;
+        }
         const ganttProp: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         const taskWidth: number = (isNullOrUndefined(segmentIndex) || segmentIndex === -1) ? ganttProp.width :
             ganttProp.segments[segmentIndex as number].width;

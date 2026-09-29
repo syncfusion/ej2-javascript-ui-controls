@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/material-dark' as *;
-@use 'ej2-buttons/styles/button/material-dark-definition' as *;
-@forward 'ej2-base/styles/definition/material-dark';
-@forward 'ej2-buttons/styles/button/material-dark-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $progress-btn-color: rgba($grey-black, .87) !default;
 $progress-btn-bgcolor: rgba($grey-black, .2) !default;
 $progress-btn-bgcolor-normal: rgba($grey-black, .2) !default;

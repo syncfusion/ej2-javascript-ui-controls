@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs, GridColumn, DataSourceChangedEventArgs} from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { CriticalPath } from '../actions/critical-path';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, IEventMarkerInfo } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../task-dependency/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../task-dependency/connector-line';import { ConnectorLineEdit } from '../task-dependency/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired, parentsUntil, isRemoteData } from './utils';import { TaskbarEdit } from '../actions/taskbar-edit';import { UndoRedo } from '../actions/undo-redo';import { WeekWorkingTimeModel } from '../models/week-working-time-model';import { WeekWorkingTime } from '../models/week-working-time';import {CellSaveArgs} from '@syncfusion/ej2-grids';import { cyclicValidator } from '../actions/validator';import { CalendarModule } from './calendar-module';import { CalendarContext } from './calendar-context';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest, initializeTelemetry } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs, GridColumn, DataSourceChangedEventArgs} from '@syncfusion/ej2-grids';import { HierarchyCheckboxMode } from '@syncfusion/ej2-treegrid';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { CriticalPath } from '../actions/critical-path';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment, WebMcpToolExecuteEventArgs, WebMcpTool } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, IEventMarkerInfo } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../task-dependency/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../task-dependency/connector-line';import { ConnectorLineEdit } from '../task-dependency/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType, DependencyType } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs, CalendarExceptionResult  } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired, parentsUntil, isRemoteData } from './utils';import { TaskbarEdit } from '../actions/taskbar-edit';import { UndoRedo } from '../actions/undo-redo';import { WeekWorkingTimeModel } from '../models/week-working-time-model';import { WeekWorkingTime } from '../models/week-working-time';import {CellSaveArgs} from '@syncfusion/ej2-grids';import { cyclicValidator } from '../actions/validator';import { CalendarModule } from './calendar-module';import { CalendarContext } from './calendar-context';import { WebMcpAdapter } from '../integrations/webmcp-adapter';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -110,6 +110,12 @@ export interface GanttModel extends ComponentModel{
     enableAdaptiveUI?: boolean;
 
     /**
+     * Enables WebMCP tool execution integration for this Gantt instance.
+     * @default false
+     */
+    enableWebMcp?: boolean;
+
+    /**
      * Enables Work Breakdown Structure (WBS) functionality in the Gantt Chart.
      * When set to true, the Gantt Chart automatically generates WBS codes based on the task hierarchy.
      * A dedicated WBS Code column will be shown to represent the task structure.
@@ -126,6 +132,15 @@ export interface GanttModel extends ComponentModel{
      * @default false
      */
     enableAutoWbsUpdate?: boolean;
+
+    /**
+     * Enables automatic generation of serial numbers for Gantt rows.
+     *
+     * Serial numbers are calculated based on the current row order and updated automatically when the row order changes.
+     *
+     * @default false
+     */
+    enableSerialNumber?: boolean;
 
     /**
      * Specifies whether to enable row selection in the Gantt chart. When enabled, selected rows are highlighted.
@@ -248,6 +263,38 @@ export interface GanttModel extends ComponentModel{
      * @default day
      */
     durationUnit?: DurationUnit;
+
+    /**
+     * Defines how many hours constitute a working day for duration calculation.
+     * This property affects how task durations are calculated and displayed.
+     * For example, if `hoursPerDay` is set to 8, a task requiring 16 working hours will be shown with a duration of 2 days.
+     * If the `hoursPerDay` property is updated after initialization, task durations are recalculated while maintaining the existing start and end dates.
+     *
+     * @default 8
+     */
+    hoursPerDay?: number;
+
+    /**
+     * Specifies the number of days represented by a single week duration unit.
+     *
+     * This value determines how many days constitute one week in the Gantt chart's
+     * date and duration calculations.
+     * Days value must be between 1 and 7
+     *
+     * @default 5
+     */
+    daysPerWeek?: number;
+
+    /**
+     * Specifies the number of days represented by a single month duration unit.
+     *
+     * This value determines how many days constitute one month in the Gantt chart's
+     * date and duration calculations.
+     * Days value must be between 1 and 31
+     *
+     * @default 20
+     */
+    daysPerMonth?: number;
 
     /**
      * Defines an external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
@@ -867,6 +914,33 @@ export interface GanttModel extends ComponentModel{
     splitterSettings?: SplitterSettingsModel;
 
     /**
+     * Defines the dependency types that are allowed during data load and editing operations.
+     *
+     * If not specified, all dependency types (FS, SS, FF, SF) are allowed.
+     *
+     * If an empty collection is specified, all dependency types are restricted
+     * and no dependency relationships can be created or modified.
+     *
+     * @default ['FS', 'SS', 'FF', 'SF']
+     */
+    allowedDependencyTypes?: DependencyType[];
+
+    /**
+     * Defines the mode for hierarchy checkbox selection.
+     *
+     * Available modes are:
+     * * `self`: Only the targeted row is selected; children and parent are not affected.
+     * * `hierarchy`: Selecting a row cascades to all its descendants (children, grandchildren, etc.)
+     *   and adjusts the parent state.
+     * * `filteredHierarchy`: Behaves like `hierarchy`, but applies the cascade only to the records
+     *   that match the current filter/search. Hidden (filtered-out) descendants are excluded from the
+     *   cascade.
+     *
+     * @default 'self'
+     */
+    hierarchyCheckboxMode?: HierarchyCheckboxMode;
+
+    /**
      * Event triggered per taskbar before rendering in the Gantt chart.
      * Used to customize taskbar styles and properties dynamically.
      *
@@ -1255,6 +1329,12 @@ export interface GanttModel extends ComponentModel{
      * @event beforePdfExport
      */
     beforePdfExport?: EmitType<Object>;
+
+    /**
+     * Triggered before a WebMCP tool execution begins.
+     * Allows cancellation/confirmation via WebMCP integration.
+     */
+    beforeWebMcpToolExecute?: EmitType<WebMcpToolExecuteEventArgs>;
 
     /**
      * Event triggered after Gantt data has been exported to PDF.

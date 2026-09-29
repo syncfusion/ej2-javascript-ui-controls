@@ -93,4 +93,20 @@ describe('Content renderer module', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en'
+            });
+        });
+        it('should have aria-multiline attribute for div', () => {
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('aria-multiline')).toBe('true');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

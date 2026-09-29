@@ -1,4 +1,4 @@
-import { EventHandler, setStyleAttribute, KeyboardEvents, KeyboardEventArgs, Browser, closest, addClass, removeClass } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, KeyboardEvents, KeyboardEventArgs, Browser, closest, addClass, removeClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -34,6 +34,7 @@ export class VirtualScroll {
      * @hidden
      */
     constructor(parent?: PivotView) {
+        initializeTelemetryFeature('VirtualScroll', 'PivotTable');
         this.parent = parent;
         this.addInternalEvents();
     }
@@ -66,8 +67,8 @@ export class VirtualScroll {
             this.boundElements = [mCont, gridContent, mHdr, mScrollBar];
             if (this.engineModule) {
                 const ele: HTMLElement = this.parent.isAdaptive ? mCont : gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
-                EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
-                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
+                EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, mScrollBar), this);
+                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, mScrollBar), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(
                     mCont.parentElement, mCont), this);
                 if (this.isFireFox) {
@@ -354,10 +355,11 @@ export class VirtualScroll {
      *
      * @param {HTMLElement} mHdr - It contains the header details.
      * @param {HTMLElement} mCont - It contains the content details.
+     * @param {HTMLElement} mScrollBar - Contains the horizontal scrollbar element used to manage and synchronize scrolling.
      * @returns {Function} - It returns the table details as Function.
      * @hidden
      */
-    public onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement): Function {
+    public onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, mScrollBar: HTMLElement): Function {
         const ele: HTMLElement = this.parent.isAdaptive ? mCont : closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
         let eleScrollLeft: number = Math.abs(ele.scrollLeft);
         let left: number = eleScrollLeft * this.parent.horizontalScrollScale;
@@ -439,6 +441,7 @@ export class VirtualScroll {
                 });
                 this.alignFreezedCells(horiOffset, false);
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
+                this.adjustHorizontalScrollOffset(mHdr, mCont, mScrollBar);
             }
             const hScrollPos: number = (ele.scrollWidth - (eleScrollLeft + (ele.offsetWidth -
                 (this.parent.element.querySelector('.' + cls.GRID_CLASS)
@@ -633,8 +636,9 @@ export class VirtualScroll {
         this.keyboardEvents = null;
     }
 
-    private setFrozenColumnPosition(horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>,
-                                    isParentCells: boolean): void {
+    private setFrozenColumnPosition(
+        horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>, isParentCells: boolean
+    ): void {
         if (rowsHeaderElement && rowsHeaderElement instanceof HTMLTableCellElement) {
             let columnWidth: number = 0;
             const colIndex: number = rowsHeaderElement.cellIndex + 1;
@@ -656,6 +660,26 @@ export class VirtualScroll {
                     (j[i as number] as HTMLElement).style.left = Number(-(horiOffset - columnWidth)) + 'px';
                 }
             }
+        }
+    }
+
+    private adjustHorizontalScrollOffset(mHdr: HTMLElement, mCont: HTMLElement, mScrollBar: HTMLElement): void {
+        const hSrcollPos: number = Math.abs((mScrollBar.scrollWidth - (Math.abs(mScrollBar.scrollLeft) + mScrollBar.offsetWidth)));
+        const tableContentPos: number = Math.abs((mCont.scrollWidth - (Math.abs(mCont.scrollLeft) + mCont.offsetWidth)));
+        const offset: number = hSrcollPos - tableContentPos;
+        if (offset < 0) {
+            const transform: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform;
+            const translateValues: string[] = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(',');
+            const horiOffset: number = (parseFloat(translateValues[0]) || 0) + offset;
+            const vertOffset: number = (parseFloat(translateValues[1]) || 0);
+            setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
+                transform: `translate(${horiOffset}px, ${vertOffset}px)`
+            });
+            setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
+                transform: `translate(${horiOffset}px, 0px)`
+            });
+            this.alignFreezedCells(horiOffset, false);
+            this.parent.scrollPosObject.horizontalSection = horiOffset;
         }
     }
 }

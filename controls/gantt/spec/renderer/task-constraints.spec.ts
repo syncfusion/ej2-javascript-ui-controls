@@ -3541,6 +3541,25 @@ describe('T1014886: Coverage for date-processor', () => {
         let startDate = ganttData.ganttProperties.startDate;
         ganttObj.dataOperation.getDateByConstraint(ganttData, startDate);
     });
+    it('Covering getDateByConstraint for AsLateAsPossible project end fallback', () => {
+        const ganttData: any = ganttObj.currentViewData[0];
+        ganttData.ganttProperties.constraintType = 1; // AsLateAsPossible
+        ganttData.ganttProperties.constraintDate = new Date('05/01/2019');
+        const result: Date = ganttObj.dataOperation.getDateByConstraint(
+            ganttData,
+            new Date('04/02/2019'),
+            true
+        );
+        expect(result).not.toBeNull();
+        expect(result.getTime()).toBe(
+            ganttObj.dataOperation.getStartDate(
+                ganttObj.dataOperation.checkEndDate(new Date(ganttObj.projectEndDate)),
+                ganttData.ganttProperties.duration,
+                ganttData.ganttProperties.durationUnit,
+                ganttData.ganttProperties
+            ).getTime()
+        );
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -3616,7 +3635,7 @@ describe('T1014886: Coverage for date-processor', () => {
             height: '650px',
             highlightWeekends: true,
             weekWorkingTime: [
-                { dayOfWeek: 'Monday', timeRange: [{ from: 10, to: 18 }] },
+                { dayOfWeek: 'Monday', timeRange: [{ from: 10, to: 12 }, { from: 14, to: 18 }] },
                 { dayOfWeek: 'Tuesday', timeRange: [{ from: 10, to: 18 }] }
             ],
             treeColumnIndex: 1,
@@ -3671,6 +3690,18 @@ describe('T1014886: Coverage for date-processor', () => {
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft - 80, 0);
         triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Covering calculateSecondDuration when startDate is not aligned and duration has fraction', () => {
+        const ganttData: any = ganttObj.currentViewData[0];
+        const startDate: Date = new Date(2019, 3, 1, 14, 0, 0);
+        const result: Date = ganttObj.dataOperation.getEndDate(startDate, 1.5, 'Day', ganttData.ganttProperties, false);
+        expect(result.getTime()).toBe(new Date(2019, 3, 2, 17, 0, 0).getTime());
+    });
+    it('Covering calculateSecondDuration when startDate is aligned and duration has fraction', () => {
+        const ganttData: any = ganttObj.currentViewData[0];
+        const startDate: Date = new Date(2019, 3, 1, 10, 0, 0);
+        const result: Date = ganttObj.dataOperation.getEndDate(startDate, 1.5, 'Day', ganttData.ganttProperties, false);
+        expect(result.getTime()).toBe(new Date(2019, 3, 2, 14, 0, 0).getTime());
     });
     afterAll(() => {
         if (ganttObj) {
@@ -3744,6 +3775,21 @@ describe('T1014886: Coverage for date-processor', () => {
         let ganttProp = ganttObj.currentViewData[0].ganttProperties;
         ganttObj.dataOperation.checkBaselineStartDate(date, ganttProp);
     });
+    it('Covering checkBaselineStartDate when date hour is after dayEndTime', () => {
+        const date: Date = new Date(2019, 3, 1, 19, 0, 0);
+        const ganttProp: any = ganttObj.currentViewData[0].ganttProperties;
+        ganttProp.isAutoSchedule = true;
+        ganttProp.endDate = new Date(2019, 3, 1, 18, 0, 0);
+        const updatedDate: Date = ganttObj.dataOperation.checkBaselineStartDate(date, ganttProp);
+        expect(updatedDate.getTime()).toBe(new Date(2019, 3, 2, 10, 0, 0).getTime());
+    });
+    it('Covering checkBaselineStartDate when date is between split working ranges', () => {
+        const date: Date = new Date(2019, 3, 1, 12, 30, 0);
+        const ganttProp: any = ganttObj.currentViewData[0].ganttProperties;
+        const updatedDate: Date = ganttObj.dataOperation.checkBaselineStartDate(date, ganttProp);
+        expect(updatedDate.getTime()).toBe(new Date(2019, 3, 1, 13, 0, 0).getTime());
+    });
+
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -3819,7 +3865,7 @@ describe('T1014886: Coverage for date-processor', () => {
     });
     it('Covering getWorkString, calculateDuration method code', () => {
         let ganttProp = ganttObj.currentViewData[0].ganttProperties;
-        let nonWork = ganttObj.dataOperation['getNonworkingTime'](ganttProp.startDate, ganttProp.endDate, ganttProp.isAutoSchedule, undefined, ganttProp.calendarContext, false, false);
+        let nonWork = ganttObj.dataOperation['getNonworkingTime'](ganttProp.startDate, ganttProp.endDate, ganttProp.isAutoSchedule, ganttProp.calendarContext, false, false);
         ganttObj.dataOperation.getValidStartDate(ganttObj.currentViewData[0].ganttProperties, true, false);
         ganttObj.dataOperation.getValidEndDate(ganttObj.currentViewData[0].ganttProperties, true, false);
         ganttObj.dataOperation.calculateStartDate(ganttObj.currentViewData[0], true);

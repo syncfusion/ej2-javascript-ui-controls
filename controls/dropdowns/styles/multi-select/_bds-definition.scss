@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bds' as *;
-@forward 'ej2-base/styles/definition/bds';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: $skin-name !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -218,9 +217,10 @@ $ddl-bigger-small-input-height: 32px !default;
 $ddl-delim-bigger-small-font-size: $text-sm !default;
 $ddl-delimviewheight-bigger-small: 32px !default;
 $ddl-closer-margin-top-bigger-small: -1.64em !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 // color
-
 $ddl-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
 $ddl-chip-selected-shadow-value: 0 2px 3px 1px $ddl-list-box-shadow-color !default;
 $ddl-chip-mobile-font: $content-text-color !default;

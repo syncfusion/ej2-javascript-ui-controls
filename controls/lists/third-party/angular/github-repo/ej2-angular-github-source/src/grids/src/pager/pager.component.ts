@@ -20,31 +20,24 @@ export const twoWays: string[] = ['currentPage', 'pageSize', 'pageCount', 'pageS
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase])
 export class PagerComponent extends Pager implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	click: any;
-	created: any;
-	dropDownChanged: any;
-	currentPageChange: any;
-	pageSizeChange: any;
-	pageCountChange: any;
-	public pageSizesChange: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare click: any;
+	declare created: any;
+	declare dropDownChanged: any;
+	declare currentPageChange: any;
+	declare pageSizeChange: any;
+	declare pageCountChange: any;
+	public declare pageSizesChange: any;
 
 
-    /** 
-     *  Defines the template as string or HTML element ID which renders customized elements in pager instead of default elements.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -74,7 +67,9 @@ export class PagerComponent extends Pager implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(PagerComponent.prototype, 'template');
+
 

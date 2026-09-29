@@ -2498,3 +2498,58 @@ describe('Coverage - Header renderer guard and target resolution', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-1051778: Improve Stacked Header Column Reordering Coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowReordering: true,
+                columns: [
+                    {   headerText: 'Order Details',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID' },
+                            { field: 'OrderDate', headerText: 'Order Date' }
+                        ]
+                    },
+                    { field: 'CustomerID', headerText: 'Customer ID' },
+                    {
+                        headerText: 'Ship Details',
+                        columns: [
+                            { field: 'ShipAddress', headerText: 'Ship Address' },
+                            { field: 'ShipCountry', headerText: 'Ship Country' }
+                        ]
+                    }
+                ]
+            }, done);
+        });
+
+        it('does not allow a child to drop on a child from another stacked header', () => {
+            const source = gridObj.getColumnHeaderByField('OrderDate');
+            const destination = gridObj.getColumnHeaderByField('ShipAddress');
+            const canDrop = (gridObj.reorderModule as any)
+                .chkDropPosition(source, destination);
+            expect(canDrop).toBe(false);
+            const columns = gridObj.columns as Column[];
+            expect((columns[0].columns as Column[])[0].field).toBe('OrderID');
+            expect(columns[1].field).toBe('CustomerID');
+            expect((columns[2].columns as Column[])[0].field).toBe('ShipAddress');
+        });
+        it('should enter detached stacked header branch for child to root reorder', () => {
+            const reorderModule: any = gridObj.reorderModule;
+            const orderDate = gridObj.getColumnByField('OrderDate');
+            const parent = reorderModule.getColParent(orderDate, gridObj.columns);
+            const targetColumn = gridObj.getColumnByField('CustomerID');
+            const targetParent = reorderModule.getColParent(targetColumn, gridObj.columns);
+            expect(!!parent).toBe(true);
+            expect(targetParent).toBeUndefined();
+            reorderModule.destElement = gridObj.getColumnHeaderByField('CustomerID');
+            const spy = spyOn(reorderModule, 'reorderStackedHeader' as any).and.callThrough();
+            reorderModule.moveColumns(1, orderDate, false);
+            expect(spy).toHaveBeenCalled();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });

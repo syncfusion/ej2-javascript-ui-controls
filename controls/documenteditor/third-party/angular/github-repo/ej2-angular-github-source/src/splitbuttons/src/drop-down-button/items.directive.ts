@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-dropdownbuttonitems>e-dropdownbuttonitem',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class DropDownButtonItemDirective extends ComplexBase<DropDownButtonItemDirective> {
@@ -23,33 +23,33 @@ export class DropDownButtonItemDirective extends ComplexBase<DropDownButtonItemD
      * Used to enable or disable the item.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines class/multiple classes separated by a space for the item that is used to include an icon. 
      * Action item can include font icon and sprite image.
      * @default ''
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Specifies the id for item.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies separator between the items. Separator are horizontal lines used to group action items.
      * @default false
      */
-    public separator: any;
+    public declare separator: any;
     /** 
      * Specifies text for item.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Specifies url for item that creates the anchor link to navigate to the url provided.
      * @default ''
      */
-    public url: any;
+    public declare url: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -65,6 +65,7 @@ export class DropDownButtonItemDirective extends ComplexBase<DropDownButtonItemD
  */
 @Directive({
     selector: 'ejs-dropdownbutton>e-dropdownbuttonitems',
+    standalone: true,
     queries: {
         children: new ContentChildren(DropDownButtonItemDirective)
     },

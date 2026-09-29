@@ -13,7 +13,7 @@ export class _TripleDataEncryptionStandardCipher {
     private _key1: Int32Array;
     private _key2: Int32Array;
     private _key3: Int32Array;
-    private _isEncryption: boolean = true;
+    private _isEncryption: boolean;
     /**
      * S-box 1 table.
      *
@@ -203,34 +203,31 @@ export class _TripleDataEncryptionStandardCipher {
             7, 15, 6, 26, 19, 12, 1, 40, 51, 30, 36, 46, 54, 29, 39, 50, 44, 32, 47, 43, 48,
             38, 55, 33, 52, 45, 41, 49, 35, 28, 31];
         const newKeys: Int32Array = new Int32Array(32);
-        const bytes1: any = new Array(56).fill(false); //eslint-disable-line
-        const bytes2: any = new Array(56).fill(false); //eslint-disable-line
+        const bytes1: Uint8Array = new Uint8Array(56);
+        const bytes2: Uint8Array = new Uint8Array(56);
         for (let j: number = 0; j < 56; j++) {
             const length: number = Pc1[<number>j];
-            bytes1[<number>j] = ((keyBytes[length >> 3] & ByteBit[length & 7]) !== 0);
+            bytes1[<number>j] = ((keyBytes[length >> 3] & ByteBit[length & 7]) !== 0) ? 1 : 0;
         }
         for (let i: number = 0; i < 16; i++) {
             const b: number = isEncrypt ? i << 1 : (15 - i) << 1;
             const c: number = b + 1;
             newKeys[<number>b] = newKeys[<number>c] = 0;
-            for (let j: number = 0; j < 28; j++) {
+            for (let j: number = 0; j < 56; j++) {
+                const halfSize: number = (j < 28) ? 28 : 56;
                 const a: number = j + Totrot[<number>i];
-                bytes2[<number>j] = (a < 28) ? bytes1[<number>a] : bytes1[a - 28];
-            }
-            for (let j: number = 28; j < 56; j++) {
-                const a: number = j + Totrot[<number>i];
-                bytes2[<number>j] = (a < 56) ? bytes1[<number>a] : bytes1[a - 28];
+                bytes2[<number>j] = (a < halfSize) ? bytes1[<number>a] : bytes1[a - 28];
             }
             for (let j: number = 0; j < 24; j++) {
-                if (bytes2[Pc2[<number>j]]) {
+                if (bytes2[Pc2[<number>j]] !== 0) {
                     newKeys[<number>b] |= BigByte[<number>j];
                 }
-                if (bytes2[Pc2[j + 24]]) {
+                if (bytes2[Pc2[j + 24]] !== 0) {
                     newKeys[<number>c] |= BigByte[<number>j];
                 }
             }
         }
-        for (let i: number = 0; i !== 32; i += 2) {
+        for (let i: number = 0; i < 32; i += 2) {
             const value1: number = newKeys[<number>i];
             const value2: number = newKeys[i + 1];
             newKeys[<number>i] = ((value1 & 0x00fc0000) << 6) | ((value1 & 0x00000fc0) << 10) |
@@ -263,7 +260,7 @@ export class _TripleDataEncryptionStandardCipher {
         left = ((left << 1) | (left >>> 31)) >>> 0;
         for (let round: number = 0; round < 8; round++) {
             data = ((right << 28) | (right >>> 4)) >>> 0;
-            data = data ^ keys[round * 4 + 0];
+            data = data ^ keys[round * 4];
             let value: number = this._sp7[data & 0x3f] | this._sp5[(data >>> 8) & 0x3f] |
                 this._sp3[(data >>> 16) & 0x3f] | this._sp1[(data >>> 24) & 0x3f];
             data = (right ^ keys[round * 4 + 1]) >>> 0;

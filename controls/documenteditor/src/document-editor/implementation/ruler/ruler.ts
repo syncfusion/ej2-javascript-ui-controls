@@ -252,6 +252,9 @@ export class Ruler {
         } else {
             this.element.style.display = 'none';
         }
+        if (this.rulerHelper) {
+            this.rulerHelper.updatePageContainerMargin(show);
+        }
     }
     private updateRulerGeometry(): void {
         this.element.style.textAlign = 'left';

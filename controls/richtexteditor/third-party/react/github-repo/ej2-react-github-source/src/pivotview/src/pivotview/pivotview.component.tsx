@@ -9,7 +9,7 @@ export interface PivotViewTypecast {
 }
 /**
  * `PivotViewComponent` represents the react Pivot Table.
- * ```tsx
+ * ```
  * <PivotViewComponent></PivotViewComponent>
  * ```
  */

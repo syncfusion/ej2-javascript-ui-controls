@@ -20,9 +20,11 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-accordionitems>e-accordionitem',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        header: new ContentChild('header'),
+        content: new ContentChild('content')
     }
 })
 export class AccordionItemDirective extends ComplexBase<AccordionItemDirective> {
@@ -34,17 +36,17 @@ export class AccordionItemDirective extends ComplexBase<AccordionItemDirective> 
      * Defines single/multiple classes (separated by a space) are to be used for Accordion item customization.
      * @default null
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Sets true to disable an accordion item.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Sets the expand (true) or collapse (false) state of the Accordion item. By default, all the items are in a collapsed state.
      * @default false
      */
-    public expanded: any;
+    public declare expanded: any;
     /** 
      * Defines an icon with the given custom CSS class that is to be rendered before the header text. 
      * Add the css classes to the `iconCss` property and write the css styles to the defined class to set images/icons. 
@@ -52,37 +54,17 @@ export class AccordionItemDirective extends ComplexBase<AccordionItemDirective> 
      * 
      * @default null
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Sets unique ID to accordion item.
      * @default null
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Sets false to hide an accordion item.
      * @default true
      */
-    public visible: any;
-    /** 
-     * Sets the header text to be displayed for the Accordion item. 
-     * You can set the title of the Accordion item using `header` property. 
-     * It also supports to include the title as `HTML element`, `string`, or `query selector`. 
-     * 
-     * @default null
-     */
-    @ContentChild('header')
-    @Template()
-    public header: any;
-    /** 
-     * Sets the text content to be displayed for the Accordion item. 
-     * You can set the content of the Accordion item using `content` property. 
-     * It also supports to include the title as `HTML element`, `string`, or `query selector`. 
-     * 
-     * @default null
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare visible: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -91,6 +73,8 @@ export class AccordionItemDirective extends ComplexBase<AccordionItemDirective> 
         this.directivePropList = input;
     }
 }
+Template()(AccordionItemDirective.prototype, 'header');
+Template()(AccordionItemDirective.prototype, 'content');
 
 /**
  * AccordionItem Array Directive
@@ -98,6 +82,7 @@ export class AccordionItemDirective extends ComplexBase<AccordionItemDirective> 
  */
 @Directive({
     selector: 'ejs-accordion>e-accordionitems',
+    standalone: true,
     queries: {
         children: new ContentChildren(AccordionItemDirective)
     },

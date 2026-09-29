@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $btn-border: 1px solid !default;

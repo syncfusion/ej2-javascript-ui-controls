@@ -1,10 +1,10 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-buttons/styles/button/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('button-group-layout') {
 /* stylelint-disable */
-  #{if(&, '&', '*')}.e-btn-group,
-  #{if(&, '&', '*')}.e-css.e-btn-group {
+  *.e-btn-group,
+  *.e-css.e-btn-group {
     display: -webkit-inline-flex;
     display: inline-flex;
     border-radius: $btn-grp-wrapper-border;
@@ -12,8 +12,8 @@
     flex-direction: row;
     position: relative;
     @if $skin-name == 'Material3' {
-      border-radius: $btn-border-radius;
-      box-shadow: $btn-active-box-shadow;
+      border-radius: btn.$btn-border-radius;
+      box-shadow: btn.$btn-active-box-shadow;
     }
 
     input:focus+label.e-btn,

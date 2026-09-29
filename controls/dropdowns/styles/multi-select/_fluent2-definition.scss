@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fluent2' as *;
-@forward 'ej2-base/styles/definition/fluent2';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'fluent2' !default;
 $ddl-multiselect-skin-name: $skin-name !default;
@@ -183,6 +182,8 @@ $ddl-small-filled-float-chiupcontent-font-size: 10px !default;
 $ddl-filled-float-mob-chipcontent-font-size: 13px !default;
 $ddl-filled-float-mob-chipcontent-padding-right: 4px !default;
 $ddl-filled-wrapper-chip-close-margin-top: -38px !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 // Small size
 $ddl-select-all-height-small: 24px !default;

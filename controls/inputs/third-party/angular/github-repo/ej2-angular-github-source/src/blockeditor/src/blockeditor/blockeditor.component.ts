@@ -20,29 +20,29 @@ export const twoWays: string[] = ['blocks'];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        
     }
 })
 @ComponentMixins([ComponentBase])
 export class BlockEditorComponent extends BlockEditor implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	afterPasteCleanup: any;
-	beforeFileUpload: any;
-	beforePasteCleanup: any;
-	blockChanged: any;
-	blockDragStart: any;
-	blockDragging: any;
-	blockDropped: any;
-	blur: any;
-	created: any;
-	fileUploadFailed: any;
-	fileUploadSuccess: any;
-	fileUploading: any;
-	focus: any;
-	selectionChanged: any;
-	public blocksChange: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare afterPasteCleanup: any;
+	declare beforeFileUpload: any;
+	declare beforePasteCleanup: any;
+	declare blockChanged: any;
+	declare blockDragStart: any;
+	declare blockDragging: any;
+	declare blockDropped: any;
+	declare blur: any;
+	declare created: any;
+	declare fileUploadFailed: any;
+	declare fileUploadSuccess: any;
+	declare fileUploading: any;
+	declare focus: any;
+	declare selectionChanged: any;
+	public declare blocksChange: any;
 
     public tags: string[] = [''];
 
@@ -86,7 +86,7 @@ export class BlockEditorComponent extends BlockEditor implements IComponentBase 
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

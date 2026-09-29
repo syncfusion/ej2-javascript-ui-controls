@@ -574,6 +574,43 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
         });
     });
 });
+describe('EJ2-23588 - RichTextEditor inline mode error when color property is displayed in mobile view.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultUserAgent= navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent="Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36"
+            "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+            rteObj = renderRTE({
+                value: '<span id="rte">RTE</span>',
+                inlineMode: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it(' Check the fontColor and backgroundColor ', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                let item: HTMLElement = (document.querySelector('#' + controlId + '_quick_FontColor').nextElementSibling.childNodes[1] as HTMLElement);
+                item.click();
+                let popup: HTMLElement = document.querySelector('.e-color-palette');
+                expect(!isNullOrUndefined(popup)).toBe(true);
+                done();
+            }, 200);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            Browser.userAgent =defaultUserAgent;
+        });
+    });
 
 describe('1032508: Mobile: Applying Background Color to Table Cell via Quick Toolbar causes page unresponsive', () => {
     let rteObj: RichTextEditor;

@@ -177,6 +177,7 @@ export class Toolbar implements IToolbarHandler {
         this.propertiesPaneButton.appendTo(this.buttonElement);
         EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
+        this.toolbar.isAngular = this.container.isModalDialog;
         this.toolbar.appendTo(toolbarTarget);
         this.initToolbarDropdown(toolbarTarget);
     }
@@ -195,6 +196,7 @@ export class Toolbar implements IToolbarHandler {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
+                this.imgDropDwn.isAngular = this.container.isModalDialog;
                 this.imgDropDwn.appendTo('#' + id + INSERT_IMAGE_ID);
             }
 
@@ -206,6 +208,7 @@ export class Toolbar implements IToolbarHandler {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
+                this.PageSetUpDropDwn.isAngular = this.container.isModalDialog;
                 this.PageSetUpDropDwn.appendTo('#' + id + PAGE_SET_UP_ID);
             }
             if (this.toolbarItems.indexOf('ContentControl') >= 0) {
@@ -222,6 +225,7 @@ export class Toolbar implements IToolbarHandler {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
+                this.ContentControlDropDwn.isAngular = this.container.isModalDialog;
                 this.ContentControlDropDwn.appendTo('#' + id + CONTENT_CONTROL_ID);
             }
             if (this.toolbarItems.indexOf('Break') >= 0) {
@@ -243,6 +247,7 @@ export class Toolbar implements IToolbarHandler {
                     showIcon: true,
                     select: this.onListViewSelection.bind(this)
                 });
+                this.breakListView.isAngular = this.container.isModalDialog;
                 this.breakListView.appendTo('#' + id + BREAK_ID + LISTVIEW_ID);
             }
 
@@ -281,6 +286,7 @@ export class Toolbar implements IToolbarHandler {
                         this.onBeforeRenderRestrictDropdown(args, id);
                     }
                 });
+                this.restrictDropDwn.isAngular = this.container.isModalDialog;
                 this.restrictDropDwn.appendTo('#' + id + RESTRICT_EDITING_ID);
             }
             if (this.toolbarItems.indexOf('FormFields') >= 0) {
@@ -292,6 +298,7 @@ export class Toolbar implements IToolbarHandler {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
+                this.formFieldDropDown.isAngular = this.container.isModalDialog;
                 this.formFieldDropDown.appendTo('#' + id + FORM_FIELDS_ID);
             }
         }
@@ -821,6 +828,7 @@ export class Toolbar implements IToolbarHandler {
         }, 30);
     }
     private onFileChange(): void {
+        const isAngularModal: boolean = this.container.isModalDialog;
         const file: File = this.filePicker.files[0];
         const filesize: number = file.size;
         let check: boolean;
@@ -859,6 +867,11 @@ export class Toolbar implements IToolbarHandler {
                     DialogUtility.alert({
                         content: localizeValue.getConstant('Unsupported format'),
                         closeOnEscape: true, showCloseIcon: true,
+                        open: (e: any) => {
+                            if (isAngularModal) {
+                                this.container.moveAlertToCdkOverlay(e);
+                            }
+                        },
                         position: { X: 'center', Y: 'center' }
                     }).enableRtl = this.container.enableRtl;
                 }
@@ -902,10 +915,16 @@ export class Toolbar implements IToolbarHandler {
     // }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private failureHandler(args: any): void {
+        const isAngularModal: boolean = this.container.isModalDialog;
         if (args.name === 'onError') {
             DialogUtility.alert({
                 content: this.container.localObj.getConstant('Error in establishing connection with web server'),
                 closeOnEscape: true, showCloseIcon: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.container.moveAlertToCdkOverlay(e);
+                    }
+                },
                 position: { X: 'center', Y: 'center' }
             }).enableRtl = this.container.enableRtl;
         } else {

@@ -20,26 +20,20 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childPalettes: new ContentChild(PalettesDirective)
+        childPalettes: new ContentChild(PalettesDirective),
+        nodeTemplate: new ContentChild('nodeTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class SymbolPaletteComponent extends SymbolPalette implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	paletteExpanding: any;
-	public paletteSelectionChange: any;
-    public childPalettes: QueryList<PalettesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare paletteExpanding: any;
+	public declare paletteSelectionChange: any;
+    public declare childPalettes: QueryList<PalettesDirective>;
     public tags: string[] = ['palettes'];
-    /** 
-     * Helps to Customizes the node template
-     * @default undefined
-     * @asptype string
-     */
-    @ContentChild('nodeTemplate')
-    @Template()
-    public nodeTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -75,7 +69,9 @@ export class SymbolPaletteComponent extends SymbolPalette implements IComponentB
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(SymbolPaletteComponent.prototype, 'nodeTemplate');
+
 

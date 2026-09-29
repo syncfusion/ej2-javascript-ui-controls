@@ -1,7 +1,7 @@
 import { FieldSettingsModel, Mention, MentionModel, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
 import { IRichTextEditor, RichTextEditorModel, SlashMenuItemSelectArgs } from '../base';
 import { ServiceLocator } from '../services';
-import { isNullOrUndefined as isNOU, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { defaultSlashMenuDataModel, injectibleSlashMenuDataModel, ISlashMenuModel, ModuleSlashMenuModel } from '../../models/slash-menu-settings';
 import { NodeSelection } from '../../selection/selection';
 import { slashMenuCommandsKey } from '../models/default-locale';
@@ -20,6 +20,7 @@ export class SlashMenu {
     private defaultItems: ISlashMenuModel[];
     private injectibleItems: ModuleSlashMenuModel[];
     constructor(options: IRichTextEditor, serviceLocator: ServiceLocator) {
+        initializeTelemetryFeature('SlashMenu', 'RichTextEditor');
         this.parent = options;
         this.currentDocument = this.parent.element.ownerDocument;
         this.L10n = serviceLocator.getService<L10n>('rteLocale');

@@ -20,57 +20,31 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        displayTemplate: new ContentChild('displayTemplate'),
+        itemTemplate: new ContentChild('itemTemplate'),
+        spinnerTemplate: new ContentChild('spinnerTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class MentionComponent extends Mention implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforeOpen: any;
-	change: any;
-	closed: any;
-	created: any;
-	destroyed: any;
-	filtering: any;
-	opened: any;
-	public select: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforeOpen: any;
+	declare change: any;
+	declare closed: any;
+	declare created: any;
+	declare destroyed: any;
+	declare filtering: any;
+	declare opened: any;
+	public declare select: any;
 
 
-    /** 
-     * Specifies the template for the selected value from the suggestion list.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('displayTemplate')
-    @Template()
-    public displayTemplate: any;
-    /** 
-     * Specifies the template for the suggestion list.
-     * @default null
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Specifies the template for showing until data is loaded in the popup.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('spinnerTemplate')
-    @Template()
-    public spinnerTemplate: any;
-    /** 
-     * Specifies the template for no matched item which is displayed when there are no items to display in the suggestion list.
-     * @default 'No records found'
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No records found')
-    public noRecordsTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -100,7 +74,11 @@ export class MentionComponent extends Mention implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MentionComponent.prototype, 'displayTemplate');
+Template()(MentionComponent.prototype, 'itemTemplate');
+Template()(MentionComponent.prototype, 'spinnerTemplate');
+Template('No records found')(MentionComponent.prototype, 'noRecordsTemplate');
 

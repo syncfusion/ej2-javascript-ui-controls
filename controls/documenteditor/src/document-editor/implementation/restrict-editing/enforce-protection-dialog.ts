@@ -88,8 +88,16 @@ export class EnforceProtectionDialog {
      * @returns {void}
      */
     public okButtonClick = (): void => {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         if (this.passwordTextBox.value !== this.confirmPasswordTextBox.value) {
-            DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
+            DialogUtility.alert({
+                content: this.localeValue.getConstant('Password Mismatch'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
         } else {
             this.password = SanitizeHtmlHelper.sanitize(this.passwordTextBox.value);
             this.viewer.owner.editorModule.addProtection(this.password, this.owner.protectionType);
@@ -175,10 +183,19 @@ export class UnProtectDocumentDialog {
      * @returns {void}
      */
     public okButtonClick = (): void => {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         const password: string = this.passwordTextBox.value;
         const empty: string = '';
         if (password.length === empty.length && password === empty) {
-            DialogUtility.alert({title: this.localObj.getConstant('Information'), content: this.localObj.getConstant('The password is incorrect')});
+            DialogUtility.alert({
+                title: this.localObj.getConstant('Information'),
+                content: this.localObj.getConstant('The password is incorrect'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
             return;
         }
         this.viewer.owner.editorModule.stopProtection(password);

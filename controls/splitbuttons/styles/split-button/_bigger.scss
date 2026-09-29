@@ -1,11 +1,12 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('split-button-bigger') {
   .e-bigger .e-split-btn-wrapper,
   .e-bigger.e-split-btn-wrapper {
     @if $skin-name == 'Material3' {
       border-radius: $split-bgr-btn-border-radius;
-      box-shadow: $btn-box-shadow;
+      box-shadow: btn.$btn-box-shadow;
     }
     .e-split-btn {
       @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
@@ -34,7 +35,7 @@
       }
 
       .e-btn-icon {
-        font-size: $drop-down-btn-icon-font-size-bigger;
+        font-size: $drop-dbtn-icon-font-size-bigger;
         margin-left: $drop-down-bigger-btn-icon-margin-left;
         padding-right: $drop-down-bigger-btn-icon-padding-right;
         width: $split-auto-width;

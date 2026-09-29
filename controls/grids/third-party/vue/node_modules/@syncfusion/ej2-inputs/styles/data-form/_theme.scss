@@ -1,0 +1,41 @@
+@use 'variables' as *;
+@include export-module('data-form-theme') {
+
+  /*! data-form theme */
+  #{&}.e-data-form {
+
+    & .e-form-label {
+      color: $field-label-color;
+    }
+
+    & .e-group-title {
+      color: $group-title-color;
+    }
+
+    & .validation-message {
+      color: $form-tooltip-color;
+      font-size: $form-validation-message-font-size;
+      font-style: italic;
+    }
+  }
+
+  #{&}.e-tooltip-wrap.e-popup.e-error-tooltip {
+    @if $skin-name != 'fluent2' {
+      background-color: $form-tooltip-background-color;
+      border: $form-tooltip-background-color;
+    }
+
+    & .e-tip-content .validation-message {
+      color: $form-tooltip-color;
+    }
+
+    & .e-arrow-tip {
+
+      & .e-arrow-tip-outer.e-tip-top,
+      & .e-arrow-tip-inner.e-tip-top {
+        border-bottom-color: $form-tooltip-background-color;
+        color: $form-tooltip-background-color;
+      }
+    }
+  }
+}

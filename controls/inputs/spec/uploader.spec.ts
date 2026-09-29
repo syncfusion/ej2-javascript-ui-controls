@@ -6473,5 +6473,147 @@ describe('Uploader Control', () => {
             document.body.innerHTML = '';
         });
     });
+    describe('Stack Overflow Fix - Chunk Upload with Sequential Upload', () => {
+        let uploadObj: any;
+        let originalTimeout: number;
+
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            let element: HTMLElement = createElement('input', {id: 'upload'});
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        });
+
+        afterEach((): void => {
+            if (uploadObj && uploadObj.uploadWrapper) { 
+                uploadObj.destroy();
+            }
+            document.body.innerHTML = '';
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+
+        it('should verify guard condition && this.multiple exists in sequenceUpload method', () => {
+            uploadObj = new Uploader({
+                multiple: false,
+                autoUpload: false,
+                sequentialUpload: true,
+                asyncSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    chunkSize: 500
+                }
+            }) as any;
+            
+            uploadObj.appendTo(document.getElementById('upload'));
+            
+            // Verify critical configuration
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.sequentialUpload).toBe(true);
+            
+            // Create mock file data with statusCode '0' (error state)
+            let fileData: any = {
+                name: 'test.txt',
+                size: 1024,
+                statusCode: '0',  // Error state - this triggers recursion path
+                type: 'txt'
+            };
+            
+            uploadObj.filesData = [fileData];
+            uploadObj.count = 0;
+            
+            // Create a spy to track if sequenceUpload is called recursively
+            let sequenceUploadSpy = spyOn(uploadObj as any, 'sequenceUpload').and.callThrough();
+            
+            (uploadObj as any).sequenceUpload([fileData]);
+            
+            expect(sequenceUploadSpy).toHaveBeenCalled();
+            expect(sequenceUploadSpy.calls.count()).toBe(1);
+        });
+
+        it('should allow recursion when multiple: true and statusCode is 0', () => {
+            uploadObj = new Uploader({
+                multiple: true,
+                autoUpload: false,
+                sequentialUpload: true,
+                asyncSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    chunkSize: 500
+                }
+            }) as any;
+            
+            uploadObj.appendTo(document.getElementById('upload'));
+            
+            expect(uploadObj.multiple).toBe(true);
+            expect(uploadObj.sequentialUpload).toBe(true);
+            
+            let fileData1: any = {
+                name: 'file1.txt',
+                size: 512,
+                statusCode: '0',
+                type: 'txt'
+            };
+            
+            let fileData2: any = {
+                name: 'file2.txt',
+                size: 512,
+                statusCode: '0',
+                type: 'txt'
+            };
+            
+            uploadObj.filesData = [fileData1, fileData2];
+            uploadObj.count = 0;
+            
+            spyOn(uploadObj as any, 'upload');
+            let sequenceUploadSpy = spyOn(uploadObj as any, 'sequenceUpload').and.callThrough();
+            
+            (uploadObj as any).sequenceUpload([fileData1, fileData2]);
+            
+            expect(sequenceUploadSpy.calls.count()).toBeGreaterThan(1);
+        });
+
+        it('should prevent infinite recursion when multiple: false with statusCode 0', () => {
+            uploadObj = new Uploader({
+                multiple: false,
+                autoUpload: false,
+                sequentialUpload: true,
+                asyncSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    chunkSize: 500
+                }
+            }) as any;
+            
+            uploadObj.appendTo(document.getElementById('upload'));
+            
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.sequentialUpload).toBe(true);
+            
+            let fileData: any = {
+                name: 'single-file.txt',
+                size: 2048,
+                statusCode: '0',  // Error/not ready state
+                type: 'txt'
+            };
+            
+            uploadObj.filesData = [fileData];
+            uploadObj.count = -1;
+            let recursionCalls = 0;
+            let originalSequenceUpload = (uploadObj as any).sequenceUpload.bind(uploadObj);
+            spyOn(uploadObj as any, 'sequenceUpload').and.callFake(function(data: any) {
+                recursionCalls++;
+                if (recursionCalls > 1) {
+                    fail('Stack overflow: sequenceUpload called recursively with multiple: false');
+                }
+                return originalSequenceUpload(data);
+            });
+            
+            (uploadObj as any).sequenceUpload([fileData]);
+            
+            // Verify no infinite recursion
+            expect(recursionCalls).toBe(1);
+        });
+    });
 });
 

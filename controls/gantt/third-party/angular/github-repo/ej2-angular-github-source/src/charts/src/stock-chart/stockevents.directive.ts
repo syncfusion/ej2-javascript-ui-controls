@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-stockchart-indicators>e-stockchart-stockevent',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StockEventDirective extends ComplexBase<StockEventDirective> {
@@ -41,24 +41,24 @@ export class StockEventDirective extends ComplexBase<StockEventDirective> {
      * * ArrowRight
      * @default 'Circle'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * The background of the stock event that accepts value in hex and rgba as a valid CSS color string.
      * @default 'transparent'
      */
-    public background: any;
+    public declare background: any;
     /** 
      * Options to customize the border of the stock events.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * Date value of stock event in which stock event shows.
      */
-    public date: any;
+    public declare date: any;
     /** 
      * Specifies the description for the chart which renders in tooltip for stock event.
      */
-    public description: any;
+    public declare description: any;
     /** 
      * Corresponding values in which stock event placed. 
      * * Close 
@@ -67,26 +67,26 @@ export class StockEventDirective extends ComplexBase<StockEventDirective> {
      * * Close
      * @default 'close'
      */
-    public placeAt: any;
+    public declare placeAt: any;
     /** 
      * To render stock events in particular series. 
      * By default stock events will render for all series.
      * @default []
      */
-    public seriesIndexes: any;
+    public declare seriesIndexes: any;
     /** 
      * Enables the stock events to be render on series. If it disabled, stock event rendered on primaryXAxis.
      * @default true
      */
-    public showOnSeries: any;
+    public declare showOnSeries: any;
     /** 
      * Specifies the text for the stock chart text.
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Options to customize the styles for stock events text.
      */
-    public textStyle: any;
+    public declare textStyle: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -102,6 +102,7 @@ export class StockEventDirective extends ComplexBase<StockEventDirective> {
  */
 @Directive({
     selector: 'ejs-stockchart>e-stockchart-stockevents',
+    standalone: true,
     queries: {
         children: new ContentChildren(StockEventDirective)
     },

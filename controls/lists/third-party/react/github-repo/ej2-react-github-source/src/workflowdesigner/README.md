@@ -1,0 +1,1 @@
+Repositary for ej2-react-template

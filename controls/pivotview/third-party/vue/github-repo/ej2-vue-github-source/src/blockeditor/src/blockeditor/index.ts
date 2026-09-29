@@ -1,0 +1,1 @@
+export { BlockEditorComponent, BlockEditorPlugin } from './blockeditor.component';

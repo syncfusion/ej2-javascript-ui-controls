@@ -230,7 +230,8 @@ export class DialogEditRender {
         const cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (this.parent.editModule.checkColumnIsGrouped(cols[parseInt(i.toString(), 10)]) || cols[parseInt(i.toString(), 10)].commands
-                || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox') {
+                || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox'
+                || cols[parseInt(i.toString(), 10)].type === 'rownumber') {
                 continue;
             }
             const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });

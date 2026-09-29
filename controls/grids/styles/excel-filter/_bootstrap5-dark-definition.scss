@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap5-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $grid-column-chosser-searchdiv-opactiy: .6 !default;
 $grid-column-chosser-searchdiv-fopactiy: 1 !default;
 $grid-columnchooser-search-border-color: $border-light !default;

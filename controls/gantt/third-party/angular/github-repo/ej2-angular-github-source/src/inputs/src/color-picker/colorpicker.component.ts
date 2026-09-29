@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,29 +30,28 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class ColorPickerComponent extends ColorPicker implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeModeSwitch: any;
-	beforeOpen: any;
-	beforeTileRender: any;
-	change: any;
-	created: any;
-	onModeSwitch: any;
-	open: any;
-	select: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeModeSwitch: any;
+	declare beforeOpen: any;
+	declare beforeTileRender: any;
+	declare change: any;
+	declare created: any;
+	declare onModeSwitch: any;
+	declare open: any;
+	declare select: any;
+	public declare valueChange: any;
 
 
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -93,7 +93,7 @@ export class ColorPickerComponent extends ColorPicker implements IComponentBase 
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

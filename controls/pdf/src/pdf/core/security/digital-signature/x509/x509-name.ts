@@ -24,7 +24,7 @@ export class _PdfX509Name {
      */
     _values: string[] = [];
     private _added: boolean[] = [];
-    private _sequence: _PdfAbstractSyntaxElement[];
+    _sequence: _PdfAbstractSyntaxElement[];
     private _defaultSymbols: Map<string, string>;
     private readonly _countryNameOid: string = '2.5.4.6';
     private readonly _organizationNameOid: string = '2.5.4.10';
@@ -62,5 +62,25 @@ export class _PdfX509Name {
                 });
             }
         });
+    }
+    /**
+     * Compares this X.509 name with another for equality.
+     *
+     * @private
+     * @param {_PdfX509Name} cert The X.509 name to compare with.
+     * @returns {boolean} Returns `true` if both names are equal; otherwise, `false`.
+     */
+    _equals(cert: _PdfX509Name): boolean {
+        const arr1: string[] = this._values;
+        const arr2: string[] = cert._values;
+        if (arr1.length !== arr2.length) {
+            return false;
+        }
+        for (let i: number = 0; i < arr1.length; i++) {
+            if (arr1[<number>i] !== arr2[<number>i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

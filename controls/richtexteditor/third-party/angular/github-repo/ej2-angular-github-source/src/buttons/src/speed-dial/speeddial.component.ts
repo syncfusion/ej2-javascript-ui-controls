@@ -20,47 +20,27 @@ export const twoWays: string[] = ['visible'];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childItems: new ContentChild(SpeedDialItemsDirective)
+        childItems: new ContentChild(SpeedDialItemsDirective),
+        itemTemplate: new ContentChild('itemTemplate'),
+        popupTemplate: new ContentChild('popupTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class SpeedDialComponent extends SpeedDial implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeItemRender: any;
-	beforeOpen: any;
-	clicked: any;
-	created: any;
-	onClose: any;
-	onOpen: any;
-	public visibleChange: any;
-    public childItems: QueryList<SpeedDialItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeItemRender: any;
+	declare beforeOpen: any;
+	declare clicked: any;
+	declare created: any;
+	declare onClose: any;
+	declare onOpen: any;
+	public declare visibleChange: any;
+    public declare childItems: QueryList<SpeedDialItemsDirective>;
     public tags: string[] = ['items'];
-    /** 
-     * Defines the template content for the speed dial item. 
-     * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Defines a template content for popup of SpeedDial.
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('popupTemplate')
-    @Template()
-    public popupTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -90,7 +70,9 @@ export class SpeedDialComponent extends SpeedDial implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(SpeedDialComponent.prototype, 'itemTemplate');
+Template()(SpeedDialComponent.prototype, 'popupTemplate');
 

@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 
 $ddl-multiselect-skin-name: 'bootstrap' !default;
@@ -209,6 +208,8 @@ $ddl-bigger-small-input-height: 34px !default;
 $ddl-delim-bigger-small-font-size: 14px !default;
 $ddl-delimviewheight-bigger-small: 34px !default;
 $ddl-closer-margin-top-bigger-small: -4em !default;
+$ddl-list-padding-right: 20px !default;
+$ddl-list-rtl-padding-left: 20px !default;
 
 $ddl-bigger-small-filled-chip-height: 28px !default;
 $ddl-bigger-filled-chip-height: 24px !default;

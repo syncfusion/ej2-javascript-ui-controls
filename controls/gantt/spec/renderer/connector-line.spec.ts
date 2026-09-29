@@ -4132,3 +4132,54 @@ describe('CR-1023089: Unscheduled tasks with predecessors cause exception on ini
         }
     });
 });
+describe('Unscheduled predecessor validation', () => {
+    let ganttObj: Gantt;
+    const predecessorData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Planning',
+            StartDate: new Date('04/01/2019'),
+            EndDate: new Date('04/30/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Scheduled predecessor', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 3, TaskName: 'Unscheduled predecessor' },
+                { TaskID: 4, TaskName: 'Scheduled predecessor 2', StartDate: new Date('04/05/2019'), Duration: 2 },
+                { TaskID: 5, TaskName: 'Milestone successor', StartDate: new Date('04/05/2019'), Duration: 0, Predecessor: '3,4' }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: predecessorData,
+            allowUnscheduledTasks: true,
+            height: '450px',
+            projectStartDate: new Date('04/01/2019'),
+            projectEndDate: new Date('04/30/2019'),
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Dialog'
+            },
+            toolbar: ['Edit', 'Update', 'Cancel']
+        }, done);
+    });
+    it('ignores an unscheduled predecessor during initial render', () => {
+        const ganttData = ganttObj.flatData[4];
+        expect(ganttData.ganttProperties.predecessor.length).toBe(1);
+        expect(ganttData.ganttProperties.predecessorsName).toBe('4FS');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

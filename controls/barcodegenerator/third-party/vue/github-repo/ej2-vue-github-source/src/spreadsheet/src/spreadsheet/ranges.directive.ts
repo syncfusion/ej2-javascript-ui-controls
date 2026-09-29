@@ -34,7 +34,7 @@ export const RangesPlugin = {
 /**
  * `e-range` directive represent a range of the VueJS Spreadsheet.
  * It must be contained in a `e-sheet` directive.
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-sheets>
  *    <e-sheet>

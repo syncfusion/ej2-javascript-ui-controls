@@ -33,6 +33,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     private wrapper: HTMLElement;
     private primaryBtnObj: Button;
     private secondaryBtnObj: DropDownButton;
+    private issecondaryBtnClick: boolean = false;
 
     /**
      * Defines the content of the SplitButton primary action button can either be a text or HTML elements.
@@ -436,15 +437,19 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     private btnKeyBoardHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
         case 'altdownarrow':
-            this.clickHandler(e);
+            if (this.issecondaryBtnClick) {
+                this.clickHandler(e);
+            }
             break;
         case 'enter':
-            this.clickHandler(e);
-            if (this.getPopUpElement() && !this.getPopUpElement().classList.contains('e-popup-close')) {
-                this.element.classList.remove('e-active');
-                this.secondaryBtnObj.element.classList.add('e-active');
-            } else {
-                this.secondaryBtnObj.element.classList.remove('e-active');
+            if (this.issecondaryBtnClick){
+                this.clickHandler(e);
+                if (this.getPopUpElement() && !this.getPopUpElement().classList.contains('e-popup-close')) {
+                    this.element.classList.remove('e-active');
+                    this.secondaryBtnObj.element.classList.add('e-active');
+                } else {
+                    this.secondaryBtnObj.element.classList.remove('e-active');
+                }
             }
             break;
         }

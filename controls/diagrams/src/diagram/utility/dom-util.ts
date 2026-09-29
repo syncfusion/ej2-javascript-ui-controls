@@ -54,29 +54,30 @@ export function removeElementsByClass(className: string, id?: string): void {
  * @private
  */
 export function findSegmentPoints(element: PathElement): PointModel[] {
-    let pts: PointModel[] = [];
+    //1038481: Optimize Diagram Interaction Performance for Large-Scale Diagrams
+    const pts: PointModel[] = [];
     let sample: SVGPoint; let sampleLength: number;
     const measureWindowElement: string = 'measureElement';
+    // Compute pathData using pure calculation (no DOM access required)
+    const pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
+    const pathData: string = updatePath(element, pathBounds, element);
+    // 930450: Check cache BEFORE any DOM operations to avoid expensive getTotalLength/setAttributeNS calls
+    const storedPoints: PointModel[] = Diagram.prototype.getPathData(pathData);
+    if (storedPoints.length > 0) {
+        return storedPoints;
+    }
+    // Cache miss: perform DOM measurement only when necessary
     window[`${measureWindowElement}`].style.visibility = 'visible';
     const svg: SVGSVGElement = window[`${measureWindowElement}`].children[2];
     const pathNode: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
-    pathNode.setAttributeNS(null, 'd', element.data);
-    const pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
-    const pathData: string = updatePath(element, pathBounds, element);
     pathNode.setAttributeNS(null, 'd', pathData);
     const pathLength: number = pathNode.getTotalLength();
-    // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
-    const storedPoints: PointModel[] = Diagram.prototype.getPathData(pathData);
-    if (storedPoints.length === 0) {
-        for (sampleLength = 0; sampleLength <= pathLength; sampleLength += 10) {
-            sample = pathNode.getPointAtLength(sampleLength);
-            pts.push({ x: sample.x, y: sample.y });
-        }
-        // Push the calculated points into the shared storage
-        Diagram.prototype.setPathData(pathData, pts);
-    } else {
-        pts = storedPoints;
+    for (sampleLength = 0; sampleLength <= pathLength; sampleLength += 10) {
+        sample = pathNode.getPointAtLength(sampleLength);
+        pts.push({ x: sample.x, y: sample.y });
     }
+    // Push the calculated points into the shared storage
+    Diagram.prototype.setPathData(pathData, pts);
     window[`${measureWindowElement}`].style.visibility = 'hidden';
     return pts;
 
@@ -1052,10 +1053,16 @@ export function getContent(
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
         if ((diagram as any).isReact) {
-            compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
-                /* eslint-enable */
-                // eslint-disable-next-line quotes
-                cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+            const templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate ?
+                (element as DiagramHtmlElement).getNodeTemplate() : null;
+            if (templateFn) {
+                compiledString = templateFn(
+                    /* eslint-enable */
+                    // eslint-disable-next-line quotes
+                    cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+            } else {
+                compiledString = null;
+            }
         } else if ((diagram as any).isVue || (diagram as any).isVue3) {
             // EJ2-57563 - Added the below code to provide slot template support for Vue and Vue 3
             const templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
@@ -1078,10 +1085,16 @@ export function getContent(
                     cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
             }
         } else {
-            compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
-                /* eslint-enable */
-                // eslint-disable-next-line quotes
-                cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
+            const templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate ?
+                (element as DiagramHtmlElement).getNodeTemplate() : null;
+            if (templateFn) {
+                compiledString = templateFn(
+                    /* eslint-enable */
+                    // eslint-disable-next-line quotes
+                    cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false);
+            } else {
+                compiledString = null;
+            }
         }
         if (compiledString) {
             //Bug:1023096 Vue v-slot nodeTemplates the HTML symbols/node does not rendered in diagram and Palette
@@ -1255,30 +1268,32 @@ export function getTemplateContent(
 
 /* eslint-disable */
 /** @private */
-export function createUserHandleTemplates(userHandleTemplate: string | Function, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
+export function createUserHandleTemplates(
+    userHandleTemplate: string | Function, template: HTMLCollection, selectedItems: SelectorModel,
+    diagramID: string, handle?: UserHandleModel): void {
     let userHandleFn: Function;
-    let handle: UserHandleModel;
     let compiledString: Function;
     let i: number;
     let div: HTMLElement;
     let diagramElement: Object = document.getElementById(diagramID);
     let instance: string = 'ej2_instances';
     let diagram: Object = diagramElement[instance][0];
+    const handles: UserHandleModel[] = handle ? [handle] : selectedItems.userHandles;
 
-    if (userHandleTemplate && template) {
+    if (userHandleTemplate && template && template.length) {
         userHandleFn = templateCompiler(userHandleTemplate);
-        for (handle of selectedItems.userHandles) {
+        for (const currentHandle of handles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate' + '_' + handle.name, undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(currentHandle), diagram, 'userHandleTemplate' + '_' + currentHandle.name, undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
-                    let attr: Object = {
+                    const attr: Object = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',
-                        'id': handle.name + '_template_hiddenUserHandle'
+                        'id': currentHandle.name + '_template_hiddenUserHandle'
                     };
                     div = createHtmlElement('div', attr);
                     div.appendChild(compiledString[i]);
+                    template[0].appendChild(div);
                 }
-                template[0].appendChild(div);
             }
         }
     }//Removed isBlazor code

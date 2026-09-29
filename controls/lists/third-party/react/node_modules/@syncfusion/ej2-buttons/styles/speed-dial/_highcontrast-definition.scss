@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $sd-offset: 16px !default;
 $sd-ul-margin: 0 !default;
 $sd-li-text-padding: 0 5px !default;

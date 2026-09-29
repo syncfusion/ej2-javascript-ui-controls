@@ -20,35 +20,35 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class PivotFieldListComponent extends PivotFieldList implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	afterServiceInvoke: any;
-	aggregateCellInfo: any;
-	aggregateMenuOpen: any;
-	beforeServiceInvoke: any;
-	calculatedFieldCreate: any;
-	created: any;
-	dataBound: any;
-	destroyed: any;
-	enginePopulated: any;
-	enginePopulating: any;
-	fieldDragStart: any;
-	fieldDrop: any;
-	fieldRemove: any;
-	load: any;
-	memberEditorOpen: any;
-	memberFiltering: any;
-	onFieldDropped: any;
-	public onHeadersSort: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare afterServiceInvoke: any;
+	declare aggregateCellInfo: any;
+	declare aggregateMenuOpen: any;
+	declare beforeServiceInvoke: any;
+	declare calculatedFieldCreate: any;
+	declare created: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare enginePopulated: any;
+	declare enginePopulating: any;
+	declare fieldDragStart: any;
+	declare fieldDrop: any;
+	declare fieldRemove: any;
+	declare load: any;
+	declare memberEditorOpen: any;
+	declare memberFiltering: any;
+	declare onFieldDropped: any;
+	public declare onHeadersSort: any;
 
 
 
@@ -86,7 +86,8 @@ export class PivotFieldListComponent extends PivotFieldList implements IComponen
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

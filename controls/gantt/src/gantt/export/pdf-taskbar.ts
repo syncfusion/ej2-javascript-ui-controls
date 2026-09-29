@@ -25,6 +25,8 @@ export class PdfGanttTaskbarCollection {
     public baselineStartDate?: Date;
     /** Defines the task baselineenddate. */
     public baselineEndDate?: Date;
+    /** Defines the baseline duration of task. */
+    public baselineDuration?: number;
     /** Defines the task baselineleft. */
     public baselineLeft?: number;
     /** Defines the task baselinewidth. */
@@ -184,6 +186,52 @@ export class PdfGanttTaskbarCollection {
                 pixelToPointHeight,
                 progressFormat
             );
+        }
+    }
+    private drawIndicators(
+        page: PdfPage,
+        taskGraphics: PdfGraphics,
+        startPoint: PointF,
+        detail: TimelineDetails,
+        cumulativeWidth: number,
+        rowHeight: number,
+        adjustHeight: number,
+        font: PdfFont,
+        taskbar: PdfGanttTaskbarCollection
+    ): void {
+        if (!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0) {
+            taskbar.indicators.map((items: IIndicator, index: number) => {
+                const currendate: Date = this.parent.dateValidationModule.getDateFromFormat(items.date, true);
+                if (detail.startDate <= currendate && currendate <= detail.endDate) {
+                    const leftValue: number = this.parent.chartRowsModule.getIndicatorleft(items.date);
+                    if (!isNullOrUndefined(items.base64)) {
+                        const image: PdfBitmap = new PdfBitmap(items.base64);
+                        const imageSize: number = 10;
+                        const indicatorFormat: PdfStringFormat = new PdfStringFormat();
+                        indicatorFormat.wordWrap = PdfWordWrapType.None;
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawImage(image, (startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10) -
+                            this.parent.perDayWidth / 2, startPoint.y + adjustHeight, imageSize, imageSize);
+                            const state: any = taskGraphics.save();
+                            taskGraphics.setClip(new RectangleF(startPoint.x, startPoint.y, page['contentWidth'], rowHeight));
+                            taskGraphics.drawString(items.name, font, null, PdfBrushes.Black,
+                                                    (startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 15 + imageSize) -
+                                this.parent.perDayWidth / 2, startPoint.y + adjustHeight, indicatorFormat);
+                            taskGraphics.restore(state);
+                        }
+                        else {
+                            taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10,
+                                                   startPoint.y + adjustHeight, imageSize, imageSize);
+                            const state: any = taskGraphics.save();
+                            taskGraphics.setClip(new RectangleF(startPoint.x, startPoint.y, page['contentWidth'], rowHeight));
+                            taskGraphics.drawString(items.name, font, null, PdfBrushes.Black, startPoint.x +
+                            pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 15 + imageSize, startPoint.y +
+                            adjustHeight, indicatorFormat);
+                            taskGraphics.restore(state);
+                        }
+                    }
+                }
+            });
         }
     }
     /**
@@ -1488,39 +1536,24 @@ export class PdfGanttTaskbarCollection {
                     this.autoWidth -= detail.totalWidth;
                 }     
             }
-            if(!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0){
-                    
-                taskbar.indicators.map((items: IIndicator, index: number) => {
-                    const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
-                    if (detail.startDate <= currendate && currendate <= detail.endDate) {
-                        const leftValue: number = this.parent.chartRowsModule.getIndicatorleft(items.date);
-                        if (!isNullOrUndefined(items.base64)) {
-                            const image: PdfBitmap = new PdfBitmap(items.base64);
-                            const indicatorFormat: PdfStringFormat = new PdfStringFormat();
-                            indicatorFormat.wordWrap = PdfWordWrapType.None;
-                            if (this.isAutoFit()) {
-                                taskGraphics.drawImage(image, (startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10) - this.parent.perDayWidth / 2, startPoint.y + adjustHeight, imageSize, imageSize)
-                                let state = taskGraphics.save();
-                                taskGraphics.setClip(new RectangleF(startPoint.x, startPoint.y, page['contentWidth'], rowHeight));
-                                taskGraphics.drawString(items.name, font, null, PdfBrushes.Black, (startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 15 + imageSize) - this.parent.perDayWidth / 2, startPoint.y + adjustHeight, indicatorFormat);
-                                taskGraphics.restore(state);
-                            }
-                            else {
-                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                let state = taskGraphics.save();
-                                taskGraphics.setClip(new RectangleF(startPoint.x, startPoint.y, page['contentWidth'], rowHeight));
-                                taskGraphics.drawString(items.name, font, null, PdfBrushes.Black, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 15 + imageSize, startPoint.y + adjustHeight, indicatorFormat);
-                                taskGraphics.restore(state);
-                            }
-                        }
-                    }
-                })
-            }
+            this.drawIndicators(page, taskGraphics, startPoint, detail, cumulativeWidth, rowHeight, adjustHeight, font, taskbar);
         } else {
-            this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, false);
             if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, true);
+                if (!isNullOrUndefined(taskbar.baselineDuration) && taskbar.baselineDuration == 0) {
+                    this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, true, rowHeight, font);
+                }
+                else {
+                    const taskbarHeight: number = this.parent.chartRowsModule.taskBarHeight;
+                    const adjustHeight: number = pixelToPoint((this.parent.rowHeight - taskbarHeight) / 4.5);
+                    if (this.isAutoFit()) {
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbarHeight + 3), (taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+                    }
+                    else {
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbarHeight + 3), pixelToPoint(taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+                    }
+                }
             }
+            this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, false, rowHeight, font);
         }
         this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
         return isNextPage;
@@ -2286,11 +2319,14 @@ export class PdfGanttTaskbarCollection {
      * @param {number} cumulativeWidth .
      * @param {PdfGanttTaskbarCollection} taskbar .
      * @param {boolean} isBaseline .
+     * @param {number} rowHeight .
+     * @param {PdfFont} font .
      * @returns {void}
     Draw milestone task
      */
     private drawMilestone(page: PdfPage, startPoint: PointF, detail: TimelineDetails,
-                          cumulativeWidth: number, taskbar: PdfGanttTaskbarCollection, isBaseline: boolean): void {
+                          cumulativeWidth: number, taskbar: PdfGanttTaskbarCollection, isBaseline: boolean,
+                          rowHeight: number, font: PdfFont): void {
         if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
             const taskGraphics: PdfGraphics = page.graphics;
             const pageIndex: number = page.section.indexOf(page);
@@ -2355,6 +2391,7 @@ export class PdfGanttTaskbarCollection {
                                            pixelToPoint(taskbar.taskbarTemplate.image[0].height - 2));
                 }
             }
+            this.drawIndicators(page, taskGraphics, startPoint, detail, cumulativeWidth, rowHeight, adjustHeight, font, taskbar);
             this.endPage = this.startPage = pageIndex;
         }
     }

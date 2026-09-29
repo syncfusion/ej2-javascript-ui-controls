@@ -1,3 +1,4 @@
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Diagram } from '../diagram';
 import { Direction } from '../enum/enum';
 import { Node } from '../objects/node';
@@ -319,6 +320,7 @@ export class AvoidLineOverlapping {
     private diagram: Diagram;
 
     constructor(parent?: Diagram) {
+        initializeTelemetryFeature('AvoidLineOverlapping', 'Diagram');
         this.diagram = parent;
         this.segmentTree = new SegmentTree();
         this.segmentMappings = new Map<Connector, Array<ILineSegment>>();

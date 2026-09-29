@@ -7,36 +7,27 @@ import { Chart3DColumnDirective, Chart3DColumnsDirective } from './columns.direc
 import { Chart3DSelectedDataIndexDirective, Chart3DSelectedDataIndexesDirective } from './selecteddataindexes.directive';
 import { Chart3DComponent } from './chart3d.component';
 
+const CHART3D_DIRECTIVES = [
+    Chart3DComponent,
+        Chart3DSeriesDirective,
+        Chart3DSeriesCollectionDirective,
+        Chart3DAxisDirective,
+        Chart3DAxesDirective,
+        Chart3DRowDirective,
+        Chart3DRowsDirective,
+        Chart3DColumnDirective,
+        Chart3DColumnsDirective,
+        Chart3DSelectedDataIndexDirective,
+        Chart3DSelectedDataIndexesDirective
+];
+
 /**
  * NgModule definition for the Chart3D component.
+ * Re-exports standalone Chart3D component and directives so existing apps can keep using:
+ * `imports: [Chart3DModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        Chart3DComponent,
-        Chart3DSeriesDirective,
-        Chart3DSeriesCollectionDirective,
-        Chart3DAxisDirective,
-        Chart3DAxesDirective,
-        Chart3DRowDirective,
-        Chart3DRowsDirective,
-        Chart3DColumnDirective,
-        Chart3DColumnsDirective,
-        Chart3DSelectedDataIndexDirective,
-        Chart3DSelectedDataIndexesDirective
-    ],
-    exports: [
-        Chart3DComponent,
-        Chart3DSeriesDirective,
-        Chart3DSeriesCollectionDirective,
-        Chart3DAxisDirective,
-        Chart3DAxesDirective,
-        Chart3DRowDirective,
-        Chart3DRowsDirective,
-        Chart3DColumnDirective,
-        Chart3DColumnsDirective,
-        Chart3DSelectedDataIndexDirective,
-        Chart3DSelectedDataIndexesDirective
-    ]
+    imports: [CommonModule, ...CHART3D_DIRECTIVES],
+    exports: [...CHART3D_DIRECTIVES]
 })
 export class Chart3DModule { }

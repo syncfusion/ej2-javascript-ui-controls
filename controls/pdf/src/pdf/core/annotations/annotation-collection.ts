@@ -5,6 +5,7 @@ import { _checkReview, _isNullOrUndefined } from './../utils';
 import { PdfAnnotation, PdfLineAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfAngleMeasurementAnnotation, PdfRectangleAnnotation, PdfSquareAnnotation, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfInkAnnotation, PdfPopupAnnotation, PdfAttachmentAnnotation, Pdf3DAnnotation, PdfFileLinkAnnotation, PdfWatermarkAnnotation, PdfRubberStampAnnotation, PdfSoundAnnotation, PdfFreeTextAnnotation, PdfRedactionAnnotation, PdfRichMediaAnnotation, PdfTextMarkupAnnotation, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfComment } from './annotation';
 import { PdfAnnotationFlag } from './../enumerator';
 import { PdfTemplate } from '../graphics/pdf-template';
+import {initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * The class provides methods and properties to handle the collection of `PdfAnnotation`.
  * ```typescript
@@ -141,6 +142,7 @@ export class PdfAnnotationCollection {
      * @returns {number} Annotation index.
      */
     public add(annotation: PdfAnnotation): number {
+        initializeTelemetryFeature('Annotation', 'PDFLibrary');
         if (typeof annotation === 'undefined' || annotation === null) {
             throw Error('annotation cannot be null or undefined');
         }

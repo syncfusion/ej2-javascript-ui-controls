@@ -35,7 +35,7 @@ export class _PdfObjectIdentifier {
             } else if (resolvedNodes[0] < 0 || resolvedNodes[0] > 2) {
                 throw new Error('Invalid oid: The first node must be 0, 1, or 2.');
             } else if (resolvedNodes[0] < 2 && resolvedNodes[1] > 39) {
-                throw new Error(`Invalid oid: When Node #1 is 0 or 1, Node #2 must be 0–39. Received: ${resolvedNodes}.`);
+                throw new Error(`Invalid oid: When Node #1 is 0 or 1, Node #2 must be 0–39. Received: ${resolvedNodes[0]},${resolvedNodes[1]}.`);
             }
         }
         const oid: _PdfObjectIdentifier = new _PdfObjectIdentifier();

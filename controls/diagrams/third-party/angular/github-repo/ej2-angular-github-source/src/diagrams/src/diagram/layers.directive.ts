@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-layers>e-layer',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class LayerDirective extends ComplexBase<LayerDirective> {
@@ -32,33 +32,33 @@ export class LayerDirective extends ComplexBase<LayerDirective> {
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public addInfo: any;
+    public declare addInfo: any;
     /** 
      * Defines the id of a diagram layer
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Enables or disables editing objects in a particular layer
      * @default false
      */
-    public lock: any;
+    public declare lock: any;
     /** 
      * Defines the collection of the objects that are added to a particular layer
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public objects: any;
+    public declare objects: any;
     /** 
      * Enables or disables the visibility of objects in a particular layer
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Defines the zOrder of the layer
      * @default -1
      */
-    public zIndex: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -74,6 +74,7 @@ export class LayerDirective extends ComplexBase<LayerDirective> {
  */
 @Directive({
     selector: 'ej-diagram>e-layers',
+    standalone: true,
     queries: {
         children: new ContentChildren(LayerDirective)
     },

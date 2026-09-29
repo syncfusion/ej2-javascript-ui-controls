@@ -1,0 +1,72 @@
+@use '../variables' as *;
+@include export-module('chatui-material-dark-icons') {
+  .e-chat-send::before {
+    content: '\e816';
+  }
+  .e-chat-check::before {
+    content: '\e96d';
+  }
+  .e-chat-copy::before {
+    content: '\e33d';
+  }
+  .e-chat-close::before {
+    content: '\e7fc';
+  }
+  .e-chat-pin::before {
+    content: '\e9e8';
+  }
+  .e-chat-view::before {
+    content: '\e345';
+  }
+  .e-chat-unpin::before {
+    content: '\e9e9';
+  }
+  .e-chat-forward::before {
+    content: '\e9e7';
+  }
+  .e-chat-reply::before {
+    content: '\e9e6';
+  }
+  .e-chat-trash::before {
+    content: '\e94a';
+  }
+  .e-chat-error::before {
+    content: '\e7e9';
+  }
+  .e-chat-seen::before {
+    content: '\e9df';
+  }
+  .e-chat-scroll-down::before {
+    content: '\e304';
+  }
+  .e-user-online::before {
+    content: '\ea84';
+  }
+  .e-user-away::before {
+    content: '\e20c';
+  }
+  .e-user-offline::before {
+    content: '\e7e9';
+  }
+  .e-chat-attachment-icon::before {
+    content: '\ea05';
+  }
+  .e-chat-file-icon::before {
+    content: '\ea06';
+  }
+  .e-chat-upload::before {
+    content: '\e60f';
+  }
+  .e-chat-video-play::before {
+    content: '\e324';
+  }
+  .e-chat-download::before {
+    content: '\ec0b';
+  }
+  .e-chat-circle-close::before {
+    content: '\e7e9';
+  }
+  .e-chat-back-icon::before {
+    content: '\e85b';
+  }
+}

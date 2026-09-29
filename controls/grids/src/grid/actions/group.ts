@@ -1,6 +1,6 @@
 import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { createElement, closest, remove, classList, addClass, removeClass, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, extend, updateCSSText } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, updateCSSText, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
 import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, getParsedFieldID, isComplexField, findCellIndex, resetRowIndex } from '../base/util';
@@ -193,6 +193,7 @@ export class Group implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, groupSettings?: GroupSettingsModel, sortedColumns?: string[], serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Group', 'DataGrid');
         this.parent = parent;
         this.groupSettings = groupSettings;
         this.serviceLocator = serviceLocator;
@@ -337,7 +338,7 @@ export class Group implements IAction {
                 e.action = 'ctrlUpArrow';
             }
         }
-        if ((e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
+        if (((e.action !== 'ctrlSpace' && e.action !== 'ctrlEnter') && (!this.groupSettings.columns.length ||
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1))
             || (this.parent.groupSettings.enableLazyLoading && this.groupSettings.columns.length
                 && (e.action === 'ctrlUpArrow' || e.action === 'ctrlDownArrow'))) {
@@ -371,11 +372,21 @@ export class Group implements IAction {
             e.preventDefault();
             this.collapseAll();
             break;
+        case 'ctrlEnter':
+            if ((e.target as Element).classList.contains('e-groupsort')) {
+                this.groupSortFocus = true;
+                e.preventDefault();
+                const isMultiSort: boolean = e.ctrlKey || (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey);
+                this.applySortFromTarget(e.target as Element, isMultiSort);
+                break;
+            }
+            break;
         case 'enter':
             if ((e.target as Element).classList.contains('e-groupsort')) {
                 this.groupSortFocus = true;
                 e.preventDefault();
-                this.applySortFromTarget(e.target as Element);
+                const isMultiSort: boolean = e.ctrlKey || (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey);
+                this.applySortFromTarget(e.target as Element, isMultiSort);
                 break;
             } else if ((e.target as Element).classList.contains('e-ungroupbutton')) {
                 this.groupCancelFocus = true;
@@ -494,7 +505,8 @@ export class Group implements IAction {
         if (trgtEle && (trgtEle.children[0].classList.contains('e-icon-gdownarrow') || trgtEle.children[0].classList.contains('e-icon-grightarrow'))) {
             this.expandCollapseRows(e.target as Element);
         }
-        this.applySortFromTarget(e.target as Element);
+        const isMultiSort: boolean = e.ctrlKey || (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey);
+        this.applySortFromTarget(e.target as Element, isMultiSort);
         this.unGroupFromTarget(e.target as Element);
         this.toogleGroupFromHeader(e.target as Element);
     }
@@ -528,16 +540,16 @@ export class Group implements IAction {
         }
     }
 
-    private applySortFromTarget(target: Element): void {
+    private applySortFromTarget(target: Element, isMultiSort?: boolean): void {
         const gObj: IGrid = this.parent;
         const gHeader: Element = closest(target as Element, '.e-groupheadercell');
         if (gObj.allowSorting && gHeader && !target.classList.contains('e-ungroupbutton') &&
             !target.classList.contains('e-toggleungroup')) {
             const field: string = gHeader.firstElementChild.getAttribute('data-mappingname');
             if (gObj.getColumnHeaderByField(field).getElementsByClassName('e-ascending').length) {
-                gObj.sortColumn(field, 'Descending', true);
+                gObj.sortColumn(field, 'Descending', isNullOrUndefined(isMultiSort) ? true : isMultiSort);
             } else {
-                gObj.sortColumn(field, 'Ascending', true);
+                gObj.sortColumn(field, 'Ascending', isNullOrUndefined(isMultiSort) ? true : isMultiSort);
             }
         }
     }

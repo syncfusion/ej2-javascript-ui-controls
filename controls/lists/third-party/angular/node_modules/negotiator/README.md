@@ -172,7 +172,7 @@ Returns the most preferred encoding from the client.
 
 Returns the most preferred encoding from a list of available encodings.
 
-##### encoding(availableEncodings, preferred)
+##### encoding(availableEncodings, { preferred })
 
 Returns the most preferred encoding from a list of available encodings, while prioritizing based on `preferred` array between same-quality encodings.
 
@@ -185,7 +185,7 @@ Returns an array of preferred encodings ordered by the client preference.
 Returns an array of preferred encodings ordered by priority from a list of
 available encodings.
 
-##### encodings(availableEncodings, preferred)
+##### encodings(availableEncodings, { preferred })
 
 Returns an array of preferred encodings ordered by priority from a list of
 available encodings, while prioritizing based on `preferred` array between same-quality encodings.

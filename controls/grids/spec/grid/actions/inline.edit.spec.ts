@@ -5578,7 +5578,7 @@ describe('DropDownEditCell unit tests', () => {
         (cell as any).parent.isEdit = true;
         ((cell as any).parent as any).editSettings.mode = 'Batch';
         const stopSpy = jasmine.createSpy('stop');
-        cell['dropDownClose']({ event: { action: 'enter', stopPropagation: stopSpy } } as any);
+        cell['dropDownClose']({ event: { action: 'enter', stopPropagation: stopSpy, preventDefault: () => {} } } as any);
         expect(stopSpy).toHaveBeenCalled();
     });
 

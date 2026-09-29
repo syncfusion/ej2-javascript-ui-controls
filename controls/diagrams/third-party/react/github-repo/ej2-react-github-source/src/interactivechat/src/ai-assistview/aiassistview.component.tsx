@@ -11,6 +11,7 @@ export interface AIAssistViewTypecast {
     itemTemplate?: string | Function | any;
     blockTemplate?: string | Function | any;
     bannerTemplate?: string | Function | any;
+    responseAnimationTemplate?: string | Function | any;
 }
 /**
  * Represents the React AIAssistView Component

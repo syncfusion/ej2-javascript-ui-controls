@@ -62,28 +62,237 @@ describe('Ribbon', () => {
             remove(ribbonEle);
             remove(containerEle);
         });
-        it('updatePopupItems - SplitButton popup should render inside CDK overlay pane when isMenu is true', (done) => {
-            const cdkOverlayPane = createElement('div', {
-                className: 'cdk-overlay-pane'
-            });
-            const popoverEl = createElement('div', { attrs: { 'popover': '' } });
-            const ribbonEle = createElement('div', { id: 'ribbon-updatepopup-split-cdk-test' });
+   it('updatePopupItems - SplitButton popup should render inside CDK overlay pane when isMenu is true', (done) => {
+        const cdkOverlayPane = createElement('div', {
+            className: 'cdk-overlay-pane'
+        });
+        const popoverEl = createElement('div', { attrs: { 'popover': '' } });
+        const ribbonEle = createElement('div', { id: 'ribbon-updatepopup-split-cdk-test' });
 
-            popoverEl.appendChild(ribbonEle);
-            cdkOverlayPane.appendChild(popoverEl);
-            document.body.appendChild(cdkOverlayPane);
+        popoverEl.appendChild(ribbonEle);
+        cdkOverlayPane.appendChild(popoverEl);
+        document.body.appendChild(cdkOverlayPane);
 
-            const cdkRibbon = new Ribbon({
+        const cdkRibbon = new Ribbon({
+            tabs: [{
+                id: 'tab1',
+                header: 'tab1',
+                groups: [{
+                    id: 'group1',
+                    header: 'group1Header',
+                    enableGroupOverflow: true,
+                    collections: [{
+                        items: [{
+                            id: 'splitUpdatePopupCdkTest',
+                            type: RibbonItemType.SplitButton,
+                            allowedSizes: RibbonItemSize.Medium,
+                            splitButtonSettings: {
+                                content: 'Split Options',
+                                iconCss: 'e-icons e-edit',
+                                items: [
+                                    { text: 'Cut' },
+                                    { text: 'Copy' },
+                                    { text: 'Paste' },
+                                    { text: 'Delete' }
+                                ]
+                            }
+                        }]
+                    }]
+                }]
+            }]
+        }, ribbonEle);
+
+        (cdkRibbon as any).isAngular = true;
+
+        const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
+        const splitBtnElement = cdkRibbon.element.querySelector('#splitUpdatePopupCdkTest') as HTMLElement;
+        const splitButtonInstance = getComponent(splitBtnElement, SplitButton) as SplitButton;
+
+        expect(splitButtonInstance).toBeTruthy('SplitButton instance should exist');
+
+        (cdkRibbon as any).updatePopupItems(itemModel, cdkRibbon.element, true, true);
+
+        expect(typeof splitButtonInstance.beforeOpen).toBe('function',
+            'beforeOpen should be assigned as a function when isMenu is true');
+
+        const dropdownArrow = splitBtnElement.parentElement.querySelector('.e-dropdown-btn') as HTMLElement;
+        triggerMouseEvent(dropdownArrow || splitBtnElement, 'click');
+
+        setTimeout(() => {
+            const popupElement = splitButtonInstance.dropDown ? splitButtonInstance.dropDown.element : null;
+
+            expect(popupElement).toBeTruthy('SplitButton popup element should be created');
+
+            expect(cdkOverlayPane.contains(popupElement)).toBe(true,
+                'SplitButton popup should be moved inside .cdk-overlay-pane');
+
+            expect(popupElement.parentElement).toBe(cdkOverlayPane,
+                'SplitButton popup direct parent should be cdk-overlay-pane');
+
+            cdkRibbon.destroy();
+            remove(cdkOverlayPane);
+            done();
+        }, 450);
+    });
+
+    it('updatePopupItems - DropDownButton popup should render inside CDK overlay pane when isMenu is true', (done) => {
+        const cdkOverlayPane = createElement('div', {
+            className: 'cdk-overlay-pane'
+        });
+        const popoverEl = createElement('div', { attrs: { 'popover': '' } });
+        const ribbonEle2 = createElement('div', { id: 'ribbon-updatepopup-dd-cdk-test' });
+
+        popoverEl.appendChild(ribbonEle2);
+        cdkOverlayPane.appendChild(popoverEl);
+        document.body.appendChild(cdkOverlayPane);
+
+        const cdkRibbon = new Ribbon({
+            tabs: [{
+                id: 'tab1',
+                header: 'tab1',
+                groups: [{
+                    id: 'group1',
+                    header: 'group1Header',
+                    enableGroupOverflow: true,
+                    collections: [{
+                        items: [{
+                            id: 'ddUpdatePopupCdkTest',
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Medium,
+                            dropDownSettings: {
+                                content: 'Options',
+                                iconCss: 'e-icons e-edit',
+                                items: [
+                                    { text: 'Cut' },
+                                    { text: 'Copy' },
+                                    { text: 'Paste' },
+                                    { text: 'Delete' }
+                                ]
+                            }
+                        }]
+                    }]
+                }]
+            }]
+        }, ribbonEle2);
+
+        (cdkRibbon as any).isAngular = true;
+
+        const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
+        const ddbElement = cdkRibbon.element.querySelector('#ddUpdatePopupCdkTest') as HTMLElement;
+        const dropDownInstance = getComponent(ddbElement, DropDownButton) as DropDownButton;
+
+        expect(dropDownInstance).toBeTruthy('DropDownButton instance should exist');
+
+        (cdkRibbon as any).updatePopupItems(itemModel, cdkRibbon.element, true, true);
+
+        expect(typeof dropDownInstance.beforeOpen).toBe('function',
+            'beforeOpen should be assigned as a function when isMenu is true');
+
+        triggerMouseEvent(ddbElement, 'click');
+
+        setTimeout(() => {
+            const popupElement = dropDownInstance.dropDown ? dropDownInstance.dropDown.element : null;
+
+            expect(popupElement).toBeTruthy('Popup element should be created');
+
+            expect(cdkOverlayPane.contains(popupElement)).toBe(true,
+                'Dropdown popup should be moved inside .cdk-overlay-pane');
+
+            expect(popupElement.parentElement).toBe(cdkOverlayPane,
+                'Popup direct parent should be cdk-overlay-pane');
+
+            cdkRibbon.destroy();
+            remove(cdkOverlayPane);
+            done();
+        }, 250);
+    });
+
+    it('updatePopupItems - Gallery popup should render inside CDK overlay pane and flip offsetX when isMenu is true', (done) => {
+        const cdkOverlayPane = createElement('div', { className: 'cdk-overlay-pane' });
+        const popoverEl = createElement('div', { attrs: { 'popover': '' } });
+        const ribbonEle = createElement('div', { id: 'ribbon-updatepopup-gallery-cdk-test' });
+
+        popoverEl.appendChild(ribbonEle);
+        cdkOverlayPane.appendChild(popoverEl);
+        document.body.appendChild(cdkOverlayPane);
+
+        const cdkRibbon = new Ribbon({
+            tabs: [{
+                id: 'tab1',
+                header: 'Tab1',
+                groups: [{
+                    id: 'group1',
+                    header: 'Group1',
+                    collections: [{
+                        items: [{
+                            id: 'galleryUpdatePopupCdkTest',
+                            type: RibbonItemType.Gallery,
+                            allowedSizes: RibbonItemSize.Large,
+                            gallerySettings: {
+                                itemCount: 2,
+                                groups: [{
+                                    items: [{ content: 'Item1' }, { content: 'Item2' }]
+                                }]
+                            }
+                        }]
+                    }]
+                }]
+            }]
+        }, ribbonEle);
+
+        (cdkRibbon as any).isAngular = true;
+
+        const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
+        const popupBtn = ribbonEle.querySelector('#galleryUpdatePopupCdkTest_popupButton') as HTMLElement;
+
+        expect(popupBtn).toBeTruthy('Gallery popup button should exist');
+
+        // trigger open first so the DropDownButton/popup instance actually exists,
+        // since it appears to be created lazily on first interaction
+        triggerMouseEvent(popupBtn, 'click');
+
+        setTimeout(() => {
+            const galleryInstance = getComponent(popupBtn, DropDownButton) as DropDownButton;
+
+            // only exercise updatePopupItems if a real component instance now exists;
+            // otherwise skip straight to verifying the popup rendered inside the CDK pane
+            if (galleryInstance) {
+                const galleryItemForUpdate = { ...itemModel, id: 'galleryUpdatePopupCdkTest_popupButton' };
+                (cdkRibbon as any).updatePopupItems(galleryItemForUpdate, cdkRibbon.element, true, true);
+
+                expect(typeof galleryInstance.beforeOpen).toBe('function',
+                    'beforeOpen should be assigned as a function when isMenu is true');
+            }
+
+            const popupElement = document.querySelector('#galleryUpdatePopupCdkTest_galleryPopup') as HTMLElement;
+
+            expect(popupElement).toBeTruthy('Gallery popup should exist');
+
+            expect(cdkOverlayPane.contains(popupElement)).toBe(true,
+                'Gallery popup should be moved inside .cdk-overlay-pane');
+
+            expect(popupElement.parentElement).toBe(cdkOverlayPane,
+                'Gallery popup direct parent should be cdk-overlay-pane');
+
+            cdkRibbon.destroy();
+            remove(cdkOverlayPane);
+            done();
+        }, 300);
+    });
+        it('removeOverFlowEvents should remove popup-control class and rebind beforeOpen on SplitButton', () => {
+            const ribbonEle = createElement('div', { id: 'ribbon-removeoverflow-split-test' });
+            document.body.appendChild(ribbonEle);
+
+            const ribbon = new Ribbon({
                 tabs: [{
                     id: 'tab1',
                     header: 'tab1',
                     groups: [{
                         id: 'group1',
                         header: 'group1Header',
-                        enableGroupOverflow: true,
                         collections: [{
                             items: [{
-                                id: 'splitUpdatePopupCdkTest',
+                                id: 'splitRemoveTest',
                                 type: RibbonItemType.SplitButton,
                                 allowedSizes: RibbonItemSize.Medium,
                                 splitButtonSettings: {
@@ -91,9 +300,7 @@ describe('Ribbon', () => {
                                     iconCss: 'e-icons e-edit',
                                     items: [
                                         { text: 'Cut' },
-                                        { text: 'Copy' },
-                                        { text: 'Paste' },
-                                        { text: 'Delete' }
+                                        { text: 'Copy' }
                                     ]
                                 }
                             }]
@@ -102,61 +309,42 @@ describe('Ribbon', () => {
                 }]
             }, ribbonEle);
 
-            (cdkRibbon as any).isAngular = true;
+            const itemModel = ribbon.tabs[0].groups[0].collections[0].items[0];
+            const splitButtonModule = (ribbon as any).ribbonSplitButtonModule;
+            const splitButtonEle = ribbon.element.querySelector('#splitRemoveTest') as HTMLElement;
 
-            const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
-            const splitBtnElement = cdkRibbon.element.querySelector('#splitUpdatePopupCdkTest') as HTMLElement;
-            const splitButtonInstance = getComponent(splitBtnElement, SplitButton) as SplitButton;
+            expect(splitButtonModule).toBeTruthy('ribbonSplitButtonModule should exist on Ribbon instance');
 
-            expect(splitButtonInstance).toBeTruthy('SplitButton instance should exist');
+            const splitButtonInstance = getComponent(splitButtonEle, SplitButton) as SplitButton;
 
-            (cdkRibbon as any).updatePopupItems(itemModel, cdkRibbon.element, true, true);
+            splitButtonInstance.cssClass = splitButtonInstance.cssClass + ' e-ribbon-popup-control';
+            splitButtonInstance.dataBind();
 
+            splitButtonModule.removeOverFlowEvents(itemModel, ribbon.element);
+
+            expect(splitButtonInstance.cssClass.indexOf('e-ribbon-popup-control')).toBe(-1,
+                'popup-control class should be removed after removeOverFlowEvents');
             expect(typeof splitButtonInstance.beforeOpen).toBe('function',
-                'beforeOpen should be assigned as a function when isMenu is true');
+                'beforeOpen should be rebound to a function');
 
-            const dropdownArrow = splitBtnElement.parentElement.querySelector('.e-dropdown-btn') as HTMLElement;
-            triggerMouseEvent(dropdownArrow || splitBtnElement, 'click');
-
-            setTimeout(() => {
-                const popupElement = splitButtonInstance.dropDown ? splitButtonInstance.dropDown.element : null;
-
-                expect(popupElement).toBeTruthy('SplitButton popup element should be created');
-
-                expect(cdkOverlayPane.contains(popupElement)).toBe(true,
-                    'SplitButton popup should be moved inside .cdk-overlay-pane');
-
-                expect(popupElement.parentElement).toBe(cdkOverlayPane,
-                    'SplitButton popup direct parent should be cdk-overlay-pane');
-
-                cdkRibbon.destroy();
-                remove(cdkOverlayPane);
-                done();
-            }, 450);
+            ribbon.destroy();
+            remove(ribbonEle);
         });
 
-        it('updatePopupItems - DropDownButton popup should render inside CDK overlay pane when isMenu is true', (done) => {
-            const cdkOverlayPane = createElement('div', {
-                className: 'cdk-overlay-pane'
-            });
-            const popoverEl = createElement('div', { attrs: { 'popover': '' } });
-            const ribbonEle2 = createElement('div', { id: 'ribbon-updatepopup-dd-cdk-test' });
+        it('removeOverFlowEvents should remove popup-control class and rebind beforeOpen on DropDownButton', () => {
+            const ribbonEle = createElement('div', { id: 'ribbon-removeoverflow-dd-test' });
+            document.body.appendChild(ribbonEle);
 
-            popoverEl.appendChild(ribbonEle2);
-            cdkOverlayPane.appendChild(popoverEl);
-            document.body.appendChild(cdkOverlayPane);
-
-            const cdkRibbon = new Ribbon({
+            const ribbon = new Ribbon({
                 tabs: [{
                     id: 'tab1',
                     header: 'tab1',
                     groups: [{
                         id: 'group1',
                         header: 'group1Header',
-                        enableGroupOverflow: true,
                         collections: [{
                             items: [{
-                                id: 'ddUpdatePopupCdkTest',
+                                id: 'ddRemoveTest',
                                 type: RibbonItemType.DropDown,
                                 allowedSizes: RibbonItemSize.Medium,
                                 dropDownSettings: {
@@ -164,75 +352,8 @@ describe('Ribbon', () => {
                                     iconCss: 'e-icons e-edit',
                                     items: [
                                         { text: 'Cut' },
-                                        { text: 'Copy' },
-                                        { text: 'Paste' },
-                                        { text: 'Delete' }
+                                        { text: 'Copy' }
                                     ]
-                                }
-                            }]
-                        }]
-                    }]
-                }]
-            }, ribbonEle2);
-
-            (cdkRibbon as any).isAngular = true;
-
-            const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
-            const ddbElement = cdkRibbon.element.querySelector('#ddUpdatePopupCdkTest') as HTMLElement;
-            const dropDownInstance = getComponent(ddbElement, DropDownButton) as DropDownButton;
-
-            expect(dropDownInstance).toBeTruthy('DropDownButton instance should exist');
-
-            (cdkRibbon as any).updatePopupItems(itemModel, cdkRibbon.element, true, true);
-
-            expect(typeof dropDownInstance.beforeOpen).toBe('function',
-                'beforeOpen should be assigned as a function when isMenu is true');
-
-            triggerMouseEvent(ddbElement, 'click');
-
-            setTimeout(() => {
-                const popupElement = dropDownInstance.dropDown ? dropDownInstance.dropDown.element : null;
-
-                expect(popupElement).toBeTruthy('Popup element should be created');
-
-                expect(cdkOverlayPane.contains(popupElement)).toBe(true,
-                    'Dropdown popup should be moved inside .cdk-overlay-pane');
-
-                expect(popupElement.parentElement).toBe(cdkOverlayPane,
-                    'Popup direct parent should be cdk-overlay-pane');
-
-                cdkRibbon.destroy();
-                remove(cdkOverlayPane);
-                done();
-            }, 250);
-        });
-
-        it('updatePopupItems - Gallery popup should render inside CDK overlay pane and flip offsetX when isMenu is true', (done) => {
-            const cdkOverlayPane = createElement('div', { className: 'cdk-overlay-pane' });
-            const popoverEl = createElement('div', { attrs: { 'popover': '' } });
-            const ribbonEle = createElement('div', { id: 'ribbon-updatepopup-gallery-cdk-test' });
-
-            popoverEl.appendChild(ribbonEle);
-            cdkOverlayPane.appendChild(popoverEl);
-            document.body.appendChild(cdkOverlayPane);
-
-            const cdkRibbon = new Ribbon({
-                tabs: [{
-                    id: 'tab1',
-                    header: 'Tab1',
-                    groups: [{
-                        id: 'group1',
-                        header: 'Group1',
-                        collections: [{
-                            items: [{
-                                id: 'galleryUpdatePopupCdkTest',
-                                type: RibbonItemType.Gallery,
-                                allowedSizes: RibbonItemSize.Large,
-                                gallerySettings: {
-                                    itemCount: 2,
-                                    groups: [{
-                                        items: [{ content: 'Item1' }, { content: 'Item2' }]
-                                    }]
                                 }
                             }]
                         }]
@@ -240,44 +361,26 @@ describe('Ribbon', () => {
                 }]
             }, ribbonEle);
 
-            (cdkRibbon as any).isAngular = true;
+            const itemModel = ribbon.tabs[0].groups[0].collections[0].items[0];
+            const dropDownModule = (ribbon as any).ribbonDropDownModule;
+            const ddElement = ribbon.element.querySelector('#ddRemoveTest') as HTMLElement;
 
-            const itemModel = cdkRibbon.tabs[0].groups[0].collections[0].items[0];
-            const popupBtn = ribbonEle.querySelector('#galleryUpdatePopupCdkTest_popupButton') as HTMLElement;
+            expect(dropDownModule).toBeTruthy('ribbonDropDownModule should exist on Ribbon instance');
 
-            expect(popupBtn).toBeTruthy('Gallery popup button should exist');
+            const dropDownInstance = getComponent(ddElement, DropDownButton) as DropDownButton;
 
-            // trigger open first so the DropDownButton/popup instance actually exists,
-            // since it appears to be created lazily on first interaction
-            triggerMouseEvent(popupBtn, 'click');
+            dropDownInstance.cssClass = dropDownInstance.cssClass + ' e-ribbon-popup-control';
+            dropDownInstance.dataBind();
 
-            setTimeout(() => {
-                const galleryInstance = getComponent(popupBtn, DropDownButton) as DropDownButton;
+            dropDownModule.removeOverFlowEvents(itemModel, ribbon.element);
 
-                // only exercise updatePopupItems if a real component instance now exists;
-                // otherwise skip straight to verifying the popup rendered inside the CDK pane
-                if (galleryInstance) {
-                    const galleryItemForUpdate = { ...itemModel, id: 'galleryUpdatePopupCdkTest_popupButton' };
-                    (cdkRibbon as any).updatePopupItems(galleryItemForUpdate, cdkRibbon.element, true, true);
+            expect(dropDownInstance.cssClass.indexOf('e-ribbon-popup-control')).toBe(-1,
+                'popup-control class should be removed after removeOverFlowEvents');
+            expect(typeof dropDownInstance.beforeOpen).toBe('function',
+                'beforeOpen should be rebound to a function');
 
-                    expect(typeof galleryInstance.beforeOpen).toBe('function',
-                        'beforeOpen should be assigned as a function when isMenu is true');
-                }
-
-                const popupElement = document.querySelector('#galleryUpdatePopupCdkTest_galleryPopup') as HTMLElement;
-
-                expect(popupElement).toBeTruthy('Gallery popup should exist');
-
-                expect(cdkOverlayPane.contains(popupElement)).toBe(true,
-                    'Gallery popup should be moved inside .cdk-overlay-pane');
-
-                expect(popupElement.parentElement).toBe(cdkOverlayPane,
-                    'Gallery popup direct parent should be cdk-overlay-pane');
-
-                cdkRibbon.destroy();
-                remove(cdkOverlayPane);
-                done();
-            }, 300);
+            ribbon.destroy();
+            remove(ribbonEle);
         });
         it('Dropdown popup should render inside CDK overlay pane when Ribbon is inside Angular CDK Dialog', (done) => {
             const cdkOverlayPane = createElement('div', {

@@ -34,7 +34,7 @@ export const ToolbarItemsPlugin = {
 /**
  * `e-toolbaritems` directive represent a custom toolbar items of the VueJS Schedule. 
  * It must be contained in a Schedule component(`ejs-schedule`). 
- * ```vue
+ * ```js
  * <ejs-schedule>
  *   <e-toolbaritems>
  *    <e-toolbaritem name='Today'></<e-toolbaritem>

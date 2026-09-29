@@ -9,9 +9,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ribbon-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        itemTemplate: new ContentChild('itemTemplate')
     }
 })
 export class RibbonItemDirective extends ComplexBase<RibbonItemDirective> {
@@ -25,102 +26,90 @@ export class RibbonItemDirective extends ComplexBase<RibbonItemDirective> {
      * @default RibbonItemType.Button
      * @asptype RibbonItemType
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Defines the active size of the ribbon item.
      * @default 'Medium'
      * @aspnumberenum 
      */
-    public activeSize: any;
+    public declare activeSize: any;
     /** 
      * Defines the sizes that are allowed for the ribbon item on ribbon resize.
      * @default null
      * @aspnumberenum 
      */
-    public allowedSizes: any;
+    public declare allowedSizes: any;
     /** 
      * Defines the settings for the ribbon button.
      * @default {}
      */
-    public buttonSettings: any;
+    public declare buttonSettings: any;
     /** 
      * Defines the settings for the ribbon checkbox.
      * @default {}
      */
-    public checkBoxSettings: any;
+    public declare checkBoxSettings: any;
     /** 
      * Defines the settings for the ribbon color picker.
      * @default {}
      */
-    public colorPickerSettings: any;
+    public declare colorPickerSettings: any;
     /** 
      * Defines the settings for the ribbon combobox.
      * @default {}
      */
-    public comboBoxSettings: any;
+    public declare comboBoxSettings: any;
     /** 
      * Defines one or more CSS classes to customize the appearance of item.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines whether the item is disabled or not.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines the display options for the ribbon item.
      * @default 'Auto'
      * @aspnumberenum 
      */
-    public displayOptions: any;
+    public declare displayOptions: any;
     /** 
      * Defines the settings for the ribbon dropdown button.
      * @default {}
      */
-    public dropDownSettings: any;
+    public declare dropDownSettings: any;
     /** 
      * Defines the properties of the gallery view in Ribbon.
      * @default {}
      */
-    public gallerySettings: any;
+    public declare gallerySettings: any;
     /** 
      * Defines the properties for group button in Ribbon
      * @default {}
      */
-    public groupButtonSettings: any;
+    public declare groupButtonSettings: any;
     /** 
      * Defines a unique identifier for the item.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the key tip text to be accessed for specified Ribbon item.
      * @default ''
      */
-    public keyTip: any;
+    public declare keyTip: any;
     /** 
      * Defines the settings for the tooltip of the item.
      * @default {}
      */
-    public ribbonTooltipSettings: any;
+    public declare ribbonTooltipSettings: any;
     /** 
      * Defines the settings for the ribbon split button.
      * @default {}
      */
-    public splitButtonSettings: any;
-    /** 
-     * Defines the template content for the ribbon item. 
-     * `ActiveSize` property is passed as string in template context.
-     * @default ''
-     * @angulartype string | object | HTMLElement
-     * @reacttype string | function | JSX.Element | HTMLElement
-     * @vuetype string | function | HTMLElement
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
+    public declare splitButtonSettings: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -129,6 +118,7 @@ export class RibbonItemDirective extends ComplexBase<RibbonItemDirective> {
         this.directivePropList = input;
     }
 }
+Template()(RibbonItemDirective.prototype, 'itemTemplate');
 
 /**
  * RibbonItem Array Directive
@@ -136,6 +126,7 @@ export class RibbonItemDirective extends ComplexBase<RibbonItemDirective> {
  */
 @Directive({
     selector: 'e-ribbon-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(RibbonItemDirective)
     },

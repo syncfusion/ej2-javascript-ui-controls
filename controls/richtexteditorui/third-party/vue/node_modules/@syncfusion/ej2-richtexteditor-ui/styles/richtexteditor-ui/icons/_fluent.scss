@@ -1,0 +1,115 @@
+@use '../variables' as *;
+
+/*! component's theme wise override definitions and variables */
+@include export-module('richtexteditor-ui-fluent-icons') {
+
+  /*! richtexteditor-ui icons */
+
+  .e-rte-ui-toolbar-wrapper,
+  .e-rte-ui-quick-popup {
+    .e-indent::before {
+      content: '\e810';
+    }
+
+    .e-outdent::before {
+      content: '\e72a';
+    }
+
+    .e-create-table::before {
+      content: '\e83f';
+    }
+    
+    .e-table-header::before {
+      content: '\e8f4';
+    }
+
+    .e-table-remove::before {
+      content: '\e811';
+    }
+
+    .e-table-rows::before {
+      content: '\e77f';
+    }
+
+    .e-table-columns::before {
+      content: '\e841';
+    }
+
+    .e-table-cell-ver-align::before {
+      content: '\e74f';
+    }
+
+    .e-table-cell::before {
+      content: '\e7c2';
+    }
+  }
+  .e-insert-column-left::before {
+    content: '\e78b';
+  }
+
+  .e-insert-column-right::before {
+    content: '\e70e';
+  }
+
+  .e-delete-column::before {
+    content: '\e714';
+  }
+
+  .e-insert-row-before::before {
+    content: '\e836';
+  }
+
+  .e-insert-row-after::before {
+    content: '\e801';
+  }
+
+  .e-delete-row::before {
+    content: '\e7f2';
+  }
+
+  .e-rte-ui-quick-toolbar.e-image-quicktoolbar {
+    .e-caption::before {
+      content: '\e8e2';
+    }
+
+    .e-alt-text::before {
+      content: '\e769';
+    }
+
+    .e-display::before {
+      content: '\e7b7';
+    }
+
+    .e-img-dimension::before {
+      content: '\e879';
+    }
+
+    .e-replace::before {
+      content: '\e710';
+    }
+
+    .e-remove::before {
+      content: '\e820';
+    }
+  }
+
+  .e-justify-left::before {
+    content: '\e7b8';
+  }
+
+  .e-justify-right::before {
+    content: '\e813';
+  }
+
+  .e-justify-center::before {
+    content: '\e719';
+  }
+
+  .e-left-wrap::before {
+    content: '\e95b';
+  }
+
+  .e-right-wrap::before {
+    content: '\e95c';
+  }
+}

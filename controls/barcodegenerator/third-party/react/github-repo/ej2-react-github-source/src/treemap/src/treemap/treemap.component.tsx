@@ -9,7 +9,7 @@ export interface TreeMapTypecast {
 }
 /**
  * Represents the React TreeMap component. It is used to visualize both hierarchical and flat data.
- * ```tsx
+ * ```
  * <TreeMapComponent></TreeMapComponent>
  * ```
  */

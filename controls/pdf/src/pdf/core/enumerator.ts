@@ -1400,7 +1400,7 @@ export enum PdfTextStyle {
 }
 /**
  * Public enum type to represent the ordered list style
- * ````typescript
+ * ```typescript
  * // Load an existing document
  * let document: PdfDocument = new PdfDocument(data);
  * // Access the first page
@@ -1513,7 +1513,7 @@ export enum PdfUnorderedListStyle {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export enum PdfLayoutType {
     /**
@@ -1548,7 +1548,7 @@ export enum PdfLayoutType {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export enum PdfLayoutBreakType {
     /**
@@ -1562,7 +1562,7 @@ export enum PdfLayoutBreakType {
 }
 /**
  * Public enum to define a list marker alignment
- * ````typescript
+ * ```typescript
  * // Load an existing document
  * let document: PdfDocument = new PdfDocument(data);
  * // Access the first page
@@ -1606,7 +1606,7 @@ export enum PdfListMarkerAlignment {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export enum PdfPrintState {
     /**
@@ -1708,7 +1708,7 @@ export enum CryptographicStandard {
  * // Create a new signature field
  * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
  * // Create a new signature using PFX data and specify forbidchanges as the certification flags
- * const sign: PdfSignature = PdfSignature.create({ documentPermissions: PdfCertificationFlags.forbidChanges }, certData, password);
+ * const sign: PdfSignature = PdfSignature.create({ documentPermissions: PdfCertificationFlag.forbidChanges }, certData, password);
  * // Sets the signature to the field
  * field.setSignature(sign);
  * // Save the document
@@ -1717,7 +1717,7 @@ export enum CryptographicStandard {
  * document.destroy();
  * ```
  */
-export enum PdfCertificationFlags {
+export enum PdfCertificationFlag {
     /**
      * Restrict any changes to the document.
      */
@@ -2350,4 +2350,156 @@ export enum _TemplateSide {
     bottom = 1,
     left = 2,
     right = 3
+}
+/**
+ * Public Enum to define PDF encryption algorithm types.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Create security options with AES-128 encryption
+ * let securityOptions: PdfSecurityOptions = {
+ *     encryptionType: PdfEncryptionType.aesBit128,
+ *     userPassword: 'user123'
+ * };
+ * // Apply security settings
+ * document.setSecurity(securityOptions);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfEncryptionType {
+    /**
+     * Specifies RC4 encryption with 40-bit key length
+     */
+    rc4Bit40,
+    /**
+     * Specifies RC4 encryption with 128-bit key length
+     */
+    rc4Bit128,
+    /**
+     * Specifies AES encryption with 128-bit key length
+     */
+    aesBit128,
+    /**
+     * Specifies AES-256 encryption with Revision 5 (PDF 1.7 Extension Level 3)
+     */
+    aesBit256Rev5,
+    /**
+     * Specifies AES-256 encryption with Revision 6 (PDF 2.0)
+     */
+    aesBit256Rev6,
+}
+/**
+ * Public enum to define revocation validation mode for Long-Term Validation.
+ *
+ * ```typescript
+ * // Load the document
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Access the PDF form
+ * const form: PdfForm = document.form;
+ * // Get an existing signature field
+ * const field: PdfSignatureField = form.fieldAt(0) as PdfSignatureField;
+ * // Get the signature
+ * const signature: PdfSignature = field.getSignature();
+ * // Create an LTV callback to fetch OCSP/CRL responses
+ * async function longTermValidationCallback(url: string, requestBytes?: Uint8Array):
+ *  Promise<{ response: Uint8Array }> {
+ *          //  Implement Long Term Validation response retrieval here
+ *           return new Uint8Array(); // Placeholder return
+ * }
+ * // Enable Long Term Validation using public certificates, revocation mode and callback
+ * const ltvEnabled: boolean = await signature.enableLTV(publicCertificates, RevocationType.crl, longTermValidationCallback);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum RevocationType {
+    /**
+     * Validates revocation using OCSP only.
+     */
+    ocsp,
+    /**
+     * Validates revocation using CRL only.
+     */
+    crl,
+    /**
+     * Validates revocation using both OCSP and CRL.
+     */
+    ocspAndCrl,
+    /**
+     * Validates revocation using either OCSP or CRL.
+     */
+    ocspOrCrl,
+    /**
+     * Does not perform revocation validation.
+     */
+    none
+}
+/**
+ * Public enum that specifies the certificate's revocation status.
+ *
+ * ```typescript
+ * // Load the signed PDF document
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Access an existing signature field
+ * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Validate the signature
+ * const result: PdfSignatureValidationResult = field.validateSignature();
+ * // Check the OCSP revocation status
+ * const revocationResult: RevocationStatus = result.revocationResult.ocspRevocationStatus;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum RevocationStatus {
+    /**
+     * Specifies that the revocation status could not be determined or is unavailable.
+     */
+    none = 0,
+    /**
+     * Specifies that the certificate is valid and has not been revoked.
+     */
+    good = 1,
+    /**
+     * Specifies that the revocation status of the certificate is unknown.
+     */
+    unknown = 2,
+    /**
+     * Specifies that the certificate has been revoked.
+     */
+    revoked = 3
+}
+/**
+ * Public enum that specifies the signature validation status.
+ *
+ * ```typescript
+ * // Load the signed PDF document
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Access an existing signature field
+ * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Validate the signature
+ * const result: PdfSignatureValidationResult = field.validateSignature();
+ * // Check the signature validation status
+ * const status: SignatureStatus = result.signatureStatus;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum SignatureStatus {
+    /**
+     * Specifies invalid status.
+     */
+    invalid = 0,
+    /**
+     * Specifies valid status.
+     */
+    valid = 1,
+    /**
+     * Specifies unknown status.
+     */
+    unknown = 2
 }

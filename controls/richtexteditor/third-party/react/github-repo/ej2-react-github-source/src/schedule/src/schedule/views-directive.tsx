@@ -17,7 +17,7 @@ export interface ViewsDirTypecast {
 /**
  * `ViewsDirective` represent a view of the react Schedule. 
  * It must be contained in a Schedule component(`SchduleComponent`). 
- * ```tsx
+ * ```ts
  * <ScheduleComponent>
  * <ViewsDirective>
  * <ViewDirective option='day' dateFormat='dd MMM'></ViewDirective>

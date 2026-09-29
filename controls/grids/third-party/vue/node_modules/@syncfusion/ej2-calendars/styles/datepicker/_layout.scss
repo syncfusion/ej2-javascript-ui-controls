@@ -1,0 +1,442 @@
+@use 'variables' as *;
+@include export-module('datepicker-layout') {
+
+  .e-input-group.e-control-wrapper.e-date-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-date-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-date-wrapper:not(.e-filled) {
+    & .e-date-icon.e-icons {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
+        box-sizing: $datepicker-box-sizing;
+      }
+    }
+  }
+
+  #{&}.e-datepicker {
+    @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
+      --dummy-style: true;
+    }
+    & .e-calendar {
+
+      & .e-content table tbody tr.e-month-hide:last-child {
+        display: $datepicker-othermonth-row;
+      }
+    }
+
+    &.e-popup-wrapper {
+      border-radius: $datepicker-popup-border-radius;
+      overflow-y: hidden;
+      pointer-events: auto;
+    }
+
+    &.e-date-modal {
+      @if $skin-name != 'Material3' {
+        background-color: $datepicker-overlay;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datepicker-overlay;
+      }
+      height: $date-picker-full-height;
+      left: $margin-zero;
+      opacity: .5;
+      pointer-events: auto;
+      position: fixed;
+      top: $margin-zero;
+      width: $datepicker-full-width;
+      z-index: 999;
+    }
+
+    & .e-model-header {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        background-color: $datepicker-modal-header-bg;
+      }
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        background: $datepicker-modal-header-bg;
+      }
+      color: $datepicker-modal-header-color;
+      cursor: default;
+      display: $datepicker-modal-header-display;
+      padding: $datepicker-modal-header-padding;
+
+      & .e-model-year {
+        font-size: $modal-year-font-size;
+        font-weight: $modal-year-font-weight;
+        line-height: $modal-year-line-height;
+        margin: $margin-zero;
+        @if $skin-name == 'bootstrap5.3' {
+          color: $modal-year-font-color;
+        }
+      }
+    }
+
+    & .e-model-month,
+    & .e-model-day {
+      font-size: $modal-month-font-size;
+      font-weight: $modal-month-font-weight;
+      line-height: $modal-month-line-height;
+      margin: $margin-zero;
+      @if $skin-name == 'bootstrap5.3' {
+        color: $modal-year-font-color;
+      }
+    }
+  }
+}
+
+/* stylelint-disable */
+.e-date-overflow {
+  overflow: hidden !important;
+}
+
+.e-datepick-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: $date-picker-full-height;
+  justify-content: center;
+  left: $margin-zero;
+  max-height: $date-picker-full-height;
+  position: fixed;
+  top: $margin-zero;
+  width: $datepicker-full-width;
+  z-index: 1002;
+
+  .e-datepicker.e-popup-wrapper.e-lib.e-popup.e-control.e-popup-open {
+    position: relative;
+    top: $margin-zero !important;
+    left: $margin-zero !important;
+  }
+
+  .e-datepicker.e-popup-wrapper.e-popup-expand.e-lib.e-popup.e-control.e-popup-open {
+    min-width: $datepicker-full-width;
+    min-height: $date-picker-full-height;
+  }
+}
+
+.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 33px;
+  min-height: $datepicker-min-height;
+}
+
+@media screen and (orientation: landscape) {
+  .e-datepick-mob-popup-wrap .e-datepicker.e-popup-expand .e-calendar .e-content.e-month td.e-today span.e-day {
+    line-height: $modal-tablet-content-dimension;
+  }
+}
+
+.e-datepick-mob-popup-wrap {  
+  & .e-datepicker.e-popup-expand {
+    border-radius: $date-zero-radius;
+
+    & .e-model-header.e-blazor-device {
+      height: $date-mob-popup-height;
+      .e-popup-close {
+        float: right;
+      }
+    }
+
+    & .e-model-header.e-blazor-device {
+      height: $date-mob-popup-height;
+      .e-popup-close {
+        float: right;
+      }
+    }
+
+    & .e-model-header {
+      height: $modal-portrait-header-height;
+      padding: $modal-portrait-header-padding;
+
+      & .e-day-wrapper {
+        margin: $modal-portrait-header-year-margin;
+      }
+
+      & .e-popup-close {
+        color: $modal-portrait-cancel-icon-color;
+        float: $modal-portrait-cancel-icon-float-style;
+        font-size: $datepicker-bigger-icon-font-size;
+        @media (min-device-width: 768px) {
+          font-size: $modal-tablet-font-size;
+        }
+      }
+
+      & .e-btn.e-flat.e-popup-close {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        font-weight: $date-normal-font;
+        padding: $padding-zero;
+      }
+
+      & .e-today.e-flat.e-primary {
+        color: $modal-today-text-color;
+        float: $modal-portrait-today-float-style;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          background-color: transparent;
+        }
+        @if $skin-name == 'fluent2' {
+          border-color: transparent;
+        }
+        @media (min-device-width: 768px) {
+          font-size: $modal-tablet-font-size;
+        }
+      }
+    }
+
+    & .e-model-month,
+    & .e-model-day {
+      font-size: $modal-portrait-month-font-size;
+      line-height: $modal-header-day-line-height;
+    }
+
+    & .e-calendar {
+      min-width: $modal-portrait-calendar-min-width;
+      min-height: $modal-portrait-calendar-min-height;
+      height: $modal-portrait-calendar-height;
+      @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+        padding: $modal-portrait-calendar-padding;
+      }
+      
+      & .e-header.e-month,
+      & .e-header.e-year,
+      & .e-header.e-decade {
+        height: $modal-portrait-header-month-height;
+        border-style: $modal-header-border-style;
+        border-width: $modal-header-border-width;
+        border-color: $modal-header-border-color;
+        padding: $modal-portrait-month-header-padding;
+        line-height: $modal-month-header-line-height;
+
+        & .e-title {
+          @if $skin-name != 'bootstrap5.3' {
+            position: $modal-portrait-header-title-position;
+            line-height: $modal-month-header-title-line-height;
+          }
+          margin-left: $modal-portrait-header-title-margin;
+          text-align: $modal-portrait-header-title-text;
+          vertical-align: $modal-portrait-month-header-vertical-align;
+          width: $modal-portrait-header-title-width;
+          @media (min-device-width: 768px) {
+            font-size: $modal-tablet-font-size;
+          }
+          @if $skin-name == 'fluent2' {
+            & {
+              left: $modal-header-left;
+            }
+          }
+        }
+
+        & .e-prev {
+          margin-right: $modal-portrait-prev-icon-margin;
+          vertical-align: inherit;
+          height: $date-header-mob-prev-height;
+          width: $date-header-mob-prev-width;
+          @media (min-device-width: 768px) {
+            height: $date-min-device-height;
+            width: $date-min-device-width;
+          }
+
+          & .e-icons {
+            vertical-align: inherit;
+           @media (min-device-width: 768px) {
+             font-size: $modal-tablet-font-size;
+           }
+          }
+        }
+
+        & .e-next {
+          margin-right: $modal-portrait-next-icon-margin;
+          vertical-align: inherit;
+          height: $date-picker-popup-next-height;
+          width: $date-picker-popup-next-width;
+          @media (min-device-width: 768px) {
+            height: $date-picker-popup-next-min-height;
+            width: $date-picker-popup-next-min-width;
+          }
+
+          & .e-icons {
+            vertical-align: inherit;
+            @media (min-device-width: 768px) {
+              font-size: $modal-tablet-font-size;
+            }
+           }
+        }
+
+        & .e-icon-container {
+          float: $modal-portrait-icon-float;
+          @if $skin-name == 'fluent2' {
+            padding-right: 2vw;
+          }
+        }
+      }
+
+      & th {
+        @media (min-device-width: 768px) {
+          font-size: $modal-tablet-font-size;
+          height: $modal-tablet-table-header-height;
+        }
+      }
+
+      & .e-content span.e-day {
+        @media (min-device-width: 768px) {
+          font-size: $modal-tablet-font-size;
+          height: $modal-tablet-content-dimension;
+          width: $modal-tablet-content-dimension;
+          line-height: $modal-tablet-content-dimension;
+        }
+      }
+
+    }
+
+  & .e-calendar-cell-container {
+    height: $modal-portrait-calendar-container-height;
+  }
+
+  .e-footer-container
+  {
+    display: $modal-portrait-footer-display-style;
+  }
+
+  & .e-content.e-month
+  {
+    height: $modal-portrait-calendar-content-height;
+    table
+    {
+    height: $modal-portrait-calendar-tabel-height;
+    }
+
+  }
+
+  }
+}
+
+@media screen and (orientation: landscape) {
+  .e-datepick-mob-popup-wrap {
+    & .e-datepicker.e-popup-expand {
+
+      & .e-model-header.e-blazor-device {
+        height: $date-picker-popup-landscape-height;
+        .e-popup-close {
+          float: right;
+        }
+      }
+
+      & .e-calendar-cell-container {
+
+        & .e-content.e-month,
+        & .e-content.e-year,
+        & .e-content.e-decade {
+          @media (max-height: 600px) {
+            height: $date-content-max-height;
+          }
+  
+          @media (min-height: 600px) {
+            height: $date-content-min-height;
+          }
+          overflow-y: auto;
+  
+          & table {
+            @media (min-height: 600px) {
+              height: $date-content-min-height;
+            }
+          }
+        }
+        & .e-footer-container {
+          @media (min-height: 600px) {
+            padding: $datepicker-footer-container-padding;
+            height: $date-footer-height;
+            font-size: $date-footer-container-font-size;
+          }
+        }
+      }
+
+      & .e-model-header {
+
+        @media (max-height: 600px) {
+          height: $modal-landscape-header-height;
+        }
+
+        @media (min-height: 600px) {
+          height: $modal-landscape-header-big-height;
+        }
+        width: $datepicker-modal-popup-landscape-max-width;
+
+        .e-popup-close {
+          float: $modal-portrait-cancel-icon-float-style;
+        }
+
+        .e-day-wrapper {
+          margin: $modal-landscape-header-year-margin;
+        }
+
+        & .e-model-month,
+        & .e-model-day {
+          font-size: $modal-month-landscape-font-size;
+        }
+
+      }
+
+      & .e-calendar .e-header.e-month,
+      & .e-calendar .e-header.e-year,
+      & .e-calendar .e-header.e-decade {
+
+        & .e-prev {
+          @if $skin-name != 'fluent2' {
+            margin-right: $modal-landscape-prev-icon-margin;
+          }
+        }
+
+        & .e-title {
+          @media (max-height: 600px) {
+            line-height: $modal-month-landscape-title-line-height;
+          }
+  
+          @media (min-height: 600px) {
+            line-height: $modal-month-header-title-line-height;
+          }          
+        }
+      }
+
+      & .e-content.e-month,
+      & .e-content.e-year,
+      & .e-content.e-decade {        
+        @media (max-height: 600px) {
+          height: $modal-landscape-calendar-content-height;
+        }
+
+        @media (min-height: 600px) {
+          height: $modal-landscape-calendar-content-big-height;
+        }
+        overflow-y: auto;
+      }
+
+      .e-calendar {
+        display: $datepicker-modal-header-display;
+        max-width: $datepicker-modal-popup-landscape-max-width;
+        overflow: $datepicker-modal-landscape-overflow;
+      }
+
+      .e-calendar-cell-container {
+        height: $date-picker-cell-container-height;
+        width: $datepicker-full-width;
+      }
+
+      .e-calendar.e-device .e-month table tbody {
+        display: table-row-group;
+      }
+
+      & .e-content.e-month table ,
+      & .e-content.e-decade table ,
+      & .e-content.e-year table {
+        @media (max-height: 600px) {
+          height: $modal-portrait-calendar-content-height;
+        }
+
+        @media (min-height: 600px) {
+          height: $modal-landscape-calendar-content-table-height;
+        }        
+      }
+    }
+}
+}
+/* stylelint-enable */

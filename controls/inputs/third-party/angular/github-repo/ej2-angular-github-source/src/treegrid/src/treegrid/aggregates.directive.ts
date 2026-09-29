@@ -27,7 +27,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-treegrid>e-aggregates>e-aggregate',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childColumns: new ContentChild(AggregateColumnsDirective)
     }
@@ -35,17 +36,17 @@ let outputs: string[] = [];
 export class AggregateDirective extends ComplexBase<AggregateDirective> {
     public directivePropList: any;
 	
-    public childColumns: any;
+    public declare childColumns: any;
     public tags: string[] = ['columns'];
     /** 
      * Configures the collection of aggregate columns.
      * @default []
      */
-    public columns: any;
+    public declare columns: any;
     /** 
      * Determines whether to display child summaries for each parent row.
      */
-    public showChildSummary: any;
+    public declare showChildSummary: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -61,6 +62,7 @@ export class AggregateDirective extends ComplexBase<AggregateDirective> {
  */
 @Directive({
     selector: 'ejs-treegrid>e-aggregates',
+    standalone: true,
     queries: {
         children: new ContentChildren(AggregateDirective)
     },

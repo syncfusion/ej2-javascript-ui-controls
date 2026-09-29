@@ -21,43 +21,40 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childNodes: new ContentChild(SankeyNodesCollectionDirective), 
-        childLinks: new ContentChild(SankeyLinksCollectionDirective)
+        childNodes: new ContentChild(SankeyNodesCollectionDirective),
+        childLinks: new ContentChild(SankeyLinksCollectionDirective),
+        tooltip_sankeyNodeTemplate: new ContentChild('tooltipSankeyNodeTemplate'),
+        tooltip_sankeyLinkTemplate: new ContentChild('tooltipSankeyLinkTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class SankeyComponent extends Sankey implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	afterExport: any;
-	beforeExport: any;
-	beforePrint: any;
-	exportCompleted: any;
-	labelRendering: any;
-	legendItemHover: any;
-	legendItemRendering: any;
-	linkClick: any;
-	linkEnter: any;
-	linkLeave: any;
-	linkRendering: any;
-	load: any;
-	loaded: any;
-	nodeClick: any;
-	nodeEnter: any;
-	nodeLeave: any;
-	nodeRendering: any;
-	sizeChanged: any;
-	public tooltipRendering: any;
-    public childNodes: QueryList<SankeyNodesCollectionDirective>;
-    public childLinks: QueryList<SankeyLinksCollectionDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare afterExport: any;
+	declare beforeExport: any;
+	declare beforePrint: any;
+	declare exportCompleted: any;
+	declare labelRendering: any;
+	declare legendItemHover: any;
+	declare legendItemRendering: any;
+	declare linkClick: any;
+	declare linkEnter: any;
+	declare linkLeave: any;
+	declare linkRendering: any;
+	declare load: any;
+	declare loaded: any;
+	declare nodeClick: any;
+	declare nodeEnter: any;
+	declare nodeLeave: any;
+	declare nodeRendering: any;
+	declare sizeChanged: any;
+	public declare tooltipRendering: any;
+    public declare childNodes: QueryList<SankeyNodesCollectionDirective>;
+    public declare childLinks: QueryList<SankeyLinksCollectionDirective>;
     public tags: string[] = ['nodes', 'links'];
-    @ContentChild('tooltipSankeyNodeTemplate')
-    @Template()
-    public tooltip_sankeyNodeTemplate: any;
-    @ContentChild('tooltipSankeyLinkTemplate')
-    @Template()
-    public tooltip_sankeyLinkTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -114,7 +111,10 @@ export class SankeyComponent extends Sankey implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(SankeyComponent.prototype, 'tooltip_sankeyNodeTemplate');
+Template()(SankeyComponent.prototype, 'tooltip_sankeyLinkTemplate');
+
 

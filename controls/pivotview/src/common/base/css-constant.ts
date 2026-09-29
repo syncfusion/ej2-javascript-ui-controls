@@ -138,6 +138,8 @@ export const MEMBER_EDITOR_DIALOG_CLASS: string = 'e-member-editor-dialog';
 /** @hidden */
 export const EDITOR_TREE_WRAPPER_CLASS: string = 'e-member-editor-outer-container';
 /** @hidden */
+export const FILTER_DIALOG_OVERFLOW: string = 'e-member-editor-overflow';
+/** @hidden */
 export const EDITOR_TREE_CONTAINER_CLASS: string = 'e-member-editor-container';
 /** @hidden */
 export const DRILLTHROUGH_GRID_CLASS: string = 'e-drillthrough-grid';
@@ -245,6 +247,8 @@ export const EMPTY_ICON_CLASS: string = 'e-emptyicon';
 export const SUB_MENU_CLASS: string = 'e-submenu';
 /** @hidden */
 export const FOCUSED_CLASS: string = 'e-focused';
+/** @hidden */
+export const FOCUS_CLASS: string = 'e-focus';
 /** @hidden */
 export const SELECTED_CLASS: string = 'e-selected';
 /** @hidden */
@@ -868,5 +872,7 @@ export const ROWCELL: string = 'e-rowcell';
 export const ROW_CLASS: string = 'e-row';
 /** @hidden */
 export const TABULAR_GROUP_ROWS: string = 'e-tabular-group-rows';
+/** @hidden */
+export const TABULAR_GROUP_ROWS_WITH_FIELDS: string = 'e-tabular-group-rows-with-fields';
 /** @hidden */
 export const TABULAR_LAYOUT_HEADER: string = 'e-tabular-layout-header';

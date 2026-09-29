@@ -1,4 +1,4 @@
-import { EventHandler, Browser, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, isNullOrUndefined, detach, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { IRichTextEditor } from '../base/interface';
@@ -20,6 +20,7 @@ export class Resize {
     private iframeMouseUpBoundFn: () => void;
 
     private constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('Resize', 'RichTextEditor');
         this.parent = parent;
         this.addEventListener();
         this.isDestroyed = false;

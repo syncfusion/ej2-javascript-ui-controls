@@ -1,0 +1,79 @@
+@use 'variables' as *;
+@include export-module('splitter-bigger') {
+
+  .e-bigger.e-splitter {
+    .e-pane {
+      font-size: $bigger-splitpane-font-size;
+    }
+
+    .e-split-bar {
+      &.e-split-bar-horizontal {
+        .e-resize-handler {
+          height: $bigger-splitbar-icon-height;
+        }
+      }
+
+      &.e-split-bar-vertical {
+        .e-resize-handler {
+          width: $bigger-splitbar-icon-gap;
+        }
+
+        .e-navigate-arrow:not(.e-arrow-down)::before,
+        .e-navigate-arrow:not(.e-arrow-down)::after {
+          margin-top: $split-bar-vertical-navigate-arrow-margin-top;
+        }
+
+        .e-navigate-arrow {
+          &.e-arrow-down::after {
+            margin-top: $split-bar-vertical-navigate-arrow-down-margin-top;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-splitter {
+    .e-pane {
+      font-size: $bigger-splitpane-font-size;
+    }
+
+    .e-split-bar {
+
+      &.e-split-bar-horizontal {
+        .e-resize-handler {
+          height: $bigger-splitbar-icon-height;
+        }
+      }
+
+      &.e-split-bar-vertical {
+        .e-resize-handler {
+          width: $bigger-splitbar-icon-gap;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-content-placeholder.e-splitter.e-placeholder-splitter,
+  .e-bigger.e-content-placeholder.e-splitter.e-placeholder-splitter {
+    background-size: 100px 110px;
+    min-height: 110px;
+  }
+
+  .e-bigger {
+    .e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+
+    &.e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+  }
+}

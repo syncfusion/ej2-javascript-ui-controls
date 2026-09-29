@@ -12,56 +12,37 @@ import { SheetDirective, SheetsDirective } from './sheets.directive';
 import { DefinedNameDirective, DefinedNamesDirective } from './definednames.directive';
 import { SpreadsheetComponent } from './spreadsheet.component';
 
+const SPREADSHEET_DIRECTIVES = [
+    SpreadsheetComponent,
+        ImageDirective,
+        ImagesDirective,
+        ChartDirective,
+        ChartsDirective,
+        RichTextDirective,
+        RichTextsDirective,
+        CellDirective,
+        CellsDirective,
+        RowDirective,
+        RowsDirective,
+        ColumnDirective,
+        ColumnsDirective,
+        RangeDirective,
+        RangesDirective,
+        ConditionalFormatDirective,
+        ConditionalFormatsDirective,
+        SheetDirective,
+        SheetsDirective,
+        DefinedNameDirective,
+        DefinedNamesDirective
+];
+
 /**
  * NgModule definition for the Spreadsheet component.
+ * Re-exports standalone Spreadsheet component and directives so existing apps can keep using:
+ * `imports: [SpreadsheetModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        SpreadsheetComponent,
-        ImageDirective,
-        ImagesDirective,
-        ChartDirective,
-        ChartsDirective,
-        RichTextDirective,
-        RichTextsDirective,
-        CellDirective,
-        CellsDirective,
-        RowDirective,
-        RowsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        RangeDirective,
-        RangesDirective,
-        ConditionalFormatDirective,
-        ConditionalFormatsDirective,
-        SheetDirective,
-        SheetsDirective,
-        DefinedNameDirective,
-        DefinedNamesDirective
-    ],
-    exports: [
-        SpreadsheetComponent,
-        ImageDirective,
-        ImagesDirective,
-        ChartDirective,
-        ChartsDirective,
-        RichTextDirective,
-        RichTextsDirective,
-        CellDirective,
-        CellsDirective,
-        RowDirective,
-        RowsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        RangeDirective,
-        RangesDirective,
-        ConditionalFormatDirective,
-        ConditionalFormatsDirective,
-        SheetDirective,
-        SheetsDirective,
-        DefinedNameDirective,
-        DefinedNamesDirective
-    ]
+    imports: [CommonModule, ...SPREADSHEET_DIRECTIVES],
+    exports: [...SPREADSHEET_DIRECTIVES]
 })
 export class SpreadsheetModule { }

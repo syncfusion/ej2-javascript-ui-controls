@@ -1,13 +1,15 @@
 /**
  * Gantt taskbaredit spec
  */
-import { DataManager, Query, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ODataAdaptor, Query, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Edit, Selection,VirtualScroll, IGanttData, Filter, IActionBeginEventArgs, ContextMenuClickEventArgs, CriticalPath, Toolbar, ColumnMenu, ContextMenu, UndoRedo } from '../../src/index';
-import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData, coverageParentData, initialDataCR916492, celleditCR916492 } from '../base/data-source.spec';
+import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData, coverageParentData, initialDataCR916492, celleditCR916492,
+addDependency } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { Tooltip } from '@syncfusion/ej2-popups';
+import * as utils from '../../src/gantt/base/utils';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -8826,6 +8828,825 @@ describe('updateSharedTask else branch', () => {
         ganttObj.editModule['updateSharedTask'](currentData);
         expect(otherData.parentItem).toBeNull();
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Spec to cover branches', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                allowRowDragAndDrop: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('should clear segments for remote data source', () => {
+        ganttObj.editModule['dropPosition'] = 'middleSegment';
+        ganttObj.editModule['draggedRecord'] = {
+            hasChildRecords: false,
+            taskData: {}
+        } as any;
+        ganttObj.editModule['droppedRecord'] = {
+            hasChildRecords: true,
+            childRecords: [],
+            expanded: false,
+            level: 0,
+            uniqueID: '1',
+            index: 0,
+            ganttProperties: {
+                rowUniqueID: 1,
+                segments: [{ startDate: new Date() }]
+            },
+            taskData: {
+                segments: [{}]
+            }
+        } as any;
+        ganttObj.taskFields = {
+            child: 'subtasks',
+            segments: 'segments'
+        } as any;
+        ganttObj.dataSource = new DataManager({
+            url: '/api/tasks'
+        });
+        spyOn(ganttObj, 'setRecordValue');
+        ganttObj.editModule['recordLevel']();
+    });
+    it('should call removeChildItem recursively for child records', () => {
+        const grandChild: any = {
+            hasChildRecords: false,
+            taskData: {
+                TaskID: 3
+            }
+        };
+        const childRecord: any = {
+            hasChildRecords: true,
+            childRecords: [grandChild],
+            taskData: {
+                TaskID: 2
+            }
+        };
+        const record: any = {
+            childRecords: [childRecord]
+        };
+        ganttObj.taskFields = {
+            id: 'TaskID'
+        } as any;
+        ganttObj.dataSource = [
+            { TaskID: 2 },
+            { TaskID: 3 }
+        ];
+        (ganttObj.editModule['treeGridData'] as any) = [
+            { TaskID: 2 },
+            { TaskID: 3 }
+        ];
+        ganttObj.ids = ['2', '3'];
+        ganttObj.editModule['removeChildItem'](record);
+    });
+    it('should return 0 when record has no child records', () => {
+        const record: any = {
+            hasChildRecords: false,
+            childRecords: []
+        }
+        const result = ganttObj.editModule['updateChildRecord'](record, 0, true);
+        expect(result).toBe(0);
+    });
+    it('should update child records recursively', () => {
+        const grandChild: any = {
+            hasChildRecords: false,
+            childRecords: [],
+            ganttProperties: {
+                rowUniqueID: 3
+            },
+            taskData: {
+                TaskID: 3
+            }
+        };
+        const child: any = {
+            hasChildRecords: true,
+            childRecords: [grandChild],
+            ganttProperties: {
+                rowUniqueID: 2
+            },
+            taskData: {
+                TaskID: 2
+            }
+        };
+        const parentRecord: any = {
+            hasChildRecords: true,
+            childRecords: [child],
+            ganttProperties: {
+                rowUniqueID: 1
+            }
+        };
+        ganttObj.ids = [];
+        ganttObj.taskFields = {
+            parentID: 'ParentID'
+        } as any;
+        ganttObj.editModule['ganttData'] = [];
+        spyOn(ganttObj, 'insertRecord');
+        const result = ganttObj.editModule['updateChildRecord'](parentRecord, 0, true);
+    });
+    it('should return 0 when record has no child records', () => {
+        const record: any = {
+            hasChildRecords: false,
+            childRecords: []
+        };
+        const result = ganttObj.editModule['updateChildRecordLevel'](record, 0);
+        expect(result).toBe(0);
+    });
+    it('should update child record level recursively', () => {
+        const grandChild: any = {
+            hasChildRecords: false,
+            childRecords: [],
+            level: 0
+        };
+        const child: any = {
+            hasChildRecords: true,
+            childRecords: [grandChild],
+            level: 0
+        };
+        const parent: any = {
+            hasChildRecords: true,
+            level: 0,
+            parentItem: null    ,
+            childRecords: [child]
+        };
+        ganttObj.editModule['updateChildRecordLevel'](parent, 0);
+    });
+    it('should splice dragged record at top segment position', () => {
+        ganttObj.editModule['dropPosition'] = 'topSegment';
+        ganttObj.taskFields = {
+            child: 'subtasks',
+            parentID: null
+        } as any;
+        const draggedRec: any = {
+            taskData: {
+                TaskID: 3
+            }
+        };
+        const childCollection: any[] = [];
+        const droppedRec: any = {
+            parentItem: null,
+            taskData: {
+                subtasks: childCollection
+            }
+        };
+        const dataSource: any[] = [
+            {
+                TaskID: 1,
+                subtasks: childCollection
+            }
+        ];
+        ganttObj.dataSource = dataSource;
+        ganttObj.editModule['draggedRecord'] = draggedRec;
+        ganttObj.editModule['droppedRecord'] = droppedRec;
+
+        ganttObj.editModule['refreshDataSource']();
+        expect(dataSource.length).toBe(2);
+    });
+    it('should refresh records when React template cell exists', () => {
+        ganttObj.isReact = true;
+        const templateCell = document.createElement('div');
+        templateCell.className = 'e-templatecell';
+        const gridElement = document.createElement('div');
+        gridElement.appendChild(templateCell);
+        const grid = ganttObj.treeGrid.grid;
+        ganttObj.treeGrid.grid = {
+            element: gridElement
+        } as any;
+        ganttObj.editedRecords = [{}];
+        spyOn(ganttObj.chartRowsModule, 'refreshRecords');
+        spyOn(ganttObj, 'trigger');
+        spyOn(ganttObj.treeGrid, 'refresh');
+        const args: any = {
+            data: {}    
+        };
+        ganttObj.editModule['indentOutdentSuccess'](args, false);
+        ganttObj.treeGrid.grid = grid;
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Spec to cover branches', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                allowRowDragAndDrop: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('should enter changedRecords array branch', () => {
+        const dataManager: any = {
+            adaptor: new ODataAdaptor(),
+            dataSource: {},
+            update: jasmine.createSpy('update').and.returnValue(Promise.resolve({}))
+        };
+        ganttObj.dataSource = dataManager;
+        ganttObj.taskFields = {
+            id: 'TaskID'
+        } as any;
+        (ganttObj.editedRecords as any) = [
+            { TaskID: 1 },
+            { TaskID: 2 }
+        ];
+        spyOn(utils, 'isRemoteData').and.returnValue(true);
+        spyOn(utils, 'getTaskData').and.returnValue([
+            { TaskID: 1 },
+            { TaskID: 2 }
+        ]);
+        ganttObj.editModule.refreshRecord({}, false);
+    });
+    it('should return task id as string', () => {
+        ganttObj.ids = ['1', '2'];
+        ganttObj.dataOperation = {
+            isTaskIDInteger: false
+        } as any;
+        ganttObj.taskFields = {
+            id: 'TaskID'
+        } as any;
+        ganttObj.columnByField = {
+            TaskID: {
+                type: 'string',
+                editType: 'stringedit'
+            }
+        } as any;
+        const result = ganttObj.editModule.getNewTaskId();
+        expect(typeof result).toBe('string');
+    });
+    it('should remove predecessor from child record when predecessor to matches parent record', () => {
+        const predecessor = {
+            from: '2',
+            to: '1',
+            type: 'FS'
+        };
+        const parentRecord: any = {
+            ganttProperties: {
+                rowUniqueID: 1,
+                predecessor: [predecessor]
+            }
+        };
+        const childRecord: any = {
+            ganttProperties: {
+                predecessor: [predecessor]
+            }
+        };
+        spyOn(ganttObj, 'getRecordByID').and.callFake((id: string) => {
+            if (id === '2') {
+                return childRecord;
+            }
+            return parentRecord;
+        });
+        spyOn(
+            ganttObj.predecessorModule,
+            'validateParentPredecessor'
+        ).and.returnValue(false);
+        spyOn(ganttObj, 'setRecordValue');
+        ganttObj.editModule.updatePredecessorOnIndentOutdent(parentRecord);
+    });
+    it('should insert record at index when rowPosition is Above', () => {
+        ganttObj.editModule.isBreakLoop = false;
+        ganttObj.viewType = 'ResourceView';
+        ganttObj.taskFields = {
+            id: 'TaskID',
+            child: 'subtasks'
+        } as any;
+        ganttObj.editModule.addRowSelectedItem = {
+            ganttProperties: {
+                rowUniqueID: '1'
+            }
+        } as any;
+        const record: any = {
+            TaskID: 100
+        };
+        const dataCollection: any[] = [
+            { TaskID: 1 },
+            { TaskID: 2 },
+            { TaskID: 3 }
+        ];
+        ganttObj.rowDragAndDropModule = {
+            droppedRecord: {
+                ganttProperties: {
+                    taskId: 2
+                }
+            }
+        } as any;
+        ganttObj.editModule['addDataInRealDataSource'](
+            dataCollection,
+            record,
+            'Above'
+        );
+        expect(dataCollection[1]).toBe(record);
+    });
+    it('should push record into existing child collection', () => {
+        ganttObj.editModule.isBreakLoop = false;
+        ganttObj.taskFields = {
+            id: 'TaskID',
+            child: 'subtasks'
+        } as any;
+        ganttObj.editModule.addRowSelectedItem = {
+            ganttProperties: {
+                rowUniqueID: '1'
+            }
+        } as any;
+        const record: any = {
+            TaskID: 10
+        };
+        const dataCollection: any[] = [{
+            TaskID: 1,
+            subtasks: [
+                { TaskID: 2 }
+            ]
+        }];
+        ganttObj.editModule['addDataInRealDataSource'](
+            dataCollection,
+            record,
+            'Child'
+        );
+        expect(dataCollection[0].subtasks.length).toBe(2);
+    });
+    it('should create child collection and push record', () => {
+        ganttObj.editModule.isBreakLoop = false;
+        ganttObj.taskFields = {
+            id: 'TaskID',
+            child: 'subtasks'
+        } as any;
+        ganttObj.editModule.addRowSelectedItem = {
+            ganttProperties: {
+                rowUniqueID: '1'
+            }
+        } as any;
+        const record: any = {
+            TaskID: 20
+        };
+        const dataCollection: any[] = [{
+            TaskID: 1,
+            subtasks: []
+        }];
+        ganttObj.editModule['addDataInRealDataSource'](
+            dataCollection,
+            record,
+            'Child'
+        );
+        expect(dataCollection[0].subtasks.length).toBe(1);
+    });
+    it('should set topSegment and get record from currentAction data', () => {
+        ganttObj.undoRedoModule = {
+            isUndoRedoPerformed: true,
+            currentAction: {
+                data: [{ TaskID: 1 }]
+            }
+        } as any;
+        spyOn(ganttObj, 'trigger').and.callFake(
+            (event: string, args: any, callback: Function) => {
+                callback({ cancel: true });
+            }
+        );
+        spyOn(ganttObj as any, 'hideLoadingIndicator');
+        ganttObj.editModule['indentOutdentRow']([0], 1, 'above');
+
+        expect(ganttObj.editModule['dropPosition']).toBe('topSegment');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Spec to cover branches', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                allowRowDragAndDrop: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('should reset redo collection when redoEnabled is true', () => {
+        ganttObj.controlId = 'Gantt';
+        ganttObj.toolbarModule = {
+            enableItems: jasmine.createSpy('enableItems')
+        } as any;
+        ganttObj.undoRedoModule = {
+            isUndoRedoPerformed: false,
+            redoEnabled: true,
+            getUndoCollection: [],
+            getRedoCollection: [],
+            findPosition: jasmine.createSpy('findPosition'),
+            createUndoCollection: jasmine.createSpy('createUndoCollection')
+        } as any;
+        (ganttObj.editModule['treeGridData'] as any) = [
+            { TaskID: 2 },
+            { TaskID: 3 }
+        ];
+        ganttObj.editModule['reArrangeRows']({
+            dropPosition: 'bottomSegment',
+            dropIndex: 0,
+            data: []
+        }, false);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Spec to cover branches', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('should set topSegment and get record from currentAction data', () => {
+        ganttObj.editModule['triggerDuplicateIdError']('2');
+        expect(ganttObj.flatData.length).toBe(3);
+    });
+   
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Spec to cover branches', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('triggerDuplicateIdError method coverage spec', () => {
+        ganttObj.editModule['triggerDuplicateIdError']('2');
+        expect(ganttObj.flatData.length).toBe(3);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Cyclic dependency value is getting saved after cell editing', () => {
+    let ganttObj: Gantt;
+
+    const editingData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30, Work: 10 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ] 
+            },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+                { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+            ]
+        },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                notes: 'info',
+                indicators: 'Indicators',
+                work: 'work'
+            },
+            editSettings: {
+                allowEditing: true
+            },
+            allowSelection: true,
+            height: '450px',
+            splitterSettings: {
+                columnIndex: 3
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                { field: 'Predecessor', headerText: 'Dependency', allowSorting: false },
+            ],
+        }, done);
+    });
+
+    it('Editing predecesssor column', (done: Function) => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        input.value = '6FS';
+        let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(update, 'click');
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe(null);
+        done();
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Regression - Task start date after multiple indents', () => {
+    let ganttObj: Gantt;
+
+    const projectNewData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 5,
+                    TaskName: 'Prepare product sketch and notes',
+                    StartDate: new Date('04/02/2019'),
+                    Duration: 3,
+                    Progress: 30
+                },
+                {
+                    TaskID: 2,
+                    TaskName: 'Defining the product and its usage',
+                    StartDate: new Date('04/02/2019'),
+                    Duration: 3,
+                    Progress: 30,
+                    Predecessor: '5'
+                },
+                {
+                    TaskID: 3,
+                    TaskName: 'Defining target audience',
+                    Predecessor: '2',
+                    StartDate: new Date('04/02/2019'),
+                    Duration: 3
+                },
+                {
+                    TaskID: 4,
+                    TaskName: 'Prepare product sketch and notes',
+                    StartDate: new Date('04/02/2019'),
+                    Duration: 3,
+                    Predecessor: '2',
+                    Progress: 30
+                }
+            ]
+        }
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true
+                },
+                height: '450px'
+            },
+            done
+        );
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('should maintain correct start date for Task 4 after indenting Task 3 and Task 4', (done: Function) => {
+
+        const task4Before: IGanttData = ganttObj.flatData[4];
+        const initialStartDate: number =
+            task4Before.ganttProperties.startDate.getTime();
+
+        // Act - Indent Task 3 under Task 2
+
+        ganttObj.selectRow(3);
+        ganttObj.indent();
+
+        let task3: IGanttData = ganttObj.flatData[3]
+
+        // Act - Indent Task 4 under Task 2
+
+        ganttObj.selectRow(4);
+        ganttObj.indent();
+
+        ganttObj.dataBind();
+
+        // Assert
+
+        const task4After: IGanttData = ganttObj.flatData[4];
+
+        // Validate start date remains same after hierarchy update
+        expect(
+            task4After.ganttProperties.startDate.getTime()
+        ).toBe(initialStartDate);
+
+        done();
+    });
+});
+describe('Indent action should preserve predecessor', () => {
+    let ganttObj: Gantt;
+
+    const editingData: Object[] = [
+        { TaskID: 1, TaskName: 'Planning and permits', StartDate: new Date('04/02/2025'), EndDate: new Date('04/10/2025'), Duration: 7, Progress: 100 },
+        { TaskID: 2, TaskName: 'Site evaluation', StartDate: new Date('04/02/2025'), EndDate: new Date('04/04/2025'), Duration: 2, Progress: 100, ParentId: 1 },
+        { TaskID: 3, TaskName: 'Obtain permits', StartDate: new Date('04/07/2025'), EndDate: new Date('04/09/2025'), Duration: 3, Progress: 100, ParentId: 1, Predecessor: '2' },
+        { TaskID: 4, TaskName: 'Finalize planning', StartDate: new Date('04/10/2025'), EndDate: new Date('04/11/2025'), Duration: 2, Progress: 100, ParentId: 1, Predecessor: '3' }
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'ParentId'
+            },
+            editSettings: {
+                allowEditing: true
+            },
+            allowSelection: true,
+            toolbar: ['Indent'],
+            height: '450px'
+        }, done);
+    });
+
+    it('Task 3 predecessor should remain 2 after indenting Task 4', () => {
+        // Select Task 4
+        ganttObj.selectRow(3);
+        // Perform indent
+        ganttObj.indent();
+
+        const task3: IGanttData = ganttObj.flatData[2]
+        expect(task3.ganttProperties.predecessorsName).toBe('2FS');
+        expect(task3.taskData['Predecessor']).toBe('2FS');
+    });
+
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);

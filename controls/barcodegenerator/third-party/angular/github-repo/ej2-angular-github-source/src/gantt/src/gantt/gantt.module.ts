@@ -9,44 +9,31 @@ import { HolidayDirective, HolidaysDirective } from './holidays.directive';
 import { EventMarkerDirective, EventMarkersDirective } from './eventmarkers.directive';
 import { GanttComponent } from './gantt.component';
 
+const GANTT_DIRECTIVES = [
+    GanttComponent,
+        ColumnDirective,
+        ColumnsDirective,
+        AddDialogFieldDirective,
+        AddDialogFieldsDirective,
+        EditDialogFieldDirective,
+        EditDialogFieldsDirective,
+        DayWorkingTimeDirective,
+        DayWorkingTimeCollectionDirective,
+        WeekWorkingTimeDirective,
+        WeekWorkingTimesDirective,
+        HolidayDirective,
+        HolidaysDirective,
+        EventMarkerDirective,
+        EventMarkersDirective
+];
+
 /**
  * NgModule definition for the Gantt component.
+ * Re-exports standalone Gantt component and directives so existing apps can keep using:
+ * `imports: [GanttModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        GanttComponent,
-        ColumnDirective,
-        ColumnsDirective,
-        AddDialogFieldDirective,
-        AddDialogFieldsDirective,
-        EditDialogFieldDirective,
-        EditDialogFieldsDirective,
-        DayWorkingTimeDirective,
-        DayWorkingTimeCollectionDirective,
-        WeekWorkingTimeDirective,
-        WeekWorkingTimesDirective,
-        HolidayDirective,
-        HolidaysDirective,
-        EventMarkerDirective,
-        EventMarkersDirective
-    ],
-    exports: [
-        GanttComponent,
-        ColumnDirective,
-        ColumnsDirective,
-        AddDialogFieldDirective,
-        AddDialogFieldsDirective,
-        EditDialogFieldDirective,
-        EditDialogFieldsDirective,
-        DayWorkingTimeDirective,
-        DayWorkingTimeCollectionDirective,
-        WeekWorkingTimeDirective,
-        WeekWorkingTimesDirective,
-        HolidayDirective,
-        HolidaysDirective,
-        EventMarkerDirective,
-        EventMarkersDirective
-    ]
+    imports: [CommonModule, ...GANTT_DIRECTIVES],
+    exports: [...GANTT_DIRECTIVES]
 })
 export class GanttModule { }

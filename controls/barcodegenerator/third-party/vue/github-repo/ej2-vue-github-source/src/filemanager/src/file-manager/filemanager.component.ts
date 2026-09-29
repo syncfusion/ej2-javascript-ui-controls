@@ -15,7 +15,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents the Essential JS 2 VueJS FileManager Component.
- * ```vue
+ * ```
  * <ejs-filemanager showThumbnail='false'></ejs-filemanager>
  * ```
  */

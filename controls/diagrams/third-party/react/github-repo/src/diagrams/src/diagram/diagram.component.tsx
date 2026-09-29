@@ -11,7 +11,7 @@ export interface DiagramTypecast {
 }
 /**
  * Represents react Diagram Component
- * ```tsx
+ * ```ts
  * <DiagramComponent></DiagramComponent>
  * ```
  */

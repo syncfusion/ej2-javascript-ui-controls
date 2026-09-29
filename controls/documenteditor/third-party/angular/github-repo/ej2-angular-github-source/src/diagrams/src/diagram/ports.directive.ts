@@ -21,9 +21,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-node>e-node-ports>e-node-port',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class PortDirective extends ComplexBase<PortDirective> {
@@ -36,7 +36,7 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public addInfo: any;
+    public declare addInfo: any;
     /** 
      * Defines the allowed direction for connections to the port 
      * * Auto - Maintains the default behavior of automatic direction calculation. 
@@ -46,18 +46,18 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * * Bottom - Restricts connections to only connect to the bottom side of the port.
      * @default 'Auto'
      */
-    public connectionDirection: any;
+    public declare connectionDirection: any;
     /** 
      * Defines the constraints of port
      * @default 'Default'
      * @aspnumberenum 
      */
-    public constraints: any;
+    public declare constraints: any;
     /** 
      * Sets the height of the port
      * @default 12
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Sets the horizontal alignment of the port with respect to its immediate parent(node/connector) 
      * * Stretch - Stretches the diagram element throughout its immediate parent 
@@ -67,40 +67,40 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
      * @default 'Center'
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Defines the unique id of the port
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
      * @blazordefaultvalue new string[] { }
      */
-    public inEdges: any;
+    public declare inEdges: any;
     /** 
      * Defines the space that the port has to be moved from its actual position
      * @default new Margin(0,0,0,0)
      */
-    public margin: any;
+    public declare margin: any;
     /** 
      * Defines the position of the port with respect to the boundaries of nodes/connector
      * @default new Point(0.5,0.5)
      * @blazortype NodePortOffset
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
      * @blazordefaultvalue new string[] { }
      */
-    public outEdges: any;
+    public declare outEdges: any;
     /** 
      * Defines the geometry of the port
      * @default ''
      */
-    public pathData: any;
+    public declare pathData: any;
     /** 
      * Defines the type of the port shape 
      * * X - Sets the decorator shape as X 
@@ -109,18 +109,18 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * * Custom - Sets the decorator shape as Custom
      * @default 'Square'
      */
-    public shape: any;
+    public declare shape: any;
     /** 
      * Defines the appearance of the port 
      * 
      * @default {}
      */
-    public style: any;
+    public declare style: any;
     /** 
      * defines the tooltip for the Ports
      * @default new DiagramToolTip();
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * Sets the vertical alignment of the port with respect to its immediate parent(node/connector) 
      * * Stretch - Stretches the diagram element throughout its immediate parent 
@@ -130,7 +130,7 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
      * @default 'Center'
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * Defines the type of the port visibility 
      * * Visible - Always shows the port 
@@ -140,12 +140,12 @@ export class PortDirective extends ComplexBase<PortDirective> {
      * @default 'Connect'
      * @aspnumberenum 
      */
-    public visibility: any;
+    public declare visibility: any;
     /** 
      * Sets the width of the port
      * @default 12
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -161,6 +161,7 @@ export class PortDirective extends ComplexBase<PortDirective> {
  */
 @Directive({
     selector: 'e-node>e-node-ports',
+    standalone: true,
     queries: {
         children: new ContentChildren(PortDirective)
     },

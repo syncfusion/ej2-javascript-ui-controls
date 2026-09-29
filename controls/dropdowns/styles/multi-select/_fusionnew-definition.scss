@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fusionnew' as *;
-@forward 'ej2-base/styles/definition/fusionnew';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: $skin-name !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -207,6 +206,8 @@ $ddl-bigger-small-input-height: 32px !default;
 $ddl-delim-bigger-small-font-size: 13px !default;
 $ddl-delimviewheight-bigger-small: 28px !default;
 $ddl-closer-margin-top-bigger-small: -2em !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 // color
 

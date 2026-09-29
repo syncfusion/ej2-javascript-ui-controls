@@ -9,7 +9,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ribbon-collection',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childItems: new ContentChild(RibbonItemsDirective)
     }
@@ -17,24 +18,24 @@ let outputs: string[] = [];
 export class RibbonCollectionDirective extends ComplexBase<RibbonCollectionDirective> {
     public directivePropList: any;
 	
-    public childItems: any;
+    public declare childItems: any;
     public tags: string[] = ['items'];
     /** 
      * Defines one or more CSS classes to customize the appearance of collection.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines a unique identifier for the collection.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the list of ribbon items.
      * @default []
      * @asptype List<RibbonItem>
      */
-    public items: any;
+    public declare items: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -50,6 +51,7 @@ export class RibbonCollectionDirective extends ComplexBase<RibbonCollectionDirec
  */
 @Directive({
     selector: 'e-ribbon-collections',
+    standalone: true,
     queries: {
         children: new ContentChildren(RibbonCollectionDirective)
     },

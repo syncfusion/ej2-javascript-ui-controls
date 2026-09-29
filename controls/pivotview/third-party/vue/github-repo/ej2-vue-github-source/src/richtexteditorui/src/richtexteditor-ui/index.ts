@@ -1,0 +1,1 @@
+export { RichTextEditorUIComponent, RichTextEditorUIPlugin } from './richtexteditorui.component';

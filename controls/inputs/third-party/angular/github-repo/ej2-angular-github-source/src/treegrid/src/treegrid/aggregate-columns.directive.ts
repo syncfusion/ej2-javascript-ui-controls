@@ -26,9 +26,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-treegrid>e-aggregates>e-aggregate>e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        footerTemplate: new ContentChild('footerTemplate')
     }
 })
 export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirective> {
@@ -54,12 +55,12 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
      * @asptype string
      * @default null
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the column name to display the aggregate value. If not defined, the `field` name is used by default.
      * @default null
      */
-    public columnName: any;
+    public declare columnName: any;
     /** 
      * Defines a custom function to calculate the aggregate value. The `type` must be set to `custom`. 
      * Use the custom value as `${custom}` in templates. 
@@ -67,31 +68,21 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
      * * `Group aggregation`: It is called with the current group details and the `AggregateColumn` object.
      * @default null
      */
-    public customAggregate: any;
+    public declare customAggregate: any;
     /** 
      * Specifies the column name on which to perform the aggregation.
      * @default null
      */
-    public field: any;
+    public declare field: any;
     /** 
      * Specifies the format to be applied to the calculated aggregate value before display. 
      * Supports both standard and custom formats for numbers and dates. 
-     * Refer to the Syncfusion documentation for [number](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string) 
+     * Refer to the Syncfusion documentation for [number](https://ej2.syncfusion.com/documentation/common/internationalization#supported-format-string) 
      * and [date](https://ej2.syncfusion.com/documentation/common/internationalization#date-formatting) formats.
      * @asptype string
      * @default null
      */
-    public format: any;
-    /** 
-     * Defines a template for the footer cell of the aggregate column. 
-     * Use the aggregate `type` names within the template to access aggregate values.
-     * @default null
-     * @asptype string
-
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
+    public declare format: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -100,6 +91,7 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
         this.directivePropList = input;
     }
 }
+Template()(AggregateColumnDirective.prototype, 'footerTemplate');
 
 /**
  * AggregateColumn Array Directive
@@ -107,6 +99,7 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
  */
 @Directive({
     selector: 'ejs-treegrid>e-aggregates>e-aggregate>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(AggregateColumnDirective)
     },

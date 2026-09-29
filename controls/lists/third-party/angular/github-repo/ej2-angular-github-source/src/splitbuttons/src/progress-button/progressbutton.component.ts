@@ -20,19 +20,19 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class ProgressButtonComponent extends ProgressButton implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	begin: any;
-	created: any;
-	end: any;
-	fail: any;
-	public progress: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare begin: any;
+	declare created: any;
+	declare end: any;
+	declare fail: any;
+	public declare progress: any;
 
 
 
@@ -64,7 +64,7 @@ export class ProgressButtonComponent extends ProgressButton implements IComponen
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

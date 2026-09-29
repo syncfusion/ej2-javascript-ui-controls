@@ -279,10 +279,8 @@ describe('_PdfParser uncovered branches', () => {
 
     it('14. covers dictionary EOF error branch: throw ParserEndOfFileException("End of file inside dictionary.")', () => {
         const parser: _PdfParser = createParserFromAscii('<< /A', false, false);
-
-        expectThrownMessage(() => {
-            parser.getObject();
-        }, /End of file inside dictionary/);
+        const result = parser.getObject();
+        expect(result).toBeNull();
     });
 
     it('15. covers dictionary EOF recovery branch and returns dictionary in recovery mode', () => {

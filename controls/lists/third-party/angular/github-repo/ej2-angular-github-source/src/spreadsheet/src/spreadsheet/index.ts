@@ -10,4 +10,4 @@ export {SheetDirective,SheetsDirective} from './sheets.directive';
 export {DefinedNameDirective,DefinedNamesDirective} from './definednames.directive';
 export { SpreadsheetComponent} from './spreadsheet.component';
 export { SpreadsheetModule } from './spreadsheet.module';
-export { SpreadsheetAllModule, ClipboardService, EditService, KeyboardNavigationService, KeyboardShortcutService, SelectionService, ContextMenuService, FormulaBarService, RibbonService, SaveService, OpenService, SheetTabsService, DataBindService, CellFormatService, NumberFormatService, FormulaService, AIAssistService } from './spreadsheet-all.module';
+export { SpreadsheetAllModule, ClipboardService, EditService, KeyboardNavigationService, KeyboardShortcutService, SelectionService, ContextMenuService, FormulaBarService, RibbonService, SaveService, OpenService, SheetTabsService, DataBindService, CellFormatService, NumberFormatService, FormulaService, AIAssistService, WebMcpAdapterService, CollaborativeEditingHandlerService } from './spreadsheet-all.module';

@@ -3707,6 +3707,44 @@ describe('Audio Module', () => {
             }, 200);
         });;
     });
+    
+    describe('878765 - Title attribute not added properly for the Audio element in RichTextEditor', function () {
+        let rteObj: RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                value: "<div><div id='videoElement'>Video Element</div><div id='audioElement'>Audio Element</div></div>"
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Use the executeCommand method to insert the video title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#videoElement'), 0);
+                (<any>rteObj).executeCommand('insertVideo', {
+                    url: 'https://www.w3schools.com/tags/movie.mp4',
+                    cssClass: 'e-rte-video',
+                    title: 'newVideo',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap').getAttribute("title") === "newVideo").toBe(true);
+                done();
+            }, 100);
+        });
+        it('Use the executeCommand method to insert the audio title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#audioElement'), 0);
+                (<any>rteObj).executeCommand('insertAudio', {
+                    url: 'https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3',
+                    cssClass: 'e-rte-audio',
+                    title: 'newAudio',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap').getAttribute("title") === "newAudio").toBe(true);
+                done();
+            }, 100);
+        });
+    });
 
     describe('1029299: Audio Quick Toolbar display dropdown does not highlight selected option', () => {
         let rteObj: RichTextEditor;

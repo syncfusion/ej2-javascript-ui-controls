@@ -18,7 +18,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-axis>e-multilevellabels>e-multilevellabel',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childCategories: new ContentChild(CategoriesDirective)
     }
@@ -26,7 +27,7 @@ let outputs: string[] = [];
 export class MultiLevelLabelDirective extends ComplexBase<MultiLevelLabelDirective> {
     public directivePropList: any;
 	
-    public childCategories: any;
+    public declare childCategories: any;
     public tags: string[] = ['categories'];
     /** 
      * Defines the position of the multi-level labels. 
@@ -36,16 +37,16 @@ export class MultiLevelLabelDirective extends ComplexBase<MultiLevelLabelDirecti
      * * Far: Places the multi-level labels further from the chart elements.
      * @default 'Center'
      */
-    public alignment: any;
+    public declare alignment: any;
     /** 
      * The `border` property allows customization of the border for multi-level labels. 
      * It includes options to set the color, width, and type of the border.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * Configures multi-level categories for multi-level labels.
      */
-    public categories: any;
+    public declare categories: any;
     /** 
      * Defines the text overflow behavior for multi-level labels. 
      * The available options are: 
@@ -54,11 +55,11 @@ export class MultiLevelLabelDirective extends ComplexBase<MultiLevelLabelDirecti
      * * None: No text overflow handling for multi-level labels.
      * @default 'Wrap'
      */
-    public overflow: any;
+    public declare overflow: any;
     /** 
      * Options to customize the multi-level labels.
      */
-    public textStyle: any;
+    public declare textStyle: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -74,6 +75,7 @@ export class MultiLevelLabelDirective extends ComplexBase<MultiLevelLabelDirecti
  */
 @Directive({
     selector: 'e-axis>e-multilevellabels',
+    standalone: true,
     queries: {
         children: new ContentChildren(MultiLevelLabelDirective)
     },

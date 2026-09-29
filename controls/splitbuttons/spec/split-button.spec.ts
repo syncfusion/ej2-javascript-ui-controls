@@ -86,6 +86,12 @@ describe('Split Button', () => {
         expect(button.secondaryBtnObj.dropDown.element.classList.contains('e-popup-open')).toEqual(true);
     });
 
+    it('Create popup on open', () => {
+        button = new SplitButton({ items: items, createPopupOnClick: true }, '#splitbtn');
+        button.element.click();
+        expect(button.secondaryBtnObj.dropDown).toEqual(undefined);
+    });
+
     it('Text with Icon position top & left testing', () => {
         button = new SplitButton({ content: 'SplitButton', iconCss: 'iconcss'});
         button.appendTo('#splitbtn');
@@ -113,6 +119,21 @@ describe('Split Button', () => {
         button.appendTo('#splitbtn');
         altDownEventArgs.target = button.element;
         button.btnKeyBoardHandler(altDownEventArgs);
+        expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
+    });
+
+    it('Alt + down key on dropdown button opens popup', () => {
+        const altDownEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'altdownarrow',
+            type: 'keyup',
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        button.issecondaryBtnClick = true;
+        altDownEventArgs.target = button.element;
+        button.btnKeyBoardHandler(altDownEventArgs);
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
     });
 
@@ -127,6 +148,35 @@ describe('Split Button', () => {
         button.appendTo('#splitbtn');
         button.keyBoardHandler(altUpEventArgs);
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
+    });
+
+    it('Enter key on primary button does not open popup', () => {
+        const enterEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 13,
+            action: 'enter',
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        enterEventArgs.target = button.element;
+        button.btnKeyBoardHandler(enterEventArgs);
+        expect(button.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();
+    });
+
+    it('Enter key on dropdown button does open popup', () => {
+        const enterEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 13,
+            action: 'enter',
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        button.issecondaryBtnClick = true;
+        enterEventArgs.target = button.element;
+        button.btnKeyBoardHandler(enterEventArgs);
+        expect(button.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
     });
 
     it('Enter key checking', () => {
@@ -152,11 +202,111 @@ describe('Split Button', () => {
         li[0].classList.add('e-focused');
         button.keyBoardHandler(downEventArgs);
         enterEventArgs.target = li[1];
+        button.issecondaryBtnClick = true;
         button.btnKeyBoardHandler(enterEventArgs);
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         button.secondaryBtnObj.element.click();
         enterEventArgs.target = button.dropDown.element.children[0];
         button.keyBoardHandler(enterEventArgs);
+    });
+
+    it('Space key on dropdown button opens popup', () => {
+        const spaceEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 32,
+            action: 'space',
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        spaceEventArgs.target = button.secondaryBtnObj.element;
+        button.secondaryBtnObj.keyBoardHandler(spaceEventArgs);
+        expect(button.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        li[0].classList.add('e-focused');
+        spaceEventArgs.target = li[1];
+        button.secondaryBtnObj.keyBoardHandler(spaceEventArgs);
+        expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
+    });
+
+    it('Home key focuses first item in popup', () => {
+        const homeEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 36,
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        button.secondaryBtnObj.element.click();
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        li[2].classList.add('e-focused');
+        homeEventArgs.target = li[2];
+        button.secondaryBtnObj.keyBoardHandler(homeEventArgs);
+        expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
+        expect((li[2] as Element).classList.contains('e-focused')).toBe(false);
+    });
+
+    it('End key focuses last item in popup', () => {
+        const endEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 35,
+            target: null
+        };
+        button = new SplitButton({ items: items });
+        button.appendTo('#splitbtn');
+        button.secondaryBtnObj.element.click();
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        li[0].classList.add('e-focused');
+        endEventArgs.target = li[0];
+        button.secondaryBtnObj.keyBoardHandler(endEventArgs);
+        expect((li[2] as Element).classList.contains('e-focused')).toBe(true);
+        expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
+    });
+
+    it('Home key skips separator and disabled items in popup', () => {
+        const homeEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 36,
+            target: null
+        };
+        const homeItems: ItemModel[] = [
+            { separator: true },
+            { text: 'Cut', disabled: true },
+            { text: 'Copy' },
+            { text: 'Paste' }
+        ];
+        button = new SplitButton({ items: homeItems });
+        button.appendTo('#splitbtn');
+        button.secondaryBtnObj.element.click();
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        homeEventArgs.target = li[3];
+        button.secondaryBtnObj.keyBoardHandler(homeEventArgs);
+        expect((li[2] as Element).classList.contains('e-focused')).toBe(true);
+        expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
+        expect((li[1] as Element).classList.contains('e-focused')).toBe(false);
+    });
+
+    it('End key skips separator and disabled items in popup', () => {
+        const endEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 35,
+            target: null
+        };
+        const endItems: ItemModel[] = [
+            { text: 'Cut' },
+            { text: 'Copy' },
+            { text: 'Paste', disabled: true },
+            { separator: true }
+        ];
+        button = new SplitButton({ items: endItems });
+        button.appendTo('#splitbtn');
+        button.secondaryBtnObj.element.click();
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        endEventArgs.target = li[0];
+        button.secondaryBtnObj.keyBoardHandler(endEventArgs);
+        expect((li[1] as Element).classList.contains('e-focused')).toBe(true);
+        expect((li[2] as Element).classList.contains('e-focused')).toBe(false);
+        expect((li[3] as Element).classList.contains('e-focused')).toBe(false);
     });
 
     it('Popup open/close testing by click', () => {
@@ -251,6 +401,58 @@ describe('Split Button', () => {
             expect(button.dropDown.element).toBe(null);
             button = new SplitButton({ items: items, createPopupOnClick: true }, '#splitbtn');
             expect(button.secondaryBtnObj.dropDown).toEqual(undefined);
+        });
+
+        it('Bug(852075): Inconsistent behavior between mouse clicks and keyboard (Enter) when opening the popup - 1', () => {
+            const enterEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                keyCode: 13,
+                action: 'enter',
+                target: null
+            };
+            const outerContainer: HTMLElement = createElement('div', {
+                className: 'e-pv-annotation-eraser-popup-container',
+            });
+            document.body.appendChild(outerContainer);
+            outerContainer.innerHTML = `
+                <ul role="menu" tabindex="0" style="list-style:none; margin:0; padding:0;">
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                </ul>
+                `;
+            button = new SplitButton({
+                target: outerContainer,
+                iconCss: 'e-pv-ink-eraser-icon e-pv-icon',
+            });
+            button.appendTo('#splitbtn');
+            button.secondaryBtnObj.element.click();
+            enterEventArgs.target = button.dropDown.element.children[0];
+            button.keyBoardHandler(enterEventArgs);
+        });
+
+        it('Bug(852075): Inconsistent behavior between mouse clicks and keyboard (Enter) when opening the popup - 2', () => {
+            const enterEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                keyCode: 13,
+                action: 'enter',
+                target: null
+            };
+            const outerContainer: HTMLElement = createElement('ul');
+            document.body.appendChild(outerContainer);
+            outerContainer.innerHTML = `  
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+                `;
+            button = new SplitButton({
+                target: outerContainer,
+                iconCss: 'e-pv-ink-eraser-icon e-pv-icon',
+            });
+            button.appendTo('#splitbtn');
+            button.secondaryBtnObj.element.click();
+            enterEventArgs.target = button.dropDown.element.children[0];
+            button.keyBoardHandler(enterEventArgs);
         });
     });
 

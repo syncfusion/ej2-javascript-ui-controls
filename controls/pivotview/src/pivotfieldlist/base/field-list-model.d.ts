@@ -178,6 +178,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * * `PopulationVar`: Allows to display the pivot table values with population variance.
      * * `SampleVar`: Allows to display the pivot table values with sample variance.
      * * `RunningTotals`: Allows to display the pivot table values with running totals.
+     * * `PercentageOfRunningTotals`: Allows to display the pivot table values with cumulative percentage of running totals.
      * * `DifferenceFrom`: Allows to display the pivot table values with difference from the value of the base item in the base field.
      * * `PercentageOfDifferenceFrom`: Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
      * * `PercentageOfGrandTotal`: Allows to display the pivot table values with percentage of grand total of all values.
@@ -190,7 +191,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * > It is applicable only for Relational data.
      *
      * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar',
-     * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
+     * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfRunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
      * 'PercentageOfParentTotal']
      */
@@ -331,12 +332,12 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers when UI action begins in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionBegin
      */
@@ -345,12 +346,12 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers when UI action in the Pivot FieldList completed. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionComplete
      */
@@ -359,12 +360,12 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers when UI action failed to achieve the desired results in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionFailure
      */

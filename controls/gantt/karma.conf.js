@@ -43,6 +43,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-interactive-chat/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-markdown-converter/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-querybuilder/**/*.js", included: false },
       // Include all material.css files from @syncfusion packages
       { pattern: "node_modules/@syncfusion/*/styles/material.css", watched: false, included: false, served: true, nocache: false },
       // Add dependent package's script files here              

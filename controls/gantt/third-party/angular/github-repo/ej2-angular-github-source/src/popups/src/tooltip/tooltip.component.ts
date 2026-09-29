@@ -20,36 +20,25 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 @ComponentMixins([ComponentBase])
 export class TooltipComponent extends Tooltip implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	afterClose: any;
-	afterOpen: any;
-	beforeClose: any;
-	beforeCollision: any;
-	beforeOpen: any;
-	beforeRender: any;
-	created: any;
-	public destroyed: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare afterClose: any;
+	declare afterOpen: any;
+	declare beforeClose: any;
+	declare beforeCollision: any;
+	declare beforeOpen: any;
+	declare beforeRender: any;
+	declare created: any;
+	public declare destroyed: any;
 
 
-    /** 
-     * It is used to display the content of Tooltip which can be both string and HTML Elements. 
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/content/) 
-     *  to know more about this property with demo.
-     * 
-     * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
-     *     
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -79,7 +68,8 @@ export class TooltipComponent extends Tooltip implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(TooltipComponent.prototype, 'content');
 

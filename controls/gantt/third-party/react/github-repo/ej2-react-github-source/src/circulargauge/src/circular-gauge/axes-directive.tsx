@@ -4,7 +4,7 @@ import { AxisModel } from '@syncfusion/ej2-circulargauge';
 
 /**
  * Represents the directive to render the axes in the Circular Gauge.
- * ```tsx
+ * ```
  * <CircularGaugeComponent>
  * <AxesDirective>
  * <AxisDirective></AxisDirective>

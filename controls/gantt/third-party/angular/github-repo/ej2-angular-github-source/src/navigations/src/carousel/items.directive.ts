@@ -20,9 +20,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-carousel>e-carousel-items>e-carousel-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class CarouselItemDirective extends ComplexBase<CarouselItemDirective> {
@@ -34,28 +35,17 @@ export class CarouselItemDirective extends ComplexBase<CarouselItemDirective> {
      * Accepts single/multiple classes (separated by a space) to be used for individual carousel item customization.
      * @default null
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Accepts HTML attributes/custom attributes to add in individual carousel item.
      * @default null
      */
-    public htmlAttributes: any;
+    public declare htmlAttributes: any;
     /** 
      * Accepts the interval duration in milliseconds for individual carousel item transition.
      * @default null
      */
-    public interval: any;
-    /** 
-     * Accepts the template for individual carousel item.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare interval: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -64,6 +54,7 @@ export class CarouselItemDirective extends ComplexBase<CarouselItemDirective> {
         this.directivePropList = input;
     }
 }
+Template()(CarouselItemDirective.prototype, 'template');
 
 /**
  * CarouselItem Array Directive
@@ -71,6 +62,7 @@ export class CarouselItemDirective extends ComplexBase<CarouselItemDirective> {
  */
 @Directive({
     selector: 'ejs-carousel>e-carousel-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(CarouselItemDirective)
     },

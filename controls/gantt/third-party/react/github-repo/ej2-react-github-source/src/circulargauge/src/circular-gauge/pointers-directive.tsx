@@ -4,7 +4,7 @@ import { PointerModel } from '@syncfusion/ej2-circulargauge';
 
 /**
  * Represents the directive to render and customize the pointers in an axis of circular gauge.
- * ```tsx
+ * ```
  * <CircularGaugeComponent>
  * <AxesDirective>
  * <AxisDirective>

@@ -23,6 +23,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion® code, ask your AI coding agent to run the Syncfusion® setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion® before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion® skill pack. No Syncfusion® account or MCP key is required to install or read Syncfusion® agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/docx-editor-sdk/llms.txt](https://ai.syncfusion.com/docx-editor-sdk/llms.txt)
+
 ## Setup
 
 ### Create an Angular Application
@@ -45,18 +59,17 @@ npm install @syncfusion/ej2-angular-documenteditor --save
 
 ### Adding CSS references for DOCX Editor
 
-Add CSS references needed for Document editor in the **src/styles/styles.css** file.
+Install the styles package from npm using the following command:
+
+```bash
+npm install @syncfusion/ej2-tailwind3-theme
+```
+
+The Tailwind 3 theme package includes an `index.css` file that automatically imports all required DOCX Editor styles. Add the required DOCX Editor theme style reference to **src/styles/styles.css** file.
 
 ```html
-@import '../../node_modules/@syncfusion/ej2-base/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-buttons/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-inputs/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-popups/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-lists/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-navigations/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-dropdowns/styles/material.css';
-@import '../../node_modules/@syncfusion/ej2-angular-documenteditor/styles/material.css';
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor/index.css";
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor-container/index.css";
 ```
 
 ### Registering DocumentEditorContainer module

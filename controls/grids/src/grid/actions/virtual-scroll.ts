@@ -7,7 +7,7 @@ import { VirtualContentRenderer, VirtualHeaderRenderer }  from '../renderer/virt
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { RowRenderer } from '../renderer/row-renderer';
-import { extend, getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { extend, getValue, isNullOrUndefined, remove, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Row } from '../models/row';
 import { setComplexFieldID, setValidationRuels, getColumnModelByUid, getComplexFieldID, parseViewportHeight } from '../base/util';
 import { EditRender } from '../renderer/edit-renderer';
@@ -21,6 +21,7 @@ export class VirtualScroll implements IAction {
     private blockSize: number;
     private locator: ServiceLocator;
     constructor(parent: IGrid, locator?: ServiceLocator) {
+        initializeTelemetryFeature('VirtualScroll', 'DataGrid');
         this.parent = parent;
         this.locator = locator;
         this.addEventListener();

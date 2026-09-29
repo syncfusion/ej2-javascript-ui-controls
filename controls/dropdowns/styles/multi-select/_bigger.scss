@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('multiselect-bigger') {
   .e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon,
   .e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
@@ -519,7 +519,7 @@
 
   .e-bigger {
     .e-multiselect.e-outline .e-multi-select-wrapper,
-    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+    &.e-multiselect.e-outline .e-multi-select-wrapper {
       @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
         min-height: $outline-multiselect-bigger-height;
         padding: $outline-multiselect-bigger-overall-padding;
@@ -527,7 +527,7 @@
     }
 
     .e-small {
-      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+      &.e-multiselect.e-outline .e-multi-select-wrapper {
         @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
           min-height: $ddl-outline-multiselect-height;
           padding: $outline-multiselect-overall-padding;
@@ -535,9 +535,9 @@
       }
     }
 
-    #{if(&, '&', '*')}.e-small {
+    &.e-small {
       .e-multiselect.e-outline .e-multi-select-wrapper,
-      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+      &.e-multiselect.e-outline .e-multi-select-wrapper {
         @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
           min-height: $ddl-outline-multiselect-height;
           padding: $outline-multiselect-overall-padding;
@@ -548,7 +548,7 @@
 
   .e-small {
     .e-bigger {
-      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+      &.e-multiselect.e-outline .e-multi-select-wrapper {
         @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
           min-height: $ddl-outline-multiselect-height;
           padding: $outline-multiselect-overall-padding;
@@ -556,7 +556,7 @@
       }
     }
 
-    #{if(&, '&', '*')}.e-bigger {
+    &.e-bigger {
       .e-multiselect.e-outline .e-multi-select-wrapper {
         @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
           min-height: $ddl-outline-multiselect-height;
@@ -1565,10 +1565,10 @@
   }
   @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
     #{&}.e-popup {
-      #{if(&, '&', '*')}.e-multi-select-list-wrapper {
-        #{if(&, '&', '*')}.e-ddl,
-        .e-bigger #{if(&, '&', '*')}.e-ddl {
-          #{if(&, '&', '*')}.e-checkbox .e-filter-parent .e-clear-icon {
+      &.e-multi-select-list-wrapper {
+        &.e-ddl,
+        .e-bigger &.e-ddl {
+          &.e-checkbox .e-filter-parent .e-clear-icon {
             padding-left: 0;
           }
         }

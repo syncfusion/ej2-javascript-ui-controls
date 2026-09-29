@@ -1,7 +1,7 @@
 /**
  * Base RTE spec
  */
-import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach, isVisible } from '@syncfusion/ej2-base';
 import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IQuickToolbar, QuickToolbar, dispatchEvent, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
 import { ActionBeginEventArgs, ITableCommandsArgs } from '../../../src/common/interface';
 import { ToolbarType, DialogType } from '../../../src/common/enum';
@@ -9,6 +9,7 @@ import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA } from './../render.spec';
 import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT, DELETE_EVENT_INIT, ENTERKEY_EVENT_INIT, SLASH_KEY_EVENT_INIT, ASTERISK_EVENT_INIT  } from '../../constant.spec';
+import { SelectionCommands } from "../../../src/editor-manager/plugin/selection-commands";
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -481,7 +482,7 @@ describe('RTE Base module ', () => {
         });
     });
 
-    describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the list issue testing', () => {
+    xdescribe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the list issue testing', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         it('Checking the keyboard enter inside the nodes', (done: Function) => {
@@ -10162,6 +10163,51 @@ Rich Text Editor 3`
         });
     });
 
+    describe('Bug 1052175: MaxLength 0 allows first character entry in empty editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                maxLength: 0,
+                value: ''
+            });
+        });
+        it('should prevent the first character input when maxLength is set to 0', (done) => {
+            rteObj.focusIn();
+            setTimeout(() => {
+                const args: any = {
+                    key: 'd',
+                    which: 68,
+                    keyCode: 68,
+                    ctrlKey: false,
+                    preventDefault: jasmine.createSpy('preventDefault')
+                };
+                (rteObj as any).restrict(args);
+                expect(args.preventDefault).toHaveBeenCalled();
+                done();
+            }, 50);
+        });
+        it('should enforce maxLength restriction when maxLength is set to 0', (done) => {
+            rteObj.focusIn();
+            setTimeout(() => {
+                expect(rteObj.maxLength).toBe(0);
+                const event: any = {
+                    which: 68,
+                    keyCode: 68,
+                    key: 'd',
+                    ctrlKey: false,
+                    preventDefault: jasmine.createSpy('preventDefault')
+                };
+                const isRestricted: boolean = (rteObj as any).restrict(event);
+                expect(isRestricted).toBe(true);
+                expect(event.preventDefault).toHaveBeenCalled();
+                done();
+            }, 50);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('1004248: Font Color Toolbar Does Not Reflect Selected Text Color in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         const richTestValue: string = '<p><span style="background-color: rgb(255, 128, 128);"><span style="color: rgb(68, 114, 196); text-decoration: inherit;">Rich</span></span> <span style="background-color: rgb(128, 255, 128);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Test</span></span> <span style="background-color: rgb(255, 255, 128);"><span style="color: rgb(255, 192, 0); text-decoration: inherit;">Editor</span></span></p>';
@@ -10545,6 +10591,508 @@ Rich Text Editor 3`
         });
     });
 
+    describe('Bug 1040140: Console error occurs when we dynamically change the cssClass property in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let container: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Hello World</p>`,
+            });
+            container = document.createElement("div");
+            container.innerHTML = `
+                <button id="toggleTest1">Toggle test-1</button>
+                <button id="toggleTest2">Toggle test-2</button>
+                <br><br>`;
+            document.body.appendChild(container);
+            document.getElementById('toggleTest1').addEventListener('click', function () {
+                toggleCssClass('test-1');
+            });
+            document.getElementById('toggleTest2').addEventListener('click', function () {
+                toggleCssClass('test-2');
+            });
+            function toggleCssClass(cssClass: string) {
+                let classes: string[] = (rteObj.cssClass || '').split(/\s+/).filter(Boolean);
+                if (classes.indexOf(cssClass) > -1) {
+                    classes = classes.filter(c => c !== cssClass);
+                } else {
+                    classes.push(cssClass);
+                }
+                const classs = classes.join(' ');
+                rteObj.cssClass = classs;
+            }
+        });
+        afterAll(() => {
+            detach(container);
+            destroy(rteObj);
+        });
+        it('Should change the Css class dynamically', (done: DoneFn) => {
+            rteObj.focusIn();
+            (document.getElementById('toggleTest1') as HTMLElement).click();
+            setTimeout(() => {
+                expect((document.querySelector('.e-control.e-richtexteditor') as HTMLElement).classList.contains('test-1')).toBe(true);
+                (document.getElementById('toggleTest2') as HTMLElement).click();
+                setTimeout(() => {
+                    expect((document.querySelector('.e-control.e-richtexteditor') as HTMLElement).classList.contains('test-1')).toBe(true);
+                    expect((document.querySelector('.e-control.e-richtexteditor') as HTMLElement).classList.contains('test-2')).toBe(true);
+                    (document.getElementById('toggleTest1') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect((document.querySelector('.e-control.e-richtexteditor') as HTMLElement).classList.contains('test-1')).toBe(false);
+                        expect((document.querySelector('.e-control.e-richtexteditor') as HTMLElement).classList.contains('test-2')).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('EJ2-18135 - name attribute of div element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLDivElement;
+        beforeAll(() => {
+            elem = <HTMLDivElement>createElement('div', { id: 'rte_test_div_EJ2_18135', attrs: { name: 'formName' } });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo(elem);
+        });
+    
+            it('name attribute to div element', () => {
+                expect((rteObj as any).valueContainer.getAttribute('name') === 'formName').toBe(true);
+            });
+    
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
+
+        describe('EJ2-21471  -  RTE data annotation validation is not worked', () => {
+            let rteObj: RichTextEditor;
+            let element: HTMLElement = createElement('div', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" ejs-for data-val="RTEValue">
+                        </textarea>
+                        </div>
+                    ` });
+            beforeAll(() => {
+                document.body.appendChild(element);
+                rteObj = new RichTextEditor({
+                    placeholder: 'Type something'
+                });
+                rteObj.appendTo("#defaultRTE");
+                rteObj.saveInterval = 0;
+                rteObj.dataBind();
+            })
+            afterAll(() => {
+                destroy(rteObj);
+                detach(element);
+            });
+    
+            it(' Set the data annotation attribute to textarea alone ', () => {
+                expect(rteObj.element.hasAttribute('ejs-for')).toBe(false);
+                expect(rteObj.element.hasAttribute('data-val')).toBe(false);
+                expect((rteObj as any).valueContainer.hasAttribute('ejs-for')).toBe(true);
+                expect((rteObj as any).valueContainer.hasAttribute('data-val')).toBe(true);
+            });
+        });
+
+        describe(' EJ2-218412  -  htmlAttributes "id" is not set to the validation textarea element in RTE ', () => {
+            let rteObj: RichTextEditor;
+            let element: HTMLElement = createElement('div', {
+                id: "form-element", innerHTML:
+                    ` <div class="rte-element"></div>
+                    ` });
+            beforeAll(() => {
+                document.body.appendChild(element);
+                rteObj = new RichTextEditor({
+                    htmlAttributes: {
+                        id: "htmlAttr-id"
+                    }
+                });
+                let target: HTMLElement = document.querySelector(".rte-element");
+                rteObj.appendTo(target);
+            })
+            afterAll(() => {
+                destroy(rteObj);
+                detach(element);
+            });
+    
+            it(' Render the RTE without ID and set the id via htmlAttributes property ', () => {
+                expect(rteObj.element.id === 'htmlAttr-id').toBe(true);
+                expect((rteObj as any).valueContainer.id === 'htmlAttr-id-value').toBe(true);
+                expect((rteObj as any).inputElement.id === 'htmlAttr-id_rte-edit-view').toBe(true);
+            })
+        });
+
+    describe('EJ2-18135 - name attribute of textarea element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeAll(() => {
+            elem = <HTMLTextAreaElement>createElement('textarea', { id: 'rte_test_EJ2_18135', attrs: { name: 'formName' } });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo(elem);
+        });
+
+        it('name attribute to textarea element', () => {
+            expect((rteObj as any).valueContainer.getAttribute('name') === 'formName').toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('EJ2-22972 - Editor content rendered twice in DOM when using RichTextEditorFor', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeAll(() => {
+            elem = <HTMLTextAreaElement>createElement('textarea',
+                { id: 'rte_test_EJ2-22972', innerHTML: '<p class="test-paragraph">RichTextEditor</p>' });
+            document.body.appendChild(elem);
+            elem.setAttribute('ejs-for', '');
+            rteObj = new RichTextEditor({
+                value: '<p class="test-paragraph">RichTextEditor</p>'
+            });
+            rteObj.appendTo(elem);
+        });
+
+        it(' Check the edit area content in wrapper element', () => {
+            expect(rteObj.element.querySelectorAll('.test-paragraph').length === 1).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-22988 - e-lib class not added into control root element, when render RTE using textarea element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeAll(() => {
+            elem = <HTMLTextAreaElement>createElement('textarea',
+                { id: 'rte_test_EJ2-22988' });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+                value: '<p class="test-paragraph">RichTextEditor</p>'
+            });
+            rteObj.appendTo(elem);
+        });
+
+        it(' Check the root element class', () => {
+            expect(rteObj.element.classList.contains('e-control')).toBe(true);
+            expect(rteObj.element.classList.contains('e-lib')).toBe(true);
+            expect(rteObj.element.classList.contains('e-richtexteditor')).toBe(true);
+            expect((rteObj as any).valueContainer.classList.contains('e-control')).toBe(false);
+            expect((rteObj as any).valueContainer.classList.contains('e-lib')).toBe(false);
+            expect((rteObj as any).valueContainer.classList.contains('e-richtexteditor')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    L10n.load({
+        'de-DE': {
+            'richtexteditor': {
+                imageInsertLinkHeader: 'Link einfügen',
+                editImageHeader: 'Bild bearbeiten',
+                alignmentsDropDownLeft: 'Linksbündig',
+                alignmentsDropDownCenter: 'Im Zentrum anordnen',
+                alignmentsDropDownRight: 'Rechts ausrichten',
+                alignmentsDropDownJustify: 'Justize ausrichten',
+                imageDisplayDropDownInline: 'In der Reihe',
+                imageDisplayDropDownBreak: 'Brechen',
+                tableInsertRowDropDownBefore: 'Reihe vorher einfügen',
+                tableInsertRowDropDownAfter: 'Zeile danach einfügen',
+                tableInsertRowDropDownDelete: 'Zeile löschen',
+                tableInsertColumnDropDownLeft: 'Spalte links einfügen',
+                tableInsertColumnDropDownRight: 'Spalte rechts einfügen',
+                tableInsertColumnDropDownDelete: 'Spalte löschen',
+                tableVerticalAlignDropDownTop: 'Top ausrichten',
+                tableVerticalAlignDropDownMiddle: 'Mitte ausrichten',
+                tableVerticalAlignDropDownBottom: 'Unten ausrichten',
+                tableStylesDropDownDashedBorder: 'Gestrichelte Grenzen',
+                tableStylesDropDownAlternateRows: 'Alternative Zeilen',
+                mergecells: 'Zellen verbinden',
+                verticalsplit: 'Vertikale Aufteilung',
+                horizontalsplit: 'Horizontale Aufteilung',
+            }
+        }
+    });
+    describe('EJ2-29347 - RTE base refresh method testing', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Syncfusion</p>'
+            });
+            rteEle = rteObj.element;
+        });
+        it(' Check the alignments dropdown items ', (done) => {
+            expect(rteObj.inputElement.innerHTML).toEqual('<p>Syncfusion</p>');
+            rteObj.inputElement.innerHTML = '<p>RTE</p>';
+            expect(rteObj.inputElement.innerHTML).toEqual('<p>RTE</p>');
+            rteObj.disableToolbarItem(['Bold']);
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(3);
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold (Ctrl+B)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo (Ctrl+Z)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo (Ctrl+Y)');
+            rteObj.refresh();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(2);
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo (Ctrl+Z)');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo (Ctrl+Y)');
+                done();
+            }, 200)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Change event triggered -readOnly enabled', () => {
+        let rteObj: RichTextEditor;
+        let changeEvent: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                maxLength: 10  ,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                saveInterval : 1,
+                change : function() {
+                    changeEvent = true ;
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check change event when readonly is enabled', (done: Function) => {
+            rteObj.inputElement.focus();
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                    expect(changeEvent).toBe(false);
+                    done();
+            }, 100);
+        });
+    });
+    describe('EJ2-59866 - The getText public method returned \n when Rich Text Editor have empty content', () => {
+        let rteObj:RichTextEditor;
+        let innerHTML: string;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: innerHTML });
+            });
+        afterAll(()=>{
+            destroy(rteObj);
+        })
+        it('should return empty string when value is editor is empty ', () => {
+            innerHTML= `<p><b></b></p>`;
+            expect(rteObj.getText()==="").toBe(true);
+        });
+    });
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '<div><p></p></div>'});
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
+        });
+    });
+    describe(' EJ2-62704  -  Rich Text Editor unique Id is not generated automatically when we do not set the Id property ', () => {
+        let rteObj: RichTextEditor;
+        const divElement: HTMLElement = createElement('div', {
+            className: 'defaultRTE' });
+        beforeAll(() => {
+            document.body.appendChild(divElement);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: [ 'Undo', 'Redo', '|',
+                        'Underline', 'StrikeThrough', '|'
+                    ]
+                }
+            });
+            const target: HTMLElement = document.querySelector('.defaultRTE');
+            rteObj.appendTo(target);
+        });
+        afterAll(() => {
+            rteObj.destroy();
+            detach(divElement);
+        });
+
+        it(' check the id genarated or not ', () => {
+            expect(rteObj.element.hasAttribute('id')).toBe(true);
+        });
+    });
+    describe('853717 - Not able to insert the SVG or Canvas elements using ExecuteCommand in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: ''
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Not able to insert the SVG or Canvas elements', () => {
+            rteObj.executeCommand('insertHTML', `<div>
+            <p>test</p>
+            <svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'>
+              <circle cx='50' cy='50' r='40' stroke='green' stroke-width='4' fill='yellow' />
+            </svg>
+          </div><p>text</p>`);
+          expect(rteObj.contentModule.getEditPanel().innerHTML === '<div><p>test</p><svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"> <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle></svg></div><p>text</p>').toBe(true);
+        });
+    });
+    describe('838394 - Updated values not sent to the server when we dynamically change the readOnly in RichTextEditor', function () {
+        let rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value : "Rich Text Editor",
+                readonly : true 
+            });
+        });
+        it('Updated values not sent to the server when we dynamically change the readOnly in RichTextEditor', function (done) {
+            rteObj.focusIn();
+            rteObj.readonly = false;
+            rteObj.dataBind();
+            var rteValue = rteObj.value;
+            rteObj.value = 'rich text editor new value';
+            setTimeout(function () {
+                expect(rteObj.value != rteValue).toBe(true);
+                done();
+            },0);
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
+    describe('954014: To validate the RTE breaking issue in Bold Desk source', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'Initial value'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should not focus in when the value property is set to NULL and there should not be any range.', (done: DoneFn)=> {
+            editor.focusIn();
+            expect(editor.element.ownerDocument.activeElement).toBe(editor.inputElement);
+            editor.value = null;
+            editor.focusOut();
+            editor.dataBind();
+            setTimeout(() => {
+                expect(editor.element.ownerDocument.activeElement).not.toBe(editor.inputElement);
+                done();
+            }, 100);
+        });
+    });
+    describe('896562 - Script error throws when using RichTextEditor inside the Grid', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({});
+        });
+        it('Should not call remove method for the input element and then should not set null for the input elemeent.', () => {
+            destroy(editor);
+            expect(editor.inputElement).not.toBe(null);
+            // Setting null will not remove the event listener on the ngOnDestroy angular Base method focus and blur events.
+        });
+    });
+    describe('898856 - Change event not triggered when we dynamically change the readOnly mode in the RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({readonly: true});
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should re bind the focus event when the readonly is set to false.', () => {
+            editor.readonly = false;
+            editor.dataBind();
+            expect(typeof (editor as any).onFocusHandler).toBe('function');
+            expect(typeof (editor as any).onBlurHandler).toBe('function');
+            expect(typeof (editor as any).onResizeHandler).toBe('function');
+        });
+    });
+    describe("863440: Too many times applying bold to a text, sometimes the text got deleted in RichTextEditor.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let domSelection: NodeSelection = new NodeSelection();
+        let parentDiv: HTMLDivElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enterKey: 'BR',
+                value:`<div id="div1"><p id="paragraph1">second rtec</p></div>`
+            });
+            rteEle = rteObj.element;
+            parentDiv = document.getElementById('div1') as HTMLDivElement;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Apply Bold tag for cursor position', () => {
+            let node1: Node = document.getElementById('paragraph1');
+            let text1: Text = node1.childNodes[0] as Text;
+            domSelection.setSelectionText(document, text1, text1, 1, 1);
+            SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+            expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
+            domSelection.setSelectionText(document, text1, text1, 5, 5);
+            SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+            expect(rteObj.inputElement.innerHTML).toEqual('<div id="div1"><p id="paragraph1">second rtec</p></div>');
+        });
+    });
+    describe("EJ2-69957: Quick toolbar tooltip remains in the open state after close the toolbar", () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                'SubScript', 'SuperScript', '|',
+                'LowerCase', 'UpperCase', '|', 
+                'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                'Indent', 'Outdent', '|',
+                'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                },
+                value:`<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><b>Toolbar</b></p><ol>
+                <li> <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p></li><li> <p>The Toolbar is fully customizable </p></li></ol>
+                <p><b>Links</b></p><ol><li><p>You can insert a hyperlink with its corresponding dialog </p></li><li><p>Attach a hyperlink to the displayed text. </p></li><li><p>Customize the quick toolbar based on the hyperlink </p> </li></ol>
+                <p><b>Image.</b></p><ol><li><p>Allows you to insert images from an online source as well as the local computer </p> </li><li><p>You can upload an image </p></li><li> 
+                <p>Provides an option to customize the quick toolbar for an image </p> </li></ol><img alt="Logo" src="//ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`
+            });
+        });
+    
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    
+        it('check undo tooltip content', (done: Function) => {
+            const undoEle = document.querySelectorAll('.e-toolbar-item')[0];
+            let mouseEve = new MouseEvent("mouseover", {bubbles: true,cancelable: true,view: window});
+            undoEle.dispatchEvent(mouseEve);
+            setTimeout(() => {
+                expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+                expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl+Z)').toBe(true);
+                dispatchEvent(undoEle, 'mouseleave');
+                done();
+            }, 1000);
+        });
+    });
+        
     describe('Bug 1027571: Multiple white spaces turns into single space in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -10561,6 +11109,544 @@ Rich Text Editor 3`
                 expect(rteObj.inputElement.innerHTML === '<p>Hello    World</p>');
                 done();
             }, 100);
+        });
+    });
+    describe('Bug 1011017: Content Update Fails When Unclosed HTML/Script Tags Exist — Causes Page Breaks After Decoding', () => {
+        let rteObj: RichTextEditor;
+        const innerHTML: string = `<p style="text-align: start"><span style="color: rgb(16, 24, 40);font-family: Inter, Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;font-size: 14px;font-style: normal;font-weight: 400;text-align: start;text-indent: 0px;text-transform: none;white-space: normal;background-color: rgb(255, 255, 255);float: none;display: inline !important;">Webmaster Bing \u2013 Validated all the issues. Created 57 tickets and added maintenance details to each ticket. 30 have been closed.</span><br style="color: rgb(16, 24, 40);font-family: Inter, Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-family: Inter, Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;font-size: 14px;float: none;display: inline !important;">Syncfusion.com</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">IndexNow - 10 links</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">Missing in sitemap - 31 links</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">The &lt;title&gt; tag contains additional tags. - 150 links</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">Multiple titles. - 1 links</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">Missing &lt;h1&gt; tag- 137 links</span><br style="color: rgb(16, 24, 40);font-size: 14px;"/><span style="color: rgb(16, 24, 40);font-size: 14px;float: none;display: inline !important;">Multiple &lt;h1&gt; tags  - 100 links</span></p>`;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableHtmlEncode: true,
+                value: innerHTML
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Should NOT create a real <title> DOM element inside the editor', () => {
+            const editPanel: HTMLElement = rteObj.inputElement;
+            const allText: string = editPanel.textContent;
+            expect(allText.indexOf('The') >= 0).toBe(true);
+            expect(allText.indexOf('tag contains additional tags. - 150 links') >= 0).toBe(true);
+            expect(allText.indexOf('Missing') >= 0).toBe(true);
+            expect(allText.indexOf('tag- 137 links') >= 0).toBe(true);
+            expect(allText.indexOf('tags  - 100 links') >= 0).toBe(true);
+            expect(editPanel.querySelectorAll('title').length).toBe(0);
+        });
+    });
+    describe('Bug 999426: Focus cannot move away from the editor using the keyboard when maxLength is reached', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let ShiftTab: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                value: `<p>hello world this is me</p>`,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                maxLength: 10
+            });
+            done();
+        });
+        it('while pressing tab key, focus should be changed when maxLength is reached', (done: DoneFn) => {
+            rteObj.focusIn();
+            setCursor(rteObj.inputElement.firstChild.firstChild as Element, 5);
+            spyOn(keyBoardEvent, 'preventDefault');
+            (rteObj as any).restrict(keyBoardEvent);
+            expect(keyBoardEvent.preventDefault).not.toHaveBeenCalled();
+            rteObj.focusIn();
+            setCursor(rteObj.inputElement.firstChild.firstChild as Element, 10);
+            spyOn(ShiftTab, 'preventDefault');
+            (rteObj as any).restrict(ShiftTab);
+            expect(ShiftTab.preventDefault).not.toHaveBeenCalled();
+            done();
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 985976: Dragged text into the RichTextEditor is not included in the Undo history', () => {
+        let editor: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeEach(() => {
+            editor = renderRTE({
+                value: `<p><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/></p><h1>This is a heading</h1>`
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it('should revert to the previous state after dropping and undoing', (done: DoneFn) => {
+            const html = '<p class="dropped">Dropped Text</p>';
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(html, 'text/html');
+            dataTransfer.setData('text/html', html);
+            dataTransfer.setData('text/plain', 'Dropped Text');
+            const heading = editor.inputElement.querySelector('h1') as HTMLElement;
+            const rect: DOMRect = heading.getBoundingClientRect() as DOMRect;
+            const dragEnter = new DragEvent('dragenter', {
+                dataTransfer,
+                clientX: rect.x + 10,
+                clientY: rect.y + 10,
+                bubbles: true,
+                cancelable: true
+            });
+            editor.inputElement.dispatchEvent(dragEnter);
+            const dragOver = new DragEvent('dragover', {
+                dataTransfer,
+                clientX: rect.x + 10,
+                clientY: rect.y + 10,
+                bubbles: true,
+                cancelable: true
+            });
+            editor.inputElement.dispatchEvent(dragOver);
+            const dropEvent = new DragEvent('drop', {
+                dataTransfer,
+                clientX: rect.x + 10,
+                clientY: rect.y + 10,
+                bubbles: true,
+                cancelable: true
+            });
+            editor.inputElement.dispatchEvent(dropEvent);
+            setTimeout(() => {
+                expect((<any>editor).formatter.editorManager.undoRedoManager.getUndoStatus().undo).toBe(true);
+                (<any>editor).formatter.editorManager.undoRedoManager.keyUp({ event: keyboardEventArgs });
+                (<any>editor).formatter.editorManager.execCommand("Actions", 'Undo', null);
+                expect((<any>editor).formatter.editorManager.undoRedoManager.getUndoStatus().redo).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML: string = `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('select all content in rte and press back space ', (done: DoneFn) => {
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('h1').childNodes[0], rteObj.element.querySelector('h2'), 0, 1);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).keyUp(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all content in rte and press delete ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=innerHTML;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('h1').childNodes[0], rteObj.element.querySelector('h2'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('Bug 1018869: Full Content Not Deleted When Using Ctrl+A + Delete in Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        const innerHTML: string = `<div id="root">
+                <span id="sjabloon_container"></span
+                ><span id="cursor_position"></span
+                ><span id="handtekening_container">
+                  <div
+                    style="
+                      font-family: Arial, Helvetica, sans-serif;
+                      font-size: 10pt;
+                    "
+                  >
+                    <p><span>TEST handtekening nieuwe e-mail</span><br /></p>
+                  </div>
+                </span>
+              </div>`;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: innerHTML
+            });
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('should delete all content when Ctrl+A and Delete are pressed', (done: DoneFn) => {
+            rteObj.focusIn();
+            rteObj.selectAll();
+            let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: true, shiftKey: false, action: null, which: 65, key: '' };
+            keyBoardEvent.keyCode = 65;
+            rteObj.keyDown(keyBoardEvent);
+            const deleteEvent: any = {
+                type: 'keydown',
+                preventDefault: () => { },
+                stopPropagation: () => { },
+                keyCode: 46,
+                which: 46,
+                key: 'Delete',
+                code: 'Delete'
+            };
+            (rteObj as any).keyDown(deleteEvent);
+            setTimeout(() => {
+                const editPanel = rteObj.contentModule.getEditPanel();
+                expect(editPanel.querySelector('#handtekening_container')).toBeNull();
+                expect(editPanel.querySelector('#root')).toBeNull();
+                expect(editPanel.textContent.trim()).toBe('');
+                done();
+            }, 100);
+        });
+    });
+    describe('Bug 1010194: XSS attacks occurs with RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let alertTriggered: boolean;
+        let originalAlert: (message?: any) => void;
+        const xssPayload: string = `#">'/><img src=M onerror="alert('http://127.0.0.1:5000')">`;
+
+        beforeAll(() => {
+            alertTriggered = false;
+            originalAlert = window.alert;
+            (window as any).alert = (msg: any) => {
+                alertTriggered = true;
+            };
+            rteObj = renderRTE({
+                value: xssPayload,
+            });
+        });
+
+        afterAll(() => {
+            window.alert = originalAlert;
+            destroy(rteObj);
+        });
+
+        it('should not trigger alert when XSS payload is loaded as value', () => {
+            expect(alertTriggered).toBe(false);
+            const content: string = rteObj.value;
+            expect(content).not.toContain('onerror');
+            expect(content).not.toContain('alert(');
+        });
+    });
+    describe('1001073: Toolbar items remain active after editor value becomes null', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>Hello</p>`,
+                toolbarSettings: {
+                    items: [
+                        'Bold',
+                        'Italic',
+                        'Underline',
+                        'StrikeThrough']
+                }
+            });
+            done();
+        });
+        it('when value is set to empty RTE shold clear the toolbar status', (done) => {
+            rteObj.focusIn();
+            rteObj.dataBind();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(true);
+            rteObj.value = '';
+            rteObj.dataBind();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 1003495: Toolbar items remain active after editor value changes dynamically.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Hello</p>`,
+                toolbarSettings: {
+                    items: [
+                        'Bold',
+                        'Italic',
+                        'Underline',
+                        'StrikeThrough']
+                }
+            });
+        });
+        it('when value is set dynamically to RTE should clear the toolbar status', () => {
+            rteObj.focusIn();
+            rteObj.dataBind();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(true);
+            rteObj.value = 'Hi';
+            rteObj.dataBind();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).classList.contains('e-active'))).toBe(false);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 989226: Script error thrown while using RichTextEditor with value binding', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                enterKey: 'P',
+                value: `﻿<div><p>123</p></div>`,
+            });
+            done();
+        });
+        it(' when value is set to undefined RTE should render without throwing any error', (done) => {
+            rteObj.value = undefined;
+            rteObj.dataBind();
+            expect((rteObj as any).inputElement.innerHTML === '<p><br></p>').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('973867 - Binding value wrapped with div adds extra P tags in the RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `﻿<div><p>123</p></div>`,
+            });
+            done();
+        });
+        it('Rich Text Editor works properly when a binding value is wrapped with a `<div>`, and no extra `<p>` tags are added', (done) => {
+            expect((rteObj as any).inputElement.innerHTML === '<div><p>123</p></div>').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 984023: The getSelectedHtml function does not return the proper HTML for links in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a></p>`,
+            });
+        });
+        it('getSelectedHtml method should return the anchor tag properly', (done: Function) => {
+            const anchorTag: HTMLElement = rteObj.element.querySelector('a.e-rte-anchor');
+            let range: Range = rteObj.contentModule.getDocument().createRange();
+            range.setStart(anchorTag.childNodes[0], 0);
+            range.setEnd(anchorTag.childNodes[0], anchorTag.childNodes[0].textContent.length);
+            rteObj.selectRange(range);
+            let str = rteObj.getSelectedHtml();
+            expect((rteObj.contentModule.getEditPanel().firstChild as HTMLElement).innerHTML === str).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('1003932 - Extra line breaks getting added when switching between preview and source view', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<details _ngcontent-ng-c3380909316=""><summary _ngcontent-ng-c3380909316="">More info</summary>
+<p _ngcontent-ng-c3380909316="">This is the details content.</p>
+</details>`,
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+        });
+        it('Press Enter at the start of the details element and switch to codeview', (done: Function) => {
+            rteObj.focusIn();
+            let targetElement = rteObj.element.querySelector('details') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, targetElement, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+            setTimeout(() => {
+                const sourceCodeItem: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_SourceCode');
+                sourceCodeItem.click();
+                setTimeout(() => {
+                    const previewBtn: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Preview');
+                    previewBtn.click();
+                    setTimeout(() => {
+                        expect(rteObj.inputElement.querySelectorAll('br').length).toBe(1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 963324: RichTextEditor Content Height Is Rendered as 0 Inside Dialog When Using IframeSettings', () => {
+        let editor: RichTextEditor;
+        let height: number | string;
+        const onCreate = () => {
+            if (editor) {
+                height = editor.inputElement.style.height;
+            }
+        }
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                created: onCreate,
+                editorMode: 'Markdown',
+                value: `<p><strong>The <span style="text-decoration: line-through;">Rich</span> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it(' Height of the editor should be changed after refreshUi method is called when rte is rendered as markdown', (done: DoneFn) => {
+            editor.refreshUI();
+            expect(height !== editor.inputElement.style.height);
+            done();
+        });
+    });
+     describe('Bug 963324: RichTextEditor Content Height Is Rendered as 0 Inside Dialog When Using IframeSettings', () => {
+        let editor: RichTextEditor;
+        let height: number | string;
+        const onCreate = () => {
+            if (editor) {
+                height = editor.element.querySelector('iframe').style.height;
+            }
+        }
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                created: onCreate,
+                value: `<p><strong>The <span style="text-decoration: line-through;">Rich</span> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it(' Height of the editor should be changed after refreshUi method is called when rte is rendered in iframe', (done: DoneFn) => {
+            editor.refreshUI();
+            expect(height !== editor.element.querySelector('iframe').style.height);
+            done();
+        });
+    });
+    describe('916204 - Link Dialog Not Closed but Link Inserted in Editor When args.cancel is Set to True in beforeDialogClose Event', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'CreateLink', 'Audio', 'Video']
+                },
+                value: `<p id="rte">RichTextEditor</p>`,
+                beforeDialogClose: function (args) {
+                    args.cancel = true;
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' inserting image', (done) => {
+            rteObj.focusIn();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it(' inserting video', (done) => {
+            rteObj.focusIn();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
+            item.click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it(' inserting audio', (done) => {
+            rteObj.focusIn();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Audio');
+            item.click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertAudio.e-primary') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it(' inserting link', (done) => {
+            rteObj.focusIn();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
+            item.click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusiocom';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

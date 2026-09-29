@@ -1,7 +1,7 @@
 import { TreeGrid, ExcelExport as TreeGridExcel } from '@syncfusion/ej2-treegrid';
 import { Gantt } from '../base/gantt';
 import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 
 /**
  * Gantt Excel Export module
@@ -16,6 +16,7 @@ export class ExcelExport {
      * @param {Gantt} gantt .
      */
     constructor(gantt: Gantt) {
+        initializeTelemetryFeature('ExcelExport', 'Gantt');
         this.parent = gantt;
         TreeGrid.Inject(TreeGridExcel);
         this.parent.treeGrid.allowExcelExport = this.parent.allowExcelExport;

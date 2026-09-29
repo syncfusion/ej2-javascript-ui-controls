@@ -1,4 +1,4 @@
-import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler, closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler, closest, isNullOrUndefined as isNOU, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
@@ -38,6 +38,7 @@ export class QuickToolbar implements IQuickToolbar {
     private showInlineQTBarTimeOut: number | null;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+        initializeTelemetryFeature('QuickToolbar', 'RichTextEditor');
         this.parent = parent;
         this.locator = locator;
         this.addEventListener();

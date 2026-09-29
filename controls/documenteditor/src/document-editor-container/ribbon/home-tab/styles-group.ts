@@ -42,7 +42,8 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
                                 groups: [
                                     {
                                         header: this.localObj.getConstant('Styles'),
-                                        items: this.getStyleItems()
+                                        items: this.getStyleItems(),
+                                        cssClass: 'e-de-ribbon-style-gallery'
                                     }
                                 ],
                                 itemCount: 3,
@@ -56,7 +57,7 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
                                         }
                                     }
                                 },
-                                popupWidth: '150px',
+                                popupWidth: '220px',
                                 popupHeight: '300px'
                             },
                             id: this.ribbonId + '_style-item-gallery',

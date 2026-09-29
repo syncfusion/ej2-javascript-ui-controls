@@ -1,6 +1,6 @@
 import { createElement, remove, Droppable, setStyleAttribute, removeClass, select, selectAll } from '@syncfusion/ej2-base';
 import { EventHandler, Touch, TapEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { addClass, formatUnit } from '@syncfusion/ej2-base';
+import { addClass, formatUnit, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
@@ -46,6 +46,7 @@ export class GroupingBar implements IAction {
      * @param {PivotView} parent - Instance.
      */
     constructor(parent: PivotView) {
+        initializeTelemetryFeature('GroupingBar', 'PivotTable');
         this.parent = parent;
         this.parent.groupingBarModule = this;
         this.resColWidth = (this.parent.resizedValue ? this.parent.resizedValue :
@@ -68,6 +69,17 @@ export class GroupingBar implements IAction {
     }
 
     /**
+     * Helper method to check if there are any row fields in the dataSourceSettings
+     *
+     * @returns {boolean} - True if row fields exist, false otherwise
+     * @hidden
+     */
+    private hasRowFields(): boolean {
+        return !!(this.parent.dataSourceSettings && this.parent.dataSourceSettings.rows &&
+            this.parent.dataSourceSettings.rows.length > 0);
+    }
+
+    /**
      * @hidden
      * @returns {void}
      */
@@ -85,8 +97,9 @@ export class GroupingBar implements IAction {
         const filterAxisPanel: HTMLElement = createElement('div', {
             className: cls.AXIS_FILTER_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container'
         });
-        this.rowPanel = createElement('div', { className: cls.GROUP_ROW_CLASS + ' ' + cls.ROW_AXIS_CLASS + (this.parent.isTabular ?
-            ' ' + cls.TABULAR_GROUP_ROWS : '') });
+        this.rowPanel = createElement('div', { className: cls.GROUP_ROW_CLASS + ' ' + cls.ROW_AXIS_CLASS +
+            (this.parent.isTabular ? ' ' + cls.TABULAR_GROUP_ROWS : '') +
+            (this.parent.isTabular && this.hasRowFields() ? ' ' + cls.TABULAR_GROUP_ROWS_WITH_FIELDS : '') });
         const columnPanel: HTMLElement = createElement('div', { className: cls.GROUP_COLUMN_CLASS + ' ' + cls.COLUMN_AXIS_CLASS });
         const valuePanel: HTMLElement = createElement('div', { className: cls.GROUP_VALUE_CLASS + ' ' + cls.VALUE_AXIS_CLASS });
         const filterPanel: HTMLElement = createElement('div', { className: cls.GROUP_FILTER_CLASS + ' ' + cls.FILTER_AXIS_CLASS });
@@ -399,12 +412,19 @@ export class GroupingBar implements IAction {
             const level: number = this.parent.isTabular && this.parent.engineModule.rowMaxLevel > 0
                 ? this.parent.engineModule.rowMaxLevel + 1
                 : 1;
-            const pvtBtn: NodeListOf<Element> = this.rowPanel && !isNullOrUndefined(this.rowPanel) ?
-                this.rowPanel.querySelectorAll('.e-pvt-btn-div') : null;
+            let pvtBtn: NodeListOf<Element>;
+            if (this.parent.currentView === 'Table' && this.groupingTable) {
+                const groupPivotRows: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-group-pivot-rows');
+                pvtBtn = groupPivotRows.length > 0 ? groupPivotRows[0].querySelectorAll('.e-pvt-btn-div') : null;
+            } else if (this.parent.currentView === 'Chart' && this.groupingChartTable) {
+                const chartGroupRows: Element = this.groupingChartTable.querySelector('.e-group-rows');
+                pvtBtn = chartGroupRows ? chartGroupRows.querySelectorAll('.e-pvt-btn-div') : null;
+            }
+            const buttonSpacing: number = this.parent.isTouchMode ? 6.5 : 5.5;
             let btnHeight: number = 0;
             if (!isNullOrUndefined(pvtBtn)) {
                 pvtBtn.forEach((ele: HTMLElement) => {
-                    btnHeight += ((ele as HTMLElement).offsetHeight + 5.5);
+                    btnHeight += ((ele as HTMLElement).offsetHeight + buttonSpacing);
                 });
             }
             for (let i: number = 0; i < level; i++) {
@@ -421,12 +441,14 @@ export class GroupingBar implements IAction {
                     let headerContent: number = 0;
                     const engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule
                         : this.parent.olapEngineModule;
-                    for (let rCnt: number = 0; rCnt < engineModule.pivotValues.length; rCnt++) {
-                        if (engineModule.pivotValues[rCnt as number] && engineModule.pivotValues[rCnt as number][0]
-                            && engineModule.pivotValues[rCnt as number][0].axis === 'row') {
-                            break;
-                        } else if (engineModule.pivotValues[rCnt as number]) {
-                            headerContent++;
+                    if (!isNullOrUndefined(engineModule) && !isNullOrUndefined(engineModule.pivotValues)) {
+                        for (let rCnt: number = 0; rCnt < engineModule.pivotValues.length; rCnt++) {
+                            if (engineModule.pivotValues[rCnt as number] && engineModule.pivotValues[rCnt as number][0]
+                                && engineModule.pivotValues[rCnt as number][0].axis === 'row') {
+                                break;
+                            } else if (engineModule.pivotValues[rCnt as number]) {
+                                headerContent++;
+                            }
                         }
                     }
                     if (btnHeight < (headerContent * this.parent.gridSettings.rowHeight)) {

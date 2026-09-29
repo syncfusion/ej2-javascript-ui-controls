@@ -5,7 +5,7 @@ import { RowModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `RowDirective` represent a row of the React Spreadsheet.
  * It must be contained in a `SheetDirective`.
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <SheetsDirective>
  *    <SheetDirective>

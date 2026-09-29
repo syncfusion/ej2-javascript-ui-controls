@@ -84,7 +84,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public requestType: string;
     private editedRowIndex: number;
     private requestTypes: string[] = ['beginEdit', 'cancel', 'delete', 'add', 'save', 'sorting', 'columnstate'];
-    private isNormaledit: boolean = this.parent.editSettings.mode === 'Normal';
+    private isNormaledit: boolean = this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Cell';
     /** @hidden */
     public virtualData: Object = {};
     private virtualInfiniteData: Object = {};
@@ -336,6 +336,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.prevInfo = this.prevInfo || this.vgenerator.getData();
         indexes = indexes.filter((val: number, ind: number) => indexes.indexOf(val) === ind);
         let preventSelf: boolean = false;
+        if (!(this.parent.allowGrouping && this.parent.groupSettings.columns.length) && this.parent.totalDataRecordsCount > 0 &&
+            this.parent.totalDataRecordsCount <= this.parent.pageSettings.pageSize) {
+            if (this.parent.totalDataRecordsCount <= this.getBlockSize()) {
+                indexes = [1];
+            } else {
+                indexes = [1, 2];
+            }
+            return indexes;
+        }
         if (checkIsVirtual(this.parent) && info.direction === 'up' && (((info.page + 1 === this.prevInfo.page
             || info.page === this.prevInfo.page) && (info.block === 1 || (info.block === 0
             && info.page === 1))) || (info.page === this.prevInfo.page && indexes.length === 2))
@@ -500,8 +509,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isBottomNotify = false;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
         }
-        if ((this.parent.pageSettings.currentPage + 1 === lastPage || this.parent.pageSettings.currentPage === lastPage) &&
-            blocks.length === 2 && e.requestType === 'delete') {
+        if (this.parent.pageSettings.currentPage > 1 && (this.parent.pageSettings.currentPage + 1 === lastPage ||
+            this.parent.pageSettings.currentPage === lastPage) && blocks.length === 2 && e.requestType === 'delete') {
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
         }
         if (lastPage !== 1 && (this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
@@ -672,7 +681,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.enableVirtualization && !isNullOrUndefined(this.virtualEle.verticalScrollbar) &&
             !isNullOrUndefined(this.virtualEle.verticalScrollerContainer) && !isNullOrUndefined(this.content)) {
             this.virtualEle.verticalScrollbar.style.overflowX = this.parent.enableVirtualization &&
-                parseInt(width, 10) > this.virtualEle.wrapper.clientWidth ? 'scroll' : 'hidden';
+                this.content.scrollWidth > this.content.clientWidth ? 'scroll' : 'hidden';
             this.virtualEle.verticalScrollerContainer.style.height = !isNullOrUndefined(virtualHeight) ? virtualHeight + 'px' : '0px';
             this.virtualEle.verticalScrollbar.style.width = getScrollBarWidth() + 1 + 'px';
         }
@@ -1358,6 +1367,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (!(this.parent.enableVirtualization || this.parent.enableColumnVirtualization)) {
             return;
         }
+        if (args.requestType === 'delete' || args.requestType === 'refresh') {
+            this.prevPage = -1;
+        }
         const editRequestTypes: string[] = ['delete', 'save', 'cancel'];
         const dataActionRequestTypes: string[] = ['sorting', 'filtering', 'grouping', 'refresh', 'searching', 'ungrouping', 'reorder'];
         if (editRequestTypes.some((value: string) => value === args.requestType)) {
@@ -1872,6 +1884,7 @@ export class VirtualElementHandler {
 
     public renderVerticalScrollbar(): void {
         this.verticalScrollbar = createElement('div', { className: 'e-virtual-vertical-scrollbar' });
+        this.gridContent.style.position = 'relative';
         this.gridContent.appendChild(this.verticalScrollbar);
         this.verticalScrollerContainer = createElement('div', { className: 'e-virtual-vertical-track'});
         this.verticalScrollbar.appendChild(this.verticalScrollerContainer);

@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ranges>e-range',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class RangeDirective extends ComplexBase<RangeDirective> {
@@ -27,53 +27,53 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
     /** 
      * Sets and gets the options to customize the style properties of the border for the axis range.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * Sets and gets the color of the axis range.
      * @default ''
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Sets and gets the end value for the range in axis.
      * @default 0
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Sets and gets the width for the end of the range in axis.
      * @default 10
      */
-    public endWidth: any;
+    public declare endWidth: any;
     /** 
      * Sets and gets the properties to render a linear gradient for the range. 
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
      * @default null
      */
-    public linearGradient: any;
+    public declare linearGradient: any;
     /** 
      * Sets and gets the offset value from where the range must be placed from the axis in linear gauge.
      * @default '0'
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Sets and gets the position to place the ranges in the axis.
      * @default Outside
      */
-    public position: any;
+    public declare position: any;
     /** 
      * Sets and gets the properties to render a radial gradient for the range.
      * @default null
      */
-    public radialGradient: any;
+    public declare radialGradient: any;
     /** 
      * Sets and gets the start value for the range in axis.
      * @default 0
      */
-    public start: any;
+    public declare start: any;
     /** 
      * Sets and gets the width for the start of the range in axis.
      * @default 10
      */
-    public startWidth: any;
+    public declare startWidth: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -89,6 +89,7 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
  */
 @Directive({
     selector: 'ej-lineargauge>e-axes>e-axis>e-ranges',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeDirective)
     },

@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-stockchart-selectedDataIndexes>e-stockchart-selectedDataIndex',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StockChartSelectedDataIndexDirective extends ComplexBase<StockChartSelectedDataIndexDirective> {
@@ -29,13 +29,13 @@ export class StockChartSelectedDataIndexDirective extends ComplexBase<StockChart
      * @default 0
      * @asptype int
      */
-    public point: any;
+    public declare point: any;
     /** 
      * Specifies index of series.
      * @default 0
      * @asptype int
      */
-    public series: any;
+    public declare series: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -51,6 +51,7 @@ export class StockChartSelectedDataIndexDirective extends ComplexBase<StockChart
  */
 @Directive({
     selector: 'ejs-stockchart>e-stockchart-selectedDataIndexes',
+    standalone: true,
     queries: {
         children: new ContentChildren(StockChartSelectedDataIndexDirective)
     },

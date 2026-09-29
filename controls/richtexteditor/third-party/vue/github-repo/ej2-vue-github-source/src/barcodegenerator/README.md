@@ -1,5 +1,19 @@
 # Vue Barcode Generator Component
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/vue/llms.txt](https://ai.syncfusion.com/vue/llms.txt)
+
 The [Vue Barcode](https://www.syncfusion.com/vue-components/vue-barcode?utm_source=npm&utm_medium=listing&utm_campaign=vue-barcode-npm) (QR Code) Generator Component is a light-weight and high-performance control that displays industry-standard 1D and 2D barcodes in Angular applications. Generated barcodes are optimized for printing and on-screen scanning. It is designed for ease of use and does not require fonts.
 
 <p align="center">

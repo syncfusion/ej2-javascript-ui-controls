@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('field-list-bigger') {
 
   .e-bigger.e-pivot-formatting-dialog,
@@ -457,6 +457,10 @@
     .e-olap-editor-dialog {
       max-height: $field-list-height-440 !important;
       min-width: $field-list-width-370 !important;
+
+      .e-append-checkbox-container .e-append-checkbox {
+        height: $field-list-add-filter-selection-bigger-height;
+      }
 
       .e-member-editor-container-outer-div .e-list-parent .e-ul {
         height: $field-list-height-auto;

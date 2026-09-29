@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,20 +30,19 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class OtpInputComponent extends OtpInput implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	blur: any;
-	created: any;
-	focus: any;
-	input: any;
-	valueChanged: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare blur: any;
+	declare created: any;
+	declare focus: any;
+	declare input: any;
+	declare valueChanged: any;
+	public declare valueChange: any;
 
 
 
@@ -88,7 +88,7 @@ export class OtpInputComponent extends OtpInput implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

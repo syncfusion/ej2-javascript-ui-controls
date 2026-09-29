@@ -1,5 +1,6 @@
 import { NodeCutter } from "../../../src/editor-manager/plugin/nodecutter";
-import { RichTextEditor } from "../../../src";
+import { RichTextEditor} from "../../../src";
+import { NodeSelection } from '../../../src/selection/selection';
 import { BASIC_MOUSE_EVENT_INIT, INSRT_LINK_EVENT_INIT } from "../../constant.spec";
 import { destroy, renderRTE, setCursorPoint } from "../../rich-text-editor/render.spec";
 
@@ -1426,6 +1427,33 @@ describe('Link testing', ()=>{
         });
     });
 
+    describe('Bug 1035590: Rich Text Editor breaks after clicking the Remove Link toolbar button repeatedly', () => {
+        let editor: RichTextEditor;
+        let controlId: string;
+        beforeEach(() => {
+            editor = renderRTE({
+                value: '<h1>Welcome to the Syncfusion Rich Text Editor</h1>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'RemoveLink']
+                }
+            });
+            controlId = editor.element.id;
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it('should not make changes in the existing content', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint((editor.inputElement.querySelector('h1') as HTMLElement).firstChild, (editor.inputElement.querySelector('h1') as HTMLElement).textContent.length);
+            const item: HTMLElement = editor.element.querySelector('#' + controlId + '_toolbar_RemoveLink') as HTMLElement;
+            item.click();
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('h1')).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
     describe('960608 - Display text does not update first time when inserting a link in the RichTextEditor', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {
@@ -1466,31 +1494,37 @@ describe('Link testing', ()=>{
             }, 50);
         });
     });
-
-    describe('Bug 1035590: Rich Text Editor breaks after clicking the Remove Link toolbar button repeatedly', () => {
-        let editor: RichTextEditor;
-        let controlId: string;
-        beforeEach(() => {
-            editor = renderRTE({
-                value: '<h1>Welcome to the Syncfusion Rich Text Editor</h1>',
+    describe('997817 - Target attribute got stripped out from the inserted link in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="focusNode">The Rich Text Editor (RTE) control is an easy to render in the client side. Customer <a class="e-rte-anchor" href="http://fdbdfbdb" title="http://fdbdfbdb" target="_blank">easy</a> to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`,
                 toolbarSettings: {
-                    items: ['CreateLink', 'RemoveLink']
-                }
+                    items: ['CreateLink', 'SourceCode', 'Bold']
+                },
+                enableXhtml: true
             });
-            controlId = editor.element.id;
+            rteEle = rteObj.element;
         });
-        afterEach(() => {
-            destroy(editor);
+        afterAll(() => {
+            destroy(rteObj);
         });
-        it('should not make changes in the existing content', (done: DoneFn) => {
-            editor.focusIn();
-            setCursorPoint((editor.inputElement.querySelector('h1') as HTMLElement).firstChild, (editor.inputElement.querySelector('h1') as HTMLElement).textContent.length);
-            const item: HTMLElement = editor.element.querySelector('#' + controlId + '_toolbar_RemoveLink') as HTMLElement;
-            item.click();
-            setTimeout(() => {
-                expect(editor.inputElement.querySelector('h1')).not.toBe(null);
-                done();
-            }, 100);
+        it('target attribute should be preserved for anchor when enabiling xhtml', () => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let focusNode = rteObj.element.querySelector('.focusNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 76, 84);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.inputElement.querySelector('a').hasAttribute('target')).toBe(true);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            (<any>rteObj).element.querySelector('#' + rteObj.element.id + '_toolbar_Preview').click();
+            expect(rteObj.inputElement.querySelector('a').hasAttribute('target')).toBe(true);
         });
     });
 });

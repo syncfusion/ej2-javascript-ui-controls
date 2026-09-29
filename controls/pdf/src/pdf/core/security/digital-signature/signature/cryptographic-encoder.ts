@@ -116,7 +116,7 @@ export class _PdfCryptographicEncoding implements _ICipherBlock {
         }
         const type: number = block[0];
         if (type !== 1 && type !== 2) {
-            throw new Error(`Invalid block type: ${type}.`);
+            return block;
         }
         let separatorIndex: number = -1;
         for (let i: number = 1; i < block.length; i++) {

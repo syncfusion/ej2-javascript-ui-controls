@@ -5,7 +5,7 @@ import { SankeyNodeModel } from '@syncfusion/ej2-charts';
 /**
  * `SankeyNodeDirective` directive represent a node of the react Sankey. 
  * It must be contained in a Sankey component(`SankeyComponent`). 
- * ```tsx
+ * ```
  * <SankeyComponent>
  * <SankeyNodesDirective>
  * <SankeyNodeDirective></SankeyNodeDirective>

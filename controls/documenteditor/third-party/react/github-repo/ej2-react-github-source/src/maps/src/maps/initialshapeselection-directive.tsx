@@ -4,7 +4,7 @@ import { InitialShapeSelectionSettingsModel } from '@syncfusion/ej2-maps';
 
 /**
  * Represents the directive to configure the selection of the shapes when the maps is initially rendered.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective>

@@ -8,7 +8,7 @@ export interface RangeNavigatorTypecast {
 }
 /**
  * Represents react RangeNavigator Component
- * ```tsx
+ * ```
  * <RangeNavigatorComponent></RangeNavigatorComponent>
  * ```
  */

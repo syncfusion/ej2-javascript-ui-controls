@@ -294,6 +294,7 @@ export class DropDownFormFieldDialog {
      * @returns {void}
      */
     public addItemtoList = (): void => {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (this.dropDownItems.length < 25) {
             this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
             this.currentSelectedItem = (this.drpDownItemsInput as HTMLInputElement).value;
@@ -311,6 +312,11 @@ export class DropDownFormFieldDialog {
                 okButton: {
                     text: localObj.getConstant('Ok'),
                     cssClass: 'e-ok-center'
+                },
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
                 },
                 showCloseIcon: true,
                 closeOnEscape: true,

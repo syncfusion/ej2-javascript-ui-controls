@@ -11,52 +11,35 @@ import { PortDirective, PortsDirective } from './ports.directive';
 import { NodeDirective, NodesDirective } from './nodes.directive';
 import { DiagramComponent } from './diagram.component';
 
+const DIAGRAM_DIRECTIVES = [
+    DiagramComponent,
+        LayerDirective,
+        LayersDirective,
+        CustomCursorDirective,
+        CustomCursorsDirective,
+        ConnectorFixedUserHandleDirective,
+        ConnectorFixedUserHandlesDirective,
+        ConnectorAnnotationDirective,
+        ConnectorAnnotationsDirective,
+        ConnectorDirective,
+        ConnectorsDirective,
+        NodeFixedUserHandleDirective,
+        NodeFixedUserHandlesDirective,
+        NodeAnnotationDirective,
+        NodeAnnotationsDirective,
+        PortDirective,
+        PortsDirective,
+        NodeDirective,
+        NodesDirective
+];
+
 /**
  * NgModule definition for the Diagram component.
+ * Re-exports standalone Diagram component and directives so existing apps can keep using:
+ * `imports: [DiagramModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        DiagramComponent,
-        LayerDirective,
-        LayersDirective,
-        CustomCursorDirective,
-        CustomCursorsDirective,
-        ConnectorFixedUserHandleDirective,
-        ConnectorFixedUserHandlesDirective,
-        ConnectorAnnotationDirective,
-        ConnectorAnnotationsDirective,
-        ConnectorDirective,
-        ConnectorsDirective,
-        NodeFixedUserHandleDirective,
-        NodeFixedUserHandlesDirective,
-        NodeAnnotationDirective,
-        NodeAnnotationsDirective,
-        PortDirective,
-        PortsDirective,
-        NodeDirective,
-        NodesDirective
-    ],
-    exports: [
-        DiagramComponent,
-        LayerDirective,
-        LayersDirective,
-        CustomCursorDirective,
-        CustomCursorsDirective,
-        ConnectorFixedUserHandleDirective,
-        ConnectorFixedUserHandlesDirective,
-        ConnectorAnnotationDirective,
-        ConnectorAnnotationsDirective,
-        ConnectorDirective,
-        ConnectorsDirective,
-        NodeFixedUserHandleDirective,
-        NodeFixedUserHandlesDirective,
-        NodeAnnotationDirective,
-        NodeAnnotationsDirective,
-        PortDirective,
-        PortsDirective,
-        NodeDirective,
-        NodesDirective
-    ]
+    imports: [CommonModule, ...DIAGRAM_DIRECTIVES],
+    exports: [...DIAGRAM_DIRECTIVES]
 })
 export class DiagramModule { }

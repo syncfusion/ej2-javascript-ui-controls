@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('drop-down-button-bds-icons') {
   .e-dropdown-btn,
   .e-dropdown-btn.e-btn {

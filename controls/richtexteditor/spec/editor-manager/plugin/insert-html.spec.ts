@@ -7,7 +7,7 @@ import { NodeCutter } from '../../../src/editor-manager/plugin/nodecutter';
 import { NodeSelection } from '../../../src/selection/index';
 import { EditorManager } from '../../../src/editor-manager/index';
 import { destroy, renderRTE } from '../../rich-text-editor/render.spec';
-import { RichTextEditor } from '../../../src';
+import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 
 describe('InsertHtml Plugin', () => {
 
@@ -1463,6 +1463,156 @@ describe('InsertHtml Plugin', () => {
                 expect(range.startOffset).toBe(range.startContainer.textContent.length);
                 done();
             }, 100);
+        });
+    });
+    describe('Bug 966213: Table insertion does not replace selected content when selection is made bottom to top', () => {
+            let rteEle: HTMLElement;
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    height: 400,
+                    value: `<p class='start'>1</p><p>2</p><p class='end'>3</p>`,
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable']
+                    },
+                });
+                rteEle = rteObj.element;
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it(' While selecting multiple elements and applying table, table should replace all the content selected', (done: DoneFn) => {
+                const startNode: Element = rteObj.inputElement.querySelector('.start').firstChild as Element;
+                const endNode: Element = rteObj.inputElement.querySelector('.end').firstChild as Element;
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, endNode, 0, endNode.textContent.length);
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                let clickEvent: any = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+                (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+                target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                    expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                    expect(rteObj.contentModule.getEditPanel().innerHTML === `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td class="e-cell-select"><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>`).toBe(true);
+                    done();
+                }, 200);
+            });
+        });
+     describe('Bug 993693: Table inserted outside the Editor, when RichTextEditor is placed inside an ordered list', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let listHost: HTMLElement;
+        let rteHost: HTMLElement;
+        beforeEach(() => {
+            listHost = document.createElement('ol');
+            const listItem = document.createElement('li');
+            rteHost = document.createElement('div');
+            rteHost.id = 'rteElement';
+            listItem.appendChild(rteHost);
+            listHost.appendChild(listItem);
+            document.body.appendChild(listHost);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+            rteObj.appendTo('#rteElement');
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+            listHost.remove();
+            rteHost.remove();
+            listHost = null;
+            rteHost = null;
+        });
+        it(' A table must be inserted inside the Rich Text Editor even when the editor is rendered within a list.', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const createTableButton: HTMLElement = rteEle.querySelector('[aria-label="Create Table (Ctrl+Shift+E)"]');
+            createTableButton.click();
+            var tableDialogPrimaryButton: HTMLElement = document.body.querySelector('#' + rteObj.element.id + '_insertTable');
+            tableDialogPrimaryButton.click();
+            var insertButton: HTMLElement = document.querySelector('button.e-rte-elements.e-control.e-btn.e-lib.e-flat.e-insert-table.e-primary');
+            insertButton.click();
+            const tables = rteObj.contentModule.getEditPanel().querySelectorAll('table');
+            expect(tables.length).toBe(1);
+            done();
+        });
+    });
+    describe('945968 - Listed table got removed while inserting new table into the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should not remove existing tables when inserting a new table below a numbered list', (done) => {
+            rteObj.value = `<ol>
+                                <li>Point 1</li>
+                                <li>
+                                    <table>
+                                        <tr><td>Cell 1</td><td>Cell 2</td></tr>
+                                    </table>
+                                    <br>
+                                </li>
+                            </ol>`;
+            rteObj.dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const node = rteObj.contentModule.getDocument().querySelector('table') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(rteObj.contentModule.getDocument(), node.parentNode as HTMLElement, 1);
+            const createTableButton: HTMLElement = rteEle.querySelector('[aria-label="Create Table (Ctrl+Shift+E)"]');
+            createTableButton.click();
+            var tableDialogPrimaryButton: HTMLElement = document.body.querySelector('#' + rteObj.element.id + '_insertTable');
+            tableDialogPrimaryButton.click();
+            var insertButton: HTMLElement = document.querySelector('button.e-rte-elements.e-control.e-btn.e-lib.e-flat.e-insert-table.e-primary');
+            insertButton.click();
+            const tables = rteObj.contentModule.getEditPanel().querySelectorAll('table');
+            expect(tables.length).toBe(2);
+            done();
+        });
+    });
+    describe('923869 - The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+        });
+        it('The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
+            rteObj.executeCommand('insertHTML',`<textarea id="text" name="text" miplato_id="text"></textarea>`);
+            expect(rteObj.inputElement.innerHTML).toBe('<p id="rte"><textarea id="text" name="text" miplato_id="text"></textarea>RichTextEditor</p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('924546 - The content does not scroll into the cursor position when inserted through the executeCommand method', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 150,
+                width: 150,
+                value: ``
+            });
+            rteEle = rteObj.element;
+        });
+        it('The content does not scroll into the cursor position when inserted through the executeCommand method', () => {
+            rteObj.executeCommand('insertHTML', `HTML tags are like keywords which defines that how web browser will format and display the content. With the help of tags, a web browser can distinguish between an HTML content and a simple content. HTML tags contain three main parts: opening tag, content and closing tag. But some HTML tags are unclosed tags.When a web browser reads an HTML document, browser reads it from top to bottom and left to right. HTML tags are used to create HTML documents and render their properties. Each HTML tags have different properties.An HTML file must have some essential tags so that web browser can differentiate between a simple text and HTML text. You can use as many tags you want as per your code requirement.HTML tags are like keywords which defines that how web browser will format and display the content. With the help of tags, a web browser can distinguish between an HTML content and a simple content. HTML tags contain three main parts: opening tag, content and closing tag. But some HTML tags are unclosed tags.When a web browser reads an HTML document, browser reads it from top to bottom and left to right. HTML tags are used to create HTML documents and render their properties. Each HTML tags have different properties.An HTML file must have some essential tags so that web browser can differentiate between a simple text and HTML text. You can use as many tags you want as per your code requirement.`);
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

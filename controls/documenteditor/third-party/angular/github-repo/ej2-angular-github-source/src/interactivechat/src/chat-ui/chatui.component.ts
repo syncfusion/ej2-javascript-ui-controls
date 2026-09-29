@@ -20,121 +20,33 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childMessages: new ContentChild(MessagesDirective)
+        childMessages: new ContentChild(MessagesDirective),
+        suggestionTemplate: new ContentChild('suggestionTemplate'),
+        footerTemplate: new ContentChild('footerTemplate'),
+        emptyChatTemplate: new ContentChild('emptyChatTemplate'),
+        messageTemplate: new ContentChild('messageTemplate'),
+        typingUsersTemplate: new ContentChild('typingUsersTemplate'),
+        timeBreakTemplate: new ContentChild('timeBreakTemplate'),
+        previewTemplate: new ContentChild('previewTemplate'),
+        attachmentTemplate: new ContentChild('attachmentTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ChatUIComponent extends ChatUI implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	attachmentRemoved: any;
-	attachmentUploadFailure: any;
-	attachmentUploadSuccess: any;
-	beforeAttachmentUpload: any;
-	created: any;
-	mentionSelect: any;
-	messageSend: any;
-	public userTyping: any;
-    public childMessages: QueryList<MessagesDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare attachmentRemoved: any;
+	declare attachmentUploadFailure: any;
+	declare attachmentUploadSuccess: any;
+	declare beforeAttachmentUpload: any;
+	declare created: any;
+	declare mentionSelect: any;
+	declare messageSend: any;
+	public declare userTyping: any;
+    public declare childMessages: QueryList<MessagesDirective>;
     public tags: string[] = ['messages'];
-    /** 
-     * Specifies the template for rendering suggestion items in the Chat UI component. 
-     * Defines the content or layout used to render suggestion items, and can be either a string or a function. 
-     * The template context includes the index and suggestion text.
-     * 
-     * {% codeBlock src='chat-ui/suggestionTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('suggestionTemplate')
-    @Template()
-    public suggestionTemplate: any;
-    /** 
-     * Specifies the template for the footer area in the Chat UI component. 
-     * Defines the content or layout used to render the footer, which can be provided as a string or a function.
-     * 
-     * {% codeBlock src='chat-ui/footerTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Specifies the template for rendering the empty state of the Chat UI component. 
-     * This property can accept either a string or a function to customize the appearance when there are no messages to display in the chat.
-     * 
-     * {% codeBlock src='chat-ui/emptyChatTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('emptyChatTemplate')
-    @Template()
-    public emptyChatTemplate: any;
-    /** 
-     * Specifies the template for rendering individual messages in the Chat UI component. 
-     * This property can accept either a string or a function to customize the appearance of messages. The template context includes message and index.
-     * 
-     * {% codeBlock src='chat-ui/messageTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('messageTemplate')
-    @Template()
-    public messageTemplate: any;
-    /** 
-     * Template for displaying users currently typing in the chat interface. 
-     * Accepts a string or function to customize the display format.
-     * 
-     * {% codeBlock src='chat-ui/typingUsersTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('typingUsersTemplate')
-    @Template()
-    public typingUsersTemplate: any;
-    /** 
-     * Defines a custom template for rendering time breaks in the Chat UI component. 
-     * Accepts a string or function that formats the appearance of date-based separators, allowing customization of how messages are visually grouped by date.
-     * 
-     * {% codeBlock src='chat-ui/timebreakTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('timeBreakTemplate')
-    @Template()
-    public timeBreakTemplate: any;
-    @ContentChild('previewTemplate')
-    @Template()
-    public previewTemplate: any;
-    @ContentChild('attachmentTemplate')
-    @Template()
-    public attachmentTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -164,7 +76,15 @@ export class ChatUIComponent extends ChatUI implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ChatUIComponent.prototype, 'suggestionTemplate');
+Template()(ChatUIComponent.prototype, 'footerTemplate');
+Template()(ChatUIComponent.prototype, 'emptyChatTemplate');
+Template()(ChatUIComponent.prototype, 'messageTemplate');
+Template()(ChatUIComponent.prototype, 'typingUsersTemplate');
+Template()(ChatUIComponent.prototype, 'timeBreakTemplate');
+Template()(ChatUIComponent.prototype, 'previewTemplate');
+Template()(ChatUIComponent.prototype, 'attachmentTemplate');
 

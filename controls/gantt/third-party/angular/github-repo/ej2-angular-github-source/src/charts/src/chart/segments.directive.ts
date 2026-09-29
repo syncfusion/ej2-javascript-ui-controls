@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-series>e-segments>e-segment',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class SegmentDirective extends ComplexBase<SegmentDirective> {
@@ -34,17 +34,17 @@ export class SegmentDirective extends ComplexBase<SegmentDirective> {
      * Defines the fill color for the region using a color name, hex code, or rgba value.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Specifies the dash pattern for the stroke of the series. The string format allows defining various dash and gap lengths.
      * @default '0'
      */
-    public dashArray: any;
+    public declare dashArray: any;
     /** 
      * Defines the starting point of region.
      * @default null
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -60,6 +60,7 @@ export class SegmentDirective extends ComplexBase<SegmentDirective> {
  */
 @Directive({
     selector: 'e-series>e-segments',
+    standalone: true,
     queries: {
         children: new ContentChildren(SegmentDirective)
     },

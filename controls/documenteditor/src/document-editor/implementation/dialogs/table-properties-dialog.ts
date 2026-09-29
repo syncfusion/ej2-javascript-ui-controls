@@ -696,6 +696,7 @@ export class TablePropertiesDialog {
         preferCheckBox.setAttribute('aria-label', localValue.getConstant('Preferred Width'));
         this.leftIndent.setAttribute('aria-labelledby', localValue.getConstant('Indent from left'));
         this.tableWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in'), htmlAttributes: {'aria-labelledby': localValue.getConstant('Measure in')}});
+        this.tableWidthType.isAngular = this.documentHelper.owner.isModalDialog;
         this.tableWidthType.appendTo(tableWidthType);
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -1015,6 +1016,7 @@ export class TablePropertiesDialog {
         this.rowHeightCheckBox.appendTo(rowHeightCheckBox);
         rowHeightCheckBox.setAttribute('aria-label', localValue.getConstant('Specify height'));
         this.rowHeightType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Row height is'), htmlAttributes: {'aria-labelledby': localValue.getConstant('Row height is')}});
+        this.rowHeightType.isAngular = this.documentHelper.owner.isModalDialog;
         this.rowHeightType.appendTo(rowHeightType);
         this.allowRowBreak = new CheckBox({
             label: localValue.getConstant('Allow row to break across pages'),
@@ -1290,6 +1292,7 @@ export class TablePropertiesDialog {
         this.preferredCellWidthCheckBox.appendTo(preferredCellWidthCheckBox);
         preferredCellWidthCheckBox.setAttribute('aria-label', localValue.getConstant('Preferred Width'));
         this.cellWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in'), htmlAttributes: {'aria-labelledby': localValue.getConstant('Measure in')}});
+        this.cellWidthType.isAngular = this.documentHelper.owner.isModalDialog;
         this.cellWidthType.appendTo(cellWidthType);
         // if (isRtl) {
         //     childdiv2.classList.add('e-de-rtl');

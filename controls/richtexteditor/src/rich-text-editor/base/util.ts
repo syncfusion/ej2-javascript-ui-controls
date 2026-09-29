@@ -1,7 +1,7 @@
 /**
  * Defines util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined, closest, updateCSSText } from '@syncfusion/ej2-base';
 import { detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as CONSTANT from '../base/constant';
@@ -202,12 +202,11 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const formatContent: string = isNOU(e.parent.format.default) ? formatItems[0].text :
                             e.parent.format.default;
                         result = value === 'empty' ? '' : getDropDownValue(formatItems, value, 'subCommand', 'text');
-                        dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
-                                'width:' + e.parent.format.width + '" >' +
+                        const htmlValue: string = ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                                 + (isNOU(result) ? formatContent : result) +
                                 '</span></span>');
-                        dropDown.formatDropDown.dataBind();
+                        updateDropdownContent(dropDown.formatDropDown, htmlValue);
                         break;
                     }
                     case 'fontcolor': {
@@ -284,8 +283,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result) === 'Default' ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName')
                             : (isNOU(result) ? fontNameContent : result);
-                        const htmlValue: string = ('<span style="display: inline-flex;' +
-                                'width:' + e.parent.fontFamily.width + '" >' +
+                        const htmlValue: string = ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + e.parent.fontFamily.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                                 + name + '</span></span>');
                         updateDropdownContent(dropDown.fontNameDropDown, htmlValue);
@@ -301,8 +299,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             e.parent.fontSize.default;
                         const fontSizeToolbarText: string = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), (fontSizeItems.length > 0 && fontSizeItems[0] && fontSizeContent.replace(/\s/g, '') === fontSizeItems[0].text && value === '') ? 'text' : 'value', 'text');
                         result = value === 'empty' ? '' : (fontSizeToolbarText === 'Default') ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeToolbarText;
-                        const htmlValue: string = ('<span style="display: inline-flex;' +
-                                'width:' + e.parent.fontSize.width + '" >' +
+                        const htmlValue: string = ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                                 + getFormattedFontSize(result) + '</span></span>');
                         updateDropdownContent(dropDown.fontSizeDropDown, htmlValue);
@@ -353,7 +350,8 @@ export function updateDropdownContent(dropDown: any, htmlString: string): void {
     dropDown.content = updatedHtml;
     dropDown.dataBind();
     if (dropDown.element.firstChild) {
-        (dropDown.element.firstChild as HTMLElement).setAttribute('style', styleValue);
+        (dropDown.element.firstChild as HTMLElement).removeAttribute('style');
+        updateCSSText(dropDown.element.firstChild, styleValue);
     }
 }
 

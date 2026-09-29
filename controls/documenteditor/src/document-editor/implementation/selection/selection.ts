@@ -80,6 +80,14 @@ export class Selection {
     /**
      * @private
      */
+    public isValidateFormField: boolean = false;
+    /**
+     * @private
+     */
+    public previousfieldBeforeValidate: FieldElementBox = undefined;
+    /**
+     * @private
+     */
     public caret: HTMLDivElement = undefined;
     //Format Retrieval Field
     /**
@@ -102,6 +110,10 @@ export class Selection {
      * @private
      */
     public skipFormatRetrieval: boolean = false;
+    /**
+     * @private
+     */
+    public isCommentSelected: boolean = false;
     /**
      * @private
      */
@@ -513,6 +525,9 @@ export class Selection {
      * @private
      */
     public get isInShape(): boolean {
+        if (isNullOrUndefined(this.start) || isNullOrUndefined(this.start.paragraph)) {
+            return false;
+        }
         let container: Widget = this.start.paragraph.containerWidget;
         do {
             if (container instanceof TextFrame) {
@@ -1221,7 +1236,13 @@ export class Selection {
     }
     private isHideSelection(paragraph: ParagraphWidget): boolean {
         const bodyWgt: BodyWidget = paragraph.bodyWidget;
+        if (isNullOrUndefined(paragraph) || isNullOrUndefined(paragraph.bodyWidget) || isNullOrUndefined(paragraph.bodyWidget.sectionFormat)) {
+            return false;
+        }
         const sectionFormat: WSectionFormat = bodyWgt.sectionFormat;
+        if (isNullOrUndefined(sectionFormat) || isNullOrUndefined(bodyWgt.page)) {
+            return false;
+        }
         const pageHt: number = sectionFormat.pageHeight - sectionFormat.footerDistance;
         const headerFooterHt: number = this.documentHelper.compatibilityMode === 'Word2013'
             && bodyWgt.page.headerWidget && bodyWgt.page.footerWidget
@@ -1241,7 +1262,7 @@ export class Selection {
             this.owner.imageResizerModule.hideImageResizer();
         }
         if (this.isEmpty) {
-            if (!this.isInShape && this.isHideSelection(this.start.paragraph)) {
+            if (!this.isInShape && !isNullOrUndefined(this.start) && !isNullOrUndefined(this.start.paragraph) && this.isHideSelection(this.start.paragraph)) {
                 this.hideCaret();
                 return;
             }
@@ -1673,7 +1694,15 @@ export class Selection {
                     } else {
                         canvasContext.clearRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
                         canvasContext.globalAlpha = 0.4;
-                        canvasContext.fillStyle = 'gray';
+                        let fillStyle: string = 'gray';
+
+                        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                            const highlightColor: string = this.getSelectedCommentHighlightColor();
+                            if (!isNullOrUndefined(highlightColor)) {
+                                fillStyle = highlightColor;
+                            }
+                        }
+                        canvasContext.fillStyle = fillStyle;
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
                         if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
                             for (let j: number = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
@@ -1689,6 +1718,18 @@ export class Selection {
                 }
             }
         }
+    }
+
+    private getSelectedCommentHighlightColor(): string {
+        if (!this.isCommentSelected) {
+            return null;
+        }
+        const currentSelectedComment = this.documentHelper.currentSelectedComment;
+        if (currentSelectedComment && currentSelectedComment.author) {
+            const authorColor: string = this.documentHelper.getAuthorColor(currentSelectedComment.author);
+            return this.documentHelper.convertColorToRGBA(authorColor, 0.6);
+        }
+        return null;
     }
 
 
@@ -2460,7 +2501,9 @@ export class Selection {
      * @returns {void}
      */
     public getPageTop(page: Page): number {
-
+        if(isNullOrUndefined(page.boundingRectangle)) {
+            return 0
+        }
         return (page.boundingRectangle.y - (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
     }
     /**
@@ -3160,7 +3203,21 @@ export class Selection {
             this.selectInternal(formField.line, element, 0, point);
         }
     }
+    private isDefaultValue(field: FieldElementBox): boolean {
+        if (!isNullOrUndefined(field.fieldSeparator) && field.fieldSeparator.nextElement !== field.fieldEnd) {
+            let nextElement: ElementBox = field.fieldSeparator.nextElement;
+            while (nextElement instanceof TextElementBox) {
+                const onlyEnSpace = /^[\u2002]+$/.test(nextElement.text);
+                if (!onlyEnSpace) {
+                    return false;
+                }
+                nextElement = nextElement.nextElement;
+            }
+        }
+        return true;
+    }
     private triggerFormFillEvent(isKeyBoardNavigation?: boolean): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         let previousField: FieldElementBox = this.previousSelectedFormField;
         const currentField: FieldElementBox = this.currentFormField;
         let previousFieldData: FormFieldFillEventArgs;
@@ -3168,7 +3225,19 @@ export class Selection {
         if (currentField !== previousField && currentField && previousField && previousField.formFieldData instanceof TextFormField && this.documentHelper.isInlineFormFillProtectedMode) {
             const formFieldData: TextFormField = previousField.formFieldData as TextFormField;
             if (formFieldData.type === 'Number' || formFieldData.type === 'Date') {
-                const isValid: boolean = this.validateFormFieldValue(previousField);
+                const startIndex: TextPosition = this.start.clone();
+                const endIndex: TextPosition = this.end.clone();
+                this.previousfieldBeforeValidate = this.previousSelectedFormField;
+                this.isValidateFormField = true;
+                let isValid: boolean = true;
+                if(!this.isDefaultValue(previousField)){
+                    isValid = this.validateFormFieldValue(previousField);
+                }
+                if (isValid && !this.isDefaultValue(previousField)) {
+                    this.selectRange(startIndex, endIndex)
+                    this.previousSelectedFormField = this.previousfieldBeforeValidate;
+                }
+                this.isValidateFormField=false;
                 if (!isValid) {
                     const validationMessage: string = formFieldData.type === 'Number' ? 'A valid number is required' : 'A valid date or time is required';
                     const localValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
@@ -3178,6 +3247,11 @@ export class Selection {
                         content: validationMessage,
                         closeOnEscape: true,
                         showCloseIcon: true,
+                        open: (e: any) => {
+                            if (isAngularModal) {
+                                this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                            }
+                        },
                         position: { X: 'center', Y: 'center' },
                         animationSettings: { effect: 'Zoom' }
                     }).enableRtl = this.owner.enableRtl;
@@ -3187,8 +3261,8 @@ export class Selection {
                 }
             }
         }
-        if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
-            && previousField.formFieldData.type === 'Text') {
+        if (!this.isValidateFormField && currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
+            && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
             if ((previousField.formFieldData as TextFormField).format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
                 this.owner.editorModule.applyFormTextFormat(previousField);
@@ -3200,8 +3274,8 @@ export class Selection {
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };
             this.owner.trigger(afterFormFieldFillEvent, previousFieldData);
         }
-        if (currentField !== previousField && currentField && ((currentField.formFieldData instanceof TextFormField
-            && currentField.formFieldData.type === 'Text' && isKeyBoardNavigation == undefined) || (((currentField.formFieldData instanceof TextFormField && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') || (currentField.formFieldData instanceof CheckBoxFormField)) && isKeyBoardNavigation))) {
+        if (!this.isValidateFormField && currentField !== previousField && currentField && ((currentField.formFieldData instanceof TextFormField
+            && isKeyBoardNavigation == undefined) || (((currentField.formFieldData instanceof TextFormField && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') || (currentField.formFieldData instanceof CheckBoxFormField)) && isKeyBoardNavigation)) && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
 
             currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(currentField) };
             this.owner.trigger(beforeFormFieldFillEvent, currentFieldData);
@@ -3209,23 +3283,28 @@ export class Selection {
     }
     private validateFormFieldValue(field: FieldElementBox): boolean {
         const formFieldData: TextFormField = field.formFieldData as TextFormField;
-        const resultantText: string = this.owner.editorModule.getFieldResultText(field);
+        let resultantText: string = this.owner.editorModule.getFieldResultText(field);
         if (resultantText === '') {
             return true;
         }
         if (formFieldData.type === 'Number') {
-            const number = Number(resultantText.replace(/[$,%]/g, '').replace(/,/g, '').replace(/^\((.+)\)$/, '-$1'));
+            const number: number = Number(resultantText.replace(/[$,%]/g, '').replace(/,/g, '').replace(/\s/g, '').replace(/^\((.+)\)$/, '-$1'));
             if (isNaN(number)) {
                 return false;
             }
-            const formattedNumber: string = HelperMethods.formatNumber((formFieldData as TextFormField).format, resultantText);
+            const formattedNumber: string = HelperMethods.formatNumber((formFieldData as TextFormField).format, number.toString());
             this.owner.editorModule.updateFormField(field, formattedNumber);
             return true;
         }        
         if (formFieldData.type === 'Date') {
             const date = new Date(resultantText);
             if (isNaN(date.getTime())) {
-                return false;
+                if (resultantText.indexOf('.') !== -1) {
+                    resultantText = new Date().toString();
+                }
+                else {
+                    return false;
+                }
             }
             const formattedDate: string = HelperMethods.formatDate((formFieldData as TextFormField).format, resultantText);
             this.owner.editorModule.updateFormField(field, formattedDate);
@@ -3825,11 +3904,13 @@ export class Selection {
         if (block) {
             if (block instanceof HeaderFooterWidget) {
                 if (this.owner.enableLayout) {
-                    const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
-                    const pageIndex: string = block.page.index.toString();
-                    // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
-                    const sectionIndex: number = block.page.sectionIndex;
-                    index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                    if (!isNullOrUndefined(block.page)) {
+                        const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
+                        const pageIndex: string = block.page.index.toString();
+                        // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                        const sectionIndex: number = block.page.sectionIndex;
+                        index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                    }
                 } else {
                     const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
                     const pageIndex: string = this.getHeaderFooterIndex(block).toString();
@@ -3877,11 +3958,13 @@ export class Selection {
             if (block instanceof FootNoteWidget) {
                 // index = block.index + ';' + index;
                 //block = block.containerWidget;
-                const hfString: string = block.footNoteType === 'Footnote' ? 'FN' : 'EN';
-                const pageIndex: string = block.page.index.toString();
-                // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
-                const sectionIndex: number = block.page.sectionIndex;
-                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                if (!isNullOrUndefined(block.page)) { 
+                    const hfString: string = block.footNoteType === 'Footnote' ? 'FN' : 'EN';
+                    const pageIndex: string = block.page.index.toString();
+                    // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                    const sectionIndex: number = block.page.sectionIndex;
+                    index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                }
             }
             if (block.containerWidget) {
                 if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
@@ -4100,7 +4183,7 @@ export class Selection {
                 const paraIndex: string = position.index.substring(0, position.index.indexOf(';'));
                 position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
                 let shape: ElementBox = (childWidget as ParagraphWidget).getInline(parseInt(indexInOwner), 0).element;
-                if (!isNullOrUndefined((shape as ShapeElementBox).textFrame)) {
+                if (!isNullOrUndefined(shape) && !isNullOrUndefined((shape as ShapeElementBox).textFrame)) {
                     childWidget = (shape as ShapeElementBox).textFrame.childWidgets[paraIndex] as Widget;
                 }
             }
@@ -4735,6 +4818,9 @@ export class Selection {
      * @returns {ElementBox}
      */
     public getNextStartInline(line: LineWidget, offset: number): ElementBox {
+        if (isNullOrUndefined(line)) {
+            return undefined;
+        }
         let indexInInline: number = 0;
         const inlineObj: ElementInfo = line.getInline(offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
@@ -5273,7 +5359,10 @@ export class Selection {
      */
     public getLineLength(line: LineWidget, elementInfo?: ElementInfo, includeShape?: boolean): number {
         let length: number = 0;
-        const bidi: boolean = line.paragraph.bidi;
+        let bidi: boolean = false;
+        if (!isNullOrUndefined(line) && !isNullOrUndefined(line.paragraph)) {
+            bidi = line.paragraph.bidi;
+        }
         for (let i: number = !bidi ? 0 : line.children.length - 1; bidi ? i > -1 : i < line.children.length; bidi ? i-- : i++) {
             const element: ElementBox = line.children[i] as ElementBox;
             if (element instanceof ListTextElementBox) {
@@ -6156,7 +6245,7 @@ export class Selection {
      */
     public getLineWidgetInternal(line: LineWidget, offset: number, moveToNextLine: boolean): LineWidget {
         let lineWidget: LineWidget = undefined;
-        if (line.children.length === 0 && line instanceof LineWidget) {
+        if (!isNullOrUndefined(line) && !isNullOrUndefined(line.children) && line.children.length === 0 && line instanceof LineWidget) {
             lineWidget = line as LineWidget;
         } else {
             let indexInInline: number = 0;
@@ -6377,11 +6466,11 @@ export class Selection {
             }
         }
 
-        let lastBlock: BlockWidget;
+        let lastBlock: BlockWidget = undefined;
 
         if (cell.childWidgets.length > 0) {
             lastBlock = (cell as TableCellWidget).lastChild as BlockWidget;
-        } else {
+        } else if (!isNullOrUndefined(cell.previousSplitWidget)) {
             lastBlock = cell.previousSplitWidget.lastChild as BlockWidget;
         }
         return this.documentHelper.getLastParagraphBlock(lastBlock);
@@ -6413,7 +6502,7 @@ export class Selection {
 
         const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && lastParagraph.lastChild === endPosition.currentWidget && endPosition.offset === this.getLineLength((lastParagraph.lastChild as LineWidget)) + (!skipParaMark ? 1 : 0);
 
-        return isAtCellEnd || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
+        return (isAtCellEnd && startPosition.isAtParagraphStart) || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
             !this.containsCell(cell, endPosition.paragraph.associatedCell));
     }
     /**
@@ -6435,7 +6524,7 @@ export class Selection {
      * @private
      */
     public getContainerCellOf(cell: TableCellWidget, tableCell: TableCellWidget): TableCellWidget {
-        while (cell.ownerTable.isInsideTable) {
+        while (!isNullOrUndefined(cell) && !isNullOrUndefined(cell.ownerTable) && cell.ownerTable.isInsideTable) {
             if ((cell.ownerTable as TableWidget).contains(tableCell as TableCellWidget)) {
                 return cell;
             }
@@ -7067,6 +7156,9 @@ export class Selection {
             inline = fieldBegin.fieldEnd;
         } else {
             inline = fieldBegin.fieldSeparator;
+            if (isNullOrUndefined(inline.line)) {
+                return inline;
+            }
             const paragraph: ParagraphWidget = inline.line.paragraph;
             if (paragraph === fieldBegin.fieldEnd.line.paragraph
                 && !this.hasValidInline(paragraph, inline, fieldBegin.fieldEnd)) {
@@ -7649,10 +7741,12 @@ export class Selection {
         let isImageSelected: boolean = false;
         if (this.owner.enableHeaderAndFooter) {
             let headerFooterWidget: HeaderFooterWidget = this.start.paragraph.bodyWidget as HeaderFooterWidget;
-            if (headerFooterWidget.headerFooterType.indexOf('Header') != -1){
-                this.comparePageWidthAndMargins(headerFooterWidget.page.headerWidget, headerFooterWidget.page);
-            } else {
-                this.comparePageWidthAndMargins(headerFooterWidget.page.footerWidget, headerFooterWidget.page);
+            if (!isNullOrUndefined(headerFooterWidget) && !(isNullOrUndefined(headerFooterWidget.headerFooterType))) {
+                if (headerFooterWidget.headerFooterType.indexOf('Header') != -1){
+                    this.comparePageWidthAndMargins(headerFooterWidget.page.headerWidget, headerFooterWidget.page);
+                } else {
+                    this.comparePageWidthAndMargins(headerFooterWidget.page.footerWidget, headerFooterWidget.page);
+                }
             }
         }
         const isImageSelectedObj: TextPositionInfo = this.updateTextPositionIn(widget, element, index, point, false);
@@ -7685,11 +7779,14 @@ export class Selection {
         let top: number = this.getTop(widget);
         let left: number = widget.paragraph.x;
         let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
-        let element: ElementBox = elementValues.element;
+        let element: ElementBox = (!isNullOrUndefined(elementValues) ? elementValues.element : undefined) as ElementBox;
         let isRtlText: boolean = false;
         let isParaBidi: boolean = false;
-        left = elementValues.left;
+        left = !isNullOrUndefined(elementValues) ? elementValues.left : left;
         let children: ElementBox[] = widget.renderedElements;
+        if (element && !element.paragraph.bidi) {
+            children = widget.children;
+        }
         if (isNullOrUndefined(element)) {
             let topMargin: number = 0; let bottomMargin: number = 0;
             let size: SizeInfo = this.getParagraphMarkSize(widget.paragraph, topMargin, bottomMargin);
@@ -7836,7 +7933,18 @@ export class Selection {
                         if (hasMouseDrag) {
                             index = this.getTextLength(element.line, element);
                         } else {
-                            index = this.getNextValidOffset(element.line, 0, true);
+                            let newElement: ElementBox = element;
+                            while (newElement && newElement instanceof BookmarkElementBox) {
+                                newElement = newElement.nextElement;
+                                if (newElement && !(newElement instanceof BookmarkElementBox || newElement instanceof EditRangeStartElementBox)) {
+                                    break;
+                                }
+                            }
+                            if (!isNullOrUndefined(newElement) && newElement instanceof EditRangeStartElementBox) {
+                                index = this.getNextValidOffset(element.line, newElement.indexInOwner + 1, true);
+                            } else {
+                                index = this.getNextValidOffset(element.line, 0, true);
+                            }
                         }
                     }
                     else {
@@ -7888,7 +7996,15 @@ export class Selection {
                     //Include width of Paragraph mark.
                     if (isParagraphEnd) {
                         width = this.documentHelper.textHelper.getParagraphMarkWidth(widget.paragraph.characterFormat);
-                        let selectParaMark: boolean = this.documentHelper.mouseDownOffset.y >= top && this.documentHelper.mouseDownOffset.y < top + widget.height ? (this.documentHelper.mouseDownOffset.x < left + width) : true;
+                        let selectParaMark: boolean;
+                        if (!isNullOrUndefined(widget.paragraph) && widget.paragraph.isInsideTable && widget.paragraph.containerWidget instanceof TableCellWidget) {
+                            // Match Microsoft Word behavior by excluding the paragraph mark when the cursor is inside a table cell.
+                            selectParaMark = !(this.documentHelper.mouseDownOffset.y < top + widget.paragraph.containerWidget.height  &&
+                            this.documentHelper.mouseDownOffset.x  < widget.paragraph.containerWidget.width + left);
+                        }
+                        else {
+                            selectParaMark = this.documentHelper.mouseDownOffset.y >= top && this.documentHelper.mouseDownOffset.y < top + widget.height ? (this.documentHelper.mouseDownOffset.x < left + width) : true;
+                        }
                         if (selectParaMark && caretPosition.x > left + width / 2) {
                             left += width;
                             index = inline.length + 1;
@@ -7939,22 +8055,24 @@ export class Selection {
         let isShapeSelected: boolean = false;
         let isInShapeBorder: boolean = false;
         let floatElement: ShapeBase;
-        if (!isNullOrUndefined(widget)) {
+        if (!isNullOrUndefined(widget) && !isNullOrUndefined(widget.paragraph)) {
             bodyWidget = widget.paragraph.bodyWidget;
             isShapeSelected = false;
             isInShapeBorder = false;
-            for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
-                if (bodyWidget.floatingElements[i] instanceof TableWidget) {
-                    continue;
-                }
-                floatElement = bodyWidget.floatingElements[i] as ShapeBase;
-                if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
-                    && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
-                    isShapeSelected = true;
-                    if (this.documentHelper.isInShapeBorder(floatElement, caretPosition)) {
-                        isInShapeBorder = true;
+            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.floatingElements)) {
+                for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                    if (bodyWidget.floatingElements[i] instanceof TableWidget) {
+                        continue;
                     }
-                    break;
+                    floatElement = bodyWidget.floatingElements[i] as ShapeBase;
+                    if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
+                        && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
+                        isShapeSelected = true;
+                        if (this.documentHelper.isInShapeBorder(floatElement, caretPosition)) {
+                            isInShapeBorder = true;
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -8022,6 +8140,9 @@ export class Selection {
      * @private
      */
     public getTop(widget: LineWidget): number {
+        if(isNullOrUndefined(widget) || isNullOrUndefined(widget.paragraph)){
+            return 0;
+        }
         let top: number = widget.paragraph.y;
         const count: number = widget.paragraph.childWidgets.indexOf(widget);
         for (let i: number = 0; i < count; i++) {
@@ -8043,7 +8164,7 @@ export class Selection {
         }
         left += firstLineIndent;
         let element: ElementBox = undefined;
-        let renderedChild: ElementBox[] = widget.renderedElements;
+        let renderedChild: ElementBox[] = widget.paragraph.bidi ? widget.renderedElements : widget.children;
         for (let i: number = 0; i < renderedChild.length; i++) {
             element = renderedChild[i];
             if (element instanceof ListTextElementBox) {
@@ -9125,6 +9246,9 @@ export class Selection {
                 if (bodyWidget instanceof TextFrame) {
                     bodyWidget = bodyWidget.containerShape.line.paragraph;
                 }
+                if (isNullOrUndefined(bodyWidget) || isNullOrUndefined(bodyWidget.containerWidget)) {
+                    break;
+                }
                 bodyWidget = bodyWidget.containerWidget;
             }
         }
@@ -10018,7 +10142,10 @@ export class Selection {
                 }
             }
             let linkText: string = this.getScreenTipText(fieldBegin);
-           
+           // Guard: ensure tooltip elements are created
+            if (isNullOrUndefined(this.screenTipElement) || isNullOrUndefined(this.toolTipTextElement)) {
+                return;
+            }
             if (isFormField) {
                 let helpText: string = fieldBegin.formFieldData.helpText;
                 if (isNullOrUndefined(helpText) || helpText === '') {
@@ -10132,7 +10259,7 @@ export class Selection {
         let page: Page = this.getPage(widget.paragraph);
 
         let containerWidth: number = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
-        let left: number = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
+        let left: number = !isNullOrUndefined(page) ? page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor : xPos * this.documentHelper.zoomFactor;
         if ((left + toolTipElement.clientWidth + 10) > containerWidth) {
             left = left - ((toolTipElement.clientWidth - (containerWidth - left)) + 15);
         }
@@ -10427,7 +10554,7 @@ export class Selection {
                 }
             }
         } else {
-            if (position.x > leftLength + element.margin.left) {
+            if (!isNullOrUndefined(element) && position.x > leftLength + element.margin.left) {
                 for (let i: number = lineWidget.children.indexOf(element); i < lineWidget.children.length; i++) {
                     element = lineWidget.children[i];
                     if (position.x < leftLength + element.margin.left + element.width || i === lineWidget.children.length - 1) {
@@ -10439,13 +10566,15 @@ export class Selection {
             if (element instanceof FootnoteElementBox) {
                 inline = element;
             }
-            let width: number = element.margin.left + element.width;
-            if (isNullOrUndefined(element.nextNode)) {
-                //Include width of Paragraph mark.
-                width += this.documentHelper.textHelper.getParagraphMarkWidth(element.line.paragraph.characterFormat);
-            }
-            if (position.x <= leftLength + width) {
-                return inline;
+            if (!isNullOrUndefined(element)) {
+                let width: number = element.margin.left + element.width;
+                if (isNullOrUndefined(element.nextNode)) {
+                    //Include width of Paragraph mark.
+                    width += this.documentHelper.textHelper.getParagraphMarkWidth(element.line.paragraph.characterFormat);
+                }
+                if (position.x <= leftLength + width) {
+                    return inline;
+                }
             }
         }
         return undefined;
@@ -11395,6 +11524,9 @@ export class Selection {
      * @private
      */
     public getCaretBottom(textPosition: TextPosition, isEmptySelection: boolean): number {
+        if (isNullOrUndefined(textPosition) || isNullOrUndefined(textPosition.paragraph)) {
+            return 0;
+        }
         let bottom: number = textPosition.location.y;
         if (textPosition.paragraph.isEmpty()) {
             let paragraph: ParagraphWidget = textPosition.paragraph;
@@ -11667,7 +11799,9 @@ export class Selection {
      * @private
      */
     public isCursorInsidePageRect(point: Point, page: Page): boolean {
-
+        if (isNullOrUndefined(page) || isNullOrUndefined(page.boundingRectangle)) {
+            return false;
+        }
         if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
             (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
             return true;
@@ -12018,6 +12152,9 @@ export class Selection {
         this.documentHelper.clearSelectionHighlight();
         let columnFirst: number = parseInt(bookmark.properties['columnFirst']);
         let columnLast: number = parseInt(bookmark.properties['columnLast']);
+        if(isNullOrUndefined(bookmark.paragraph) || isNullOrUndefined(bookmark.paragraph.associatedCell)) {
+            return;
+        }
         let table: TableWidget = bookmark.paragraph.associatedCell.ownerTable;
         let cellArray: TableCellWidget[] = this.getCellsToSelect(table, columnFirst, columnLast, bookmark);
         if(!isNullOrUndefined(cellArray)){
@@ -12659,7 +12796,7 @@ export class Selection {
                             if (isPageStartAfter && isPageEndBefore) {
                                 editRangePage = startElement;
                                 editRangeCollection = [];
-                            } else if (!((isPageStartAfter && pageStart.isExistAfter(editRangeEnd)) ||
+                            } else if (editRangeStart.isExistBefore(editRangeEnd) && !((isPageStartAfter && pageStart.isExistAfter(editRangeEnd)) ||
                                 (pageEnd.isExistBefore(editRangeStart) && isPageEndBefore))) {
                                 // Only edit range start or end is present inside the page then need to update it.
                                 editRangeCollection.push(startElement);

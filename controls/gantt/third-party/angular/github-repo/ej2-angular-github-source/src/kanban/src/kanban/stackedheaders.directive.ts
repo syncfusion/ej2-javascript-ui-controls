@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-stackedHeaders>e-stackedHeader',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StackedHeaderDirective extends ComplexBase<StackedHeaderDirective> {
@@ -34,12 +34,12 @@ export class StackedHeaderDirective extends ComplexBase<StackedHeaderDirective> 
      * Defines the multiple columns keyField
      * @default null
      */
-    public keyFields: any;
+    public declare keyFields: any;
     /** 
      * Defines the column header text
      * @default null
      */
-    public text: any;
+    public declare text: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -55,6 +55,7 @@ export class StackedHeaderDirective extends ComplexBase<StackedHeaderDirective> 
  */
 @Directive({
     selector: 'ejs-kanban>e-stackedHeaders',
+    standalone: true,
     queries: {
         children: new ContentChildren(StackedHeaderDirective)
     },

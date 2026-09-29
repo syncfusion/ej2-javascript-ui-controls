@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
-@use 'ej2-buttons/styles/button/bootstrap5-dark-definition' as *;
-@forward 'ej2-base/styles/definition/bootstrap5-dark';
-@forward 'ej2-buttons/styles/button/bootstrap5-dark-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/bootstrap5-dark-definition' as *;
 
 //layout variables
 $btn-grp-margin: -1px !default;

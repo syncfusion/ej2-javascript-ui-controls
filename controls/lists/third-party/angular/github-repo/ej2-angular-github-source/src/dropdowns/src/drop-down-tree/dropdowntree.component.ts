@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,98 +30,35 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        footerTemplate: new ContentChild('footerTemplate'),
+        headerTemplate: new ContentChild('headerTemplate'),
+        valueTemplate: new ContentChild('valueTemplate'),
+        itemTemplate: new ContentChild('itemTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate'),
+        actionFailureTemplate: new ContentChild('actionFailureTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class DropDownTreeComponent extends DropDownTree implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionFailure: any;
-	beforeOpen: any;
-	blur: any;
-	change: any;
-	close: any;
-	created: any;
-	dataBound: any;
-	destroyed: any;
-	filtering: any;
-	focus: any;
-	keyPress: any;
-	open: any;
-	select: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionFailure: any;
+	declare beforeOpen: any;
+	declare blur: any;
+	declare change: any;
+	declare close: any;
+	declare created: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare filtering: any;
+	declare focus: any;
+	declare keyPress: any;
+	declare open: any;
+	declare select: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Specifies the template that renders a customized footer container at the bottom of the pop-up list. 
-     * By default, the footerTemplate will be null and there will be no footer container for the pop-up list.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Specifies the template that renders a customized header container at the top of the pop-up list. 
-     * By default, the headerTemplate will be null and there will be no header container for the pop-up list.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
-    /** 
-     * Specifies the way to customize the selected values in the Dropdown Tree component based on application needs. If the **valueTemplate** property is set, the template content overrides the displayed item text. 
-     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('valueTemplate')
-    @Template()
-    public valueTemplate: any;
-    /** 
-     * Specifies a template to render customized content for all the items. 
-     * If the **itemTemplate** property is set, the template content overrides the displayed item text. 
-     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) 
-     * or HTML element ID holding the content.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Specifies the template that renders a customized pop-up list content when there is no data available 
-     * to be displayed within the pop-up.
-     * @default 'No Records Found'
-     * @asptype string
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No Records Found')
-    public noRecordsTemplate: any;
-    /** 
-     * Specifies the template that renders to the popup list content of the 
-     * Dropdown Tree component when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
-     * @asptype string
-     */
-    @ContentChild('actionFailureTemplate')
-    @Template('The Request Failed')
-    public actionFailureTemplate: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -164,7 +102,13 @@ export class DropDownTreeComponent extends DropDownTree implements IComponentBas
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(DropDownTreeComponent.prototype, 'footerTemplate');
+Template()(DropDownTreeComponent.prototype, 'headerTemplate');
+Template()(DropDownTreeComponent.prototype, 'valueTemplate');
+Template()(DropDownTreeComponent.prototype, 'itemTemplate');
+Template('No Records Found')(DropDownTreeComponent.prototype, 'noRecordsTemplate');
+Template('The Request Failed')(DropDownTreeComponent.prototype, 'actionFailureTemplate');
 

@@ -6,7 +6,7 @@ import { AIAssistView, AIAssistViewModel } from '@syncfusion/ej2-interactive-cha
 import { ViewsDirective, ViewDirective, ViewsPlugin, ViewPlugin } from './views.directive'
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeView', 'attachmentSettings', 'bannerTemplate', 'blockTemplate', 'cssClass', 'enableAttachments', 'enablePersistence', 'enableRtl', 'enableScrollToBottom', 'enableStreaming', 'footerTemplate', 'footerToolbarSettings', 'height', 'itemTemplate', 'locale', 'prompt', 'promptIconCss', 'promptItemTemplate', 'promptPlaceholder', 'promptSuggestionItemTemplate', 'promptSuggestions', 'promptSuggestionsHeader', 'promptToolbarSettings', 'prompts', 'responseIconCss', 'responseItemTemplate', 'responseToolbarSettings', 'showClearButton', 'showHeader', 'speechToTextSettings', 'textToSpeechSettings', 'toolbarSettings', 'views', 'width', 'attachmentRemoved', 'attachmentUploadFailure', 'attachmentUploadSuccess', 'beforeAttachmentUpload', 'created', 'editableContextClicked', 'promptChanged', 'promptRequest', 'stopRespondingClick'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeView', 'attachmentSettings', 'bannerTemplate', 'blockTemplate', 'cssClass', 'enableAttachments', 'enablePersistence', 'enableRtl', 'enableScrollToBottom', 'enableStreaming', 'footerTemplate', 'footerToolbarSettings', 'height', 'itemTemplate', 'locale', 'mentions', 'prompt', 'promptIconCss', 'promptItemTemplate', 'promptPlaceholder', 'promptSuggestionItemTemplate', 'promptSuggestions', 'promptSuggestionsHeader', 'promptToolbarSettings', 'prompts', 'responseAnimationTemplate', 'responseIconCss', 'responseItemTemplate', 'responseToolbarSettings', 'showClearButton', 'showHeader', 'speechToTextSettings', 'telemetrySettings', 'textToSpeechSettings', 'toolbarSettings', 'views', 'width', 'attachmentRemoved', 'attachmentRemoving', 'attachmentUploadFailure', 'attachmentUploadSuccess', 'beforeAttachmentUpload', 'created', 'editableContextClicked', 'mentionSelect', 'promptChanged', 'promptRequest', 'stopRespondingClick'];
 export const modelProps: string[] = ['prompt'];
 
 export const testProp: any = getProps({props: properties});
@@ -131,8 +131,8 @@ export let AIAssistViewComponent: DefineVueComponent<AIAssistViewModel> =  vueDe
         custom(): void {
             this.updated();
         },
-        addPromptResponse(outputResponse: string | Object, isFinalUpdate: boolean): void {
-            return this.ej2Instances.addPromptResponse(outputResponse, isFinalUpdate);
+        addPromptResponse(outputResponse: string | Object, isFinalUpdate: boolean, telemetryData?: Object): void {
+            return this.ej2Instances.addPromptResponse(outputResponse, isFinalUpdate, telemetryData);
         },
         destroy(): void {
             return this.ej2Instances.destroy();
@@ -165,7 +165,7 @@ export type AIAssistViewComponent = typeof ComponentBase & {
     trigger(eventName: string, eventProp: {
         [key: string]: Object;
     }, successHandler?: Function): void;
-    addPromptResponse(outputResponse: string | Object, isFinalUpdate: boolean): void;
+    addPromptResponse(outputResponse: string | Object, isFinalUpdate: boolean, telemetryData?: Object): void;
     destroy(): void;
     executePrompt(prompt: string): void;
     registerToolUI(tool: Object): void;

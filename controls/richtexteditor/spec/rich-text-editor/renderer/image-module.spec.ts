@@ -2,7 +2,7 @@
  * Image module spec 
  */
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, ImageCommand, IQuickToolbar } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, ImageCommand, IQuickToolbar, PasteCleanup } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { DialogType } from "../../../src/common/enum";
 import { ActionBeginEventArgs, ActionCompleteEventArgs, BeforeQuickToolbarOpenArgs } from '../../../src/common/interface';
@@ -9218,7 +9218,242 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+    describe('EJ2-60381 - Image resize icon not shown properly when enabled iframe', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p style="cursor: auto;"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-img-inline e-resize e-img-focus" alt="employee-icon.jpg" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px; width: 247px; height: 247px;"> </p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value:innerHTML
+            });
+        });
+        afterAll(()=>{
+            destroy(rteObj);
+        })
+        it('check resize element when click image in iframe mode', () => {
+            let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+            let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+        });
+    });
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 7 Image Element Alt Text' , () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string = '<p><span class="e-img-caption-container e-img-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap null"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-resize" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1277px; min-height: 0px;"><span class="e-img-caption-text null" contenteditable="true">Caption</span></span></span> </p>';
+        beforeAll( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+        })
+        afterAll( () => {
+            destroy( rteObject );
+        })
+        it('should wrap span element with font size to around the style span node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-img-caption-text');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem, 1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            setTimeout(() => {
+                expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+                done();
+            }, 100);
+        });
+    });
+    describe('847101 - The image focus and resize class names are not removed when the editor in focused out. - ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p><img id="rteImageID" style="width: 300px; height: 300px;" alt="Logo" src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png"></p>'
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it('image focus out - while click on document', () => {
+            let rteEle: HTMLElement = rteObj.element;
+            rteObj.focusIn();
+            let trg = (rteEle.querySelector('#rteImageID') as HTMLElement);
+            let event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            event = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            document.body.dispatchEvent(event);
+            expect(trg.classList.contains('e-resize')).toBe(false);
+            expect(trg.classList.contains('e-img-focus')).toBe(false);
+            expect(trg.style.maxWidth === '').toBe(true);
+        });
+    });
+    describe('904558: Image action begin event args does not reflect after image is inserted.', () => {
+        let editor: RichTextEditor;
+        let url: string;
+        beforeAll(() => {
+            editor = renderRTE({
+                actionBegin: function (e) {
+                    if (e.requestType === 'Image') {
+                        e.itemCollection.url = e.itemCollection.url  + 'api/UnauthorizedImage';
+                        url = e.itemCollection.url;
+                    }
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it ('Should able to update edit the inserted image on action begin event.', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_IMG_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', INSRT_IMG_EVENT_INIT));
+            setTimeout(() => {
+                const inputElem: HTMLInputElement = editor.element.querySelector('.e-rte-img-dialog .e-input.e-img-url');
+                inputElem.value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png';
+                inputElem.dispatchEvent(new Event('input'));
+                (editor.element.querySelector('.e-insertImage') as HTMLElement).click();
+                setTimeout(() => {
+                    expect((editor.inputElement.querySelector('img').src)).toBe(url);
+                    done();
+                }, 200);
+            }, 100);
+        });
+    });
+    describe('853677 - The image alternate text is not shown properly in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+        });
+        it('ensure insert image on Alternate text', () => {
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint((rteObj as any).inputElement, 0);
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand('insertImage', {
+                url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png',
+                cssClass: 'testingClass',
+                width: { minWidth: '200px', maxWidth: '200px', width: 180 },
+                height: { minHeight: '200px', maxHeight: '600px', height: 500 },
+                altText: '<a href="javascript:alert(\'XSS\')">Click me</a>'
+            });
+            let imgElem: HTMLElement = (rteObj as any).inputElement.querySelector('img');
+            expect(imgElem.getAttribute('alt') === '<a href="javascript:alert(\'XSS\')">Click me</a>').toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('859382 - ImageRemoving event arguments are not properly passed in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let propertyCheck: boolean;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                insertImageSettings: {
+                    saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Images/"
+                },
+                imageRemoving: function (args) {
+                    if (args.cancel != null && args.customFormData != null && args.event != null && args.filesData != null && args.postRawFile != null) {
+                        propertyCheck = true;
+                    }
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it("The imageRemiving event doesn't have the args property.", (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector(".e-richtexteditor .e-upload-files .e-file-remove-btn") as any).click();
+            setTimeout(() => {
+                expect(propertyCheck).toBe(true);
+                done();
+            }, 300);
+        });
+    });
+    describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:106%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.0pt;line-height:106%;">Afterwards, a new option\n"InsertLoremIpsum" will show in the "plugin" menu entry. A\nrestart may be required. &gt;&gt; screenshots<u><br clear="all">\n</u></span><span><img width="476" height="220" src="blob:http://127.0.0.1:5501/a004d4d0-4153-44c9-8ce9-5b1bb5bd25d0" v:shapes="Picture_x0020_1" id="msWordImg-clip_image001" class="e-rte-image e-img-inline" style="opacity: 1;"> </span></p>`
+            });
+        });
+        it('img with enter key', () => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('img'), 0);
+            keyBoardEvent.code = 'Enter';
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.which = 13;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(rteObj.inputElement.querySelector('img') !== null).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('870038 - Pasted image tag added inside the link tag in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a></p>`
+            });
+        });
 
+        it('image after the link', () => {
+            rteObj.executeCommand('insertImage', { url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png', cssClass: 'rte-img'});
+            expect(rteObj.inputElement.innerHTML).toBe('<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image rte-img" width="auto" height="auto" style="min-width: 0px; min-height: 0px;">&nbsp;</p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('Bug 1032762: Insert button disabled in file, image, video upload dialog', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -9244,6 +9479,352 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((document.querySelector('.e-insertImage.e-primary') as HTMLElement).hasAttribute('disabled')).toBe(false);
                 done();
             }, 100);
+        });
+    });
+
+    describe('Bug 983508: Images are not properly dropped after 1st time in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveFormat: 'Base64',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(" Drag and dropping image multiple times ino the editor ", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.dataBind();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            setTimeout(() => {
+                let fileObj: File = new File(["Nice Two"], "sample.png", { lastModified: 0, type: "image/png" });
+                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+                rteObj.focusIn();
+                (rteObj.imageModule as any).insertDragImage(event);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelectorAll('img').length === 2).toBe(true);
+                    done();
+                }, 100);
+            }, 200);
+        });
+    });
+     describe('Bug 971752: Image Upload fails when dragging and dropping images into RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(" Drag and dropping image without path configuration", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.dataBind();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+                expect((rteObj.inputElement.querySelector('img') as HTMLImageElement).src.includes('blob')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('Bug 1006884: Focus Lost After Deleting Image in Mobile Devices', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+        let defaultUA: string = navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = mobileUA;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: { resize: false },
+                value: '<p class="testNode">Test node</p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('contenteditable should be true after image click', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                let dialogEle: any = document.body.querySelector('.e-rte-img-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+                (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
+                dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+                let eventsArgs: any = { target: (rteObj.element.querySelector('.e-rte-image') as HTMLElement), preventDefault: function () { } };
+                (<any>rteObj).imageModule.imageClick(eventsArgs);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('Bug 971752: Image Upload fails when dragging and dropping images into RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                pasteCleanupSettings: {
+                    prompt: false,
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(" Need to drag and drop the image after pasting the image", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.pasteCleanupSettings.prompt = false;
+            rteObj.pasteCleanupSettings.plainText = false;
+            rteObj.pasteCleanupSettings.keepFormat = true;
+            rteObj.dataBind();
+            setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+            let pasteCleanupObj: PasteCleanup = new PasteCleanup(rteObj, rteObj.serviceLocator);
+            (pasteCleanupObj as any).bindOnEnd();
+            let elem: HTMLElement = createElement('span', {
+                id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
+            });
+            (pasteCleanupObj as any).imageFormatting(keyBoardEvent, { elements: [elem.firstElementChild] });
+            setTimeout(() => {
+                let pastedElm: any = (rteObj as any).inputElement.innerHTML;
+                expect(rteObj.inputElement.children[0].children[0].tagName.toLowerCase() === 'img').toBe(true);
+                let expected: boolean = false;
+                let expectedElem: string = `<p><img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus e-rte-image e-img-inline">&nbsp;21</p>`;
+                if (pastedElm === expectedElem) {
+                    expected = true;
+                }
+                expect(expected).toBe(true);
+                let image: HTMLElement = createElement("IMG");
+                image.classList.add('e-rte-drag-image');
+                image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+                let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+                rteObj.inputElement.appendChild(image);
+                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+                rteObj.focusIn();
+                (rteObj.imageModule as any).insertDragImage(event);
+                expect(rteObj.inputElement.querySelectorAll('img').length === 2).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+     describe('967065 - Modified the modules rendering while toolbar disabled', function () {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                    items: ['Image']
+                },
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check the image module is rendered or not", (done: DoneFn) => {
+            rteObj.toolbarSettings.enable = true;
+            rteObj.dataBind();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            setTimeout(() => {
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                let trg = (document.querySelector('.e-rte-image') as HTMLElement);
+                expect(trg).not.toBe(null);
+                expect(document.querySelectorAll('img').length).toBe(1);
+                expect((document.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
+                done();
+            }, 100);
+        });
+    });
+    describe('942812 - RichTextEditor Image Interaction', () => {
+        let rteObj: RichTextEditor;
+        let changeSpy: jasmine.Spy;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            changeSpy = jasmine.createSpy('change');
+            rteObj = renderRTE({
+                value: '<img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-img-inline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;">',
+                change: (args: any) => changeSpy(args),
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should not trigger change event when clicking and unfocusing image', (done: Function) => {
+            (rteObj as any).cloneValue = '<p><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-img-inline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"></p>';
+            let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(changeSpy).not.toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+     describe('939792 - Image Caption is Editable in Rich Text Editor After Posting', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-img-caption-container e-img-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-caption-text" contenteditable="true">Caption</span></span></span></p>`
+            });
+        });
+        it('Image Caption is Editable in Rich Text Editor After Posting', () => {
+            expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-img-caption-container e-img-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-caption-text" contenteditable="true">Caption</span></span></span></p>');
+                expect(rteObj.getHtml()).toBe('<p><span class="e-img-caption-container e-img-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-caption-text" contenteditable="false">Caption</span></span></span></p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('914317 - Image duplicated when Shift enter action is performed on a paragraph', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: true,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: '200px',
+                value:  `<p><img alt=\"Logo\" src=\"https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png\" style=\"width: 300px;\"> </p>`
+            });
+        });
+        it('Image get duplicated after the shift + enter is pressed twice', function (done: DoneFn): void {
+            const nodetext: any = rteObj.inputElement.childNodes[0];
+            const sel: void = new NodeSelection().setSelectionText(
+                document, nodetext, nodetext, 0, 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            setTimeout(() => {
+                setCursorPoint(nodetext, 0);
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.innerHTML).toBe('<p><br><br><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-img-inline"></p>');
+                    done();
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('908611 -In localiaztion, same text are used in alternative text quick toolbar item and alternative text dialog header.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-img-caption-container e-img-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><a href="http://www.google.com" contenteditable="true" target="_blank"><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/></a><span class="e-img-caption-text" contenteditable="true">Caption</span></span></span></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('image dialog quick toolbar alternative text check', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                let alternateButton = document.getElementById(rteEle.id+'_quick_AltText');
+                expect(alternateButton.getAttribute('aria-label') === 'Alternate Text').toBe(true);
+                done();
+            }, 200);
         });
     });
 });

@@ -1,5 +1,4 @@
 @use '@syncfusion/ej2-base/styles/common/base-variables' as *;
-@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
@@ -228,8 +227,8 @@ $rte-big-img-upload-abort-icon-btn-margin-top: -3px;
 $rte-big-img-upload-abort-icon-btn-padding: 18px;
 $rte-dialog-upload-status-progress: #1b809e !default;
 $rte-content-pre-background: inherit;
-$rte-code-background: rgba(243, 244, 246, 1) !default;
-$rte-code-color: rgba(224, 0, 5, 1) !default;
+$rte-code-background: rgba(157, 157, 157, .15) !default;
+$rte-code-color: rgba(237, 72, 76) !default;
 $rte-code-block-label-font-weight: 500 !default;
 $rte-code-block-label-font-family: Helvetica Neue !default;
 $rte-code-block-label-line-height: 18px !default;

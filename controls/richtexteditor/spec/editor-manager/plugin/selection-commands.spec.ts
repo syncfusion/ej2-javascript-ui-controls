@@ -5,6 +5,7 @@ import { detach, Browser } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { SelectionCommands } from '../../../src/editor-manager/plugin/selection-commands';
 import { renderRTE, destroy, setCursorPoint } from '../../rich-text-editor/render.spec';
+import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 
 describe('Selection commands', ()=> {
 
@@ -1257,6 +1258,39 @@ describe('Selection commands', ()=> {
             expect(node1.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('strong');
         });
     });
+    describe('Bug 1044363: EJ2: Font color and Background color not working properly in Firefox browser.', () => {
+        const fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        const defaultUA: string = navigator.userAgent;
+        const innervalue: string = `<p>Hello</p>`;
+        let rteObj: any;
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            rteObj = renderRTE({ 
+                value: innervalue,
+                toolbarSettings: {
+                    items: ['BackgroundColor']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            Browser.userAgent = defaultUA;
+        });
+        it('Apply background color to the content inside the editor testing in firefox', () => {
+            rteObj.focusIn();
+            rteObj.selectAll();
+            let node1: Node = document.querySelector('p');
+            let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: true, shiftKey: false, action: null, which: 65, key: '' };
+            keyBoardEvent.keyCode = 65;
+            rteObj.keyDown(keyBoardEvent);
+            let backgroundColorPicker: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+            backgroundColorPicker.click();
+            const colorElement: HTMLElement = document.querySelector('[aria-label="#ffff00ff"]');
+            colorElement.click();
+            expect((node1.firstChild as HTMLElement).style.backgroundColor).toEqual('rgb(255, 255, 0)');
+        });
+    });
+
 
     describe('862912 - Bold is not applied when using shortcut key (Ctrl+B)', () => {
         let innervalue: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a id="firstLink" href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">markdown</a> of the content <a id="lastLink" href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">HTML markup</a></p><p><b>Toolbar</b></p>`;
@@ -2511,7 +2545,22 @@ describe('Selection commands', ()=> {
             destroy(rteObj);
         });
     });
-
+    describe('853959 - The anchor element was removed when removing the underline in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Copy the text from this</span><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);">&nbsp;</span><a href="https://support.syncfusion.com/kb/article/7218/download-excel-from-ajax-call-in-asp-net-mvc?isInternalRefresh=False" style="text-decoration: underline; color: var(--communication-foreground,rgba(0, 90, 158, 1)); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); cursor: pointer;">link</a><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">, which has a link and an underline.</span></p>'
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The anchor element was removed', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.contentModule.getDocument().querySelector('a'), rteObj.contentModule.getDocument().querySelector('a'), 0, 1);
+            rteObj.executeCommand('underline');
+            expect(rteObj.contentModule.getDocument().querySelector('a').style.textDecoration === 'none').toBe(true);
+        });
+    });
     describe('EJ2-944794: Page becomes unresponsive when removing inline code in the RichTextEditor', () => {
         var innerValue = '<pre class="skip-highlight-pre-element highlight hightlight-theme tab null"><code class="null hljs language-xml"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>My First Heading<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>My first paragraph.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>\n                <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></code></pre><div>ergergre gr eg re g r g&nbsp; re g r g reg</div>';
         var rteObj: any;
@@ -2534,6 +2583,46 @@ describe('Selection commands', ()=> {
             expect(rteObj.inputElement.innerHTML).toEqual(`<pre class="skip-highlight-pre-element highlight hightlight-theme tab null"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>My First Heading<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>My first paragraph.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>\n                <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></pre><div>ergergre gr eg re g r g&nbsp; re g r g reg</div>`);
          });
     });
-
-
+    describe('Bug 964391: Format tag inserted outside the <p> tag after clearing content ', () => {
+            let customBtn: HTMLElement;
+            let rteObj: RichTextEditor;
+            const onCreate = () => {
+                customBtn = document.getElementById('custom_tbar') as HTMLElement;
+                customBtn.onclick = (e: Event) => {
+                    rteObj.value = '';
+                };
+            }
+            beforeAll(() => {
+                rteObj = renderRTE(
+                    {
+                        toolbarSettings: {
+                            items: [{
+                                tooltipText: 'Change Text',
+                                template:
+                                    '<button class="e-tbar-btn e-btn e-rte-elements" tabindex="-1" id="custom_tbar"  style="width:100%"> Change Text </button>'
+                            }, 'Bold']
+                        },
+                        created: onCreate,
+                        value: `<div style="display:block;">
+                                <p style="margin-right:10px">
+                                    The custom command "insert special character" is configured 
+                                    as the last item of the toolbar. Click on the command and choose the special character 
+                                    you want to include from the popup.
+                                </p>
+                            </div>`,
+                    }
+                );
+            });
+            it(' Format tag should be inserted within the p tag', () => {
+                rteObj.focusIn();
+                (document.getElementById('custom_tbar') as HTMLElement).click();
+                rteObj.dataBind();
+                (document.querySelector('[title="Bold (Ctrl+B)"]') as HTMLElement).click();
+                expect(rteObj.contentModule.getEditPanel().innerHTML === `<p><strong>​</strong></p>`).toBe(true);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+                document.body.innerHTML = "";
+            });
+        });
 });// DO NOT Add TEST BELOW.

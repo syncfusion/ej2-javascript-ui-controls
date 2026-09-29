@@ -1,6 +1,4 @@
 # @jridgewell/resolve-uri
-[![Build Status](https://travis-ci.org/jridgewell/resolve-uri.svg?branch=master)](https://travis-ci.org/jridgewell/resolve-uri)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/jridgewell/resolve-uri/blob/master/LICENSE)
 
 > Resolve a URI relative to an optional base URI
 

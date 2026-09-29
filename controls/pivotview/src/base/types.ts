@@ -31,6 +31,7 @@ export type Sorting =
  * PopulationVar :- Allows to display the pivot table values with population variance.
  * SampleVar :- Allows to display the pivot table values with sample variance.
  * RunningTotals :- Allows to display the pivot table values with running totals.
+ * PercentageOfRunningTotals :- Allows to display the pivot table values with cumulative percentage of running totals. This option is applicable only to the client-side engine.
  * DifferenceFrom :- Allows to display the pivot table values with difference from the value of the base item in the base field.
  * PercentageOfDifferenceFrom :- Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
  * PercentageOfGrandTotal :- Allows to display the pivot table values with percentage of grand total of all values.
@@ -77,6 +78,8 @@ export type SummaryTypes =
     'PercentageOfParentTotal' |
     /** Allows to display the pivot table values with running totals. */
     'RunningTotals' |
+    /** Allows to display the pivot table values with cumulative percentage of running totals. This option is applicable only to the client-side engine. */
+    'PercentageOfRunningTotals' |
     /** Allows to display the pivot table values with population standard deviation. */
     'PopulationStDev' |
     /** Allows to display the pivot table values with sample standard deviation. */
@@ -138,6 +141,8 @@ export type FilterType =
  * AfterOrEqualTo :- Display the pivot table with next all records along with the given date.
  * Between :- Display the pivot table that records between the start and end text or value or date.
  * NotBetween :- Display the pivot table that does not record between the start and end text or value or date.
+ * Top :- Display the pivot table with the top N members (highest values) based on the specified measure. This option is applicable only to the client-side engine.
+ * Bottom :- Display the pivot table with the bottom N members (lowest values) based on the specified measure. This option is applicable only to the client-side engine.
  * ```
  */
 export type Operators =
@@ -176,7 +181,11 @@ export type Operators =
     /** Display the pivot table that records between the start and end text or value or date. */
     'Between' |
     /** Display the pivot table that does not record between the start and end text or value or date. */
-    'NotBetween';
+    'NotBetween' |
+    /** Display the pivot table with the top N members (highest values) based on the specified measure. This option is applicable only to the client-side engine.*/
+    'Top' |
+    /** Display the pivot table with the bottom N members (lowest values) based on the specified measure. This option is applicable only to the client-side engine.*/
+    'Bottom';
 
 /**
  * Defines the conditional operators for string type fields. They are

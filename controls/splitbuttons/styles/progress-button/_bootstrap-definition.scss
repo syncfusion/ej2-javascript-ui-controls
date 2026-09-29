@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
-@forward 'ej2-buttons/styles/button/bootstrap-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $progress-btn-color: $grey-light-font !default;
 $progress-btn-bgcolor: rgba($grey-white, .3) !default;
 $progress-btn-bgcolor-normal: rgba($grey-base, .2) !default;

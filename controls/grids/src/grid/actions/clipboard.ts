@@ -182,12 +182,14 @@ export class Clipboard implements IAction {
     private initialEnd(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.parent.off(events.contentReady, this.initialEnd);
-        this.clipBoardTextArea = this.parent.createElement('textarea', {
-            className: 'e-clipboard',
-            attrs: { id: this.parent.element.id + '_clipboard', tabindex: '-1', 'aria-label': this.l10n.getConstant('ClipBoard') }
-        }) as HTMLInputElement;
-        this.clipBoardTextArea.style.opacity = '0';
-        this.parent.element.appendChild(this.clipBoardTextArea);
+        if (!this.clipBoardTextArea) {
+            this.clipBoardTextArea = this.parent.createElement('textarea', {
+                className: 'e-clipboard',
+                attrs: { id: this.parent.element.id + '_clipboard', tabindex: '-1', 'aria-label': this.l10n.getConstant('ClipBoard') }
+            }) as HTMLInputElement;
+            this.clipBoardTextArea.style.opacity = '0';
+            this.parent.element.appendChild(this.clipBoardTextArea);
+        }
     }
 
     private keyDownHandler(e: KeyboardEventArgs): void {

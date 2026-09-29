@@ -8,7 +8,7 @@ export interface SymbolPaletteTypecast {
 }
 /**
  * Represents react SymbolPalette Component
- * ```tsx
+ * ```ts
  * <SymbolPaletteComponent></SymbolPaletteComponent>
  * ```
  */

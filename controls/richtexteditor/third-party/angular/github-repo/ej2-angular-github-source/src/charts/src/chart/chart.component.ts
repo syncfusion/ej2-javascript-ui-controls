@@ -26,78 +26,75 @@ export const twoWays: string[] = ['dataSource'];
     inputs: inputs,
     outputs: outputs,
     template: '',
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(SeriesCollectionDirective), 
-        childAxes: new ContentChild(AxesDirective), 
-        childRows: new ContentChild(RowsDirective), 
-        childColumns: new ContentChild(ColumnsDirective), 
-        childRangeColorSettings: new ContentChild(RangeColorSettingsDirective), 
-        childAnnotations: new ContentChild(AnnotationsDirective), 
-        childSelectedDataIndexes: new ContentChild(SelectedDataIndexesDirective), 
-        childIndicators: new ContentChild(IndicatorsDirective)
+        childSeries: new ContentChild(SeriesCollectionDirective),
+        childAxes: new ContentChild(AxesDirective),
+        childRows: new ContentChild(RowsDirective),
+        childColumns: new ContentChild(ColumnsDirective),
+        childRangeColorSettings: new ContentChild(RangeColorSettingsDirective),
+        childAnnotations: new ContentChild(AnnotationsDirective),
+        childSelectedDataIndexes: new ContentChild(SelectedDataIndexesDirective),
+        childIndicators: new ContentChild(IndicatorsDirective),
+        tooltip_template: new ContentChild('tooltipTemplate'),
+        legendSettings_template: new ContentChild('legendSettingsTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ChartComponent extends Chart implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	afterExport: any;
-	animationComplete: any;
-	annotationRender: any;
-	axisLabelClick: any;
-	axisLabelRender: any;
-	axisMultiLabelRender: any;
-	axisRangeCalculated: any;
-	beforeExport: any;
-	beforePrint: any;
-	beforeResize: any;
-	chartDoubleClick: any;
-	chartMouseClick: any;
-	chartMouseDown: any;
-	chartMouseLeave: any;
-	chartMouseMove: any;
-	chartMouseUp: any;
-	crosshairLabelRender: any;
-	drag: any;
-	dragComplete: any;
-	dragEnd: any;
-	dragStart: any;
-	legendClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	multiLevelLabelClick: any;
-	onZooming: any;
-	pointClick: any;
-	pointDoubleClick: any;
-	pointMove: any;
-	pointRender: any;
-	resized: any;
-	scrollChanged: any;
-	scrollEnd: any;
-	scrollStart: any;
-	selectionComplete: any;
-	seriesRender: any;
-	sharedTooltipRender: any;
-	textRender: any;
-	tooltipRender: any;
-	zoomComplete: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<SeriesCollectionDirective>;
-    public childAxes: QueryList<AxesDirective>;
-    public childRows: QueryList<RowsDirective>;
-    public childColumns: QueryList<ColumnsDirective>;
-    public childRangeColorSettings: QueryList<RangeColorSettingsDirective>;
-    public childAnnotations: QueryList<AnnotationsDirective>;
-    public childSelectedDataIndexes: QueryList<SelectedDataIndexesDirective>;
-    public childIndicators: QueryList<IndicatorsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare afterExport: any;
+	declare animationComplete: any;
+	declare annotationRender: any;
+	declare axisLabelClick: any;
+	declare axisLabelRender: any;
+	declare axisMultiLabelRender: any;
+	declare axisRangeCalculated: any;
+	declare beforeExport: any;
+	declare beforePrint: any;
+	declare beforeResize: any;
+	declare chartDoubleClick: any;
+	declare chartMouseClick: any;
+	declare chartMouseDown: any;
+	declare chartMouseLeave: any;
+	declare chartMouseMove: any;
+	declare chartMouseUp: any;
+	declare crosshairLabelRender: any;
+	declare drag: any;
+	declare dragComplete: any;
+	declare dragEnd: any;
+	declare dragStart: any;
+	declare legendClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare multiLevelLabelClick: any;
+	declare onZooming: any;
+	declare pointClick: any;
+	declare pointDoubleClick: any;
+	declare pointMove: any;
+	declare pointRender: any;
+	declare resized: any;
+	declare scrollChanged: any;
+	declare scrollEnd: any;
+	declare scrollStart: any;
+	declare selectionComplete: any;
+	declare seriesRender: any;
+	declare sharedTooltipRender: any;
+	declare textRender: any;
+	declare tooltipRender: any;
+	declare zoomComplete: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<SeriesCollectionDirective>;
+    public declare childAxes: QueryList<AxesDirective>;
+    public declare childRows: QueryList<RowsDirective>;
+    public declare childColumns: QueryList<ColumnsDirective>;
+    public declare childRangeColorSettings: QueryList<RangeColorSettingsDirective>;
+    public declare childAnnotations: QueryList<AnnotationsDirective>;
+    public declare childSelectedDataIndexes: QueryList<SelectedDataIndexesDirective>;
+    public declare childIndicators: QueryList<IndicatorsDirective>;
     public tags: string[] = ['series', 'axes', 'rows', 'columns', 'rangeColorSettings', 'annotations', 'selectedDataIndexes', 'indicators'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
-    @ContentChild('legendSettingsTemplate')
-    @Template()
-    public legendSettings_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -521,7 +518,10 @@ export class ChartComponent extends Chart implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ChartComponent.prototype, 'tooltip_template');
+Template()(ChartComponent.prototype, 'legendSettings_template');
+
 

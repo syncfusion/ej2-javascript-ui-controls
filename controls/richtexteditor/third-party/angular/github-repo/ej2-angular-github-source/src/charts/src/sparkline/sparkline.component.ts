@@ -20,28 +20,29 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childRangeBandSettings: new ContentChild(RangeBandSettingsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class SparklineComponent extends Sparkline implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	axisRendering: any;
-	dataLabelRendering: any;
-	load: any;
-	loaded: any;
-	markerRendering: any;
-	pointRegionMouseClick: any;
-	pointRegionMouseMove: any;
-	pointRendering: any;
-	resize: any;
-	seriesRendering: any;
-	sparklineMouseClick: any;
-	sparklineMouseMove: any;
-	public tooltipInitialize: any;
-    public childRangeBandSettings: QueryList<RangeBandSettingsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare axisRendering: any;
+	declare dataLabelRendering: any;
+	declare load: any;
+	declare loaded: any;
+	declare markerRendering: any;
+	declare pointRegionMouseClick: any;
+	declare pointRegionMouseMove: any;
+	declare pointRendering: any;
+	declare resize: any;
+	declare seriesRendering: any;
+	declare sparklineMouseClick: any;
+	declare sparklineMouseMove: any;
+	public declare tooltipInitialize: any;
+    public declare childRangeBandSettings: QueryList<RangeBandSettingsDirective>;
     public tags: string[] = ['rangeBandSettings'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -78,7 +79,8 @@ export class SparklineComponent extends Sparkline implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

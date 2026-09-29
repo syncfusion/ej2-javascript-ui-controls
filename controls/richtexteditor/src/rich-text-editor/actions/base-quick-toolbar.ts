@@ -927,13 +927,14 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const isTopPosition: boolean = this.isElemVisible(blockRect, 'top', false) && spaceAbove > totalPopupHeight && topViewPortSpace > totalPopupHeight;
         const isBotPosition: boolean = offsetParams.direction === 'Backward'  && isTopPosition ? false : this.isElemVisible(blockRect, 'bottom', false) && spaceBelow > totalPopupHeight && botViewPortSpace > totalPopupHeight;
         const isInlineMode: boolean = this.parent.inlineMode.enable && this.type === 'Inline';
+        const isLargeBlock: boolean = offsetParams.blockRect.height > this.popupHeight;
         if (isBotPosition) {
             this.currentTipPosition = this.currentTipPosition.replace('Bottom', 'Top') as TipPointerPosition;
         } else if (isTopPosition) {
             args.positionY = -(this.popupHeight + 10) + (offsetParams.rangeRect.top - offsetParams.blockRect.top);
             this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
         } else if ((spaceAbove < totalPopupHeight && spaceBelow < totalPopupHeight) &&
-            (containsMedia || isInlineMode) && !this.parent.quickToolbarSettings.enableAppendToBody) {
+            (containsMedia || isInlineMode || isLargeBlock) && !this.parent.quickToolbarSettings.enableAppendToBody) {
             const withToolbarHeight: number = -(offsetParams.blockRect.top) + toolbarRect.bottom; // When floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
             const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
                 -(offsetParams.blockRect.top) : (-offsetParams.blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.

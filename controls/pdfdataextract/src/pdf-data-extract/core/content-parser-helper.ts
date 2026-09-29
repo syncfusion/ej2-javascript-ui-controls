@@ -4,7 +4,7 @@ import { _TextProcessingMode } from './enum';
 import { PdfRedactor } from './redaction/pdf-redactor';
 import { _GraphicState, _TextState } from './graphic-state';
 import { _FontStructure } from './text-extraction';
-import { _decodeEncodedText, _getXObject, _isArrayEqual } from './utils';
+import { _decodeEncodedText, _fetchXObject, _getXObject, _isArrayEqual } from './utils';
 import { _PdfTextParser } from './pdf-text-parser';
 import { _PdfShapeParser } from './redaction/shape-parser-helper';
 import { _ImageStructure } from './image-extraction/image-structure';
@@ -434,6 +434,45 @@ export class _PdfContentParserHelper {
             stream.write('\r\n');
             return stream;
         } else if (this._mode === _TextProcessingMode.textExtraction) {
+            return this._resultantText;
+        } else if (this._mode === _TextProcessingMode.textLineExtraction) {
+            return this._textLine;
+        }
+        return;
+    }
+    /**
+     * Processes a collection of content records and delegates operator handling.
+     *
+     * @private
+     * @param {_PdfRecord[]} recordCollection - Array of parsed content records.
+     * @param {PdfPage} page - Page being processed.
+     * @param {Map<string, _FontStructure>} fontCollection - Map of fonts available on the page.
+     * @param {Map<string, any>} xObjectCollection - Map of XObjects (images/forms).
+     * @param {_GraphicState} graphicState - Current graphic state tracker.
+     * @param {Map<string, _ImageStructure>} [imageCollection] - Optional image collection to populate.
+     * @returns { Promise<any> } Stream for redaction or extracted results based on mode.
+     */
+    async _fetchRecordCollection(recordCollection: _PdfRecord[],  page: PdfPage, fontCollection: Map<string, _FontStructure>,
+                             xObjectCollection: Map<string, any>, graphicState: _GraphicState, imageCollection?: // eslint-disable-line 
+                                 Map<string, _ImageStructure>): Promise<any> { // eslint-disable-line 
+        let textState: _TextState;
+        const red: number = 0;
+        const green: number = 0;
+        const blue: number = 0;
+        const updatedText: string = '';
+        let parser: _PdfShapeParser;
+        const skipUntil: number = -1;
+        const stream: _PdfContentStream = new _PdfContentStream([]);
+        for (let i: number = 0 ; i < recordCollection.length; i++) {
+            const record: _PdfRecord = recordCollection[Number.parseInt(i.toString(), 10)];
+            const token: string = record._operator;
+            const element: string[] = record._operands;
+            this._parser._processCommand(token, element, graphicState);
+            textState = graphicState._state;
+            i = await this._fetchPdfRecordCollection(textState, i, updatedText, page, recordCollection, fontCollection, xObjectCollection,
+                                                     graphicState, parser, red, green, blue, skipUntil, stream);
+        }
+        if (this._mode === _TextProcessingMode.textExtraction) {
             return this._resultantText;
         } else if (this._mode === _TextProcessingMode.textLineExtraction) {
             return this._textLine;
@@ -900,6 +939,186 @@ export class _PdfContentParserHelper {
             }
             this._redaction._optimizeContent(recordCollection, index, updatedText, stream);
             isChangeOperator = false;
+        }
+        if (this._mode !== _TextProcessingMode.imageExtraction) {
+            return index;
+        }
+    }
+    /**
+     * Processes a single record within a collection; core dispatcher for operators.
+     *
+     * @private
+     * @param {_TextState} textState - Current text state.
+     * @param {number} index - Index of the current record in the collection.
+     * @param {string} updatedText - Updated text accumulator for redaction optimization.
+     * @param {PdfPage} page - Page being processed.
+     * @param {_PdfRecord[]} recordCollection - Array of parsed records.
+     * @param {Map<string, _FontStructure>} fontCollection - Font collection map.
+     * @param {Map<string, any>} xObjectCollection - XObject collection map.
+     * @param {_GraphicState} graphicState - Graphic state object.
+     * @param {_PdfShapeParser} parser - Shape parser instance (may be created internally).
+     * @param {number} red - Red color channel (unused local).
+     * @param {number} green - Green color channel (unused local).
+     * @param {number} blue - Blue color channel (unused local).
+     * @param {number} skipUntil - Index until which to skip records (used by shape parser).
+     * @param {_PdfContentStream} stream - Stream accumulator for redaction output.
+     * @returns { Promise<any> } The possibly modified index or other dispatch result.
+     */
+    async _fetchPdfRecordCollection(textState: _TextState, index: number, updatedText: string, page: PdfPage,
+                                    recordCollection: _PdfRecord[], fontCollection: Map<string, _FontStructure>,
+                                xObjectCollection: Map<string, any>, graphicState: _GraphicState, // eslint-disable-line
+                                    parser: _PdfShapeParser, red: number, green: number, blue: number, skipUntil: number,
+                                stream: _PdfContentStream): Promise<any> { // eslint-disable-line
+        let currentFont: _FontStructure;
+        const record: _PdfRecord = recordCollection[Number.parseInt(index.toString(), 10)];
+        const token: string = record._operator;
+        const element: string[] = record._operands;
+        switch (token) {
+        case 'Tm':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._setTextMatrix(element, textState);
+            }
+            break;
+        case 'cm':
+            {
+                if (this._mode === _TextProcessingMode.redaction) {
+                    const x: number = parseFloat(element[4]);
+                    const y: number = parseFloat(element[5]);
+                    if (this._parser._isFoundText(x, y, page, this._redaction._redactionRegion)) {
+                        this._isContainsRedactionText = true;
+                    }
+                }
+            }
+            break;
+        case 'BT':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._beginText(textState, this._identityMatrix);
+            }
+            break;
+        case 'ET':
+            if (this._mode === _TextProcessingMode.textExtraction) {
+                this._resultantText += '\r\n';
+            }
+            break;
+        case 'Tf':
+            this._parser._setFont(element, textState);
+            break;
+        case 'Tc':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._setCharSpacing(element, textState);
+            }
+            break;
+        case 'Tw':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._setWordSpacing(element, textState);
+            }
+            break;
+        case 'Tz':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._setTextHorizontalScale(element, textState);
+            }
+            break;
+        case 'TL':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._updateTextLeading(element, textState);
+            }
+            break;
+        case 'Td':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._moveTextPlacement(element, textState);
+            }
+            break;
+        case 'TD':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._moveTextPlacementAndSetLeading(element, textState);
+            }
+            break;
+        case 'Ts':
+            if (this._mode !== _TextProcessingMode.textExtraction) {
+                this._parser._setTextRise(element, textState);
+            }
+            break;
+        case 'Tj':
+        {
+            if (this._mode !== _TextProcessingMode.imageExtraction) {
+                this._processTjOperator(record, textState, currentFont, page, fontCollection);
+            }
+            break;
+        }
+        case 'TJ':
+        {
+            if (this._mode !== _TextProcessingMode.imageExtraction) {
+                this._processTJOperator(record, textState, currentFont, page, fontCollection);
+            }
+            break;
+        }
+        case "'": // eslint-disable-line
+        {
+            if (this._mode !== _TextProcessingMode.imageExtraction) {
+                this._processSingleQuoteOperator(record, textState, currentFont, page,
+                                                 fontCollection);
+            }
+            break;
+        }
+        case '"':
+        {
+            if (this._mode !== _TextProcessingMode.imageExtraction) {
+                this._processDoubleQuoteOperator(record, textState, currentFont, page,
+                                                 fontCollection);
+            }
+            break;
+        }
+        case 'T*':
+            if (this._mode === _TextProcessingMode.textExtraction) {
+                this._resultantText += '\r\n';
+            } else {
+                this._parser._setNewLineWithLeading(textState);
+            }
+            break;
+        case 'RG':
+        case 'k':
+        case 'g':
+        case 'rg':
+            red = Number(element[0]);
+            green = Number(element[1]);
+            blue = Number(element[2]);
+            textState._textColor = {r: red, g: green, b: blue};
+            break;
+        case 'Do':
+        {
+            const xobject: string = element[0].replace('/', '');
+            if (xObjectCollection.has(xobject)) {
+                let base: any = xObjectCollection.get(xobject); //eslint-disable-line
+                if (base) {
+                    if (this._mode === _TextProcessingMode.textExtraction || this._mode === _TextProcessingMode.textLineExtraction) {
+                        await _fetchXObject(element, page, xObjectCollection, this, this._mode, graphicState);
+                    }
+                }
+            }
+            break;
+        }
+        case 're':
+        {
+            parser = new _PdfShapeParser();
+            const numberArray: number[] = element.map(function (value: string): number {
+                return Number(value);
+            });
+            if (_isArrayEqual(page.mediaBox, numberArray)) {
+                break;
+            }
+            const records: _PdfRecord[] = parser._processRectangle(recordCollection, index, element);
+            if (record && records.length > 0) {
+                recordCollection.splice(index--, 1, ...records);
+            }
+            break;
+        }
+        case 'm':
+            parser = new _PdfShapeParser();
+            skipUntil = parser._findRedactPath(recordCollection, index, page, this._redaction, this._mode, stream);
+            if (skipUntil !== -1) {
+                index = skipUntil;
+            }
+            break;
         }
         if (this._mode !== _TextProcessingMode.imageExtraction) {
             return index;

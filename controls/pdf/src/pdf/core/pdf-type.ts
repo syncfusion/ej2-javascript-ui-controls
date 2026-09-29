@@ -1,4 +1,4 @@
-import { DigestAlgorithm, CryptographicStandard, PdfTemplateHorizontalAlignment, PdfTemplateVerticalAlignment, PdfTemplateLayerMode } from './enumerator';
+import { DigestAlgorithm, CryptographicStandard, PdfTemplateHorizontalAlignment, PdfTemplateVerticalAlignment, PdfTemplateLayerMode, PdfEncryptionType, PdfPermissionFlag, PdfCertificationFlag, RevocationStatus, SignatureStatus, RevocationType  } from './enumerator';
 import { PdfFont } from './fonts/pdf-standard-font';
 import { PdfStringFormat } from './fonts/pdf-string-format';
 import { PdfBrush, PdfPen } from './graphics/pdf-graphics';
@@ -154,6 +154,38 @@ export type PdfDocumentTemplate = {
     oddBottom?: { template: PdfPageTemplateElement;  templateLayerMode?: PdfTemplateLayerMode; alignment?: PdfTemplateHorizontalAlignment };
 };
 /**
+ * Represents security configuration for PDF encryption.
+ *
+ * @property {PdfEncryptionType} encryptionType - Specifies the type of the algorithm and length of the encryption key (optional).
+ * @property {string} userPassword - The user password which is required when the PDF document is opened in a viewer. (optional).
+ * @property {string} ownerPassword - The owner password, If the PDF document is password protected you can use the owner password to open the document and change its permissions. (optional)
+ * @property {PdfPermissionFlag} permissions - The permission flags, Defines what operations are allowed when the document is opened with user password. (optional).
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Create security options with AES-128 encryption
+ * let securityOptions: PdfSecurityOptions = {
+ *     encryptionType: PdfEncryptionType.aesBit128,
+ *     userPassword: 'user123',
+ *     ownerPassword: 'owner456',
+ *     permissions: PdfPermissionFlag.print | PdfPermissionFlag.copy
+ * };
+ * // Apply security settings
+ * document.setSecurity(securityOptions);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export type PdfSecurityOptions = {
+    encryptionType?: PdfEncryptionType;
+    userPassword?: string;
+    ownerPassword?: string;
+    permissions?: PdfPermissionFlag;
+};
+/**
  * Internal helper type for template-value caching.
  *
  * @private
@@ -161,4 +193,162 @@ export type PdfDocumentTemplate = {
 export type _PdfTemplateValuePair = {
     template: PdfTemplate;
     value: string;
+};
+/**
+ * Callback to retrieve revocation data.
+ *
+ * @param {string} url - Specifies the responder endpoint.
+ * @param {Uint8Array} [requestbytes] - Specifies the optional request data.
+ * @returns {Promise<{ response: Uint8Array }>} Returns a promise that resolves to the responder data.
+ */
+export type LongTermValidationCallback = (url: string, requestbytes?: any) => Promise<{ response: Uint8Array }>; // eslint-disable-line
+/**
+ * Represents the result of a PDF signature validation operation.
+ *
+ * @property {CryptographicStandard} cryptographicStandard - Specifies the cryptographic standard used for the signature.
+ * @property {DigestAlgorithm} digestAlgorithm - Specifies the digest algorithm used to generate the signature.
+ * @property {boolean} isDocumentModified - Indicates whether the document has been modified after signing.
+ * @property {boolean} validityAtCurrentTime - Indicates whether the signature is valid at the current time.
+ * @property {boolean} validityAtSignedTime - Indicates whether the signature was valid at the time it was signed.
+ * @property {boolean} validityAtTimestampTime - Indicates whether the signature was valid at the timestamp generation time.
+ * @property {boolean} isCertificated - Indicates whether the document is certified.
+ * @property {PdfCertificationFlag} documentPermissions - Specifies the permissions granted by the certification signature.
+ * @property {RevocationResult} revocationResult - Contains revocation validation information.
+ * @property {LtvVerificationInformation} ltvVerificationInformation - Contains Long-Term Validation (LTV) verification information.
+ * @property {string} signatureAlgorithm - Specifies the signature algorithm used to create the signature.
+ * @property {string} signatureName - Specifies the name of the signature field.
+ * @property {SignatureStatus} signatureStatus - Specifies the validation status of the signature.
+ * @property {string[]} validationErrorMessages - Contains validation error messages generated during signature verification.
+ * @property {TimestampInformation} timestampInformation - Contains timestamp validation and certificate information.
+ * @property {boolean} isSignatureValid - Indicates whether the signature is valid.
+ * @property {PdfSignerCertificate[]} [signerCertificates] - Contains the signer certificate chain and associated revocation details.
+ */
+export type PdfSignatureValidationResult = {
+    cryptographicStandard: CryptographicStandard,
+    digestAlgorithm: DigestAlgorithm,
+    isDocumentModified: boolean,
+    validityAtCurrentTime: boolean,
+    validityAtSignedTime: boolean,
+    validityAtTimestampTime: boolean,
+    isCertifiedSignature: boolean,
+    documentPermissions: PdfCertificationFlag,
+    revocationResult: RevocationResult,
+    ltvVerificationInformation: LtvVerificationInformation,
+    signatureAlgorithm: string,
+    signatureName: string,
+    signatureStatus: SignatureStatus,
+    validationErrorMessages: string[],
+    timestampInformation: TimestampInformation,
+    isSignatureValid: boolean,
+    signerCertificates: PdfSignerCertificate[]
+};
+/**
+ * Represents Long-Term Validation (LTV) verification information.
+ *
+ * @property {boolean} isCrlEmbedded - Indicates whether CRL information is embedded in the document.
+ * @property {boolean} isLtvEmbedded - Indicates whether LTV information is embedded in the document.
+ * @property {boolean} isOcspEmbedded - Indicates whether OCSP information is embedded in the document.
+ */
+export type LtvVerificationInformation = {
+    isCrlEmbedded: boolean;
+    isLtvEmbedded: boolean;
+    isOcspEmbedded: boolean;
+};
+/**
+ * Represents certificate revocation validation results.
+ *
+ * @property {boolean} isRevokedCRL - Indicates whether the certificate was revoked according to CRL validation.
+ * @property {RevocationStatus} ocspRevocationStatus - Specifies the revocation status determined through OCSP validation.
+ */
+export type RevocationResult = {
+    isRevokedCRL: boolean;
+    ocspRevocationStatus: RevocationStatus;
+};
+/**
+ * Represents revocation information (OCSP or CRL) associated with a certificate in the chain.
+ *
+ * @property {boolean} isEmbedded - Indicates whether the revocation data is embedded in the PDF.
+ * @property {PdfX509CertificateProperties[]} certificates - The certificates associated with the revocation response.
+ * @property {Date} validFrom - The date/time from which the revocation response is valid.
+ * @property {Date} validTo - The date/time until which the revocation response is valid.
+ */
+export type PdfRevocationCertificate = {
+    isEmbedded: boolean;
+    certificates: PdfX509CertificateProperties[];
+    validFrom: Date;
+    validTo: Date;
+};
+/**
+ * Represents per-certificate revocation and identity details for a signer certificate in the chain.
+ *
+ * @property {PdfX509CertificateProperties} certificate - The signer or chain certificate.
+ * @property {PdfRevocationCertificate} [ocspCertificate] - OCSP revocation information for this certificate, if available.
+ * @property {PdfRevocationCertificate} [crlCertificate] - CRL revocation information for this certificate, if available.
+ */
+export type PdfSignerCertificate = {
+    certificate: PdfX509CertificateProperties;
+    ocspCertificate?: PdfRevocationCertificate;
+    crlCertificate?: PdfRevocationCertificate;
+};
+/**
+ * Represents timestamp validation information associated with a signature.
+ *
+ * @property {boolean} isDocumentTimestamp - Indicates whether the timestamp is a document timestamp.
+ * @property {boolean} isvalid - Indicates whether the timestamp is valid.
+ * @property {Date} timestampTime - Specifies the date and time when the timestamp was generated.
+ * @property {string} timestampPolicyId - Specifies the timestamp policy identifier.
+ * @property {PdfX509CertificateProperties} certificate - Specifies the timestamp authority certificate.
+ * @property {PdfSignerCertificate[]} signerCertificates - Specifies the timestamp signer certificate chain.
+ */
+export type TimestampInformation = {
+    isDocumentTimestamp: boolean;
+    isValid: boolean;
+    timestampTime: Date;
+    timestampPolicyId: string;
+    certificate: PdfX509CertificateProperties;
+    signerCertificates: PdfSignerCertificate[];
+};
+/**
+ * Represents options used to customize digital signature validation.
+ *
+ * @property {Uint8Array[]} [trustedCertificates] Specifies the trusted certificates used for certificate chain validation.
+ * @property {RevocationType} [revocationValidationType] Specifies the revocation validation method to use.
+ * @property {Uint8Array} [ocspExternalData] Specifies external OCSP response data used when embedded OCSP information is unavailable.
+ * @property {Uint8Array} [crlExternalData] Specifies external CRL data used when embedded CRL information is unavailable.
+ * @property {string[]} [passwords] Specifies the passwords associated with the trusted certificate data, if required.
+ */
+export type PdfSignatureValidationOptions = {
+    trustedCertificates?: Uint8Array[];
+    revocationValidationType?: RevocationType;
+    ocspExternalData?: Uint8Array;
+    crlExternalData?: Uint8Array;
+    passwords?: string[];
+};
+/**
+ * Represents the properties of an X.509 certificate.
+ *
+ * @property {string} subject Specifies the full distinguished name (DN) of the certificate subject.
+ * @property {string} issuer Specifies the full distinguished name (DN) of the certificate issuer.
+ * @property {string} subjectSimpleName Specifies a Common Name (CN) component of the subject distinguished name.
+ * @property {string} issuerSimpleName Specifies a  Common Name (CN) component of the issuer distinguished name.
+ * @property {string} serialNumber Specifies the unique serial number assigned to the certificate by the issuing authority.
+ * @property {Date} validFrom Specifies the date and time from which the certificate is valid.
+ * @property {Date} validTo Specifies the date and time until which the certificate remains valid.
+ * @property {number} version Specifies the X.509 version of the certificate.
+ * @property {string} signatureAlgorithm Specifies the signature algorithm used to sign the certificate.
+ * @property {Uint8Array} issuerUniqueId Specifies the optional issuer unique identifier contained in the certificate.
+ * @property {Uint8Array} subjectUniqueId Specifies the optional subject unique identifier contained in the certificate.
+ */
+export type PdfX509CertificateProperties = {
+    subject: string;
+    issuer: string;
+    subjectSimpleName: string;
+    issuerSimpleName: string;
+    serialNumber: string;
+    validFrom: Date;
+    validTo: Date;
+    version: number;
+    signatureAlgorithm: string;
+    issuerUniqueId: Uint8Array;
+    subjectUniqueId: Uint8Array;
 };

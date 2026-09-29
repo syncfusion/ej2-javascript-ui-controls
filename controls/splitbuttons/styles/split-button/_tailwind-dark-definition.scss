@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/tailwind-dark-definition' as *;
-@forward 'ej2-base/styles/definition/tailwind-dark';
-@forward '../drop-down-button/tailwind-dark-definition';
 
 //layout variables
 $split-btn-zindex: 2 !default;
@@ -43,6 +41,8 @@ $drop-down-zero-border-radius: 0 !default;
 $drop-down-bigger-rtl-padding-left: 12px !default;
 $drop-down-bigger-rtl-padding-right: 12px !default;
 $drop-down-bgr-rtl-icon-padding-left: 10px !default;
+$drop-dbtn-icon-font-size: $text-base !default;
+$drop-dbtn-icon-font-size-bigger: $text-lg !default;
 
 $split-rtl-btn-padding-left: 12px !default;
 $split-rtl-btn-padding-right: 12px !default;

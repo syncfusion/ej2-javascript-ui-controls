@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 
 .e-multi-select-wrapper {
   box-sizing: border-box;
@@ -10,12 +10,12 @@
   user-select: none;
   width: $multi-full-width;
 
-  #{if(&, '&', '*')}.e-delimiter {
-    #{if(&, '&', '*')} .e-searcher,
-    #{if(&, '&', '*')} .e-multi-searcher {
+  &.e-delimiter {
+    & .e-searcher,
+    & .e-multi-searcher {
       height: $ddl-delimiter-height;
       vertical-align: middle;
-      #{if(&, '&', '*')} .e-dropdownbase {
+      & .e-dropdownbase {
         height: $ddl-full-height;
         min-height: $ddl-full-height;
       }
@@ -25,8 +25,8 @@
   .e-delim-view {
     white-space: nowrap;
 
-    #{if(&, '&', '*')}.e-delim-values.e-delim-overflow,
-    #{if(&, '&', '*')}.e-delim-values.e-delim-total {
+    &.e-delim-values.e-delim-overflow,
+    &.e-delim-values.e-delim-total {
       box-sizing: border-box;
       display: inline-block;
       overflow: hidden;
@@ -34,6 +34,15 @@
       @if $ddl-multiselect-skin-name == 'tailwind' {
         padding: $ddl-multiselect-zero-padding-margin;
       }
+    }
+
+    &.e-delim-summary {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      display: inline-block;
+      vertical-align: middle;
+      box-sizing: border-box;
     }
   }
 
@@ -243,7 +252,7 @@
 .e-small .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'highcontrast' {
     margin: $ddl-chip-small-margin;
-    #{if(&, '&', '*')} > .e-chipcontent {
+    & > .e-chipcontent {
       padding: $ddl-chip-small-content-padding;
     }
   }
@@ -922,7 +931,7 @@ ejs-multiselect {
 
 .e-small {
   .e-multiselect.e-outline .e-multi-select-wrapper,
-  #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+  &.e-multiselect.e-outline .e-multi-select-wrapper {
     @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
       min-height: $outline-multiselect-small-height;
       padding: $outline-multiselect-overall-padding;

@@ -9,6 +9,7 @@ import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { foreignKeyData } from '../base/constant';
 import { CellType } from '../base/enum';
 import * as literals from '../base/string-literals';
+import { FormulaValue } from '../actions';
 
 /**
  * CellRenderer class which responsible for building cell content.
@@ -48,10 +49,13 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @returns {string} returns the format
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public format(column: Column, value: Object, data?: Object): string {
+    public format(column: Column, value: Object | FormulaValue, data?: Object): string {
         if (!isNullOrUndefined(column.format)) {
 
             if (column.type === 'number' && isNaN(parseInt(value as string, 10))) {
+                value = null;
+            }
+            if (column.allowFormula && isNaN(parseInt(value as string, 10))) {
                 value = null;
             }
             if (column.type === 'dateonly' && typeof value === 'string' && value) {
@@ -61,7 +65,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             value = this.formatter.toView(value as number | Date, column.getFormatter());
         }
 
-        return isNullOrUndefined(value) ? '' : value.toString();
+        return isNullOrUndefined(value) ? '' : String(value);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -167,6 +171,11 @@ export class CellRenderer implements ICellRenderer<Column> {
             for (const elem of elements) {
                 td.appendChild(elem);
             }
+            if (td.innerHTML && typeof td.innerHTML === 'string' && td.innerHTML.startsWith('#')) {
+                td.classList.add('e-formula-error');
+            } else if (td.classList.contains('e-formula-error')) {
+                td.classList.remove('e-formula-error');
+            }
         }
     }
 
@@ -194,9 +203,31 @@ export class CellRenderer implements ICellRenderer<Column> {
         //Prepare innerHtml
         let innerHtml: string = <string>this.getGui();
 
-        let value: Object = cell.isForeignKey ? this.getValue(column.foreignKeyValue, fData, column) :
+        let value: Object | FormulaValue = cell.isForeignKey ? this.getValue(column.foreignKeyValue, fData, column) :
             this.getValue(column.field, data, column);
 
+        if (!isNullOrUndefined(column) && column.type === 'rownumber') {
+            const index: number = parseInt(attributes && attributes['data-index'] as string, 10);
+            value = index + 1;
+            if (this.parent.allowPaging) {
+                const pageSize: number = this.parent.pageSettings.pageSize || 0;
+                const currentPage: number = this.parent.pageSettings.currentPage || 1;
+                const pageOffset: number = (currentPage - 1) * pageSize;
+                value = index + pageOffset + 1;
+            }
+        }
+        if (this.parent.formulaModule && column.allowFormula && !isEdit) {
+            const isRawFormula: boolean = typeof value === 'string' && value.trim().startsWith('=');
+            if (isRawFormula) {
+                const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+                this.parent.setCellFormula(data[`${primaryKey}`], column.field, value as string);
+                value = this.parent.getFormulaValue(data[`${primaryKey}`], column.field);
+            }
+            if (!isNullOrUndefined((this.parent.getHeaderTable() as HTMLElement).querySelectorAll('.e-header-col-ref')) &&
+                isNullOrUndefined(this.parent.getHeaderTable().querySelector('.e-col-hidden'))) {
+                Array.from((this.parent.getHeaderTable() as HTMLElement).querySelectorAll('.e-header-col-ref')).map((ele: HTMLElement) => ele.classList.add('e-col-hidden'));
+            }
+        }
         if ((column.type === 'date' || column.type === 'datetime') && !isNullOrUndefined(value)) {
             value = new Date(value as string);
         }
@@ -204,8 +235,11 @@ export class CellRenderer implements ICellRenderer<Column> {
             const arr: string[] = value.split(/[^0-9.]/);
             value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
         }
-        value = this.format(column, value, data);
-
+        if (value instanceof Error) {
+            value = String(value);
+        } else {
+            value = this.format(column, value, data);
+        }
         innerHtml = value.toString();
 
         if (column.type === 'boolean' && !column.displayAsCheckBox) {
@@ -331,7 +365,9 @@ export class CellRenderer implements ICellRenderer<Column> {
         if (cell.isTemplate) {
             classes.push('e-templatecell');
         }
-
+        if ((<{ type?: string }>cell.column).type === 'rownumber') {
+            classes.push(literals.rowNumberCell);
+        }
         if (cell.isSelected) {
             classes.push(...['e-selectionbackground', 'e-active']);
             if (isCheckBoxType) {

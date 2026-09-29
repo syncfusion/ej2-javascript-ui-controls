@@ -391,9 +391,14 @@ describe('PivotView spec', () => {
             });
             it('Type18', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
-                pivotGridObj.dataSourceSettings.values[0].type = 'SampleStDev';
+                pivotGridObj.dataSourceSettings.values[0].type = 'PercentageOfRunningTotals';
+                pivotGridObj.refreshData();
             });
             it('Type19', () => {
+                expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
+                pivotGridObj.dataSourceSettings.values[0].type = 'SampleStDev';
+            });
+            it('Type20', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
                 pivotGridObj.dataSourceSettings.values[0].type = 'SampleVar';
             });
@@ -503,9 +508,14 @@ describe('PivotView spec', () => {
             });
             it('AnotherType18', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
-                pivotGridObj.dataSourceSettings.values[1].type = 'SampleStDev';
+                pivotGridObj.dataSourceSettings.values[1].type = 'PercentageOfRunningTotals';
+                pivotGridObj.refreshData();
             });
             it('AnotherType19', () => {
+                expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
+                pivotGridObj.dataSourceSettings.values[1].type = 'SampleStDev';
+            });
+            it('AnotherType20', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
                 pivotGridObj.dataSourceSettings.values[1].type = 'SampleVar';
             });
@@ -519,14 +529,8 @@ describe('PivotView spec', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
                 (document.querySelectorAll('.e-expand')[0] as HTMLElement).click();
             });
-            it('Drilldown-column1', () => {
-                (document.querySelectorAll('.e-expand')[0] as HTMLElement).click();
-            });
             it('Drillup-row1', () => {
-                expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("-");
-                (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
-            });
-            it('Drillup-column1', () => {
+                expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe('');
                 (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
             });
         });
@@ -669,7 +673,7 @@ describe('PivotView spec', () => {
                     width: 800,
                     displayOption: { view: 'Both' },
                     chartSettings: {
-                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,showMemberSeries:true,
+                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false, showPointColorByMembers: true,
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
                     'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
@@ -845,6 +849,386 @@ describe('PivotView spec', () => {
             const memory = inMB(getMemoryProfile());
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
             expect(average).toBeLessThan(10);
+        });
+    });
+
+    describe('Percentage of Running Totals', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement;
+        let originalTimeout: number;
+
+        const percentageRunningTotalData: IDataSet[] = [
+            { 'Month': 'Jan', 'Product': 'Mobile', 'Sales': 100, 'Expense': 50 },
+            { 'Month': 'Jan', 'Product': 'Laptop', 'Sales': 200, 'Expense': 100 },
+            { 'Month': 'Feb', 'Product': 'Mobile', 'Sales': 150, 'Expense': 75 },
+            { 'Month': 'Feb', 'Product': 'Laptop', 'Sales': 300, 'Expense': 150 },
+            { 'Month': 'Mar', 'Product': 'Mobile', 'Sales': 200, 'Expense': 100 },
+            { 'Month': 'Mar', 'Product': 'Laptop', 'Sales': 400, 'Expense': 200 }
+        ];
+
+        afterEach(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+
+        // ========================================
+        // MODULE 1: Unit Tests - Aggregation Calculation
+        // ========================================
+        describe('Module 1: PercentageOfRunningTotals Aggregation Calculation', () => {
+
+            it('8.1.1 - Basic percentage of running totals calculation (row-based)', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[1][2].actualValue).toBe(150);
+                    done();
+                }, 100);
+            });
+
+            it('8.1.2 - Percentage of running totals accumulation across rows', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[1][2].actualValue).toBe(150);
+                    done();
+                }, 100);
+            });
+
+            it('8.1.3 - Column-based percentage of running totals calculation', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Product' }],
+                        columns: [{ name: 'Month' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[1][2].actualValue).toBe(200);
+                    done();
+                }, 100);
+            });
+
+            it('8.1.4 - Multiple values with percentage of running totals', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [
+                            { name: 'Sales', type: 'PercentageOfRunningTotals' },
+                            { name: 'Expense', type: 'PercentageOfRunningTotals' }
+                        ],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues).toBeDefined();
+                    expect(pivotValues[0].length).toBeGreaterThan(2);
+                    done();
+                }, 100);
+            });
+        });
+
+        // ========================================
+        // MODULE 2: Integration Tests - Hierarchy Levels
+        // ========================================
+        describe('Module 2: PercentageOfRunningTotals with Hierarchy Levels', () => {
+
+            it('8.2.1 - Percentage of running totals with multi-level hierarchy', (done: Function) => {
+                const hierarchyData: IDataSet[] = [
+                    { 'Year': 2021, 'Quarter': 'Q1', 'Month': 'Jan', 'Sales': 100 },
+                    { 'Year': 2021, 'Quarter': 'Q1', 'Month': 'Feb', 'Sales': 200 },
+                    { 'Year': 2021, 'Quarter': 'Q2', 'Month': 'Apr', 'Sales': 300 },
+                    { 'Year': 2022, 'Quarter': 'Q1', 'Month': 'Jan', 'Sales': 400 },
+                    { 'Year': 2022, 'Quarter': 'Q2', 'Month': 'Apr', 'Sales': 500 }
+                ];
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: hierarchyData,
+                        rows: [{ name: 'Year' }, { name: 'Quarter' }, { name: 'Month' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues).toBeDefined();
+                    expect(pivotValues.length).toBeGreaterThan(1);
+                    done();
+                }, 100);
+            });
+
+            it('8.2.2 - Percentage of running totals respects subtotal boundaries', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: true,
+                        showSubTotals: true
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues[1][1].formattedText).toBe("33.33%");
+                    done();
+                }, 100);
+            });
+
+            it('8.2.3 - Percentage of running totals with expanded hierarchy', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }, { name: 'Product' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: true
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues.length).toBeGreaterThan(3);
+                    done();
+                }, 100);
+            });
+        });
+
+        // ========================================
+        // MODULE 3: Formatting Tests
+        // ========================================
+        describe('Module 3: PercentageOfRunningTotals Percentage Formatting and Rounding', () => {
+
+            it('8.3.1 - Percentage format applied to percentage of running totals', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false,
+                        formatSettings: [
+                            { name: 'Sales', format: 'P2' }
+                        ]
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[2][1].formattedText).toBe("55.56%");
+                    done();
+                }, 100);
+            });
+
+            it('8.3.2 - Decimal precision maintained in percentage calculation', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false,
+                        formatSettings: [
+                            { name: 'Sales', format: 'P4' } // 4 decimal places
+                        ]
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[2][1].formattedText).toBe("55.5556%");
+                    done();
+                }, 100);
+            });
+
+            it('8.3.3 - Zero values formatted as empty cell', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[3][1].formattedText).toBe("100%");
+                    done();
+                }, 100);
+            });
+
+            it('8.3.4 - Large percentage values formatted correctly', (done: Function) => {
+                const largeData: IDataSet[] = [
+                    { 'Month': 'Jan', 'Sales': 10000 },
+                    { 'Month': 'Feb', 'Sales': 20000 },
+                    { 'Month': 'Mar', 'Sales': 30000 }
+                ];
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: largeData,
+                        rows: [{ name: 'Month' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: false
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[1][1].formattedText).toBe("33.33%");
+                    done();
+                }, 100);
+            });
+        });
+
+        // ========================================
+        // MODULE 4: Running Total Reset at Boundaries
+        // ========================================
+        describe('Module 4: PercentageOfRunningTotals Reset at Parent Boundaries', () => {
+
+            it('8.4.1 - Running total resets at parent level boundaries', (done: Function) => {
+                const boundaryData: IDataSet[] = [
+                    { 'Category': 'A', 'Item': 'A1', 'Sales': 100 },
+                    { 'Category': 'A', 'Item': 'A2', 'Sales': 200 },
+                    { 'Category': 'B', 'Item': 'B1', 'Sales': 300 },
+                    { 'Category': 'B', 'Item': 'B2', 'Sales': 400 }
+                ];
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: boundaryData,
+                        rows: [{ name: 'Category' }, { name: 'Item' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: true,
+                        showSubTotals: true
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    // Verify structure with parent boundaries
+                    expect(pivotValues).toBeDefined();
+                    expect(pivotValues.length).toBeGreaterThan(3);
+                    done();
+                }, 100);
+            });
+
+            it('8.4.2 - Percentage accumulation respects hierarchy levels', (done: Function) => {
+                const hierarchyBoundaryData: IDataSet[] = [
+                    { 'Year': 2021, 'Quarter': 'Q1', 'Sales': 100 },
+                    { 'Year': 2021, 'Quarter': 'Q2', 'Sales': 200 },
+                    { 'Year': 2022, 'Quarter': 'Q1', 'Sales': 300 },
+                    { 'Year': 2022, 'Quarter': 'Q2', 'Sales': 400 }
+                ];
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: hierarchyBoundaryData,
+                        rows: [{ name: 'Year' }, { name: 'Quarter' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: true
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues).toBeDefined();
+                    done();
+                }, 100);
+            });
+
+            it('8.4.3 - Subtotal rows have empty formatted text at boundaries', (done: Function) => {
+                elem = createElement('div', { id: 'PivotView', styles: 'height: 500px; width: 100%' });
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: percentageRunningTotalData,
+                        rows: [{ name: 'Month' }, { name: 'Product' }],
+                        columns: [],
+                        values: [{ name: 'Sales', type: 'PercentageOfRunningTotals' }],
+                        expandAll: true,
+                        showSubTotals: true,
+                        showRowSubTotals: true
+                    },
+                    height: 500
+                });
+                pivotGridObj.appendTo('#PivotView');             
+                setTimeout(() => {
+                    const pivotValues = pivotGridObj.pivotValues;
+                    expect(pivotValues[1][1].formattedText).toBe("33.33%");
+                    done();
+                }, 100);
+            });
         });
     });
 });

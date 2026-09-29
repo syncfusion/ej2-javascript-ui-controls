@@ -802,9 +802,33 @@ export class _PdfUniqueEncodingElement extends _PdfAbstractSyntaxElement {
         }
         const encodedElements: _PdfUniqueEncodingElement[] = [];
         let i: number = 0;
-        while (i < this._value.length) {
+        const value: Uint8Array = this._getValue();
+        while (i < value.length) {
+            const remaining: Uint8Array = value.subarray(i);
+            if (remaining.length < 2) {
+                throw new Error('ASN.1 parsing error: element too short');
+            }
+            if (remaining[0] === 0x2A) {
+                throw new Error(
+                    'ASN.1 parsing error: raw value detected (missing tag + length encoding)'
+                );
+            }
             const next: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
-            i += next._fromBytes(this._getValue().subarray(i));
+            let consumed: number;
+            try {
+                consumed = next._fromBytes(remaining);
+            } catch (e) {
+                throw new Error(
+                    `ASN.1 parsing failed at offset ${i}: ${e.message}`
+                );
+            }
+            if (consumed <= 0) {
+                throw new Error('ASN.1 parsing error: invalid element size');
+            }
+            if (i + consumed > value.length) {
+                throw new Error('ASN.1 parsing error: length exceeds buffer');
+            }
+            i += consumed;
             encodedElements.push(next);
         }
         return encodedElements;

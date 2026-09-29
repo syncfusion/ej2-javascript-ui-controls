@@ -1999,7 +1999,33 @@ describe('Code Block with Blockquote Functionality', () => {
         }, 50);
     });
 });
-
+describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 5 Code Block' , () => {
+    let rteObject : RichTextEditor ;
+    let innerHTML: string = '<pre><span style="text-decoration: line-through;"><span style="text-decoration: underline;">Testing﻿﻿</span></span><br></pre>';
+    beforeAll( () => {
+        rteObject = renderRTE({ 
+            toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+            'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+            } ,value: innerHTML
+        });
+    })
+    afterAll( () => {
+        destroy( rteObject );
+    })
+    it('should add span element with font size to around the span node', (done : Function) => {
+        const contentElem : HTMLElement = rteObject.element.querySelector('pre');
+        let range : Range = new Range();
+        range.setStart( contentElem ,0 );
+        range.setEnd( contentElem ,1 );
+        rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+        const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+        ( dropButton[1] as HTMLElement ).click(); // Font Size
+        const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+        ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+        expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+        done();
+    });
+});
 describe('977351 - Blazor Server: Unable to Insert Code Block After Deleting Table via Quick Toolbar', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Tab', stopPropagation: () => { }, shiftKey: false, which: 9, code: 'Tab' };

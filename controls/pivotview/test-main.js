@@ -106,6 +106,11 @@ require.config({
             name: '@syncfusion/ej2-notifications',
             location: 'node_modules/@syncfusion/ej2-notifications/dist',
             main: 'ej2-notifications.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-querybuilder',
+            location: 'node_modules/@syncfusion/ej2-querybuilder/dist',
+            main: 'ej2-querybuilder.umd.min.js'
         }
         // Include dependent packages
     ],

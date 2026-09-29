@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin padding-styles($left, $right) {
   padding-left: $left;
   padding-right: $right;
@@ -27,6 +27,10 @@
         @if $grid-xlfl-skin == 'fluent2' {
           padding: 0 36px 0 0;
         }
+      }
+
+      .e-contextmenu-container ul:not(.e-ul) {
+        max-width: 100%;
       }
     }
   }
@@ -202,7 +206,7 @@
     &.e-dialog .e-dlg-content {
       padding-left: $grid-bigger-checkbox-content-padding-left;
       @if $grid-xlfl-skin == 'fluent2' {
-        padding-right: 24px;
+        padding-right: 7px;
       }
     }
   

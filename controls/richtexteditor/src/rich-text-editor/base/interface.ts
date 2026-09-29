@@ -358,7 +358,7 @@ export interface IRenderer {
     addEventListener?(): void
     removeEventListener?(): void
     renderToolbar?(args: IToolbarOptions): void
-    renderDropDownButton?(args: DropDownItemModel): DropDownButton
+    renderDropDownButton?(args: DropDownItemModel, width?: string, type?: string): DropDownButton
     renderColorPicker?(args: IColorPickerModel, item?: string, toobarType?: string): ColorPicker
     renderListDropDown?(args: IDropDownModel): DropDownButton
     renderSplitButton?(args: ISplitButtonModel): SplitButton
@@ -1369,4 +1369,92 @@ export interface BeforePopupOpenCloseEventArgs {
      * @optional
      */
     originalEvent?: Event;
+}
+
+/**
+ * Defines the event arguments for the `beforeWebMcpToolExecute` event.
+ * Provides access to the tool name and its input arguments before execution,
+ * and allows the application to inspect, modify, or cancel the operation.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /**
+     * Specifies whether the tool execution should be cancelled.
+     * Set to `true` to prevent the tool from executing.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the name of the WebMCP tool being executed (e.g. `'editCell'`, `'getCellData'`).
+     */
+    toolName?: string;
+    /**
+     * Specifies the arguments passed to the tool.
+     * The shape of this object matches the tool's `inputSchema` as defined in the tool registry.
+     */
+    toolArgs?: object;
+    /**
+     * Set to `true` to display a confirmation dialog to the user before the tool executes.
+     * Execution proceeds only if the user confirms.
+     */
+    showConfirmationDialog?: boolean;
+    /**
+     * Specifies a custom response message to send back to the AI when tool execution is cancelled,
+     * either by setting `cancel` to `true` or when the user dismisses the confirmation dialog.
+     * When not provided, a default cancellation message is sent to the AI.
+     */
+    cancellationResponse?: string;
+}
+
+
+/**
+ * Defines the structure of a WebMCP tool, including its name, description,
+ * and input/output JSON schemas used for tool registration and execution.
+ */
+export interface WebMcpTool {
+    /**
+     * The unique identifier name of the WebMCP tool (e.g., 'editCell', 'getCellData').
+     */
+    name: string;
+    /**
+     * A description of the tool's functionality and purpose.
+     */
+    description: string;
+    /**
+     * The JSON schema object that defines the expected input parameters for the tool.
+     */
+    inputSchema: object;
+    /**
+     * The JSON schema object that defines the structure of the tool's output response.
+     */
+    outputSchema: object;
+    /**
+     * A readOnlyHint flag indicating whether the tool performs read-only operations without modifying state.
+     */
+    annotations: object;
+    /**
+     * A function that executes the tool's logic when invoked.
+     */
+    execute?: Function;
+}
+
+/**
+ * Defines the result returned by a WebMCP tool execution,
+ * containing the response content array and an optional error flag.
+ *
+ * @hidden
+ */
+export interface WebMcpToolResponse {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+}
+
+/**
+ * Defines the result returned after executing an AI assist command,
+ * including success status, message, optional data payload, and error details.
+ */
+export interface CommandResult {
+    action: string;
+    success: boolean;
+    message: string;
+    data?: Record<string, unknown>;
+    error?: { code: string; message: string; retryable?: boolean };
 }

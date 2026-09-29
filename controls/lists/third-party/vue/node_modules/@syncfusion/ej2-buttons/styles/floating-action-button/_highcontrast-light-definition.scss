@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $fab-offset: 16px !default;
 
 $fab-border-radius: 9999px !default;

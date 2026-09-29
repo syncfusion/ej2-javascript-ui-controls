@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ranges>e-range',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class RangeDirective extends ComplexBase<RangeDirective> {
@@ -29,70 +29,70 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
      * @aspdefaultvalueignore 
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Sets and gets the end value of the range in circular gauge.
      * @aspdefaultvalueignore 
      * @default 0
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Sets and gets the width for the end of the range in the circular gauge.
      * @default '10'
      */
-    public endWidth: any;
+    public declare endWidth: any;
     /** 
      * Sets and gets the text to be displayed for the corresponding legend item in the legend of the circular gauge.
      * @default ''
      */
-    public legendText: any;
+    public declare legendText: any;
     /** 
      * Sets and gets the properties to render a linear gradient for the range. 
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the range.
      * @default null
      */
-    public linearGradient: any;
+    public declare linearGradient: any;
     /** 
      * Sets and gets the offset value for the range from which it is to be placed from the axis in circular gauge.
      * @default '0'
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Sets and gets the opacity for the ranges in circular gauge.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * Sets and gets the position of the range in the axis in circular gauge.
      * @default Auto
      */
-    public position: any;
+    public declare position: any;
     /** 
      * Sets and gets the properties to render a radial gradient for the range.
      * @default null
      */
-    public radialGradient: any;
+    public declare radialGradient: any;
     /** 
      * Sets and gets the radius of the range for circular gauge.
      * @default null
      */
-    public radius: any;
+    public declare radius: any;
     /** 
      * Sets and gets the corner radius for ranges in circular gauge.
      * @default 0
      */
-    public roundedCornerRadius: any;
+    public declare roundedCornerRadius: any;
     /** 
      * Sets and gets the start value of the range in circular gauge.
      * @aspdefaultvalueignore 
      * @default 0
      */
-    public start: any;
+    public declare start: any;
     /** 
      * Sets and gets the width for the start of the range in the circular gauge.
      * @default '10'
      */
-    public startWidth: any;
+    public declare startWidth: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -108,6 +108,7 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
  */
 @Directive({
     selector: 'ej-circulargauge>e-axes>e-axis>e-ranges',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeDirective)
     },

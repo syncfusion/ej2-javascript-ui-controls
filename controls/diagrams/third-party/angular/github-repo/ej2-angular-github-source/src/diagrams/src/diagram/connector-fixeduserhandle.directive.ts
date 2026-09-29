@@ -21,9 +21,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-connector>e-connector-fixeduserhandles>e-connector-fixeduserhandle',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ConnectorFixedUserHandleDirective extends ComplexBase<ConnectorFixedUserHandleDirective> {
@@ -38,83 +38,83 @@ export class ConnectorFixedUserHandleDirective extends ComplexBase<ConnectorFixe
      *  * After - Aligns the annotation after a connector segment
      * @default Center
      */
-    public alignment: any;
+    public declare alignment: any;
     /** 
      * Specifies the cornerRadius for fixed user handle container
      * @default 0
      */
-    public cornerRadius: any;
+    public declare cornerRadius: any;
     /** 
      * Specifies the displacement of an fixed user handle from its actual position
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public displacement: any;
+    public declare displacement: any;
     /** 
      * Specifies the fill color of the fixed user handle
      * @default 'transparent'
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * Specifies the stroke color of the fixed user handle container
      * @default ''
      */
-    public handleStrokeColor: any;
+    public declare handleStrokeColor: any;
     /** 
      * Specifies the stroke width of the fixed user handle container
      * @default 1
      */
-    public handleStrokeWidth: any;
+    public declare handleStrokeWidth: any;
     /** 
      * Specifies the height of the fixed user handle
      * @default 10
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Specifies the stroke color of the fixed user handle
      * @default 'transparent'
      */
-    public iconStrokeColor: any;
+    public declare iconStrokeColor: any;
     /** 
      * Specifies the stroke width of the fixed user handle
      * @default 0
      */
-    public iconStrokeWidth: any;
+    public declare iconStrokeWidth: any;
     /** 
      * Specifies the unique id of the fixed user handle
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the position of the connector fixed user handle
      * @default 0.5
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Specifies the space between the fixed user handle and container
      * @default new Margin(0,0,0,0)
      */
-    public padding: any;
+    public declare padding: any;
     /** 
      * Specifies the shape information for fixed user handle
      * @default ''
      */
-    public pathData: any;
+    public declare pathData: any;
     /** 
      * Used to show tooltip for fixed user handle on mouse over.
      * @default {}
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * Specifies the visibility of the fixed user handle
      * @default true
      */
-    public visibility: any;
+    public declare visibility: any;
     /** 
      * Specifies the width of the fixed user handle
      * @default 10
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -130,6 +130,7 @@ export class ConnectorFixedUserHandleDirective extends ComplexBase<ConnectorFixe
  */
 @Directive({
     selector: 'e-connector>e-connector-fixeduserhandles',
+    standalone: true,
     queries: {
         children: new ContentChildren(ConnectorFixedUserHandleDirective)
     },

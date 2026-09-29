@@ -1,5 +1,19 @@
 # Angular Interactive Chat Component
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 A package of Angular Interactive Chat components which comes with a AI AssistView component to enables users to display AI-generated responses in a user-friendly interface and the Chat UI component which is lightweight, conversational interface for displaying chat messages between the users.
 
 ## What's Included in the Angular Interactive Chat Package

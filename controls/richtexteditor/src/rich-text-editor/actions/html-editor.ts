@@ -1,4 +1,4 @@
-import { addClass, attributes, Browser, closest, createElement, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { addClass, attributes, Browser, closest, createElement, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor, convertFontSize, isBlockNode } from '../../common/util';
 import { EditorManager } from '../../editor-manager';
@@ -53,7 +53,10 @@ export class HtmlEditor {
     private isContainsEmptySpace: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('HtmlEditor', 'RichTextEditor');
         this.parent = parent;
+        initializeTelemetryFeature(`EnterKey: ${this.parent.enterKey}`, 'RichTextEditor');
+        initializeTelemetryFeature(`Shitt Enterkey: ${this.parent.shiftEnterKey}`, 'RichTextEditor');
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.xhtmlValidation = new XhtmlValidation(parent);
@@ -434,7 +437,7 @@ export class HtmlEditor {
     }
     private onKeyDown(e: NotifyArgs): void {
         if ((e.args as KeyboardEventArgs).ctrlKey && (e.args as KeyboardEventArgs).keyCode === 65 &&
-            !this.parent.tableModule.isTableCopyAll) {
+            !isNOU(this.parent.tableModule) && !this.parent.tableModule.isTableCopyAll) {
             this.isCopyAll = true;
         }
         else if (!(((e.args as KeyboardEventArgs).key === 'Backspace' || (e.args as KeyboardEventArgs).key === 'Delete') && this.isCopyAll)){
@@ -1126,6 +1129,20 @@ export class HtmlEditor {
         let isLiElement: boolean = false;
         let liElement: HTMLElement;
         let rootElement: HTMLElement;
+        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Delete' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 46) {
+            const currentRange: Range = this.parent.getRange();
+            const liElement: HTMLElement | null = currentRange.startContainer as HTMLElement;
+            if (!isNOU(liElement.lastElementChild)) {
+                if (liElement.nodeType === Node.ELEMENT_NODE && liElement.lastElementChild.tagName === 'HR') {
+                    const hrElement: HTMLElement = liElement.querySelector('hr') as HTMLElement;
+                    if (hrElement) {
+                        (e.args as KeyboardEventArgs).preventDefault();
+                        detach(hrElement);
+                        return;
+                    }
+                }
+            }
+        }
         if (!isNOU(this.parent.codeBlockModule)) {
             const codePos: CodeBlockPosition = this.parent.formatter.editorManager.codeBlockObj.getCodeBlockPosition(currentRange);
             if ((e.args as KeyboardEventArgs).code === 'Delete' && (!isNOU(this.parent.formatter.editorManager.codeBlockObj.isValidCodeBlockStructure(currentRange.startContainer)) ||
@@ -1596,6 +1613,7 @@ export class HtmlEditor {
 
     private instantiateRenderer(): void {
         if (this.parent.iframeSettings.enable) {
+            initializeTelemetryFeature('IFrame', 'RichTextEditor');
             this.renderFactory.addRenderer(RenderType.Content, new IframeContentRender(this.parent));
         } else {
             this.renderFactory.addRenderer(RenderType.Content, new ContentRender(this.parent));

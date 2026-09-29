@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'sass:color';
+@use 'variables' as *;
 @include export-module('e-aiassistview-theme') {
   .e-aiassistview {
     border-color: $assist-view-border-color;
@@ -141,8 +142,14 @@
           border-left: $assist-blockquote-border solid $suggested-content-bg-color;
         }
         img,
-        svg {
+        &:not(:has(.e-stage-spinner, .e-active-spinner)) svg {
           background-color: $suggested-content-bg-color;
+        }
+        .e-response .e-assist-tool {
+          img,
+          svg {
+            background-color: unset;
+          }
         }
       }
       .e-content-body code:not(pre code) {
@@ -189,7 +196,8 @@
       &:not(.e-footer-template) {
         border: $assist-footer-border solid $assist-footer-border-color;
         border-bottom-color: $assist-footer-border-btm-color;
-        &.e-footer-focused {
+        &.e-footer-focused,
+        &.e-upload-drag-hover {
           border: $assist-focused-border-width solid $assist-footer-focus-bdr-color;
           @if ($skin-name == 'fluent2') {
             border-bottom-color: $assist-footer-border-btm-color;
@@ -204,14 +212,14 @@
           }
         }
       }
-      .e-footer-icons-wrapper {
+      .e-footer-icons-wrapper,
+      .e-footer-left-items {
         .e-toolbar-item::after {
           background-color: transparent;
         }
         .e-toolbar,
-        .e-toolbar-items,
-        .e-tbar-btn {
-          background: transparent;
+        .e-toolbar-items {
+          background: $assist-view-bg-color;
           border: none;
           box-shadow: none;
         }
@@ -222,11 +230,6 @@
             }
             &:hover:not(:focus-visible),
             &:active {
-              background: transparent;
-              box-shadow: none;
-              .e-icons {
-                color: $send-icon-color;
-              }
               .e-icons.disabled {
                 color: $send-icon-disabled-color;
               }
@@ -237,9 +240,14 @@
                 }
               }
             }
-            &:focus:not(:focus-visible) {
-              outline: none;
-              box-shadow: none;
+            &:hover:not(:focus-visible):has(.e-icons.disabled),
+            &:active:has(.e-icons.disabled),
+            &:focus:not(:focus-visible):has(.e-icons.disabled) {
+              background: transparent;
+            }
+            &:hover:not(:focus-visible):has(.e-assist-stop),
+            &:active:has(.e-assist-stop),
+            &:focus:not(:focus-visible):has(.e-assist-stop) {
               background: transparent;
             }
           }
@@ -303,10 +311,6 @@
         background-color: $attached-file-bg-color;
       }
 
-      .e-assist-file-format-icon {
-        color: $assist-file-document-icon-color;
-      }
-
       .e-assist-file-size {
         color: $attached-file-size-color;
       }
@@ -323,6 +327,88 @@
         background-color: $file-progress-bar-failure-color;
       }
     }
+
+    .e-scroll-down-btn {
+      @if $theme-name == 'tailwind3-dark' {
+        background-color: var(--color-sf-content-bg-color);
+      }
+    }
+
+    .e-response-navigation-container {
+      .e-assist-next.e-icons:not(.e-disabled),
+      .e-assist-previous.e-icons:not(.e-disabled) {
+        &:focus-visible {
+          background: $aiassist-regenerate-tbar-focus-bg;
+          border-radius: $aiassist-regenerate-tbar-btn-border-radius;
+          border-color: $aiassist-regenerate-tbar-btn-focus-border-color;
+          border-style: $aiassist-regenerate-tbar-border-nav-type;
+          border-width: $aiassist-regenerate-tbar-btn-hover-border-size;
+          box-shadow: $aiassist-regenerate-tbar-ext-btn-focus-box-shadow;
+          color: $aiassist-regenerate-tbar-btn-icons-focus-color;
+          @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+            color: $aiassist-regenerate-tbar-hover-border-color;
+          }
+        }
+        &:hover {
+          background: $aiassist-regenerate-tbar-hover-bg;
+          border-color: $aiassist-regenerate-tbar-hover-border-color;
+          border-style: $aiassist-regenerate-tbar-border-nav-type;
+          border-width: $aiassist-regenerate-tbar-btn-hover-border-size;
+          border-radius: $aiassist-regenerate-tbar-btn-border-radius;
+          color: $aiassist-regenerate-tbar-btn-icons-focus-color;
+          @if $skin-name == 'bootstrap5' {
+            color: $aiassist-regenerate-tbar-btn-icons-focus-color;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            color: $primary-text-color;
+          }
+        }
+      }
+    }
+
+    /* Thinking support theme styles */
+    .e-response {
+      .e-aiassist-thinking-timeline,
+      .e-single-stage-container {
+        border-color: $thinking-timeline-progressline-color;
+        @if $theme-name == 'highcontrast' or $theme-name == 'fabric' or $theme-name == 'fabric-dark' {
+          border-color: $thinking-single-stage-container-border-color;
+        }
+      }
+      .e-inline-context-item {
+        border-color: $thinking-single-stage-container-border-color;
+      }
+      .e-inline-context-item {
+        color: $thinking-inline-context-color;
+      }
+      .e-timeline-content,
+      .e-single-stage-content,
+      .e-thinking-response-content {
+        color: $thinking-content-color;
+      }
+    }
+    .e-aiassist-thinking-toggle {
+      color: $aiassist-thinking-toggle-color;
+      @if $theme-name == 'fluent2-highcontrast' or $theme-name == 'highcontrast' or $theme-name == 'tailwind3-dark' {
+        color: rgba(0, 0, 0, 1);
+      }
+      @if $theme-name == 'bootstrap5.3-dark' or $theme-name == 'fluent2-dark' or $theme-name == 'Material3-dark' {
+        color: rgba(33, 37, 41, .75);
+      }
+    }
+    .e-toolbar .e-toolbar-item {
+      box-shadow: none;
+    }
+    // Mention styles
+    .e-mention-chip,
+    .e-mention-chip:hover {
+      background: $ai-assist-mention-chip-bg-color;
+      color: $ai-assist-mention-chip-color;
+      border: none;
+      @if $theme-name == 'fluent2-highcontrast' {
+        background: rgba(71, 95, 97, 1);
+      }
+    }
   }
   .e-prompt-toolbar,
   .e-content-footer {
@@ -336,6 +422,13 @@
     .e-toolbar {
       box-shadow: unset;
       border: $assist-view-toolbar-border;
+    }
+  }
+  .e-footer-icons-wrapper {
+    .e-tbar-btn:not(:hover),
+    .e-tbar-btn:not(:active),
+    .e-tbar-btn:not(:focus) {
+      background: $assist-view-bg-color;
     }
   }
   .e-aiassist-view-toolbar-item .e-tbar-btn:not(:hover),

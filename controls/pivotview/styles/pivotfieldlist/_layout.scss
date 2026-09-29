@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin active-wrap-styles {
   @if ($field-list-skin =='bootstrap4') {
     background-color: $field-list-sort-select-background-color;
@@ -902,12 +902,23 @@
         }
       }
 
+      .e-append-checkbox-container .e-append-checkbox {
+        align-items: center;
+        display: flex;
+        height: $field-list-add-filter-selection-height;
+        margin-left: $field-list-add-filter-selection-margin;
+      }
+
       .e-member-editor-container-outer-div {
         display: inline-block;
         height: $field-list-member-filter-list-height;
         max-width: $field-list-width-400;
         overflow: auto;
         width: $field-list-width-100p;
+      }
+
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-member-editor-container-outer-div {
+        height: calc($field-list-member-filter-list-height - $field-list-add-filter-selection-height);
       }
 
       .e-member-editor-container {
@@ -1038,6 +1049,17 @@
     }
 
     .e-member-editor-dialog {
+      height: 350px;
+
+      &.e-excel-filter,
+      &.e-member-editor-overflow {
+        height: 400px;
+      }
+
+      &.e-excel-filter.e-member-editor-overflow {
+        height: 440px;
+      }
+
       .e-toolbar .e-toolbar-items {
         margin-left: $field-list-filter-toolbar-items-margin;
       }
@@ -1193,8 +1215,16 @@
         }
       }
 
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($field-list-excel-member-filter-height - $field-list-add-filter-selection-height) !important;
+      }
+
       &.e-node-limit .e-excelfilter .e-member-editor-container-outer-div {
         height: $field-list-excel-member-filter-node-limit-height !important;
+      }
+
+      &.e-node-limit:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($field-list-excel-member-filter-node-limit-height - $field-list-add-filter-selection-height) !important;
         /* stylelint-enable */
       }
 

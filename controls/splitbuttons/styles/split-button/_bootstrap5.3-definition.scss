@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/bootstrap5.3-definition' as *;
-@forward 'ej2-base/styles/definition/bootstrap5.3';
-@forward '../drop-down-button/bootstrap5.3-definition';
+
 $split-btn-zindex: 2 !default;
 $split-btn-border-radius: $radius-4 !default;
 $split-btn-focus-outline-offset: 0 !default;
@@ -43,6 +42,8 @@ $drop-down-bigger-rtl-padding-right: 12px !default;
 $drop-down-bgr-rtl-icon-padding-left: 10px !default;
 $drop-dbtn-bigger-padding-left: 4px !default;
 $drop-dbtn-bigger-padding-right: 4px !default;
+$drop-dbtn-icon-font-size: $text-sm !default;
+$drop-dbtn-icon-font-size-bigger: $text-base !default;
 $split-rtl-btn-padding-left: 4px !default;
 $split-rtl-btn-padding-right: 10px !default;
 $split-btn-icon-padding-right: 8px !default;

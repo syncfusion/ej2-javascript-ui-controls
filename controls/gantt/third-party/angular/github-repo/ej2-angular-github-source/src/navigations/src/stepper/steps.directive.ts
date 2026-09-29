@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-stepper>e-steps>e-step',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StepDirective extends ComplexBase<StepDirective> {
@@ -34,17 +34,17 @@ export class StepDirective extends ComplexBase<StepDirective> {
      * Defines the CSS class to customize the step appearance.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines whether a step is enabled or disabled.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines the icon content of the step.
      * @default ''
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Defines the state whether it is valid completion or not. 
      * If set to true, the completion is valid. 
@@ -53,17 +53,17 @@ export class StepDirective extends ComplexBase<StepDirective> {
      * @asptype bool?
      * @default null
      */
-    public isValid: any;
+    public declare isValid: any;
     /** 
      * Defines the label content of the step.
      * @default ''
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Defines whether the step is optionally to skip completion or not.
      * @default false
      */
-    public optional: any;
+    public declare optional: any;
     /** 
      * Defines the status of the step. 
      * The possible values are 
@@ -74,12 +74,12 @@ export class StepDirective extends ComplexBase<StepDirective> {
      * @default StepStatus.NotStarted
      * @asptype StepStatus
      */
-    public status: any;
+    public declare status: any;
     /** 
      * Defines the text content of the step.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -95,6 +95,7 @@ export class StepDirective extends ComplexBase<StepDirective> {
  */
 @Directive({
     selector: 'ejs-stepper>e-steps',
+    standalone: true,
     queries: {
         children: new ContentChildren(StepDirective)
     },

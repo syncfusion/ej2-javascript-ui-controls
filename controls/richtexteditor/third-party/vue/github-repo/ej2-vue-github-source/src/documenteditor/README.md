@@ -23,6 +23,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/docx-editor-sdk/llms.txt](https://ai.syncfusion.com/docx-editor-sdk/llms.txt)
+
 ## Setup
 
 ### Create an Vue Application
@@ -59,20 +73,17 @@ Vue.use(DocumentEditorPlugin);
 
 ### Adding CSS references for DOCX Editor
 
-Add CSS references needed for Document editor in **style** section of the **App.vue** file from **../node_modules/@syncfusion** package folder.
+Install the styles package from npm using the following command:
+
+```bash
+npm install @syncfusion/ej2-tailwind3-theme
+```
+
+The Tailwind 3 theme package includes an `index.css` file that automatically imports all required DOCX Editor styles. Add the required DOCX Editor theme style in  **style** section of the **App.vue** file.
 
 ```html
-<style>
-@import '../node_modules/@syncfusion/ej2-base/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-buttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-inputs/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-popups/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-lists/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-navigations/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-dropdowns/styles/material.css';
-@import "../node_modules/@syncfusion/ej2-vue-documenteditor/styles/material.css";
-</style>
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor/index.css";
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor-container/index.css";
 ```
 
 ## Add DOCX Editor component
@@ -161,6 +172,47 @@ Product support is available through the following mediums.
 * [GitHub issues](https://github.com/syncfusion/ej2-vue-ui-components/issues/new)
 * [Request feature or report bug](https://www.syncfusion.com/feedback/vue?utm_source=npm&utm_medium=listing&utm_campaign=vue-word-processor-npm)
 * Live chat
+
+## Other Popular Vue Components
+
+Explore other popular Syncfusion<sup>®</sup> Vue components curated from UI components, standalone SDKs, and document solution suites.
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/vue-components/vue-grid">Vue DataGrid</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/vue-components/vue-charts">Vue Charts</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/vue-components/vue-file-manager">Vue File Manager</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/gantt-sdk/vue-gantt-chart">Vue Gantt Chart</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/diagram-sdk/vue-diagram">Vue Diagram</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/scheduler-sdk/vue-scheduler">Vue Scheduler</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/spreadsheet-editor-sdk/vue-spreadsheet-editor">Vue Spreadsheet Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/pdf-viewer-sdk/vue-pdf-viewer">Vue PDF Viewer</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/rich-text-editor-sdk/vue-rich-text-editor">Vue Rich Text Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/vue-components/vue-maps-library">Vue Maps</a>
+        </td>
+    </tr>
+</table>
 
 ## Changelog
 

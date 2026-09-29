@@ -278,6 +278,9 @@ export let DiagramComponent: DefineVueComponent<DiagramModel> =  vueDefineCompon
         getTool(action: string): Object {
             return this.ej2Instances.getTool(action);
         },
+        getWrapper(nodes: Object, id: string): Object {
+            return this.ej2Instances.getWrapper(nodes, id);
+        },
         group(): void {
             return this.ej2Instances.group();
         },
@@ -322,6 +325,9 @@ export let DiagramComponent: DefineVueComponent<DiagramModel> =  vueDefineCompon
         },
         redo(): void {
             return this.ej2Instances.redo();
+        },
+        refreshTemplate(element?: Object | Object | Object | Object | Object | string | string[], parent?: Object | Object): boolean {
+            return this.ej2Instances.refreshTemplate(element, parent);
         },
         remove(obj?: Object | Object): void {
             return this.ej2Instances.remove(obj);
@@ -515,6 +521,7 @@ export type DiagramComponent = typeof ComponentBase & {
     getObject(name: string): Object;
     getParentId(id: string): string;
     getTool(action: string): Object;
+    getWrapper(nodes: Object, id: string): Object;
     group(): void;
     hideTooltip(obj: Object | Object): void;
     importFromVisio(file: Object | Object, options?: Object): Object;
@@ -530,6 +537,7 @@ export type DiagramComponent = typeof ComponentBase & {
     print(options: Object): void;
     printImage(image: string, options: Object): void;
     redo(): void;
+    refreshTemplate(element?: Object | Object | Object | Object | Object | string | string[], parent?: Object | Object): boolean;
     remove(obj?: Object | Object): void;
     removeChildFromGroup(group: Object, child: string | Object | Object): void;
     removeConstraints(constraintsType: number, constraintsValue: number): number;

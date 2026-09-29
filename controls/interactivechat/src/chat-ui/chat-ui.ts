@@ -178,6 +178,8 @@ export class MessageReply extends ChildProperty<MessageReply> {
     /**
      * Represents the mentioned Users of the message sent by the replied user in the Chat UI component.
      *
+     * {% codeBlock src='chat-ui/mentionUsers/index.md' %}{% endcodeBlock %}
+     *
      * @type {UserModel[]}
      * @default []
      */
@@ -740,6 +742,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Specifies the list of message suggestions displayed above the input textarea in the Chat UI component.
      * This property represents an array of suggestions that can assist the user in composing messages, providing quick replies.
      *
+     * {% codeBlock src='chat-ui/suggestions/index.md' %}{% endcodeBlock %}
+     *
      * @type {string[]}
      * @default null
      */
@@ -759,6 +763,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     /**
      * Specifies a collection of messages within the Chat UI component.
      * Each message is represented by a MessageModel object, containing properties such as text, author, timestamp, and status.
+     *
+     * {% codeBlock src='chat-ui/messages/index.md' %}{% endcodeBlock %}
      *
      * @type {MessageModel[]}
      * @default null
@@ -844,6 +850,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Defines the content or layout used to render suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
      *
+     * {% codeBlock src='chat-ui/suggestionTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @type {string | Function}
      * @default ''
      * @angularType string | object
@@ -858,6 +866,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Specifies the template for the footer area in the Chat UI component.
      * Defines the content or layout used to render the footer, which can be provided as a string or a function.
      *
+     * {% codeBlock src='chat-ui/footerTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -870,6 +880,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     /**
      * Specifies the template for rendering the empty state of the Chat UI component.
      * This property can accept either a string or a function to customize the appearance when there are no messages to display in the chat.
+     *
+     * {% codeBlock src='chat-ui/emptyChatTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -884,6 +896,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Specifies the template for rendering individual messages in the Chat UI component.
      * This property can accept either a string or a function to customize the appearance of messages. The template context includes message and index.
      *
+     * {% codeBlock src='chat-ui/messageTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -897,6 +911,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Defines a custom template for rendering time breaks in the Chat UI component.
      * Accepts a string or function that formats the appearance of date-based separators, allowing customization of how messages are visually grouped by date.
      *
+     * {% codeBlock src='chat-ui/timebreakTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -909,6 +925,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     /**
      * Template for displaying users currently typing in the chat interface.
      * Accepts a string or function to customize the display format.
+     *
+     * {% codeBlock src='chat-ui/typingUsersTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -935,6 +953,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Specifies the settings for the message toolbar in the Chat UI component.
      * Configures the toolbar options associated with each message such as Reply, Forward, Copy, Pin, and Delete.
      * If 'items' is not provided, default toolbar actions ['Copy', 'Reply', 'Pin', 'Delete'] will be rendered.
+     *
+     * {% codeBlock src='chat-ui/messageToolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -982,6 +1002,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
      * Specifies the configuration options for attachment handling.
      *  Includes save URL, allowed file types, and maximum file size.
      *
+     * {% codeBlock src='chat-ui/attachmentSettings/index.md' %}{% endcodeBlock %}
      *
      * @default null
      */
@@ -1144,16 +1165,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private updateScrollPosition(isMethodCall: boolean, timeDelay: number): void {
+        const action: () => void = () => isMethodCall ? this.handleAutoScroll() : this.scrollToBottom();
+
         if (this.isReact || this.isAngular) {
-            setTimeout(() => {
-                if (isMethodCall) {
-                    this.handleAutoScroll();
-                } else {
-                    this.scrollToBottom();
-                }
-            }, timeDelay);
+            setTimeout(action, timeDelay);
         } else {
-            this.scrollToBottom();
+            action();
         }
     }
     private renderChatHeader(): void {
@@ -1566,7 +1583,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             });
             fileReplyContent.appendChild(thumbnailvideo);
         } else {
-            const fileIcon: HTMLElement = this.createElement('span', { className: 'e-chat-file-icon e-icons' });
+            const fileIcon: HTMLElement = this.createElement('div', { className: 'e-chat-file-icon-svg' });
+            fileIcon.appendChild(this.createFileTypeIcon(file.name));
             fileReplyContent.appendChild(fileIcon);
         }
         if (!hasText) {
@@ -1674,7 +1692,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }) as HTMLVideoElement;
         }
         else {
-            mediaElement = this.createElement('span', { className: 'e-chat-file-icon e-icons' }) as HTMLElement;
+            mediaElement = this.createElement('div', { className: 'e-chat-file-icon-svg' }) as HTMLElement;
+            mediaElement.appendChild(this.createFileTypeIcon(file.name));
         }
         const messageText: string = this.getMessageText(message);
         const hasText: boolean = messageText.trim() !== '';
@@ -1763,13 +1782,28 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             toolbarEle.style.top = `${topPosition}px`;
 
             if (messageContentRect.width < toolbarRect.width && isLeftMessage) {
-                toolbarEle.style.left = '0';
-                toolbarEle.style.right = 'auto';
+                if (this.enableRtl) {
+                    // In RTL, anchor the toolbar from the right for small received messages
+                    toolbarEle.style.right = '0';
+                    toolbarEle.style.left = 'auto';
+                } else {
+                    // LTR behavior: anchor from the left
+                    toolbarEle.style.left = '0';
+                    toolbarEle.style.right = 'auto';
+                }
             } else {
                 const statusIconElement: HTMLElement = messageContent.querySelector('.e-status-icon') as HTMLElement;
                 const statusIconWidth: number = statusIconElement ? statusIconElement.getBoundingClientRect().width + 2 : 0;
-                const rightPosition: number = messageItemRect.right - messageContentRect.right + statusIconWidth;
-                toolbarEle.style.right = `${rightPosition}px`;
+                if (this.enableRtl) {
+                    // Mirror positioning for RTL: compute left offset instead of right
+                    const leftPosition: number = messageItemRect.left - messageContentRect.left + statusIconWidth;
+                    toolbarEle.style.left = `${leftPosition}px`;
+                    toolbarEle.style.right = 'auto';
+                } else {
+                    const rightPosition: number = messageItemRect.right - messageContentRect.right + statusIconWidth;
+                    toolbarEle.style.right = `${rightPosition}px`;
+                    toolbarEle.style.left = 'auto';
+                }
             }
 
             toolbarEle.style.display = '';
@@ -2564,7 +2598,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.getContextObject('attachmenttemplate', introContainer, null , null, null, fileData);
         }
         else {
-            const fileIcon: HTMLElement = this.createElement('div', { className: 'e-icons e-chat-file-icon' });
+            const fileIcon: HTMLElement = this.createElement('div', { className: 'e-chat-file-icon-svg' });
+            fileIcon.appendChild(this.createFileTypeIcon(fileData.name));
             const fileDetails: HTMLElement = this.createElement('div', { className: 'e-chat-file-details' });
             const fileName: HTMLElement = this.createElement('span', { className: 'e-chat-file-name', innerHTML: fileData.name });
             const fileSize: HTMLElement = this.createElement('span', { className: 'e-chat-file-size', innerHTML: `${(fileData.size / 1024).toFixed(2)} KB` });
@@ -2616,9 +2651,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         const filePreview: HTMLElement = this.createElement('div', {
             className: 'e-file-preview'
         });
-        const fileIcon: HTMLElement = this.createElement('span', {
-            className: 'e-icons e-file-document'
+        const fileIcon: HTMLElement = this.createElement('div', {
+            className: 'e-chat-file-icon-svg'
         });
+        fileIcon.appendChild(this.createFileTypeIcon(file.name));
         const previewText: HTMLElement = this.createElement('div', {
             className: 'e-preview-file-text',
             innerHTML: this.l10n.getConstant('filePreview')
@@ -2914,11 +2950,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private updateHeaderText(): void {
-        if (this.headerText) {
-            const headerTextEle: HTMLDivElement | null = this.element.querySelector('.e-header-text');
-            if (headerTextEle) {
-                headerTextEle.innerHTML = this.headerText;
-            }
+        const headerTextEle: HTMLDivElement = this.element.querySelector('.e-header-text') as HTMLDivElement;
+        if (headerTextEle) {
+            headerTextEle.innerHTML = this.headerText;
+        }
+        else {
+            this.renderChatHeader();
         }
     }
 
@@ -2981,7 +3018,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                     text: index === filesCount - 1 ? messageText : '',
                     mentionUsers: index === filesCount - 1 ? mentionUsers : [],
                     replyTo: index === filesCount - 1 ? repliedTO : null,
-                    attachedFile: file
+                    attachedFile: file,
+                    timeStamp: new Date(),
+                    timeStampFormat: this.timeStampFormat || 'dd/MM/yyyy hh:mm a',
+                    status: null,
+                    isPinned: false,
+                    isForwarded: false
                 };
 
                 const eventArgs: MessageSendEventArgs = {
@@ -3007,7 +3049,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 text: messageText,
                 mentionUsers: mentionUsers,
                 replyTo: repliedTO,
-                attachedFile: null
+                attachedFile: null,
+                timeStamp: new Date(),
+                timeStampFormat: this.timeStampFormat || 'dd/MM/yyyy hh:mm a',
+                status: null,
+                isPinned: false,
+                isForwarded: false
             };
 
             const eventArgs: MessageSendEventArgs = {
@@ -3486,10 +3533,26 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
         } else {
             for (let i: number = newMessageObjs.length - 1; i >= 0; i--) {
-                this.renderGroup( this.messageWrapper, newMessageObjs[parseInt(i.toString(), 10)], true, i, -1, true );
+                this.renderGroup(this.messageWrapper, newMessageObjs[parseInt(i.toString(), 10)], true, i, i + 1, true);
+                this.handlePrependTimeBreak(i, i + 1);
             }
         }
         this.isProtectedOnChange = prevOnChange;
+    }
+
+    private handlePrependTimeBreak(currentIndex: number, nextIndex: number): void {
+        if (!this.showTimeBreak) { return; }
+        const currentMessageDate: Date = this.getMessageDate(currentIndex);
+        currentMessageDate.setHours(0, 0, 0, 0);
+        if (nextIndex >= 0) {
+            const nextMessageDate: Date = this.getMessageDate(nextIndex);
+            nextMessageDate.setHours(0, 0, 0, 0);
+            if (currentMessageDate.getTime() === nextMessageDate.getTime()) {
+                const prevTimeBreak: HTMLDivElement = this.messageWrapper.querySelectorAll('.e-timebreak')[0] as HTMLDivElement;
+                if (prevTimeBreak) { prevTimeBreak.remove(); }
+            }
+        }
+        this.messageWrapper.prepend(this.createTimebreakElement(currentMessageDate));
     }
 
     /**

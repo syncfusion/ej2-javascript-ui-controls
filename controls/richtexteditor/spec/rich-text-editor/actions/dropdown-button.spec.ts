@@ -98,6 +98,35 @@ describe('Dropdown Button', ()=> {
                 done();
             });
         });
+    describe('EJ2-23134 - Localization not applied to dropdown buttons and its item collections', () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let controlId: string;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    locale: 'de-DE'
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+            });
+            it(' Check the alignments dropdown items ', (done) => {
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Alignments');
+                dispatchEvent(item, 'mousedown');
+                dispatchEvent(item, 'mouseup');
+                item.click();
+                setTimeout(() => {
+                    let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Alignments-popup .e-item');
+                    expect(items[0].textContent === 'Linksbündig').toBe(true);
+                    expect(items[1].textContent === 'Im Zentrum anordnen').toBe(true);
+                    expect(items[2].textContent === 'Rechts ausrichten').toBe(true);
+                    expect(items[3].textContent === 'Justize ausrichten').toBe(true);
+                    done();
+                }, 200)
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
 
     describe('995417 - List type dropdown does not update correctly after cutting partial items from two separate lists', () => {
         let rteObj: RichTextEditor;
@@ -134,5 +163,29 @@ describe('Dropdown Button', ()=> {
             }, 100);
         });
     });
-
+     describe('917630 - Error on Empty fontFamily and fontSize Items in Syncfusion Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                },
+                fontFamily: {
+                    default: null,
+                    items: [],
+                  },
+                fontSize:  {
+                    default: null,
+                    items: [],
+                  },
+            });
+        });
+        it(' Apply the underline and then apply the fontcolor', () => {
+            (rteObj.element.querySelectorAll('.e-toolbar-item button')[0] as HTMLElement).click();
+            (rteObj.element.querySelectorAll('.e-toolbar-item button')[1] as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

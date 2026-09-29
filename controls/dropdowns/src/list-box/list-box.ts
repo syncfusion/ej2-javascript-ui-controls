@@ -2330,14 +2330,18 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
-        if (this.allowFiltering && e.ctrlKey && e.keyCode === 65) {
+        if (this.allowFiltering && ((e.ctrlKey && e.keyCode === 65) || e.keyCode === 16)) {
             e.preventDefault(); return;
         }
-        const char: string = e.code && e.keyCode >= 96 && e.keyCode <= 105 ?
-            String.fromCharCode(e.keyCode - 48) : String.fromCharCode(e.keyCode);
-        const isWordCharacter: Object = char.match(/\w/);
-        const isWordAccentCharacter: Object = char.match(/[A-Za-z0-9\u00C0-\u024F ]/);
-        if (!isNullOrUndefined(isWordCharacter) || !isNullOrUndefined(isWordAccentCharacter)) {
+        const isSpecialKey: boolean = e.keyCode >= 186 && e.keyCode <= 192;
+        const isBracketKey: boolean = e.keyCode === 219 || e.keyCode === 220 || e.keyCode === 221 || e.keyCode === 222;
+        const isNumericKeyPadSpecialKey: boolean = e.keyCode === 107 || e.keyCode === 109 || e.keyCode === 111;
+        const isWordCharacter: Object = e.key && e.key.match(/\w/);
+        const isWordAccentCharacter: Object = e.key && e.key.match(
+            /[A-Za-z0-9\u00C0-\u024F ,>/:;\-+=[\]\\ '@!#$%^&*()]/
+        );
+        if (!isNullOrUndefined(isWordCharacter) || !isNullOrUndefined(isWordAccentCharacter)
+            || isSpecialKey || isBracketKey || isNumericKeyPadSpecialKey) {
             this.isValidKey = true;
         }
         this.isBackSpace = e.keyCode === 8;

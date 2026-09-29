@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chart3d-columns>e-chart3d-columns',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class Chart3DColumnDirective extends ComplexBase<Chart3DColumnDirective> {
@@ -29,7 +29,7 @@ export class Chart3DColumnDirective extends ComplexBase<Chart3DColumnDirective> 
      * If specified as '100%, column renders to the full width of its chart.
      * @default '100%'
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -45,6 +45,7 @@ export class Chart3DColumnDirective extends ComplexBase<Chart3DColumnDirective> 
  */
 @Directive({
     selector: 'ejs-chart3d>e-chart3d-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(Chart3DColumnDirective)
     },

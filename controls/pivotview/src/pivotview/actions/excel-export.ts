@@ -5,7 +5,7 @@ import { PivotView } from '../base/pivotview';
 import { IAxisSet, PivotEngine } from '../../base/engine';
 import { IPageSettings, IMatrix2D } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { PivotExportUtil } from '../../base/export-util';
 import { Column, ExcelFooter, ExcelHeader, ExcelStyle, ExcelTheme } from '@syncfusion/ej2-grids';
 import { DataSourceSettingsModel } from '../../model/datasourcesettings-model';
@@ -37,6 +37,7 @@ export class ExcelExport {
      * @hidden
      */
     constructor(parent?: PivotView) {
+        initializeTelemetryFeature('ExcelExport', 'PivotTable');
         this.parent = parent;
         this.excelExportHelper = new ExcelExportHelper(this.parent);
         this.rows = [];
@@ -264,109 +265,125 @@ export class ExcelExport {
                                         }
                                         pivotCell.formattedText =
                                             !isNullOrUndefined(cellValue) ? cellValue.toString() : cellValue as string;
-                                        if (!(pivotCell.level === -1 && !pivotCell.rowSpan) && pivotCell.rowSpan !== 0) {
-                                            cells.push({
-                                                index: cCnt + 1, value: cellValue,
-                                                colSpan: pivotCell.colSpan, rowSpan: (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan)
-                                            });
-                                            const lastCell: ExcelCell = cells[cells.length - 1];
-                                            if (pivotCell.axis === 'value') {
-                                                if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
-                                                    pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
-                                                    lastCell.value = type === 'Excel' ? null : '';
-                                                }
-                                                styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
-                                                lastCell.style = styles;
-                                            } else {
-                                                lastCell.style = headerStyle;
-                                                if (pivotCell.axis === 'row' &&
-                                                    (this.parent.isTabular ? cCnt < this.parent.engineModule.rowMaxLevel + 1 :
-                                                        cCnt === 0)) {
+                                        const isHeaderCollapsed: boolean = pivotCell.hasChild === true && pivotCell.isDrilled === false;
+                                        const isSubTotalCell: boolean = pivotCell.type === 'sum' || pivotCell.type === 'grand sum';
+                                        const isRepeatRowHeaderLabels: boolean = this.parent.gridSettings.repeatRowHeaderLabels === true ||
+                                            this.parent.gridSettings.repeatItemLabels === true;
+                                        const isRepeatLabelEnabled: boolean =
+                                            isRepeatRowHeaderLabels && !isHeaderCollapsed && !isSubTotalCell;
+                                        if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
+                                            const forcedRowSpan: number = !isRepeatLabelEnabled ? pivotCell.rowSpan
+                                                : ((pivotCell.rowSpan === 0 || pivotCell.rowSpan > 1) ? 1 :
+                                                    (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan));
+                                            if (forcedRowSpan !== 0) {
+                                                cells.push({
+                                                    index: cCnt + 1, value: cellValue,
+                                                    colSpan: pivotCell.colSpan, rowSpan: forcedRowSpan
+                                                });
+                                                const lastCell: ExcelCell = cells[cells.length - 1];
+                                                if (pivotCell.axis === 'value') {
+                                                    if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
+                                                        pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
+                                                        lastCell.value = type === 'Excel' ? null : '';
+                                                    }
+                                                    styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
                                                     lastCell.style = styles;
-                                                    if (this.parent.dataType === 'olap') {
-                                                        const indent: number = this.parent.renderModule.indentCollection[rCnt as number];
-                                                        lastCell.style.indent = indent * 2;
-                                                        maxLevel = maxLevel > indent ? maxLevel : indent;
-                                                    } else {
-                                                        const levelName: string = pivotCell.valueSort ? pivotCell.valueSort.levelName.toString() : '';
-                                                        const delimiter: string =
-                                                            this.parent.dataSourceSettings.valueSortSettings.headerDelimiter;
-                                                        const memberPos: number = pivotCell.actualText ?
-                                                            pivotCell.actualText.toString().split(delimiter).length : 0;
-                                                        const levelPosition: number = levelName.split(delimiter).length -
-                                                            (memberPos ? memberPos - 1 : memberPos);
-                                                        const level: number = levelPosition ? (levelPosition - 1) : 0;
-                                                        lastCell.style.indent = level * 2;
-                                                        maxLevel = level > maxLevel ? level : maxLevel;
+                                                } else {
+                                                    lastCell.style = headerStyle;
+                                                    if (pivotCell.axis === 'row' &&
+                                                        (this.parent.isTabular ? cCnt < this.parent.engineModule.rowMaxLevel + 1 :
+                                                            cCnt === 0)) {
+                                                        lastCell.style = styles;
+                                                        if (this.parent.dataType === 'olap') {
+                                                            const indent: number =
+                                                                this.parent.renderModule.indentCollection[rCnt as number];
+                                                            lastCell.style.indent = indent * 2;
+                                                            maxLevel = maxLevel > indent ? maxLevel : indent;
+                                                        } else {
+                                                            const levelName: string = pivotCell.valueSort ? pivotCell.valueSort.levelName.toString() : '';
+                                                            const delimiter: string =
+                                                                this.parent.dataSourceSettings.valueSortSettings.headerDelimiter;
+                                                            const memberPos: number = pivotCell.actualText ?
+                                                                pivotCell.actualText.toString().split(delimiter).length : 0;
+                                                            const levelPosition: number = levelName.split(delimiter).length -
+                                                                (memberPos ? memberPos - 1 : memberPos);
+                                                            const level: number = levelPosition ? (levelPosition - 1) : 0;
+                                                            lastCell.style.indent = !this.parent.isTabular ? level * 2 : 0;
+                                                            maxLevel = level > maxLevel ? level : maxLevel;
+                                                        }
                                                     }
                                                 }
-                                            }
-                                            if (pivotCell.style || lastCell.style.backColor || lastCell.style.fontColor ||
-                                                lastCell.style.fontName || lastCell.style.fontSize) {
-                                                lastCell.style.backColor = lastCell.style.backColor ? lastCell.style.backColor
-                                                    : pivotCell.style.backgroundColor;
-                                                lastCell.style.fontColor = lastCell.style.fontColor ? lastCell.style.fontColor
-                                                    : pivotCell.style.color;
-                                                lastCell.style.fontName = lastCell.style.fontName ? lastCell.style.fontName
-                                                    : pivotCell.style.fontFamily;
-                                                if (!isNullOrUndefined(lastCell.style.fontSize) ||
-                                                    !isNullOrUndefined(pivotCell.style.fontSize)) {
-                                                    lastCell.style.fontSize = !isNullOrUndefined(lastCell.style.fontSize) ?
-                                                        Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
+                                                if (pivotCell.style || lastCell.style.backColor || lastCell.style.fontColor ||
+                                                    lastCell.style.fontName || lastCell.style.fontSize) {
+                                                    lastCell.style.backColor = lastCell.style.backColor ? lastCell.style.backColor
+                                                        : pivotCell.style.backgroundColor;
+                                                    lastCell.style.fontColor = lastCell.style.fontColor ? lastCell.style.fontColor
+                                                        : pivotCell.style.color;
+                                                    lastCell.style.fontName = lastCell.style.fontName ? lastCell.style.fontName
+                                                        : pivotCell.style.fontFamily;
+                                                    if (!isNullOrUndefined(lastCell.style.fontSize) ||
+                                                        !isNullOrUndefined(pivotCell.style.fontSize)) {
+                                                        lastCell.style.fontSize = !isNullOrUndefined(lastCell.style.fontSize) ?
+                                                            Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
+                                                    }
                                                 }
-                                            }
-                                            lastCell.style.borders = { color: '#000000', lineStyle: 'thin' };
-                                            let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
-                                            let excelQueryCellInfoArgs: ExcelQueryCellInfoEventArgs;
-                                            if (pivotCell.axis === 'column') {
-                                                excelHeaderQueryCellInfoArgs = {
-                                                    style: !isNullOrUndefined(this.theme) && !isNullOrUndefined(this.theme.header) ?
-                                                        this.excelExportHelper.getHeaderThemeStyle(this.theme, headerStyle) as ExcelStyle
-                                                        : headerStyle,
-                                                    cell: pivotCell
-                                                };
-                                                this.parent.trigger(events.excelHeaderQueryCellInfo, excelHeaderQueryCellInfoArgs);
-                                            }
-                                            else {
-                                                excelQueryCellInfoArgs = {
-                                                    style: !isNullOrUndefined(this.theme) && !isNullOrUndefined(this.theme.record) ?
-                                                        this.excelExportHelper.getRecordThemeStyle(this.theme, styles) as ExcelStyle
-                                                        : styles,
-                                                    cell: pivotCell,
-                                                    column: undefined,
-                                                    data: pivotValues,
-                                                    value: cellValue,
-                                                    colSpan: 1
-                                                };
-                                                this.parent.trigger(events.excelQueryCellInfo, excelQueryCellInfoArgs);
-                                            }
-                                            lastCell.value = (pivotCell.axis === 'column') ?
-                                                (excelHeaderQueryCellInfoArgs.cell as IAxisSet).formattedText :
-                                                excelQueryCellInfoArgs.value;
-                                            lastCell.style = (pivotCell.axis === 'column') ? excelHeaderQueryCellInfoArgs.style
-                                                : excelQueryCellInfoArgs.style;
-                                            if ((excelHeaderQueryCellInfoArgs && excelHeaderQueryCellInfoArgs.image) ||
-                                                (excelQueryCellInfoArgs && excelQueryCellInfoArgs.image)) {
-                                                rowHeight = this.excelExportHelper.setImage((pivotCell.axis === 'column') ?
-                                                    excelHeaderQueryCellInfoArgs : excelQueryCellInfoArgs, cCnt, this.actualrCnt,
-                                                                                            rowHeight);
-                                            }
-                                            if (!isNullOrUndefined(excelHeaderQueryCellInfoArgs) &&
-                                                !isNullOrUndefined(excelHeaderQueryCellInfoArgs.hyperLink)) {
-                                                lastCell.hyperlink = { target: excelHeaderQueryCellInfoArgs.hyperLink.target };
-                                                lastCell.value = excelHeaderQueryCellInfoArgs.hyperLink.displayText || lastCell.value;
-                                            } else if (!isNullOrUndefined(excelQueryCellInfoArgs) &&
-                                                !isNullOrUndefined(excelQueryCellInfoArgs.hyperLink)) {
-                                                lastCell.hyperlink = { target: excelQueryCellInfoArgs.hyperLink.target };
-                                                lastCell.value = excelQueryCellInfoArgs.hyperLink.displayText || lastCell.value;
-                                            }
-                                            if (pivotCell.axis === 'column') {
-                                                lastCell.colSpan = (excelHeaderQueryCellInfoArgs.cell as ExcelCell).colSpan;
-                                                lastCell.rowSpan = (excelHeaderQueryCellInfoArgs.cell as ExcelCell).rowSpan;
-                                            } else {
-                                                lastCell.colSpan = excelQueryCellInfoArgs.colSpan > 1 ? excelQueryCellInfoArgs.colSpan :
-                                                    (excelQueryCellInfoArgs.cell as ExcelCell).colSpan;
-                                                lastCell.rowSpan = (excelQueryCellInfoArgs.cell as ExcelCell).rowSpan;
+                                                lastCell.style.borders = { color: '#000000', lineStyle: 'thin' };
+                                                let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
+                                                let excelQueryCellInfoArgs: ExcelQueryCellInfoEventArgs;
+                                                if (pivotCell.axis === 'column') {
+                                                    excelHeaderQueryCellInfoArgs = {
+                                                        style: !isNullOrUndefined(this.theme) && !isNullOrUndefined(this.theme.header) ?
+                                                            this.excelExportHelper.getHeaderThemeStyle(this.theme,
+                                                                                                       headerStyle) as ExcelStyle
+                                                            : headerStyle,
+                                                        cell: pivotCell
+                                                    };
+                                                    this.parent.trigger(events.excelHeaderQueryCellInfo, excelHeaderQueryCellInfoArgs);
+                                                }
+                                                else {
+                                                    excelQueryCellInfoArgs = {
+                                                        style: !isNullOrUndefined(this.theme) && !isNullOrUndefined(this.theme.record) ?
+                                                            this.excelExportHelper.getRecordThemeStyle(this.theme, styles) as ExcelStyle
+                                                            : styles,
+                                                        cell: pivotCell,
+                                                        column: undefined,
+                                                        data: pivotValues,
+                                                        value: cellValue,
+                                                        colSpan: 1
+                                                    };
+                                                    this.parent.trigger(events.excelQueryCellInfo, excelQueryCellInfoArgs);
+                                                }
+                                                lastCell.value = (pivotCell.axis === 'column') ?
+                                                    (excelHeaderQueryCellInfoArgs.cell as IAxisSet).formattedText :
+                                                    excelQueryCellInfoArgs.value;
+                                                lastCell.style = (pivotCell.axis === 'column') ? excelHeaderQueryCellInfoArgs.style
+                                                    : excelQueryCellInfoArgs.style;
+                                                if ((excelHeaderQueryCellInfoArgs && excelHeaderQueryCellInfoArgs.image) ||
+                                                    (excelQueryCellInfoArgs && excelQueryCellInfoArgs.image)) {
+                                                    rowHeight = this.excelExportHelper.setImage((pivotCell.axis === 'column') ?
+                                                        excelHeaderQueryCellInfoArgs : excelQueryCellInfoArgs, cCnt, this.actualrCnt,
+                                                                                                rowHeight);
+                                                }
+                                                if (!isNullOrUndefined(excelHeaderQueryCellInfoArgs) &&
+                                                    !isNullOrUndefined(excelHeaderQueryCellInfoArgs.hyperLink)) {
+                                                    lastCell.hyperlink = { target: excelHeaderQueryCellInfoArgs.hyperLink.target };
+                                                    lastCell.value = excelHeaderQueryCellInfoArgs.hyperLink.displayText || lastCell.value;
+                                                } else if (!isNullOrUndefined(excelQueryCellInfoArgs) &&
+                                                    !isNullOrUndefined(excelQueryCellInfoArgs.hyperLink)) {
+                                                    lastCell.hyperlink = { target: excelQueryCellInfoArgs.hyperLink.target };
+                                                    lastCell.value = excelQueryCellInfoArgs.hyperLink.displayText || lastCell.value;
+                                                }
+                                                if (pivotCell.axis === 'column') {
+                                                    lastCell.colSpan = (excelHeaderQueryCellInfoArgs.cell as ExcelCell).colSpan;
+                                                    lastCell.rowSpan = (excelHeaderQueryCellInfoArgs.cell as ExcelCell).rowSpan;
+                                                } else {
+                                                    lastCell.colSpan = excelQueryCellInfoArgs.colSpan > 1 ? excelQueryCellInfoArgs.colSpan :
+                                                        (excelQueryCellInfoArgs.cell as ExcelCell).colSpan;
+                                                    lastCell.rowSpan = (excelQueryCellInfoArgs.cell as ExcelCell).rowSpan;
+                                                }
+                                                if (isRepeatLabelEnabled) {
+                                                    lastCell.rowSpan = 1;
+                                                }
                                             }
                                         }
                                     }
@@ -381,7 +398,7 @@ export class ExcelExport {
                                         }
                                         else {
                                             pivotCell.colSpan = this.parent.isTabular ? (this.parent.engineModule.rowMaxLevel + 1) : 1;
-                                            pivotCell.rowSpan = this.engine.headerContent.length;
+                                            pivotCell.rowSpan = Object.keys(this.engine.headerContent).length;
                                         }
                                     }
                                     let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;

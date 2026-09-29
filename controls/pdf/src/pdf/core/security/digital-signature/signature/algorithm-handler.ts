@@ -1,5 +1,6 @@
 import { _bytesToBigInt, _bigIntToBytes, _modPow, _createRandomInRange, _modInverse, _getBigInt } from '../../../utils';
-import { _PdfCipherParameter } from '../x509/x509-cipher-handler';
+import { _PdfCipherParameter, _PdfRonCipherParameter } from '../x509/x509-cipher-handler';
+import { _PdfBigInt } from '../pdf-big-integer';
 import { _ICipherBlock } from './pdf-interfaces';
 /**
  * Provides the internal RSA core operations, including modular exponentiation,
@@ -40,7 +41,73 @@ export class _PdfRsaCoreAlgorithm {
     _initialize(isEncryption: boolean, parameters: _PdfCipherParameter): void {
         this._key = parameters;
         this._isEncryption = isEncryption;
-        this._bitSize = this._key.modulus._bitLength();
+        let modCandidate: any;  // eslint-disable-line
+        if (this._key && this._key.modulus) {
+            this._bitSize = this._key.modulus._bitLength();
+            modCandidate = this._key.modulus;
+        }
+        if (this._key instanceof _PdfRonCipherParameter) {
+            this._bitSize = this._key._modulus.length * 8;
+            modCandidate = this._key._modulus;
+        } else if (
+            this._key &&
+            this._key._enableCertificationVerification &&
+            this._key._modulus instanceof Uint8Array) {
+            this._bitSize = this._key._modulus.length * 8;
+            modCandidate = this._key._modulus;
+        }
+        if (modCandidate) {
+            if (typeof modCandidate._bitLength === 'function') {
+                this._bitSize = modCandidate._bitLength();
+            } else if (modCandidate instanceof Uint8Array) {
+                const bytes: Uint8Array = modCandidate;
+                let firstNonZero: number = 0;
+                while (firstNonZero < bytes.length && bytes[<number>firstNonZero] === 0) {
+                    firstNonZero++;
+                }
+                if (firstNonZero === bytes.length) {
+                    this._bitSize = 0;
+                } else {
+                    const firstByte: number = bytes[<number>firstNonZero];
+                    const leadingBits: number = Math.floor(Math.log2(firstByte)) + 1;
+                    this._bitSize = ((bytes.length - firstNonZero - 1) * 8) + leadingBits;
+                }
+                if (!(this._key.modulus)) {
+                    (this._key as any).modulus = {  // eslint-disable-line
+                        _bitLength: () => this._bitSize,
+                        _toBigInt: () => _bytesToBigInt(bytes)
+                    };
+                }
+                if ((this._key as any)._exponent instanceof Uint8Array || this._key.exponent instanceof  Uint8Array&& !(this._key as any).exponent) {  // eslint-disable-line
+                    const expBytes: Uint8Array = (this._key as any)._exponent;  // eslint-disable-line
+                    (this._key as any).exponent = {  // eslint-disable-line
+                        _toBigInt: () => _bytesToBigInt(expBytes)
+                    };
+                }
+            } else {
+                try {
+                    this._bitSize = modCandidate._bitLength();
+                } catch {
+                    this._bitSize = 0;
+                }
+            }
+        } else {
+            this._bitSize = 0;
+        }
+    }
+    /**
+     * Gets the length of the RSA modulus in bytes.
+     *
+     * @returns {number} The modulus length in bytes; otherwise, 0 if no modulus is available.
+     * @private
+     */
+    _getModulusByteLength(): number {
+        if (this._key._modulus) {
+            return (this._key._modulus instanceof Uint8Array) ? this._key._modulus.length : 0;
+        } else {
+            const m: any = this._key.modulus; // eslint-disable-line
+            return (m instanceof Uint8Array) ? m.length : 0;
+        }
     }
     /**
      * Converts a segment of bytes into a bigint suitable for RSA modular operations,
@@ -54,6 +121,30 @@ export class _PdfRsaCoreAlgorithm {
      */
     _convertInput(bytes: Uint8Array, offset: number, length: number): bigint {
         const subBytes: Uint8Array = bytes.subarray(offset, offset + length);
+        if (!this._key._isPrivate) {
+            const kMod: number = this._getModulusByteLength();
+            const kSig: number = subBytes.length;
+            if (kSig !== kMod) {
+                throw new Error(
+                    `Signature length (${kSig}) does not match modulus length (${kMod}). Wrong issuer public key.`
+                );
+            }
+            const input: bigint = _bytesToBigInt(subBytes);
+            let modBigInt: bigint;
+            if (this._key.modulus) {
+                modBigInt = typeof (this._key.modulus as any)._toBigInt === 'function'  // eslint-disable-line
+                    ? (this._key.modulus as any)._toBigInt()  // eslint-disable-line
+                    : _bytesToBigInt(this._key.modulus as Uint8Array);
+            } else {
+                modBigInt = typeof (this._key._modulus as any)._toBigInt === 'function'  // eslint-disable-line
+                    ? (this._key._modulus as any)._toBigInt()  // eslint-disable-line
+                    : _bytesToBigInt(this._key._modulus as Uint8Array);
+            }
+            if (input >= modBigInt) {
+                throw new Error('Input data is larger than modulus.');
+            }
+            return input;
+        }
         if (subBytes.length > this._getInputBlockSize() + 1) {
             throw new Error('Input data too large for RSA block.');
         }
@@ -72,13 +163,11 @@ export class _PdfRsaCoreAlgorithm {
      */
     _convertOutput(result: bigint): Uint8Array {
         const output: Uint8Array = _bigIntToBytes(result);
-        if (this._isEncryption) {
-            const outSize: number = this._getOutputBlockSize();
-            if (output.length < outSize) {
-                const paddedOutput: Uint8Array = new Uint8Array(outSize);
-                paddedOutput.set(output, outSize - output.length);
-                return paddedOutput;
-            }
+        const outSize: number = this._getOutputBlockSize();
+        if (output.length < outSize) {
+            const paddedOutput: Uint8Array = new Uint8Array(outSize);
+            paddedOutput.set(output, outSize - output.length);
+            return paddedOutput;
         }
         return output;
     }
@@ -110,7 +199,21 @@ export class _PdfRsaCoreAlgorithm {
             m = m + mQ;
             return m;
         }
-        return _modPow(input, this._key.exponent, this._key.modulus);
+        let expBigInt: bigint;
+        let modBigInt: bigint;
+        if (this._key.modulus && this._key.modulus instanceof Uint8Array && this._key.exponent
+            && this._key.exponent instanceof Uint8Array) {
+            expBigInt = new _PdfBigInt()._fromBytesBE(this._key.exponent)._toBigInt();
+            modBigInt = new _PdfBigInt()._fromBytesBE(this._key.modulus)._toBigInt();
+        } else if (this._key._modulus && this._key._modulus instanceof Uint8Array && this._key._exponent &&
+            this._key._exponent instanceof Uint8Array && this._key._enableCertificationVerification) {
+            expBigInt = new _PdfBigInt()._fromBytesBE(this._key._exponent)._toBigInt();
+            modBigInt = new _PdfBigInt()._fromBytesBE(this._key._modulus)._toBigInt();
+        } else {
+            expBigInt =  this._key.exponent._toBigInt();
+            modBigInt = this._key.modulus._toBigInt();
+        }
+        return _modPow(input, expBigInt, modBigInt);
     }
 }
 /**

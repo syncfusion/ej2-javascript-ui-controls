@@ -265,6 +265,7 @@ describe('Milestone not rendered correctly with day working time', function () {
             Progress: 30,
         }],
         dayWorkingTime:[{from:0, to: 24}],
+        hoursPerDay: 24,
         taskFields: {
             id: 'TaskID',
             name: 'TaskName',

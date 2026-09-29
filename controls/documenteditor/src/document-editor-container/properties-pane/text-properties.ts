@@ -141,11 +141,21 @@ export class Text {
         this.createChangecase(rightDiv2);
     }
     private createChangecase = (container: HTMLElement): void => {
+        const isAngularModal: boolean = this.container.isModalDialog;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const caseDiv: any = this;
         const items: ItemModel[] = FontHelper.getChangeCaseItems(this.localObj, container.id);
         this.changeCaseDropdown = new DropDownButton({
             items: items,
             iconCss: 'e-icons e-de-ctnr-change-case',
-            enableRtl: this.isRtl
+            enableRtl: this.isRtl,
+            beforeOpen: function (this: DropDownButton, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
+                    caseDiv.container.movePopupToCdkOverlay(dropDownButtonEl, popupEl);
+                }
+            }
         });
         const changeCaseContainer: HTMLElement = createElement('div', {
             id: container.id + '_changeCase', className: 'e-de-ctnr-group-btn'
@@ -160,6 +170,7 @@ export class Text {
     }
 
     private createHighlightColorSplitButton(id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton {
+        const textProperties: any = this;
         const buttonElement: HTMLButtonElement = createElement('button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.padding = '1px';
@@ -169,7 +180,10 @@ export class Text {
             cssClass: 'e-de-btn-hghlclr',
             iconCss: 'e-de-ctnr-hglt-color',
             /* eslint-disable-next-line max-len */
-            target: this.highlightColorElement, close: this.closePopup.bind(this), beforeOpen: this.openPopup.bind(this), enableRtl: this.isRtl
+            target: this.highlightColorElement, close: this.closePopup.bind(this), enableRtl: this.isRtl,
+            beforeOpen: function (this: SplitButton, e: any): void {
+                textProperties.openPopup(e, this);
+            },
         });
         hgltSplitObj.appendTo(buttonElement);
         hgltSplitObj.click = (): void => {
@@ -180,8 +194,14 @@ export class Text {
         hgltSplitObj.element.parentElement.setAttribute('aria-label', toolTipText);
         return hgltSplitObj;
     }
-    private openPopup(): void {
+    private openPopup( e: any,  splitButton: SplitButton): void {
         this.highlightColorElement.style.display = 'block';
+        const isAngularModal: boolean = this.container.isModalDialog;
+        if (isAngularModal) {
+            const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+            const buttonEl: HTMLElement = splitButton.element as HTMLElement;
+            this.container.movePopupToCdkOverlay(buttonEl, popupEl);
+        }
     }
     private closePopup(): void {
         this.highlightColorElement.style.display = 'none';
@@ -350,12 +370,22 @@ export class Text {
         return button;
     }
     private createFontColorPicker(id: string, width: number, divElement: HTMLElement, toolTipText: string): HTMLInputElement {
+        const fontdiv: any = this;
+        const isAngularModal: boolean = this.container.isModalDialog;
         const { columns, createPopupOnClick, cssClass, disabled, enablePersistence, inline, mode, modeSwitcher, noColor, presetColors, showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id, attrs: { 'type': 'color' } }) as HTMLInputElement;
         inputElement.style.width = width + 'px';
         divElement.appendChild(inputElement);
-
-        this.fontColorInputElement = new ColorPicker({ value: '#000000', enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false, mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns, createPopupOnClick: createPopupOnClick, cssClass: cssClass, disabled: disabled, enablePersistence: enablePersistence, inline: inline, noColor: noColor, presetColors: presetColors }, inputElement);
+        this.fontColorInputElement = new ColorPicker({ value: '#000000', enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false, mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns, createPopupOnClick: createPopupOnClick, cssClass: cssClass, disabled: disabled, enablePersistence: enablePersistence, inline: inline, noColor: noColor, presetColors: presetColors,
+            beforeOpen: function (this: ColorPicker, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const colorPickerEl: HTMLElement = this.element as HTMLElement;
+                    fontdiv.container.movePopupToCdkOverlay(colorPickerEl, popupEl);
+                }
+            }
+        });
+        this.fontColorInputElement.appendTo(inputElement);
         this.fontColorInputElement.element.parentElement.setAttribute('title', toolTipText);
         this.fontColorInputElement.element.parentElement.setAttribute('aria-label', toolTipText);
         this.documentEditor.documentHelper.fontColorInputElement = this.fontColorInputElement;
@@ -376,6 +406,7 @@ export class Text {
         };
         const format: SelectionCharacterFormat = this.documentEditor.selectionModule.characterFormat;
         this.fontSize.value = (format.bidi || format.complexScript) ? format.fontSizeBidi.toString() : format.fontSize.toString();
+        this.fontSize.isAngular = this.container.isModalDialog;
         this.fontSize.appendTo(fontSelectElement);
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
     }
@@ -402,6 +433,7 @@ export class Text {
             enableRtl: this.isRtl,
             itemTemplate: itemTemplate
         });
+        this.fontFamily.isAngular = this.container.isModalDialog;
         this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.isStringTemplate = isStringTemplate;
         const fontFamilyValue: string[] = this.container.documentEditorSettings.fontFamilies;

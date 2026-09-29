@@ -1,4 +1,4 @@
-import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlags } from '../../../enumerator';
+import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlag } from '../../../enumerator';
 /**
  * Represents the properties used to configure a PDF signature.
  *
@@ -8,7 +8,7 @@ import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlags } from '.
  * @property {string} reason - The reason for signing the document.
  * @property {string} locationInfo - The geographical location where the document is signed.
  * @property {boolean} certify - Indicates whether the signature certifies the document.
- * @property {PdfCertificationFlags} documentPermissions - Permissions to apply when certifying the document.
+ * @property {PdfCertificationFlag} documentPermissions - Permissions to apply when certifying the document.
  * @property {string} signedName - The name to display as the signer.
  * @property {boolean} isLocked - Indicates whether the signature field should be locked after signing.
  *
@@ -63,7 +63,7 @@ export type PdfSignatureOptions = {
     /**
      * Specifies permission for certificated documents.
      */
-    documentPermissions?: PdfCertificationFlags;
+    documentPermissions?: PdfCertificationFlag;
     /**
      * Specifies the name of the signature.
      */
@@ -72,6 +72,10 @@ export type PdfSignatureOptions = {
      * Specifies a value indicating whether to lock the signature or not.
      */
     isLocked?: boolean;
+    /**
+     * Specifies a value indicating whether to generate validation appearance.
+     */
+    isValidationAppearanceEnabled?: boolean;
 }
 /**
  * Represents information extracted from a PDF certificate.

@@ -21,6 +21,7 @@ export const twoWays: string[] = ['startDate', 'endDate', 'value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,41 +30,32 @@ export const twoWays: string[] = ['startDate', 'endDate', 'value'];
         }
     ],
     queries: {
-        childPresets: new ContentChild(PresetsDirective)
+        childPresets: new ContentChild(PresetsDirective),
+        start: new ContentChild('start'),
+        end: new ContentChild('end')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class DateRangePickerComponent extends DateRangePicker implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	blur: any;
-	change: any;
-	cleared: any;
-	close: any;
-	created: any;
-	destroyed: any;
-	focus: any;
-	navigated: any;
-	open: any;
-	renderDayCell: any;
-	select: any;
-	startDateChange: any;
-	endDateChange: any;
-	public valueChange: any;
-    public childPresets: any;
+    public declare tagObjects: any;
+	declare blur: any;
+	declare change: any;
+	declare cleared: any;
+	declare close: any;
+	declare created: any;
+	declare destroyed: any;
+	declare focus: any;
+	declare navigated: any;
+	declare open: any;
+	declare renderDayCell: any;
+	declare select: any;
+	declare startDateChange: any;
+	declare endDateChange: any;
+	public declare valueChange: any;
+    public declare childPresets: any;
     public tags: string[] = ['presets'];
-    /** 
-     * Specifies the initial view of the Calendar when it is opened. 
-     * With the help of this property, initial view can be changed to year or decade view.
-     * @default Month
-     */
-    @ContentChild('start')
-    @Template()
-    public start: any;
-    @ContentChild('end')
-    @Template()
-    public end: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -107,7 +99,9 @@ export class DateRangePickerComponent extends DateRangePicker implements ICompon
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(DateRangePickerComponent.prototype, 'start');
+Template()(DateRangePickerComponent.prototype, 'end');
 

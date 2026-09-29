@@ -1,41 +1,57 @@
 # React Gantt Component
 
-The [React Gantt](https://www.syncfusion.com/react-components/react-gantt-chart?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm) component is a project planning and management tool used to display and manage hierarchical tasks with timeline details. It helps assess how long a project should take, determine the resources needed, manage the dependencies between tasks, and plan the order in which the tasks should be completed.
+The [React Gantt](https://www.syncfusion.com/gantt-sdk/react-gantt-chart?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm) component is a project planning and management tool used to display and manage hierarchical tasks with timeline details. It helps assess how long a project should take, determine the resources needed, manage the dependencies between tasks, and plan the order in which the tasks should be completed.
 
 <p align="center">
-  <a href="https://ej2.syncfusion.com/react/documentation/gantt/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm">Getting Started</a> .
+  <a href="https://help.syncfusion.com/gantt-sdk/react/gantt-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm">Getting Started</a> .
   <a href="https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm#/bootstrap5/gantt/default">Online demos</a> .
-  <a href="https://www.syncfusion.com/react-components/react-gantt-chart?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm">Learn more</a>
+  <a href="https://www.syncfusion.com/gantt-sdk/react-gantt-chart?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm">Learn more</a>
 </p>
 
 <p align="center">
-<img alt="React Gantt Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/react/react-gantt-chart.png"> </p>
+<img alt="React Gantt Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/react/react-gantt-chart.webp"> </p>
 
 <p align="center">
-Trusted by the world's leading companies
+Trusted by the world's leading companies<br>
   <a href="https://www.syncfusion.com">
     <img src="https://ej2.syncfusion.com/home/images/trusted_companies.png" alt="Bootstrap logo">
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/react/llms.txt](https://ai.syncfusion.com/react/llms.txt)
+
 ## Setup
 
 ### Create a React Application
 
-You can use [`create-react-app`](https://github.com/facebookincubator/create-react-app) to setup applications. To create React app use the following command.
+You can use [`Vite`](https://github.com/vitejs/vite) to set up a modern React application. To create a React TypeScript app, use the following command.
 
 ```bash
-npx create-react-app my-app --template typescript
+npm create vite@latest my-app -- --template react-ts
 cd my-app
-npm start
+npm install
+npm run dev
 ```
 
-### Adding Syncfusion Gantt package
+### Adding Syncfusion Gantt and Theme Packages
 
-All Syncfusion react packages are published in the [npmjs.com](https://www.npmjs.com/~syncfusionorg) registry. To install the react gantt package, use the following command.
+All Syncfusion react packages are published in the [npmjs.com](https://www.npmjs.com/~syncfusionorg) registry. To install the React Gantt package and the Tailwind 3 theme package, use the following commands.
 
 ```bash
-npm install @syncfusion/ej2-react-gantt --save
+npm install @syncfusion/ej2-react-gantt
+npm install @syncfusion/ej2-tailwind3-theme
 ```
 
 ### Adding CSS references for Gantt
@@ -43,19 +59,7 @@ npm install @syncfusion/ej2-react-gantt --save
 Add CSS references needed for a Gantt in **src/App.css** from the **../node_modules/@syncfusion** package folder.
 
 ```css
-@import '../node_modules/@syncfusion/ej2-base/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-buttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-calendars/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-dropdowns/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-inputs/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-lists/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-layouts/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-navigations/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-popups/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-grids/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-treegrid/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-react-gantt/styles/material.css';
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/gantt/index.css";
 ```
 
 ### Add Gantt Component
@@ -71,23 +75,23 @@ function App() {
         {
             TaskID: 1,
             TaskName: 'Project Initiation',
-            StartDate: new Date('04/02/2019'),
-            EndDate: new Date('04/21/2019'),
+            StartDate: new Date('04/02/2026'),
+            EndDate: new Date('04/21/2026'),
             subtasks: [
-                { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
-                { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50  },
-                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
+                { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2026'), Duration: 4, Progress: 50 },
+                { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2026'), Duration: 4, Progress: 50  },
+                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2026'), Duration: 4, Progress: 50 },
             ]
         },
         {
             TaskID: 5,
             TaskName: 'Project Estimation',
-            StartDate: new Date('04/02/2019'),
-            EndDate: new Date('04/21/2019'),
+            StartDate: new Date('04/02/2026'),
+            EndDate: new Date('04/21/2026'),
             subtasks: [
-                { TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 },
-                { TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 },
-                { TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 }
+                { TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2026'), Duration: 3, Progress: 50 },
+                { TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2026'), Duration: 3, Progress: 50 },
+                { TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2026'), Duration: 3, Progress: 50 }
             ]
         }];
     let taskSettings = {id: 'TaskID', name: 'TaskName', startDate: 'StartDate', endDate: 'EndDate', duration: 'Duration', progress: 'Progress', child: 'subtasks' };
@@ -101,20 +105,20 @@ export default App;
 
 Gantt component is also offered in the following list of frameworks.
 
-| [<img src="https://ej2.syncfusion.com/github/images/js.svg" height="50" />](https://www.syncfusion.com/javascript-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg"  height="50" />](https://www.syncfusion.com/angular-components/?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-components/?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| [<img src="https://ej2.syncfusion.com/github/images/js.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/javascript-gantt-chart?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[JavaScript](https://www.syncfusion.com/gantt-sdk/javascript-gantt-chart?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg"  height="50" />](https://www.syncfusion.com/gantt-sdk/angular-gantt-chart/?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/gantt-sdk/angular-gantt-chart/?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/aspnet-core-gantt-chart?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/gantt-sdk/aspnet-core-gantt-chart?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/gantt-sdk/aspnet-mvc-gantt-chart?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/gantt-sdk/aspnet-mvc-gantt-chart?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
 | :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase samples
 
-* Loan Calculator - [Source](https://github.com/syncfusion/ej2-showcase-react-loan-calculator), [Live Demo](https://ej2.syncfusion.com/showcase/react/loancalculator/?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm#/default)
+* Loan Calculator - [Source](https://github.com/syncfusion/ej2-showcase-react-loan-calculator), [Live Demo](https://ej2.syncfusion.com/showcase/react/loancalculator/?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm)
 
 ## Key features
 
 * [Data sources](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/local-data): Bind hierarchical or self-referential data to Gantt chart with an array of JSON objects or DataManager.
 * [Timeline](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/timeline): Display timescale from minutes to decades easily, and also display custom texts in the timeline units. Timeline can be displayed in either one-tier or two-tier layout.
-* [Task dependency](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/editing): Allows for the definition or update of dependencies between tasks in a project using four types of task dependencies: Finish – Start, Start – Finish, Finish – Finish, and Start – Start.
+* [Task dependency](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/default-editing): Allows for the definition or update of dependencies between tasks in a project using four types of task dependencies: Finish – Start, Start – Finish, Finish – Finish, and Start – Start.
 * [Resources](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/resource-view): Visualizes the list of tasks assigned to each resource in hierarchy manner and switch the resources as per user need by task editing.
-* [Editing](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/editing): Provides the options to dynamically insert, delete and update tasks using columns, dialog and taskbar editing options.
+* [Editing](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/default-editing): Provides the options to dynamically insert, delete and update tasks using columns, dialog and taskbar editing options.
 * [Virtual scrolling](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/virtual-scroll): Improves the performance of the gantt control when binding large amounts of data by only rendering the currently visible parts of the user interface and rendering other elements as needed while scrolling.
 * [Critical path](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/critical-path): The critical path in a project is displayed by a single task or a series of tasks. If a task in critical path is delayed, the entire project will be delayed. A task is considered to be critical if any delay to this task would affect the project end date.
 * [Customizable taskbars](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/taskbar-template): Display various tasks in a project using parent and child taskbars, summary taskbars and milestone UI, which can be customized with templates.
@@ -130,14 +134,14 @@ Gantt component is also offered in the following list of frameworks.
 * [Row re-ordering](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/drag-and-drop): Allows rows to be rearranged through drag and drop actions, changing their position and hierarchy level. A child row can be moved as a sibling within the same parent row or as a child to a different parent row.
 * [Selection](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/selection): Rows or cells can be selected in the Gantt Chart. One or more rows or cells can also be selected by holding Shift, Ctrl or Command, or programmatically.
 * [Templates](https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_campaign=react-gantt-npm#/bootstrap5/gantt/column-template): Templates can be used to create custom user experiences in the gantt.
-* [RTL support](https://ej2.syncfusion.com/react/documentation/gantt/global-local/#right-to-left-rtl): Provides the right-to-left mode which aligns content in the Gantt Chart component from right to left. This improves user experience and accessibility for those who work with RTL languages like Hebrew and Arabic.
-* [Localization](https://ej2.syncfusion.com/react/documentation/gantt/global-local/#localization): Provides inherent support to localize the UI.
+* [RTL support](https://help.syncfusion.com/gantt-sdk/react/gantt-chart/global-local?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm#right-to-left-rtl-support): Provides the right-to-left mode which aligns content in the Gantt Chart component from right to left. This improves user experience and accessibility for those who work with RTL languages like Hebrew and Arabic.
+* [Localization](https://help.syncfusion.com/gantt-sdk/react/gantt-chart/global-local?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm#localization-implementation): Provides inherent support to localize the UI.
 
 ## Resources
 
 * [AI Coding Assistant](https://ej2.syncfusion.com/react/documentation/ai-coding-assistants/overview)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/react?utm_medium=listing&utm_source=github)
+* [What's New](https://www.syncfusion.com/products/whatsnew/gantt-sdk?utm_medium=listing&utm_source=github)
 * [Road Map](https://www.syncfusion.com/products/roadmap/react)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=react&type=all)
 
@@ -146,9 +150,9 @@ Gantt component is also offered in the following list of frameworks.
 Product support is available through following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/react-js2?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm)
+* [Community forum](https://www.syncfusion.com/forums/gantt-sdk?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm)
 * [GitHub issues](https://github.com/syncfusion/ej2-react-ui-components/issues/new)
-* [Request feature or report bug](https://www.syncfusion.com/feedback/react?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/gantt-sdk?utm_source=npm&utm_medium=listing&utm_campaign=react-gantt-npm)
 * Live chat
 
 ## Changelog
@@ -163,4 +167,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-react-ui-components
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-react-ui-components/blob/master/license) for more info.
 
-&copy; Copyright 2025 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+&copy; Copyright 2026 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.

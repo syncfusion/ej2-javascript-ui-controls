@@ -83,8 +83,10 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
             if ((args.event as KeyboardEventArgs).action === 'escape') {
                 this.parent.editModule.editCellDialogClose = true;
             }
-            else if (this.parent.isEdit && this.parent.editSettings.mode === 'Batch' && (args.event as KeyboardEventArgs).action === 'enter') {
+            else if (this.parent.isEdit && (this.parent.editSettings.mode === 'Batch' || this.parent.editSettings.mode === 'Cell') &&
+                (args.event as KeyboardEventArgs).action === 'enter') {
                 (args.event as KeyboardEventArgs).stopPropagation();
+                (args.event as KeyboardEventArgs).preventDefault();
             }
         }
     }

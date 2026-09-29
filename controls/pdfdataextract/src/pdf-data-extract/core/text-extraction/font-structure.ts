@@ -238,7 +238,7 @@ export class _FontStructure {
      * Create a `_FontStructure` instance.
      *
      * @param {_PdfDictionary} dictionary - Optional PDF font dictionary used to initialize the structure.
-     * @param {PdfCrossReferenceType} crossReference - Optional cross reference used to resolve indirect objects.
+     * @param {_PdfCrossReference} crossReference - Optional cross reference used to resolve indirect objects.
      *
      * @private
      */

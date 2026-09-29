@@ -5,7 +5,7 @@ import { Chart3DAxisModel } from '@syncfusion/ej2-charts';
 /**
  * `Axis3D` directive represent a axis row of the react Chart. 
  * It must be contained in a Chart component(`Chart3DComponent`). 
- * ```tsx
+ * ```
  * <Chart3DComponent>
  * <Chart3DAxesDirective>
  * <Chart3DAxisDirective></Chart3DAxisDirective>

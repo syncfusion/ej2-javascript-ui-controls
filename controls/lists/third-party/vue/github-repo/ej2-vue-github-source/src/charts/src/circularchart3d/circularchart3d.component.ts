@@ -17,7 +17,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs Circular 3D Chart Component
- * ```vue
+ * ```
  * <ejs-circularchart3d></ejs-circularchart3d>
  * ```
  */

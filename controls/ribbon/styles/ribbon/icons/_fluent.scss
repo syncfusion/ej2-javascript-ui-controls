@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('ribbon-fluent-icons') {
   .e-ribbon {
     & .e-drop-icon {

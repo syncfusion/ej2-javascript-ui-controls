@@ -20,6 +20,7 @@ import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
 import { EventMarkerModel } from '../models/event-marker-model';
 import { PdfPaddings } from '../export/pdf-base/index';
 import { CalendarContext } from './calendar-context';
+import { DayWorkingTimeModel } from '../models/models';
 /**
  * Specifies Gantt-chart interfaces
  *
@@ -89,6 +90,8 @@ export interface IGanttTaskInfo {
     wbsCode?: string;
     /** Specifies the WBS predecessor code for the task, which identifies the preceding task in the Work Breakdown Structure. This helps define task dependencies and maintain proper sequencing in project planning. */
     wbsPredecessor?: string;
+    /** Specifies the auto-generated serial number for the task. Automatically assigned when `enableSerialNumber` is true, reflecting the current visible row order (1-based). */
+    serialNumber?: number;
     /** Specifies whether the task is auto-schedulable. */
     isAutoSchedule?: boolean;
     /** Specifies the left position of an auto-scheduled taskbar within a manually scheduled parent task. */
@@ -207,6 +210,8 @@ export interface ITaskData {
     wbsCode?: string;
     /** Defines the WBS predecessor code for each task, indicating its preceding task in the hierarchy to establish dependencies and maintain proper sequencing in project planning. */
     wbsPredecessor?: string;
+    /** Defines the auto-generated serial number for the task, reflecting the current visible row index (1-based). Assigned when `enableSerialNumber` is true. */
+    serialNumber?: number;
     /** Defines the constraint date of the task. */
     constraintDate?: Date;
     /** Defines the constraint type of the task. */
@@ -997,6 +1002,8 @@ export interface RowDropEventArgs {
     modifiedRecords?: IGanttData[];
     /** Defines the modified records. */
     dropRecord?: IGanttData;
+    /** Defines the collection of Gantt records selected and dragged as part of the row drag-and-drop action. */
+    draggedRecords?: IGanttData[];
 }
 
 export interface IMouseMoveEventArgs {
@@ -1460,4 +1467,73 @@ export interface BaselineTemplateContext {
     left: number;
     /** Specifies the baseline width of the task. */
     width: number;
+}
+export interface CalendarExceptionRange {
+    /** Defines the unique identifier of the exception */
+    id: string;
+    /** Defines the start date of the exception period */
+    from: Date;
+    /** Defines the end date of the exception period */
+    to: Date;
+    /** Defines the label for the exception period */
+    label?: string;
+    /** Defines the working times applied during the exception period */
+    exceptionWorkingTime: DayWorkingTimeModel[];
+}
+export interface CalendarExceptionResult {
+    /** Defines the start time of the exception in seconds from midnight */
+    startTime: number;
+    /** Defines the end time of the exception in seconds from midnight */
+    endTime: number;
+    /** Defines the total seconds in the day */
+    secondsPerDay: number;
+    /** Defines the working time ranges within the exception */
+    workingRange: IWorkingTimeRange[];
+    /** Defines the non-working time ranges within the exception */
+    nonWorkingRange: IWorkingTimeRange[];
+    /** Defines the non-working hours in the day */
+    nonWorkingHours: number[];
+    /** Defines the label for the exception */
+    label?: string;
+    /** Defines the total duration in days covered by the exception */
+    totalDurationDays: number;
+    /** Defines the total working hours within the exception */
+    totalWorkingHours: number;
+}
+
+/**
+ * WebMCP Tool Execution Event Arguments.
+ * Enables inspection/cancellation/confirmation prior to executing a WebMCP tool.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /** Cancel the tool execution when set to true. */
+    cancel?: boolean;
+    /** Name of the WebMCP tool being executed. */
+    toolName?: string;
+    /** Arguments passed to the tool (shape matches the tool input schema). */
+    toolArgs?: object;
+    /** Show confirmation dialog before executing a write operation. */
+    showConfirmationDialog?: boolean;
+    /** Optional custom cancellation response sent back to the AI. */
+    cancellationResponse?: string;
+}
+
+/**
+ * WebMCP Tool Schema definition.
+ */
+export interface WebMcpTool {
+    name: string;
+    description: string;
+    inputSchema: object;
+    outputSchema: object;
+    annotations: { [key: string]: unknown };
+    execute?: Function;
+}
+
+/**
+ * Standard WebMCP tool execution response format.
+ */
+export interface WebMcpToolResponse {
+    content: { type: string; text: string }[];
+    isError?: boolean;
 }

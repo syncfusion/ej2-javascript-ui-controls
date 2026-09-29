@@ -237,6 +237,7 @@ export class XmlPane {
             text: this.DropDownListData[0].Value as string,
             select: this.handleDropDownList.bind(this)
         });
+        this.dropDownListObject.isAngular = this.documentHelper.owner.isModalDialog;
         this.dropDownListObject.appendTo('#xml_mapping_properties_firstPageDiv_dropdownlist');
 
     }
@@ -356,6 +357,7 @@ export class XmlPane {
     * @returns {void}
     */
     private applyContentControl(args: string): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         this.documentHelper.owner.isXmlMapCC = true;
         if (this.documentHelper.owner.isXmlMapCC && !isNullOrUndefined(this.documentHelper.owner.editor.xmlData.length) && this.documentHelper.owner.editor.xmlData.length > 0) {
             this.getXmlPath();
@@ -371,6 +373,11 @@ export class XmlPane {
                 okButton: { text: localObj.getConstant('Ok') },
                 showCloseIcon: true,
                 closeOnEscape: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 animationSettings: { effect: 'Zoom' },
                 position: { X: 'center', Y: 'center' },
                 close: (): void => {

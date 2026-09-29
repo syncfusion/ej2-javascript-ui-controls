@@ -1,0 +1,3 @@
+# Angular Component
+
+Angular content

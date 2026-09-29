@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $radio-btn-background-color: $grey-white !default;
 $radio-btn-border: 2px solid !default;
 $radio-btn-border-color: $grey-600 !default;

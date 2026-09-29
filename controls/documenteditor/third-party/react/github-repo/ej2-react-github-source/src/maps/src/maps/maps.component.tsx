@@ -7,7 +7,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 /**
  * Represents the React Maps component.
  * It is ideal for rendering maps from GeoJSON data or other map providers like OpenStreetMap, Google Maps, Bing Maps, etc that has rich feature set that includes markers, labels, bubbles and much more. 
- * ```tsx
+ * ```
  * <MapsComponent></MapsComponent>
  * ```
  */

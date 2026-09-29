@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin avatar {
   height: $listbox-template-avatar-size;
   left: $listbox-template-avatar-left;

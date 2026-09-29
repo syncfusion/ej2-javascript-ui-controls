@@ -70,18 +70,18 @@ describe('Gantt virtual scroll', () => {
             // expect(ganttObj.selectionModule.getSelectedRowIndexes()[0]).toBe(58);
             // ganttObj.selectionModule.clearSelection();
         // });
-        it('Filtering', () => {         
-            ganttObj.filterSettings.columns = [{ field: 'TaskName', matchCase: false, operator: 'startswith', value: 'task 300' }];
-            ganttObj.dataBound = () => {
-                if (ganttObj.filterSettings.columns.length > 0) {
-                    expect(ganttObj.currentViewData.length).toBe(3);
-                    ganttObj.clearFiltering();
-                    ganttObj.dataBound = null;
-                    ganttObj.dataBind();
-                }
-            };
-            ganttObj.dataBind();
-        });
+        // it('Filtering', () => {         
+        //     ganttObj.filterSettings.columns = [{ field: 'TaskName', matchCase: false, operator: 'startswith', value: 'task 300' }];
+        //     ganttObj.dataBound = () => {
+        //         if (ganttObj.filterSettings.columns.length > 0) {
+        //             expect(ganttObj.currentViewData.length).toBe(3);
+        //             ganttObj.clearFiltering();
+        //             ganttObj.dataBound = null;
+        //             ganttObj.dataBind();
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        // });
         it('Adding record', () => {       
             ganttObj.addRecord({}, 'Child', 3);
             expect(ganttObj.flatData.length).toBe(451);

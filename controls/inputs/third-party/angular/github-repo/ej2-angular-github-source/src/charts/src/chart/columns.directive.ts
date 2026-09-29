@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ColumnDirective extends ComplexBase<ColumnDirective> {
@@ -27,13 +27,13 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
     /** 
      * Options to customize the border of the columns.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * The width of the column as a string accepts input both as '100px' and '100%'. 
      * If specified as '100%', the column renders to the full width of its chart.
      * @default '100%'
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -49,6 +49,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
  */
 @Directive({
     selector: 'ejs-chart>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColumnDirective)
     },

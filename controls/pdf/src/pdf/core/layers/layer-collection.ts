@@ -1386,8 +1386,12 @@ export class PdfLayerCollection {
                             this._processBeginMarkContent(layer, _operator, operands, data, objID);
                             isSkip = true;
                         }
-                        if (_operator === 'Do' && layer._xObject.indexOf(entry._operands[0]) !== -1) {
-                            isSkip = true;
+                        let skipCurrentOperator: boolean = false;
+                        if (_operator === 'Do' && '/' + layer._layerId === entry._operands[0]) {
+                            skipCurrentOperator = true;
+                        }
+                        if (skipCurrentOperator) {
+                            continue;
                         }
                         if (
                             _operator === 'q' || _operator === 'Q' ||
@@ -1410,12 +1414,12 @@ export class PdfLayerCollection {
                             isSkip = false;
                         }
                     }
-                    if (data.length > 0 && !objID) {
-                        const _pages: PdfPage =  layer._pages[<number>i];
-                        const _reference: _PdfReference = _pages._contents[<number>m];
-                        const contentStream: _PdfContentStream = this._crossReference._fetch(_reference);
-                        contentStream._bytes.length = 0;
-                        contentStream.write(data.getString());
+                    if (data.length > 0) {
+                        const pages: PdfPage =  layer._pages[<number>i];
+                        const refArray: _PdfReference[] = pages._pageDictionary.getRaw('Contents');
+                        const ref: _PdfReference = refArray[<number>m];
+                        this._crossReference._cacheMap.set(ref, data);
+                        pages._pageDictionary._updated = true;
                     }
                 }
                 layer._pages[<number>i]._pageDictionary._updated = true;

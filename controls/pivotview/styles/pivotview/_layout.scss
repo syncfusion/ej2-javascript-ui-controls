@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin wrap-styles {
   /* stylelint-disable */
   background-color: $gray-600 !important;
@@ -249,12 +249,23 @@
         }
       }
 
+      .e-append-checkbox-container .e-append-checkbox {
+        align-items: center;
+        display: flex;
+        height: $pivotgrid-add-filter-selection-height;
+        margin-left: $pivotgrid-add-filter-selection-margin;
+      }
+
       .e-member-editor-container-outer-div {
         display: inline-block;
         height: $pivotgrid-member-filter-list-height;
         max-width: $pivotgrid-width-400;
         overflow: auto;
         width: $pivotgrid-width-100p;
+      }
+
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-member-editor-container-outer-div {
+        height: calc($pivotgrid-member-filter-list-height - $pivotgrid-add-filter-selection-height);
       }
 
       .e-member-editor-container {
@@ -316,8 +327,16 @@
         }
       }
 
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($pivotgrid-excel-member-filter-height - $pivotgrid-add-filter-selection-height);
+      }
+
       &.e-node-limit .e-excelfilter .e-member-editor-container-outer-div {
         height: $pivotgrid-excel-member-filter-node-limit-height;
+      }
+
+      &.e-node-limit:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($pivotgrid-excel-member-filter-node-limit-height - $pivotgrid-add-filter-selection-height);
       }
 
       .e-label-filter,
@@ -616,6 +635,20 @@
         .e-chart-type-option-text {
           padding-bottom: $pivotgrid-padding-5;
         }
+      }
+
+      .e-checkbox-wrapper label,
+      .e-css.e-checkbox-wrapper label {
+        /* stylelint-disable */
+        display: flex !important;
+        align-items: center;
+        /* stylelint-enable */
+      }
+
+      .e-chart-type-checkbox-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
       .e-multiple-axes-mode-container {
@@ -935,7 +968,7 @@
     width: $pivotgrid-width-60p !important;
   }
 
-  #{if(&, "&", "*")}.e-rtl {
+  *.e-rtl {
     .e-pivotview-report-input {
       float: left;
     }

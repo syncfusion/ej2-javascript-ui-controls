@@ -34,7 +34,7 @@ export const ResourcesPlugin = {
 /**
  * `e-resources` directive represent a resources of the VueJS Schedule. 
  * It must be contained in a Schedule component(`ejs-schedule`). 
- * ```vue
+ * ```js
  * <ejs-schedule>
  *   <e-resources>
  *    <e-resource field='RoomId' name='Rooms'></e-resource>

@@ -107,13 +107,17 @@ export class PivotEngine {
     public isPagingOrVirtualizationEnabled: boolean = false;
     /** @hidden */
     public rowMaxLevel: number = 0;
-    public valueMatrix: ValueMatrixInfo[][] = [];
+    private _vmatOrdinal: Int32Array = new Int32Array(0);
+    private _vmatMember: Float64Array = new Float64Array(0);
+    private _vmatFieldCount: number = 0;
+    private static readonly TOP_BOTTOM_CACHE_LIMIT: number = 64;
+    private static readonly TOP_BOTTOM_CACHE_EVICT_COUNT: number = 16;
     private reportDataType: { [key: string]: string };
     private allowValueFilter: boolean;
     private isValueFiltered: boolean;
     private isValueFiltersAvail: boolean;
-    private valueSortData: ValueSortData[];
     private valueFilteredData: IAxisSet[];
+    private topBottomFilterCache: Map<string, Set<string>> = new Map<string, Set<string>>();
     private filterFramedHeaders: IAxisSet[];
     private memberCnt: number = -1;
     private pageInLimit: boolean = false;
@@ -173,6 +177,9 @@ export class PivotEngine {
     private tabularPivotValues: IAxisSet[][] = [];
     private sortMembers: { [key: string]: Object } = {};
     private isFilterAction: boolean = false;
+    private levelMap: { [key: number]: number } = {};
+    private isMultiValueRowAxis: boolean = false;
+    private isTabularMultiValueRowAxis: boolean = false;
     /** @hidden */
     public viewportPageCount: number = 3;
     /**
@@ -201,9 +208,7 @@ export class PivotEngine {
         this.rowGrandTotal = null;
         this.columnGrandTotal = null;
         this.rawIndexObject = {};
-        if (this.dataSourceSettings.valueIndex > -1) {
-            this.valueAxisFields = {};
-        }
+        this.topBottomFilterCache = new Map<string, Set<string>>();
         this.headerObjectsCollection = {};
         this.fieldDrillCollection = {};
         this.sortMembers = {};
@@ -333,7 +338,10 @@ export class PivotEngine {
                 }
             }
             if (customProperties && customProperties.pageSettings && customProperties.allowDataCompression) {
-                this.actualData = this.data;
+                if (this.isDrillThrough) {
+                    this.actualData = this.data;
+                }
+                this.groupingFields = {};
                 this.data = this.getGroupedRawData(dataSource);
             }
             this.dataSourceSettings.rows = dataSource.rows ? dataSource.rows : [];
@@ -363,7 +371,6 @@ export class PivotEngine {
             this.valueSortSettings = dataSource.valueSortSettings ||
                 { rowSortOrder: 'None', rowHeaderText: '', columnSortOrder: 'None', columnHeaderText: '', headerDelimiter: '.', columnIndex: undefined,
                     rowIndex: undefined } as IValueSortSettings;
-            this.valueSortData = [];
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
             this.allowDataCompression = customProperties && customProperties.allowDataCompression;
@@ -380,6 +387,10 @@ export class PivotEngine {
                     .columns[columnLength as number];
                 columnLength--;
             }
+            this.isMultiValueRowAxis = this.dataSourceSettings.valueAxis === 'row' && (
+                this.dataSourceSettings.values.length > 1 || this.dataSourceSettings.alwaysShowValueHeader
+            ) && this.dataSourceSettings.rows.length > 0;
+            this.isTabularMultiValueRowAxis = this.isMultiValueRowAxis && customProperties.isTabularLayout;
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
         }
@@ -457,8 +468,9 @@ export class PivotEngine {
     }
 
     private getGroupedRawData(dataSourceSettings: IDataOptions): IDataSet[] | string[][] {
+        const actualData: IDataSet[] | string[][] = this.data;
         this.data = [];
-        for (const data of this.actualData as IDataSet[]) {
+        for (const data of actualData as IDataSet[]) {
             this.data[this.data.length] = PivotUtil.frameHeaderWithKeys(data) as IDataSet | string[];
         }
         const countFields: string[] = dataSourceSettings.values.filter((item: IFieldOptions) => {
@@ -1462,7 +1474,7 @@ export class PivotEngine {
             }
         }
         const unBoundFields: IGroupSettings[] = this.dataSourceSettings.groupSettings.filter((groupSetting: IGroupSettings) =>
-            !fields.some((field: IFieldListOptions) => groupSetting.name === field.name)
+            !fields.some((field: IFieldOptions) => groupSetting.name === field.name)
         );
         const groupingTypes: string[] = [
             '_date_group_years',
@@ -1573,7 +1585,7 @@ export class PivotEngine {
     private validateValueFields(): void {
         this.isValueHasAdvancedAggregate = false;
         for (const value of this.dataSourceSettings.values) {
-            if ((['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal', 'RunningTotals']).indexOf(value.type) !== -1) {
+            if ((['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal', 'RunningTotals', 'PercentageOfRunningTotals']).indexOf(value.type) !== -1) {
                 this.isValueHasAdvancedAggregate = true;
                 break;
             }
@@ -1587,7 +1599,7 @@ export class PivotEngine {
      * @hidden
      */
     public fetchFieldMembers(fieldName: string): void {
-        const fieldPosition: number = this.fieldList[fieldName as string].index;
+        const fieldPosition: number = this.fields.indexOf(fieldName);
         this.generateMembers(fieldPosition, new Set<number>());
     }
     private generateMembers(kl: number, formulaFields: Set<number>): void {
@@ -1643,15 +1655,9 @@ export class PivotEngine {
                 }
                 const memberName: string | number | Date = isNullOrUndefined(memberkey) ? memberkey : fList[key as string].type === 'number' ?
                     (!isNaN(Number(memberkey)) ? Number(memberkey) : undefined) : 1;
-                const valueMatrixInfo: ValueMatrixInfo = {
-                    ordinal: members[mkey as string].ordinal,
-                    member: memberName as number
-                };
-                if (!(this.valueMatrix[dl as number])) {
-                    this.valueMatrix[dl as number] = [];
-                }
-                this.valueMatrix[dl as number][kl as number] = valueMatrixInfo;
-                // }
+                const flatIdx: number = (dl * this._vmatFieldCount) + fList[key as string].index;
+                this._vmatOrdinal[flatIdx as number] = members[mkey as string].ordinal;
+                this._vmatMember[flatIdx as number] = memberName as number;
             }
             fList[key as string].isMembersFilled = true;
         }
@@ -1660,8 +1666,16 @@ export class PivotEngine {
         const keys: string[] = this.fields;
         const fList: IFieldListOptions = this.fieldList;
         const kLn: number = keys.length;
-        if (this.data.length - this.valueMatrix.length < 0) {
-            this.valueMatrix = this.valueMatrix.slice(0, this.data.length);
+        const fieldCount: number = this.getValueMatrixFieldCount(keys);
+        if (this._vmatFieldCount !== fieldCount || this._vmatOrdinal.length !== this.data.length * fieldCount) {
+            for (const key of keys) {
+                if (fList[key as string]) {
+                    fList[key as string].isMembersFilled = false;
+                }
+            }
+            this._vmatFieldCount = fieldCount;
+            this._vmatOrdinal = new Int32Array(this.data.length * this._vmatFieldCount);
+            this._vmatMember = new Float64Array(this.data.length * this._vmatFieldCount);
         }
         const formulaFields: Set<number> = new Set<number>();
         if (this.calculatedFormulas && Object.keys(this.calculatedFormulas).length > 0) {
@@ -1685,11 +1699,56 @@ export class PivotEngine {
             fList[key].members = sortedMembers; */
         }
     }
+    private getValueMatrixFieldCount(keys: string[], fieldIndex?: number): number {
+        let fieldCount: number = isNullOrUndefined(fieldIndex) ? keys.length : fieldIndex + 1;
+        for (let index: number = 0; index < keys.length; index++) {
+            const field: IField = this.fieldList[keys[index as number]];
+            if (field && field.index >= fieldCount) {
+                fieldCount = field.index + 1;
+            }
+        }
+        return fieldCount;
+    }
+    /**
+     * Retrieves the ordinal value for the specified cell from the flattened value matrix.
+     *
+     * @param {number} row - The zero-based row index of the cell.
+     * @param {number} col - The zero-based column index of the cell.
+     * @returns {number} The ordinal value of the specified cell. Returns `0`
+     * @hidden
+     */
+    private getValueMatrixOrdinal(row: number, col: number): number {
+        if (this._vmatFieldCount > 0 && this._vmatOrdinal.length > 0) {
+            return this._vmatOrdinal[(row * this._vmatFieldCount) + col];
+        }
+        return 0;
+    }
+    /**
+     * Retrieves the member value for the specified cell from the flattened value matrix.
+     *
+     * @param {number} row - The zero-based row index of the cell.
+     * @param {number} col - The zero-based column index of the cell.
+     * @returns {number | undefined} The member identifier of the specified cell. Returns `undefined`
+     * when the cell holds a missing value: typed arrays coerce the "missing value" sentinel
+     * (`undefined`/`null`) written by `generateMembers`/`generateValueMatrix` into `NaN`, so a `NaN`
+     * slot is translated back to `undefined` to let aggregates (`getAggregateValue`) distinguish
+     * present values from missing ones via `isNullOrUndefined` checks.
+     * @hidden
+     */
+    private getValueMatrixMember(row: number, col: number): number | undefined {
+        if (this._vmatFieldCount > 0 && this._vmatMember.length > 0) {
+            const member: number | undefined = this._vmatMember[(row * this._vmatFieldCount) + col];
+            return member !== member ? undefined : member;
+        }
+        return 0;
+    }
     private generateValueMatrix(): void {
         const keys: string[] = this.fields;
         let len: number = this.data.length;
         const keyLen: number = keys.length;
         const flList: IFieldListOptions = this.fieldList;
+        const mem: Float64Array = this._vmatMember;
+        const fc: number = this._vmatFieldCount || keyLen;
         while (len--) {
             let tkln: number = keyLen;
             //if (isNullOrUndefined(vMat[len as number])) {
@@ -1700,7 +1759,7 @@ export class PivotEngine {
                 if (field.isMembersFilled) {
                     const fieldValue: string | number | Date = (this.data as IDataSet[])[len as number][
                         this.fieldKeys[key as string] as string | number];
-                    this.valueMatrix[len as number][tkln as number].member =
+                    mem[(len * fc) + field.index] =
                         isNullOrUndefined(fieldValue) ? fieldValue as number : (field.type === 'number' ?
                             (!isNaN(Number(fieldValue)) ? Number(fieldValue) : undefined) : 1);
                 }
@@ -1723,7 +1782,7 @@ export class PivotEngine {
         //this.getFilterExcludeList(source.columns, flist);
         //this.getFilterExcludeList(source.filters, flist);
         // let filters: Iterator = isInclude ? iList : eList;
-        const dln: number = this.valueMatrix.length;
+        const dln: number = this.data.length;
         if (isInclude) {
             const keys: number[] = list.include.index;
             for (let ln: number = 0; ln < keys.length; ln++) {
@@ -2122,17 +2181,34 @@ export class PivotEngine {
                     if (this.getValueCellInfo) {
                         this.getValueCellInfo(cellDetails);
                     }
-                    value = cellDetails.value;
+                    value = cellDetails.value as number;
                     this.rawIndexObject = {};
-                    const operand1: number = this.getParsedValue(measure, filterSettings[fieldName as string].value1 as string);
-                    const operand2: number = this.getParsedValue(measure, filterSettings[fieldName as string].value2 as string);
-                    if (!this.validateFilterValue(value, filterSettings[fieldName as string].condition as ValueOperators, operand1, operand2) && rows[i as number].type !== 'grand sum') {
-                        const data: IAxisSet = this.removefilteredData(rows[i as number], this.valueFilteredData);
-                        const row: IAxisSet = data ? data : rows[i as number];
-                        this.validateFilteredParentData(row, this.valueFilteredData, allMember, 0, level, type);
-                    } else if (rows[i as number].type !== 'grand sum') {
-                        rowFilterData.push(extend({}, rows[i as number], null, true));
-                        rowFilterData[rowFilterData.length - 1].isLevelFiltered = true;
+                    const condition: string = filterSettings[fieldName as string].condition as string;
+                    if (condition === 'Top' || condition === 'Bottom') {
+                        const levelName: string = rows[i as number].valueSort ? rows[i as number].valueSort.levelName as string : '';
+                        const topBottomSet: Set<string> = this.applyTopBottomFiltering(
+                            fieldName, level, rows, filterSettings[fieldName as string], levelName, columns, type
+                        );
+                        const memberId: string = rows[i as number].actualText as string;
+                        if (!topBottomSet.has(memberId) && rows[i as number].type !== 'grand sum') {
+                            const data: IAxisSet = this.removefilteredData(rows[i as number], this.valueFilteredData);
+                            const row: IAxisSet = data ? data : rows[i as number];
+                            this.validateFilteredParentData(row, this.valueFilteredData, allMember, 0, level, type);
+                        } else if (rows[i as number].type !== 'grand sum') {
+                            rowFilterData.push(extend({}, rows[i as number], null, true));
+                            rowFilterData[rowFilterData.length - 1].isLevelFiltered = true;
+                        }
+                    } else {
+                        const operand1: number = this.getParsedValue(measure, filterSettings[fieldName as string].value1 as string);
+                        const operand2: number = this.getParsedValue(measure, filterSettings[fieldName as string].value2 as string);
+                        if (!this.validateFilterValue(value, filterSettings[fieldName as string].condition as ValueOperators, operand1, operand2) && rows[i as number].type !== 'grand sum') {
+                            const data: IAxisSet = this.removefilteredData(rows[i as number], this.valueFilteredData);
+                            const row: IAxisSet = data ? data : rows[i as number];
+                            this.validateFilteredParentData(row, this.valueFilteredData, allMember, 0, level, type);
+                        } else if (rows[i as number].type !== 'grand sum') {
+                            rowFilterData.push(extend({}, rows[i as number], null, true));
+                            rowFilterData[rowFilterData.length - 1].isLevelFiltered = true;
+                        }
                     }
                 } else if (rows[i as number].hasChild && rows[i as number].members.length > 0 && rows[i as number].type !== 'grand sum') {
                     rowFilterData.push(extend({}, rows[i as number], null, true));
@@ -2171,6 +2247,103 @@ export class PivotEngine {
             }
         }
         return filteredData;
+    }
+    private applyTopBottomFiltering(
+        fieldName: string, level: number, members: IAxisSet[], filter: IFilter,
+        parentLevelName: string, columns: IAxisSet, filterType: string
+    ): Set<string> {
+        const cacheKey: string = fieldName + '_' + level + '_' + (parentLevelName || 'global') + '_' + (filter.condition as string) + '_' + (filter.measure as string) + '_' + (filter.value1 as string);
+        if (this.topBottomFilterCache.has(cacheKey as string)) {
+            const cached: Set<string> = this.topBottomFilterCache.get(cacheKey as string);
+            this.topBottomFilterCache.delete(cacheKey as string);
+            this.topBottomFilterCache.set(cacheKey as string, cached);
+            return cached;
+        }
+        let count: number;
+        const parsedValue: number = parseInt(filter.value1 as string, 10);
+        if (isNaN(parsedValue)) {
+            count = 10;
+        } else {
+            count = parsedValue;
+        }
+        const topBottomSet: Set<string> = new Set<string>();
+        if (count <= 0) {
+            this.setTopBottomCacheEntry(cacheKey, topBottomSet);
+            return topBottomSet;
+        }
+        const memberValues: Array<{ memberId: string; memberName: string | number; aggregateValue: number; member: IAxisSet }> = [];
+        const rLen: number = members.length;
+        const measure: string = filter.measure;
+        const mPos: number = this.fieldList[measure as string].index;
+        const aggregate: string = this.fieldList[measure as string].aggregateType;
+        for (let i: number = 0; i < rLen; i++) {
+            if (members[i as number].level === level && members[i as number].type !== 'grand sum' && members[i as number].type !== 'sum') {
+                let aggregateValue: number = 0;
+                const member: IAxisSet = members[i as number];
+                this.rawIndexObject = {};
+                if (filterType === 'row') {
+                    aggregateValue = this.getAggregateValue(member.index, columns.indexObject, mPos, aggregate, false);
+                } else {
+                    aggregateValue = this.getAggregateValue(columns.index, member.indexObject, mPos, aggregate, false);
+                }
+                this.rawIndexObject = {};
+                memberValues.push({
+                    memberId: member.actualText as string,
+                    memberName: member.actualText,
+                    aggregateValue: aggregateValue,
+                    member: member
+                });
+            }
+        }
+        const condition: string = filter.condition as string;
+        type MemberValueItem = { memberId: string; memberName: string | number; aggregateValue: number; member: IAxisSet };
+        const nonEmptyMembers: MemberValueItem[] = memberValues.filter(function (member: MemberValueItem): boolean {
+            return member.aggregateValue !== undefined && member.aggregateValue !== null && member.aggregateValue !== 0;
+        });
+        if (condition === 'Top') {
+            nonEmptyMembers.sort(function (a: MemberValueItem, b: MemberValueItem): number {
+                return b.aggregateValue - a.aggregateValue;
+            });
+        } else if (condition === 'Bottom') {
+            nonEmptyMembers.sort(function (a: MemberValueItem, b: MemberValueItem): number {
+                return a.aggregateValue - b.aggregateValue;
+            });
+        }
+        const len: number = Math.min(count, nonEmptyMembers.length);
+        for (let i: number = 0; i < len; i++) {
+            topBottomSet.add(nonEmptyMembers[i as number].memberId);
+        }
+        this.setTopBottomCacheEntry(cacheKey, topBottomSet);
+        return topBottomSet;
+    }
+    /**
+     * Inserts an entry into the LRU top/bottom filter cache, enforcing the
+     * size limit by evicting the oldest entries (insertion-order prefix of the
+     * backing `Map`) when the limit is reached.
+     *
+     * @param {string} cacheKey - The composite cache key for the filter combination.
+     * @param {Set<string>} topBottomSet - The computed top/bottom member-id set to cache.
+     * @returns {void}
+     */
+    private setTopBottomCacheEntry(cacheKey: string, topBottomSet: Set<string>): void {
+        const cache: Map<string, Set<string>> = this.topBottomFilterCache;
+        if (cache.has(cacheKey as string)) {
+            cache.delete(cacheKey as string);
+        } else if (cache.size >= PivotEngine.TOP_BOTTOM_CACHE_LIMIT) {
+            const evictCount: number = Math.min(
+                PivotEngine.TOP_BOTTOM_CACHE_EVICT_COUNT,
+                cache.size
+            );
+            const oldestKeys: IterableIterator<string> = cache.keys();
+            for (let i: number = 0; i < evictCount; i++) {
+                const next: IteratorResult<string> = oldestKeys.next();
+                if (next.done) {
+                    break;
+                }
+                cache.delete(next.value);
+            }
+        }
+        cache.set(cacheKey as string, topBottomSet);
     }
     private validateFilteredParentData(
         row: IAxisSet, rows: IAxisSet[], allMemberData: IAxisSet, i: number, level: number, type: string): void {
@@ -2292,6 +2465,11 @@ export class PivotEngine {
         if (rowHeaders.length === 0 || columnHeaders.length === 0) {
             this.isEmptyData = true;
         }
+        if (this.isEmptyData) {
+            this.rowMaxLevel = 0;
+            this.rowCount = 0;
+            this.columnCount = 0;
+        }
     }
     /**
      * It is used to update the grid data.
@@ -2303,8 +2481,13 @@ export class PivotEngine {
     public updateGridData(dataSource: IDataOptions): void {
         this.updateDataSourceSettings(dataSource, true);
         this.data = dataSource.dataSource as IDataSet[];
+        this._vmatFieldCount = 0;
+        this._vmatOrdinal = new Int32Array(0);
+        this._vmatMember = new Float64Array(0);
         if (this.allowDataCompression) {
-            this.actualData = this.data;
+            if (this.isDrillThrough) {
+                this.actualData = this.data;
+            }
             this.data = this.getGroupedRawData(dataSource);
         }
         for (const field of this.fields) {
@@ -2343,7 +2526,7 @@ export class PivotEngine {
         // let dataFields: IFieldOptions[] = extend([], this.dataSourceSettings.rows, null, true) as IFieldOptions[];
         // dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
         if (showNoDataItems) {
-            for (let ln: number = 0; ln < this.valueMatrix.length; ln++) {
+            for (let ln: number = 0; ln < this.data.length; ln++) {
                 filterMembers.push(ln);
             }
         }
@@ -2358,11 +2541,13 @@ export class PivotEngine {
             if (!headerCollection) {
                 this.isLastHeaderHasMeasures = true;
                 this.columnCount = 0; this.rowCount = 0; this.cMembers = []; this.rMembers = [];
+                this.levelMap = {};
                 if (rows.length !== 0 && values.length !== 0) {
                     this.rMembers = this.getIndexedHeaders(
                         rows, data, this.customProperties.isTabularLayout ? this.rowMaxLevel : 0, rows[0].showNoDataItems ? filterMembers :
                             this.filterMembers, 'row', '', this.allowValueFilter
                     );
+                    this.updateRowMaxLevel();
                 }
                 if (columns.length !== 0 && values.length !== 0) {
                     this.cMembers = this.getIndexedHeaders(
@@ -2473,7 +2658,7 @@ export class PivotEngine {
                 this.cMembers[this.cMembers.length - 1]));
         this.applyAdvancedAggregate(rowheads, colheads, this.pivotValues);
         if (this.customProperties.isTabularLayout) {
-            this.pivotValues = this.getTabularPivotValues(requireDatasourceUpdate, false, isScrolled);
+            this.pivotValues = this.getTabularPivotValues(requireDatasourceUpdate);
             this.setRowSpan();
         }
         this.isEngineUpdated = true;
@@ -2552,14 +2737,11 @@ export class PivotEngine {
      * @hidden
      */
     public onDrill(drilledItem: IDrilledItem): void {
-        if (!this.enableVirtualization && !this.enablePaging && this.customProperties.isTabularLayout) {
-            this.rowMaxLevel = 0;
-        }
         this.frameDrillObject(drilledItem);
         const headersInfo: IHeadersInfo = this.getHeadersInfo(drilledItem.fieldName, drilledItem.axis);
         this.performDrillOperation(headersInfo.headers, drilledItem, headersInfo.fields, headersInfo.position, 0);
-        if (this.customProperties.isTabularLayout && drilledItem.action === 'up' && headersInfo.axis === 'row') {
-            this.rowMaxLevel = this.getMaxLevel(headersInfo.headers);
+        if (headersInfo.axis === 'row') {
+            this.updateRowMaxLevel();
         }
         this.headerCollection.rowHeadersCount = this.rowCount; this.headerCollection.columnHeadersCount = this.columnCount;
         if (headersInfo.axis === 'row') {
@@ -2568,34 +2750,6 @@ export class PivotEngine {
             this.headerCollection.columnHeaders = headersInfo.headers;
         }
         this.updateEngine();
-    }
-    /**
-     * Computes the maximum nested members depth.
-     *
-     * @param {IAxisSet[]} headers - Row members.
-     * @returns {number} Returns the maxLevel of header
-     */
-    private getMaxLevel(headers: IAxisSet[]): number {
-        /**
-         * Recursively traverses members to find max depth.
-         *
-         * @param {IAxisSet[]} members - The current level of members.
-         * @param {number} currentLevel - The current depth during traversal.
-         * @returns {number} Returns the rowMaxLevel.
-         */
-        function traverse(members: IAxisSet[], currentLevel: number): number {
-            let maxLevel: number = currentLevel;
-            for (const member of members) {
-                if (member.members.length > 0) {
-                    const childLevel: number = traverse(member.members, currentLevel + 1);
-                    if (childLevel > maxLevel) {
-                        maxLevel = childLevel;
-                    }
-                }
-            }
-            return maxLevel;
-        }
-        return traverse(headers, 0);
     }
     /**
      * It performs to update the engine by sorting data.
@@ -2661,7 +2815,7 @@ export class PivotEngine {
             for (let ln: number = 0; ln < addPos.length; ln++) {
                 this.filterPosObj[addPos[ln as number]] = addPos[ln as number];
             }
-            for (let ln: number = 0; ln < this.valueMatrix.length; ln++) {
+            for (let ln: number = 0; ln < this.data.length; ln++) {
                 filterMembers.push(ln);
             }
             addPos = filterMembers;
@@ -2750,29 +2904,22 @@ export class PivotEngine {
                 const levelName: string[] =
                     (headers[count as number].valueSort.levelName as string).split(this.valueSortSettings.headerDelimiter);
                 if (drilledItem.memberName === levelName.join(drilledItem.delimiter ? drilledItem.delimiter : '**')) {
-                    const rowSubTotals: boolean = drilledItem.axis === 'row' && this.dataSourceSettings && this.dataSourceSettings.showSubTotals &&
-                        this.dataSourceSettings.showRowSubTotals && headers[count as number] && headers[count as number].valueSort &&
-                        headers[count as number].valueSort.axis && this.fieldList &&
-                        this.fieldList[headers[count as number].valueSort.axis as string] ? (!isNullOrUndefined(
-                            this.fieldList[headers[count as number].valueSort.axis as string].showSubTotals
-                        ) ? this.fieldList[headers[count as number].valueSort.axis as string].showSubTotals : true) : undefined;
-                    const canUpdateRowCount: boolean = this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && drilledItem.axis === 'row' &&
-                        this.rowCount > 0 && !rowSubTotals;
                     if (drilledItem.action === 'down') {
+                        const memberCount: number = this.getRowMemberContributionCount(headers[count as number]);
                         headers[count as number].isDrilled = true;
-                        if (canUpdateRowCount) {
-                            this.rowCount -= this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
-                        }
                         headers[count as number].members = this.getIndexedHeaders(
                             fields, this.data, position + 1, headers[count as number].index, drilledItem.axis, drilledItem.memberName.
                                 split(drilledItem.delimiter ? drilledItem.delimiter : '**').join(this.valueSortSettings.headerDelimiter));
+                        const memberCountDifference: number = this.getRowMemberContributionCount(headers[count as number]) - memberCount;
                         let sortedHeaders: ISortedHeaders;
                         if (drilledItem.axis === 'row') {
+                            this.rowCount += memberCountDifference;
                             sortedHeaders = this.applyValueSorting(headers[count as number].members, this.cMembers);
                             headers[count as number].members = sortedHeaders.rMembers;
                             if (!this.customProperties.isTabularLayout) {
                                 this.rowCount += (this.showSubTotalsAtBottom ? 1 : 0);
                             }
+                            this.drillDownLevel(headers[count as number].level, true);
                         } else {
                             const showSubTotals: boolean = this.dataSourceSettings.showSubTotals &&
                                 this.dataSourceSettings.showColumnSubTotals && fields[position as number].showSubTotals;
@@ -2781,14 +2928,17 @@ export class PivotEngine {
                             headers[count as number].members = sortedHeaders.cMembers;
                         }
                     } else {
+                        const memberCount: number = this.getRowMemberContributionCount(headers[count as number]);
                         headers[count as number].isDrilled = false;
-                        if (canUpdateRowCount) {
-                            this.rowCount += this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
-                        }
                         this.updateHeadersCount(headers[count as number].members, drilledItem.axis, position, fields, 'minus', true);
+                        const memberCountDifference: number = this.getRowMemberContributionCount(headers[count as number]) - memberCount;
                         headers[count as number].members = [];
-                        if (drilledItem.axis === 'row' && !this.customProperties.isTabularLayout) {
-                            this.rowCount -= (this.showSubTotalsAtBottom ? 1 : 0);
+                        if (drilledItem.axis === 'row') {
+                            this.rowCount += memberCountDifference;
+                            this.drillUpLevel(headers[count as number].level);
+                            if (!this.customProperties.isTabularLayout) {
+                                this.rowCount -= (this.showSubTotalsAtBottom ? 1 : 0);
+                            }
                         }
                     }
                     break;
@@ -2929,6 +3079,7 @@ export class PivotEngine {
             }
             if (headersInfo.axis === 'row') {
                 this.rowCount = 0;
+                this.levelMap = {};
             } else {
                 this.columnCount = 0;
             }
@@ -2940,6 +3091,7 @@ export class PivotEngine {
                 this.insertTotalPosition(rawHeaders);
                 this.rMembers = this.headerCollection.rowHeaders = rawHeaders;
                 this.headerCollection.rowHeadersCount = this.rowCount;
+                this.updateRowMaxLevel();
             } else {
                 if (headersInfo.position > 0) {
                     this.insertPosition(this.dataSourceSettings.columns, this.data, 0, this.filterMembers, 'column', '', rawHeaders);
@@ -3017,7 +3169,7 @@ export class PivotEngine {
             (this.columnGrandTotal ? this.columnGrandTotal : this.cMembers[this.cMembers.length - 1]));
         this.applyAdvancedAggregate(rowheads, colheads, this.pivotValues);
         if (this.customProperties.isTabularLayout) {
-            this.pivotValues = this.getTabularPivotValues(true, true);
+            this.pivotValues = this.getTabularPivotValues(true);
             this.setRowSpan();
         }
         this.isEngineUpdated = true;
@@ -3056,22 +3208,11 @@ export class PivotEngine {
         }
         while (lenCnt < headers.length) {
             if (axis === 'row') {
-                const rowSubTotals: boolean = this.dataSourceSettings && this.dataSourceSettings.showSubTotals &&
-                    this.dataSourceSettings.showRowSubTotals && headers[lenCnt as number] && headers[lenCnt as number].valueSort &&
-                    headers[lenCnt as number].valueSort.axis && this.fieldList &&
-                    this.fieldList[headers[lenCnt as number].valueSort.axis as string] ? (!isNullOrUndefined(
-                        this.fieldList[headers[lenCnt as number].valueSort.axis as string].showSubTotals
-                    ) ? this.fieldList[headers[lenCnt as number].valueSort.axis as string].showSubTotals : true) : undefined;
-                if (!(this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && !rowSubTotals &&
-                    headers[lenCnt as number].members.length && headers[lenCnt as number].hasChild)) {
-                    this.rowCount = this.rowCount - (action === 'plus'
-                        ? -(this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1)
-                        : (this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1));
-                }
+                const increment: number = this.getRowMemberContributionCount(headers[lenCnt as number]);
+                this.rowCount += action === 'plus' ? increment : -increment;
             } else {
-                this.columnCount = this.columnCount - (
-                    action === 'plus' ? -(this.valueAxis === 1 ? 1 : this.dataSourceSettings.values.length) :
-                        (this.valueAxis === 1 ? 1 : this.dataSourceSettings.values.length));
+                this.columnCount -= (action === 'plus' ? -(this.valueAxis === 1 ? 1 : this.dataSourceSettings.values.length) :
+                    (this.valueAxis === 1 ? 1 : this.dataSourceSettings.values.length));
             }
             if (headers[lenCnt as number].members.length > 0) {
                 this.updateHeadersCount(headers[lenCnt as number].members, axis, position + 1, fields, action, true);
@@ -3080,6 +3221,11 @@ export class PivotEngine {
                         headers[lenCnt as number].hasChild && headers[
                         lenCnt as number
                     ].isDrilled ? 1 : 0;
+                    if (action === 'plus') {
+                        this.drillDownLevel(headers[lenCnt as number].level);
+                    } else {
+                        this.drillUpLevel(headers[lenCnt as number].level);
+                    }
                 }
             }
             lenCnt++;
@@ -3374,7 +3520,7 @@ export class PivotEngine {
             /* inserting the row grant-total members */
             this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
             if (rowFlag) {
-                this.rowCount += this.rowValuesLength;
+                this.rowCount += this.rowValuesLength + ((this.isMultiValueRowAxis && !this.customProperties.isTabularLayout) ? 1 : 0);
             }
             /* inserting the column gran-total members */
             this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
@@ -3385,7 +3531,7 @@ export class PivotEngine {
             if (rowFlag) {
                 /* inserting the row grant-total members */
                 this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
-                this.rowCount += this.rowValuesLength;
+                this.rowCount += this.rowValuesLength + ((this.isMultiValueRowAxis && !this.customProperties.isTabularLayout) ? 1 : 0);
             } else {
                 this.rowGrandTotal = this.insertAllMember([], this.filterMembers, '', 'row')[0];
             }
@@ -3430,8 +3576,10 @@ export class PivotEngine {
                         cell.index = [];
                         cell.indexObject = {};
                         savedCell = extend({}, cell, null, true);
-                        cell.index = indexObj.index;
-                        cell.indexObject = indexObj.indexObject;
+                        if (this.isDrillThrough) {
+                            cell.index = indexObj.index;
+                            cell.indexObject = indexObj.indexObject;
+                        }
                         let rowPos: number = rowCnt + 1;
                         while (this.pivotValues[rowPos as number] && !this.pivotValues[rowPos as number][colCnt as number]) {
                             const curentCell: IAxisSet = this.pivotValues[rowCnt as number][colCnt as number] as IAxisSet;
@@ -3472,10 +3620,12 @@ export class PivotEngine {
                     } else {
                         rowCells[colCnt as number] =
                             this.headerContent[rowCnt as number][colCnt as number] = extend({}, savedCell, null, true);
-                        rowCells[colCnt as number].index =
-                            this.headerContent[rowCnt as number][colCnt as number].index = indexObj.index;
-                        rowCells[colCnt as number].indexObject =
-                            this.headerContent[rowCnt as number][colCnt as number].indexObject = indexObj.indexObject;
+                        if (this.isDrillThrough) {
+                            rowCells[colCnt as number].index =
+                                this.headerContent[rowCnt as number][colCnt as number].index = indexObj.index;
+                            rowCells[colCnt as number].indexObject =
+                                this.headerContent[rowCnt as number][colCnt as number].indexObject = indexObj.indexObject;
+                        }
                         spanCnt++;
                         if (this.showSubTotalsAtTop) {
                             memberCnt--;
@@ -3583,6 +3733,19 @@ export class PivotEngine {
             }
         }
     }
+    private getRowMemberContributionCount(header: IAxisSet): number {
+        const isParent: boolean = header.isDrilled && header.hasChild;
+        const fName: string = header.valueSort && header.valueSort.axis as string;
+        const isMeasuresAvail: boolean = (header.level <= this.measureIndex) && this.isMultiValueRowAxis;
+        const shouldCountMember: boolean = (!isParent && !isMeasuresAvail) || !this.customProperties.isTabularLayout;
+        const shouldAddTotals: boolean = this.dataSourceSettings.showRowSubTotals &&
+            this.dataSourceSettings.showSubTotals && (
+            this.fieldList[fName as string] && this.fieldList[fName as string].showSubTotals
+        );
+        const shouldIncludeRowValues: boolean = shouldAddTotals ?
+            (isMeasuresAvail || (isParent && this.showSubTotalsAtBottom)) : (isMeasuresAvail && !isParent);
+        return (shouldIncludeRowValues ? this.rowValuesLength : 0) + (shouldCountMember ? 1 : 0);
+    }
     private getIndexedHeaders(
         keys: IFieldOptions[], data: IDataSet[] | string[][], keyInd?: number, position?: number[], axis?: string,
         parentMember?: string, valueFil?: boolean
@@ -3644,9 +3807,8 @@ export class PivotEngine {
                 member.level = keyInd;
                 member.axis = axis;
                 member.colSpan = 1;
-                this.rowMaxLevel = (axis === 'row' && this.rowMaxLevel < keyInd) ? keyInd : this.rowMaxLevel;
                 const memInd: number = isNoData ? childrens.members[Object.keys(savedMembers)[0]].ordinal :
-                    this.valueMatrix[position[pos as number]][childrens.index].ordinal;
+                    this.getValueMatrixOrdinal(position[pos as number], childrens.index);
                 let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :
                     (data as IDataSet[])[position[pos as number]][this.fieldKeys[fieldName as string] as string | number] as string;
                 headerValue = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(headerValue) : headerValue;
@@ -3746,21 +3908,9 @@ export class PivotEngine {
             for (let iln: number = 0, ilt: number = hierarchy.length; iln < ilt; iln++) {
                 if (!this.frameHeaderObjectsCollection) {
                     if (axis === 'row') {
-                        const isParent: boolean = hierarchy[iln as number].isDrilled && hierarchy[iln as number].hasChild;
-                        const shouldAddSubtotalRow: boolean = isParent && this.showSubTotalsAtBottom &&
-                            !this.customProperties.isTabularLayout;
-                        const shouldRemoveForTabular: boolean = this.isPagingOrVirtualizationEnabled &&
-                            this.customProperties.isTabularLayout && isParent && this.dataSourceSettings &&
-                            (!this.dataSourceSettings.showRowSubTotals || !this.dataSourceSettings.showSubTotals ||
-                                !(this.fieldList && hierarchy[iln as number] && hierarchy[iln as number].valueSort &&
-                                    hierarchy[iln as number].valueSort.axis as string &&
-                                    this.fieldList[hierarchy[iln as number].valueSort.axis as string] &&
-                                    this.fieldList[hierarchy[iln as number].valueSort.axis as string].showSubTotals)
-                            );
-                        const additionalRows: number = (shouldAddSubtotalRow ? 1 : 0) - (shouldRemoveForTabular ? 1 : 0);
-                        this.rowCount += (this.rowValuesLength + additionalRows);
+                        this.rowCount += this.getRowMemberContributionCount(hierarchy[iln as number]);
                     } else {
-                        this.columnCount += this.colValuesLength;
+                        this.columnCount += hierarchy[iln as number].level <= this.measureIndex ? this.colValuesLength : 1;
                     }
                 }
                 let level: string = null;
@@ -3793,6 +3943,9 @@ export class PivotEngine {
                     const filterPosition: number[] = hierarchy[iln as number].index;
                     hierarchy[iln as number].members = this.getIndexedHeaders(
                         keys, data, keyInd + 1, (filterPosition === undefined ? [] : filterPosition), axis, parentMember, valueFil);
+                    if (axis === 'row' && hierarchy[iln as number].members.length > 0) {
+                        this.drillDownLevel(keyInd);
+                    }
                     if (this.frameHeaderObjectsCollection) {
                         this.headerObjectsCollection[parentMember as string] = hierarchy[iln as number].members;
                     }
@@ -3884,7 +4037,7 @@ export class PivotEngine {
             const childrens: IField = this.fieldList[field as string];
             for (let pos: number = 0, lt: number = position.length; pos < lt; pos++) {
                 const member: IAxisSet = {};
-                const memInd: number = this.valueMatrix[position[pos as number]][childrens.index].ordinal;
+                const memInd: number = this.getValueMatrixOrdinal(position[pos as number], childrens.index);
                 const slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd as number]];
                 let value: string | number | Date = (data as IDataSet[])[position[pos as number]][
                     this.fieldKeys[field as string] as number | string];
@@ -3976,7 +4129,7 @@ export class PivotEngine {
                     ((this.pageSettings.currentRowPage + 1) * this.rowValuesLength) >= this.rowPageCount) ?
                 this.rowPageCount : this.pageSettings.currentRowPage;
             const requirePageCount: number = this.enablePaging ? 1 : this.enableOptimizedRendering ? 1.5 : this.viewportPageCount;
-            this.memberCnt = this.enablePaging ? 0 : -this.rowValuesLength;
+            this.memberCnt = 0;
             this.rowStartPos = ((this.pageSettings.currentRowPage * this.pageSettings.rowPageSize) -
                 (this.pageSettings.rowPageSize)) * (this.enablePaging ? 1 : this.rowValuesLength) + (this.enablePaging ? 1 : 0);
             let exactStartPos: number = this.enablePaging ? this.rowStartPos :
@@ -4065,7 +4218,11 @@ export class PivotEngine {
             if (this.enablePaging && this.endPos <= this.memberCnt && pos !== 0) {
                 break;
             }
-            this.memberCnt += headers[pos as number].level <= this.measureIndex ? (axis === 'column' ? this.colValuesLength : this.rowValuesLength) : 1;
+            if (axis === 'row') {
+                this.memberCnt += this.getRowMemberContributionCount(headers[pos as number]);
+            } else {
+                this.memberCnt += headers[pos as number].level <= this.measureIndex ? this.colValuesLength : 1;
+            }
             if (!this.pageInLimit && startPos <= this.memberCnt) {
                 if (axis === 'column') {
                     this.colFirstLvl = this.colFirstLvl + headers[pos as number].level;
@@ -4077,7 +4234,8 @@ export class PivotEngine {
                 this.pageInLimit = true;
             }
             if (this.pageInLimit && !this.enablePaging) {
-                if (this.endPos <= this.memberCnt) {
+                const isValidLimit: boolean = axis === 'column' ? this.endPos <= this.memberCnt : this.endPos < this.memberCnt;
+                if (isValidLimit) {
                     if (axis === 'column') {
                         if (headers[pos as number].members.length === 0) {
                             if (this.colHdrBufferCalculated) {
@@ -4105,21 +4263,11 @@ export class PivotEngine {
             }
             slicedHeaders.push(headers[pos as number].members.length > 0 ?
                 this.removeChildMembers(headers[pos as number] as { [key: string]: Object }) : headers[pos as number]);
-            const isParent: boolean = headers[pos as number].isDrilled && headers[pos as number].hasChild;
-            if (this.isPagingOrVirtualizationEnabled && this.customProperties.isTabularLayout && isParent &&
-                this.dataSourceSettings && (!this.dataSourceSettings.showRowSubTotals || !this.dataSourceSettings.showSubTotals ||
-                    !(this.fieldList && headers[pos as number] && headers[pos as number].valueSort &&
-                        headers[pos as number].valueSort.axis as string && this.fieldList[headers[pos as number].valueSort.axis as string]
-                        && this.fieldList[headers[pos as number].valueSort.axis as string].showSubTotals))) {
-                this.memberCnt -= 1;
-            }
             if (headers[pos as number].members.length > 0) {
                 if (axis === 'column') {
                     this.memberCnt -= !(this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
                         this.columnKeys[(headers[pos as number].valueSort as { [key: string]: number }).axis].showSubTotals) ?
                         this.colValuesLength : 0;
-                } else if (this.showSubTotalsAtBottom && !this.customProperties.isTabularLayout) {
-                    this.memberCnt++;
                 }
                 slicedHeaders[slicedHeaders.length - 1].members = this.performSlicing(headers[pos as number].members, [], startPos, axis);
             }
@@ -4244,8 +4392,14 @@ export class PivotEngine {
                     data[tnum as number] = [];
                     this.valueContent[actCnt as number] = {} as IAxisSet[];
                 }
-                data[tnum as number][0] = reformAxis[tnum as number]
-                    = this.valueContent[actCnt as number][0] = PivotUtil.getFormattedHeader(row, this);
+                const header: IAxisSet = PivotUtil.getFormattedHeader(row, this);
+                if (!this.isDrillThrough) {
+                    const { index, indexObject, ...uiHeader } = header;
+                    data[tnum as number][0] = uiHeader;
+                } else {
+                    data[tnum as number][0] = header;
+                }
+                reformAxis[tnum as number] = this.valueContent[actCnt as number][0] = header;
                 if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader)) {
                     const hPos: number = tnum;
                     const actpos: number = actCnt;
@@ -4365,7 +4519,6 @@ export class PivotEngine {
                     }
                 }
                 if (this.lastMember && reformAxis && reformAxis[tnum as number] &&
-                    typeof reformAxis[tnum as number].actualText === 'string' &&
                     this.lastMember[reformAxis[tnum as number].actualText]) {
                     expectedLevels = this.lastMember[reformAxis[tnum as number].actualText] as string;
                 }
@@ -4449,6 +4602,7 @@ export class PivotEngine {
                 }
                 break;
             case 'RunningTotals':
+            case 'PercentageOfRunningTotals':
                 {
                     this.selectedHeaders.values.push(values[vln as number].name);
                     this.getAggregatedHeaderData((this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? cMembers : rMembers), values[vln as number].name, undefined, false, (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? 'column' : 'row'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
@@ -4535,6 +4689,7 @@ export class PivotEngine {
                 }
                 break;
             case 'RunningTotals':
+            case 'PercentageOfRunningTotals':
             case 'PercentageOfParentRowTotal':
             case 'PercentageOfParentColumnTotal':
                 {
@@ -4655,6 +4810,154 @@ export class PivotEngine {
             return;
         }
     }
+
+    private calculateColumnGrandTotals(
+        rowIndex: number[], colIndex: number[], rowheads: IAxisSet[], data: IAxisSet[][], name: string, selectedHeaderCollection: IAxisSet[]
+    ): { [key: string]: number } {
+        const columnTotals: { [key: string]: number } = {};
+        for (const colIdx of colIndex) {
+            let grandTotal: number = 0;
+            for (const headerItem of selectedHeaderCollection) {
+                for (const rowIdx of rowIndex) {
+                    if (rowheads[rowIdx as number] !== undefined) {
+                        const currentSet: IAxisSet = data[rowIdx as number][colIdx as number] as IAxisSet;
+                        if (rowheads[rowIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
+                            rowheads[rowIdx as number].level === headerItem.level &&
+                            rowheads[rowIdx as number].type !== 'grand sum' &&
+                            currentSet.axis === 'value' && currentSet.actualText === name) {
+                            grandTotal += this.extractRunningTotalValue(currentSet);
+                        }
+                    }
+                }
+            }
+            columnTotals[colIdx.toString()] = grandTotal;
+        }
+        return columnTotals;
+    }
+
+    private calculateRowGrandTotals(
+        rowIndex: number[], activeColumn: IAxisSet[], data: IAxisSet[][], name: string, selectedHeaderCollection: IAxisSet[]
+    ): { [key: string]: number } {
+        const rowTotals: { [key: string]: number } = {};
+        for (const rowIdx of rowIndex) {
+            let grandTotal: number = 0;
+            if (data[rowIdx as number] !== undefined) {
+                for (const headerItem of selectedHeaderCollection) {
+                    for (let colLen: number = activeColumn.length, colIdx: number = 0; colIdx < colLen; colIdx++) {
+                        const currentSet: IAxisSet = data[rowIdx as number][colIdx as number] as IAxisSet;
+                        if (activeColumn[colIdx as number] !== undefined &&
+                            activeColumn[colIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
+                            currentSet.axis === 'value' && currentSet.actualText === name) {
+                            if (activeColumn[colIdx as number].type !== 'grand sum') {
+                                grandTotal += this.extractRunningTotalValue(currentSet);
+                            }
+                        }
+                    }
+                }
+            }
+            rowTotals[rowIdx.toString()] = grandTotal;
+        }
+        return rowTotals;
+    }
+
+    private convertRunningTotalToPercentage(
+        accumulatedValue: number, grandTotal: number, fieldName: string
+    ): { actualValue: number; formattedText: string } {
+        const percentageDecimal: number = grandTotal === 0 ? 0 : (accumulatedValue / grandTotal);
+        const formattedText: string = percentageDecimal === 0 && accumulatedValue === 0 ? this.emptyCellTextContent
+            : this.globalize.formatNumber(percentageDecimal, {
+                format: 'P',
+                maximumFractionDigits: this.getPercentFormat(this.formatFields, fieldName)
+            });
+        return {
+            actualValue: percentageDecimal,
+            formattedText: formattedText
+        };
+    }
+
+    private extractRunningTotalValue(currentSet: IAxisSet): number {
+        return (!currentSet.showSubTotals && !(
+            !isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ?
+            currentSet.actualValue : (!isNullOrUndefined(currentSet.value) &&
+            !isNaN(currentSet.value)) ? currentSet.value : 0;
+    }
+
+    private isRowSubtotal(rowIdx: number, rowheads: IAxisSet[]): boolean {
+        return rowheads[rowIdx as number] && rowheads[rowIdx as number].hasChild &&
+            rowheads[rowIdx as number].isDrilled &&
+            ((!isNullOrUndefined(rowheads[rowIdx as number].showSubTotals) &&
+                !rowheads[rowIdx as number].showSubTotals) || !this.dataSourceSettings.showSubTotals ||
+                !this.dataSourceSettings.showRowSubTotals);
+    }
+
+    private accumulateRowBasedRunningValues(
+        colIndex: number[], rowIndex: number[], rowheads: IAxisSet[], data: IAxisSet[][], name: string,
+        selectedHeaderCollection: IAxisSet[], pivotIndex: { [key: string]: [number, number] },
+        formatter: (accumulatedValue: number, colIdx: number) => { formattedText: string; actualValue: number }
+    ): void {
+        for (const colIdx of colIndex) {
+            let accumulatedValue: number = 0;
+            for (const headerItem of selectedHeaderCollection) {
+                for (const rowIdx of rowIndex) {
+                    if (rowheads[rowIdx as number] !== undefined) {
+                        const currentSet: IAxisSet = data[rowIdx as number][colIdx as number] as IAxisSet;
+                        if (rowheads[rowIdx as number] !== undefined &&
+                            rowheads[rowIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
+                            rowheads[rowIdx as number].level === headerItem.level &&
+                            currentSet.axis === 'value' &&
+                            currentSet.actualText === name) {
+                            if (rowheads[rowIdx as number].type !== 'grand sum') {
+                                accumulatedValue += this.extractRunningTotalValue(currentSet);
+                            }
+                            const result: { formattedText: string; actualValue: number } = formatter(accumulatedValue, colIdx);
+                            currentSet.formattedText = currentSet.showSubTotals ? result.formattedText : currentSet.formattedText;
+                            if (!this.aggregatedValueMatrix[rowIdx as number]) {
+                                this.aggregatedValueMatrix[rowIdx as number] = [];
+                            }
+                            this.aggregatedValueMatrix[rowIdx as number][colIdx as number] = result.actualValue;
+                            if (pivotIndex[rowIdx + ',' + colIdx]) {
+                                delete pivotIndex[rowIdx + ',' + colIdx];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private accumulateColumnBasedRunningValues(
+        rowIndex: number[], activeColumn: IAxisSet[], rowheads: IAxisSet[], data: IAxisSet[][], name: string,
+        selectedHeaderCollection: IAxisSet[], pivotIndex: { [key: string]: [number, number] },
+        formatter: (accumulatedValue: number, rowIdx: number) => { formattedText: string; actualValue: number }
+    ): void {
+        for (const rowIdx of rowIndex) {
+            if (data[rowIdx as number] !== undefined) {
+                let accumulatedValue: number = 0;
+                for (const headerItem of selectedHeaderCollection) {
+                    for (let colLen: number = activeColumn.length, colIdx: number = 0; colIdx < colLen; colIdx++) {
+                        const currentSet: IAxisSet = data[rowIdx as number][colIdx as number] as IAxisSet;
+                        if (activeColumn[colIdx as number] !== undefined &&
+                            activeColumn[colIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
+                            currentSet.axis === 'value' &&
+                            currentSet.actualText === name) {
+                            if (activeColumn[colIdx as number].type !== 'grand sum') {
+                                accumulatedValue += this.extractRunningTotalValue(currentSet);
+                            }
+                            const result: { formattedText: string; actualValue: number } = formatter(accumulatedValue, rowIdx);
+                            currentSet.formattedText = currentSet.showSubTotals ? result.formattedText : currentSet.formattedText;
+                            if (!this.aggregatedValueMatrix[rowIdx as number]) {
+                                this.aggregatedValueMatrix[rowIdx as number] = [];
+                            }
+                            this.aggregatedValueMatrix[rowIdx as number][colIdx as number] = result.actualValue;
+                            if (pivotIndex[rowIdx + ',' + colIdx]) {
+                                delete pivotIndex[rowIdx + ',' + colIdx];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     private updateAggregates(
         rowheads: IAxisSet[], colheads: IAxisSet[], data: IAxisSet[][], selectedHeaders: IHeaderData[], colIndex: number[],
         rowIndex: number[], pivotIndex: { [key: string]: [number, number] }): void {
@@ -4673,9 +4976,9 @@ export class PivotEngine {
             const rowindexCollection: number[] = [];
             let selectedRowValues: IAxisSet[] = [];
             const selectedColumnValues: ISelectedValues = [];
-            if ((['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal', 'RunningTotals']).indexOf(headers.type) !== -1) {
+            if ((['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal', 'RunningTotals', 'PercentageOfRunningTotals']).indexOf(headers.type) !== -1) {
                 if (isRowBaseField) {
-                    if (headers.type !== 'RunningTotals') {
+                    if (headers.type !== 'RunningTotals' && headers.type !== 'PercentageOfRunningTotals') {
                         for (const rln of rowIndex) {
                             if (rowheads[rln as number] !== undefined) {
                                 if (rowheads[rln as number].valueSort[uniqueName as string]) {
@@ -4708,7 +5011,7 @@ export class PivotEngine {
                             len = 0;
                         }
                     }
-                    if (headers.type !== 'RunningTotals') {
+                    if (headers.type !== 'RunningTotals' && headers.type !== 'PercentageOfRunningTotals') {
                         for (let clt: number = activeColumn.length, cln: number = 0; cln < clt; cln++) {
                             let isSelectedColumn: boolean = false;
                             if (activeColumn[cln as number] !== undefined && activeColumn[cln as number].valueSort[uniqueName as string]) {
@@ -4994,68 +5297,55 @@ export class PivotEngine {
             case 'RunningTotals':
                 {
                     if (isRowBaseField) {
-                        for (const index of colIndex) {
-                            let cVal: number = 0;
-                            for (const item of selectedHeaderCollection) {
-                                for (const rlen of rowIndex) {
-                                    if (rowheads[rlen as number] !== undefined) {
-                                        const currentSet: IAxisSet = data[rlen as number][index as number] as IAxisSet;
-                                        if (rowheads[rlen as number] !== undefined && rowheads[rlen as number].valueSort[item.valueSort.levelName as string] && rowheads[rlen as number].level === item.level && currentSet.axis === 'value' && currentSet.actualText === name) {
-                                            if (rowheads[rlen as number].type !== 'grand sum') {
-                                                cVal += (!currentSet.showSubTotals && !(
-                                                    !isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ?
-                                                    currentSet.actualValue : (!isNullOrUndefined(currentSet.value) &&
-                                                    !isNaN(currentSet.value)) ? currentSet.value : null;
-                                                currentSet.formattedText = currentSet.showSubTotals ? (cVal === 0 &&
-                                                    (currentSet.actualValue && currentSet.actualValue !== 0) ? '' :
-                                                    this.getFormattedValue(cVal, name).formattedText) : currentSet.formattedText;
-                                                if (!this.aggregatedValueMatrix[rlen as number]) {
-                                                    this.aggregatedValueMatrix[rlen as number] = [];
-                                                }
-                                                this.aggregatedValueMatrix[rlen as number][index as number] = cVal;
-                                            }
-                                            if (pivotIndex[rlen + ',' + index]) {
-                                                delete pivotIndex[rlen + ',' + index];
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        this.accumulateRowBasedRunningValues(
+                            colIndex, rowIndex, rowheads, data, name, selectedHeaderCollection, pivotIndex,
+                            (accumulatedValue: number, _colIdx: number) => ({
+                                formattedText: accumulatedValue === 0 ? '' : this.getFormattedValue(accumulatedValue, name).formattedText,
+                                actualValue: accumulatedValue
+                            })
+                        );
                     } else {
-                        for (const rln of rowIndex) {
-                            if (data[rln as number] !== undefined) {
-                                let cVal: number = 0;
-                                for (const item of selectedHeaderCollection) {
-                                    const subTotal: boolean = (rowheads[rln as number].hasChild && rowheads[rln as number].isDrilled &&
-                                        ((!isNullOrUndefined(rowheads[rln as number].showSubTotals) &&
-                                            !rowheads[rln as number].showSubTotals) || !this.dataSourceSettings.showSubTotals ||
-                                            !this.dataSourceSettings.showRowSubTotals));
-                                    for (let clt: number = activeColumn.length, cln: number = 0; cln < clt; cln++) {
-                                        const currentSet: IAxisSet = data[rln as number][cln as number] as IAxisSet;
-                                        if (activeColumn[cln as number] !== undefined &&
-                                            activeColumn[cln as number].valueSort[item.valueSort.levelName as string] &&
-                                            currentSet.axis === 'value' && currentSet.actualText === name) {
-                                            if (activeColumn[cln as number].type !== 'grand sum') {
-                                                if (!isNullOrUndefined(currentSet.value)) {
-                                                    cVal += currentSet.value;
-                                                }
-                                                currentSet.formattedText = subTotal ? '' : this.getFormattedValue(cVal, name).formattedText;
-                                                if (!this.aggregatedValueMatrix[rln as number]) {
-                                                    this.aggregatedValueMatrix[rln as number] = [];
-                                                }
-                                                this.aggregatedValueMatrix[rln as number][cln as number] = cVal;
-                                            }
-                                            if (pivotIndex[rln + ',' + cln]) {
-                                                delete pivotIndex[rln + ',' + cln];
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
+                        this.accumulateColumnBasedRunningValues(
+                            rowIndex, activeColumn, rowheads, data, name, selectedHeaderCollection, pivotIndex,
+                            (accumulatedValue: number, rowIdx: number) => {
+                                const subTotal: boolean = this.isRowSubtotal(rowIdx, rowheads);
+                                return {
+                                    formattedText: subTotal ? '' : this.getFormattedValue(accumulatedValue, name).formattedText,
+                                    actualValue: accumulatedValue
+                                };
                             }
-                        }
+                        );
+                    }
+                }
+                break;
+            case 'PercentageOfRunningTotals':
+                {
+                    if (isRowBaseField) {
+                        const columnTotals: { [key: string]: number } = this.calculateColumnGrandTotals(
+                            rowIndex, colIndex, rowheads, data, name, selectedHeaderCollection
+                        );
+                        this.accumulateRowBasedRunningValues(
+                            colIndex, rowIndex, rowheads, data, name, selectedHeaderCollection, pivotIndex,
+                            (accumulatedValue: number, colIdx: number) => {
+                                const grandTotal: number = columnTotals[colIdx.toString()] || 0;
+                                return this.convertRunningTotalToPercentage(accumulatedValue, grandTotal, name);
+                            }
+                        );
+                    } else {
+                        const rowTotals: { [key: string]: number } = this.calculateRowGrandTotals(
+                            rowIndex, activeColumn, data, name, selectedHeaderCollection
+                        );
+                        this.accumulateColumnBasedRunningValues(
+                            rowIndex, activeColumn, rowheads, data, name, selectedHeaderCollection, pivotIndex,
+                            (accumulatedValue: number, rowIdx: number) => {
+                                const subTotal: boolean = this.isRowSubtotal(rowIdx, rowheads);
+                                if (subTotal) {
+                                    return { formattedText: '', actualValue: accumulatedValue };
+                                }
+                                const grandTotal: number = rowTotals[rowIdx.toString()] || 0;
+                                return this.convertRunningTotalToPercentage(accumulatedValue, grandTotal, name);
+                            }
+                        );
                     }
                 }
                 break;
@@ -5605,8 +5895,8 @@ export class PivotEngine {
                     if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
                         this.rawIndexObject[index as number] = index as number;
-                        if (!isNullOrUndefined(this.valueMatrix[index as number][value as number].member)) {
-                            values.push(this.valueMatrix[index as number][value as number].member);
+                        if (!isNullOrUndefined(this.getValueMatrixMember(index as number, value as number))) {
+                            values.push(this.getValueMatrixMember(index as number, value as number));
                         }
                     }
                     ri++;
@@ -5631,8 +5921,8 @@ export class PivotEngine {
                     if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
                         this.rawIndexObject[index as number] = index as number;
-                        cellValue += (isNullOrUndefined(this.valueMatrix[index as number][value as number].member) ?
-                            0 : (this.allowDataCompression ? this.valueMatrix[index as number][value as number].member : 1));
+                        const _vmCount: number = this.getValueMatrixMember(index as number, value as number);
+                        cellValue += (isNullOrUndefined(_vmCount) ? 0 : (this.allowDataCompression ? _vmCount : 1));
                     }
                     ri++;
                 }
@@ -5668,7 +5958,7 @@ export class PivotEngine {
                     if (columnIndex[index as number] !== undefined) {
                         this.rawIndexObject[index as number] = index as number;
                         isValueExist = true;
-                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
+                        const currentVal: number = this.getValueMatrixMember(index as number, value as number);
                         if (!isNullOrUndefined(currentVal)) {
                             cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
                             cellValue *= currentVal;
@@ -5697,7 +5987,7 @@ export class PivotEngine {
                     if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
                         this.rawIndexObject[index as number] = index as number;
-                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
+                        const currentVal: number = this.getValueMatrixMember(index as number, value as number);
                         if (!isNullOrUndefined(currentVal)) {
                             val += currentVal;
                             indexVal.push(currentVal);
@@ -5728,20 +6018,18 @@ export class PivotEngine {
                 cellValue = undefined;
                 while (rowIndex[ri as number] !== undefined) {
                     const index: number = rowIndex[ri as number];
-                    if (columnIndex[index as number] !== undefined &&
-                        this.valueMatrix[index as number][value as number].member !== undefined) {
+                    const _v: number = this.getValueMatrixMember(index as number, value as number);
+                    if (columnIndex[index as number] !== undefined && _v !== undefined) {
                         isValueExist = true;
                         this.rawIndexObject[index as number] = index as number;
-                        if (isNullOrUndefined(cellValue) &&
-                            isNullOrUndefined(this.valueMatrix[index as number][value as number].member)) {
-                            cellValue = this.valueMatrix[index as number][value as number].member;
+                        if (isNullOrUndefined(cellValue) && isNullOrUndefined(_v)) {
+                            cellValue = _v;
                         } else {
                             if (isFirst) {
-                                cellValue = this.valueMatrix[index as number][value as number].member;
+                                cellValue = _v;
                                 isFirst = false;
                             } else {
-                                cellValue = this.valueMatrix[index as number][value as number].member < cellValue ?
-                                    this.valueMatrix[index as number][value as number].member : cellValue;
+                                cellValue = _v < cellValue ? _v : cellValue;
                             }
                         }
                     }
@@ -5754,16 +6042,15 @@ export class PivotEngine {
                 let isMaxFirst: boolean = true;
                 while (rowIndex[ri as number] !== undefined) {
                     const index: number = rowIndex[ri as number];
-                    if (columnIndex[index as number] !== undefined &&
-                            this.valueMatrix[index as number][value as number].member !== undefined) {
+                    const _v: number = this.getValueMatrixMember(index as number, value as number);
+                    if (columnIndex[index as number] !== undefined && _v !== undefined) {
                         isValueExist = true;
                         this.rawIndexObject[index as number] = index as number;
                         if (isMaxFirst) {
-                            cellValue = this.valueMatrix[index as number][value as number].member;
+                            cellValue = _v;
                             isMaxFirst = false;
                         } else {
-                            cellValue = this.valueMatrix[index as number][value as number].member > cellValue ?
-                                this.valueMatrix[index as number][value as number].member : cellValue;
+                            cellValue = _v > cellValue ? _v : cellValue;
                         }
                     }
                     ri++;
@@ -5807,7 +6094,7 @@ export class PivotEngine {
                             this.rawIndexObject[index as number] = index as number;
                         }
                         //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri as number]), 1)[0] : rowIndex[ri as number];
-                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
+                        const currentVal: number = this.getValueMatrixMember(index as number, value as number);
                         if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
                             cellValue = currentVal;
                         } else {
@@ -5951,24 +6238,18 @@ export class PivotEngine {
         }
         return formula;
     }
-    private getTabularPivotValues(requireDatasourceUpdate?: boolean, isDrilled?: boolean, isScrolled?: boolean): IAxisSet[][] {
+    private getTabularPivotValues(requireDatasourceUpdate?: boolean): IAxisSet[][] {
         this.tabularPivotValues = [];
         let colIndex: number;
         const indexObjectMap: { [key: string]: { index: number[], indexObject: INumberIndex }; } = {};
         const isGrouping: boolean = Object.keys(this.groupingFields).length > 0;
-        const isMultiValueRowAxis: boolean = this.dataSourceSettings.valueAxis === 'row' && (
-            this.dataSourceSettings.values.length > 1 || this.dataSourceSettings.alwaysShowValueHeader
-        );
-        const rowMeasureAtLastPosition: boolean = isMultiValueRowAxis && (this.dataSourceSettings.rows.length === this.measureIndex);
-        if (isMultiValueRowAxis && !isDrilled && !isScrolled) {
-            this.rowMaxLevel = this.rowMaxLevel + 1;
-        }
         for (let i: number = 0; i < this.pivotValues.length; i++) {
             let rowPivotValues: Array<IAxisSet>;
             let drillMem: boolean = false;
             let isValue: boolean = true;
             let levelName: string;
             let levelNameParts: string[];
+            let vLevelNameParts: string[];
             let valueAxis: string;
             let type: boolean = false;
             while (isNullOrUndefined(this.pivotValues[i as number]) && i < this.pivotValues.length) {
@@ -5981,7 +6262,7 @@ export class PivotEngine {
             const firstRow: IAxisSet | undefined = rowPivotValues[0] ? rowPivotValues[0] : undefined;
             if (firstRow) {
                 levelName = firstRow.valueSort.levelName as string;
-                levelNameParts = levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter);
+                levelNameParts = vLevelNameParts = levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter);
                 if (((!this.dataSourceSettings.showSubTotals && firstRow.type !== 'value') ||
                     (!this.dataSourceSettings.showRowSubTotals)) &&
                     firstRow.formattedText !== this.localeObj.getConstant('grandTotal')) {
@@ -5990,19 +6271,26 @@ export class PivotEngine {
                     }
                 }
                 if (isGrouping) {
-                    const pivotValue: IAxisSet = this.pivotValues[i - 1][0];
-                    const previousValue: IAxisSet = this.tabularPivotValues[this.tabularPivotValues.length - 1][this.rowMaxLevel - 1];
+                    let pivotValue: IAxisSet;
+                    if (!isNullOrUndefined(this.pivotValues[i - 1])) {
+                        pivotValue = this.pivotValues[i - 1][0];
+                    }
+                    let previousValue: IAxisSet;
+                    if (this.tabularPivotValues.length > 0 &&
+                        this.tabularPivotValues[this.tabularPivotValues.length - 1]) {
+                        previousValue = this.tabularPivotValues[this.tabularPivotValues.length - 1][this.rowMaxLevel - 1];
+                    }
                     if (!isNullOrUndefined(pivotValue) || !isNullOrUndefined(previousValue)) {
-                        const pivotValueAxis: string = pivotValue.valueSort.axis as string;
+                        const pivotValueAxis: string = pivotValue ? pivotValue.valueSort.axis as string : '';
                         let previousValueAxis: string;
                         if (!isNullOrUndefined(previousValue) && previousValue.valueSort.axis) {
                             previousValueAxis = previousValue.valueSort.axis as string;
                         }
-                        if (pivotValueAxis.includes('custom_group') || !isNullOrUndefined(previousValueAxis) &&
+                        if ((!isNullOrUndefined(pivotValueAxis) && pivotValueAxis.includes('custom_group')) || !isNullOrUndefined(previousValueAxis) &&
                             previousValueAxis.includes('custom_group')) {
-                            if ((pivotValue.formattedText === levelNameParts[this.rowMaxLevel - 1] && pivotValue.formattedText !==
-                                levelNameParts[levelNameParts.length - 1]) || (previousValue && previousValue.formattedText ===
-                                    levelNameParts[this.rowMaxLevel - 1])) {
+                            if ((pivotValue && pivotValue.formattedText === levelNameParts[this.rowMaxLevel - 1] &&
+                                pivotValue.formattedText !== levelNameParts[levelNameParts.length - 1]) ||
+                                (previousValue && previousValue.formattedText === levelNameParts[this.rowMaxLevel - 1])) {
                                 valueAxis = pivotValue.valueSort.axis ? pivotValue.valueSort.axis as string :
                                     previousValue.valueSort.axis as string;
                             } else {
@@ -6014,7 +6302,7 @@ export class PivotEngine {
                     }
                 }
             }
-            if (firstRow && isMultiValueRowAxis) {
+            if (firstRow && this.isTabularMultiValueRowAxis) {
                 if (firstRow.type === 'value') {
                     if (levelNameParts.length - 1 !== this.rowMaxLevel && levelNameParts[0] !== this.localeObj.getConstant('grandTotal')) {
                         for (let w: number = 0; w < this.dataSourceSettings.values.length; w++) {
@@ -6048,7 +6336,8 @@ export class PivotEngine {
             if (!isNullOrUndefined(firstRow) && firstRow.axis === 'row') {
                 if (!isNullOrUndefined(rowPivotValues[1]) && !(firstRow.hasChild && firstRow.isDrilled) && isValue) {
                     const levelNameArray: string[] = [];
-                    if (isMultiValueRowAxis && (requireDatasourceUpdate && drillMem
+                    const vLevelNameArray: string[] = [];
+                    if (this.isTabularMultiValueRowAxis && (requireDatasourceUpdate && drillMem
                         ? levelNameParts.length - 1 < this.rowMaxLevel : levelNameParts.length <= this.rowMaxLevel) &&
                         firstRow.type === 'value' && (!this.dataSourceSettings.expandAll ? drillMem : !drillMem) ||
                         levelNameParts[0] === this.localeObj.getConstant('grandTotal')) {
@@ -6057,11 +6346,14 @@ export class PivotEngine {
                             if (levelNameParts[b as number] === levelNameParts[levelNameParts.length - 2]) {
                                 levelNameArray[b as number] = levelNameParts[levelNameParts.length - 2] + ' ' +
                                     levelNameParts[levelNameParts.length - 1];
+                                vLevelNameArray[b as number] = levelNameParts[levelNameParts.length - 2] +
+                                    this.valueSortSettings.headerDelimiter + levelNameParts[levelNameParts.length - 1];
                                 if (b === 0) {
                                     break;
                                 } else {
                                     while (b >= 0) {
                                         levelNameArray[b - 1] = levelNameParts[b - 1];
+                                        vLevelNameArray[b - 1] = vLevelNameParts[b - 1];
                                         b--;
                                     }
                                     break;
@@ -6069,20 +6361,23 @@ export class PivotEngine {
                             } else {
                                 levelNameArray[b as number] = levelNameParts[levelNameParts.length - 2] + ' ' +
                                     levelNameParts[levelNameParts.length - 1];
+                                vLevelNameArray[b as number] = levelNameParts[levelNameParts.length - 2] +
+                                    this.valueSortSettings.headerDelimiter + levelNameParts[levelNameParts.length - 1];
                             }
                         }
                         levelNameParts = levelNameArray;
+                        vLevelNameParts = vLevelNameArray;
                     }
                     colIndex = firstRow.colIndex;
                     let currentRow: IAxisSet[] = [];
-                    let dLevelName: string = levelNameParts[0];
+                    let dLevelName: string = vLevelNameParts[0];
                     let level: number = 0;
                     for (let k: number = 0; k < levelNameParts.length - 1 || k < this.rowMaxLevel; k++) {
                         let valueIsDrill: boolean;
                         let valueHasChild: boolean;
                         let duplIsDrilled: boolean = firstRow.isDrilled;
                         let dupliHasChild: boolean = firstRow.hasChild;
-                        if (isMultiValueRowAxis) {
+                        if (this.isTabularMultiValueRowAxis) {
                             valueIsDrill = false;
                             valueHasChild = false;
                             if (levelNameParts[levelNameParts.length - 1] !== levelNameParts[levelNameParts.length - 2]) {
@@ -6107,15 +6402,15 @@ export class PivotEngine {
                         if (k < levelNameParts.length - 1) {
                             if (k > 0) {
                                 dLevelName = dLevelName + this.dataSourceSettings.valueSortSettings.headerDelimiter +
-                                    levelNameParts[k as number];
+                                    vLevelNameParts[k as number];
                             }
                             currentRow.push({
                                 actualText: levelNameParts[k as number],
                                 axis: firstRow.axis,
                                 formattedText: levelNameParts[k as number],
                                 rowIndex: this.tabularPivotValues.length,
-                                hasChild: (isMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueHasChild : dupliHasChild,
-                                isDrilled: (isMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueIsDrill : duplIsDrilled,
+                                hasChild: (this.isTabularMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueHasChild : dupliHasChild,
+                                isDrilled: (this.isTabularMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueIsDrill : duplIsDrilled,
                                 level: level,
                                 valueSort: {
                                     levelName: type && firstRow.type === 'value' && k === this.rowMaxLevel ?
@@ -6134,14 +6429,14 @@ export class PivotEngine {
                         if (k >= firstRow.level) {
                             const span: number = k === 0 ? this.rowMaxLevel : this.rowMaxLevel - 1;
                             currentRow.push({
-                                actualText: isMultiValueRowAxis ? levelNameParts[k as number] === undefined ?
+                                actualText: this.isTabularMultiValueRowAxis ? levelNameParts[k as number] === undefined ?
                                     levelNameParts[levelNameParts.length - 1] : levelNameParts[k as number] : firstRow.formattedText,
                                 axis: firstRow.axis,
-                                formattedText: isMultiValueRowAxis ? levelNameParts[k as number] === undefined ?
+                                formattedText: this.isTabularMultiValueRowAxis ? levelNameParts[k as number] === undefined ?
                                     levelNameParts[levelNameParts.length - 1] : levelNameParts[k as number] : firstRow.formattedText,
                                 rowIndex: this.tabularPivotValues.length,
-                                hasChild: (isMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueHasChild : firstRow.hasChild,
-                                isDrilled: (isMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueIsDrill : firstRow.isDrilled,
+                                hasChild: (this.isTabularMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueHasChild : firstRow.hasChild,
+                                isDrilled: (this.isTabularMultiValueRowAxis && firstRow.type !== 'grand sum') ? valueIsDrill : firstRow.isDrilled,
                                 level: level,
                                 valueSort: {
                                     levelName: firstRow.valueSort.levelName,
@@ -6168,7 +6463,7 @@ export class PivotEngine {
                     firstRow.rowIndex = this.tabularPivotValues.length;
                     firstRow.colSpan = 1;
                     firstRow.rowSpan = 1;
-                    if (isMultiValueRowAxis) {
+                    if (this.isTabularMultiValueRowAxis) {
                         firstRow.formattedText = levelNameParts[levelNameParts.length - 1];
                     }
                     currentRow.push(firstRow);
@@ -6182,7 +6477,7 @@ export class PivotEngine {
                     }
                     currentRow = currentRow.concat(colData);
                     this.tabularPivotValues.push(currentRow);
-                } else if (rowMeasureAtLastPosition) {
+                } else if (this.isTabularMultiValueRowAxis && (this.dataSourceSettings.rows.length === this.measureIndex)) {
                     const levelKey: string = firstRow.valueSort.levelName.toString();
                     if (levelKey) {
                         indexObjectMap[levelKey as string] = { index: firstRow.index, indexObject: firstRow.indexObject };
@@ -6209,6 +6504,32 @@ export class PivotEngine {
             }
         }
         return this.tabularPivotValues;
+    }
+    private drillDownLevel(level: number, isDrillDown: boolean = false): void {
+        this.levelMap[level as number] = (this.levelMap[level as number] || 0) + 1;
+        if (isDrillDown) {
+            this.updateRowMaxLevel();
+        }
+    }
+    private drillUpLevel(level: number, isDrillUp: boolean = false): void {
+        if (this.levelMap[level as number] && this.levelMap[level as number] > 0) {
+            this.levelMap[level as number]--;
+            if (this.levelMap[level as number] === 0) {
+                delete this.levelMap[level as number];
+            }
+        }
+        if (isDrillUp) {
+            this.updateRowMaxLevel();
+        }
+    }
+    private updateRowMaxLevel(): void {
+        const levels: number[] = Object.keys(this.levelMap).map((level: string) => Number(level));
+        if (levels.length > 0) {
+            this.rowMaxLevel = Math.max(...levels) + 1;
+        } else {
+            this.rowMaxLevel = 0;
+        }
+        this.rowMaxLevel = this.isTabularMultiValueRowAxis ? this.rowMaxLevel + 1 : this.rowMaxLevel;
     }
 
     public setColumnSpan(currentRow: IAxisSet[], firstRow: IAxisSet): void {
@@ -6798,13 +7119,6 @@ export interface IMatrix2D {
     [key: number]: { [key: number]: number };
     length: number;
     push(item: number): number;
-}
-/**
- * @hidden
- */
-export interface ValueMatrixInfo {
-    ordinal: number;
-    member: number;
 }
 /**
  * @hidden

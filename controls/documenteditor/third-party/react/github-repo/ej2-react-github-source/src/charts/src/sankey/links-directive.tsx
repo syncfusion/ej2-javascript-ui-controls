@@ -5,7 +5,7 @@ import { SankeyLinkModel } from '@syncfusion/ej2-charts';
 /**
  * `SankeyLinkDirective` directive represent a link of the react Sankey. 
  * It must be contained in a Sankey component(`SankeyComponent`). 
- * ```tsx
+ * ```
  * <SankeyComponent>
  * <SankeyLinksDirective>
  * <SankeyLinkDirective></SankeyLinkDirective>

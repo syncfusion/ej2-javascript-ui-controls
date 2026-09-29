@@ -24,7 +24,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs chart Component
- * ```vue
+ * ```
  * <ejs-stockchart></ejs-stockchart>
  * ```
  */
@@ -154,6 +154,9 @@ export let StockChartComponent: DefineVueComponent<StockChartModel> =  vueDefine
         renderPeriodSelector(): void {
             return this.ej2Instances.renderPeriodSelector();
         },
+        setData(dataPoint: Object, seriesIndex: number, duration?: number): void {
+            return this.ej2Instances.setData(dataPoint, seriesIndex, duration);
+        },
         stockChartDataManagerSuccess(): void {
             return this.ej2Instances.stockChartDataManagerSuccess();
         },
@@ -181,6 +184,7 @@ export type StockChartComponent = typeof ComponentBase & {
     findCurrentData(totalData: Object, xName: string): Object;
     rangeChanged(updatedStart: number, updatedEnd: number): void;
     renderPeriodSelector(): void;
+    setData(dataPoint: Object, seriesIndex: number, duration?: number): void;
     stockChartDataManagerSuccess(): void
 };
 

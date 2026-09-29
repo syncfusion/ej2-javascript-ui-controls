@@ -235,7 +235,7 @@ export class TextHelper {
         if (isNullOrUndefined(isRender)) {
             isRender = false;
         }
-        if (textToRender.length === 0) {
+        if (!isNullOrUndefined(textToRender) && textToRender.length === 0) {
             return '';
         }
         const isRtlText: boolean = isBidi;
@@ -453,7 +453,7 @@ export class TextHelper {
      * @param {boolean} isAutoWidth
      * @param {boolean} isAllColumnHasAutoWidthType 
      */
-    public readWord(text: string, elements: Dictionary<TextElementBox, number>, isAutoWidth: boolean, isAllColumnHasAutoWidthType: boolean): string {
+    public readWord(text: string, elements: Dictionary<TextElementBox, number>, isAutoWidth: boolean, isAllowAutoFit: boolean, isAllColumnHasAutoWidthType: boolean): string {
         let pos: number = this._position;
         let length: number = text.length;
         let char: string = '';
@@ -465,7 +465,7 @@ export class TextHelper {
             if (char === '\u2002' || char === '\u200C' || (char === '\u00A0' && !isAutoWidth) || (isAllColumnHasAutoWidthType && (code >= 0x4E00 && code <= 0x9FFF))) {
                 isSplitChar = true;
             }
-            if ((char === '/' || char === '.' || char === ',' || char === '=' || char === '*' || char === '«' || char === '»' || char === '?' || char === '>' || char === '<') && !isAllColumnHasAutoWidthType) {
+            if ((char === '/' || char === '.' || char === ',' || char === '=' || char === '*' || char === '«' || char === '»' || char === '?' || char === '>' || char === '<') && !isAllColumnHasAutoWidthType  && !isAllowAutoFit) {
                 isSplitChar = true;
             }
             switch (char) {

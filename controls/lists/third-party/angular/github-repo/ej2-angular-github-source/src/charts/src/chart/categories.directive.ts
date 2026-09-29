@@ -21,9 +21,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-multilevellabel>e-categories>e-category',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class CategoryDirective extends ComplexBase<CategoryDirective> {
@@ -44,35 +44,35 @@ export class CategoryDirective extends ComplexBase<CategoryDirective> {
      * @aspdefaultvalueignore 
      * @blazordefaultvalueignore 
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Allows adding custom data for multi-level labels.
      * @default null
      */
-    public customAttributes: any;
+    public declare customAttributes: any;
     /** 
      * Specifies the end value for the multi-level labels.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Specifies the maximum width of the text for multi-level labels.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public maximumTextWidth: any;
+    public declare maximumTextWidth: any;
     /** 
      * Specifies the starting value for the multi-level labels.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public start: any;
+    public declare start: any;
     /** 
      * Specifies the text to be displayed for the multi-level labels.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -88,6 +88,7 @@ export class CategoryDirective extends ComplexBase<CategoryDirective> {
  */
 @Directive({
     selector: 'e-multilevellabel>e-categories',
+    standalone: true,
     queries: {
         children: new ContentChildren(CategoryDirective)
     },

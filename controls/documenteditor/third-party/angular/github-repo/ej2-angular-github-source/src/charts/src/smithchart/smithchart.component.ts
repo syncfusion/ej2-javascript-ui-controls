@@ -20,26 +20,27 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childSeries: new ContentChild(SmithchartSeriesCollectionDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class SmithchartComponent extends Smithchart implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	animationComplete: any;
-	axisLabelRender: any;
-	beforePrint: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	seriesRender: any;
-	subtitleRender: any;
-	textRender: any;
-	titleRender: any;
-	public tooltipRender: any;
-    public childSeries: QueryList<SmithchartSeriesCollectionDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare animationComplete: any;
+	declare axisLabelRender: any;
+	declare beforePrint: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare seriesRender: any;
+	declare subtitleRender: any;
+	declare textRender: any;
+	declare titleRender: any;
+	public declare tooltipRender: any;
+    public declare childSeries: QueryList<SmithchartSeriesCollectionDirective>;
     public tags: string[] = ['series'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -82,7 +83,8 @@ export class SmithchartComponent extends Smithchart implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

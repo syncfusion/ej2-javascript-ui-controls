@@ -21,7 +21,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-layer>e-initialShapeSelections>e-initialShapeSelection',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
 
     }
@@ -35,12 +36,12 @@ export class InitialShapeSelectionDirective extends ComplexBase<InitialShapeSele
      * Gets or sets the property name from the data source in maps.
      * @default null
      */
-    public shapePath: any;
+    public declare shapePath: any;
     /** 
      * Gets or sets the value from the data source which is bound to the shape in maps.
      * @default null
      */
-    public shapeValue: any;
+    public declare shapeValue: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -56,6 +57,7 @@ export class InitialShapeSelectionDirective extends ComplexBase<InitialShapeSele
  */
 @Directive({
     selector: 'e-layer>e-initialShapeSelections',
+    standalone: true,
     queries: {
         children: new ContentChildren(InitialShapeSelectionDirective)
     },

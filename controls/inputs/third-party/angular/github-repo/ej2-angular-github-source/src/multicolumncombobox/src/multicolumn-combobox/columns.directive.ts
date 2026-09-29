@@ -20,9 +20,11 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-multicolumncombobox>e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template'),
+        headerTemplate: new ContentChild('headerTemplate')
     }
 })
 export class ColumnDirective extends ComplexBase<ColumnDirective> {
@@ -34,63 +36,40 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
      * The CSS styles and attributes of the content cells of a particular column can be customized.
      * @default null
      */
-    public customAttributes: any;
+    public declare customAttributes: any;
     /** 
      * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
      * @default false
      */
-    public displayAsCheckBox: any;
+    public declare displayAsCheckBox: any;
     /** 
      * Defines the name of the field whose data will be displayed in the column.
      * @default ''
      */
-    public field: any;
+    public declare field: any;
     /** 
      * It is used to change display value with the given format and does not affect the original data. 
      * Gets the format from the user which can be standard or custom `number` and `date` formats.
      * @default null
      * @asptype string
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Defines the header text of column which is used to display in column header. 
      * If headerText is not defined, then field name value will be assigned to header text.
      * @default ''
      */
-    public header: any;
+    public declare header: any;
     /** 
      * Defines the alignment of the column in both header and content cells.
      * @default Left
      */
-    public textAlign: any;
+    public declare textAlign: any;
     /** 
      * Defines the width of the column in pixels or percentage.
      * @default ''
      */
-    public width: any;
-    /** 
-     * Defines the column template that renders customized element in each cell of the column. 
-     * It accepts either template or HTML element ID.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
-    /** 
-     * Defines the column template as string or HTML element ID which is used to add customized element in the column header.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -99,6 +78,8 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
         this.directivePropList = input;
     }
 }
+Template()(ColumnDirective.prototype, 'template');
+Template()(ColumnDirective.prototype, 'headerTemplate');
 
 /**
  * Column Array Directive
@@ -106,6 +87,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
  */
 @Directive({
     selector: 'ejs-multicolumncombobox>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColumnDirective)
     },

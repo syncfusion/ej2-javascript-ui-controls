@@ -5,7 +5,7 @@ import { ConditionalFormatModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `ConditionalFormatDirective` represent a conditionalformat of the React Spreadsheet.
  * It must be contained in a `SheetDirective`.
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <SheetsDirective>
  *    <SheetDirective>

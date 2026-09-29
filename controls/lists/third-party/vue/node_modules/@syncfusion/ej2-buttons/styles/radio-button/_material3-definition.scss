@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material3' as *;
-@forward 'ej2-base/styles/definition/material3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $radio-btn-border: 1px solid !default;
 $radio-btn-bigger-font-size: 16px !default;
 $radio-btn-bigger-height: 20px !default;

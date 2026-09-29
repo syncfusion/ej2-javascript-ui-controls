@@ -298,7 +298,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Year");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Month");
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(12);
+            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(3);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("MMM yyyy");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
@@ -313,7 +313,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Year");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Week");
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(48);
+            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(8);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("MMM dd, yyyy");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
@@ -328,7 +328,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Year");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Day");
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(336);
+            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(55);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
@@ -373,7 +373,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("None");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Hour");
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(72000);
+            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1320);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("H");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(1);
@@ -388,7 +388,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("None");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Minutes");
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(4320000);
+            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(79200);
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("m");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(1);
@@ -757,7 +757,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("MMM dd, yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("");
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("7/3/2018");
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/24/2018");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(1);
             done();
         }
@@ -870,7 +870,7 @@ describe('Gantt base module', () => {
             expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("MMM dd, yyyy");
             expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("H");
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("7/3/2018");
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/24/2018");
             expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
             done();
         }
@@ -1571,7 +1571,7 @@ describe('Gantt base module', () => {
         ganttObj.dataBound = function () {
             setTimeout(() => {
                 ganttObj.zoomOut();
-                expect(ganttObj.currentZoomingLevel.level).toBe(4);
+                expect(ganttObj.currentZoomingLevel.level).toBe(6);
                 done();
             }, 200);
         }
@@ -1777,7 +1777,7 @@ describe('Project End Date', () => {
             }, done);
     });
     it('Render project end date as in sample', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/19/2018");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/13/2018");
     });
     afterAll(() => {
         if (ganttObj) {
@@ -5513,7 +5513,7 @@ describe('Gantt ZoomToFit action with viewStart and ViewEndDate', () => {
         }, done);
     });
     it('viewStart and viewEnd date', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("03/01/2019");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("04/01/2019");
         expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'MM/dd/yyyy')).toBe("04/30/2019");
     });
     it('Perform ZoomToFit action', () => {
@@ -5675,7 +5675,7 @@ describe('Gantt with viewStart and ViewEndDate is set to auto - project end date
         }, done);
     });
     it('timeline Start and timeline End date', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("03/30/2019");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("04/01/2019");
     });
     
     afterAll(() => {
@@ -5838,7 +5838,7 @@ describe('Gantt with viewStart is set auto and project start date is defined' , 
     });
     it('timeline Start and timeline End date', () => {
         ganttObj.timelineSettings.viewEndDate = 'auto',
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("03/30/2019");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("04/01/2019");
         ganttObj.locale = 'zh';
     });
     it('timeline Start and timeline End date', () => {

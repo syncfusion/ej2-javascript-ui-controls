@@ -14,7 +14,7 @@ export interface TreeGridTypecast {
 }
 /**
  * `TreeGridComponent` represents the react TreeGrid.
- * ```tsx
+ * ```
  * <TreeGridComponent dataSource={data} allowPaging={true} allowSorting={true}/>
  * ```
  */

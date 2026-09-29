@@ -1,6 +1,6 @@
 import { Dialog, OffsetPosition, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Droppable, createElement, extend, remove, addClass, closest, getInstance, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine, IField } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button, RadioButton, CheckBox, ChangeArgs } from '@syncfusion/ej2-buttons';
@@ -81,6 +81,7 @@ export class CalculatedField implements IAction {
      * @param {PivotView | PivotFieldList} parent - It represent the parent.
      */
     constructor(parent: PivotView | PivotFieldList) {
+        initializeTelemetryFeature('CalculatedField', 'PivotTable');
         this.parent = parent;
         this.existingReport = null;
         this.parent.calculatedFieldModule = this;

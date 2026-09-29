@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material-dark' as *;
-@forward 'ej2-base/styles/definition/material-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $grid-checkbox-padding-topbottom: 9px !default;
 $grid-checkbox-content-padding-left: 9px !default;
 $grid-rtl-checkbox-content-padding-left: 18px !default;

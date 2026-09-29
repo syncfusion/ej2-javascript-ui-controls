@@ -33,7 +33,7 @@ export class Toolbar {
     private serviceLocator: ServiceLocator;
     private l10n: L10n;
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print', 'Search',
-        'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport', 'Undo', 'Redo'];
+        'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport', 'Undo', 'Redo', 'AdvancedFilter'];
     private searchBoxObj: SearchBox;
     private evtHandlers: { event: string, handler: Function }[];
     private isRightToolbarMenu: boolean = false;
@@ -71,6 +71,13 @@ export class Toolbar {
             id: this.gridID + '_search',
             tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper',
             type: 'Input'
+        };
+        (this.predefinedItems as { AdvancedFilter: ItemModel }).AdvancedFilter = {
+            id: this.gridID + '_advancedfilter',
+            prefixIcon: 'e-icon-advanced-filter e-icon-filter',
+            text: this.l10n.getConstant('FilterIcon') || 'Filter',
+            tooltipText: this.l10n.getConstant('FilterIcon') || 'Filter',
+            align: 'Right'
         };
         this.isRightToolbarMenu = false;
         if (this.parent.enableAdaptiveUI && this.isResponsiveToolbarMenuItems(true) && ((this.parent.rowRenderingMode === 'Horizontal') ||
@@ -112,6 +119,10 @@ export class Toolbar {
             };
         }
         this.createToolbar();
+        if (this.parent.advancedFilterSettings && this.parent.advancedFilterSettings.queryBuilderSettings
+            && this.parent.advancedFilterSettings.queryBuilderSettings.rule) {
+            this.enableAdvancedFilterButton(true);
+        }
         if (this.parent.enableAdaptiveUI) {
             if (isNullOrUndefined(this.responsiveToolbarMenu)) {
                 this.renderResponsiveToolbarpopup();
@@ -212,6 +223,17 @@ export class Toolbar {
     }
 
     private toolbarCreated(isNormal?: boolean): void {
+        this.renderSearchInput(isNormal);
+    }
+
+    /**
+     * Renders the search input elements in the toolbar based on normal or adaptive grid and bind search input events .
+     *
+     * @param {boolean} isNormal - Specifies whether the normal or Adaptive UI search should be rendered.
+     * @returns {void}
+     * @hidden
+     */
+    public renderSearchInput(isNormal?: boolean): void {
         if (this.element.querySelector('.e-search-wrapper')) {
             if (!this.parent.enableAdaptiveUI || isNormal) {
                 const classList: string = this.parent.cssClass ? 'e-input-group e-search ' + this.parent.cssClass
@@ -609,6 +631,11 @@ export class Toolbar {
                             }
                         }
                         break;
+                    case gID + '_advancedfilter':
+                        if (gObj.advancedFilterModule) {
+                            gObj.advancedFilterModule.openDialog();
+                        }
+                        break;
                     case gID + '_columnchooser':
                         if (this.parent.enableAdaptiveUI) {
                             gObj.showResponsiveCustomColumnChooser();
@@ -874,6 +901,21 @@ export class Toolbar {
             }
         }
         return getFocusToolbarItems;
+    }
+
+    public enableAdvancedFilterButton(active: boolean): void {
+        if (!this.toolbar || !this.toolbar.element) {
+            return;
+        }
+        const selector: string = `#${this.gridID}_advancedfilter, [data-item="AdvancedFilter"], [data-item="advancedfilter"], [title*="Advanced Filter"]`;
+        const filterButton: HTMLElement | null = this.toolbar.element.querySelector(selector) as HTMLElement | null;
+        if (!filterButton) {
+            return;
+        }
+        const filterIcon: HTMLElement | null = filterButton.querySelector('.e-btn-icon.e-icon-advanced-filter.e-icon-filter') as HTMLElement | null;
+        if (filterIcon) {
+            filterIcon.classList.toggle('e-filtered', active);
+        }
     }
 
     private keyPressedHandler(e: KeyboardEventArgs): void {

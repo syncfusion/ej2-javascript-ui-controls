@@ -8,7 +8,7 @@ export interface BulletChartTypecast {
 }
 /**
  * Represents react BulletChart Component
- * ```tsx
+ * ```
  * <BulletChartComponent></BulletChartComponent>
  * ```
  */

@@ -20,32 +20,32 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class DocumentEditorContainerComponent extends DocumentEditorContainer implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeAcceptRejectChanges: any;
-	beforeCommentAction: any;
-	beforePaneSwitch: any;
-	beforePaste: any;
-	commentDelete: any;
-	contentChange: any;
-	contentControl: any;
-	created: any;
-	customContextMenuBeforeOpen: any;
-	customContextMenuSelect: any;
-	destroyed: any;
-	documentChange: any;
-	fileMenuItemClick: any;
-	selectionChange: any;
-	serviceFailure: any;
-	toolbarClick: any;
-	trackChange: any;
-	public beforeXmlHttpRequestSend: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeAcceptRejectChanges: any;
+	declare beforeCommentAction: any;
+	declare beforePaneSwitch: any;
+	declare beforePaste: any;
+	declare commentDelete: any;
+	declare contentChange: any;
+	declare contentControl: any;
+	declare created: any;
+	declare customContextMenuBeforeOpen: any;
+	declare customContextMenuSelect: any;
+	declare destroyed: any;
+	declare documentChange: any;
+	declare fileMenuItemClick: any;
+	declare selectionChange: any;
+	declare serviceFailure: any;
+	declare toolbarClick: any;
+	declare trackChange: any;
+	public declare beforeXmlHttpRequestSend: any;
 
 
 
@@ -89,7 +89,8 @@ export class DocumentEditorContainerComponent extends DocumentEditorContainer im
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

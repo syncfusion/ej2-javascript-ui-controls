@@ -2779,4 +2779,33 @@ describe('Add watermark to specific PDF document', () => {
         expect(resources).toBe(resourceDictionary);
         document.destroy();
     });
+    it('1018400 - CropBox and MediaBox items reference', () => {
+        const document = new PdfDocument();
+        const page = document.addPage();
+        const cropBoxReference1: _PdfReference = new _PdfReference(1, 0);
+        const cropBoxReference2: _PdfReference = new _PdfReference(2, 0);
+        const cropBoxReference3: _PdfReference = new _PdfReference(3, 0);
+        const cropBoxReference4: _PdfReference = new _PdfReference(4, 0);
+        const mediaBoxReference1: _PdfReference = new _PdfReference(5, 0);
+        const mediaBoxReference2: _PdfReference = new _PdfReference(6, 0);
+        const mediaBoxReference3: _PdfReference = new _PdfReference(7, 0);
+        const mediaBoxReference4: _PdfReference = new _PdfReference(8, 0);
+        page._pageDictionary.update('CropBox', [
+            cropBoxReference1,
+            cropBoxReference2,
+            cropBoxReference3,
+            cropBoxReference4
+        ]);
+        page._pageDictionary.update('MediaBox', [
+            mediaBoxReference1,
+            mediaBoxReference2,
+            mediaBoxReference3,
+            mediaBoxReference4
+        ]);
+        expect(page.size).toBeDefined();
+        let cBox = page._pageDictionary.get("CropBox");
+        let mBox = page._pageDictionary.get("MediaBox");
+        expect(Array.isArray(cBox) && cBox.every(item => (item as any) !instanceof _PdfReference));
+        expect(Array.isArray(mBox) && mBox.every(item => (item as any) !instanceof _PdfReference));
+    });
 });

@@ -20,23 +20,24 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childItems: new ContentChild(SplitButtonItemsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class SplitButtonComponent extends SplitButton implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeItemRender: any;
-	beforeOpen: any;
-	click: any;
-	close: any;
-	created: any;
-	open: any;
-	public select: any;
-    public childItems: QueryList<SplitButtonItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeItemRender: any;
+	declare beforeOpen: any;
+	declare click: any;
+	declare close: any;
+	declare created: any;
+	declare open: any;
+	public declare select: any;
+    public declare childItems: QueryList<SplitButtonItemsDirective>;
     public tags: string[] = ['items'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -67,7 +68,7 @@ export class SplitButtonComponent extends SplitButton implements IComponentBase 
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

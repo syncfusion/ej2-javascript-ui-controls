@@ -1,0 +1,13 @@
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/mixin' as *;
+
+@include export-module('button-group-bigger') {
+  .e-bigger .e-btn-group,
+  .e-bigger.e-btn-group,
+  .e-bigger .e-css.e-btn-group,
+  .e-bigger.e-css.e-btn-group  {
+    .e-btn-icon {
+      font-size: $btn-grp-icon-font-size-bigger;
+    }
+  }
+}

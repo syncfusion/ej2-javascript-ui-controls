@@ -141,7 +141,9 @@ export class RibbonContextualTabManager {
             }
         } else {
             ribbon.hideTab(tableDesignId, true);
+            this.updateContextualTabVisibility(ribbon, tableDesignId, false);
             ribbon.hideTab(tableLayoutId, true);
+            this.updateContextualTabVisibility(ribbon, tableLayoutId, false);
         }
     }
 
@@ -165,9 +167,13 @@ export class RibbonContextualTabManager {
             ribbon.selectTab(ribbonId + HOME_TAB_ID);
         }
         ribbon.hideTab(ribbonId + TABLE_DESIGN_TAB_ID, true);
+        this.updateContextualTabVisibility(ribbon, ribbonId + TABLE_DESIGN_TAB_ID, false);
         ribbon.hideTab(ribbonId + TABLE_LAYOUT_TAB_ID, true);
+        this.updateContextualTabVisibility(ribbon, ribbonId + TABLE_LAYOUT_TAB_ID, false);
         ribbon.hideTab(ribbonId + HEADER_FOOTER_TAB_ID, true);
+        this.updateContextualTabVisibility(ribbon, ribbonId + HEADER_FOOTER_TAB_ID, false);
         ribbon.hideTab(ribbonId + PICTURE_FORMAT_TAB_ID, true);
+        this.updateContextualTabVisibility(ribbon, ribbonId + PICTURE_FORMAT_TAB_ID, false);
         // ribbon.selectTab(ribbonId + HOME_TAB_ID);
     }
 
@@ -197,6 +203,17 @@ export class RibbonContextualTabManager {
             }
         } else {
             ribbon.hideTab(headerFooterTabId, true);
+            this.updateContextualTabVisibility(ribbon, headerFooterTabId, false);
+        }
+    }
+    private updateContextualTabVisibility(ribbon: EJ2Ribbon, tabId: string, visible: boolean): void {
+        for (const contextualTab of ribbon.contextualTabs) {
+            for (const tab of contextualTab.tabs) {
+                if (tab.id === tabId) {
+                    contextualTab.visible = visible;
+                    return;
+                }
+            }
         }
     }
 
@@ -231,6 +248,7 @@ export class RibbonContextualTabManager {
             }
         } else {
             ribbon.hideTab(pictureFormatTab, true);
+            this.updateContextualTabVisibility(ribbon, pictureFormatTab, false);
         }
     }
 }

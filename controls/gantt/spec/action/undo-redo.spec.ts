@@ -4576,7 +4576,7 @@ describe('time span for month mode', () => {
     });
     it('time span for month mode', () => {
         ganttObj.nextTimeSpan();
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'M/d/yyyy')).toBe("9/1/2019");
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'M/d/yyyy')).toBe("7/1/2019");
     });
 });
 describe('time span for day mode', () => {

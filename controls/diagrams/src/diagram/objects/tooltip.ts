@@ -121,7 +121,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
  */
 export function initTooltip(diagram: Diagram): Tooltip {
     let tooltipOption: Tooltip = new Tooltip;
-    tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption) as Tooltip;
+    tooltipOption = updateTooltipContent(diagram, diagram.tooltip, tooltipOption) as Tooltip;
     const tooltip: Tooltip = new Tooltip(tooltipOption);
     tooltip.beforeCollision = beforeCollision;
     tooltip.beforeOpen = beforeOpen;
@@ -129,6 +129,7 @@ export function initTooltip(diagram: Diagram): Tooltip {
     tooltip.opensOn = 'custom';
     tooltip.appendTo('#' + diagram.element.id);
     tooltip.close();
+    diagram.isTooltipOpen = false;
     return tooltip;
 }
 
@@ -173,7 +174,7 @@ export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorMode
     //let tooltip: DiagramTooltipModel;
     const tooltipObject: Tooltip = diagram.tooltipObject as Tooltip;
     const tooltip: DiagramTooltipModel = node ? node.tooltip : diagram.tooltip;
-    updateTooltipContent(tooltip, tooltipObject);
+    updateTooltipContent(diagram, tooltip, tooltipObject);
     return tooltipObject;
 }
 
@@ -181,12 +182,13 @@ export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorMode
  * updateTooltipContent method \
  *
  * @returns { Tooltip } updateTooltipContent method .\
+ * @param {Diagram} diagram - provide the Diagram.
  * @param {DiagramTooltipModel} tooltip - provide the points value.
  * @param {Tooltip} tooltipObject - provide the points value.
  *
  * @private
  */
-function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Tooltip): Tooltip {
+function updateTooltipContent(diagram: Diagram, tooltip: DiagramTooltipModel, tooltipObject: Tooltip): Tooltip {
     if (tooltip.content) {
         tooltipObject.content = tooltip.content;
         //Task 834121: Content-Security-Policy support for diagram
@@ -206,7 +208,7 @@ function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Toolt
             tooltipObject.animation = tooltip.animation;
         }
     } else {
-        tooltipObject.close();
+        diagram.commandHandler.closeTooltip();
     }
     return tooltipObject as Tooltip;
 }

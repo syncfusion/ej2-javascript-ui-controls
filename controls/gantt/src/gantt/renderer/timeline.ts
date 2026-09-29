@@ -794,7 +794,9 @@ export class Timeline {
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
             pStartDate.setDate(pStartDate.getDate() - 1);
-            const dayEndTime: number = this.parent['getCurrentDayEndTime'](property.isAutoSchedule ? property.autoEndDate : property.endDate);
+            const calendarContext: CalendarContext = property && property.calendarContext ?
+                property.calendarContext : this.parent.defaultCalendarContext;
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](property.isAutoSchedule ? property.autoEndDate : property.endDate, calendarContext);
             this.parent.dateValidationModule.setTime(dayEndTime, pStartDate);
             pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate, property, true);
         }
@@ -1518,7 +1520,7 @@ export class Timeline {
         let perDayWidth: number;
         let totWidth: number;
         let contentWidth: number;
-        const contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+        const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
         if (!isNullOrUndefined(contentElement) && !(this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport)) {
             if (!this.parent.isLoad && this.parent.splitterModule && this.parent.splitterModule.splitterObject &&
                 this.parent.splitterSettings.view === 'Chart') {
@@ -1528,7 +1530,7 @@ export class Timeline {
                 contentWidth = contentElement['offsetWidth'];
             }
             const contentHeight: number = contentElement['offsetHeight'];
-            const scrollHeight: number = document.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+            const scrollHeight: number = this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
             timeDiff = Math.abs(this.timelineStartDate.getTime() - endDate.getTime());
             timeDiff = timeDiff / (1000 * 3600 * 24);
             if (!this.parent.timelineSettings.showWeekend) {

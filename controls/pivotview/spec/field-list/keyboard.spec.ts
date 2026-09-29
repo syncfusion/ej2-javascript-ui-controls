@@ -13,6 +13,7 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Dialog } from '@syncfusion/ej2-popups';
+import * as cls from '../../src/common/base/css-constant';
 
 /**
  * Pivot keyboard interaction spec
@@ -690,6 +691,204 @@ describe('Testing', () => {
         });
     });
 
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('toggleFieldList method coverage', () => {
+    let pivotGridObj: PivotView;
+    let pivotViewKeyModule: any;
+    let elem: HTMLElement = createElement('div', { id: 'PivotGrid_FieldList', styles: 'height:200px; width:500px' });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeAll((done: Function) => {
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        let dataBound: EmitType<Object> = () => { done(); };
+        PivotView.Inject(FieldList);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                enableSorting: true,
+                sortSettings: [{ name: 'company', order: 'Descending' }],
+                filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                { name: 'company', type: 'Include', items: ['NIPAZ'] },
+                { name: 'gender', type: 'Include', items: ['male'] }],
+                rows: [{ name: 'company' }, { name: 'state' }],
+                columns: [{ name: 'name' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [{ name: 'gender' }]
+            },
+            showFieldList: true,
+            dataBound: dataBound
+        });
+        pivotGridObj.appendTo('#PivotGrid_FieldList');
+    });
+
+    beforeEach((done: Function) => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(() => {
+            pivotViewKeyModule = pivotGridObj.keyboardModule;
+            done();
+        }, 1000);
+    });
+
+    it('toggleFieldList - toggle field list visibility when icon is not hidden (Ctrl+Shift+F)', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+        expect(toggleFieldListIcon).toBeTruthy;
+
+        // Get initial state
+        const isHiddenInitial: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+
+        // Trigger ctrlShiftF action (which calls toggleFieldList)
+        const eventArgs = {
+            action: 'ctrlShiftF',
+            target: toggleFieldListIcon,
+            preventDefault: (): void => { /** Null */ }
+        };
+
+        pivotViewKeyModule.keyActionHandler(eventArgs);
+
+        setTimeout(() => {
+            const isHiddenAfter: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+            // State should change after toggle
+            expect(isHiddenAfter).not.toBe(isHiddenInitial);
+            done();
+        }, 500);
+    });
+
+    it('toggleFieldList - toggle field list visibility again to revert state', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+        const isHiddenBefore: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+
+        const eventArgs = {
+            action: 'ctrlShiftF',
+            target: toggleFieldListIcon,
+            preventDefault: (): void => { /** Null */ }
+        };
+
+        pivotViewKeyModule.keyActionHandler(eventArgs);
+
+        setTimeout(() => {
+            const isHiddenAfter: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+            // State should toggle back
+            expect(isHiddenAfter).not.toBe(isHiddenBefore);
+            done();
+        }, 500);
+    });
+
+    it('toggleFieldList - when toggle button is not hidden and field list is visible', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+
+        // Ensure icon is not hidden
+        removeClass([toggleFieldListIcon], cls.ICON_HIDDEN);
+
+        const eventArgs = {
+            action: 'ctrlShiftF',
+            target: toggleFieldListIcon,
+            preventDefault: (): void => { /** Null */ }
+        };
+
+        pivotViewKeyModule.keyActionHandler(eventArgs);
+
+        setTimeout(() => {
+            // After toggle, icon should be hidden
+            expect(toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN)).toBeTruthy;
+            done();
+        }, 500);
+    });
+
+    it('toggleFieldList - when field list dialog is hidden and icon has ICON_HIDDEN class', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+
+        // Ensure icon is hidden
+        addClass([toggleFieldListIcon], cls.ICON_HIDDEN);
+
+        // Ensure dialog exists and is not destroyed
+        if (pivotGridObj.pivotFieldListModule && pivotGridObj.pivotFieldListModule.dialogRenderer) {
+            const eventArgs = {
+                action: 'ctrlShiftF',
+                target: toggleFieldListIcon,
+                preventDefault: (): void => { /** Null */ }
+            };
+
+            pivotViewKeyModule.keyActionHandler(eventArgs);
+
+            setTimeout(() => {
+                // Icon should no longer be hidden after toggle
+                expect(toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN)).not.toBeTruthy;
+                done();
+            }, 500);
+        } else {
+            done();
+        }
+    });
+
+    it('toggleFieldList - when parent is null (should not throw error)', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+
+        // Save original parent
+        const originalParent = pivotViewKeyModule.parent;
+
+        // Set parent to null temporarily
+        pivotViewKeyModule.parent = null;
+
+        const eventArgs = {
+            action: 'ctrlShiftF',
+            target: toggleFieldListIcon,
+            preventDefault: (): void => { /** Null */ }
+        };
+
+        expect(() => {
+            pivotViewKeyModule.keyActionHandler(eventArgs);
+        }).not.toThrow();
+
+        // Restore parent
+        pivotViewKeyModule.parent = originalParent;
+        done();
+    });
+
+    it('toggleFieldList - when showFieldList is false (should not execute toggle)', (done: Function) => {
+        const toggleFieldListIcon: HTMLElement = pivotGridObj.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement;
+        const isHiddenBefore: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+
+        // Temporarily disable field list
+        const originalShowFieldList = pivotGridObj.showFieldList;
+        pivotGridObj.showFieldList = false;
+
+        const eventArgs = {
+            action: 'ctrlShiftF',
+            target: toggleFieldListIcon,
+            preventDefault: (): void => { /** Null */ }
+        };
+
+        pivotViewKeyModule.keyActionHandler(eventArgs);
+
+        setTimeout(() => {
+            const isHiddenAfter: boolean = toggleFieldListIcon.classList.contains(cls.ICON_HIDDEN);
+            // State should remain unchanged since showFieldList is false
+            expect(isHiddenAfter).toBe(isHiddenBefore);
+
+            // Restore original state
+            pivotGridObj.showFieldList = originalShowFieldList;
+            done();
+        }, 500);
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

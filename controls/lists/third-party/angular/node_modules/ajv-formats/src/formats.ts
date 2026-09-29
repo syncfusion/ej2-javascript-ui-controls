@@ -7,6 +7,8 @@ export type FormatName =
   | "date"
   | "time"
   | "date-time"
+  | "iso-time"
+  | "iso-date-time"
   | "duration"
   | "uri"
   | "uri-reference"
@@ -44,8 +46,10 @@ export const fullFormats: DefinedFormats = {
   // date: http://tools.ietf.org/html/rfc3339#section-5.6
   date: fmtDef(date, compareDate),
   // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
-  time: fmtDef(time, compareTime),
-  "date-time": fmtDef(date_time, compareDateTime),
+  time: fmtDef(getTime(true), compareTime),
+  "date-time": fmtDef(getDateTime(true), compareDateTime),
+  "iso-time": fmtDef(getTime(), compareIsoTime),
+  "iso-date-time": fmtDef(getDateTime(), compareIsoDateTime),
   // duration: https://tools.ietf.org/html/rfc3339#appendix-A
   duration: /^P(?!$)((\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?|(\d+W)?)$/,
   uri,
@@ -62,7 +66,7 @@ export const fullFormats: DefinedFormats = {
   hostname:
     /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i,
   // optimized https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-  ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
+  ipv4: /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/,
   ipv6: /^((([0-9a-f]{1,4}:){7}([0-9a-f]{1,4}|:))|(([0-9a-f]{1,4}:){6}(:[0-9a-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){5}(((:[0-9a-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){4}(((:[0-9a-f]{1,4}){1,3})|((:[0-9a-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){3}(((:[0-9a-f]{1,4}){1,4})|((:[0-9a-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){2}(((:[0-9a-f]{1,4}){1,5})|((:[0-9a-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){1}(((:[0-9a-f]{1,4}){1,6})|((:[0-9a-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-f]{1,4}){1,7})|((:[0-9a-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))$/i,
   regex,
   // uuid: http://tools.ietf.org/html/rfc4122
@@ -94,12 +98,20 @@ export const fastFormats: DefinedFormats = {
   ...fullFormats,
   date: fmtDef(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, compareDate),
   time: fmtDef(
-    /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i,
+    /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
     compareTime
   ),
   "date-time": fmtDef(
-    /^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
+    /^\d\d\d\d-[0-1]\d-[0-3]\dt(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
     compareDateTime
+  ),
+  "iso-time": fmtDef(
+    /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i,
+    compareIsoTime
+  ),
+  "iso-date-time": fmtDef(
+    /^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i,
+    compareIsoDateTime
   ),
   // uri: https://github.com/mafintosh/is-my-json-valid/blob/master/formats.js
   uri: /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/)?[^\s]*$/i,
@@ -143,43 +155,68 @@ function compareDate(d1: string, d2: string): number | undefined {
   return 0
 }
 
-const TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d(?::?\d\d)?)?$/i
+const TIME = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i
 
-function time(str: string, withTimeZone?: boolean): boolean {
-  const matches: string[] | null = TIME.exec(str)
-  if (!matches) return false
-
-  const hour: number = +matches[1]
-  const minute: number = +matches[2]
-  const second: number = +matches[3]
-  const timeZone: string = matches[5]
-  return (
-    ((hour <= 23 && minute <= 59 && second <= 59) ||
-      (hour === 23 && minute === 59 && second === 60)) &&
-    (!withTimeZone || timeZone !== "")
-  )
+function getTime(strictTimeZone?: boolean): (str: string) => boolean {
+  return function time(str: string): boolean {
+    const matches: string[] | null = TIME.exec(str)
+    if (!matches) return false
+    const hr: number = +matches[1]
+    const min: number = +matches[2]
+    const sec: number = +matches[3]
+    const tz: string | undefined = matches[4]
+    const tzSign: number = matches[5] === "-" ? -1 : 1
+    const tzH: number = +(matches[6] || 0)
+    const tzM: number = +(matches[7] || 0)
+    if (tzH > 23 || tzM > 59 || (strictTimeZone && !tz)) return false
+    if (hr <= 23 && min <= 59 && sec < 60) return true
+    // leap second
+    const utcMin = min - tzM * tzSign
+    const utcHr = hr - tzH * tzSign - (utcMin < 0 ? 1 : 0)
+    return (utcHr === 23 || utcHr === -1) && (utcMin === 59 || utcMin === -1) && sec < 61
+  }
 }
 
-function compareTime(t1: string, t2: string): number | undefined {
+function compareTime(s1: string, s2: string): number | undefined {
+  if (!(s1 && s2)) return undefined
+  const t1 = new Date("2020-01-01T" + s1).valueOf()
+  const t2 = new Date("2020-01-01T" + s2).valueOf()
+  if (!(t1 && t2)) return undefined
+  return t1 - t2
+}
+
+function compareIsoTime(t1: string, t2: string): number | undefined {
   if (!(t1 && t2)) return undefined
   const a1 = TIME.exec(t1)
   const a2 = TIME.exec(t2)
   if (!(a1 && a2)) return undefined
-  t1 = a1[1] + a1[2] + a1[3] + (a1[4] || "")
-  t2 = a2[1] + a2[2] + a2[3] + (a2[4] || "")
+  t1 = a1[1] + a1[2] + a1[3]
+  t2 = a2[1] + a2[2] + a2[3]
   if (t1 > t2) return 1
   if (t1 < t2) return -1
   return 0
 }
 
 const DATE_TIME_SEPARATOR = /t|\s/i
-function date_time(str: string): boolean {
-  // http://tools.ietf.org/html/rfc3339#section-5.6
-  const dateTime: string[] = str.split(DATE_TIME_SEPARATOR)
-  return dateTime.length === 2 && date(dateTime[0]) && time(dateTime[1], true)
+function getDateTime(strictTimeZone?: boolean): (str: string) => boolean {
+  const time = getTime(strictTimeZone)
+
+  return function date_time(str: string): boolean {
+    // http://tools.ietf.org/html/rfc3339#section-5.6
+    const dateTime: string[] = str.split(DATE_TIME_SEPARATOR)
+    return dateTime.length === 2 && date(dateTime[0]) && time(dateTime[1])
+  }
 }
 
 function compareDateTime(dt1: string, dt2: string): number | undefined {
+  if (!(dt1 && dt2)) return undefined
+  const d1 = new Date(dt1).valueOf()
+  const d2 = new Date(dt2).valueOf()
+  if (!(d1 && d2)) return undefined
+  return d1 - d2
+}
+
+function compareIsoDateTime(dt1: string, dt2: string): number | undefined {
   if (!(dt1 && dt2)) return undefined
   const [d1, t1] = dt1.split(DATE_TIME_SEPARATOR)
   const [d2, t2] = dt2.split(DATE_TIME_SEPARATOR)

@@ -1,0 +1,12 @@
+@use '../variables' as *;
+@include export-module('dropdowntree-bootstrap5-icons') {
+  .e-ddt {
+    .e-ddt-icon::before {
+      content: '\e734';
+    }
+
+    .e-chips-close::before {
+      content: '\e7e7';
+    }
+  }
+}

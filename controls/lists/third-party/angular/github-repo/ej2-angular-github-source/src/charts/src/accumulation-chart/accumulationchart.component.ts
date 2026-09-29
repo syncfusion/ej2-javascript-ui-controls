@@ -21,49 +21,46 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(AccumulationSeriesCollectionDirective), 
-        childAnnotations: new ContentChild(AccumulationAnnotationsDirective)
+        childSeries: new ContentChild(AccumulationSeriesCollectionDirective),
+        childAnnotations: new ContentChild(AccumulationAnnotationsDirective),
+        tooltip_template: new ContentChild('tooltipTemplate'),
+        legendSettings_template: new ContentChild('legendSettingsTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class AccumulationChartComponent extends AccumulationChart implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	afterExport: any;
-	animationComplete: any;
-	annotationRender: any;
-	beforeExport: any;
-	beforePrint: any;
-	beforeResize: any;
-	chartDoubleClick: any;
-	chartMouseClick: any;
-	chartMouseDown: any;
-	chartMouseLeave: any;
-	chartMouseMove: any;
-	chartMouseUp: any;
-	legendClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	pointClick: any;
-	pointMove: any;
-	pointRender: any;
-	resized: any;
-	selectionComplete: any;
-	seriesRender: any;
-	textRender: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<AccumulationSeriesCollectionDirective>;
-    public childAnnotations: QueryList<AccumulationAnnotationsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare afterExport: any;
+	declare animationComplete: any;
+	declare annotationRender: any;
+	declare beforeExport: any;
+	declare beforePrint: any;
+	declare beforeResize: any;
+	declare chartDoubleClick: any;
+	declare chartMouseClick: any;
+	declare chartMouseDown: any;
+	declare chartMouseLeave: any;
+	declare chartMouseMove: any;
+	declare chartMouseUp: any;
+	declare legendClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare pointClick: any;
+	declare pointMove: any;
+	declare pointRender: any;
+	declare resized: any;
+	declare selectionComplete: any;
+	declare seriesRender: any;
+	declare textRender: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<AccumulationSeriesCollectionDirective>;
+    public declare childAnnotations: QueryList<AccumulationAnnotationsDirective>;
     public tags: string[] = ['series', 'annotations'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
-    @ContentChild('legendSettingsTemplate')
-    @Template()
-    public legendSettings_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -156,7 +153,10 @@ export class AccumulationChartComponent extends AccumulationChart implements ICo
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(AccumulationChartComponent.prototype, 'tooltip_template');
+Template()(AccumulationChartComponent.prototype, 'legendSettings_template');
+
 

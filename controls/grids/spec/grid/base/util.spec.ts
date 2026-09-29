@@ -376,4 +376,273 @@ describe('Util module', () => {
             const result = getCollapsedRowsCount(val, grid);
         });
     });
+     describe('Row Number Column Rendering', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement[];
+
+        afterEach(() => {
+            if (grid) { destroy(grid); }
+            grid = undefined;
+            rows = undefined;
+        });
+
+        it('should render row number column with sequential numbers', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50, headerText: '#' },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001, CustomerID: 'VINET' },
+                    { OrderID: 1002, CustomerID: 'TOMSP' },
+                    { OrderID: 1003, CustomerID: 'HANAR' }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[1].cells[0].textContent).toBe('2');
+                expect(rows[2].cells[0].textContent).toBe('3');
+                done();
+            });
+        });
+
+        it('should render row number column with pagination on first page', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50, headerText: 'Row #' },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 },
+                    { OrderID: 1003 },
+                    { OrderID: 1004 },
+                    { OrderID: 1005 }
+                ],
+                pageSettings: { pageSize: 2 },
+                allowPaging: true
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[1].cells[0].textContent).toBe('2');
+                done();
+            });
+        });
+
+        it('should render row number with correct offset on second page', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 },
+                    { OrderID: 1003 },
+                    { OrderID: 1004 },
+                    { OrderID: 1005 }
+                ],
+                pageSettings: { pageSize: 2, currentPage: 2 },
+                allowPaging: true
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('3');
+                expect(rows[1].cells[0].textContent).toBe('4');
+                done();
+            });
+        });
+
+        it('should render row number on third page with correct offset', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 },
+                    { OrderID: 1003 },
+                    { OrderID: 1004 },
+                    { OrderID: 1005 }
+                ],
+                pageSettings: { pageSize: 2, currentPage: 3 },
+                allowPaging: true
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('5');
+                done();
+            });
+        });
+
+        it('should render row number column alongside data columns', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50, headerText: '#' },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer ID' },
+                    { field: 'Freight', headerText: 'Freight' }
+                ],
+                dataSource: [
+                    { OrderID: 1001, CustomerID: 'VINET', Freight: 32.38 },
+                    { OrderID: 1002, CustomerID: 'TOMSP', Freight: 11.61 }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells.length).toBe(4);
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[0].cells[1].textContent).toBe('1001');
+                expect(rows[0].cells[2].textContent).toBe('VINET');
+                done();
+            });
+        });
+
+        it('should maintain row number when data is sorted', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', allowSorting: true },
+                    { field: 'CustomerID', headerText: 'Customer ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1003, CustomerID: 'HANAR' },
+                    { OrderID: 1001, CustomerID: 'VINET' },
+                    { OrderID: 1002, CustomerID: 'TOMSP' }
+                ],
+                allowSorting: true,
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[1].cells[0].textContent).toBe('2');
+                expect(rows[2].cells[0].textContent).toBe('3');
+                done();
+            });
+        });
+
+        it('should render row number with CSS class e-rowcell', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                const rowNumberCell = rows[0].cells[0];
+                expect(rowNumberCell.classList.contains('e-rowcell')).toBeTruthy();
+                expect(rowNumberCell.getAttribute('role')).toBe('gridcell');
+                done();
+            });
+        });
+
+        it('should render row number with correct value when rowIndex is string', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 },
+                    { OrderID: 1003 }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[1].cells[0].textContent).toBe('2');
+                expect(rows[2].cells[0].textContent).toBe('3');
+                done();
+            });
+        });
+
+        it('should render row number with pagination page size 3', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 },
+                    { OrderID: 1003 },
+                    { OrderID: 1004 },
+                    { OrderID: 1005 },
+                    { OrderID: 1006 }
+                ],
+                pageSettings: { pageSize: 3, currentPage: 2 },
+                allowPaging: true
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('4');
+                expect(rows[1].cells[0].textContent).toBe('5');
+                expect(rows[2].cells[0].textContent).toBe('6');
+                done();
+            });
+        });
+
+        it('should render multiple row number columns independently', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50, headerText: '#1' },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { type: 'rownumber', width: 50, headerText: '#2' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[0].cells[2].textContent).toBe('1');
+                expect(rows[1].cells[0].textContent).toBe('2');
+                expect(rows[1].cells[2].textContent).toBe('2');
+                done();
+            });
+        });
+
+        it('should handle row number with empty data', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows.length).toBe(0);
+                done();
+            });
+        });
+        
+        it('should render row number with rowNumber property set to true', (done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'rownumber', width: 50, headerText: 'Serial' },
+                    { field: 'OrderID', headerText: 'Order ID' }
+                ],
+                dataSource: [
+                    { OrderID: 1001 },
+                    { OrderID: 1002 }
+                ],
+                allowPaging: false
+            }, () => {
+                rows = grid.getRows() as HTMLTableRowElement[];
+                expect(rows[0].cells[0].textContent).toBe('1');
+                expect(rows[1].cells[0].textContent).toBe('2');
+                done();
+            });
+        });
+        
+
+    });
+
 });

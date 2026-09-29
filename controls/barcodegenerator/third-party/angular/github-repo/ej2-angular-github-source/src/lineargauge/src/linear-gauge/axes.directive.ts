@@ -15,67 +15,68 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-axes>e-axis',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-        childRanges: new ContentChild(RangesDirective), 
+        childRanges: new ContentChild(RangesDirective),
         childPointers: new ContentChild(PointersDirective)
     }
 })
 export class AxisDirective extends ComplexBase<AxisDirective> {
     public directivePropList: any;
 	
-    public childRanges: any;
-    public childPointers: any;
+    public declare childRanges: any;
+    public declare childPointers: any;
     public tags: string[] = ['ranges', 'pointers'];
     /** 
      * Enables or disables the inversed axis.
      * @default false
      */
-    public isInversed: any;
+    public declare isInversed: any;
     /** 
      * Sets and gets the options for customizing the appearance of the label in axis.
      */
-    public labelStyle: any;
+    public declare labelStyle: any;
     /** 
      * Sets and gets the options for customizing the appearance of the axis line.
      */
-    public line: any;
+    public declare line: any;
     /** 
      * Sets and gets the options for customizing the major tick lines.
      */
-    public majorTicks: any;
+    public declare majorTicks: any;
     /** 
      * Sets and gets the maximum value for the axis.
      * @default 100
      */
-    public maximum: any;
+    public declare maximum: any;
     /** 
      * Sets and gets the minimum value for the axis.
      * @default 0
      */
-    public minimum: any;
+    public declare minimum: any;
     /** 
      * Sets and gets the options for customizing the minor tick lines.
      */
-    public minorTicks: any;
+    public declare minorTicks: any;
     /** 
      * Enables or disables the opposed position of the axis in the linear gauge.
      * @default false
      */
-    public opposedPosition: any;
+    public declare opposedPosition: any;
     /** 
      * Sets and gets the options for customizing the pointers of an axis.
      */
-    public pointers: any;
+    public declare pointers: any;
     /** 
      * Sets and gets the options for customizing the ranges of an axis.
      */
-    public ranges: any;
+    public declare ranges: any;
     /** 
      * Shows or hides the last label in the axis of the linear gauge.
      * @default false
      */
-    public showLastLabel: any;
+    public declare showLastLabel: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -91,6 +92,7 @@ export class AxisDirective extends ComplexBase<AxisDirective> {
  */
 @Directive({
     selector: 'ej-lineargauge>e-axes',
+    standalone: true,
     queries: {
         children: new ContentChildren(AxisDirective)
     },

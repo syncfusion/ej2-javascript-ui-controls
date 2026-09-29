@@ -542,17 +542,29 @@ describe('Paste CR issues ', ()=> {
     describe('Bug 988347: Incorrect Pasting of Bullet Points from External Sources', () => {
         let rteObject: RichTextEditor;
         let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><li>Item one</li>\n<li>Item two</li>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
-        beforeAll(() => {
+        beforeEach(() => {
             rteObject = renderRTE({
                 pasteCleanupSettings: {
                     prompt: false
                 }, value: ''
             });
         });
-        afterAll(() => {
+        afterEach(() => {
             destroy(rteObject);
         });
         it(' should wrap ul when clipboard data has unstructured li in it', (done: Function) => {
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', innerHTML);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObject.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(rteObject.inputElement.querySelectorAll('ul').length === 1).toBe(true);
+                done();
+            }, 100);
+        });
+        it(' should wrap ul when clipboard data has unstructured li and div in it', (done: Function) => {
+            let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><div style="font-family:'Segoe UI';font-size:14px;font-style:normal;font-weight:400;line-height:20px;"><li>Blue umbrella</li><li>Mango smoothie</li><li>42</li><li>Running shoes</li></div>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
             setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
             const dataTransfer: DataTransfer = new DataTransfer();
             dataTransfer.setData('text/html', innerHTML);
@@ -1502,6 +1514,40 @@ describe('Paste CR issues ', ()=> {
                     // The compensating negative text-indent must also be cleared so the
                     // list text does not overlap with the marker.
                     expect(listItems[i as number].style.textIndent).toBe('');
+                }
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Bug 1041220: RichTextEditor - Duplicate Bullets Generated When Pasting Document Bullet Lists from a Word Document', () => {
+        let editor: RichTextEditor;
+        const innerHTML: string = `\r\n<!--StartFragment-->\r\n<p class=MsoListParagraph style='margin-top:0in;margin-right:0in;margin-bottom:\r\n0in;margin-left:.25in;mso-add-space:auto;text-indent:-.25in;line-height:normal;\r\nmso-list:l0 level1 lfo1'><![if !supportLists]><span style='mso-list:Ignore'>●<span\r\nstyle='font:7.0pt \"Times New Roman\"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span><![endif]>First bullet item<o:p></o:p></p>\r\n\r\n<p class=MsoListParagraph style='margin-top:0in;margin-right:0in;margin-bottom:\r\n0in;margin-left:.25in;mso-add-space:auto;text-indent:-.25in;line-height:normal;\r\nmso-list:l0 level1 lfo1'><![if !supportLists]><span style='mso-list:Ignore'>●<span\r\nstyle='font:7.0pt \"Times New Roman\"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span><![endif]>Second bullet item<o:p></o:p></p>\r\n\r\n<p class=MsoNormal><o:p>&nbsp;</o:p></p>\r\n\r\n<!--EndFragment-->\r\n`;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false,
+                    plainText: false,
+                    keepFormat: false
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should render exactly one bullet per list item when mso-list:Ignore span is the first child', (done: Function) => {
+            editor.focusIn();
+            setCursorPoint((editor as any).inputElement.firstElementChild, 0);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', innerHTML);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                const listItems: NodeListOf<HTMLLIElement> = editor.inputElement.querySelectorAll('li');
+                for (let i: number = 0; i < listItems.length; i++) {
+                    const item: HTMLLIElement = listItems[i as number];
+                    expect(item.querySelectorAll('span[style*="mso-list"]').length).toBe(0);
+                    expect(item.textContent.indexOf('●')).toBe(-1);
                 }
                 done();
             }, 100);

@@ -136,10 +136,12 @@ export class ContextMenu {
      */
     /* eslint-disable  */
     public initContextMenu(localValue: L10n, isRtl?: boolean): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
+        let appendToElement: HTMLElement = this.documentHelper.owner.getAppendTo(isAngularModal);
         let id: string = this.documentHelper.owner.element.id;
         this.contextMenu = document.createElement('div');
         this.contextMenu.id = this.documentHelper.owner.containerId + 'e-de-contextmenu';
-        document.body.appendChild(this.contextMenu);
+        appendToElement.appendChild(this.contextMenu);
         let ul: HTMLUListElement = document.createElement('ul');
         ul.contentEditable = 'false';
         ul.style.width = 'auto';
@@ -376,7 +378,9 @@ export class ContextMenu {
                 this.handleContextMenuItem(item);
             },
         };
-        this.contextMenuInstance = new Menu(menuOptions, '#' + this.documentHelper.owner.containerId + 'e-de-contextmenu-list');
+        this.contextMenuInstance = new Menu(menuOptions);
+        this.contextMenuInstance.isAngular = this.documentHelper.owner.isModalDialog;
+        this.contextMenuInstance.appendTo('#' + this.documentHelper.owner.containerId + 'e-de-contextmenu-list');
         this.contextMenuInstance.beforeOpen = (args: BeforeOpenCloseMenuEventArgs) => {
             for (let index: number = 0; index < this.customMenuItems.length; index++) {
                 if (typeof this.customMenuItems[index].id !== 'undefined') {
@@ -399,7 +403,7 @@ export class ContextMenu {
                 classList(this.documentHelper.selection.caret, [], ['e-de-cursor-animation']);
                 this.documentHelper.selection.showCaret();
             }
-            if (args.parentItem == null) {			
+            if (args.parentItem == null && !isAngularModal) {			
                 this.contextMenuInstance.element.parentElement.style.height = this.documentHelper.viewerContainer.style.height;
                 this.contextMenuInstance.element.parentElement.style.top = '0px';
                 this.contextMenuInstance.element.parentElement.style.position = 'absolute';
@@ -427,6 +431,7 @@ export class ContextMenu {
      * paste Dialog box.
      */
     private openPasteDialog(): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         const container = createElement('div') as HTMLElement;
         const contentDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const contentValue: HTMLParagraphElement = createElement('p') as HTMLParagraphElement;
@@ -452,6 +457,11 @@ export class ContextMenu {
                 content: container,
                 okButton: { text: this.locale.getConstant('Ok') },
                 showCloseIcon: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 closeOnEscape: true,
                 animationSettings: { effect: 'Zoom' },
                 close: (): void => {
@@ -760,6 +770,8 @@ export class ContextMenu {
      * @param {MouseEvent | TouchEvent} event 
      */
     private showContextMenuOnSel(event: MouseEvent | TouchEvent): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
+        let appendToElement: HTMLElement = this.documentHelper.owner.getAppendTo(isAngularModal);
         let isTouch: boolean = !(event instanceof MouseEvent);
         let xPos: number = 0;
         let yPos: number = 0;
@@ -768,8 +780,8 @@ export class ContextMenu {
             xPos = point.x;
             yPos = point.y;
         } else {
-            yPos = ((Browser.isIE) ? (event as MouseEvent).clientY : (event as MouseEvent).y) + document.body.scrollTop + document.documentElement.scrollTop;
-            xPos = ((Browser.isIE) ? (event as MouseEvent).clientX : (event as MouseEvent).x) + document.body.scrollLeft + document.documentElement.scrollLeft;
+            yPos = ((Browser.isIE) ? (event as MouseEvent).clientY : (event as MouseEvent).y) + appendToElement.scrollTop + document.documentElement.scrollTop;
+            xPos = ((Browser.isIE) ? (event as MouseEvent).clientX : (event as MouseEvent).x) + appendToElement.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {
@@ -1002,6 +1014,7 @@ export class ContextMenu {
             let start: TextPosition = selection.start;
             // let end: TextPosition = selection.end;
             if (selection.contextType === 'List'
+                && !isNullOrUndefined(owner.selectionModule.getListLevel(start.paragraph))
                 && owner.selectionModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';

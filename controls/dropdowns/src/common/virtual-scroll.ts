@@ -30,6 +30,7 @@ export class VirtualScroll {
     private touchModule: Touch;
     private component: string;
     private scrollHandler: Function;
+    private previousScrollTop: number = 0;
 
     constructor(parent: IDropdownlist) {
         this.parent = parent;
@@ -79,9 +80,16 @@ export class VirtualScroll {
         return 'VirtualScroll';
     }
 
+
+    private isFilterScrollScenario(): boolean {
+        return this.component === 'dropdownlist' && this.parent.allowFiltering;
+    }
+
     private popupScrollHandler(): void {
         this.parent.isMouseScrollAction = true;
-        this.parent.isPreventScrollAction = false;
+        if (!(this.isFilterScrollScenario() && this.parent.isVirtualScrolling)) {
+            this.parent.isPreventScrollAction = false;
+        }
     }
 
     private getPageQuery(query: Query, virtualStartIndex: number, virtualEndIndex: number): Query {
@@ -220,7 +228,13 @@ export class VirtualScroll {
                     if (oldUlElement) {
                         this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
                     }
-                    this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (this.component === 'multiselect' && this.parent.value.length >= (this.parent as any).getSummaryTagThreshold() &&
+                        this.parent.mode === 'CheckBox' && (this.parent as any).enableVirtualization) {
+                        this.parent.resetList(this.parent.dataSource, this.parent.fields, query, undefined, true);
+                    } else {
+                        this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                    }
                     isListUpdated = false;
                     this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;
                     oldUlElement = null;
@@ -473,7 +487,8 @@ export class VirtualScroll {
     }
 
     public scrollListener(scrollArgs: ScrollArg): void {
-        if (!this.parent.isPreventScrollAction && !this.parent.isVirtualTrackHeight) {
+        const preventReentrant: boolean = this.isFilterScrollScenario() && this.parent.isVirtualScrolling;
+        if (!this.parent.isPreventScrollAction && !this.parent.isVirtualTrackHeight && !preventReentrant) {
             this.parent.preventSetCurrentData = false;
             const info: SentinelType = scrollArgs.sentinel;
             const pStartIndex: number = this.parent.previousStartIndex;
@@ -485,6 +500,8 @@ export class VirtualScroll {
                 this.parent.virtualListInfo = { ...this.parent.viewPortInfo };
                 this.parent.isPreventKeyAction = true;
                 this.parent.isVirtualScrolling = true;
+                const savedScrollTop: number = this.parent.popupContentElement ?
+                    this.parent.popupContentElement.scrollTop : 0;
                 setTimeout(() => {
                     this.parent.pageCount = this.parent.getPageCount();
                     this.parent.isRequesting = false;
@@ -494,9 +511,16 @@ export class VirtualScroll {
                             this.parent.updateSelectionList();
                             this.parent.liCollections = <HTMLElement[] & NodeListOf<Element>>this.parent.getItems();
                         }
+                        if (this.isFilterScrollScenario()) {
+                            const scrollContainer: HTMLElement = this.parent.popupContentElement || this.parent.list;
+                            if (scrollContainer && scrollContainer.scrollTop < savedScrollTop) {
+                                scrollContainer.scrollTop = savedScrollTop;
+                            }
+                            this.previousScrollTop = scrollContainer ? scrollContainer.scrollTop : savedScrollTop;
+                        }
                         this.parent.isKeyBoardAction = false;
-                        this.parent.isVirtualScrolling = false;
                         this.parent.isPreventKeyAction = false;
+                        this.parent.isVirtualScrolling = false;
                     });
                 }, 5);
             }
@@ -589,13 +613,17 @@ export class VirtualScroll {
 
     private virtualScrollHandler(callback?: Function): Function {
         const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
-        let prevTop: number = 0; const debounced100: Function = debounce(callback, delay);
+        const debounced100: Function = debounce(callback, delay);
         const debounced50: Function = debounce(callback, 50);
         return (e: Event) => {
             const top: number = (<HTMLElement>e.target).scrollTop;
             const left: number = (<HTMLElement>e.target).scrollLeft;
-            const direction: ScrollDirection = prevTop < top && !this.parent.isUpwardScrolling ? 'down' : 'up';
-            prevTop = top;
+            if (this.isFilterScrollScenario() && (this.parent.isVirtualScrolling || this.parent.isPreventScrollAction)) {
+                this.previousScrollTop = top;
+                return;
+            }
+            const direction: ScrollDirection = this.previousScrollTop < top && !this.parent.isUpwardScrolling ? 'down' : 'up';
+            this.previousScrollTop = top;
             const current: SentinelType = this.sentinelInfo[direction as 'up' | 'down'];
             const pstartIndex: number = this.parent.scrollPreStartIndex;
             const scrollOffsetargs: { top: number, left: number } = {

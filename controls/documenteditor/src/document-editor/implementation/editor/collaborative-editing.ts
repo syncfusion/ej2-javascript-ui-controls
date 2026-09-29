@@ -5,7 +5,7 @@ import {
 } from '../viewer/page';
 import { TextPosition } from '../selection/selection-helper';
 import { Selection } from '../selection/index';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { WSectionFormat } from '../format/section-format';
 import { XmlHttpRequestHandler, actionCompleteEvent } from '../../base/index';
 import { ElementInfo, PositionInfo, ParagraphInfo, LockSelectionInfo, CollaborativeEditingEventArgs } from './editor-helper';
@@ -39,6 +39,7 @@ export class CollaborativeEditing {
     }
 
     public constructor(editor: DocumentEditor) {
+        initializeTelemetryFeature('CollaborativeEditing', 'DOCXEditor');
         this.owner = editor;
     }
     private getModuleName(): string {
@@ -295,6 +296,7 @@ export class CollaborativeEditing {
 
     /* eslint-disable-next-line max-len */
     private successHandler(result: CollaborativeEditingEventArgs, selectionInfo: LockSelectionInfo, startInfo: ParagraphInfo, endInfo: ParagraphInfo): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         const canLock: boolean = JSON.parse(result.data).canLock;
         if (canLock) {
             selectionInfo.start = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
@@ -324,15 +326,26 @@ export class CollaborativeEditing {
             localizeValue.setLocale(this.owner.locale);
             DialogUtility.alert({
                 content: localizeValue.getConstant('Already locked'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
             }).enableRtl = this.owner.enableRtl;
         }
     }
     private failureHandler(): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         const localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localizeValue.setLocale(this.owner.locale);
         DialogUtility.alert({
             content: localizeValue.getConstant('Error in establishing connection with web server'),
+            open: (e: any) => {
+                if (isAngularModal) {
+                    this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                }
+            },
             closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
         }).enableRtl = this.owner.enableRtl;
     }

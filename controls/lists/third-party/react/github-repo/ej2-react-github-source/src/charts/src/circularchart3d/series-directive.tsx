@@ -7,7 +7,7 @@ export interface CircularChart3DSeriesDirTypecast {
 /**
  * `CircularChart3DSeriesDirective` directive represent a series of the react Circular3D Chart. 
  * It must be contained in a Pie component(`CircularChart3D`). 
- * ```tsx
+ * ```
  * <CircularChart3DComponent>
  * <CircularChart3DSeriesCollectionDirective>
  * <CircularChart3DSeriesDirective></CircularChart3DSeriesDirective>

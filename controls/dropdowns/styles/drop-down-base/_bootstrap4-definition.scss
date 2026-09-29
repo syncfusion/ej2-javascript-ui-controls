@@ -1,7 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap4' as *;
-@forward 'ej2-base/styles/definition/bootstrap4';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: inherit !default;

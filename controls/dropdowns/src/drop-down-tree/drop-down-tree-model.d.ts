@@ -50,7 +50,7 @@ export interface FieldsModel {
     parentValue?: string;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query/)
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will execute along with the data processing.
      *
      * @default null
@@ -316,7 +316,7 @@ export interface DropDownTreeModel extends ComponentModel{
     /**
      * Specifies a template to render customized content for all the items.
      * If the **itemTemplate** property is set, the template content overrides the displayed item text.
-     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine/)
+     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine)
      * or HTML element ID holding the content.
      *
      * @default null
@@ -484,7 +484,7 @@ export interface DropDownTreeModel extends ComponentModel{
 
     /**
      * Specifies the way to customize the selected values in the Dropdown Tree component based on application needs. If the **valueTemplate** property is set, the template content overrides the displayed item text.
-     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
+     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
      *
      * @default null
      * @angularType string | object

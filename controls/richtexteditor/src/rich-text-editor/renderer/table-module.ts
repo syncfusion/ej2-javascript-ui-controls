@@ -4,7 +4,7 @@
 // Core EJ2 base utilities
 import {
     detach, closest, Browser, L10n, isNullOrUndefined as isNOU, getComponent, isNullOrUndefined,
-    EventHandler, addClass, KeyboardEventArgs
+    EventHandler, addClass, KeyboardEventArgs, initializeTelemetryFeature
 } from '@syncfusion/ej2-base';
 
 // Rich Text Editor interfaces
@@ -93,6 +93,7 @@ export class Table {
     private selectionStage: number = 0;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Table', 'RichTextEditor');
         this.parent = parent;
         this.rteID = parent.element.id;
         this.l10n = serviceLocator.getService<L10n>('rteLocale');

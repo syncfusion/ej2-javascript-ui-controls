@@ -5,7 +5,7 @@ import { LayerModel } from '@syncfusion/ej2-diagrams';
 /**
  * `Layers Directive` directive represent a connectors of the react diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <LayersDirective>
  * <LayerDirective></LayerDirective>

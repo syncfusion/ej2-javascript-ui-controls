@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,44 +30,32 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class InPlaceEditorComponent extends InPlaceEditor implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionFailure: any;
-	actionSuccess: any;
-	beforeSanitizeHtml: any;
-	beginEdit: any;
-	cancelClick: any;
-	change: any;
-	created: any;
-	destroyed: any;
-	endEdit: any;
-	submitClick: any;
-	validating: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionFailure: any;
+	declare actionSuccess: any;
+	declare beforeSanitizeHtml: any;
+	declare beginEdit: any;
+	declare cancelClick: any;
+	declare change: any;
+	declare created: any;
+	declare destroyed: any;
+	declare endEdit: any;
+	declare submitClick: any;
+	declare validating: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Specifies the HTML element ID as a string that can be added as a editable field.
-     * 
-     * {% codeBlock src='inplace-editor/template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @blazortype string
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -156,7 +145,8 @@ export class InPlaceEditorComponent extends InPlaceEditor implements IComponentB
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(InPlaceEditorComponent.prototype, 'template');
 

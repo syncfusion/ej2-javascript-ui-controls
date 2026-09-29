@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/fluent-dark' as *;
-@forward 'ej2-base/styles/definition/fluent-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $fab-offset: 16px !default;
 
 $fab-border-radius: 9999px !default;

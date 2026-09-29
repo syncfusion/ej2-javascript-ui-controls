@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 $btn-color: rgba($grey-black, .87) !default;
 $btn-font-weight: 500 !default;

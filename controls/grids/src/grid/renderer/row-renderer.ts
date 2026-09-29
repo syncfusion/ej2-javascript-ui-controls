@@ -84,12 +84,17 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         const cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
         const tempCells: HTMLTableDataCellElement[] =  [].slice.call(node.querySelectorAll('.e-templatecell'));
-        if (this.parent.isReact && tempCells.length) {
+        if ((this.parent.isReact || this.parent.isAngular) && tempCells.length) {
             for (const col of columns) {
                 if (col.template) {
                     setTimeout(
                         () => {
-                            this.parent.refreshReactColumnTemplateByUid(col.uid, true);
+                            if (this.parent.isReact) {
+                                this.parent.refreshReactColumnTemplateByUid(col.uid, true);
+                            }
+                            if (this.parent.isAngular) {
+                                this.parent.refreshColumnTemplates();
+                            }
                         },
                         0);
                     break;
@@ -296,7 +301,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                                 const right: number = this.parent.getFrozenRightColumnsCount();
                                 const left: number = this.parent.getFrozenLeftCount();
                                 const movableCount: number = columns.length - right;
-                                const cellIdx: number = cellArgs.column.index;
+                                const cellIdx: number = cell.index;
                                 if (left > cellIdx && left < (cellIdx + cellArgs.colSpan)) {
                                     const colSpan: number = (cellIdx + cellArgs.colSpan) - left;
                                     cellArgs.colSpan = cellArgs.colSpan - colSpan;

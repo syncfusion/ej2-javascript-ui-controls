@@ -1,0 +1,105 @@
+@use 'variables' as *;
+
+@include export-module('drop-down-button-bigger') {
+  .e-bigger .e-dropdown-btn,
+  .e-bigger.e-dropdown-btn {
+    .e-btn-icon {
+      font-size: $drop-down-btn-icon-font-size-bigger;
+    }
+
+    .e-caret {
+      font-size: $drop-down-btn-caret-icon-font-size-bigger;
+    }
+
+    &.e-vertical {
+      line-height: $drop-down-btn-line-height;
+      padding: $drop-down-btn-vertical-bigger-padding;
+    }
+
+    &.e-small {
+      &.e-vertical {
+        line-height: $drop-down-btn-line-height;
+        padding: $drop-down-btn-vertical-bigger-padding;
+      }
+      .e-btn-icon {
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
+          font-size: $drop-down-btn-small-icon-font-size-bigger;
+        }
+      }
+      .e-btn-icon.e-caret {
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' or $skin-name == 'fluent2' {
+          font-size: $drop-down-btn-small-caret-icon-font-size-bigger;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-small.e-dropdown-popup ul,
+  .e-bigger.e-small.e-dropdown-popup ul {
+    & .e-item {
+      @if $skin-name == 'tailwind3' {
+        height: $drop-down-btn-bigger-small-li-height;
+        font-size: $drop-down-btn-bigger-font-size;
+        line-height: $drop-down-btn-bigger-small-li-height;
+        .e-menu-icon {
+          font-size: $drop-down-btn-icon-font-size-bigger;
+          line-height: $drop-down-btn-bigger-small-li-height;
+        }
+      }
+    }
+  }
+
+  *.e-bigger .e-dropdown-popup {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $theme-name == 'tailwind-dark' or $theme-name == 'bootstrap5-dark' {
+      background-color: transparent;
+      border-radius: $drop-down-btn-ul-border-radius;
+    }
+  }
+
+  *.e-bigger .e-dropdown-popup ul,
+  *.e-bigger.e-dropdown-popup ul {
+    box-shadow: $drop-down-btn-parent-ul-box-shadow;
+    font-size: $drop-down-btn-bigger-font-size;
+    min-width: $drop-down-btn-bigger-min-width;
+    padding: $drop-down-btn-ul-bigger-padding;
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+      background-color: $drop-down-btn-ul-bgcolor;
+      margin-top: $drop-down-btn-bigger-popup-margin-top;
+    }
+
+    & .e-item  {
+      height: $drop-down-btn-bigger-li-height;
+      @if $skin-name != 'fluent2' {
+        line-height: $drop-down-btn-bigger-li-height;
+      }
+      @if $skin-name == 'fluent2' {
+        height: $drop-down-btn-item-height;
+        line-height: $drop-down-btn-item-line-height;
+      }
+      padding: $drop-down-btn-bigger-li-padding;
+
+      &.e-url {
+        padding: $dd-btn-zero-margin-padding;
+      }
+
+      & .e-menu-url {
+        @if $skin-name == 'fluent2' {
+          padding: $drop-down-menu-url-padding;
+        }
+      }
+
+      & .e-menu-icon {
+        font-size: $drop-down-btn-menu-icon-bigger-font-size;
+        line-height: $drop-down-btn-bigger-li-height;
+        @if $skin-name == 'fluent2' {
+          line-height: $dropdown-btn-line-height;
+        }
+      }
+
+      &.e-separator {
+        height: $dd-auto-height;
+        line-height: $dd-bgr-seperator-line-height;
+      }
+    }
+  }
+}

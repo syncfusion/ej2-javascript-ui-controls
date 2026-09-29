@@ -22,54 +22,55 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childLayers: new ContentChild(LayersDirective), 
+        childLayers: new ContentChild(LayersDirective),
         childAnnotations: new ContentChild(AnnotationsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class MapsComponent extends Maps implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	animationComplete: any;
-	annotationRendering: any;
-	beforePrint: any;
-	bubbleClick: any;
-	bubbleMouseMove: any;
-	bubbleRendering: any;
-	click: any;
-	dataLabelRendering: any;
-	doubleClick: any;
-	itemHighlight: any;
-	itemSelection: any;
-	layerRendering: any;
-	legendRendering: any;
-	load: any;
-	loaded: any;
-	markerClick: any;
-	markerClusterClick: any;
-	markerClusterMouseMove: any;
-	markerClusterRendering: any;
-	markerDragEnd: any;
-	markerDragStart: any;
-	markerMouseMove: any;
-	markerRendering: any;
-	mouseMove: any;
-	onclick: any;
-	pan: any;
-	panComplete: any;
-	resize: any;
-	rightClick: any;
-	shapeHighlight: any;
-	shapeRendering: any;
-	shapeSelected: any;
-	tooltipRender: any;
-	tooltipRenderComplete: any;
-	zoom: any;
-	zoomComplete: any;
-	public dataSourceChange: any;
-    public childLayers: QueryList<LayersDirective>;
-    public childAnnotations: QueryList<AnnotationsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare animationComplete: any;
+	declare annotationRendering: any;
+	declare beforePrint: any;
+	declare bubbleClick: any;
+	declare bubbleMouseMove: any;
+	declare bubbleRendering: any;
+	declare click: any;
+	declare dataLabelRendering: any;
+	declare doubleClick: any;
+	declare itemHighlight: any;
+	declare itemSelection: any;
+	declare layerRendering: any;
+	declare legendRendering: any;
+	declare load: any;
+	declare loaded: any;
+	declare markerClick: any;
+	declare markerClusterClick: any;
+	declare markerClusterMouseMove: any;
+	declare markerClusterRendering: any;
+	declare markerDragEnd: any;
+	declare markerDragStart: any;
+	declare markerMouseMove: any;
+	declare markerRendering: any;
+	declare mouseMove: any;
+	declare onclick: any;
+	declare pan: any;
+	declare panComplete: any;
+	declare resize: any;
+	declare rightClick: any;
+	declare shapeHighlight: any;
+	declare shapeRendering: any;
+	declare shapeSelected: any;
+	declare tooltipRender: any;
+	declare tooltipRenderComplete: any;
+	declare zoom: any;
+	declare zoomComplete: any;
+	public declare dataSourceChange: any;
+    public declare childLayers: QueryList<LayersDirective>;
+    public declare childAnnotations: QueryList<AnnotationsDirective>;
     public tags: string[] = ['layers', 'annotations'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -187,7 +188,8 @@ export class MapsComponent extends Maps implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

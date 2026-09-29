@@ -242,6 +242,56 @@ describe('Coverage issue changeDelocale', () => {
         }
     });
 });
+describe('Tree-grid refresh selection cleanup', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 10 },
+                { TaskID: 2, TaskName: 'Task 2', StartDate: new Date('04/03/2019'), Duration: 2, Progress: 20 },
+                { TaskID: 3, TaskName: 'Task 3', StartDate: new Date('04/04/2019'), Duration: 1, Progress: 30 }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks'
+            },
+            allowSelection: true,
+            selectionSettings: {
+                mode: 'Both',
+                type: 'Multiple',
+                persistSelection: true
+            },
+            editSettings: {
+                allowDeleting: true,
+                allowEditing: true
+            }
+        }, done);
+    });
+
+    it('should remove deleted selected records during refresh', () => {
+        const selectedRecords: any[] = [ganttObj.currentViewData[0], ganttObj.currentViewData[1]];
+        (ganttObj.selectionModule as any).getSelectedRecords = () => selectedRecords;
+        ganttObj.editModule.deletedRecord = [{ ganttProperties: { taskId: ganttObj.currentViewData[0].ganttProperties.taskId } }];
+        ganttObj.editModule.isAdded = false;
+        ganttObj.addDeleteRecord = true;
+        ganttObj.selectedRowIndex = -1;
+
+        ganttObj.treeGridModule['treeActionComplete']({ requestType: 'refresh' });
+
+        expect(selectedRecords.length).toBe(1);
+        expect(selectedRecords[0][ganttObj.taskFields.id]).toBe(ganttObj.currentViewData[1][ganttObj.taskFields.id]);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('Unscheduled task rendering with duration alone', () => {
     let ganttObj: Gantt;
     let editingData = [

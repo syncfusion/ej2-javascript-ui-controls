@@ -21,9 +21,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-layer>e-navigationLineSettings>e-navigationLineSetting',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        tooltipSettings_template: new ContentChild('tooltipSettingsTemplate')
     }
 })
 export class NavigationLineDirective extends ComplexBase<NavigationLineDirective> {
@@ -35,52 +36,49 @@ export class NavigationLineDirective extends ComplexBase<NavigationLineDirective
      * Gets or sets the angle of the curve connecting different locations in maps.
      * @default 0
      */
-    public angle: any;
+    public declare angle: any;
     /** 
      * Gets or sets the options to customize the arrow for the navigation line in maps.
      */
-    public arrowSettings: any;
+    public declare arrowSettings: any;
     /** 
      * Gets or sets the color for the navigation lines in maps.
      * @default 'black'
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Gets or sets the dash-array for the navigation lines drawn in maps.
      * @default ''
      */
-    public dashArray: any;
+    public declare dashArray: any;
     /** 
      * Gets or sets the highlight settings of the navigation line in maps.
      */
-    public highlightSettings: any;
+    public declare highlightSettings: any;
     /** 
      * Gets or sets the latitude value for the navigation lines to be drawn in maps.
      * @default []
      */
-    public latitude: any;
+    public declare latitude: any;
     /** 
      * Gets or sets the longitude for the navigation lines to be drawn in maps.
      * @default []
      */
-    public longitude: any;
+    public declare longitude: any;
     /** 
      * Gets or sets the selection settings of the navigation line in maps.
      */
-    public selectionSettings: any;
+    public declare selectionSettings: any;
     /** 
      * Enables or disables the navigation lines to be drawn in maps.
      * @default false
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Gets or sets the width of the navigation lines in maps.
      * @default 1
      */
-    public width: any;
-    @ContentChild('tooltipSettingsTemplate')
-    @Template()
-    public tooltipSettings_template: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -89,6 +87,7 @@ export class NavigationLineDirective extends ComplexBase<NavigationLineDirective
         this.directivePropList = input;
     }
 }
+Template()(NavigationLineDirective.prototype, 'tooltipSettings_template');
 
 /**
  * NavigationLine Array Directive
@@ -96,6 +95,7 @@ export class NavigationLineDirective extends ComplexBase<NavigationLineDirective
  */
 @Directive({
     selector: 'e-layer>e-navigationLineSettings',
+    standalone: true,
     queries: {
         children: new ContentChildren(NavigationLineDirective)
     },

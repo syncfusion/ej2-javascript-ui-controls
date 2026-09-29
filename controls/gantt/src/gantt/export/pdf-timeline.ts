@@ -45,6 +45,7 @@ export class PdfTimeline {
     public fontFamily: PdfFontFamily;
     private topTierValueLeftPadding: number = 8;
     public pageIndex: number;
+    public prevPageIndex: number;
     public timelineHeight: number = 0;
     public gridPageWidth: number = 0;
 
@@ -269,7 +270,7 @@ export class PdfTimeline {
         if (!this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
             this.lastWidth = x + width;
         }
-        const adjustedWidth: number = isHoliday && (ganttStyle.holiday.borderColor || ganttStyle.holiday.borders) ? width - 2 : width;
+        let adjustedWidth: number = isHoliday && (ganttStyle.holiday.borderColor || ganttStyle.holiday.borders) ? width - 2 : width;
         // rectangle for timeline header
         graphics.drawRectangle(timelineborder, cellBackgroundColor, x, y, adjustedWidth, pixelToPoint(height));
         const rectPen: PdfPen = (!isTopTier && (this.parent.gridLines === 'Both' || this.parent.gridLines === 'Vertical')) ?
@@ -283,17 +284,42 @@ export class PdfTimeline {
             const startDate: Date = this.detailsTimeline.startDate;
             const endDate: Date = this.detailsTimeline.endDate;
             const currentDateNow: Date = new Date(startDate);
-            if ( x > 0 && this.gridPageWidth === 0 ) {
+            const pageStartDate: Date = new Date(startDate);
+            const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
+
+            // Global left of page start
+            const pageStartLeftRaw: number = this.parent.dataOperation.getTaskLeft(
+                this.parent.dateValidationModule.getDateFromFormat(pageStartDate, true),
+                false,
+                this.parent.defaultCalendarContext,
+                true
+            );
+
+            const pageStartLeft: number = isAutoFit ? pageStartLeftRaw : pixelToPoint(pageStartLeftRaw);
+            // to ensure gridPageWidth is updated for every new page
+            if (this.prevPageIndex !== this.pageIndex) {
                 this.gridPageWidth = x;
+                this.prevPageIndex = this.pageIndex;
             }
             while (currentDateNow <= endDate) {
-                if (nonWorkingDays.indexOf(new Date(currentDateNow).getDay()) !== -1) {
-                    const left: number = this.parent.dataOperation.getTaskLeft(
+
+                // to ensure holiday highlight lines are not drawn beyong the timeline end date
+                if (currentDateNow >= this.parent.timelineModule.timelineEndDate) {
+                    break;
+                }
+
+                if (nonWorkingDays.indexOf(currentDateNow.getDay()) !== -1) {
+                    const leftRaw: number = this.parent.dataOperation.getTaskLeft(
                         this.parent.dateValidationModule.getDateFromFormat(currentDateNow, true),
-                        false, this.parent.defaultCalendarContext, true
+                        false,
+                        this.parent.defaultCalendarContext,
+                        true
                     );
-                    const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
-                    const adjustedLeft: number = (isAutoFit ? left : pixelToPoint(left)) + this.gridPageWidth;
+                    const globalLeft: number = isAutoFit ? leftRaw : pixelToPoint(leftRaw);
+
+                    // Convert to page-relative position
+                    const adjustedLeft: number = globalLeft - pageStartLeft + this.gridPageWidth;
+                    adjustedWidth = Math.floor(adjustedLeft);
                     graphics.drawRectangle(
                         gridLineColor,
                         holidayContainerColor,

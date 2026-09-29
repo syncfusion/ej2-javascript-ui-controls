@@ -251,7 +251,11 @@ export class FocusStrategy {
             if (returnVal === false) { return; }
             this.focus();
             if (this.currentInfo.element.classList.contains('e-rowcell') && e.type && e.type === 'click' && !isFocusFirstCell) {
-                addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+                if (!(this.parent.isEdit && this.parent.editModule && this.parent.editModule.editModule['cellDetails'] &&
+                    this.parent.editModule.editModule['cellDetails'].column &&
+                    this.parent.editModule.editModule['cellDetails'].column.allowFormula)) {
+                    addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+                }
             }
             if (isFocusFirstCell && e && e.target){
                 addClass([<HTMLElement>e.target], ['e-focused', 'e-focus']);
@@ -594,14 +598,19 @@ export class FocusStrategy {
                 this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer').removeAttribute('aria-hidden');
             }
             if ((e.action === 'enter' || e.action === 'shiftEnter') && this.parent.editSettings &&
-                this.parent.editSettings.mode === 'Cell') {
+                this.parent.editSettings.mode === 'Cell' && this.parent.editSettings.allowEditing) {
                 this.active.matrix.current = prevBatchValue;
             }
             if ((this.parent.editSettings.mode === 'Batch' || (this.parent.editSettings.mode === 'Cell' &&
                 !isNullOrUndefined(parentsUntil(e.target as Element, literals.editedRow)))) && (e.action === 'tab' || e.action === 'shiftTab')) {
                 this.active.matrix.current = this.findBatchEditCell(prevBatchValue, e.action === 'tab' ? true : false);
                 if (e.action === 'tab' && prevBatchValue.toString() === this.active.matrix.current.toString()) {
-                    this.parent.editModule.editModule.addBatchRow = true;
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        this.parent.editModule.editModule.addBatchRow = true;
+                    } else {
+                        this.active.matrix.current = prevBatchValue;
+                        returnVal = true;
+                    }
                 }
             }
             if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
@@ -627,7 +636,7 @@ export class FocusStrategy {
                     );
                 }
                 if (!returnVal && (firstContentCellIndex.toString() === this.active.matrix.current.toString()
-                    || (this.parent.editSettings.mode === 'Batch'
+                    || ((this.parent.editSettings.mode === 'Batch' || this.parent.editSettings.mode === 'Cell')
                         && prevBatchValue.toString() === this.active.matrix.current.toString()))) {
                     returnVal = true;
                     this.setActive(false);
@@ -686,7 +695,7 @@ export class FocusStrategy {
         const tr: Element = closest(cell, 'tr');
         const cellColIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10) - 1;
         const cellCol: Column = this.parent.getColumns()[parseInt(cellColIndex.toString(), 10)];
-        if (this.active.matrix.matrix[cellIndex[0]][cellIndex[1]] === 1
+        if (cellCol && this.active.matrix.matrix[cellIndex[0]][cellIndex[1]] === 1
             && (!tr.classList.contains('e-row') || (tr.classList.contains('e-insertedrow') || !cellCol.isPrimaryKey) && cellCol.allowEditing)) {
             return true;
         }
@@ -1033,6 +1042,10 @@ export class FocusStrategy {
         if (!info.element) { return; }
         const isFocused: boolean = info.elementToFocus.classList.contains('e-focus');
         if (isFocused) { return; }
+        if (info.elementToFocus && info.elementToFocus.classList.contains('e-lastrowcell')
+            && this.parent.emptyRecordMode === 'Sticky') {
+            this.currentInfo.outline = false;
+        }
         if (this.currentInfo.outline) {
             addClass([info.element], ['e-focused']);
         }

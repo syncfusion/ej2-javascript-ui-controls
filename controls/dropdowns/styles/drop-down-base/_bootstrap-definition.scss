@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 1px !default;

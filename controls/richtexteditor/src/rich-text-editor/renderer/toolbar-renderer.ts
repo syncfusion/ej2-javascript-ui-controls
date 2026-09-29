@@ -1,4 +1,4 @@
-import { addClass, Browser, L10n, removeClass, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler, detach } from '@syncfusion/ej2-base';
+import { addClass, Browser, L10n, removeClass, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler, detach, updateCSSText } from '@syncfusion/ej2-base';
 import { closest} from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode, Menu, KeyDownEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
@@ -103,28 +103,29 @@ export class ToolbarRenderer implements IRenderer {
         }
     }
 
-    private mouseOutHandler (): void {
-        if (!isNOU(this.tooltipTargetEle)){
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
-        } else {
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-                this.parent.contentModule.getDocument();
-            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+    private mouseOutHandler (args: Event): void {
+        const target: HTMLElement = args.currentTarget as HTMLElement;
+        if (target && target.hasAttribute('data-title')) {
+            target.setAttribute('title', target.getAttribute('data-title'));
+            target.removeAttribute('data-title');
         }
-        this.tooltipTargetEle.removeAttribute('data-title');
-        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
+        EventHandler.remove(target, 'mouseout', this.mouseOutHandler);
+        if (this.tooltipTargetEle === target) {
+            this.tooltipTargetEle = null;
+        }
     }
 
     private tooltipAfterClose(args: ClickEventArgs | TooltipEventArgs): void {
         const target: HTMLElement = (args as TooltipEventArgs).target ? (args as TooltipEventArgs).target :
             (args as ClickEventArgs).originalEvent.target as HTMLElement ;
         if (this.parent.showTooltip && target) {
-            this.tooltipTargetEle = target.getAttribute('title') ? target : target.closest('[title]');
+            this.tooltipTargetEle = target.getAttribute('title') ? target : target.closest('[title], [data-title]');
             if (!isNOU(this.tooltipTargetEle)) {
-                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
-                this.tooltipTargetEle.removeAttribute('title');
-                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+                if (this.tooltipTargetEle.hasAttribute('title')) {
+                    this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+                    this.tooltipTargetEle.removeAttribute('title');
+                    EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+                }
             }
         }
     }
@@ -169,6 +170,15 @@ export class ToolbarRenderer implements IRenderer {
         this.parent.notify(events.beforeDropDownItemRender, args);
     }
 
+    private dropDownItemCreated(args: IDropDownModel, width: string, type: string): void {
+        if (isNOU(args.element)) { return; }
+        const dropDownButtonEle: HTMLElement = args.element.querySelector('.e-rte-dropdown-btn-text-wrapper') as HTMLElement;
+        if (dropDownButtonEle) {
+            const styleValue: string = 'width:' + ((type === 'quick') ? 'auto' : width) + ';';
+            updateCSSText(dropDownButtonEle, styleValue);
+        }
+    }
+
     private tooltipBeforeRender(args: TooltipEventArgs): void {
         if (!isNOU(args.target.getAttribute('title'))) {
             const tooltipTarget: string = args.target.getAttribute('title');
@@ -193,6 +203,10 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
+        if (this.parent.userAgentData && this.parent.userAgentData.getBrowser() === 'Firefox' && this.rangeStore) {
+            this.parent.notify(events.selectionRestore, {});
+            this.rangeStore = false;
+        }
         const istableEditDialog: boolean = this.parent.tableModule && this.parent.tableModule.editdlgObj
         && !isNOU(this.parent.tableModule.editdlgObj.element) && !isNOU(this.parent.tableModule.editdlgObj.element.querySelector('.e-rte-edit-tablecell-dialog,.e-rte-edit-table-content'));
         if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge'))) {
@@ -303,11 +317,13 @@ export class ToolbarRenderer implements IRenderer {
      * renderDropDownButton method
      *
      * @param {IDropDownModel} args - specifies the the arguments.
+     * @param {string} width - specifies the the arguments.
+     * @param {string} type - specifies the the arguments.
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public renderDropDownButton(args: IDropDownModel): DropDownButton {
+    public renderDropDownButton(args: IDropDownModel, width: string, type: string): DropDownButton {
         let css: string;
         const targetEle: HTMLElement = args.activeElement;
         args.element.classList.add(CLS_DROPDOWN_BTN);
@@ -333,6 +349,12 @@ export class ToolbarRenderer implements IRenderer {
             animationSettings: isTesting ? { effect: 'None', duration: 0  } : { effect : 'None', duration: 400, easing: 'ease'},
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.closeTooltips();
+                if (this.parent.userAgentData && this.parent.userAgentData.getBrowser() === 'Firefox' &&
+                    this.parent.formatter.editorManager.nodeSelection &&
+                    this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
+                    proxy.parent.notify(events.selectionSave, {});
+                    this.rangeStore = true;
+                }
                 args.preventScroll = true;
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     args.cancel = true;
@@ -387,26 +409,43 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     while (alignEle !== proxy.parent.inputElement && !isNOU(alignEle.parentElement)) {
                         alignEle = this.parent.formatter.editorManager.domNode.getImmediateBlockNode(alignEle);
-                        const alignStyle: string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
-                        if (!isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Alignments') {
-                            if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
-                                addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
-                                break;
-                            }
-                            else if (args.items[1 as number].text === 'Align Center' && alignStyle === 'center') {
-                                addClass([args.element.childNodes[1 as number]] as Element[], 'e-active');
-                                break;
-                            }
-                            else if (args.items[2 as number].text === 'Align Right' && alignStyle === 'right') {
-                                addClass([args.element.childNodes[2 as number]] as Element[], 'e-active');
-                                break;
-                            }
-                            else if (args.items[3 as number].text === 'Align Justify' && alignStyle === 'justify') {
-                                addClass([args.element.childNodes[3 as number]] as Element[], 'e-active');
-                                break;
+                        if (!isNOU(args.items[0 as number])) {
+                            if ((args.items[0 as number] as IDropDownItemModel).command === 'Alignments') {
+                                const alignStyle: string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
+                                if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
+                                    addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                                else if (args.items[1 as number].text === 'Align Center' && alignStyle === 'center') {
+                                    addClass([args.element.childNodes[1 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                                else if (args.items[2 as number].text === 'Align Right' && alignStyle === 'right') {
+                                    addClass([args.element.childNodes[2 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                                else if (args.items[3 as number].text === 'Align Justify' && alignStyle === 'justify') {
+                                    addClass([args.element.childNodes[3 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                            } else if ((args.items[0 as number] as IDropDownItemModel).command === 'Table') {
+                                // Table Vertical Align Dropdown active state handling
+                                const verticalAlignValue: string = (alignEle as HTMLElement).style.verticalAlign;
+                                if ((args.items[0 as number] && args.items[0 as number].text === 'Align Top' && verticalAlignValue === 'top')) {
+                                    addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                                else if (args.items[1 as number] && args.items[1 as number].text === 'Align Middle' && verticalAlignValue === 'middle') {
+                                    addClass([args.element.childNodes[1 as number]] as Element[], 'e-active');
+                                    break;
+                                }
+                                else if (args.items[2 as number] && args.items[2 as number].text === 'Align Bottom' && verticalAlignValue === 'bottom') {
+                                    addClass([args.element.childNodes[2 as number]] as Element[], 'e-active');
+                                    break;
+                                }
                             }
                         }
-                        alignEle = alignEle.parentElement;
+                        alignEle = alignEle.parentElement as HTMLElement;
                     }
                     //image preselect
                     const closestNode: HTMLElement = startNode.closest('img');
@@ -606,7 +645,8 @@ export class ToolbarRenderer implements IRenderer {
             close: this.dropDownClose.bind(this),
             beforeClose: this.dropDownBeforeClose.bind(this),
             open: this.dropDownOpen.bind(this),
-            beforeItemRender: this.beforeDropDownItemRender.bind(this)
+            beforeItemRender: this.beforeDropDownItemRender.bind(this),
+            created: this.dropDownItemCreated.bind(this, args, width, type)
         });
         dropDown.isStringTemplate = true;
         dropDown.createElement = proxy.parent.createElement;

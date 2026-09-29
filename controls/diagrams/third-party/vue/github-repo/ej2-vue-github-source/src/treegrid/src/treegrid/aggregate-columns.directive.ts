@@ -33,7 +33,7 @@ export const AggregateColumnsPlugin = {
 
 /**
  * `e-aggregate->e-column` directive represent a aggregate column of the VueJS TreeGrid. 
- * ```vue
+ * ```html
  * <ejs-treegrid :dataSource='data' allowPaging='true' allowSorting='true'> 
  *   <e-columns>
  *     <e-column field='ID' width='100'/>

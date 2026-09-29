@@ -1,0 +1,20 @@
+.e-tooltip-close::before {
+  content: '\e761';
+  font-size: 16px;
+}
+
+.e-arrow-tip-inner.e-tip-right::before {
+  content: '\e70b';
+}
+
+.e-arrow-tip-inner.e-tip-top::before {
+  content: '\e721';
+}
+
+.e-arrow-tip-inner.e-tip-bottom::before {
+  content: '\e744';
+}
+
+.e-arrow-tip-inner.e-tip-left::before {
+  content: '\e71f';
+}

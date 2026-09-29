@@ -14,7 +14,7 @@ import { SheetsDirective, SheetDirective, SheetsPlugin, SheetPlugin } from './sh
 import { DefinedNamesDirective, DefinedNameDirective, DefinedNamesPlugin, DefinedNamePlugin } from './definednames.directive'
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeSheetIndex', 'aiAssistSettings', 'allowAutoFill', 'allowCellFormatting', 'allowChart', 'allowConditionalFormat', 'allowDataValidation', 'allowDelete', 'allowEditing', 'allowFiltering', 'allowFindAndReplace', 'allowFreezePane', 'allowHyperlink', 'allowImage', 'allowInsert', 'allowMerge', 'allowNumberFormatting', 'allowOpen', 'allowPrint', 'allowResizing', 'allowSave', 'allowScrolling', 'allowSorting', 'allowUndoRedo', 'allowWrap', 'author', 'autoFillSettings', 'calculationMode', 'cellStyle', 'cssClass', 'currencyCode', 'definedNames', 'enableAIAssist', 'enableClipboard', 'enableContextMenu', 'enableKeyboardNavigation', 'enableKeyboardShortcut', 'enableNotes', 'enablePersistence', 'enableRtl', 'height', 'isProtected', 'listSeparator', 'locale', 'openSettings', 'openUrl', 'password', 'saveUrl', 'scrollSettings', 'selectionSettings', 'sheets', 'showAggregate', 'showCommentsPane', 'showFormulaBar', 'showRibbon', 'showSheetTabs', 'width', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate', 'beforeCellFormat', 'beforeCellRender', 'beforeCellSave', 'beforeCellUpdate', 'beforeConditionalFormat', 'beforeDataBound', 'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'beforeOpen', 'beforeSave', 'beforeSelect', 'beforeSort', 'cellEdit', 'cellEdited', 'cellEditing', 'cellSave', 'contextMenuBeforeClose', 'contextMenuBeforeOpen', 'contextMenuItemSelect', 'created', 'dataBound', 'dataSourceChanged', 'dialogBeforeOpen', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'fileMenuItemSelect', 'openComplete', 'openFailure', 'promptRequest', 'promptResponse', 'queryCellInfo', 'saveComplete', 'select', 'sortComplete'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeSheetIndex', 'aiAssistSettings', 'allowAutoFill', 'allowCellFormatting', 'allowChart', 'allowConditionalFormat', 'allowDataValidation', 'allowDelete', 'allowEditing', 'allowFiltering', 'allowFindAndReplace', 'allowFreezePane', 'allowHyperlink', 'allowImage', 'allowInsert', 'allowMerge', 'allowNumberFormatting', 'allowOpen', 'allowPrint', 'allowResizing', 'allowSave', 'allowScrolling', 'allowSorting', 'allowUndoRedo', 'allowWrap', 'author', 'autoFillSettings', 'calculationMode', 'cellStyle', 'cssClass', 'currencyCode', 'definedNames', 'enableAIAssist', 'enableClipboard', 'enableCollaborativeEditing', 'enableContextMenu', 'enableKeyboardNavigation', 'enableKeyboardShortcut', 'enableNotes', 'enablePersistence', 'enableRtl', 'enableWebMcp', 'height', 'isProtected', 'listSeparator', 'locale', 'openSettings', 'openUrl', 'password', 'saveUrl', 'scrollSettings', 'selectionSettings', 'sheets', 'showAggregate', 'showCommentsPane', 'showFormulaBar', 'showRibbon', 'showSheetTabs', 'width', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate', 'beforeCellFormat', 'beforeCellRender', 'beforeCellSave', 'beforeCellUpdate', 'beforeConditionalFormat', 'beforeDataBound', 'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'beforeOpen', 'beforeSave', 'beforeSelect', 'beforeSort', 'beforeWebMcpToolExecute', 'cellEdit', 'cellEdited', 'cellEditing', 'cellSave', 'contextMenuBeforeClose', 'contextMenuBeforeOpen', 'contextMenuItemSelect', 'created', 'dataBound', 'dataSourceChanged', 'dialogBeforeOpen', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'fileMenuItemSelect', 'openComplete', 'openFailure', 'promptRequest', 'promptResponse', 'queryCellInfo', 'saveComplete', 'select', 'sortComplete'];
 export const modelProps: string[] = [];
 
 export const testProp: any = getProps({props: properties});
@@ -24,7 +24,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ejs-spreadsheet` represents the VueJS Spreadsheet Component.
- * ```vue
+ * ```html
  * <ejs-spreadsheet></ejs-spreadsheet>
  * ```
  */
@@ -231,6 +231,9 @@ export let SpreadsheetComponent: DefineVueComponent<SpreadsheetModel> =  vueDefi
         getSelectAllContent(): Object {
             return this.ej2Instances.getSelectAllContent();
         },
+        getWebMcpTools(toolNames?: string[]): Object[] {
+            return this.ej2Instances.getWebMcpTools(toolNames);
+        },
         goTo(address: string): void {
             return this.ej2Instances.goTo(address);
         },
@@ -302,6 +305,9 @@ export let SpreadsheetComponent: DefineVueComponent<SpreadsheetModel> =  vueDefi
         },
         refresh(isNew?: boolean): void {
             return this.ej2Instances.refresh(isNew);
+        },
+        registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void {
+            return this.ej2Instances.registerWebMcpTools(prefix, tools, exposedTo);
         },
         removeContextMenuItems(items: string[], isUniqueId?: boolean): void {
             return this.ej2Instances.removeContextMenuItems(items, isUniqueId);
@@ -461,6 +467,7 @@ export type SpreadsheetComponent = typeof ComponentBase & {
     getDisplayText(cell: Object): string;
     getRowData(index?: number, sheetIndex?: number): Object[];
     getSelectAllContent(): Object;
+    getWebMcpTools(toolNames?: string[]): Object[];
     goTo(address: string): void;
     hideColumn(startIndex: number, endIndex: number, hide: boolean): void;
     hideFileMenuItems(items: string[], hide: boolean, isUniqueId?: boolean): void;
@@ -485,6 +492,7 @@ export type SpreadsheetComponent = typeof ComponentBase & {
     protectSheet(sheet?: number | string, protectSettings?: Object, password?: string): void;
     redo(): void;
     refresh(isNew?: boolean): void;
+    registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void;
     removeContextMenuItems(items: string[], isUniqueId?: boolean): void;
     removeDataValidation(range?: string): void;
     removeDefinedName(definedName: string, scope: string): boolean;

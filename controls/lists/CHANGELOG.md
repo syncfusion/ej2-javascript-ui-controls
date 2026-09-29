@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
-
-### ListBase
-
-#### Bug Fixes
-
-- `#I851323`- Resolved an issue in `Dropdown` components where the `popup` list incorrectly rendered items as anchor tags when the `DataSource` text field contained a URL.
-
-## 34.1.29 (2026-07-06)
+## 35.1.37 (2026-09-29)
 
 ### ListView
 

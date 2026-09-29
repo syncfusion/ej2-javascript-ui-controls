@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 /* stylelint-disable */
 $ddt-skin-name: 'highcontrast-light' !default;

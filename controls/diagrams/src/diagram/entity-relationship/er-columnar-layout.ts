@@ -70,7 +70,9 @@ const NAME_WIDTH: number = 55;
 const STATIC_KEY_WIDTH: number = 15;
 const STATIC_TYPE_WIDTH: number = 50;
 const STATIC_CONSTRAINT_WIDTH: number = 25;
-const BUFFER_VALUE: number = -60;  // Extra padding for name column
+// measureText() over-reports visual width due to browser/canvas metrics.
+// A scale factor < 1 corrects this proportionally for any text length.
+const TEXT_MEASURE_SCALE: number = 0.72; // Corrects measureText over-reporting
 const DUAL_KEY_EXTRA: number = 12; // Extra width when a field can be both PK and FK
 
 /**
@@ -105,13 +107,14 @@ function measureNameColumnWidth(entityShape: ErShapeModel): number {
 
             // Measure the field name text
             const measuredSize: Size = measureText(tempTextElement, tempTextElement.style, field.name, 200);
-            maxNameWidth = Math.max(maxNameWidth, measuredSize.width);
+            // Apply scale factor to correct measureText over-reporting (proportional correction)
+            maxNameWidth = Math.max(maxNameWidth, measuredSize.width * TEXT_MEASURE_SCALE);
         }
     }
 
-    // Return measured width with padding, but ensure minimum
+    // Ensure minimum width
     const MIN_NAME_WIDTH: number = 45;
-    return Math.max(maxNameWidth + BUFFER_VALUE, MIN_NAME_WIDTH);
+    return Math.max(maxNameWidth, MIN_NAME_WIDTH);
 }
 
 /**

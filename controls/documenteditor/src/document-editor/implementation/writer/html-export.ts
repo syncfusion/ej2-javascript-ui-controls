@@ -16,6 +16,7 @@ export class HtmlExport {
     private characterFormat: WCharacterFormat;
     private paragraphFormat: WParagraphFormat;
     private keywordIndex: number = undefined;
+    private listValues: Dictionary<number, number> = new Dictionary<number, number>();
     private images: Dictionary<number, string[]>;
     private isSkipStyle: boolean = false;
     private isInlineOnlySelected: boolean = false;
@@ -41,6 +42,7 @@ export class HtmlExport {
         for (let i: number = 0; i < document[sectionsProperty[this.keywordIndex]].length; i++) {
             html += this.serializeSection(document[sectionsProperty[this.keywordIndex]][i]);
         }
+        this.listValues.clear();
         this.isSkipStyle = false;
         this.isInlineOnlySelected = false;
         return html;
@@ -143,6 +145,14 @@ export class HtmlExport {
     }
     private handleNestedList(listId: number, currentLevelNumber: number, listLevel: WListLevel): string {
         let html: string = '';
+        if (listLevel.listLevelPattern === 'Arabic') {
+            if (this.listValues.get(listId)) {
+                let start: number = this.listValues.get(listId) + 1;
+                this.listValues.set(listId, start);
+            } else {
+                this.listValues.add(listId, listLevel.startAt);
+            }
+        }
         if (this.listInfoDetails.length === 0) {
             html += this.getHtmlList(listLevel, currentLevelNumber);
             this.listInfoDetails.push({
@@ -164,9 +174,9 @@ export class HtmlExport {
                 html += this.closeListLevelTag(currentLevelNumber);
                 // Check if we need to open a new list at this level
                 const stackItemAtLevel: ListInfo = this.findStackItemAtLevel(currentLevelNumber);
-                if (!stackItemAtLevel || this.isListPatternChanged(stackItemAtLevel.listLevel, listLevel)) {
+                if (!stackItemAtLevel || this.isListPatternChanged(stackItemAtLevel.listLevel, listLevel, stackItemAtLevel.listId, listId)) {
                     html += this.closeList();
-                    html += this.getHtmlList(listLevel, currentLevelNumber);
+                    html += this.getHtmlList(listLevel, currentLevelNumber, listId);
                     this.listInfoDetails.push({
                         listId: listId,
                         listLevelNumber: currentLevelNumber,
@@ -177,11 +187,11 @@ export class HtmlExport {
             } else {
                 // Same level - check if list type changed (ul to ol or vice versa)
                 const lastStackItem: ListInfo = this.listInfoDetails[this.listInfoDetails.length - 1];
-                if (lastStackItem && this.isListPatternChanged(lastStackItem.listLevel, listLevel)) {
+                if (lastStackItem && this.isListPatternChanged(lastStackItem.listLevel, listLevel, lastStackItem.listId, listId)) {
                     // Close current list and open new one
                     const isOrderedList: boolean = (lastStackItem.listLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
                     html += this.endTag(isOrderedList ? 'ol' : 'ul');
-                    html += this.getHtmlList(listLevel, currentLevelNumber);
+                    html += this.getHtmlList(listLevel, currentLevelNumber, listId);
                     this.listInfoDetails[this.listInfoDetails.length - 1] = {
                         listId: listId,
                         listLevelNumber: currentLevelNumber,
@@ -201,10 +211,18 @@ export class HtmlExport {
         }
         return undefined;
     }
-    private isListPatternChanged(previousListLevel: WListLevel, currentListLevel: WListLevel): boolean {
+    private isListPatternChanged(previousListLevel: WListLevel, currentListLevel: WListLevel, previousListId?: number, currentListId?: number): boolean {
+        // Check 1: If listId values are provided and different, they are independent lists
+        if (previousListId !== undefined && currentListId !== undefined && previousListId !== currentListId) {
+            return true;
+        }
         const isPreviousListOrdered: boolean = (previousListLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
         const isCurrentListOrdered: boolean = (currentListLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
-        return isPreviousListOrdered !== isCurrentListOrdered;
+        // Check 2: One is ordered, one is unordered
+        if (isPreviousListOrdered !== isCurrentListOrdered) {
+            return true;
+        }
+        return false;
     }
     private closeListLevelTag(targetLevel: number): string {
         let html: string = '';
@@ -254,7 +272,7 @@ export class HtmlExport {
         return listLevel;
 
     }
-    private getHtmlList(listLevel: any, levelNumer: number): string {
+    private getHtmlList(listLevel: any, levelNumer: number, listId?: number): string {
         //if (start == null || (start != null && start.Paragraph != this)) {
         //    let block: BlockAdv = this.GetPreviousBlock();
         //    if (block instanceof ParagraphAdv) {
@@ -308,7 +326,11 @@ export class HtmlExport {
                     html += '1';
                 break;
             }
-            html += '" start="' + listLevel[startAtProperty[this.keywordIndex]].toString() + '">';
+            if (listLevel[listLevelPatternProperty[this.keywordIndex]] === 'Arabic' && this.listValues && this.listValues.length > 0 && listId && this.listValues.get(listId)) {
+                html += '" start="' + this.listValues.get(listId).toString() + '">';
+            } else {
+                html += '" start="' + listLevel[startAtProperty[this.keywordIndex]].toString() + '">';
+            }
         }
         return html;
     }
@@ -368,7 +390,7 @@ export class HtmlExport {
                     this.fieldCheck = 0;
                 }
             } else if (inline.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
-                blockStyle += this.serializeContentInlines(inline, blockStyle);
+                blockStyle = this.serializeContentInlines(inline, blockStyle);
             } else {
                 const text: string = isNullOrUndefined(inline[textProperty[this.keywordIndex]]) ? '' : inline[textProperty[this.keywordIndex]];
                 if (inline.hasOwnProperty(bookmarkTypeProperty[this.keywordIndex])) {

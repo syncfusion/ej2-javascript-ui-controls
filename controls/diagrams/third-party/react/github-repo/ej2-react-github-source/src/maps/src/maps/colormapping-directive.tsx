@@ -4,7 +4,7 @@ import { ColorMappingSettingsModel } from '@syncfusion/ej2-maps';
 
 /**
  * Represents the directive to define the bubble color mapping in the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective>

@@ -705,6 +705,7 @@ export class TableOfContentsDialog {
         }
     }
     private initAlertDialog(isvalid: boolean): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         let localValue: L10n = new L10n("documenteditor", this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
         let dialogContent: string = isvalid ? localValue.getConstant("The number must be between") : localValue.getConstant("The Invalid number");
@@ -712,6 +713,11 @@ export class TableOfContentsDialog {
             title: localValue.getConstant("Information"),
             content: dialogContent,
             closeOnEscape: true,
+            open: (e: any) => {
+                if (isAngularModal) {
+                    this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                }
+            },
             showCloseIcon: true,
             position: { X: "center", Y: "center" },
         }).enableRtl = this.documentHelper.owner.enableRtl;

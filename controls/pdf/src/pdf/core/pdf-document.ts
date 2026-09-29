@@ -1,12 +1,12 @@
 import { _PdfContentStream, _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
-import { _isWhiteSpace, FormatError, _decode, _getNewGuidString, _isNullOrUndefined, _updatePageSettings, _updatePageCount, _convertDateToString, _convertStringToDate, _getCjkEncoding, _getCjkDescendantFont, _resolveStandardFontFamily, _resolveCjkFontFamily, _bytesToHex } from './utils';
+import { _isWhiteSpace, FormatError, _decode, _getNewGuidString, _isNullOrUndefined, _updatePageSettings, _updatePageCount, _convertDateToString, _convertStringToDate, _getCjkEncoding, _getCjkDescendantFont, _resolveStandardFontFamily, _resolveCjkFontFamily, _bytesToHex, _bytesToString } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
 import { Save } from '@syncfusion/ej2-file-utils';
-import { DataFormat, PdfPermissionFlag, PdfTextAlignment, PdfPageOrientation, PdfRotationAngle, _PdfWordWrapType, PdfTemplateHorizontalAlignment, PdfTemplateVerticalAlignment, PdfTemplateLayerMode, _PdfDocumentTemplateKey, _TemplateSide, _PdfAlignmentStyle } from './enumerator';
+import { DataFormat, PdfPermissionFlag, PdfTextAlignment, PdfPageOrientation, PdfRotationAngle, _PdfWordWrapType, PdfTemplateHorizontalAlignment, PdfTemplateVerticalAlignment, PdfTemplateLayerMode, _PdfDocumentTemplateKey, _TemplateSide, _PdfAlignmentStyle, PdfEncryptionType } from './enumerator';
 import { PdfForm } from './form/form';
 import { PdfField } from './form/field';
 import { _PdfTransformationMatrix, PdfBrush, PdfGraphics, PdfGraphicsState} from './graphics/pdf-graphics';
@@ -27,8 +27,8 @@ import { _PdfFontMetrics } from './fonts/pdf-font-metrics';
 import { _UnicodeTrueTypeFont } from './fonts/unicode-true-type-font';
 import { _MD5 } from './security/encryptors/messageDigest5';
 import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
-import { Rectangle, Size, PdfDocumentTemplate } from './pdf-type';
-import { validateLicense } from '@syncfusion/ej2-base';
+import { Rectangle, Size, PdfDocumentTemplate, PdfSecurityOptions } from './pdf-type';
+import { initializeTelemetry, initializeTelemetryFeature, validateLicense } from '@syncfusion/ej2-base';
 import { PdfUriAnnotation } from './annotations/annotation';
 import { _LineInfo, _PdfStringLayouter, _PdfStringLayoutResult } from './fonts/string-layouter';
 import { PdfXmpMetadata } from './xmp/pdf-xmp-metadata';
@@ -39,6 +39,8 @@ import { PdfPageTemplateElement } from './graphics/pdf-page-template-element';
 import { PdfLayer } from './layers/layer';
 import { _PdfStreamWriter } from './graphics/pdf-stream-writer';
 import { PdfTemplate } from './graphics/pdf-template';
+import { _PdfDecryptStream } from './decrypt-stream';
+import { _PdfEncryptor } from './security/encryptor';
 /**
  * Represents a PDF document and can be used to parse an existing PDF document.
  * ```typescript
@@ -276,6 +278,19 @@ export class PdfDocument {
      * @private
      */
     _templateRenderingStarted: boolean = false;
+    /**
+     * Contains the original PDF document bytes.
+     *
+     * @private
+     */
+    _rawBytes: Uint8Array;
+    /**
+     * Indicates whether form fields should be parsed from page widget annotations
+     * instead of relying solely on the AcroForm dictionary.
+     *
+     * @private
+     */
+    _allowDeepParsingFromPages: boolean = false;
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
@@ -396,9 +411,11 @@ export class PdfDocument {
      */
     public constructor(data: Uint8Array, password: string)
     public constructor(data?: string | Uint8Array, password?: string) {
+        initializeTelemetry('PDFLibrary');
         this._fontCollection = new Map();
         if (data) {
-            this._stream = new _PdfStream(typeof data === 'string' ? _decode(data) : data);
+            this._rawBytes = data instanceof Uint8Array ? data : _decode(data) as Uint8Array;
+            this._stream = new _PdfStream(this._rawBytes);
             this._fileStructure = new PdfFileStructure();
             this._crossReference = new _PdfCrossReference(this, password);
             this._pages = new Map<number, PdfPage>();
@@ -645,7 +662,7 @@ export class PdfDocument {
      * @returns {Uint8Array} The decompressed bytes, or original bytes if not compressed.
      */
     _getDecompressedStreamBytes(stream: any): Uint8Array { // eslint-disable-line
-        if (stream instanceof _PdfFlateStream) {
+        if (stream instanceof _PdfFlateStream || stream instanceof _PdfDecryptStream) {
             const len: number = (stream as any).bytes ? (stream as any).bytes.length : ((stream as any).bufferLength || 0); // eslint-disable-line
             return stream.getBytes(len);
         }
@@ -666,10 +683,12 @@ export class PdfDocument {
             let metadataStream: any; // eslint-disable-line
             if (metadataRef instanceof _PdfReference) {
                 const obj: any = this._crossReference._fetch(metadataRef); // eslint-disable-line
-                if (obj instanceof _PdfStream || obj instanceof _PdfFlateStream) {
+                if (obj instanceof _PdfStream || obj instanceof _PdfFlateStream || obj instanceof _PdfDecryptStream) {
                     metadataStream = obj;
                 }
-            } else if (metadataRef instanceof _PdfStream || metadataRef instanceof _PdfFlateStream) {
+            } else if (metadataRef instanceof _PdfStream ||
+                metadataRef instanceof _PdfFlateStream ||
+                metadataRef instanceof _PdfDecryptStream) {
                 metadataStream = metadataRef;
             }
             if (metadataStream) {
@@ -2246,6 +2265,7 @@ export class PdfDocument {
      */
     public exportAnnotations(filename: string, settings: PdfAnnotationExportSettings): void
     public exportAnnotations(arg1?: string | PdfAnnotationExportSettings, arg2?: PdfAnnotationExportSettings): Uint8Array | void {
+        initializeTelemetryFeature('Annotation', 'PDFLibrary');
         this._isExport = true;
         this._doPostProcessOnAnnotations();
         let helper: _ExportHelper;
@@ -2353,6 +2373,7 @@ export class PdfDocument {
      */
     public exportFormData(filename: string, settings: PdfFormFieldExportSettings): void
     public exportFormData(arg1?: string | PdfFormFieldExportSettings, arg2?: PdfFormFieldExportSettings): Uint8Array | void {
+        initializeTelemetryFeature('AcroForm', 'PDFLibrary');
         this._doPostProcessOnFormFields();
         let helper: _ExportHelper;
         let settings: PdfFormFieldExportSettings;
@@ -2423,6 +2444,7 @@ export class PdfDocument {
      */
     public importAnnotations(data: Uint8Array, dataFormat: DataFormat): void
     public importAnnotations(data: string | Uint8Array, dataFormat: DataFormat): void {
+        initializeTelemetryFeature('Annotation', 'PDFLibrary');
         if (dataFormat === DataFormat.xfdf) {
             const xfdf: _XfdfDocument = new _XfdfDocument();
             xfdf._importAnnotations(this, (typeof data === 'string') ? _decode(data) as Uint8Array : data);
@@ -2473,6 +2495,7 @@ export class PdfDocument {
      */
     public importFormData(data: Uint8Array, dataFormat: DataFormat): void
     public importFormData(data: string | Uint8Array, dataFormat: DataFormat): void {
+        initializeTelemetryFeature('AcroForm', 'PDFLibrary');
         if (this._form && this._form._requiresPostProcessing) {
             this._doPostProcessOnFormFields();
         }
@@ -2492,6 +2515,103 @@ export class PdfDocument {
                 xml._importFormData(this, (typeof data === 'string') ? _decode(data) as Uint8Array : data);
             }
         }
+    }
+    /**
+     * Sets security settings for the PDF document.
+     *
+     * @param {PdfSecurityOptions} options Security configuration options.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Apply encryption to the document
+     * document.setSecurity({
+     *     encryptionType: PdfEncryptionType.AES_256Bit_GCM,
+     *     userPassword: 'user123',
+     *     ownerPassword: 'owner456',
+     *     permissions: PdfPermissionFlag.print | PdfPermissionFlag.copy
+     * });
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public setSecurity(options: PdfSecurityOptions): void {
+        if (options === null || typeof options === 'undefined') {
+            throw new Error('Options should not be null');
+        }
+        initializeTelemetryFeature('EncryptPDF', 'PDFLibrary');
+        if (this._isLoaded && (this._crossReference._encrypt || this._crossReference._encryptionState)) {
+            this._crossReference._updateEncryptionSettings(options);
+        } else {
+            this._crossReference._initializeEncryptionState(options);
+        }
+    }
+    /**
+     * Gets the current security settings of the PDF document.
+     *
+     * @returns {PdfSecurityOptions} Current security options if document is encrypted.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, 'password');
+     * // Get security settings
+     * let security: PdfSecurityOptions = document.getSecurity();
+     * console.log('Encryption type:', security.encryptionType);
+     * console.log('Permissions:', security.permissions);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public getSecurity(): PdfSecurityOptions {
+        const encryptor: _PdfEncryptor = this._crossReference._encrypt || this._crossReference._newEncrypt;
+        let options: PdfSecurityOptions;
+        if (!encryptor) {
+            options = { userPassword: '',
+                ownerPassword: '',
+                permissions: PdfPermissionFlag.default,
+                encryptionType: PdfEncryptionType.rc4Bit40
+            };
+            return options;
+        }
+        if (this._crossReference._encryptionState) {
+            return { ...this._crossReference._encryptionState };
+        }
+        const dict: _PdfDictionary = encryptor._dictionary;
+        const version: number = dict.get('V');
+        const revision: number = dict.get('R');
+        let encryptionType: PdfEncryptionType;
+        if (version === 1 && revision === 2) {
+            encryptionType = PdfEncryptionType.rc4Bit40;
+        } else if (version === 2 && revision === 3) {
+            encryptionType = PdfEncryptionType.rc4Bit128;
+        } else if (version === 4 && revision === 4) {
+            encryptionType = PdfEncryptionType.aesBit128;
+        } else if (version === 5 && revision === 5) {
+            encryptionType = PdfEncryptionType.aesBit256Rev5;
+        } else if (version === 5 && revision === 6) {
+            encryptionType = PdfEncryptionType.aesBit256Rev6;
+        } else {
+            throw new FormatError('Unsupported encryption type');
+        }
+        const permissions: PdfPermissionFlag = dict.get('P');
+        let userPassword: string = '';
+        let ownerPassword: string = '';
+        if (this._isUserPassword) {
+            userPassword = this._crossReference._password;
+        } else {
+            ownerPassword = this._crossReference._password;
+            if (!(encryptor._algorithm >= 5)) {
+                const decoded: Uint8Array = this._extractRealPassword(this._crossReference._encrypt._decodePassword,
+                                                                      this._crossReference._encrypt._defaultPasswordBytes);
+                userPassword = _bytesToString(decoded);
+            }
+        }
+        options = { encryptionType, permissions, userPassword, ownerPassword };
+        this._crossReference._encryptionState = options;
+        return { ...options };
     }
     /**
      * Disposes the current instance of `PdfDocument` class.
@@ -2564,6 +2684,29 @@ export class PdfDocument {
             }
         }
         return this._namedDestinationCollection;
+    }
+    /**
+     * Extracts the actual password from a decoded byte array by removing the padding sequence.
+     *
+     * @private
+     * @param {Uint8Array} decoded - The decoded byte array containing the padded password.
+     * @param {Uint8Array} padding - The standard padding sequence used in PDF password processing.
+     * @returns {Uint8Array} The extracted real password without padding.
+     */
+    _extractRealPassword(decoded: Uint8Array, padding: Uint8Array): Uint8Array {
+        for (let i: number = 0; i < decoded.length; i++) {
+            let match: boolean = true;
+            for (let j: number = 0; j < padding.length && (i + j) < decoded.length; j++) {
+                if (decoded[i + j] !== padding[<number>j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                return decoded.subarray(0, i);
+            }
+        }
+        return decoded;
     }
     /**
      * Retrieves the linearization page dictionary and reference for the given page index.
@@ -3937,6 +4080,7 @@ export class PdfDocument {
      * @returns {void} nothing.
      */
     _importPages(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
+        initializeTelemetryFeature('MergePDF', 'PDFLibrary');
         let sourceOCProperties: _PdfDictionary;
         let correspondancePagecount: number = 0;
         let ocProperties : _PdfDictionary;
@@ -4228,6 +4372,7 @@ export class PdfDocument {
         return result;
     }
     private _invokeSplitEvent(splitIndex: number, pdfData: Uint8Array): void {
+        initializeTelemetryFeature('SplitPDF', 'PDFLibrary');
         const args: PdfDocumentSplitEventArgs = new PdfDocumentSplitEventArgs(splitIndex, pdfData);
         this.splitEvent(this, args);
     }

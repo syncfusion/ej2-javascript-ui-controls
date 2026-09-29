@@ -23,7 +23,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
     fields?: FieldSettingsModel;
 
     /**
-     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
+     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
      *
@@ -88,7 +88,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
 
     /**
      * Determines on which filter type, the component needs to be considered on search action.
-     * The available [`FilterType`](../../auto-complete/filtering/#change-the-filter-type)
+     * The available [`FilterType`](../../auto-complete/filtering#change-the-filter-type)
      * and its supported data types are
      *
      * <table>

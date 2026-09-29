@@ -283,7 +283,8 @@ export class DialogRenderer {
             this.parent.dataType === 'pivot' && !this.parent.isAdaptive) {
             this.parent.engineModule.fieldList = this.parent.pivotFieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
             const clonedField: string[] = Object.keys(this.parent.engineModule.fieldList);
-            if (this.parent.allowCalculatedField && clonedField.length !== this.parent.engineModule.fields.length) {
+            if (this.parent.allowCalculatedField && this.parent.engineModule && this.parent.engineModule.fields &&
+                clonedField.length !== this.parent.engineModule.fields.length) {
                 const fields: string[] =  [];
                 this.parent.engineModule.fields.forEach((field: string) => {
                     if (clonedField.indexOf(field) !== -1) {
@@ -297,7 +298,8 @@ export class DialogRenderer {
             this.parent.dialogRenderer.fieldListDialog.hide();
             this.parent.actionObj.actionName = events.closeFieldlist;
         } else {
-            this.parent.actionObj.actionName = events.actionDropped;
+            this.parent.actionObj.actionName = this.parent.isDeferLayoutUpdate ? events.enableDeferLayoutUpdate
+                : events.disableDeferLayoutUpdate;
         }
         if (this.parent.actionObj.actionName) {
             this.parent.actionCompleteMethod();
@@ -409,8 +411,9 @@ export class DialogRenderer {
     }
 
     private beforeOpen(): void {
-        if (this.parent.clonedFieldList && Object.keys(this.parent.clonedFieldList).length === 0 &&
-            (this.parent.isDeferLayoutUpdate || (this.parent.pivotGridModule && this.parent.pivotGridModule.pivotDeferLayoutUpdate))) {
+        if (!isNullOrUndefined(this.parent.pivotFieldList) && this.parent.clonedFieldList &&
+            Object.keys(this.parent.clonedFieldList).length === 0 && (this.parent.isDeferLayoutUpdate || (this.parent.pivotGridModule &&
+                this.parent.pivotGridModule.pivotDeferLayoutUpdate))) {
             this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
         }
     }
@@ -455,6 +458,7 @@ export class DialogRenderer {
         }
         this.parent.updateDataSource();
         this.parent.dialogRenderer.fieldListDialog.hide();
+        PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.fieldListRefresh, {});
     }
     private renderAdaptiveLayout(fieldListWrappper: HTMLElement): void {
         const layoutFooter: HTMLElement = createElement('div', {
@@ -640,7 +644,9 @@ export class DialogRenderer {
                 if (this.parent.dataType === 'olap') {
                     this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
                 }
-                this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
+                if (!isNullOrUndefined(this.parent.pivotFieldList)) {
+                    this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
+                }
             }
             addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
             this.parent.dialogRenderer.fieldListDialog.show();

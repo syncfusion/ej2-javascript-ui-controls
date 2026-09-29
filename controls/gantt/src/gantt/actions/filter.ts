@@ -3,7 +3,7 @@ import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion,
 import { getActualProperties, IFilterMUI, Filter as GridFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
-import { getValue, isNullOrUndefined, remove, createElement, addClass, closest, EventHandler } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, remove, createElement, addClass, closest, EventHandler, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -17,6 +17,7 @@ export class Filter {
     public filterMenuElement: HTMLElement;
     public filteredResult: Object[] = [];
     constructor(gantt: Gantt) {
+        initializeTelemetryFeature('Filter', 'Gantt');
         this.parent = gantt;
         TreeGrid.Inject(TreeGridFilter);
         this.parent.treeGrid.allowFiltering = this.parent.allowFiltering;

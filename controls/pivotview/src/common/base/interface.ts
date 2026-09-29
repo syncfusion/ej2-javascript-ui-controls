@@ -1,7 +1,7 @@
-import { IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings } from '../../base/engine';
+import { IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings, IGroupSettings } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
-import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView } from '../base/enum';
+import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView, SubTotalsPosition, GrandTotalsPosition, ChartSeriesType, MultipleAxisMode } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties as GridPdfExportProperties, Hyperlink, Image as GridExcelImage } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties as GridExcelExportProperties } from '@syncfusion/ej2-grids';
@@ -1322,14 +1322,14 @@ export interface FetchRawDataArgs {
 /**
  * The action begins event arguments provide information about the current UI action, such as the action name, current datasource settings,
  * and the selected field information which are configured based on the UI actions like
- * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
- * [`value sorting`](../../pivotview/sorting/#value-sorting),
- * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`drill down/up`](../../pivotview/drill-down#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
  * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
+ * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionBeginEventArgs {
@@ -1388,14 +1388,14 @@ export interface PivotActionBeginEventArgs {
 /**
  * The action complete event arguments provide information about the current UI action, such as the current action name, current datasource settings, selected field information, and the current action information
  * which are configured based on the UI actions like
- * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
- * [`value sorting`](../../pivotview/sorting/#value-sorting),
- * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`drill down/up`](../../pivotview/drill-down#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
  * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
+ * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionCompleteEventArgs {
@@ -1453,14 +1453,14 @@ export interface PivotActionCompleteEventArgs {
 /**
  * When the current UI action fails to achieve the desired result, the action failure event arguments provide necessary information about the current UI action, such as the current action name and failure information
  * which are configured based on the UI actions like
- * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
- * [`value sorting`](../../pivotview/sorting/#value-sorting),
- * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
+ * [`drill down/up`](../../pivotview/drill-down#drill-down-and-drill-up),
+ * [`value sorting`](../../pivotview/sorting#value-sorting),
+ * built-in [`toolbar`](../../pivotview/tool-bar#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
  * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
+ * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionFailureEventArgs {
@@ -1539,6 +1539,12 @@ export interface PivotActionInfo {
     toolbarInfo?: PivotToolbarInfo;
     /** Defines the current value sort settings from current pivot report. */
     valueSortInfo?: IValueSortSettings;
+    /** Defines the grouping information such as field name, grouping type (Number, Date, Custom) and grouping settings. */
+    groupingInfo?: IGroupSettings;
+    /** Defines the paging information such as current page number, page size and previous page details. */
+    pagingInfo?: PivotPagingInfo;
+    /** Defines the aggregate information for operations that change aggregation type. */
+    aggregateInfo?: PivotAggregateInfo;
 }
 
 /**
@@ -1589,6 +1595,64 @@ export interface PivotToolbarInfo {
     gridSettings?: GridSettings;
     /** Defines the pivot chart settings such as chart series, chart area, axis labels, legends, border, crosshairs, theme, title, tooltip, zooming, etc. */
     chartSettings?: ChartSettings;
+    /** Defines the chart series type */
+    chartType?: ChartSeriesType;
+    /** Defines the grand totals position (Top or Bottom). */
+    grandTotalsPosition?: GrandTotalsPosition;
+    /** Defines the sub-totals position (Top, Bottom, or Auto). */
+    subTotalsPosition?: SubTotalsPosition;
+    /** Defines whether multiple axis is enabled. */
+    enableMultipleAxis?: boolean;
+    /** Defines the multiple axis mode (Stacked, Single, Combined). */
+    multipleAxisMode?: MultipleAxisMode;
+    /** Defines whether legend is visible. */
+    legendVisible?: boolean;
+    /** Defines whether to show or hide sub-totals in both row and column axes of the pivot table. */
+    showSubTotals?: boolean;
+    /** Defines whether to show or hide grand totals in both row and column axes of the pivot table. */
+    showGrandTotals?: boolean;
+    /** Defines whether to show or hide sub-totals in the column axis of the pivot table. */
+    showColumnSubTotals?: boolean;
+    /** Defines whether to show or hide sub-totals in the row axis of the pivot table. */
+    showRowSubTotals?: boolean;
+    /** Defines whether to show or hide grand totals in the column axis of the pivot table. */
+    showColumnGrandTotals?: boolean;
+    /** Defines whether to show or hide grand totals in the row axis of the pivot table. */
+    showRowGrandTotals?: boolean;
+}
+
+/**
+ * Defines the paging information such as current page number, page size and previous page details.
+ */
+export interface PivotPagingInfo {
+    /** Defines the current row page number. */
+    currentRowPage?: number;
+    /** Defines the current column page number. */
+    currentColumnPage?: number;
+    /** Defines the previous row page number. */
+    previousRowPage?: number;
+    /** Defines the previous column page number. */
+    previousColumnPage?: number;
+    /** Defines the row page size. */
+    rowPageSize?: number;
+    /** Defines the column page size. */
+    columnPageSize?: number;
+}
+
+/**
+ * Defines the aggregate information for operations that change aggregation type.
+ */
+export interface PivotAggregateInfo {
+    /** Defines the aggregate type. */
+    aggregateType?: string;
+    /** Defines the field name. */
+    fieldName?: string;
+    /** Defines the field caption. */
+    fieldCaption?: string;
+    /** Defines the base field for aggregate operations. */
+    baseField?: string;
+    /** Defines the base item for aggregate operations. */
+    baseItem?: string;
 }
 
 /**
@@ -1655,4 +1719,39 @@ export interface PdfExportProperties extends GridPdfExportProperties {
      * pivotTableIds: ['PivotView1', 'PivotView2']
      */
     pivotTableIds?: string[]
+}
+
+/**
+ * Defines focused cell metadata used to restore keyboard focus after refresh.
+ *
+ * This interface stores the row and column indices, focus context, and field name for the currently focused pivot cell.
+ */
+export interface FocusedCellInfo {
+    /** Defines the row index of the focused cell. */
+    rowIndex: number;
+    /** Defines the column index of the focused cell. */
+    colIndex: number;
+    /** Defines the field name associated with the focused cell. */
+    fieldName: string;
+    /** Defines the pivot matrix data associated with the focused cell. */
+    matrix: number[];
+}
+
+/**
+ * Local augmentation of the Document interface for Constructable Stylesheets
+ * support. `adoptedStyleSheets` was added to `lib.dom.d.ts` in a TypeScript
+ * release newer than the one pinned by this project's `tsconfig.json`
+ * (which sets `lib: ["es2015.collection","es5","es2015","es2015.promise","dom"]`).
+ *
+ * Without this declaration, the conditional-format CSS rule injector in
+ * `pivotview.ts` would fail the type-check when it accesses
+ * `document.adoptedStyleSheets`. Declaring the shape here lets us use the
+ * API without changing the project-wide `lib` setting.
+ *
+ * At runtime, every modern browser that supports the `adoptedStyleSheets`
+ * property will already have it on the real `Document` prototype; this
+ * declaration is purely a type-level "make TypeScript aware of it" hint.
+ */
+export interface DocumentWithAdoptedSheets extends Document {
+    adoptedStyleSheets: CSSStyleSheet[];
 }

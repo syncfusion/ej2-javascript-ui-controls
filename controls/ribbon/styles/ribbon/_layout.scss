@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin ribbon-backstage-border($width) {
   border-style: solid;
   border-width: $width;
@@ -650,8 +650,11 @@
     border: $ribbon-border;
 
     .e-disabled {
-      opacity: $ribbon-disabled-opacity;
       pointer-events: none;
+    }
+
+    .e-disabled:not(.e-btn.e-disabled):not(.e-checkbox-wrapper.e-checkbox-disabled):not(.e-input-group.e-disabled):not(.e-split-btn-wrapper.e-splitbtn-disabled):not(.e-combobox.e-disabled) {
+      opacity: $ribbon-disabled-opacity;
     }
 
     .e-input-group {
@@ -843,6 +846,18 @@
       }
     }
 
+    .e-ribbon-group-overflow {
+      &.e-ribbon-large-item {
+        .e-btn {
+          .e-table {
+            @if ($skin-name == 'Material3' or $skin-name == 'tailwind' or $skin-name == 'fabric' or $skin-name == 'bootstrap5') {
+              margin-bottom: 5px;
+            }
+          }
+        }
+      }
+    }
+    
     .e-ribbon-group-overflow {
       height: $ribbon-group-overflow-height;
       padding: $ribbon-group-overflow-padding;

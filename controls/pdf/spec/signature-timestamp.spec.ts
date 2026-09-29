@@ -1,5 +1,5 @@
 
-import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlags } from '../src/pdf/core/enumerator';
+import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlag } from '../src/pdf/core/enumerator';
 import { PdfSignatureField } from '../src/pdf/core/form/field';
 import { PdfDocument } from '../src/pdf/core/pdf-document';
 import { PdfPage } from '../src/pdf/core/pdf-page';
@@ -145,7 +145,7 @@ describe('987473 - timestamp', () => {
             contactInfo: 'contact@domain',
             locationInfo: 'HQ',
             reason: 'Permissioned',
-            documentPermissions: PdfCertificationFlags.forbidChanges
+            documentPermissions: PdfCertificationFlag.forbidChanges
         }, timestampCallback2
         );
         doc.form.add(field);
@@ -162,7 +162,7 @@ describe('987473 - timestamp', () => {
         expect(options.contactInfo).toEqual('contact@domain');
         expect(options.locationInfo).toEqual('HQ');
         expect(options.reason).toEqual('Permissioned');
-        expect(options.documentPermissions).toEqual(PdfCertificationFlags.forbidChanges);
+        expect(options.documentPermissions).toEqual(PdfCertificationFlag.forbidChanges);
         expect(verifyDoc.form.count).toEqual(1);
         expect(verifyField).toBeDefined();
         expect(verifyField._dictionary.get('V')).toBeTruthy();
@@ -711,7 +711,7 @@ describe('987473 - timestamp', () => {
             contactInfo: 'contact@domain',
             locationInfo: 'HQ',
             reason: 'Allow comments',
-            documentPermissions: PdfCertificationFlags.allowComments,
+            documentPermissions: PdfCertificationFlag.allowComments,
             certify: true
         }, timestampCallback2
         );
@@ -729,7 +729,7 @@ describe('987473 - timestamp', () => {
         expect(options1.contactInfo).toEqual('contact@domain');
         expect(options1.locationInfo).toEqual('HQ');
         expect(options1.reason).toEqual('Allow comments');
-        expect(options1.documentPermissions).toEqual(PdfCertificationFlags.allowComments);
+        expect(options1.documentPermissions).toEqual(PdfCertificationFlag.allowComments);
         const page2 = verifyDoc1.addPage();
         const field2: PdfSignatureField = new PdfSignatureField(page2, 'sigperm2', { x: 20, y: 20, width: 120, height: 40 });
         let sign2: PdfSignature = PdfSignature.create(
@@ -760,7 +760,7 @@ describe('987473 - timestamp', () => {
         expect(vOpt1.contactInfo).toEqual('contact@domain');
         expect(vOpt1.locationInfo).toEqual('HQ');
         expect(vOpt1.reason).toEqual('Allow comments');
-        expect(vOpt1.documentPermissions).toEqual(PdfCertificationFlags.allowComments);
+        expect(vOpt1.documentPermissions).toEqual(PdfCertificationFlag.allowComments);
         expect(vOpt2.contactInfo).toEqual('second@domain');
         expect(vOpt2.locationInfo).toEqual('Branch');
         expect(vOpt2.reason).toEqual('Approval');

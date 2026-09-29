@@ -69,7 +69,7 @@ export class Splitter {
             },
             resizing: (args: ResizingEventArgs) => {
                 this.parent.trigger('splitterResizing', args);
-                if (this.parent.timelineModule.isZoomToFit) {
+                if (this.parent.timelineModule.isZoomToFit && this.parent.timelineModule.updateTimelineAfterZooming) {
                     this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
                 }
             },
@@ -89,7 +89,7 @@ export class Splitter {
                         this.splitterObject.paneSettings[1].size = null;
                         this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
                     }
-                    if (this.parent.timelineSettings.viewEndDate === 'auto') {
+                    if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule.updateTimelineAfterZooming) {
                         this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
                     }
                     callBackPromise.resolve(splitterResizedArgs);
@@ -104,6 +104,15 @@ export class Splitter {
             const numericValue: number = parseFloat(splitterPosition.replace('%', ''));
             const ariaValueNow: number = Math.min(100, Math.max(0, numericValue));
             splitterLeftPane.setAttribute('aria-valuenow', ariaValueNow.toString());
+        }
+        // When Gantt keyboard support is disabled, ensure splitter separator is not reachable by Tab.
+        // SplitterLayout internally sets tabindex="0" and aria-hidden="false" on the separator.
+        if (!this.parent.allowKeyboard) {
+            const separator: HTMLElement | null = this.parent.splitterElement.querySelector('.e-split-bar');
+            if (separator) {
+                separator.setAttribute('tabindex', '-1');
+                separator.setAttribute('aria-hidden', 'true');
+            }
         }
     }
     /**
@@ -197,7 +206,7 @@ export class Splitter {
             this.splitterObject.paneSettings[0].size = splitterPosition;
         }
         this.isSplitterResized = false;
-        if (this.parent.timelineSettings.viewEndDate === 'auto') {
+        if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule.updateTimelineAfterZooming) {
             this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
         }
     }

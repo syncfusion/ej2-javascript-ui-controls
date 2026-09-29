@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin ribbon-font-props($font-size, $line-height) {
   font-size: $font-size;
   line-height: $line-height;
@@ -535,6 +535,13 @@
           padding: $ribbon-bigger-group-button-padding;
         }
       }
+    }
+  }
+
+  *.e-bigger .e-dropdown-popup.e-ribbon-vertical-center ul,
+  *.e-bigger.e-dropdown-popup.e-ribbon-vertical-center ul {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+      margin-top: unset;
     }
   }
 

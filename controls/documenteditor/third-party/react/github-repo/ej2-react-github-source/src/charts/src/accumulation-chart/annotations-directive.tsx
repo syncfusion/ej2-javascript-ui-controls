@@ -7,7 +7,7 @@ export interface AccumulationAnnotationSettingsDirTypecast {
 /**
  * `AccumulationAnnotationsDirective` directive represent a annotation of the react AccumulationChart.
  * It must be contained in a Pie component(`AccumulationChart`). 
- * ```tsx
+ * ```
  * <AccumulationChartComponent>
  * <AccumulationAnnotationsDirective>
  * <AccumulationAnnotationDirective></AccumulationAnnotationDirective>

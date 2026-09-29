@@ -20,38 +20,22 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childItems: new ContentChild(ItemsDirective)
+        childItems: new ContentChild(ItemsDirective),
+        template: new ContentChild('template'),
+        content: new ContentChild('content'),
+        oppositeContent: new ContentChild('oppositeContent')
     }
 })
 @ComponentMixins([ComponentBase])
 export class TimelineComponent extends Timeline implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeItemRender: any;
-	public created: any;
-    public childItems: QueryList<ItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeItemRender: any;
+	public declare created: any;
+    public declare childItems: QueryList<ItemsDirective>;
     public tags: string[] = ['items'];
-    /** 
-     * Defines the template content for each timeline item. The template context will contain the item model.
-     * 
-     * {% codeBlock src='timeline/template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
-    @ContentChild('content')
-    @Template()
-    public content: any;
-    @ContentChild('oppositeContent')
-    @Template()
-    public oppositeContent: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -81,7 +65,10 @@ export class TimelineComponent extends Timeline implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(TimelineComponent.prototype, 'template');
+Template()(TimelineComponent.prototype, 'content');
+Template()(TimelineComponent.prototype, 'oppositeContent');
 

@@ -29,14 +29,18 @@ export class CustomUserAgentData {
         if (/windows/i.test(this.userAgent)) {
             return 'Windows';
         }
+        if (/iphone|ipad|ipod|crios/i.test(this.userAgent)
+            || (window.navigator && window.navigator.platform &&
+            window.navigator.platform === 'MacIntel'
+            && (window.navigator.maxTouchPoints as number) > 1 &&
+            !/chrome|chromium|crios/i.test(this.userAgent))) {
+            return 'iOS';
+        }
         if (/macintosh|mac os/i.test(this.userAgent) && !(/iphone|ipad|ipod|crios/i.test(this.userAgent))) {
             return 'macOS';
         }
         if (/linux/i.test(this.userAgent) && !(/android/i.test(this.userAgent))) {
             return 'Linux';
-        }
-        if (/iphone|ipad|ipod|crios/i.test(this.userAgent)) {
-            return 'iOS';
         }
         if (/android/i.test(this.userAgent)) {
             return 'Android';

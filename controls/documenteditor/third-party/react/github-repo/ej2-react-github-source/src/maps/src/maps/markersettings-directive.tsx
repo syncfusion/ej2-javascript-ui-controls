@@ -7,7 +7,7 @@ export interface MarkerSettingsDirTypecast {
 }
 /**
  * Represents the directive to define the markers in the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective>

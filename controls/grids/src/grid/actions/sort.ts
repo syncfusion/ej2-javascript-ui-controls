@@ -1,5 +1,5 @@
 import { Browser, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
@@ -56,6 +56,7 @@ export class Sort implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, sortSettings?: SortSettings, sortedColumns?: string[], locator?: ServiceLocator) {
+        initializeTelemetryFeature('Sort', 'DataGrid');
         this.parent = parent;
         this.sortSettings = sortSettings;
         this.sortedColumns = sortedColumns;
@@ -400,7 +401,7 @@ export class Sort implements IAction {
         this.currentTarget = null;
         this.popUpClickHandler(e);
         const target: Element = closest(e.target as Element, '.e-headercell');
-        if (target && !(e.target as Element).classList.contains('e-grptogglebtn') &&
+        if (target && !(e.target as Element).closest('.e-hierarchycheckbox') && !(e.target as Element).classList.contains('e-grptogglebtn') &&
             !(target.classList.contains('e-resized')) &&
             !(e.target as Element).classList.contains('e-rhandler') &&
             !(e.target as Element).classList.contains('e-columnmenu') &&

@@ -1804,4 +1804,31 @@ describe('filter menu module =>', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-1049539: DateFilterUI injectMaskedDateTime Coverage =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: [{ OrderID: 10248, OrderDate: new Date() }],
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'OrderDate', headerText: 'Order Date', type: 'date' }
+                ]
+            }, done);
+        });
+
+        it('should cover injectMaskedDateTime branches', () => {
+            const dateFilter = new DateFilterUI(gridObj, gridObj.serviceLocator, gridObj.filterSettings as any);
+            dateFilter.injectMaskedDateTime('date');
+            dateFilter.injectMaskedDateTime('dateonly');
+            dateFilter.injectMaskedDateTime('datetime');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

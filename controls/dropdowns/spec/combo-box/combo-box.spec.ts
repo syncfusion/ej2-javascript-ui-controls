@@ -2848,6 +2848,34 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter in po
             done();
         }, 450)
     });
+    describe('Remote data - Change event for dynamic value update', () => {
+        let ddlObj: any;
+        let element: HTMLInputElement;
+        let changeFired: boolean = false;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'comboRemote' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('change event triggers for programmatic value update', (done) => {
+            changeFired = false;
+            ddlObj = new ComboBox({
+                dataSource: [{ text: 'One', value: '1' }],
+                fields: { text: 'text', value: 'value' },
+                change: () => { changeFired = true; }
+            });
+            ddlObj.appendTo(element);
+            ddlObj.value = '1';
+            ddlObj.dataBind();
+            setTimeout(() => {
+                expect(changeFired).toBe(true);
+                ddlObj.destroy();
+                done();
+            }, 0);
+        });
+    });
 });
 describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => {
     let element: HTMLInputElement;
@@ -4268,7 +4296,6 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             }, 450)
         });
     });
-
     describe('ComboBox autofill - change event trigger (public API)', () => {
         let listObj1: ComboBox;
         let element: HTMLInputElement;
@@ -4311,8 +4338,6 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 expect(isChangeTriggered).toBe(true);
                 done();
             }, 300);
-
         });
-
     });
 });

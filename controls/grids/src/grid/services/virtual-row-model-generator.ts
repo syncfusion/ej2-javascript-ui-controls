@@ -78,7 +78,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             isManualRefresh = true;
         }
         this.checkAndResetCache(e.requestType);
-        if (e.requestType === 'pin-row' || e.requestType === 'unpin-row') {
+        if (e.requestType === 'pin-row' || e.requestType === 'unpin-row' || e.requestType === 'refresh') {
             this.startIndex = null;
         }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {

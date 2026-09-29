@@ -1,5 +1,6 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('progress-button-theme') {
 
@@ -19,25 +20,25 @@
       }
 
       .e-path-arc {
-        stroke: $btn-color;
+        stroke: btn.$btn-color;
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           stroke-width: 3px;
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-primary,
-    #{if(&, '&', '*')}.e-primary.e-outline:hover,
-    #{if(&, '&', '*')}.e-primary.e-outline:focus,
-    #{if(&, '&', '*')}.e-primary.e-flat:hover,
-    #{if(&, '&', '*')}.e-primary.e-flat:focus {
+    &.e-primary,
+    &.e-primary.e-outline:hover,
+    &.e-primary.e-outline:focus,
+    &.e-primary.e-flat:hover,
+    &.e-primary.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-primary-color;
-        stroke: $btn-primary-color;
+        fill: btn.$btn-primary-color;
+        stroke: btn.$btn-primary-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-primary-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-primary-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-primary-color, $alpha: -$progress-btn-circle-opacity);
@@ -45,21 +46,21 @@
         }
 
         .e-path-arc {
-          stroke: $btn-primary-color;
+          stroke: btn.$btn-primary-color;
         }
       }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-flat-primary-color;
-          stroke: $btn-flat-primary-color;
+          fill: btn.$btn-flat-primary-color;
+          stroke: btn.$btn-flat-primary-color;
 
           .e-path-circle {
             @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-flat-primary-path-arc, $alpha: -$progress-btn-circle-opacity);
             }
             @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap'{
-              stroke: color.adjust($btn-flat-primary-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-flat-primary-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
@@ -68,45 +69,45 @@
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
-              stroke: $btn-flat-primary-color;
+              stroke: btn.$btn-flat-primary-color;
             }
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-primary.e-outline:hover,
-    #{if(&, '&', '*')}.e-primary.e-outline:focus {
+    &.e-primary.e-outline:hover,
+    &.e-primary.e-outline:focus {
       @if $skin-name == 'Material3' {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-primary-bgcolor;
-          stroke: $btn-primary-bgcolor;
+          fill: btn.$btn-primary-bgcolor;
+          stroke: btn.$btn-primary-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-primary-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-primary-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-primary-color;
+            stroke: btn.$btn-primary-color;
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-success,
-    #{if(&, '&', '*')}.e-success.e-outline:hover,
-    #{if(&, '&', '*')}.e-success.e-outline:focus,
-    #{if(&, '&', '*')}.e-success.e-flat:hover,
-    #{if(&, '&', '*')}.e-success.e-flat:focus {
+    &.e-success,
+    &.e-success.e-outline:hover,
+    &.e-success.e-outline:focus,
+    &.e-success.e-flat:hover,
+    &.e-success.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-success-color;
-        stroke: $btn-success-color;
+        fill: btn.$btn-success-color;
+        stroke: btn.$btn-success-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-success-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-success-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-success-color, $alpha: -$progress-btn-circle-opacity);
@@ -114,14 +115,14 @@
         }
 
         .e-path-arc {
-          stroke: $btn-success-color;
+          stroke: btn.$btn-success-color;
         }
       }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-flat-success-color;
-          stroke: $btn-flat-success-color;
+          fill: btn.$btn-flat-success-color;
+          stroke: btn.$btn-flat-success-color;
 
           .e-path-circle {
             @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
@@ -129,7 +130,7 @@
             }
             @else {
               @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-                stroke: color.adjust($btn-flat-success-color, $alpha: -$progress-btn-circle-opacity);
+                stroke: color.adjust(btn.$btn-flat-success-color, $alpha: -$progress-btn-circle-opacity);
               }
             }
           }
@@ -139,28 +140,28 @@
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
-              stroke: $btn-flat-success-color;
+              stroke: btn.$btn-flat-success-color;
             }
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-success.e-outline:hover,
-    #{if(&, '&', '*')}.e-success.e-outline:focus {
+    &.e-success.e-outline:hover,
+    &.e-success.e-outline:focus {
       @if $skin-name == 'Material3' {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-success-bgcolor;
-          stroke: $btn-success-bgcolor;
+          fill: btn.$btn-success-bgcolor;
+          stroke: btn.$btn-success-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-success-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-success-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-success-color;
+            stroke: btn.$btn-success-color;
           }
         }
       }
@@ -172,12 +173,12 @@
     &.e-info.e-flat:hover,
     &.e-info.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-info-color;
-        stroke: $btn-info-color;
+        fill: btn.$btn-info-color;
+        stroke: btn.$btn-info-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-info-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-info-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-info-color, $alpha: -$progress-btn-circle-opacity);
@@ -188,21 +189,21 @@
         }
 
         .e-path-arc {
-          stroke: $btn-info-color;
+          stroke: btn.$btn-info-color;
         }
       }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-flat-info-color;
-          stroke: $btn-flat-info-color;
+          fill: btn.$btn-flat-info-color;
+          stroke: btn.$btn-flat-info-color;
 
           .e-path-circle {
             @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-flat-primary-path-arc, $alpha: -$progress-btn-circle-opacity);
             }
             @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-flat-info-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-flat-info-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
@@ -211,28 +212,28 @@
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
-              stroke: $btn-flat-info-color;
+              stroke: btn.$btn-flat-info-color;
             }
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-info.e-outline:hover,
-    #{if(&, '&', '*')}.e-info.e-outline:focus {
+    &.e-info.e-outline:hover,
+    &.e-info.e-outline:focus {
       @if $skin-name == 'Material3' {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-info-bgcolor;
-          stroke: $btn-info-bgcolor;
+          fill: btn.$btn-info-bgcolor;
+          stroke: btn.$btn-info-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-info-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-info-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-info-color;
+            stroke: btn.$btn-info-color;
           }
         }
       }
@@ -244,12 +245,12 @@
     &.e-warning.e-flat:hover,
     &.e-warning.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-warning-color;
-        stroke: $btn-warning-color;
+        fill: btn.$btn-warning-color;
+        stroke: btn.$btn-warning-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-warning-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-warning-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-warning-color, $alpha: -$progress-btn-circle-opacity);
@@ -257,21 +258,21 @@
         }
 
         .e-path-arc {
-          stroke: $btn-warning-color;
+          stroke: btn.$btn-warning-color;
         }
       }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-flat-warning-color;
-          stroke: $btn-flat-warning-color;
+          fill: btn.$btn-flat-warning-color;
+          stroke: btn.$btn-flat-warning-color;
 
           .e-path-circle {
             @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-flat-primary-path-arc, $alpha: -$progress-btn-circle-opacity);
             }
             @else {
-              stroke: $btn-flat-warning-color;
+              stroke: btn.$btn-flat-warning-color;
             }
           }
 
@@ -280,28 +281,28 @@
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
-              stroke: $btn-flat-warning-color;
+              stroke: btn.$btn-flat-warning-color;
             }
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-warning.e-outline:hover,
-    #{if(&, '&', '*')}.e-warning.e-outline:focus {
+    &.e-warning.e-outline:hover,
+    &.e-warning.e-outline:focus {
       @if $skin-name == 'Material3' {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-warning-bgcolor;
-          stroke: $btn-warning-bgcolor;
+          fill: btn.$btn-warning-bgcolor;
+          stroke: btn.$btn-warning-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-warning-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-warning-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-warning-color;
+            stroke: btn.$btn-warning-color;
           }
         }
       }
@@ -313,12 +314,12 @@
     &.e-danger.e-flat:hover,
     &.e-danger.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-danger-color;
-        stroke: $btn-danger-color;
+        fill: btn.$btn-danger-color;
+        stroke: btn.$btn-danger-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-danger-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-danger-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-danger-color, $alpha: -$progress-btn-circle-opacity);
@@ -326,21 +327,21 @@
         }
 
         .e-path-arc {
-          stroke: $btn-danger-color;
+          stroke: btn.$btn-danger-color;
         }
       }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-flat-danger-color;
-          stroke: $btn-flat-danger-color;
+          fill: btn.$btn-flat-danger-color;
+          stroke: btn.$btn-flat-danger-color;
 
           .e-path-circle {
             @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: color.adjust($btn-flat-primary-path-arc, $alpha: -$progress-btn-circle-opacity);
             }
             @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-flat-danger-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-flat-danger-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
@@ -349,28 +350,28 @@
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
-              stroke: $btn-flat-danger-color;
+              stroke: btn.$btn-flat-danger-color;
             }
           }
         }
       }
     }
 
-    #{if(&, '&', '*')}.e-danger.e-outline:hover,
-    #{if(&, '&', '*')}.e-danger.e-outline:focus {
+    &.e-danger.e-outline:hover,
+    &.e-danger.e-outline:focus {
       @if $skin-name == 'Material3' {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-danger-bgcolor;
-          stroke: $btn-danger-bgcolor;
+          fill: btn.$btn-danger-bgcolor;
+          stroke: btn.$btn-danger-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-danger-color, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-danger-color, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-danger-color;
+            stroke: btn.$btn-danger-color;
           }
         }
       }
@@ -380,12 +381,12 @@
     &.e-flat {
       &.e-primary {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-primary-bgcolor;
-          stroke: $btn-primary-bgcolor;
+          fill: btn.$btn-primary-bgcolor;
+          stroke: btn.$btn-primary-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-primary-bgcolor, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-primary-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
             @else if $skin-name == 'tailwind' {
               stroke: color.adjust($progress-btn-primary-bgcolor, $alpha: -$progress-btn-circle-opacity);
@@ -393,35 +394,35 @@
           }
 
           .e-path-arc {
-            stroke: $btn-primary-bgcolor;
+            stroke: btn.$btn-primary-bgcolor;
           }
         }
       }
 
       &.e-success {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-success-bgcolor;
-          stroke: $btn-success-bgcolor;
+          fill: btn.$btn-success-bgcolor;
+          stroke: btn.$btn-success-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-success-bgcolor, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-success-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
           }
           .e-path-arc {
-            stroke: $btn-success-bgcolor;
+            stroke: btn.$btn-success-bgcolor;
           }
         }
       }
 
       &.e-info {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-info-bgcolor;
-          stroke: $btn-info-bgcolor;
+          fill: btn.$btn-info-bgcolor;
+          stroke: btn.$btn-info-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-info-bgcolor, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-info-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
             @else if $skin-name == 'tailwind' {
               stroke: color.adjust($progress-btn-info-bgcolor, $alpha: -$progress-btn-circle-opacity);
@@ -429,41 +430,41 @@
           }
 
           .e-path-arc {
-            stroke: $btn-info-bgcolor;
+            stroke: btn.$btn-info-bgcolor;
           }
         }
       }
 
       &.e-warning {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-warning-bgcolor;
-          stroke: $btn-warning-bgcolor;
+          fill: btn.$btn-warning-bgcolor;
+          stroke: btn.$btn-warning-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-warning-bgcolor, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-warning-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-warning-bgcolor;
+            stroke: btn.$btn-warning-bgcolor;
           }
         }
       }
 
       &.e-danger {
         .e-spinner-pane .e-spinner-inner svg {
-          fill: $btn-danger-bgcolor;
-          stroke: $btn-danger-bgcolor;
+          fill: btn.$btn-danger-bgcolor;
+          stroke: btn.$btn-danger-bgcolor;
 
           .e-path-circle {
             @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-              stroke: color.adjust($btn-danger-bgcolor, $alpha: -$progress-btn-circle-opacity);
+              stroke: color.adjust(btn.$btn-danger-bgcolor, $alpha: -$progress-btn-circle-opacity);
             }
           }
 
           .e-path-arc {
-            stroke: $btn-danger-bgcolor;
+            stroke: btn.$btn-danger-bgcolor;
           }
         }
       }
@@ -471,12 +472,12 @@
 
     &.e-link {
       .e-spinner-pane .e-spinner-inner svg {
-        fill: $btn-link-color;
-        stroke: $btn-link-color;
+        fill: btn.$btn-link-color;
+        stroke: btn.$btn-link-color;
 
         .e-path-circle {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            stroke: color.adjust($btn-link-color, $alpha: -$progress-btn-circle-opacity);
+            stroke: color.adjust(btn.$btn-link-color, $alpha: -$progress-btn-circle-opacity);
           }
           @else if $skin-name == 'tailwind' {
             stroke: color.adjust($progress-btn-link-color, $alpha: -$progress-btn-circle-opacity);
@@ -484,7 +485,7 @@
         }
 
         .e-path-arc {
-          stroke: $btn-link-color;
+          stroke: btn.$btn-link-color;
         }
       }
     }
@@ -499,9 +500,9 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-primary,
-  #{if(&, '&', '*')}.e-success,
-  #{if(&, '&', '*')}.e-danger {
+  *.e-primary,
+  *.e-success,
+  *.e-danger {
     .e-progress {
       @if $skin-name == 'bootstrap5.3'  {
         background: currentColor;
@@ -512,7 +513,7 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-info {
+  *.e-info {
     .e-progress {
       @if $skin-name == 'bootstrap5.3'  {
         background: currentColor;
@@ -523,7 +524,7 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-flat {
+  *.e-flat {
     &.e-primary {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
@@ -565,11 +566,11 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-outline:not(:focus) {
+  *.e-outline:not(:focus) {
     &.e-primary {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-          background: color.adjust($btn-primary-bgcolor, $alpha: -.8);
+          background: color.adjust(btn.$btn-primary-bgcolor, $alpha: -.8);
         }
         @else if $skin-name == 'tailwind' {
           background: color.adjust($progress-btn-primary-bgcolor, $alpha: -.8);
@@ -580,7 +581,7 @@
     &.e-success {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-          background: color.adjust($btn-success-bgcolor, $alpha: -.8);
+          background: color.adjust(btn.$btn-success-bgcolor, $alpha: -.8);
         }
       }
     }
@@ -588,7 +589,7 @@
     &.e-info {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-          background: color.adjust($btn-info-bgcolor, $alpha: -.8);
+          background: color.adjust(btn.$btn-info-bgcolor, $alpha: -.8);
         }
         @else if $skin-name == 'tailwind' {
           background: color.adjust($progress-btn-info-bgcolor, $alpha: -.8);
@@ -599,7 +600,7 @@
     &.e-warning {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-          background: color.adjust($btn-warning-bgcolor, $alpha: -.8);
+          background: color.adjust(btn.$btn-warning-bgcolor, $alpha: -.8);
         }
       }
     }
@@ -607,15 +608,15 @@
     &.e-danger {
       .e-progress {
         @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-          background: color.adjust($btn-danger-bgcolor, $alpha: -.8);
+          background: color.adjust(btn.$btn-danger-bgcolor, $alpha: -.8);
         }
       }
     }
   }
   
   @if $skin-name == 'Material3' {
-    #{if(&, '&', '*')}.e-flat,
-    #{if(&, '&', '*')}.e-flat:not(:focus) {
+    *.e-flat,
+    *.e-flat:not(:focus) {
       &.e-primary {
         .e-progress {
           background: $progress-btn-flat-primary-progress-color;
@@ -648,12 +649,12 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-flat:not(:focus) {
+  *.e-flat:not(:focus) {
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       &.e-primary {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            background: color.adjust($btn-primary-bgcolor, $alpha: -.8);
+            background: color.adjust(btn.$btn-primary-bgcolor, $alpha: -.8);
           }
           @else if $skin-name == 'tailwind' {
             background: color.adjust($progress-btn-primary-bgcolor, $alpha: -.8);
@@ -664,7 +665,7 @@
       &.e-success {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-            background: color.adjust($btn-success-bgcolor, $alpha: -.8);
+            background: color.adjust(btn.$btn-success-bgcolor, $alpha: -.8);
           }
         }
       }
@@ -672,7 +673,7 @@
       &.e-info {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
-            background: color.adjust($btn-info-bgcolor, $alpha: -.8);
+            background: color.adjust(btn.$btn-info-bgcolor, $alpha: -.8);
           }
           @else if $skin-name == 'tailwind' {
             background: color.adjust($progress-btn-info-bgcolor, $alpha: -.8);
@@ -683,7 +684,7 @@
       &.e-warning {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-            background: color.adjust($btn-warning-bgcolor, $alpha: -.8);
+            background: color.adjust(btn.$btn-warning-bgcolor, $alpha: -.8);
           }
         }
       }
@@ -691,7 +692,7 @@
       &.e-danger {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-            background: color.adjust($btn-danger-bgcolor, $alpha: -.8);
+            background: color.adjust(btn.$btn-danger-bgcolor, $alpha: -.8);
           }
         }
       }
@@ -701,17 +702,17 @@
 
 @if $skin-name != 'fluent2' {
   .e-progress-btn.e-outline .e-spinner-pane .e-spinner-inner svg {
-    fill: $btn-outline-color;
-    stroke: $btn-outline-color;
+    fill: btn.$btn-outline-color;
+    stroke: btn.$btn-outline-color;
   }
   
   .e-progress-btn.e-outline:focus .e-spinner-pane .e-spinner-inner svg {
-    fill: $btn-color;
-    stroke: $btn-color;
+    fill: btn.$btn-color;
+    stroke: btn.$btn-color;
   }
   
   .e-progress-btn.e-outline.e-success .e-spinner-pane .e-spinner-inner svg .e-path-arc {
-    stroke: $btn-outline-color;
+    stroke: btn.$btn-outline-color;
   }
 }
 

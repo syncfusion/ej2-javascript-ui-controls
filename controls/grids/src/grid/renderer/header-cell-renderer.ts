@@ -3,7 +3,7 @@ import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IGrid } from '../base/interface';
-import { setStyleAndAttributes, appendChildren, addStickyColumnPosition } from '../base/util';
+import { setStyleAndAttributes, appendChildren, addStickyColumnPosition, getColumnLetter } from '../base/util';
 import { CellRenderer } from './cell-renderer';
 import { AriaService, IAriaOptions } from '../services/aria-service';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -183,6 +183,15 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                     headerElement.appendChild(templateHeaderText);
                 }
             }
+        }
+        if (this.parent.formulaModule) {
+            const colIndex: number = this.parent.getColumnIndexByField(column.field);
+            const colRef: string = getColumnLetter(colIndex);
+            const refSpan: Element = this.parent.createElement('span', { className: 'e-header-col-ref e-col-hidden', innerHTML: colRef });
+            innerDIV.insertBefore(refSpan, innerDIV.querySelector('.e-headertext'));
+        }
+        if (column.type && column.type.toLowerCase() === 'rownumber') {
+            node.classList.add('e-header-rownumber-cell');
         }
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {

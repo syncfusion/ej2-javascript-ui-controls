@@ -1,5 +1,5 @@
 import { DocumentEditor, HelperMethods, ViewChangeEventArgs } from '../../document-editor/index';
-import { createElement, KeyboardEventArgs, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, L10n, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -118,13 +118,18 @@ export class StatusBar {
         this.documentEditor.enableSpellCheck = (this.container.enableSpellCheck) ? true : false;
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         const styles: string = isRtl ? 'padding-right:16px' : 'padding-left:16px';
-        this.pageNumDiv = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
+        this.pageNumDiv = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout'});
+        updateCSSText(this.pageNumDiv, styles);
         this.statusBarDiv.appendChild(this.pageNumDiv);
         this.pageLabel = createElement('span');
         this.pageLabel.textContent = this.localObj.getConstant('Page') + ' ';
         this.pageNumDiv.appendChild(this.pageLabel);
-        this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text', 'aria-label' : this.localObj.getConstant('Current Page Number') }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
-        this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
+        this.pageNumberInput = createElement('input', { attrs: { type: 'text', 'aria-label' : this.localObj.getConstant('Current Page Number') }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
+        const pageNumberInputStyle: string = 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text';
+        updateCSSText(this.pageNumberInput, pageNumberInputStyle);
+        this.editablePageNumber = createElement('div', { className: 'e-input e-de-pagenumber-text' });
+        const cssText: string = 'display: inline-flex';
+        updateCSSText(this.editablePageNumber, cssText);
         this.editablePageNumber.appendChild(this.pageNumberInput);
         let pageNumberOfLabelStyle: string = '';
         if (isRtl) {
@@ -139,33 +144,24 @@ export class StatusBar {
         this.updatePageNumber();
         this.pageNumDiv.appendChild(this.editablePageNumber);
         this.editablePageNumber.setAttribute('title', this.localObj.getConstant('Current Page Number'));
-        this.ofLabel = createElement('span', { styles: pageNumberOfLabelStyle });
+        this.ofLabel = createElement('span');
+        if (pageNumberOfLabelStyle) {
+            updateCSSText(this.ofLabel, pageNumberOfLabelStyle);
+        }
         this.ofLabel.textContent = ' ' + this.localObj.getConstant('of') + ' ';
         this.pageNumDiv.appendChild(this.ofLabel);
         this.pageCount = createElement('span');
         this.pageNumDiv.appendChild(this.pageCount);
         this.updatePageCount();
         const paddingStyle: string = isRtl ? 'padding-right:10px;' : 'padding-left:10px;';
-        this.loadingDiv = createElement('div', {
-            styles: `display: none; ${paddingStyle}`
-        });
-        this.loadingDiv.innerHTML = 'Loading<span id="dots"></span>';
-        const style: HTMLStyleElement = document.createElement('style');
-        style.textContent = `
-#dots::after {
-    content: '';
-    animation: dots 1.5s steps(4, end) infinite;
-  }
-
-  @keyframes dots {
-    0%   { content: ''; }
-    25%  { content: '.'; }
-    50%  { content: '..'; }
-    75%  { content: '...'; }
-    100% { content: ''; }
-  }
-`;
-        document.head.appendChild(style);
+        this.loadingDiv = createElement('div');
+        const cssTextdiv: string = `display:none;${paddingStyle}`;
+        updateCSSText(this.loadingDiv, cssTextdiv);
+        const loadingText: HTMLElement = createElement('span');
+        loadingText.textContent = 'Loading';
+        const dotsSpan: HTMLElement = createElement('span', { className: 'e-de-loading-dots' });
+        this.loadingDiv.appendChild(loadingText);
+        this.loadingDiv.appendChild(dotsSpan);
         this.pageNumDiv.appendChild(this.loadingDiv);
         if (this.documentEditor.enableSpellCheck) {
             this.verticalLine = createElement('div', { className: 'e-de-statusbar-separator' });
@@ -219,6 +215,7 @@ export class StatusBar {
         ];
         this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom.bind(this) });
         this.zoom.isStringTemplate = true;
+        this.zoom.isAngular = this.container.isModalDialog;
         //Selecting the current text in the dropdown
         this.zoom.beforeOpen = () => {
             // Used settimeout because drop down will not be rendered.
@@ -266,7 +263,7 @@ export class StatusBar {
                 }
             }
         });
-
+        this.spellCheckButton.isAngular = this.container.isModalDialog;
         return spellCheckBtn;
     }
     private onZoom(args: MenuEventArgs): void {
@@ -277,7 +274,7 @@ export class StatusBar {
         this.setSpellCheckValue(args.item.text);
     }
     public updateZoomContent(): void {
-        this.zoom.content = Math.round(this.documentEditor.zoomFactor * 100) + '%';
+        this.zoom.content = Math.round(this.documentEditor.documentHelper.zoomFactor * 100) + '%';
     }
     private highlightSelectedItem(text: string): void {
         const listItems: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup .e-item');

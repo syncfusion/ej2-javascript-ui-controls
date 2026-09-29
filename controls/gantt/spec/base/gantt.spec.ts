@@ -5,7 +5,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize, CriticalPath, VirtualScroll, UndoRedo} from '../../src/index';
 import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1,resourceCollection10,projectNewDatas1, cr940492,
-    autoValidateTaskData, autoValidateTaskModeData, autoValidateUnScheduleData, 
+    autoValidateTaskData, autoValidateTaskModeData, autoValidateUnScheduleData,
     autoValidatedTaskResrcmode, autovaldateResourceCollection, autovalidateDatasource,projectData, MT1014886
 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
@@ -7261,7 +7261,7 @@ describe('Auto-validated task collection on load time -default data with workwee
             height: '550px',
             actionComplete : function (args: any): void {
                 if (args.type === 'refresh') {
-                    expect(args.modifiedTasks.length).toBe(30);
+                    expect(args.modifiedTasks.length).toBe(31);
                 }
             },
             allowUnscheduledTasks: true,
@@ -7270,7 +7270,7 @@ describe('Auto-validated task collection on load time -default data with workwee
             }, done);
     });
     it('Checking autovalidated task collection', () => {
-        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(30);
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(31);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -7454,6 +7454,7 @@ describe('Auto-validated task collection on load time -default data with daywork
                 id: 'TaskID',
                 name: 'TaskName',
                 startDate: 'StartDate',
+                endDate: 'EndDate',
                 duration: 'Duration',
                 progress: 'Progress',
                 dependency:'Predecessor',
@@ -9856,7 +9857,7 @@ describe('ganttChartMouseUp branches', () => {
         const chartModule = ganttObj.ganttChartModule;
         insertedWrapper = document.createElement('div');
         const cell = document.createElement('div');
-        cell.classList.add('e-editedbatchcell');
+        cell.classList.add('e-editedcell');
         insertedWrapper.appendChild(cell);
         ganttObj.element.appendChild(insertedWrapper);
         const target = document.createElement('div');
@@ -10173,12 +10174,12 @@ describe('onTabAction special branches', () => {
     it('executes saveCell branch when nextElement is noNextRow and edited batch cell exists', () => {
         const cell = ganttObj.treeGrid.getRows()[0].querySelector('.e-rowcell') as HTMLElement;
         const editedCell = document.createElement('td');
-        editedCell.classList.add('e-editedbatchcell');
+        editedCell.classList.add('e-editedcell');
         ganttObj.treeGrid.element.appendChild(editedCell);
         appended.push(editedCell);
         chartModule.getNextElement = () => 'noNextRow';
         chartModule.onTabAction({ action: 'tab', target: cell } as any);
-        expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+        expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedcell').length).toBe(1);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -10419,7 +10420,7 @@ describe('onTabAction branch with child record handling (patched getNextRowEleme
     it('executes child-record branch without null errors', () => {
         const rowCells = ganttObj.element.querySelectorAll('.e-rowcell');
         const editedCell = rowCells[0];
-        editedCell.classList.add('e-editedbatchcell');
+        editedCell.classList.add('e-editedcell');
         const secondRow = ganttObj.treeGrid.getRows()[1];
         secondRow.setAttribute('aria-rowindex', '2');
         const idCellSecondRow = secondRow.querySelector('.e-rowcell') as HTMLElement;
@@ -10507,7 +10508,7 @@ describe('onTabAction branch with child record handling (patched getNextRowEleme
     it('executes child-record branch without null errors', () => {
         const rowCells = ganttObj.element.querySelectorAll('.e-rowcell');
         const editedCell = rowCells[0];
-        editedCell.classList.add('e-editedbatchcell');
+        editedCell.classList.add('e-editedcell');
         const secondRow = ganttObj.treeGrid.getRows()[1];
         secondRow.setAttribute('aria-rowindex', '2');
         const idCellSecondRow = secondRow.querySelector('.e-rowcell') as HTMLElement;
@@ -11700,4 +11701,127 @@ describe('1021511 Parent taskbar startDate calculation not considering the unsch
         }
     });
 });
+describe('Date format update dynamically', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Task 1',
+                        StartDate: new Date('04/02/2026'),
+                        EndDate: new Date('04/05/2026')
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate'
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' }
+                ],
+                dateFormat: 'M/d/yyyy',
+                height: '450px'
+            }, done);
+    });
+    it('should update date format dynamically', () => {
+        // Initial format
+        expect(
+            ganttObj.getFormatedDate(
+                ganttObj.flatData[0].ganttProperties.startDate
+            )
+        ).toBe('4/2/2026');
+        // Change date format dynamically
+        ganttObj.dateFormat = 'dd/MM/yyyy';
+        expect(ganttObj.dateFormat).toBe('dd/MM/yyyy');
+        // Verify formatted date
+        expect(
+            ganttObj.getFormatedDate(
+                ganttObj.flatData[0].ganttProperties.startDate
+            )
+        ).toBe('02/04/2026');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt daysPerWeek and daysPerMonth invalid value validation and for coverage', () => {
+    let ganttObj: Gantt;
+    let actionFailureArgs: string[] = [];
 
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            allowSelection: true,
+            dataSource: [
+                { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('2024-01-01'), Duration: 5 }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration'
+            },
+            daysPerWeek: null,
+            daysPerMonth: -5,
+            actionFailure: (args: any) => {
+                if (args.name === 'actionFailure') {
+                    actionFailureArgs.push(args.error[0]);
+                }
+            }
+        }, done);
+    });
+
+    it('should trigger actionFailure on initial load for invalid daysPerWeek and daysPerMonth', () => {
+        expect(actionFailureArgs).toBeDefined();
+        expect(actionFailureArgs[0]).toContain('daysPerWeek');
+        expect(actionFailureArgs[1]).toContain('daysPerMonth');
+        expect(ganttObj.daysPerWeek).toBe(5);
+        expect(ganttObj.daysPerMonth).toBe(20);
+    });
+
+    it('should trigger actionFailure on property change for invalid daysPerWeek and daysPerMonth', (done: Function) => {
+        const failureMessages: string[] = [];
+        const ganttObj2: Gantt = createGantt({
+            allowSelection: true,
+            dataSource: [
+                { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('2024-01-01'), Duration: 5 }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration'
+            }
+        }, () => {
+            ganttObj2.actionFailure = (args: any) => {
+                if (args.name === 'actionFailure' && args.error) {
+                    Object.keys(args.error).forEach((key: string) => {
+                        failureMessages.push(args.error[key]);
+                    });
+                    if (failureMessages.some((msg: string) => msg.includes('daysPerWeek')) &&
+                        failureMessages.some((msg: string) => msg.includes('daysPerMonth'))) {
+                        expect(failureMessages.some((msg: string) => msg.includes('daysPerWeek'))).toBe(true);
+                        expect(failureMessages.some((msg: string) => msg.includes('daysPerMonth'))).toBe(true);
+                        destroyGantt(ganttObj2);
+                        done();
+                    }
+                }
+            };
+            ganttObj2.setProperties({ daysPerWeek: 10, daysPerMonth: 32 });
+        });
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

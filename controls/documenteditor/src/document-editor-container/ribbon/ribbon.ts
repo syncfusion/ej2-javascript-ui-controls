@@ -1,5 +1,5 @@
 import { DocumentEditorContainer } from '../document-editor-container';
-import { getInstance, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { getInstance, L10n, ModuleDeclaration, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Ribbon as EJ2Ribbon, RibbonTabModel, RibbonGroupModel, RibbonItemModel, RibbonFileMenu, RibbonColorPicker, RibbonGallery, RibbonContextualTab, RibbonKeyTip, BackStageMenuModel, RibbonBackstage, RibbonContextualTabSettingsModel, RibbonCollectionModel } from '@syncfusion/ej2-ribbon';
 import { Dictionary, FileMenuItemType } from '../../document-editor/base/index';
 import { DocumentEditor } from '../../document-editor/document-editor';
@@ -81,6 +81,7 @@ export class Ribbon implements IToolbarHandler {
      * @private
      */
     public constructor(container: DocumentEditorContainer) {
+        initializeTelemetryFeature('Ribbon', 'DOCXEditor');
         this.container = container;
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
     }
@@ -158,7 +159,7 @@ export class Ribbon implements IToolbarHandler {
                 }
             }
         });
-
+        this.ribbon.isAngular = this.container.isModalDialog;
         // Check if backstage menu is configured
         if (this.backstageMenu) {
             EJ2Ribbon.Inject(RibbonBackstage);

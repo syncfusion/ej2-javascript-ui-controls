@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-menu>e-menu-items>e-menu-item>',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class MenuItemDirective extends ComplexBase<MenuItemDirective> {
@@ -23,38 +23,38 @@ export class MenuItemDirective extends ComplexBase<MenuItemDirective> {
      * Specifies the htmlAttributes property to support adding custom attributes to the menu items in the menu component.
      * @default null
      */
-    public htmlAttributes: any;
+    public declare htmlAttributes: any;
     /** 
      * Defines class/multiple classes separated by a space for the menu Item that is used to include an icon. 
      * Menu Item can include font icon and sprite image.
      * @default null
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Specifies the id for menu item.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the sub menu items that is the array of MenuItem model.
      * @default []
      */
-    public items: any;
+    public declare items: any;
     /** 
      * Specifies separator between the menu items. Separator are either horizontal or vertical lines used to group menu items.
      * @default false
      */
-    public separator: any;
+    public declare separator: any;
     /** 
      * Specifies text for menu item.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Specifies url for menu item that creates the anchor link to navigate to the url provided.
      * @default ''
      */
-    public url: any;
+    public declare url: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -70,6 +70,7 @@ export class MenuItemDirective extends ComplexBase<MenuItemDirective> {
  */
 @Directive({
     selector: 'ejs-menu>e-menu-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(MenuItemDirective)
     },

@@ -3302,16 +3302,6 @@ export interface ChartSettingsModel {
     enableScrollOnMultiAxis?: boolean;
 
     /**
-     * Allows to display chart series in accordance with member name in all chart area.
-     * > It is applicable only when `enableMultipleAxis` property is set to **true**.
-     * > The `showMemberSeries` property is deprecated and will no longer be used. Use `showPointColorByMembers` with  to achieve the same.
-     *
-     * @default false
-     * @deprecated
-     */
-    showMemberSeries?: boolean;
-
-    /**
      * Allows to display data points in different colors in multiple charts. The multiple charts are actually drawn as a result of the "n" of measures bound in the datasource.
      * > It is only applicable when the `enableMultipleAxis` property is enabled and the `multipleAxisMode` property is set to **Stacked**.
      *

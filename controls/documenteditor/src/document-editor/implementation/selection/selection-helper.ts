@@ -472,7 +472,7 @@ export class TextPosition {
         let lineLength: number = this.selection.getLineLength(lineWidget);
         const lineIndex: number = lineWidget.paragraph.childWidgets.indexOf(lineWidget);
         if (lineWidget.isLastLine()) {
-            if (!isNullOrUndefined(lineWidget.paragraph.bodyWidget.footNoteReference)) {
+            if (!isNullOrUndefined(lineWidget.paragraph.bodyWidget) && !isNullOrUndefined(lineWidget.paragraph.bodyWidget.footNoteReference)) {
                 lineLength = lineLength + lineWidget.paragraph.bodyWidget.footNoteReference.text.length;
             } else {
                 lineLength = lineLength + 1;
@@ -1518,6 +1518,31 @@ export class TextPosition {
             endPosition.setPositionParagraph(span.line, selection.getStartLineOffset(span.line));
         }
     }
+
+    public updateCurrentIndexOnSelection(currentIndex: string, isForward: boolean): string {
+        let isCheckBoxContentControl: boolean = !isNullOrUndefined(this.selection.currentContentControl)
+            && this.selection.currentContentControl.contentControlProperties.type === 'CheckBox';
+        if (isCheckBoxContentControl) {
+            let inlineObj: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+            let currentElement: ElementBox = inlineObj.element;
+            let previousElement: ElementBox = currentElement.previousNode;
+            if (isForward) {
+                if (currentElement instanceof ContentControl && currentElement.type == 0) {
+                    this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset - 1);
+                } else if (!isNullOrUndefined(previousElement) && previousElement instanceof ContentControl && previousElement.type == 0) {
+                    this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset - 2);
+                }
+            } else {
+                if (currentElement instanceof ContentControl && currentElement.type == 0) {
+                    this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 2);
+                } else if (!isNullOrUndefined(previousElement) && previousElement instanceof ContentControl && previousElement.type == 0) {
+                    this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
+                }
+            }
+            currentIndex = this.selection.start.getHierarchicalIndexInternal();
+        }
+        return currentIndex;
+    }
     /**
      * Validate if text position is in field forward
      *
@@ -1536,6 +1561,7 @@ export class TextPosition {
                 this.selection.end.setPositionParagraph(this.selection.end.currentWidget, this.owner.selectionModule.isForward ? this.selection.end.offset + 1 : this.selection.end.offset);
             }
         }
+        currentIndex = this.updateCurrentIndexOnSelection(currentIndex, this.owner.selectionModule.isForward);
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(currentIndex, selectionEndIndex)) {
             if (!isPositionMoved) {
                 textPosition.moveNextPosition(false);
@@ -1616,6 +1642,7 @@ export class TextPosition {
         }
 
         let selectionStartIndex: string = this.selection.start.getHierarchicalIndexInternal();
+        currentIndex = this.updateCurrentIndexOnSelection(currentIndex, this.owner.selectionModule.isForward);
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
             let indexInInline: number = 0;
             let inlineObj: ElementInfo = textPosition.currentWidget.getInline(textPosition.offset, indexInInline) as ElementInfo;

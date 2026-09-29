@@ -1,6 +1,6 @@
 // src/document-editor-container/helper/borders-helper.ts
 import { DocumentEditor, BorderSettings, BorderType, LineStyle } from '../../document-editor/index';
-import { L10n, createElement } from '@syncfusion/ej2-base';
+import { L10n, createElement, updateCSSText } from '@syncfusion/ej2-base';
 
 /**
  * Helper class for border operations in Document Editor
@@ -87,28 +87,28 @@ export class BordersHelper {
      */
     public static createBorderWidthOption(ulTag: HTMLElement, text: string, localObj: L10n): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block',
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items e-de-list-item-size'
         });
+        updateCSSText(liTag, 'display:block');
         ulTag.appendChild(liTag);
-
-        let innerHTML: string;
-        if (text === localObj.getConstant('No Border')) {
-            innerHTML = '<div>' + text + '</div>';
-        } else if (text === '1.5px') {
-            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:10px;border-bottom-width:' +
-                text + ';"></span></div>';
-        } else {
-            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' +
-                text + ';"></span></div>';
-        }
-
         const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu',
-            innerHTML: innerHTML
+            className: 'e-de-list-header-presetmenu'
         });
-        liTag.appendChild(liInnerDiv);
+        const contentDiv: HTMLElement = createElement('div');
+        contentDiv.textContent = text;
+        if (text !== localObj.getConstant('No Border')) {
+            const spanElement: HTMLElement = createElement('span', {
+                className: 'e-de-list-line e-de-border-width'
+            });
+            const cssText: string =
+                `margin-left:${text === '1.5px' ? '10px' : '20px'};` +
 
+                `border-bottom-width:${text};`;
+            updateCSSText(spanElement, cssText);
+            contentDiv.appendChild(spanElement);
+        }
+        liInnerDiv.appendChild(contentDiv);
+        liTag.appendChild(liInnerDiv);
         return liTag;
     }
 

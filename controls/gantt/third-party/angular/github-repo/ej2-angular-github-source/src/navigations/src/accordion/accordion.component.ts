@@ -20,44 +20,25 @@ export const twoWays: string[] = ['expandedIndices'];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childItems: new ContentChild(AccordionItemsDirective)
+        childItems: new ContentChild(AccordionItemsDirective),
+        headerTemplate: new ContentChild('headerTemplate'),
+        itemTemplate: new ContentChild('itemTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class AccordionComponent extends Accordion implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	clicked: any;
-	created: any;
-	destroyed: any;
-	expanded: any;
-	expanding: any;
-	public expandedIndicesChange: any;
-    public childItems: QueryList<AccordionItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare clicked: any;
+	declare created: any;
+	declare destroyed: any;
+	declare expanded: any;
+	declare expanding: any;
+	public declare expandedIndicesChange: any;
+    public declare childItems: QueryList<AccordionItemsDirective>;
     public tags: string[] = ['items'];
-    /** 
-     * Specifies the header title template option for accordion items.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
-    /** 
-     * Specifies the template option for accordion items.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -87,7 +68,9 @@ export class AccordionComponent extends Accordion implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(AccordionComponent.prototype, 'headerTemplate');
+Template()(AccordionComponent.prototype, 'itemTemplate');
 

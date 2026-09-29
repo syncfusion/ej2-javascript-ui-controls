@@ -20,24 +20,25 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childPaneSettings: new ContentChild(PanesDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class SplitterComponent extends Splitter implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeCollapse: any;
-	beforeExpand: any;
-	beforeSanitizeHtml: any;
-	collapsed: any;
-	created: any;
-	expanded: any;
-	resizeStart: any;
-	resizeStop: any;
-	public resizing: any;
-    public childPaneSettings: QueryList<PanesDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeCollapse: any;
+	declare beforeExpand: any;
+	declare beforeSanitizeHtml: any;
+	declare collapsed: any;
+	declare created: any;
+	declare expanded: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	public declare resizing: any;
+    public declare childPaneSettings: QueryList<PanesDirective>;
     public tags: string[] = ['paneSettings'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -68,7 +69,7 @@ export class SplitterComponent extends Splitter implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

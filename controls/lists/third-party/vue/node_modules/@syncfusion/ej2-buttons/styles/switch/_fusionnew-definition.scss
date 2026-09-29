@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/fusionnew' as *;
-@forward 'ej2-base/styles/definition/fusionnew';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $switch-wrapper-width: 50px !default;
 $switch-wrapper-height: 20px !default;
 $switch-inner-width: 100% !default;

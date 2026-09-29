@@ -20,14 +20,14 @@ let outputs: string[] = ['click'];
 @Directive({
     selector: 'e-buttons>e-dialogbutton',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class DialogButtonDirective extends ComplexBase<DialogButtonDirective> {
     public directivePropList: any;
-	public click: any;
+	public declare click: any;
 
 
     /** 
@@ -37,16 +37,16 @@ export class DialogButtonDirective extends ComplexBase<DialogButtonDirective> {
      * @asptype string
      * @blazortype string
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the button component properties to render the dialog buttons.
      */
-    public buttonModel: any;
+    public declare buttonModel: any;
     /** 
      * Specifies the flat appearance of the dialog buttons
      * @default true
      */
-    public isFlat: any;
+    public declare isFlat: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -62,6 +62,7 @@ export class DialogButtonDirective extends ComplexBase<DialogButtonDirective> {
  */
 @Directive({
     selector: 'ejs-dialog>e-buttons',
+    standalone: true,
     queries: {
         children: new ContentChildren(DialogButtonDirective)
     },

@@ -7,7 +7,7 @@ import { Column, ColumnModel } from '../models/column';
 import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
     FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel, ResizeSettingsModel,
-    DomVirtualizationSettingsModel
+    DomVirtualizationSettingsModel, AdvancedFilterSettingsModel, FormulaSettingsModel
 } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
@@ -17,9 +17,10 @@ import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, Com
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets, RowSelectable, PinRow, SetRowHeight } from './type';
-import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
+import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode, EmptyRecordMode } from './enum';
 import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
+import { Formula, FormulaValue } from '../actions/formula';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
 import { DropDownListModel, MultiSelectModel, ComboBoxModel } from '@syncfusion/ej2-dropdowns';
@@ -27,7 +28,7 @@ import { NumericTextBoxModel, MaskedTextBoxModel, TextBoxModel } from '@syncfusi
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage, PdfStringFormat, PdfGridRow } from '@syncfusion/ej2-pdf-export';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage, PdfStringFormat, PdfGridRow, PdfHorizontalOverflowType } from '@syncfusion/ej2-pdf-export';
 import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
@@ -36,6 +37,7 @@ import {
 } from './enum';
 import { FlMenuOptrUI } from '../renderer/filter-menu-operator';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
+import { ColumnsModel, QueryBuilder, RuleModel, Validation as QueryBuilderValidation } from '@syncfusion/ej2-querybuilder';
 import { Render } from '../renderer/render';
 import { DetailRow } from '../actions/detail-row';
 import { Print } from '../actions/print';
@@ -47,6 +49,7 @@ import { Scroll } from '../actions/scroll';
 import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
+import { AdvancedFilter } from '../actions/advanced-filter';
 import { Reorder } from '../actions/reorder';
 import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
@@ -62,6 +65,7 @@ export interface IGrid extends Component<HTMLElement> {
     //public properties
     currentViewData?: Object[];
     currentAction?: ActionArgs;
+
     /**
      * @hidden
      * Specifies whether the inline edit form widgets are destroyed or not.
@@ -323,6 +327,20 @@ export interface IGrid extends Component<HTMLElement> {
     filterSettings?: FilterSettingsModel;
 
     /**
+     * Specifies whether the advanced filtering is enable or not.
+     *
+     * @default null
+     */
+    allowAdvancedFiltering?: boolean;
+
+    /**
+     * Specifies the advancedFilterSettings for Grid.
+     *
+     * @default {}
+     */
+    advancedFilterSettings?: AdvancedFilterSettingsModel;
+
+    /**
      * Specifies whether the grouping is enable or not.
      *
      * @default null
@@ -349,6 +367,13 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     autoFit?: boolean;
+
+    /**
+     * Formula settings configuration.
+     *
+     * @default []
+     */
+    formulaSettings?: FormulaSettingsModel;
 
     /**
      * Specifies the groupSettings for Grid.
@@ -438,6 +463,14 @@ export interface IGrid extends Component<HTMLElement> {
     emptyRecordTemplate?: string | Function;
 
     /**
+     * Specifies the display mode for empty records. Can be 'Normal' (default) or 'Sticky'.
+     * When set to 'Sticky', the empty message is displayed as a fixed overlay instead of a table row.
+     *
+     * @default 'Normal'
+     */
+    emptyRecordMode?: EmptyRecordMode;
+
+    /**
      * Specifies detailTemplate
      */
     detailTemplate?: string | Function;
@@ -488,6 +521,20 @@ export interface IGrid extends Component<HTMLElement> {
     rowHeight?: number;
 
     /**
+     * Defines the row offset height for Grid rows.
+     *
+     * @default null
+     */
+    rowOffsetHeight?: number;
+
+    /**
+     * Defines the height of Grid header rows.
+     *
+     * @default null
+     */
+    headerRowHeight?: number;
+
+    /**
      * Defines the height of Grid footer rows.
      *
      * @default null
@@ -514,6 +561,13 @@ export interface IGrid extends Component<HTMLElement> {
      * @default false
      */
     isVirtualAdaptive?: boolean;
+
+    /**
+     * @hidden
+     * suspend formula refresh operations.
+     * @default false
+     */
+    isFormulaRefreshSuspended?: boolean;
 
     /**
      * @hidden
@@ -651,6 +705,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     editModule?: Edit;
 
+    formulaModule?: Formula;
+
     selectionModule?: Selection;
 
     aggregateModule?: Aggregate;
@@ -701,6 +757,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     pinnedTopRecords?: Object[];
 
+    pinnedDataCount?: number;
+
     pinnedTopRowKeys?: { [key: number]: boolean };
 
     pinnedRowIndexes?: { [key: number]: {pinnedIndex: number, contentIndex: number} };
@@ -734,6 +792,8 @@ export interface IGrid extends Component<HTMLElement> {
     clipboardModule?: Clipboard;
 
     filterModule?: Filter;
+
+    advancedFilterModule?: AdvancedFilter;
 
     reorderModule?: Reorder;
 
@@ -818,6 +878,17 @@ export interface IGrid extends Component<HTMLElement> {
     getSelectedRowIndexes?(): number[];
     getSelectedRowCellIndexes(): ISelectedCell[];
     getCurrentViewRecords(): Object[];
+    getCellFormula?(primaryKeyValue: string | number, field: string): string;
+    setCellFormula?(primaryKeyValue: string | number, field: string, formula: string): void;
+    getFormulaValue?(primaryKeyValue: string | number, field: string): FormulaValue | undefined;
+    refreshFormulas?(): void;
+    suspendFormulaRefresh?(): void;
+    resumeFormulaRefresh?(): void;
+    refreshFormula?(rowIndex: number): void;
+    getFormulas(): FormulaDefinitionModel[];
+    hasFormula?(primaryKeyValue: number, field: string): boolean;
+    addFormula?(name: string, handler: Function): void;
+    removeFormula?(name: string): void;
     selectRows?(indexes: number[]): void;
     clearSelection?(): void;
     clearRowSelection?(): void;
@@ -886,6 +957,7 @@ export interface IGrid extends Component<HTMLElement> {
     refreshReactColumnTemplateByUid?(columnUid: string, renderTemplates?: boolean): void;
     refreshReactHeaderTemplateByUid?(columnUid: string): void;
     refreshGroupCaptionFooterTemplate?(): void;
+    refreshColumnTemplates?(): void;
     getAllDataRows?(includeBatch: boolean): Element[];
     getAllMovableDataRows?(includeBatch: boolean): Element[];
     getAllFrozenDataRows?(includeBatch: boolean): Element[];
@@ -952,6 +1024,8 @@ export interface IGrid extends Component<HTMLElement> {
     getRowHeight?(): number;
     setCellValue(key: string | number, field: string, value: string | number | boolean | Date | null): void;
     setRowData(key: string | number, rowData?: Object): void;
+    saveBulkChanges(changedData: Object, rowData?: Object[], callBack?: Function): void;
+    saveBulkChangesAsync(changedData: Object, rowData?: Object[]): Promise<Object | void>;
     getState?(): Object;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     destroyTemplate?(templateName: string[], index?: any, callback?: Function): void;
@@ -3056,6 +3130,8 @@ export interface PdfExportProperties {
     query?: Query;
     /** Exports multiple grid into the pdf document */
     multipleExport?: MultiplePdfExport;
+    /** Defines the horizontal overflow type for the pdf grid */
+    horizontalOverflowType?: PdfHorizontalOverflowType;
 }
 
 export interface PdfTheme {
@@ -3529,4 +3605,136 @@ export interface CellFocusEventArgs {
     cellType?: string;
     /** Defines the original triggering event. */
     event?: Event | KeyboardEvent;
+}
+
+/**
+ * @hidden
+ */
+export type Validation = QueryBuilderValidation;
+
+/**
+ * Defines the column configuration for QueryBuilder in Advanced Filter.
+ * Extends ColumnsModel to include validation and data source information.
+ * @hidden
+ */
+export interface QueryBuilderColumnDefinition extends ColumnsModel {
+    /** Specifies the field name of the column. */
+    field: string;
+    /** Specifies the display label for the column. */
+    label: string;
+    /** Specifies the data type of the column. */
+    type: string;
+    /** Specifies the operators available for the column. */
+    operators: ColumnsModel['operators'];
+    /** Specifies the display format for the column values. */
+    format?: string;
+    /** Specifies the data source for the column. */
+    dataSource?: unknown;
+    /** Specifies the field mappings for the data source. */
+    fields?: { value: string; text: string };
+    /** Specifies the validation rules for the column. */
+    validation?: Validation;
+}
+
+/**
+ * Defines the button configuration for Advanced Filter dialog.
+ * @hidden
+ */
+export interface DialogButtonDefinition {
+    /** Specifies the click event handler for the button. */
+    click: () => void;
+    /** Specifies the button model configuration. */
+    buttonModel: ButtonModel;
+}
+
+/**
+ * Defines a single filter column configuration for Advanced Filter.
+ * @hidden
+ */
+export type AdvancedFilterGridFilterColumn = {
+    /** Specifies the field name of the column. */
+    field?: string;
+    /** Specifies the filter operator. */
+    operator?: string;
+    /** Specifies the filter value. */
+    value?: RuleModel['value'];
+};
+
+/**
+ * Defines the filter settings configuration for Advanced Filter in Grid.
+ * @hidden
+ */
+export type AdvancedFilterGridFilterSettings = {
+    /** Specifies the array of filter columns. */
+    columns?: AdvancedFilterGridFilterColumn[];
+};
+
+/**
+ * Defines the event arguments for opening the Advanced Filter dialog.
+ */
+export interface AdvancedFilterOpenEventArgs {
+    /** Defines the request type. */
+    requestType: 'advancedFilterOpen';
+    /** Defines the Advanced Filter dialog instance. */
+    dialog: Dialog;
+    /** Defines the QueryBuilder instance used by the dialog. */
+    queryBuilder: QueryBuilder | null;
+}
+
+/**
+ * Defines the event arguments for closing the Advanced Filter dialog.
+ */
+export interface AdvancedFilterCloseEventArgs {
+    /** Defines the request type. */
+    requestType: 'advancedFilterClose';
+    /** Defines the Advanced Filter dialog instance. */
+    dialog: Dialog;
+    /** Defines the QueryBuilder instance used by the dialog. */
+    queryBuilder: QueryBuilder | null;
+    /** Defines whether the close action should be cancelled. */
+    cancel?: boolean;
+}
+
+/**
+ * Defines the event arguments raised before applying or clearing an Advanced Filter.
+ * Setting cancel to true prevents the filtering or clearing operation.
+ */
+export interface AdvancedFilterBeginArgs {
+    /** Defines the Advanced Filter operation. */
+    requestType: 'filtering' | 'clear-filtering';
+    /** Defines the event type. */
+    type: string;
+    /** Defines whether the Advanced Filter operation is canceled. */
+    cancel: boolean;
+    /** Defines the filter rule being applied. */
+    rule?: RuleModel;
+    /** Defines the Advanced Filter dialog instance. */
+    dialog: Dialog | null;
+    /** Defines the QueryBuilder instance. */
+    queryBuilder: QueryBuilder | null;
+}
+
+/**
+ * Defines the event arguments raised after applying or clearing an Advanced Filter.
+ * Setting cancel to true keeps the Advanced Filter dialog open after completion.
+ */
+export interface AdvancedFilterCompleteEventArgs {
+    /** Defines the Advanced Filter operation. */
+    requestType: 'filtering' | 'clear-filtering';
+    /** Defines the event type. */
+    type: string;
+    /** Defines whether closing the Advanced Filter dialog is canceled. */
+    cancel: boolean;
+    /** Defines the filter rule that was applied. */
+    rule?: RuleModel;
+}
+
+/**
+ * Represents a formula definition model containing formula and metadata.
+ */
+export interface FormulaDefinitionModel {
+    rowIndex: number | string;
+    field: string;
+    formula: string;
+    value?: FormulaValue;
 }

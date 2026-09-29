@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/material3' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/material3-definition' as *;
-@forward 'ej2-base/styles/definition/material3';
-@forward '../drop-down-button/material3-definition';
 
 //layout variables
 $split-btn-zindex: 2 !default;
@@ -64,6 +62,8 @@ $split-btn-vertical-padding-right: 10px !default;
 $split-btn-vertical-icon-top-padding: 4px !default;
 $drop-down-btn-vertical-padding-bottom: 4px !default;
 $drop-down-btn-vertical-padding-top: 4px !default;
+$drop-dbtn-icon-font-size: $text-base !default;
+$drop-dbtn-icon-font-size-bigger: $text-lg !default;
 $split-btn-top-icon-padding-bottom: 12px !default;
 $split-btn-top-icon-padding-top: 12px !default;
 $split-auto-width: auto !default;

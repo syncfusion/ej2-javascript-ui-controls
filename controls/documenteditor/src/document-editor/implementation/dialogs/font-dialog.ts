@@ -133,7 +133,8 @@ export class FontDialog {
      * @returns {void}
      */
     public initFontDialog(locale: L10n, isRtl?: boolean): void {
-
+        let fontDialogDiv = this;
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         const id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { className: 'e-de-font-dlg' });
         const fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
@@ -196,9 +197,16 @@ export class FontDialog {
         this.target.appendChild(this.effectsProperties);
         const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.colorPicker = new ColorPicker({
-            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale, enableOpacity: false, mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , cssClass : cssClass , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
+            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale, 
+            beforeOpen: function (this: ColorPicker, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const colorPickerEl: HTMLElement = this.element as HTMLElement;
+                    fontDialogDiv.documentHelper.owner.movePopupToCdkOverlay(colorPickerEl, popupEl);
+                }
+            },                        
+            enableOpacity: false, mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , cssClass : cssClass , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
-      
         this.colorPicker.appendTo(this.fontColorElement);
         this.strikethroughBox = new CheckBox({
             change: this.singleStrikeUpdate,
@@ -263,8 +271,10 @@ export class FontDialog {
         this.sizeSubDiv2.appendChild(this.underlineElement);
         this.getSizeDiv.appendChild(this.sizeSubDiv2);
         this.fontSizeText = new ComboBox({ change: this.fontSizeUpdate, allowCustom: true, showClearButton:false, enableRtl: isRtl, floatLabelType: 'Always', placeholder: sizeLabel,htmlAttributes:{'aria-labelledby':sizeLabel} });
+        this.fontSizeText.isAngular = this.documentHelper.owner.isModalDialog;
         this.fontSizeText.appendTo(this.getFontSize);
         this.underlineDrop = new DropDownList({ change: this.underlineUpdate, enableRtl: isRtl, floatLabelType : 'Always', placeholder: html,htmlAttributes:{'aria-labelledby':html}  });
+        this.underlineDrop.isAngular = this.documentHelper.owner.isModalDialog;
         this.underlineDrop.appendTo(this.underlineElement);
         return this.getSizeDiv;
     }
@@ -292,9 +302,11 @@ export class FontDialog {
         this.fontSubDiv2.appendChild(this.fontStyleValues);
         this.fontDiv.appendChild(this.fontSubDiv2);
         this.fontNameList = new ComboBox({ change: this.fontFamilyUpdate, enableRtl: isRtl, floatLabelType: 'Always', placeholder: fontLabel});
+        this.fontNameList.isAngular = this.documentHelper.owner.isModalDialog;
         this.fontNameList.showClearButton = false;
         this.fontNameList.appendTo(this.fontNameValues);
         this.fontStyleText = new DropDownList({ change: this.fontStyleUpdate, enableRtl: isRtl, floatLabelType: 'Always', placeholder: fontStyleLabel });
+        this.fontStyleText.isAngular = this.documentHelper.owner.isModalDialog;
         this.fontStyleText.appendTo(this.fontStyleValues);
         return this.fontDiv;
     }

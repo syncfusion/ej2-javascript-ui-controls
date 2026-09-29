@@ -4,24 +4,21 @@ import { ProgressBarAnnotationDirective, ProgressBarAnnotationsDirective } from 
 import { RangeColorDirective, RangeColorsDirective } from './rangecolors.directive';
 import { ProgressBarComponent } from './progressbar.component';
 
+const PROGRESSBAR_DIRECTIVES = [
+    ProgressBarComponent,
+        ProgressBarAnnotationDirective,
+        ProgressBarAnnotationsDirective,
+        RangeColorDirective,
+        RangeColorsDirective
+];
+
 /**
  * NgModule definition for the ProgressBar component.
+ * Re-exports standalone ProgressBar component and directives so existing apps can keep using:
+ * `imports: [ProgressBarModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        ProgressBarComponent,
-        ProgressBarAnnotationDirective,
-        ProgressBarAnnotationsDirective,
-        RangeColorDirective,
-        RangeColorsDirective
-    ],
-    exports: [
-        ProgressBarComponent,
-        ProgressBarAnnotationDirective,
-        ProgressBarAnnotationsDirective,
-        RangeColorDirective,
-        RangeColorsDirective
-    ]
+    imports: [CommonModule, ...PROGRESSBAR_DIRECTIVES],
+    exports: [...PROGRESSBAR_DIRECTIVES]
 })
 export class ProgressBarModule { }

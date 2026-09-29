@@ -1155,6 +1155,9 @@ export class TableCommand {
         } else {
             this.deleteSelectedRows(e, minMaxIndex, allCells, colIndex);
         }
+        if (this.curTable.querySelectorAll('th,td').length === 0) {
+            this.removeEntireTable(e);
+        }
 
         this.executeCallback(e);
     }

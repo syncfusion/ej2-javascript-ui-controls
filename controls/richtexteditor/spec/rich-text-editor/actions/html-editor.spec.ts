@@ -1,7 +1,8 @@
-import { RichTextEditor } from '../../../src/rich-text-editor';
-import { renderRTE, destroy, setCursorPoint, clickImage } from '../render.spec';
+import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
+import { renderRTE, destroy, setCursorPoint, clickImage, dispatchEvent } from '../render.spec';
 import { BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, ENTERKEY_EVENT_INIT, TAB_KEY_EVENT_INIT } from '../../constant.spec';
-import { NodeSelection } from '../../../src';
+import { NodeSelection } from '../../../src/selection/selection';
+import { Browser } from '@syncfusion/ej2-base';
 
 const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
 describe('Html-Editor specs', ()=> {
@@ -304,6 +305,98 @@ describe('Html-Editor specs', ()=> {
         });
     });
 
+
+    describe('EJ2-18212 - RTE - Edited changes are not reflect using getHTML method through console window.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something'
+            });
+            rteObj.saveInterval = 10;
+            rteObj.dataBind();
+        });
+        it("AutoSave the value in interval time", (done) => {
+            rteObj.focusIn();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
+                (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
+                expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
+                setTimeout(() => {
+                    expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
+                    done();
+                }, 400);
+            }, 400);
+        });
+        it(" Clear the setInterval at component blur", (done) => {
+            rteObj.focusOut();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(false);
+                done();
+            }, 110);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-20463 - Change event is triggered on clicking into html source code view in Edge browser', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let triggerChange: boolean = false;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<p id="rte">RichTextEditor</p>`,
+                enableHtmlEncode: true,
+                change: () => {
+                    triggerChange = true;
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+        });
+        it(' change event not trigger while click on source code without edit ', (done) => {
+            rteObj.focusIn();
+            expect(triggerChange).toBe(false);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            expect(triggerChange).toBe(false);
+            setTimeout(() => {
+                expect(triggerChange).toBe(false);
+                done();
+            }, 110);
+        });
+
+        it(' change event trigger while click on source code with edit ', (done) => {
+            rteObj.focusIn();
+            expect(triggerChange).toBe(false);
+            (rteObj as any).inputElement.innerHTML = `<p id="rte">RichTextEditor component</p>`;
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            expect(triggerChange).toBe(true);
+            triggerChange = false;
+            setTimeout(() => {
+                expect(triggerChange).toBe(false);
+                done();
+            }, 110);
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
     describe('1021173: Backspace near HR inside list item', () => {
         let rteObj: RichTextEditor;
         const rteValue: string = `
@@ -340,4 +433,440 @@ describe('Html-Editor specs', ()=> {
             }, 100);
         });
     });
+    describe('Bug 986390: Bullet Point Not Removed Properly When Using Backspace on Pasted Text in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ul><li><div>Line 1</div></li><li><div class="startNode">Line 2</div></li><li><div>Line 3</div></li></ul>',
+            });
+        });
+        it(' pressing backspace in start of list, should remove the entire list', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode').firstChild as Element;
+            setCursorPoint(startNode, 0);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            expect(rteObj.inputElement.querySelectorAll('li').length).toBe(2);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+     describe('Bug 992064: Editor gets broken when pressing the backspace key after a link in the RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: `text
+                <a
+                  contenteditable="false"
+                  href="https://google.com"
+                  title=""
+                  target="_blank"
+                  style="word-break: normal"
+                  data-tracking-enabled="false"
+                  data-tracking-tag=""
+                  >hyperlink</a
+                >
+                text`,
+                enterKey: 'BR',
+                shiftEnterKey: 'BR',
+                });
+            });
+            it(' The editor should not be deleted when Backspace is pressed immediately following a link', () => {
+                const startNode: Element = rteObj.inputElement.lastChild as Element;
+                setCursorPoint(startNode, 0);
+                const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+                rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+                expect(rteObj.inputElement).not.toBe(null);
+                expect(rteObj.inputElement.textContent.length).not.toBe(0);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
+    describe('Bug 1011397: Backspace removes inserted video/image after pressing Enter multiple times, even when the media is not selected.', () => {
+            let rteObj: RichTextEditor;
+            const value: string = `<div style="display:block;"> <p style="margin-right:10px"> <span class="e-video-wrap" contenteditable="false" title="Screen Recording 2026-01-27 at 6.44.55PM.mov"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1193px; min-height: 0px;"><source src="blob:http://127.0.0.1:5500/404b6da5-5bec-484c-876c-b1b56c70dbe9" type="video/mp4"></video></span> </p><p><br></p><p><br></p><p style="margin-right: 10px;">The custom command "insert special character" is configured as the last item of the toolbar. Click on the command and choose the special character you want to include from the popup. </p> </div>`;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: value
+                });
+            });
+            it('video element should remain after pressing backspace 4 times from start of text content', (done: DoneFn) => {
+                rteObj.focusIn();
+                const targetParagraph: HTMLElement = Array.from(rteObj.inputElement.querySelectorAll('p')).filter((p: HTMLElement) => {
+                    return p.textContent && p.textContent.indexOf('The custom command "insert special character"') > -1;
+                })[0] as HTMLElement;
+                setCursorPoint(targetParagraph.firstChild as Element, 0);
+                const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                for (let i: number = 0; i < 4; i++) {
+                    rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+                    rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+                }
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('video')).not.toBe(null);
+                    done();
+                }, 100);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
+    describe('Bug 1026350: Cursor Moves Incorrectly and Clears Mention Chip on Backspace in iOS', () => {
+            let rteObj: RichTextEditor;
+            let iosUA: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1';
+            let defaultUA: string = navigator.userAgent;
+            const mentionHtml: string = '<p><span contenteditable="false" class="e-mention-chip"><a href="mailto:camden@gmail.com" title="camden@gmail.com">@Camden Kate</a></span>\u00A0</p>';
+            beforeAll(() => {
+                Browser.userAgent = iosUA;
+                rteObj = renderRTE({
+                    value: mentionHtml
+                });
+            });
+            afterAll(() => {
+                destroy(rteObj);
+                Browser.userAgent = defaultUA;
+            });
+            it('should replace the trailing nbsp with a zero-width space when backspace is pressed at the end of the mention element', (done: DoneFn) => {
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                const paragraph: HTMLElement = rteObj.inputElement.querySelector('p');
+                rteObj.formatter.editorManager.nodeSelection.setCursorPoint(
+                    document, paragraph.childNodes[1] as Element, 1);
+                expect(rteObj.userAgentData.getPlatform()).toBe('iOS');
+                const range: Range = rteObj.formatter.editorManager.nodeSelection.getRange(document);
+                const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+                rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+                setTimeout(() => {
+                    const mentionChip: HTMLElement = rteObj.inputElement.querySelector('span.e-mention-chip');
+                    expect(mentionChip).not.toBeNull();
+                    // The trailing nbsp should have been replaced with a zero-width space (\u200B)
+                    const paragraphAfter: HTMLElement = rteObj.inputElement.querySelector('p');
+                    const lastChild: Node = paragraphAfter.lastChild;
+                    expect(lastChild.nodeType).toBe(Node.TEXT_NODE);
+                    expect(lastChild.nodeValue).toBe('\u200B');
+                    expect(lastChild.textContent.length).toBe(1);
+                    done();
+                }, 100);
+            });
+        });
+    describe('971893 - Backspacing the text elements inside the div does not work properly in RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"> <div><div>Has the claimant previously been absent due to back problems?</div></div> <div><div>Were aware of any pre-existing back problems with the claimant?</div></div> <div><div class="focusNode">Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div> <div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div> </div>`,
+            });
+        });
+        it('Rich Text Editor works properly when backspacing text inside nested <div> elements', (done) => {
+            var startNode = rteObj.inputElement.querySelector(".focusNode").childNodes[0];
+            setCursorPoint((startNode as Element), 0);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, code:'Backspace', key: 'backspace', action: 'backspace', keyCode: 8, stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.target = rteObj.inputElement;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.innerHTML === '<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><div><div>Has the claimant previously been absent due to back problems?</div></div><div><div>Were aware of any pre-existing back problems with the claimant?Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div><div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div></div>').toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 969276: Backspace infront of the paragraph with List before is not working properly', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<ol> <li><br></li> </ol> <p id='testing'>Rich Text Editor</p> <p>Document Editor</p>`,
+            });
+        });
+        it(' pressing backspace in front of the paragraph', () => {
+            const element = document.getElementById("testing");
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.setStart(element.firstChild, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            element.focus();
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('937051 - Text format gets collapsed when we press backspace within the list elements in the RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<ol><li>asdfasdfas<br>fasdfa<br>asdfasdf<br>asdfasdf<br>asdsda<br></li></ol>`,
+            });
+        });
+        it('Should handle backspace correctly in various list positions', (done) => {
+            var startNode = rteObj.inputElement.querySelector("OL li").childNodes[4];
+            setCursorPoint((startNode as Element), 0);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', action: 'backspace', keyCode: 8, stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.target = rteObj.inputElement;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.childNodes.length === 1).toBe(true);
+            rteObj.value = `<ol><li>asdfasdfas<br>fasdfa<br><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="e-list-elem">asdfasdf</span></span></em></strong><br>asdfasdf<br>asdsda<br></li></ol>`;
+            rteObj.dataBind();
+            startNode = rteObj.inputElement.querySelector("OL li .e-list-elem").childNodes[0];
+            setCursorPoint((startNode as Element), 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(rteObj.inputElement.childNodes.length === 1).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('960444 - Font color retention when pressing Backspace after Enter', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
+
+        beforeAll(() => {
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            rteObj = renderRTE({
+                height: '200px',
+                enterKey: 'P',
+                value: ''
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should maintain font color when pressing Backspace after pressing Enter twice', (done) => {
+            rteObj.value = '<p><span style="color: rgb(255, 0, 0);">Red text</span></p>';
+            rteObj.inputElement.innerHTML = '<p><span style="color: rgb(255, 0, 0);">Red text</span></p>';
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const startNode: any = rteObj.inputElement.querySelector('span').childNodes[0];
+            const sel: void = new NodeSelection().setCursorPoint(
+                document, startNode, startNode.textContent.length);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            const paragraphs = rteObj.inputElement.querySelectorAll('p');
+            expect(paragraphs.length).toBe(3);
+            (<any>rteObj).keyDown({
+                ...keyboardEventArgs,
+                charCode: 8,
+                keyCode: 8,
+                which: 8,
+                code: 'Backspace'
+            });
+            setTimeout(() => {
+                const currentParagraph = rteObj.inputElement.querySelectorAll('p')[1];
+                const spanInCurrentParagraph: HTMLElement = currentParagraph.querySelector('span[style*="color"]');
+                // Verify color formatting is preserved
+                expect(spanInCurrentParagraph).not.toBeNull();
+                expect(spanInCurrentParagraph.style.color).toBe('rgb(255, 0, 0)');
+                // Check HTML structure matches expected format with color preserved
+                expect(rteObj.inputElement.innerHTML).toContain('<p><span style="color: rgb(255, 0, 0);">Red text</span></p>');
+                expect(rteObj.inputElement.innerHTML).toContain('<p><span style="color: rgb(255, 0, 0);">');
+                done();
+            }, 50);
+        });
+
+        it('should maintain complex formatting when pressing Backspace after Enter', (done) => {
+            // Set initial content with multiple formatting styles
+            rteObj.value = '<p><span style="color: rgb(255, 0, 0);"><strong><em>Formatted text</em></strong></span></p>';
+            rteObj.inputElement.innerHTML = '<p><span style="color: rgb(255, 0, 0);"><strong><em>Formatted text</em></strong></span></p>';
+            rteObj.dataBind();
+            rteObj.focusIn();
+            // Get the innermost text node
+            const spanElement = rteObj.inputElement.querySelector('span');
+            const startNode: any = rteObj.inputElement.querySelector('em').childNodes[0];
+            // Place cursor at the end of the text
+            const sel: void = new NodeSelection().setCursorPoint(
+                document, startNode, startNode.textContent.length);
+            // Press Enter twice
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            // Press Backspace
+            (<any>rteObj).keyDown({
+                ...keyboardEventArgs,
+                charCode: 8,
+                keyCode: 8,
+                which: 8,
+                code: 'Backspace'
+            });
+            setTimeout(() => {
+                // Check if all formatting styles are preserved
+                const currentParagraph = rteObj.inputElement.querySelectorAll('p')[1];
+                const colorSpan: HTMLElement = currentParagraph.querySelector('span[style*="color"]');
+                const strongTag = currentParagraph.querySelector('strong');
+                const emTag = currentParagraph.querySelector('em');
+                expect(colorSpan).not.toBeNull();
+                expect(colorSpan.style.color).toBe('rgb(255, 0, 0)');
+                expect(strongTag).not.toBeNull();
+                expect(emTag).not.toBeNull();
+                done();
+            }, 50);
+        });
+    });
+    describe('933152 - The Div element is removed from the content when pressing the Enter key followed by the Backspace key', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><br/><br/></p><div id="user_email_signature_content"><p style="line-height: 1.5;"><span style="font-size: 12pt;"><span style="font-family: Trebuchet MS;">Testing</span></span></p></div>`,
+            });
+        });
+        it('Press Enter and Backspace before text in div', (done: Function) => {
+            rteObj.focusIn();
+            let targetElement = rteObj.element.querySelector('#user_email_signature_content p span span') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, targetElement, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+            setTimeout(() => {
+                rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT));
+                rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT));
+                setTimeout(() => {
+                    expect(rteObj.value).toBe('<p><br><br></p><div id="user_email_signature_content"><p style="line-height: 1.5;"><span style="font-size: 12pt;"><span style="font-family: Trebuchet MS;">Testing</span></span></p></div>');
+                    done();
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+     describe('920512-DIV element removed when pressing backspace at the start of the DIV element', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            code: 'Backspace',
+            preventDefault: function () { },
+            ctrlKey: false,
+            keyCode: 8,
+            key: 'backspace',
+            stopPropagation: function () { },
+            shiftKey: false,
+            which: 8
+        };
+    
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', 'Bold']
+                },
+                value: '<p><br/></p><div class="signatureDiv"><p>Regards,</p><p>Syncfusion</p></div><p><br/></p>',
+            });
+            rteEle = rteObj.element;
+        });
+    
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    
+        it('Backspace before the DIV element', () => {
+            const editPanel = rteObj.contentModule.getEditPanel();
+            const regardsElement = editPanel.querySelector('.signatureDiv p');
+            if (regardsElement) {
+                rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, regardsElement, 0);
+            }
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerHTML).toBe('<div class="signatureDiv"><p>Regards,</p><p>Syncfusion</p></div><p><br></p>');
+            const toolbarItems =rteObj.element.querySelectorAll(".e-toolbar-item");
+            (toolbarItems[0] as any).click();
+            (toolbarItems[1] as any).click();
+            expect(rteObj.inputElement.innerHTML).toBe('<div class="signatureDiv"><p>Regards,</p><p>Syncfusion</p></div><p><br></p>');
+        });
+    });
+    describe('902049 - After moving the new line, the cursor is not visible when it reaches the bottom of the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        const divElement = document.createElement('div');
+        divElement.style.overflowY='scroll';
+        divElement.style.height='60px';
+        var innerHTML = `<p><br></p><p><br></p><p><br></p><p><br></p><p id='one'><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+            });
+            divElement.appendChild(rteObj.element);
+            document.body.appendChild(divElement);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            divElement.remove();
+        });
+        it('press enter 5 times', (done: DoneFn) => {
+            rteObj.dataBind();
+            let keyBoardEvent: any = { 
+                type: 'keydown', 
+                preventDefault: function () { }, 
+                ctrlKey: false, 
+                key: 'enter', 
+                stopPropagation: function () { }, 
+                shiftKey: false, 
+                which: 13,
+                keyCode: 13,
+                action: 'enter'
+            };
+            let para = document.querySelector("#one");
+            setCursorPoint(para, 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.textContent ==='').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });
+    describe('1014752: Deleting Horizontal Line Breaks List Rendering and Inserts Unwanted br Tags', () => {
+        let rteObj: RichTextEditor;
+        const rteValue: string = `
+        <h1>Welcome to the Syncfusion Rich Text Editor</h1>
+        <p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+        <h2>Do you know the key features of the editor?</h2>
+        <hr/>
+        <ul>
+        <li><hr/><hr/>
+            Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.
+        </li>
+        <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li>
+        </ul>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                    height: 400,
+                    value: rteValue
+                });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Delete hr element in list without replacing br tag', (done: DoneFn) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const hrElement: HTMLElement | null = rteObj.inputElement.querySelector('ul li hr') as HTMLElement;
+            setCursorPoint(hrElement, 0);
+            const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            const deleteKeyUp: KeyboardEvent = new KeyboardEvent('keyup', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDown);
+            rteObj.inputElement.dispatchEvent(deleteKeyUp);
+            setTimeout(() => {
+                const listItem: HTMLElement = rteObj.inputElement.querySelector('ul li');
+                expect(!(listItem.querySelector('hr') && listItem.querySelector('br'))).toBe(true);
+                done();
+            }, 100);
+        });
+    });

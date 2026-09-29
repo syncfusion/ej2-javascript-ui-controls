@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-indicators>e-indicator',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class IndicatorDirective extends ComplexBase<IndicatorDirective> {
@@ -40,11 +40,11 @@ export class IndicatorDirective extends ComplexBase<IndicatorDirective> {
      * * 'BollingerBands' - Predicts the trend using the Bollinger Bands approach.
      * @default 'Sma'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Options to improve accessibility for technical indicator elements.
      */
-    public accessibility: any;
+    public declare accessibility: any;
     /** 
      * Options for customizing the animation of the series. 
      * By default, animation is enabled with a duration of 1000 milliseconds (about 1 second). It can be disabled by setting enable to `false`. 
@@ -53,217 +53,217 @@ export class IndicatorDirective extends ComplexBase<IndicatorDirective> {
      * * duration: The duration of the animation in milliseconds. 
      * * delay: The delay before the animation starts, in milliseconds.
      */
-    public animation: any;
+    public declare animation: any;
     /** 
      * Configures the settings for customizing the Bollinger Bands in the indicator.
      * @default 'rgba(211,211,211,0.25)'
      */
-    public bandColor: any;
+    public declare bandColor: any;
     /** 
      * The data source field that contains the close value. 
      * It is applicable for both financial series and technical indicators.
      * @default ''
      */
-    public close: any;
+    public declare close: any;
     /** 
      * The data source field that contains the color mapping value. 
      * It is applicable for range color mapping.
      */
-    public colorName: any;
+    public declare colorName: any;
     /** 
      * Defines the period over which price changes determine the %D value in stochastic indicators.
      * @default 3
      */
-    public dPeriod: any;
+    public declare dPeriod: any;
     /** 
      * Defines the pattern of dashes and gaps used to stroke the lines in `Line` type series.
      * @default ''
      */
-    public dashArray: any;
+    public declare dashArray: any;
     /** 
      * Specifies the data source for the series. It can be an array of JSON objects, or an instance of DataManager. 
      * 
      * @default ''
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * This property is used to improve chart performance through data mapping for the series data source.
      * @default false
      */
-    public enableComplexProperty: any;
+    public declare enableComplexProperty: any;
     /** 
      * Sets the fast period to define the MACD line.
      * @default 26
      */
-    public fastPeriod: any;
+    public declare fastPeriod: any;
     /** 
      * Defines the field used to compare the current value with previous values.
      * @default 'Close'
      */
-    public field: any;
+    public declare field: any;
     /** 
      * The fill color for the series, which accepts values in hex or rgba as a valid CSS color string. 
      * It also represents the color of the signal lines in technical indicators. 
      * For technical indicators, the default value is 'blue', and for series, it is null.
      * @default null
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * The data source field that contains the high value. 
      * It is applicable for both financial series and technical indicators.
      * @default ''
      */
-    public high: any;
+    public declare high: any;
     /** 
      * Defines the look-back period for price changes used to calculate the %K value in stochastic indicators.
      * @default 14
      */
-    public kPeriod: any;
+    public declare kPeriod: any;
     /** 
      * Applies a linear gradient fill to the indicator.
      * @default null
      */
-    public linearGradient: any;
+    public declare linearGradient: any;
     /** 
      * The data source field that contains the low value. 
      * It is applicable for both financial series and technical indicators.
      * @default ''
      */
-    public low: any;
+    public declare low: any;
     /** 
      * Defines the appearance of the lower line in technical indicators.
      */
-    public lowerLine: any;
+    public declare lowerLine: any;
     /** 
      * Defines the appearance of the MACD line in the MACD indicator.
      * @default { color: '#ff9933', width: 2 }
      */
-    public macdLine: any;
+    public declare macdLine: any;
     /** 
      * Specifies the color for negative bars in the MACD indicator.
      * @default '#e74c3d'
      */
-    public macdNegativeColor: any;
+    public declare macdNegativeColor: any;
     /** 
      * Specifies the color for positive bars in the MACD indicator.
      * @default '#2ecd71'
      */
-    public macdPositiveColor: any;
+    public declare macdPositiveColor: any;
     /** 
      * Defines the type of the MACD (Moving Average Convergence Divergence) indicator.
      * @default 'Both'
      */
-    public macdType: any;
+    public declare macdType: any;
     /** 
      * The data source field that contains the open value. 
      * It is applicable for both financial series and technical indicators.
      * @default ''
      */
-    public open: any;
+    public declare open: any;
     /** 
      * Specifies the over-bought (threshold) values applicable for RSI and stochastic indicators.
      * @default 80
      */
-    public overBought: any;
+    public declare overBought: any;
     /** 
      * Defines the over-sold (threshold) values for RSI and stochastic indicators.
      * @default 20
      */
-    public overSold: any;
+    public declare overSold: any;
     /** 
      * Defines the period over which price changes are considered for trend prediction.
      * @default 14
      */
-    public period: any;
+    public declare period: any;
     /** 
      * Defines the appearance of the period line in technical indicators.
      */
-    public periodLine: any;
+    public declare periodLine: any;
     /** 
      * The data source field that contains the color value of a point. 
      * It is applicable for series.
      * @default ''
      */
-    public pointColorMapping: any;
+    public declare pointColorMapping: any;
     /** 
      * Specifies a query to select data from the data source. This property is applicable only when the data source is an `ej.DataManager`.
      * @default ''
      */
-    public query: any;
+    public declare query: any;
     /** 
      * Applies a radial gradient fill to the indicator.
      * @default null
      */
-    public radialGradient: any;
+    public declare radialGradient: any;
     /** 
      * Defines the axis along which the line series will be split.
      */
-    public segmentAxis: any;
+    public declare segmentAxis: any;
     /** 
      * Specifies a collection of regions used to differentiate a line series.
      */
-    public segments: any;
+    public declare segments: any;
     /** 
      * Specifies the name of the series to be used for displaying the indicator data.
      * @default ''
      */
-    public seriesName: any;
+    public declare seriesName: any;
     /** 
      * Specifies whether to enable or disable the over-bought and over-sold regions.
      * @default true
      */
-    public showZones: any;
+    public declare showZones: any;
     /** 
      * Sets the slow period for defining the MACD line.
      * @default 12
      */
-    public slowPeriod: any;
+    public declare slowPeriod: any;
     /** 
      * Sets the standard deviation values used to define the upper and lower Bollinger Bands.
      * @default 2
      */
-    public standardDeviation: any;
+    public declare standardDeviation: any;
     /** 
      * Defines the appearance of the upper line in technical indicators.
      */
-    public upperLine: any;
+    public declare upperLine: any;
     /** 
      * If set to `true`, the series will be visible. If set to `false`, the series will be hidden.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Defines the data source field that contains the volume value in candle charts. 
      * It is applicable for both financial series and technical indicators.
      * @default ''
      */
-    public volume: any;
+    public declare volume: any;
     /** 
      * The stroke width for the series, applicable only for `Line` type series. 
      * It also represents the stroke width of the signal lines in technical indicators.
      * @default 1
      */
-    public width: any;
+    public declare width: any;
     /** 
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart. 
      * It is applicable for series and technical indicators. 
      * 
      * @default null
      */
-    public xAxisName: any;
+    public declare xAxisName: any;
     /** 
      * The data source field that contains the x value. 
      * It is applicable to both series and technical indicators.
      * @default ''
      */
-    public xName: any;
+    public declare xName: any;
     /** 
      * The name of the vertical axis associated with the series. It requires `axes` of the chart. 
      * It is applicable for series and technical indicators. 
      * 
      * @default null
      */
-    public yAxisName: any;
+    public declare yAxisName: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -279,6 +279,7 @@ export class IndicatorDirective extends ComplexBase<IndicatorDirective> {
  */
 @Directive({
     selector: 'ej-chart>e-indicators',
+    standalone: true,
     queries: {
         children: new ContentChildren(IndicatorDirective)
     },

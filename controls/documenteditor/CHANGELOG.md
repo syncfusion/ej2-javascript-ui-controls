@@ -2,9 +2,121 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
+## 34.2.6 (2026-09-01)
 
 ### DocumentEditor
+
+#### Bug Fixes
+
+`#I857112` - Fixed an issue where paragraph borders were rendered incorrectly, causing text to overlap in the document.
+`#I861033` - Fixed an issue where the Document Editor became unresponsive when resizing a table column.
+`#I864175` - Fixed an issue where the document layout changed after modifying header table border properties.
+`#I857044` - Fixed an issue where heading style changes were not retained when using the `applyStyle()` API.
+`#I866483` - Fixed a script error that occurred in Java when importing a document.
+`#I865409` - Fixed an issue where extra spacing appeared between headings in the document.
+
+## 34.2.5 (2026-08-25)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I858339` - Fixed an issue where checkboxes were missing when opening a document in the Document Editor.
+`#I860738` - Resolved an issue where partial text deletion removed the entire cell content.
+`#I859436` - Fixed an issue where picture content controls did not resize properly in the header.
+`#I860057` - Resolved an issue where the table was resized incorrectly after applying AutoFit to Window.
+`#I857842` - Fixed an issue where header content visible in Microsoft Word was missing after DOC import.
+`#I858608` - Resolved an issue where pasted SFDT content lost its original alignment.
+`#I862243` - Fixed an issue where a heading was rendered on the previous page instead of the next page.
+
+## 34.2.4 (2026-08-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I858305` - Fixed an issue where the editable region highlight did not extend to empty region boundaries in the Document Editor.
+`#I860689` - Resolved a script error that occurred while loading a document.
+`#I860831` - Fixed an issue where pasting a table inside another table cell displayed raw SFDT content.
+`#I860753` - Resolved an issue where the table resize icon appeared when hovering over normal text content.
+`#I857232` - Fixed an overlapping issue in multi-column documents.
+`#I854040` - Resolved a Document Editor loading error with CRG generated individual scripts.
+`#I859142` - Fixed an issue where content was removed after pasting selected HTML as SFDT.
+`#I855175` - Resolved an issue where the table shifted to the left when resizing the first column.
+`#I854961` - Fixed an issue where backspace and delete key did not match Microsoft Word.
+`#I854770` - Resolved an issue where mentions in comments could not be edited in Firefox.
+`#I859875` - Fixed a script error that occurred when performing a Backspace operation in an RTL list.
+`#I855151` - Fixed an issue where an extra newline appeared after pasting text and performing an undo operation.
+`#I856552` - Resolved an issue where text inside a shape was rendered above the shape and overlapped with other content.
+- Updated component name in telemetry to ensure consistent event tracking and reporting.
+
+## 34.2.3 (2026-08-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I858568` - Fixed an issue where the comment box continuously blinked while typing a comment.
+`#I858300` - Resolved an issue where users were unable to type at the beginning of an empty editable region in the Document Editor.
+`#I856715` - Fixed a document layout corruption issue that occurred after pasting content into specific table cells.
+`#I853541` - Resolved an issue where merging table cells in imported DOCX documents caused column width shifts.
+`#I855151` - Fixed an issue where an extra newline appeared after pasting text and performing an undo operation.
+`#I856552` - Resolved an issue where text inside a shape was rendered above the shape and overlapped with other content.
+`#I857097` - Fixed a layout issue that occurred after inserting text and performing an undo operation.
+
+## 34.2.2 (2026-08-05)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I856098` - Fixed an issue where the document became unresponsive when accepting tracked changes.
+`#I851443` - Fixed an issue where the ruler jumped when scrolling the document on Mac.
+`#I855241` - Resolved an issue where the Spell Check dialog skipped a misspelled word after performing "Change All".
+
+## 34.1.33 (2026-07-28)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I850758` - Fixed an issue where strict CSP caused console errors and prevented the editor from loading completely.
+`#I845212` - Fixed an issue where the header date layout differed from Microsoft Word rendering.
+`#I852072` - Fixed an issue where text did not return to its original line after re-inserting a deleted space.
+`#I849043` - Fixed a pagination issue that occurred due to a checkbox when opening the document in the Document Editor.
+`#I853875` - Fixed an issue where mentions in comments were rendered incorrectly in Firefox.
+
+## 34.1.32 (2026-07-21)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I843065` - Fixed an issue where table content moved to the next page instead of remaining on the expected page.
+`#I845637` - Fixed an issue where the document failed to render due to script errors.
+`#I847820` - Fixed an issue where table resizing caused cross-page merges and incorrect alignment.
+`#I851474` - Fixed an issue where page layout was cut off and pages were missing in the editor on the MVC platform.
+`#I852072` - Fixed an issue where text did not return to its original line after re-inserting a deleted space.
+`#I853940` - Fixed an issue where a warning appeared when injecting the editor module.
+`#I853465` - Fixed an issue where discarding a newly added comment changed document formatting after a reverse selection.
+`#I851443` - Fixed an issue where the ruler jumped while scrolling the document on Mac.
+`#I853253` - Fixed an issue where discarding a newly added comment changed document formatting after a reverse selection.
+
+## 34.1.31 (2026-07-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I847820` - Fixed an issue where table resizing caused cross-page merges and incorrect alignment.
+
+## 34.1.30 (2026-07-09)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I827048` - Fixed an issue where double-clicking the Ribbon tab left extra space and an unexpected border in the status bar.
 
 #### Features
 

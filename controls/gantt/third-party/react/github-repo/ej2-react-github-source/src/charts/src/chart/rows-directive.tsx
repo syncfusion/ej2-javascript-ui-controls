@@ -5,7 +5,7 @@ import { RowModel } from '@syncfusion/ej2-charts';
 /**
  * `Row` directive represent a axis row of the react Chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent> 
  * <RowsDirective>
  * <RowDirective></RowDirective>

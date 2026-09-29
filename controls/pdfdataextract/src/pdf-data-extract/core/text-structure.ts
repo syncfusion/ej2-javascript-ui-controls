@@ -7,7 +7,7 @@ import { PdfFontStyle, Rectangle, PdfColor } from '@syncfusion/ej2-pdf';
  * // Initialize a new instance of the `PdfDataExtractor` class
  * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
  * // Extract `TextLine` from the PDF document.
- * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+ * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
  * textLines.forEach((textLine: TextLine) => {
  *   // Gets the bounds of the text line.
  *   let lineBounds: Rectangle = textLine.bounds;
@@ -84,7 +84,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the single line of extracted text from the PDF page.
      *   let line: string = textLine.text;
@@ -109,7 +109,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the collection of text words extracted from a specified page in a PDF document.
      *   let words: TextWord[] = textLine.words;
@@ -134,7 +134,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the name of the font used for a particular line of text.
      *   let fontName: string = textLine.fontName;
@@ -158,7 +158,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the font size used for a particular line of text.
      *   let fontSize: number = textLine.fontSize;
@@ -183,7 +183,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the font style used for a particular line of text.
      *   let fontStyle: number = textLine.fontStyle;
@@ -208,7 +208,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the bounds of the text line.
      *   let lineBounds: Rectangle = textLine.bounds;
@@ -233,7 +233,7 @@ export class TextLine {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the page index of the text line extracted.
      *   let pageIndex: number = textLine.pageIndex;
@@ -256,7 +256,7 @@ export class TextLine {
  * // Initialize a new instance of the `PdfDataExtractor` class
  * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
  * // Extract `TextLine` from the PDF document.
- * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+ * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
  * textLines.forEach((textLine: TextLine) => {
  *   textLine.words.forEach((textWord: TextWord) => {
  *      // Gets the bounds of the text word.
@@ -333,7 +333,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the single word of extracted text from the PDF page.
@@ -360,7 +360,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the collection of text glyphs extracted from a specified page in a PDF document.
@@ -387,7 +387,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the name of the font used for a particular word.
@@ -414,7 +414,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the size of the font used for a particular word.
@@ -441,7 +441,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the style of the font used for a particular word.
@@ -468,7 +468,7 @@ export class TextWord {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the bounds of the text word.
@@ -493,7 +493,7 @@ export class TextWord {
  * // Initialize a new instance of the `PdfDataExtractor` class
  * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
  * // Extract `TextLine` from the PDF document.
- * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+ * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
  * textLines.forEach((textLine: TextLine) => {
  *   textLine.words.forEach((textWord: TextWord) => {
  *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -604,7 +604,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -633,7 +633,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -662,7 +662,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -691,7 +691,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *           // Gets the font style used for a particular character of the text.
@@ -719,7 +719,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -748,7 +748,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
@@ -777,7 +777,7 @@ export class TextGlyph {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+     * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {

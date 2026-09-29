@@ -26,8 +26,10 @@ addFormats(ajv)
 The package defines these formats:
 
 - _date_: full-date according to [RFC3339](http://tools.ietf.org/html/rfc3339#section-5.6).
-- _time_: time with optional time-zone.
-- _date-time_: date-time from the same source (time-zone is mandatory).
+- _time_: time (time-zone is mandatory).
+- _date-time_: date-time (time-zone is mandatory).
+- _iso-time_: time with optional time-zone.
+- _iso-date-time_: date-time with optional time-zone.
 - _duration_: duration from [RFC3339](https://tools.ietf.org/html/rfc3339#appendix-A)
 - _uri_: full URI.
 - _uri-reference_: URI reference, including full and relative URIs.
@@ -108,7 +110,7 @@ or
 addFormats(ajv, {mode: "fast", formats: ["date", "time"], keywords: true})
 ```
 
-In `"fast"` mode the following formats are simplified: `"date"`, `"time"`, `"date-time"`, `"uri"`, `"uri-reference"`, `"email"`. For example `"date"`, `"time"` and `"date-time"` do not validate ranges in `"fast"` mode, only string structure, and other formats have simplified regular expressions.
+In `"fast"` mode the following formats are simplified: `"date"`, `"time"`, `"date-time"`, `"iso-time"`, `"iso-date-time"`, `"uri"`, `"uri-reference"`, `"email"`. For example, `"date"`, `"time"` and `"date-time"` do not validate ranges in `"fast"` mode, only string structure, and other formats have simplified regular expressions.
 
 ## Tests
 

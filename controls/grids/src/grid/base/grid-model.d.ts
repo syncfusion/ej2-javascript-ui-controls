@@ -1,4 +1,4 @@
-import { isNullOrUndefined, setValue, getValue, defaultCurrencyCode, updateCSSText } from '@syncfusion/ej2-base';import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData, getScrollBarWidth, setEnableSeamlessScrolling } from './util';import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberFormat, getTransformValues } from './util';import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';import * as events from '../base/constant';import { ReturnType, BatchChanges, RowSelectable, PinRow, SetRowHeight } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs } from './interface';import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, CellFocusEventArgs, ParentDetails, ContextMenuItemModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportDetailTemplateEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr, ReorderEventArgs } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { DetailExpandCollapseArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, FilterMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, ClipMode, freezeMode, IndicatorType } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';import { ColumnQueryModeType, RowRenderingDirection, AdaptiveMode  } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { ContextMenu } from '../actions/context-menu';import { MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger, Logger } from '../actions/logger';import { IModelGenerator } from '../base/interface';import { RowModelGenerator } from '../services/row-model-generator';import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import * as literals from '../base/string-literals';import { Workbook } from '@syncfusion/ej2-excel-export';import { HeaderCellRenderer } from '../renderer/header-cell-renderer';import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import { isNullOrUndefined, setValue, getValue, defaultCurrencyCode, updateCSSText } from '@syncfusion/ej2-base';import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor, Predicate as DataPredicate } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip, DialogModel } from '@syncfusion/ej2-popups';import { RuleModel, QueryBuilderModel } from '@syncfusion/ej2-querybuilder';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData, getScrollBarWidth, setEnableSeamlessScrolling } from './util';import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberFormat, getTransformValues } from './util';import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';import * as events from '../base/constant';import { ReturnType, BatchChanges, RowSelectable, PinRow, SetRowHeight } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs, AdvancedFilterOpenEventArgs, AdvancedFilterCloseEventArgs, AdvancedFilterBeginArgs, AdvancedFilterCompleteEventArgs } from './interface';import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, CellFocusEventArgs, ParentDetails, ContextMenuItemModel, FormulaDefinitionModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportDetailTemplateEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr, ReorderEventArgs } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { DetailExpandCollapseArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, FilterMode, FormulaCalculationMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, ClipMode, freezeMode, IndicatorType } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';import { ColumnQueryModeType, RowRenderingDirection, AdaptiveMode, EmptyRecordMode } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { AdvancedFilter } from '../actions/advanced-filter';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { ContextMenu } from '../actions/context-menu';import { MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger, Logger } from '../actions/logger';import { IModelGenerator } from '../base/interface';import { RowModelGenerator } from '../services/row-model-generator';import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper, initializeTelemetry } from '@syncfusion/ej2-base';import * as literals from '../base/string-literals';import { Workbook } from '@syncfusion/ej2-excel-export';import { HeaderCellRenderer } from '../renderer/header-cell-renderer';import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';import { CustomFunction, Formula, FormulaValue } from '../actions';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -382,6 +382,28 @@ export interface FilterSettingsModel {
      * @default false
      */
     showFilterBarOperator?: boolean;
+
+}
+
+/**
+ * Interface for a class AdvancedFilterSettings
+ */
+export interface AdvancedFilterSettingsModel {
+
+    /**
+     * Specifies whether hidden columns are included in the Advanced Filter builder.
+     * Set this property to true to allow filtering hidden columns.
+     *
+     * @default false
+     */
+    includeHiddenColumns?: boolean;
+
+    /**
+     * Defines the QueryBuilder options used to customize the Advanced Filter dialog.
+     *
+     * @default {}
+     */
+    queryBuilderSettings?: QueryBuilderModel;
 
 }
 
@@ -793,6 +815,39 @@ export interface EditSettingsModel {
 }
 
 /**
+ * Interface for a class FormulaSettings
+ */
+export interface FormulaSettingsModel {
+
+    /**
+     * If `allowBuiltInFunctions` is set to true, built-in functions such as SUM, AVERAGE,
+     * MIN, MAX, IF, AND, OR, NOT, CONCAT, LEN, TODAY, and other supported functions
+     * can be used in formula expressions.
+     *
+     * @default true
+     */
+    allowBuiltInFunctions?: boolean;
+
+    /**
+     * Defines the collection of custom formula functions that can be used within
+     * Grid formula expressions.
+     *
+     * @default {}
+     */
+    customFunctions?: Record<string, CustomFunction>;
+
+    /**
+     * Defines when formula values should be recalculated. The available modes are:
+     * * Automatic
+     * * Manual
+     *
+     * @default Automatic
+     */
+    calculationMode?: FormulaCalculationMode;
+
+}
+
+/**
  * Interface for a class LoadingIndicator
  */
 export interface LoadingIndicatorModel {
@@ -1115,6 +1170,25 @@ export interface GridModel extends ComponentModel{
     allowFiltering?: boolean;
 
     /**
+     * Defines whether Advanced Filtering is enabled for the Grid.
+     * When enabled, users can create complex filtering conditions across multiple columns
+     * using the Advanced Filter dialog.
+     *
+     *
+     *
+     * @default false
+     */
+    allowAdvancedFiltering?: boolean;
+
+    /**
+     * Configures the Advanced Filter behavior of the Grid.
+     *
+     *
+     * @default {}
+     */
+    advancedFilterSettings?: AdvancedFilterSettingsModel;
+
+    /**
      * Defines the grid row elements rendering direction. The available directions are,
      * * `Horizontal`: Renders the grid row elements in the horizontal direction
      * * `Vertical`: Renders the grid row elements in the vertical direction
@@ -1250,6 +1324,16 @@ export interface GridModel extends ComponentModel{
     editSettings?: EditSettingsModel;
 
     /**
+     * Configures the formula settings of the Grid.
+     * It enables spreadsheet-like formula support including cell references,
+     * range references, built-in functions, custom functions, dependency tracking,
+     * automatic recalculation, and formula editor features.
+     *
+     * @default { allowBuiltInFunctions: true, customFunctions: [],  calculationMode: 'Automatic' }
+     */
+    formulaSettings?: FormulaSettingsModel;
+
+    /**
      * Configures the Grid aggregate rows.
      * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
      * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
@@ -1334,6 +1418,16 @@ export interface GridModel extends ComponentModel{
     emptyRecordTemplate?: string | Function;
 
     /**
+     * Defines how the empty record content is rendered when the Grid contains no records.
+     * The options are:
+     * * Normal - Renders the empty record content as a table row (default).
+     * * Sticky - Renders the empty record content as a fixed overlay that remains stationary during content scrolling.
+     *
+     * @default 'Normal'
+     */
+    emptyRecordMode?: EmptyRecordMode;
+
+    /**
      * The detail template allows you to show or hide additional information about a particular row.
      *
      * > It accepts either the [template string](../../common/template/) or the HTML element ID.
@@ -1407,6 +1501,13 @@ export interface GridModel extends ComponentModel{
      * @default null
      */
     rowHeight?: number;
+
+    /**
+     * Defines the height of Grid header row.
+     *
+     * @default null
+     */
+    headerRowHeight?: number;
 
     /**
      * Defines the height of Grid footer rows.
@@ -2264,5 +2365,34 @@ export interface GridModel extends ComponentModel{
      * @event beforeCustomFilterOpen
      */
     beforeCustomFilterOpen?: EmitType<BeforeCustomFilterOpenEventArgs>;
+
+    /**
+     * Triggers when the Advanced Filter dialog is opened.
+     *
+     * @event advancedFilterOpen
+     */
+    advancedFilterOpen?: EmitType<AdvancedFilterOpenEventArgs>;
+
+    /**
+     * Triggers when the Advanced Filter dialog is closed.
+     *
+     * @event advancedFilterClose
+     */
+    advancedFilterClose?: EmitType<AdvancedFilterCloseEventArgs>;
+
+    /**
+     * Triggers before advanced filter apply or clear operations.
+     * Set cancel to true to prevent the filter operation.
+     *
+     * @event advancedFilterBegin
+     */
+    advancedFilterBegin?: EmitType<AdvancedFilterBeginArgs>;
+
+    /**
+     * Triggers after advanced filter apply or clear operations complete and data is bound to the grid.
+     *
+     * @event advancedFilterComplete
+     */
+    advancedFilterComplete?: EmitType<AdvancedFilterCompleteEventArgs>;
 
 }

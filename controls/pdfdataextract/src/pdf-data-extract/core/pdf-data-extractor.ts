@@ -10,7 +10,45 @@ import { PdfDocument, _PdfDictionary, _PdfReference, PdfPage, PdfPath, _ContentP
 import { _PdfTextParser } from './pdf-text-parser';
 import { PdfStructureElement } from './pdf-structure-element';
 import { PdfEmbeddedImage } from './image-extraction/pdf-embedded-image';
-
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
+/**
+ * Represents the text search result.
+ */
+export type TextSearchResult = {
+    /**
+     * The text to search for in the PDF document.
+     */
+    searchText: string;
+    /**
+     * A Map where keys are 1-based page numbers and values are arrays of bounding rectangles for matches on that page.
+     */
+    searchResults: Map<number, Rectangle[]>;
+};
+/**
+ * Represents the text search options.
+ */
+export type TextSearchOptions = {
+    /*
+     * Text search option to specify case-sensitivity. Default is false.
+     * @default false
+     */
+    caseSensitive?: boolean;
+    /*
+     * Text search option to specify whole word matching. Default is false.
+     * @default false
+     */
+    wholeWord?: boolean;
+    /*
+     * The start page index for text search. Defaults to 0.
+     * @default 0
+     */
+    startPageIndex?: number;
+    /*
+     * The end page index for text search. Defaults to last page index of the PDF document.
+     * @default Last page index
+     */
+    endPageIndex?: number;
+};
 /**
  * Represents a utility for extracting data from a PDF document.
  * ```typescript
@@ -19,7 +57,7 @@ import { PdfEmbeddedImage } from './image-extraction/pdf-embedded-image';
  * // Initialize a new instance of the `PdfDataExtractor` class
  * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
  * // Extract `TextLine` from the PDF document.
- * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
+ * let textLines: Array<TextLine> = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount-1});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -412,7 +450,7 @@ export class PdfDataExtractor {
         this._objects.push(this._ctm);
     }
     /**
-     * Extract text from the PDF document
+     * Extract text from the PDF document, synchronously.
      *
      * @returns {string} The extracted text
      *
@@ -422,16 +460,16 @@ export class PdfDataExtractor {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract text content from the PDF document.
-     * let text: string = extractor.extractText();
+     * let text: string = extractor.extractTextSync();
      * // Save the output PDF
      * document.save(‘Output.pdf’);
      * // Destroy the documents
      * document.destroy();
      * ```
      */
-    extractText(): string
+    extractTextSync(): string
     /**
-     * Extract text from the page ranges specified by start and end page number
+     * Extract text from a specified page range in the PDF document with optional layout preservation, synchronously.
      *
      * @param {object} options Options to specify the page range to be selected and to extract the text.
      * @returns {string} The extracted text
@@ -442,15 +480,16 @@ export class PdfDataExtractor {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract text content from the PDF document.
-     * let text: string = extractor.extractText({ startPageIndex: 0, endPageIndex: document.pageCount - 1 });
+     * let text: string = extractor.extractTextSync({ startPageIndex: 0, endPageIndex: document.pageCount - 1 });
      * // Save the output PDF
      * document.save(‘Output.pdf’);
      * // Destroy the documents
      * document.destroy();
      * ```
      */
-    extractText(options: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): string
-    extractText(options?: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): string {
+    extractTextSync(options: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): string
+    extractTextSync(options?: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): string {
+        initializeTelemetryFeature('ExtractText', 'PDFLibrary');
         let startIndex: number = 0;
         let endIndex: number = this._document.pageCount - 1;
         this._resultantText = '';
@@ -473,6 +512,69 @@ export class PdfDataExtractor {
         this._isLayout = false;
         return this._resultantText;
     }
+    /**
+     * Extract text from the PDF document.
+     *
+     * @returns {Promise<string>} The extracted text
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data1);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract text content from the PDF document.
+     * let text: string = await extractor.extractText();
+     * // Save the output PDF
+     * document.save('Output.pdf');
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractText(): Promise<string>;
+    /**
+     * Extract text from a specified page range in the PDF document with optional layout preservation.
+     *
+     * @param {object} options Options to specify the page range to be selected and to extract the text.
+     * @returns {Promise<string>} The extracted text
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data1);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract text content from the PDF document.
+     * let text: string = await extractor.extractText({ startPageIndex: 0, endPageIndex: document.pageCount - 1 });
+     * // Save the output PDF
+     * document.save('Output.pdf');
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractText(options: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): Promise<string>;
+    async extractText(options?: { isLayout?: boolean; startPageIndex?: number; endPageIndex?: number }): Promise<string> {
+        initializeTelemetryFeature('ExtractText', 'PDFLibrary');
+        let startIndex: number = 0;
+        let endIndex: number = this._document.pageCount - 1;
+        this._resultantText = '';
+        if (options) {
+            if (options.isLayout) {
+                this._isLayout = true;
+            }
+            this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.textExtraction);
+            if (options.startPageIndex !== null && typeof options.startPageIndex === 'number') {
+                startIndex = options.startPageIndex;
+            }
+            if (options.endPageIndex !== null && typeof options.endPageIndex === 'number') {
+                endIndex = options.endPageIndex;
+            }
+        }
+        await this._processPdfPages(startIndex, endIndex);
+        if (this._resultantText.length) {
+            this._resultantText = _ignoreEscapeSequence(this._resultantText);
+        }
+        this._isLayout = false;
+        return this._resultantText;
+    }
     /* eslint-disable */
     /** Render text in layout mode for a page record collection.
      *
@@ -484,6 +586,360 @@ export class PdfDataExtractor {
      * @returns {any} returns layout parameter.
      */
     _renderTextAsLayOut(recordCollection: _PdfRecord[],  page: PdfPage, fontCollection: Map<string, _FontStructure>, xObjectCollection: Map<string, any>): any {
+        const currentTd: number[] = [];
+        let currentYLocation: number;
+        let hexElement: string[];
+        let spaceBetweenWord: boolean = false;
+        let differenceX: number = 0;
+        let currentCmY: number = 0;
+        let prevCmY: number = 0;
+        this._hasTm = false;
+        this._hasET = false;
+        this._hasBeginMarkedContent = false;
+        this._hasTj = false;
+        let textlineMatrix: _MatrixHelper = new _MatrixHelper(1, 0, 0, 1, 0, 0);
+        let prevYLocation: number;
+        const structElement: PdfStructureElement = new PdfStructureElement();
+        this._initialTransForm = new _MatrixHelper(1.3333333333333333, 0, 0, -1.3333333333333333, 0, page.size.height * 1.3333333333333333);
+        const mcidTextMap: Map<number, string[]> = new Map();
+        recordCollection.forEach((record: _PdfRecord) => {
+            const token: string = record._operator;
+            const element: string[] = record._operands;
+            let a: number;
+            let b: number;
+            let c: number;
+            let d: number;
+            let e: number;
+            let f: number;
+            let red: number;
+            let green: number;
+            let blue: number;
+            let endTextPosition: number;
+            let current: number;
+            let prev: number;
+            let locationY: number;
+            let difference: number;
+            switch (token) {
+            case 'q':
+                this._hasET = false;
+                this._objects.unshift(this._objects[0]);
+                this._ctm = this._objects[0];
+                break;
+            case 'Q':
+                this._objects.splice(0, 1);
+                this._ctm = this._objects[0];
+                break;
+            case 'Tc':
+                this._characterSpacing = Number(element[0]);
+                break;
+            case 'Tw':
+                this._wordSpacing = Number(element[0]);
+                break;
+            case 'Tm':
+                this._hasTm = true;
+                a = Number(element[0]);
+                b = Number(element[1]);
+                c = Number(element[2]);
+                d = Number(element[3]);
+                e = Number(element[4]);
+                f = Number(element[5]);
+                this._textMatrix = new _MatrixHelper(a, b, c, d, e, f);
+                this._textLineMatrix = this._textMatrix;
+                this._currentLocation = [0, 0];
+                this._isTextMatrix = true;
+                textlineMatrix = this._textLineMatrix;
+                if (this._textMatrix._offsetY === this._textLineMatrix._offsetY &&
+                     this._textMatrix._offsetX !== this._textLineMatrix._offsetX) {
+                    this._textLineMatrix = this._textMatrix;
+                }
+                if (this._textLineMatrix._offsetY !== this._currentTextMatrix._offsetY ||
+                    ((this._textLineMatrix._offsetX !== this._currentTextMatrix._offsetX) && this._hasBeginMarkedContent && !this._hasTj))
+                {
+                    this._tempBoundingRectangle = { x: 0, y: 0, width: 0, height: 0 } ;
+                    this._hasBeginMarkedContent = false;
+                }
+                break;
+            case 'Tf':
+                this._renderFont(element);
+                break;
+            case 'TL':
+                this._textLeading = -Number(element);
+                break;
+            case 'T*':
+                this._moveToNextLine(0, this._textLeading, textlineMatrix);
+                textlineMatrix = this._textLineMatrix;
+                break;
+            case 'BT':
+                this._textMatrix = new _MatrixHelper(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+                this._textLineMatrix = textlineMatrix = new _MatrixHelper(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+                break;
+            case 'ET':
+                this._hasET = true;
+                endTextPosition = (this._textLineMatrix._offsetX - (this._tempBoundingRectangle.width + this._tempBoundingRectangle.x))
+                                   / 10;
+                if (this._isLayout && this._hasLeading && endTextPosition === 0 && this._hasNoSpacing) {
+                    this._resultantText += String.fromCharCode(32);
+                    this._tempBoundingRectangle = {x: 0, y: 0, width: 0 , height: 0};
+                    this._hasLeading = false;
+                }
+                this._currentLocation = [];
+                if (this._isTextMatrix) {
+                    this._isTextMatrix = false;
+                }
+                this._characterSpacing = 0;
+                this._wordSpacing = 0;
+                break;
+            case 're':
+                break;
+            case 'cm':
+                a = parseFloat(element[0]);
+                b = parseFloat(element[1]);
+                c = parseFloat(element[2]);
+                d = parseFloat(element[3]);
+                e = parseFloat(element[4]);
+                f = parseFloat(element[5]);
+                this._hasET = false;
+                currentCmY = Number(element[5]);
+                current = currentCmY;
+                prev = prevCmY;
+                this._ctm = new _MatrixHelper(a, b, c, d, e, f)._multiply(this._objects[0]);
+                this._objects[0] = this._ctm;
+                locationY = (current - prev) / 10;
+                if ((current !== prev) && this._hasTm && (locationY < 0 || locationY >= 1)) {
+                    this._resultantText += '\r\n';
+                    this._hasTm = false;
+                }
+                prevCmY = currentCmY;
+                break;
+            case 'BDC':
+            {
+                this._hasBeginMarkedContent = true;
+                this._hasET = true;
+                hexElement = element;
+                const markedContentId: number = structElement._parseContent(element);
+                if (this._currentContentId !== markedContentId) {
+                    this._currentContentId = markedContentId;
+                }
+                if (!mcidTextMap.has(this._currentContentId)) {
+                    mcidTextMap.set(this._currentContentId, []);
+                }
+                break;
+            }
+            case 'TD':
+                this._setTextLeading(Number(-element[1]));
+                this._moveToNextLine(Number(element[0]), Number(element[1]), textlineMatrix);
+                textlineMatrix = this._textLineMatrix;
+                if (this._textLineMatrix._offsetY !== this._currentTextMatrix._offsetY ||
+                    (this._hasBeginMarkedContent && this._textLineMatrix._offsetX !== this._currentTextMatrix._offsetX && !this._hasTj)) {
+                    this._tempBoundingRectangle = {x: 0, y: 0, width: 0, height: 0};
+                    this._hasBeginMarkedContent = false;
+                }
+                break;
+            case 'Td':
+                this._moveToNextLine(Number(element[0]), Number(element[1]), textlineMatrix);
+                textlineMatrix = this._textLineMatrix;
+                if (this._textLineMatrix._offsetY !== this._currentTextMatrix._offsetY ||
+                     (this._hasBeginMarkedContent && this._textLineMatrix._offsetX !== this._currentTextMatrix._offsetX)) {
+                    this._tempBoundingRectangle = {x: 0, y: 0, width: 0, height: 0};
+                    this._hasBeginMarkedContent = false;
+                }
+                if (Math.abs(this._textLineMatrix._offsetX - this._currentTextMatrix._offsetX) > 0 && !spaceBetweenWord && this._hasTj) {
+                    this._differenceX = Math.abs(this._textLineMatrix._offsetX - this._currentTextMatrix._offsetX);
+                    spaceBetweenWord = true;
+                }
+                currentTd[0] = Number(element[0]);
+                currentTd[1] = Number(element[1]);
+                break;
+            case 'Tz':
+                this._textHorizontalScaling = Number(element[0]);
+                break;
+            case "'":
+            {
+                this._moveToNextLine(0, this._textLeading, textlineMatrix);
+                textlineMatrix = this._textLineMatrix;
+                currentYLocation = this._textMatrix._offsetY;
+                this._hasNoSpacing = false;
+                difference = 0;
+                if (this._fontSize >= 10) {
+                    difference = Math.round((currentYLocation - prevYLocation) / 10);
+                } else {
+                    difference = Math.round((currentYLocation - prevYLocation) / this._fontSize);
+                }
+                if (difference < 0) {
+                    difference = -difference;
+                }
+                this._hasLeading = true;
+                if (prevYLocation !== 0 && difference >= 1) {
+                    this._resultantText += '\r\n';
+                }
+                const currentXPosition: number = Math.floor(this._textLineMatrix._offsetX);
+                const prevXPosition: number = Math.floor(this._currentTextMatrix._offsetX);
+                if ((prevXPosition - currentXPosition) > 0) {
+                    this._hasNoSpacing = true;
+                }
+                const backUpMatrix: _MatrixHelper = this._textLineMatrix;
+                if (this._isRotatePage) {
+                    this._buildTextContentStream(element, page, fontCollection);
+                } else {
+                    this._currentExtractedText = this._renderTextElementFromTJ(element, page, fontCollection);
+                }
+                prevYLocation = currentYLocation;
+                if (this._isLayout) {
+                    this._resultantText += this._currentExtractedText;
+                } else {
+                    this._textLineMatrix = backUpMatrix;
+                }
+                this._currentTextMatrix = this._textLineMatrix;
+                this._textMatrix = this._textLineMatrix;
+                if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                    const text: string = this._currentExtractedText;
+                    const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                    if (text && textCollection) {
+                        textCollection.push(text);
+                    }
+                }
+                break;
+            }
+            case 'TJ':
+                currentYLocation = this._textMatrix._offsetY;
+                difference = 0;
+                if (this._fontSize >= 10) {
+                    difference = Math.round((currentYLocation - prevYLocation) / 10);
+                } else {
+                    difference = Math.round((currentYLocation - prevYLocation) / this._fontSize);
+                }
+                if (difference < 0) {
+                    difference = -difference;
+                }
+                if (spaceBetweenWord) {
+                    if (differenceX > this._fontSize) {
+                        differenceX = 0;
+                    }
+                    spaceBetweenWord = false;
+                }
+                this._hasTj =  true;
+                if (prevYLocation !== 0 && difference >= 1) {
+                    this._resultantText += '\r\n';
+                }
+                if (this._isRotatePage) {
+                    this._buildTextContentStream(element, page, fontCollection);
+                } else {
+                    this._currentExtractedText = this._renderTextElementFromTJ(element, page, fontCollection);
+                }
+                prevYLocation = currentYLocation;
+                if (this._isLayout) {
+                    this._resultantText += this._currentExtractedText;
+                }
+                this._currentTextMatrix = this._textLineMatrix;
+                this._text += this._currentExtractedText;
+                if (this._isLayout && this._textLineMatrix._m11 !== -1 && this._textLineMatrix._m22 !== 1) {
+                    this._resultantText += ' ';
+                }
+                this._textMatrix = this._textLineMatrix;
+                this._hasET = false;
+                this._hasBeginMarkedContent = true;
+                if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                    const text: string = this._currentExtractedText;
+                    const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                    if (text && textCollection) {
+                        textCollection.push(text);
+                    }
+                }
+                break;
+            case 'Tj':
+                {
+                    currentYLocation = this._textMatrix._offsetY;
+                    let difference: number = 0;
+                    let hex: string = '';
+                    let hexChar: string = '';
+                    if (this._fontSize >= 10) {
+                        difference = Math.round((currentYLocation - prevYLocation) / 10);
+                    } else {
+                        difference = Math.round((currentYLocation - prevYLocation) / this._fontSize);
+                    }
+                    if (difference < 0) {
+                        difference = -difference;
+                    }
+                    if (spaceBetweenWord) {
+                        if (differenceX > this._fontSize) {
+                            differenceX = 0;
+                        }
+                        if (typeof(hexElement) !== 'undefined' && hexElement.length > 1) {
+                            hexElement[1] = hexElement[1].replace(/^</, '');
+                            hex = hexElement[1].replace(/>$/, '');
+                            hexChar = element[0].replace(/^\(|\)$/g, '');
+                            if (hex !== '' && hex.indexOf('<') !== -1 && hexChar.length === 1 && /^[a-zA-Z]$/.test(hexChar)) {
+                                this._hasET = false;
+                            }
+                        }
+                        if (this._hasET) {
+                            this._resultantText += ' ';
+                        }
+                        this._hasET = false;
+                        spaceBetweenWord = false;
+                    }
+                    this._hasTj = true;
+                    if (prevYLocation !== 0 && difference >= 1) {
+                        this._resultantText += '\r\n';
+                    }
+                    if (this._isRotatePage) {
+                        this._buildTextContentStream(element, page, fontCollection);
+                    } else {
+                        this._currentExtractedText = this._renderTextElementFromTJ(element, page, fontCollection);
+                    }
+                    this._currentTextMatrix = this._textLineMatrix;
+                    prevYLocation = currentYLocation;
+                    this._previousExtractText = this._currentExtractedText;
+                    if (this._previousTextMatrix._offsetY !== 0 && this._currentTextMatrix._offsetY !== 0 &&
+                         this._previousTextMatrix._offsetY + this._previousFontSize > this._currentTextMatrix._offsetY + this._fontSize &&
+                        this._previousTextMatrix._offsetY < this._currentTextMatrix._offsetY) {
+                        if (this._resultantText.length >= 2 && this._resultantText.slice(-2) === '\r\n') {
+                            this._resultantText = this._resultantText.slice(0, -2);
+                        }
+                    }
+                    this._previousFontSize = this._fontSize;
+                    if (this._isLayout) {
+                        this._resultantText += this._currentExtractedText;
+                    }
+                    this._textMatrix = this._textLineMatrix;
+                    this._previousTextMatrix = this._textLineMatrix;
+                    if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                        const text: string = this._currentExtractedText;
+                        const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                        if (text && textCollection) {
+                            textCollection.push(text);
+                        }
+                    }
+                }
+                break;
+            case 'Do':
+                _getXObject(element, page, xObjectCollection, this);
+                break;
+            case 'RG':
+            case 'k':
+            case 'g':
+            case 'rg':
+                red = Number(element[0]);
+                green = Number(element[1]);
+                blue = Number(element[2]);
+                this._textColor = [red, green, blue];
+            }
+        });
+        if (mcidTextMap && mcidTextMap.size > 0) {
+            this._mcidTextMap = mcidTextMap;
+        }
+    }
+    /* eslint-disable */
+    /** Render text in layout mode for a page record collection.
+     *
+     * @private
+     * @param {_PdfRecord[]} recordCollection - Parsed content stream records for the page.
+     * @param {PdfPage} page - Page being processed.
+     * @param {Map<string, _FontStructure>} fontCollection - Fonts resolved for the page.
+     * @param {Map<string, any>} xObjectCollection - XObject resources for the page.
+     * @returns {any} returns layout parameter.
+     */
+    async _renderPdfTextAsLayOut(recordCollection: _PdfRecord[],  page: PdfPage, fontCollection: Map<string, _FontStructure>, xObjectCollection: Map<string, any>): Promise<any> {
         const currentTd: number[] = [];
         let currentYLocation: number;
         let hexElement: string[];
@@ -856,6 +1312,38 @@ export class PdfDataExtractor {
             this._renderTextAsLayOut(recordCollection, page, fontCollection, xObjectCollection);
         } else {
             text = this._contentParser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
+            this._resultantText = text;
+        }
+    }
+    /** Render page text using parsed records and the given graphic state.
+     *
+     * @private
+     * @param {PdfPage} page - Page to process.
+     * @param {Map<string, _FontStructure>} fontCollection - Font resources for page.
+     * @param {Map<string, any>} xObjectCollection - XObject resources for page.
+     * @param {_GraphicState} graphicState - Current graphics/text state.
+     * @param {boolean} [imageExtraction] - Whether called for image extraction.
+     * @returns {any} values from rendering text
+     */
+    async _renderPdfText(page: PdfPage, fontCollection: Map<string, _FontStructure>, xObjectCollection: Map<string, any>, graphicState: _GraphicState, imageExtraction?: boolean): Promise<any> {
+        if (!(this._contentParser)) {
+            this._contentParser = new _PdfContentParserHelper((this._isExtractTextLines ||
+                this._extractTaggedText) ? _TextProcessingMode.textLineExtraction
+                : _TextProcessingMode.textExtraction);
+        }
+        const recordCollection: _PdfRecord[] = this._contentParser._getPageRecordCollection(page);
+        let text: any;
+        if (this._isLayout) {
+            await this._renderPdfTextAsLayOut(recordCollection, page, fontCollection, xObjectCollection);
+        } else if (this._isExtractTextLines) {
+            text = await this._contentParser._fetchRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
+            this._textLine = text;
+        } else if (this._extractTaggedText) {
+            text = await this._contentParser._fetchRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
+            this._textLine = text;
+            await this._renderPdfTextAsLayOut(recordCollection, page, fontCollection, xObjectCollection);
+        } else {
+            text = await this._contentParser._fetchRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
             this._resultantText = text;
         }
     }
@@ -1383,7 +1871,7 @@ export class PdfDataExtractor {
         this._fontSize = Number(fontElements[i + 1]);
     }
     /**
-     * Extract `TextLine` collection from the PDF document.
+     * Extract `TextLine` collection from all pages of the PDF document, synchronously.
      *
      * @returns {TextLine[]} The extracted textLines
      *
@@ -1393,16 +1881,16 @@ export class PdfDataExtractor {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textCollection: TextLine[] = extractor.extractTextLines();
+     * let textCollection: TextLine[] = extractor.extractTextLinesSync();
      * // Save the output PDF
      * document.save(‘Output.pdf’);
      * // Destroy the documents
      * document.destroy();
      * ```
      */
-    extractTextLines(): TextLine[];
+    extractTextLinesSync(): TextLine[];
     /**
-     * Extract `TextLine` from the PDF document.
+     * Extract `TextLine` collection from all pages of the PDF document, synchronously
      *
      * @param {object} options The options to specify the page range to be selected.
      * @returns {TextLine[]} The extracted textLines
@@ -1413,15 +1901,16 @@ export class PdfDataExtractor {
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
      * // Extract `TextLine` from the PDF document.
-     * let textCollection: TextLine[] = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+     * let textCollection: TextLine[] = extractor.extractTextLinesSync({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
      * // Save the output PDF
      * document.save(‘Output.pdf’);
      * // Destroy the documents
      * document.destroy();
      * ```
      */
-    extractTextLines(options: { startPageIndex?: number, endPageIndex?: number }): TextLine[];
-    extractTextLines(options?: { startPageIndex?: number, endPageIndex?: number }): TextLine[] {
+    extractTextLinesSync(options: { startPageIndex?: number, endPageIndex?: number }): TextLine[];
+    extractTextLinesSync(options?: { startPageIndex?: number, endPageIndex?: number }): TextLine[] {
+        initializeTelemetryFeature('ExtractText', 'PDFLibrary');
         let startIndex: number = 0;
         this._isExtractTextLines = true;
         this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.textLineExtraction);
@@ -1434,6 +1923,62 @@ export class PdfDataExtractor {
         }
         this._textLine = [];
         this._processPages(startIndex, endIndex);
+        this._isExtractTextLines = false;
+        return this._textLine;
+    }
+    /**
+     * Extract `TextLine` collection from all pages of the PDF document.
+     *
+     * @returns {Promise<TextLine[]>} The extracted textLines
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data1);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract `TextLine` from the PDF document.
+     *  let textCollection: TextLine[] = await extractor.extractTextLines();
+     * // Save the output PDF
+     * document.save('Output.pdf');
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractTextLines(): Promise<TextLine[]>;
+    /**
+     * Extract `TextLine` collection from all pages of the PDF document.
+     *
+     * @param {object} options The options to specify the page range to be selected.
+     * @returns {Promise<TextLine[]>} The extracted textLines
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data1);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract `TextLine` from the PDF document.
+     * let textCollection: TextLine[] = await extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount - 1 });
+     * // Save the output PDF
+     * document.save('Output.pdf');
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractTextLines(options: { startPageIndex?: number, endPageIndex?: number }): Promise<TextLine[]>;
+    async extractTextLines(options?: { startPageIndex?: number, endPageIndex?: number }): Promise<TextLine[]> {
+        initializeTelemetryFeature('ExtractText', 'PDFLibrary');
+        let startIndex: number = 0;
+        this._isExtractTextLines = true;
+        this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.textLineExtraction);
+        if (options && typeof(options.startPageIndex) === 'number') {
+            startIndex = options.startPageIndex;
+        }
+        let endIndex: number = this._document.pageCount - 1;
+        if (options && typeof(options.endPageIndex) === 'number') {
+            endIndex = options.endPageIndex;
+        }
+        this._textLine = [];
+        await this._processPdfPages(startIndex, endIndex);
         this._isExtractTextLines = false;
         return this._textLine;
     }
@@ -1477,6 +2022,7 @@ export class PdfDataExtractor {
      */
     async extractImages(options: { startPageIndex?: number, endPageIndex?: number }): Promise<PdfEmbeddedImage[]>;
     async extractImages(options?: { startPageIndex?: number, endPageIndex?: number }): Promise<PdfEmbeddedImage[]> {
+        initializeTelemetryFeature('ExtractImages', 'PDFLibrary');
         this._document._crossReference._isDecoderSupport = true;
         let startIndex: number = 0;
         this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.imageExtraction);
@@ -1515,6 +2061,526 @@ export class PdfDataExtractor {
         fontCache.clear();
         xObjectCache.clear();
         return this._imageInfo;
+    }
+    /**
+     * Searches for text in the PDF document and returns the bounding rectangles
+     * of all matches grouped by page number, synchronously.
+     *
+     * @param {string} searchText The text to search for in the PDF document.
+     * @param {TextSearchOptions} options The text search options.
+     * @returns {TextSearchResult} The text search result.
+     *
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the PdfDataExtractor class.
+     * const extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Search for text within the specified page range.
+     * const result: TextSearchResult = extractor.findTextSync('text', {
+     *     caseSensitive: false,
+     *     wholeWord: true,
+     *     startPageIndex: 2,
+     *     endPageIndex: 3
+     * });
+     *
+     * // Get the searched text.
+     * const searchText: string = result.searchText;
+     * // The map keys are one-based page numbers, and the values are
+     * // collections of bounding rectangles for the matches on each page.
+     * const searchResults: Map<number, Rectangle[]> = result.searchResults;
+     * // Destroy the document.
+     * document.destroy();
+     * ```
+     */
+    findTextSync(searchText: string, options?: TextSearchOptions): TextSearchResult;
+    /**
+     * Searches for a text collection in the PDF document and returns the text
+     * search results that specify the bounding rectangles of all matches
+     * grouped by page number, synchronously.
+     *
+     * @param {string[]} searchText The collection of text values to search for
+     * in the PDF document.
+     * @param {TextSearchOptions} options The text search options.
+     * @returns {TextSearchResult[]} The text search results.
+     *
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the PdfDataExtractor class.
+     * const extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Search for multiple text values within the specified page range.
+     * const results: TextSearchResult[] = extractor.findTextSync(
+     *     ['text', 'PDF'],
+     *     {
+     *         caseSensitive: false,
+     *         wholeWord: true,
+     *         startPageIndex: 2,
+     *         endPageIndex: 3
+     *     }
+     * );
+     * // Access the first text search result.
+     * const result: TextSearchResult = results[0];
+     * // Get the searched text.
+     * const searchText: string = result.searchText;
+     * // The map keys are one-based page numbers, and the values are
+     * // collections of bounding rectangles for the matches on each page.
+     * const searchResults: Map<number, Rectangle[]> = result.searchResults;
+     * // Destroy the document.
+     * document.destroy();
+     * ```
+     */
+    findTextSync(searchText: string[], options?: TextSearchOptions): TextSearchResult[];
+    findTextSync(searchText: string | string[], options?: TextSearchOptions): TextSearchResult | TextSearchResult[] {
+        const isSearchTextCollection: boolean = Array.isArray(searchText);
+        const searchTextCollection: string[] = isSearchTextCollection ? searchText as string[] : [searchText as string];
+        let startPageIndex: number = 0;
+        let endPageIndex: number = this._document.pageCount - 1;
+        if (options) {
+            if (typeof options.startPageIndex === 'number') {
+                startPageIndex = options.startPageIndex;
+            }
+            if (typeof options.endPageIndex === 'number') {
+                endPageIndex = options.endPageIndex;
+            }
+        }
+        if (startPageIndex < 0) {
+            startPageIndex = 0;
+        }
+        if (endPageIndex >= this._document.pageCount) {
+            endPageIndex = this._document.pageCount - 1;
+        }
+        const resolvedOptions: TextSearchOptions = {
+            caseSensitive: options && typeof options.caseSensitive === 'boolean' ? options.caseSensitive : false,
+            wholeWord: options && typeof options.wholeWord === 'boolean' ? options.wholeWord : false,
+            startPageIndex: startPageIndex,
+            endPageIndex: endPageIndex
+        };
+        const textSearchResults: TextSearchResult[] = this._findTextMatches(searchTextCollection, resolvedOptions);
+        if (isSearchTextCollection) {
+            return textSearchResults;
+        }
+        return textSearchResults[0];
+    }
+    /**
+     * Coordinates document-wide text search and returns the search results for all supplied search strings.
+     *
+     * @private
+     * @param {string[]} searchTextCollection The collection of search text.
+     * @param {TextSearchOptions} options The resolved text search options.
+     * @returns {TextSearchResult[]} The text search results.
+     */
+    private _findTextMatches(searchTextCollection: string[], options: TextSearchOptions): TextSearchResult[] {
+        const startPageIndex: number = typeof options.startPageIndex === 'number'
+            ? options.startPageIndex
+            : 0;
+        const endPageIndex: number = typeof options.endPageIndex === 'number'
+            ? options.endPageIndex
+            : this._document.pageCount - 1;
+        const textSearchResults: TextSearchResult[] = [];
+        for (let i: number = 0; i < searchTextCollection.length; i++) {
+            textSearchResults.push({
+                searchText: searchTextCollection[Number.parseInt(i.toString(), 10)],
+                searchResults: new Map<number, Rectangle[]>()
+            });
+        }
+        if (searchTextCollection.length === 0 || startPageIndex > endPageIndex || endPageIndex < 0 ||
+            startPageIndex >= this._document.pageCount) {
+            return textSearchResults;
+        }
+        this._textLine = this.extractTextLinesSync({
+            startPageIndex: startPageIndex,
+            endPageIndex: endPageIndex
+        });
+        const pageLineCollection: Map<number, TextLine[]> = new Map<number, TextLine[]>();
+        for (const textLine of this._textLine) {
+            let pageLines: TextLine[] | undefined = pageLineCollection.get(textLine._pageIndex);
+            if (!pageLines) {
+                pageLines = [];
+                pageLineCollection.set(textLine._pageIndex, pageLines);
+            }
+            pageLines.push(textLine);
+        }
+        for (let pageIndex: number = startPageIndex; pageIndex <= endPageIndex; pageIndex++) {
+            const currentPageLines: TextLine[] | undefined = pageLineCollection.get(pageIndex);
+            const pageLines: TextLine[] = currentPageLines ? currentPageLines : [];
+            const boundsCollection: Map<number, Rectangle[]> = this._findTextMatchesInPage(
+                pageIndex,
+                pageLines,
+                searchTextCollection,
+                options
+            );
+            boundsCollection.forEach((rectangles: Rectangle[], searchTextIndex: number): void => {
+                if (rectangles.length > 0) {
+                    textSearchResults[searchTextIndex].searchResults.set(pageIndex + 1, rectangles); // eslint-disable-line
+                }
+            });
+        }
+        return textSearchResults;
+    }
+    /**
+     * Searches for multiple text values on a single page using existing extracted text structures.
+     *
+     * @private
+     * @param {number} pageIndex The zero-based page index to search.
+     * @param {TextLine[]} pageLines The text lines extracted from the page.
+     * @param {string[]} searchTextCollection The collection of search text.
+     * @param {TextSearchOptions} options The text search options.
+     * @returns {Map<number, Rectangle[]>} Match bounds grouped by search-text index.
+     */
+    private _findTextMatchesInPage(pageIndex: number, pageLines: TextLine[], searchTextCollection: string[],
+                                   options: TextSearchOptions): Map<number, Rectangle[]> {
+        const boundsCollection: Map<number, Rectangle[]> = new Map<number, Rectangle[]>();
+        const searchTextLowerCollection: string[] = [];
+        const page: PdfPage = this._document.getPage(pageIndex);
+        for (let i: number = 0; i < searchTextCollection.length; i++) {
+            const searchText: string = searchTextCollection[Number.parseInt(i.toString(), 10)];
+            const searchTextLower: string = options.caseSensitive ? searchText : searchText.toLowerCase();
+            searchTextLowerCollection.push(searchTextLower);
+            boundsCollection.set(i, []);
+        }
+        for (const textLine of pageLines) {
+            for (const textWord of textLine._wordCollection) {
+                const wordText: string = options.caseSensitive ? textWord._text : textWord._text.toLowerCase();
+                for (let searchTextIndex: number = 0; searchTextIndex < searchTextLowerCollection.length; searchTextIndex++) {
+                    const searchTextLower: string = searchTextLowerCollection[
+                        Number.parseInt(searchTextIndex.toString(), 10)
+                    ];
+                    if (searchTextLower.length === 0) {
+                        continue;
+                    }
+                    const rectangles: Rectangle[] | undefined = boundsCollection.get(searchTextIndex);
+                    if (!rectangles) {
+                        continue;
+                    }
+                    let isMatch: boolean = false;
+                    if (options.wholeWord) {
+                        isMatch = wordText === searchTextLower;
+                    } else {
+                        isMatch = wordText.includes(searchTextLower);
+                    }
+                    if (!isMatch) {
+                        continue;
+                    }
+                    if (options.wholeWord) {
+                        rectangles.push(this._getFindTextBounds(page, textWord._bounds));
+                    } else {
+                        let startIndex: number = 0;
+                        while (true) { // eslint-disable-line
+                            const matchIndex: number = wordText.indexOf(searchTextLower, startIndex);
+                            if (matchIndex === -1) {
+                                break;
+                            }
+                            const endIndex: number = matchIndex + searchTextLower.length;
+                            const glyphs: TextGlyph[] = textWord._glyphs;
+                            const matchGlyphs: TextGlyph[] = [];
+                            let charIndex: number = 0;
+                            for (let i: number = 0; i < glyphs.length; i++) {
+                                if (charIndex >= matchIndex && charIndex < endIndex) {
+                                    matchGlyphs.push(glyphs[Number.parseInt(i.toString(), 10)]);
+                                }
+                                charIndex++;
+                            }
+                            if (matchGlyphs.length > 0) {
+                                const pdfPath: PdfPath = new PdfPath();
+                                for (let i: number = 0; i < matchGlyphs.length; i++) {
+                                    pdfPath.addRectangle(matchGlyphs[Number.parseInt(i.toString(), 10)]._bounds);
+                                }
+                                const bounds: number[] = pdfPath._getBounds();
+                                const matchRectangle: Rectangle = {
+                                    x: bounds[0],
+                                    y: bounds[1],
+                                    width: bounds[2],
+                                    height: bounds[3]
+                                };
+                                rectangles.push(this._getFindTextBounds(page, matchRectangle));
+                            }
+                            startIndex = matchIndex + searchTextLower.length;
+                        }
+                    }
+                }
+            }
+        }
+        return boundsCollection;
+    }
+    /**
+     * Converts extracted text bounds into page annotation coordinate bounds.
+     *
+     * @private
+     * @param {PdfPage} page The page that contains the matched text.
+     * @param {Rectangle} bounds The extracted text word bounds.
+     * @returns {Rectangle} The find text bounds in annotation coordinate space.
+     */
+    private _getFindTextBounds(page: PdfPage, bounds: Rectangle): Rectangle {
+        const rectangle: Rectangle = this._normalizeFindTextBounds(bounds);
+        if (page.rotation === PdfRotationAngle.angle0) {
+            return rectangle;
+        }
+        const left: number = rectangle.x;
+        const top: number = rectangle.y;
+        const right: number = rectangle.x + rectangle.width;
+        const bottom: number = rectangle.y + rectangle.height;
+        const points: number[][] = [
+            this._transformFindTextPoint(page, left, top),
+            this._transformFindTextPoint(page, right, top),
+            this._transformFindTextPoint(page, left, bottom),
+            this._transformFindTextPoint(page, right, bottom)
+        ];
+        return this._getFindTextBoundsFromPoints(points);
+    }
+    /**
+     * Searches for text in the PDF document and returns the bounding rectangles
+     * of all matches grouped by page number.
+     *
+     * @param {string} searchText - The text to search for in the PDF document.
+     * @param {TextSearchOptions} options - The text search options.
+     * @returns {Promise<TextSearchResult>} The text search result.
+     *
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the PdfDataExtractor class.
+     * const extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Search for text within the specified page range.
+     * const result: TextSearchResult = await extractor.findText('text', {
+     *     caseSensitive: false,
+     *     wholeWord: true,
+     *     startPageIndex: 2,
+     *     endPageIndex: 3
+     * });
+     * // Get the searched text.
+     * const searchText: string = result.searchText;
+     * // The map keys are one-based page numbers, and the values are
+     * // collections of bounding rectangles for the matches on each page.
+     * const searchResults: Map<number, Rectangle[]> = result.searchResults;
+     * // Destroy the document.
+     * document.destroy();
+     * ```
+     */
+    async findText( searchText: string, options?: TextSearchOptions): Promise<TextSearchResult>;
+    /**
+     * Searches for a collection of text values in the PDF document and returns
+     * the bounding rectangles of all matches grouped by page number.
+     *
+     * @param {string[]} searchText - The collection of text values to search for
+     * in the PDF document.
+     * @param {TextSearchOptions} options - The text search options.
+     * @returns {Promise<TextSearchResult[]>} The text search results.
+     *
+     * @example
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the PdfDataExtractor class.
+     * const extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Search for multiple text values within the specified page range.
+     * const results: TextSearchResult[] = await extractor.findText(
+     *     ['text', 'PDF'],
+     *     {
+     *         caseSensitive: false,
+     *         wholeWord: true,
+     *         startPageIndex: 2,
+     *         endPageIndex: 3
+     *     }
+     * );
+     * // Access the first text search result.
+     * const result: TextSearchResult = results[0];
+     * const searchText: string = result.searchText;
+     * // The map keys are one-based page numbers, and the values are
+     * // collections of bounding rectangles for the matches on each page.
+     * const searchResults: Map<number, Rectangle[]> = result.searchResults;
+     * // Destroy the document.
+     * document.destroy();
+     * ```
+     */
+    async findText( searchText: string[], options?: TextSearchOptions ): Promise<TextSearchResult[]>;
+    async findText( searchText: string | string[], options?: TextSearchOptions ): Promise<TextSearchResult | TextSearchResult[]> {
+        const isSearchTextCollection: boolean = Array.isArray(searchText);
+        const searchTextCollection: string[] = isSearchTextCollection ? searchText as string[] : [searchText as string];
+        let startPageIndex: number = 0;
+        let endPageIndex: number = this._document.pageCount - 1;
+        if (options) {
+            if (typeof options.startPageIndex === 'number') {
+                startPageIndex = options.startPageIndex;
+            }
+            if (typeof options.endPageIndex === 'number') {
+                endPageIndex = options.endPageIndex;
+            }
+        }
+        if (startPageIndex < 0) {
+            startPageIndex = 0;
+        }
+        if (endPageIndex >= this._document.pageCount) {
+            endPageIndex = this._document.pageCount - 1;
+        }
+        const resolvedOptions: TextSearchOptions = {
+            caseSensitive: options &&
+                typeof options.caseSensitive === 'boolean'
+                ? options.caseSensitive
+                : false,
+            wholeWord: options &&
+                typeof options.wholeWord === 'boolean'
+                ? options.wholeWord
+                : false,
+            startPageIndex : startPageIndex,
+            endPageIndex : endPageIndex
+        };
+        const textSearchResults: TextSearchResult[] = await this._findTextMatchesAsync( searchTextCollection, resolvedOptions);
+        if (isSearchTextCollection) {
+            return textSearchResults;
+        }
+        return textSearchResults[0];
+    }
+    /**
+     * Coordinates document-wide asynchronous text search and returns the
+     * search results for all supplied search strings.
+     *
+     * Text lines are extracted only once for the requested page range.
+     *
+     * @private
+     * @param {string[]} searchTextCollection The collection of search text.
+     * @param {TextSearchOptions} options The resolved text search options.
+     * @returns {Promise<TextSearchResult[]>} The text search results.
+     */
+    private async _findTextMatchesAsync( searchTextCollection: string[], options: TextSearchOptions): Promise<TextSearchResult[]> {
+        const startPageIndex: number = typeof options.startPageIndex === 'number' ? options.startPageIndex : 0;
+        const endPageIndex: number = typeof options.endPageIndex === 'number' ? options.endPageIndex : this._document.pageCount - 1;
+        const textSearchResults: TextSearchResult[] = [];
+        for ( let searchTextIndex: number = 0; searchTextIndex < searchTextCollection.length; searchTextIndex++) {
+            textSearchResults.push({
+                searchText: searchTextCollection[
+                    Number.parseInt(searchTextIndex.toString(), 10)
+                ],
+                searchResults: new Map<number, Rectangle[]>()
+            });
+        }
+        if ( searchTextCollection.length === 0 || startPageIndex > endPageIndex || endPageIndex < 0 ||
+            startPageIndex >= this._document.pageCount
+        ) {
+            return textSearchResults;
+        }
+        const textLines: TextLine[] = await this.extractTextLines({
+            startPageIndex: startPageIndex,
+            endPageIndex: endPageIndex
+        });
+        const pageLineCollection: Map<number, TextLine[]> =
+            new Map<number, TextLine[]>();
+        for (const textLine of textLines) {
+            let pageLines: TextLine[] | undefined =
+                pageLineCollection.get(textLine._pageIndex);
+            if (!pageLines) {
+                pageLines = [];
+                pageLineCollection.set(textLine._pageIndex, pageLines);
+            }
+            pageLines.push(textLine);
+        }
+        for ( let pageIndex: number = startPageIndex; pageIndex <= endPageIndex; pageIndex++ ) {
+            const currentPageLines: TextLine[] | undefined = pageLineCollection.get(pageIndex);
+            const pageLines: TextLine[] = currentPageLines ? currentPageLines : [];
+            const boundsCollection: Map<number, Rectangle[]> =
+                this._findTextMatchesInPage(
+                    pageIndex,
+                    pageLines,
+                    searchTextCollection,
+                    options
+                );
+            boundsCollection.forEach(
+                (
+                    rectangles: Rectangle[],
+                    searchTextIndex: number
+                ): void => {
+                    if (rectangles.length > 0) {
+                        textSearchResults[ //eslint-disable-line
+                            searchTextIndex
+                        ].searchResults.set(
+                            pageIndex + 1,
+                            rectangles
+                        );
+                    }
+                }
+            );
+        }
+        return textSearchResults;
+    }
+    /**
+     * Applies inverse page rotation to a point.
+     *
+     * @private
+     * @param {PdfPage} page The page that contains the point.
+     * @param {number} x The x-coordinate.
+     * @param {number} y The y-coordinate.
+     * @returns {number[]} The transformed point.
+     */
+    private _transformFindTextPoint(page: PdfPage, x: number, y: number): number[] {
+        if (page.rotation === PdfRotationAngle.angle90) {
+            return [
+                y,
+                page.size.height - x
+            ];
+        }
+        if (page.rotation === PdfRotationAngle.angle180) {
+            return [
+                page.size.width - x,
+                page.size.height - y
+            ];
+        }
+        if (page.rotation === PdfRotationAngle.angle270) {
+            return [
+                page.size.width - y,
+                x
+            ];
+        }
+        return [x, y];
+    }
+    /**
+     * Creates rectangle bounds from transformed points.
+     *
+     * @private
+     * @param {number} points The transformed points.
+     * @returns {Rectangle} The bounds that include all points.
+     */
+    private _getFindTextBoundsFromPoints(points: number[][]): Rectangle {
+        let minX: number = points[0][0];
+        let minY: number = points[0][1];
+        let maxX: number = points[0][0];
+        let maxY: number = points[0][1];
+        for (let i: number = 1; i < points.length; i++) {
+            const point: number[] = points[Number.parseInt(i.toString(), 10)];
+            if (point[0] < minX) {
+                minX = point[0];
+            }
+            if (point[1] < minY) {
+                minY = point[1];
+            }
+            if (point[0] > maxX) {
+                maxX = point[0];
+            }
+            if (point[1] > maxY) {
+                maxY = point[1];
+            }
+        }
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+    /**
+     * Normalizes rectangle bounds to positive width and height.
+     *
+     * @private
+     * @param {Rectangle} bounds The bounds to normalize.
+     * @returns {Rectangle} The normalized bounds.
+     */
+    private _normalizeFindTextBounds(bounds: Rectangle): Rectangle {
+        let x: number = bounds.x;
+        let y: number = bounds.y;
+        let width: number = bounds.width;
+        let height: number = bounds.height;
+        if (width < 0) {
+            x += width;
+            width = -width;
+        }
+        if (height < 0) {
+            y += height;
+            height = -height;
+        }
+        return { x: x, y: y, width: width, height: height };
     }
     /** Process page range and perform text/image extraction per page.
      *
@@ -1561,6 +2627,49 @@ export class PdfDataExtractor {
                     }
                 }
                 this._renderText(page, fontCollection, xObjectCollection, graphicState, isImageExtraction);
+            }
+            this._isRotatePage = false;
+        }
+        fontCache.clear();
+        xObjectCache.clear();
+    }
+    async _processPdfPages(startIndex: number, endIndex: number, isImageExtraction?: boolean): Promise<void> {
+        const fontCache: Map<string, Map<string, _FontStructure>> = new Map();
+        const xObjectCache: Map<string, Map<string, _FontStructure>> = new Map();
+        for (let pageIndex: number = startIndex; pageIndex <= endIndex; pageIndex++) {
+            const page: PdfPage = this._document.getPage(pageIndex);
+            if (page.rotation !== PdfRotationAngle.angle0 && !this._isLayout) {
+                this._isRotatePage = true;
+            }
+            const graphicState: _GraphicState = new _GraphicState();
+            const resource: _PdfDictionary = page._pageDictionary.get('Resources');
+            if (resource !== null && typeof resource !== 'undefined') {
+                const resourceId: any = resource._reference ? resource._reference.toString() : ''; //eslint-disable-line
+                let fontCollection: Map<string, _FontStructure>;
+                if (!isImageExtraction) {
+                    if (resourceId && fontCache.has(resourceId)) {
+                        fontCollection = fontCache.get(resourceId);
+                    } else {
+                        fontCollection = _addFontResources(resource, this._crossReference);
+                        if (resourceId) {
+                            fontCache.set(resourceId, fontCollection);
+                        }
+                    }
+                }
+                let xObjectCollection: Map<string, _FontStructure>;
+                if (resourceId && xObjectCache.has(resourceId)) {
+                    xObjectCollection = xObjectCache.get(resourceId);
+                } else {
+                    let mode: _TextProcessingMode;
+                    if (typeof(isImageExtraction) === 'boolean' && isImageExtraction) {
+                        mode = _TextProcessingMode.imageExtraction;
+                    }
+                    xObjectCollection = _getXObjectResources(resource, this._crossReference, mode, page);
+                    if (resourceId) {
+                        xObjectCache.set(resourceId, xObjectCollection);
+                    }
+                }
+                await this._renderPdfText(page, fontCollection, xObjectCollection, graphicState, isImageExtraction);
             }
             this._isRotatePage = false;
         }

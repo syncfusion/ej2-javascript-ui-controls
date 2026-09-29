@@ -13,12 +13,6 @@ export class _DeflateStream {
      */
     _data: number[];
     /**
-     * Indicates whether the underlying stream should remain open.
-     *
-     * @private
-     */
-    _leaveOpen: boolean;
-    /**
      * Current offset within the data array.
      *
      * @private
@@ -36,14 +30,11 @@ export class _DeflateStream {
      * @private
      */
     _inflater: _Inflater;
-    constructor(data: number[], offset: number, leaveOpen: boolean) {
+    constructor(data: number[], offset: number) {
         if (_isNullOrUndefined(data)) {
             this._data = data;
         } else {
             this._data = [];
-        }
-        if (_isNullOrUndefined(leaveOpen)) {
-            this._leaveOpen = leaveOpen;
         }
         this._offset = offset;
         this._inflater = new _Inflater();

@@ -34,7 +34,7 @@ export const LayersPlugin = {
 /**
  * `e-layers` directive represent a layers of the vue diagram. 
  * It must be contained in a Diagram component(`ejs-diagram`). 
- * ```vue
+ * ```html
  * <ejs-diagram>
  * <e-layers>
  * <e-layer>

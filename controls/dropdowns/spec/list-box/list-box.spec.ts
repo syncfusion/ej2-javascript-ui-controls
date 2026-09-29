@@ -1378,7 +1378,18 @@ describe('ListBox', () => {
                 }
             }, elem);
             listObj.filterInput.value = 'mc';
-            listObj.KeyUp({ keyCode: 67, ctrlKey: false, text: 'mc', preventDefault: () => { } });
+            (listObj as any).KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 67,
+                keyCode: 67,
+                which: 67,
+                code: 'KeyC'
+            } as unknown as KeyboardEvent);
             expect(listObj.liCollections.length).toEqual(2);
             expect(listObj.liCollections[0].innerText).toEqual("McLaren Z1");
         });
@@ -1393,7 +1404,18 @@ describe('ListBox', () => {
                 console.log('filter event triggered');
             } }, elem);
             listObj.filterInput.value = 'ă';
-            listObj.KeyUp({ keyCode: 259, ctrlKey: false, text: 'ă', preventDefault: () => { } });
+            (listObj as any).KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'ă',
+                charCode: 259,
+                keyCode: 193,
+                which: 193,
+                code: 'KeyA'
+            } as unknown as KeyboardEvent);
             expect(listObj.liCollections.length).toEqual(1);
             expect(listObj.liCollections[0].innerText).toEqual("ăgatti Chiron");
         });
@@ -1742,6 +1764,39 @@ describe('ListBox', () => {
                 code: 22
             });
             (listObj as any).isSelected();
+        });
+        it('allow filtering for special characters using the main keyboard', () => {
+            listObj = new ListBox({ dataSource: vegetableData, allowFiltering: true }, elem);
+            const triggerSpy: jasmine.Spy = spyOn(listObj as any, 'trigger').and.callThrough();
+            const keyEvents: Array<{ key: string; keyCode: number; code: string }> = [
+                { key: ',', keyCode: 188, code: 'Comma' },
+                { key: '>', keyCode: 190, code: 'Period' },
+                { key: '/', keyCode: 191, code: 'Slash' },
+                { key: ':', keyCode: 186, code: 'Semicolon' },
+                { key: ';', keyCode: 186, code: 'Semicolon' },
+                { key: '-', keyCode: 189, code: 'Minus' },
+                { key: '=', keyCode: 187, code: 'Equal' },
+                { key: '+', keyCode: 187, code: 'Equal' }
+            ];
+
+            for (const keyEvent of keyEvents) {
+                listObj.filterInput.value = 'c';
+                listObj.KeyUp({
+                    preventDefault: function () { },
+                    altKey: false,
+                    ctrlKey: false,
+                    shiftKey: false,
+                    char: '',
+                    key: keyEvent.key,
+                    charCode: keyEvent.key.charCodeAt(0),
+                    keyCode: keyEvent.keyCode,
+                    which: keyEvent.keyCode,
+                    code: keyEvent.code
+                } as unknown as KeyboardEvent);
+            }
+
+            expect((listObj as any).isValidKey).toBe(false);
+            expect(triggerSpy).toHaveBeenCalled();
         });
         it('Validation attribute checking', () => {
             listObj = new ListBox({

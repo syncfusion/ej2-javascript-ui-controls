@@ -57,6 +57,7 @@ const FILTERPARENT: string = 'e-filter-parent';
 const CUSTOM_WIDTH: string = 'e-search-custom-width';
 const FILTERINPUT: string = 'e-input-filter';
 const RESIZE_ICON: string = 'e-resizer-right e-icons';
+const SUMMARY_TAG_VIEW: string = 'e-delim-summary';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -96,6 +97,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isSelectAll: boolean;
     private isSelectAllClicked: boolean;
     private isProcessingVirtualSelectAll: boolean;
+    private wasSelectAllActive: boolean = false;
     private clearIconWidth: number = 0;
     private previousFilterText: string = '';
     private selectedElementID: string;
@@ -127,7 +129,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isFilteringAction: boolean = false;
     private headerTemplateHeight: number;
     private resizeHandler: () => void;
+    private preventKeyboardInteraction: boolean;
     private scrollEvent: MouseEvent;
+    private isPropertyChanged: boolean = false;
+    private uncheckedValues: { [key: string]: Object }[] | string[] | number[] | boolean[] | object[] = [];
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -320,8 +325,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     public width: string | number;
     /**
      * Gets or sets the height of the popup list. By default it renders based on its list item.
-     * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      *
      * @default '300px'
      * @aspType string
@@ -330,8 +333,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     public popupHeight: string | number;
     /**
      * Gets or sets the width of the popup list and percentage values has calculated based on input width.
-     * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      *
      * @default '100%'
      * @aspType string
@@ -542,6 +543,22 @@ export class MultiSelect extends DropDownBase implements IInput {
     @Property('Default')
     public mode: visualMode;
     /**
+     * Defines the threshold number of selected items above which the summary template is applied (CheckBox mode only).
+     *
+     * @default 0
+     * @type {number}
+     */
+    @Property(0)
+    public summaryTagCount: number;
+    /**
+     * Specifies the string template content for displaying selected items in the input field (CheckBox mode only).
+     *
+     * @default '${selectedCount} items selected'
+     * @type {string}
+     */
+    @Property('${selectedCount} items selected')
+    public summaryTagTemplate: string;
+    /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
      *
      * @default ','
@@ -549,7 +566,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     @Property(',')
     public delimiterChar: string;
     /**
-     * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering)
+     * Sets [`case sensitive`](../../multi-select/filtering#case-sensitive-filtering)
      * option for filter operation.
      *
      * @default true
@@ -913,6 +930,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private onPopupShown(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
+        this.sanitizeData();
         if (Browser.isDevice && (this.mode === 'CheckBox' && this.allowFiltering)) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
@@ -928,7 +946,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!eventArgs.cancel) {
                 this.focusAtFirstListItem(true);
                 if (this.popupObj){
-                    document.body.appendChild(this.popupObj.element);
+                    const appendToElement: HTMLElement = this.getAppendToElement();
+                    appendToElement.appendChild(this.popupObj.element);
                 }
                 if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
                     this.updateListItems(this.list.querySelectorAll('li.e-list-item'), this.mainList.querySelectorAll('li.e-list-item'));
@@ -1227,54 +1246,155 @@ export class MultiSelect extends DropDownBase implements IInput {
     private getForQuery(valuecheck: string[] | number[] | boolean[] | object[], isCheckbox?: boolean): Query {
         let predicate: Predicate;
         const field: string = this.isPrimitiveData ? '' : this.fields.value;
-        if (this.enableVirtualization && valuecheck) {
-            if (isCheckbox) {
-                const startindex: number = this.viewPortInfo.startIndex;
-                const endindex: number = (((startindex + this.viewPortInfo.endIndex) <= (valuecheck.length)) &&
-                    valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) &&
-                    (this.dataSource instanceof DataManager && this.totalItemCount !== 0 && this.totalItemCount > (this.itemCount * 2))
-                    ? (startindex + this.viewPortInfo.endIndex)
-                    : (valuecheck.length);
-                for (let i: number = startindex; i < endindex; i++) {
-                    const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
-                        this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
-                    if (i === startindex) {
-                        predicate = new Predicate(field, 'equal', (value));
-                    } else {
-                        predicate = predicate.or(field, 'equal', (value));
+        if (valuecheck && valuecheck.length >= 3000) {
+            // Batch size to prevent stack overflow with large preselected values (EJ2-Fix-MaxCallStack)
+            const BATCH_SIZE: number = 100;
+            if (this.enableVirtualization) {
+                if (isCheckbox) {
+                    const startindex: number = this.viewPortInfo.startIndex;
+                    let endindex: number = (((startindex + this.viewPortInfo.endIndex) <= (valuecheck.length)) &&
+                        valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) &&
+                        (this.dataSource instanceof DataManager && this.totalItemCount !== 0 && this.totalItemCount > (this.itemCount * 2))
+                        ? (startindex + this.viewPortInfo.endIndex)
+                        : (valuecheck.length);
+                    if (this.value && this.value.length > this.getSummaryTagThreshold()) {
+                        endindex = this.viewPortInfo.endIndex;
                     }
-                }
-                return new Query().where(predicate);
-            }
-            else{
-                for (let i: number = 0; i < valuecheck.length; i++) {
-                    const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
-                        this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
-                    if (this.isaddNonPresentItems) {
-                        predicate = i === 0 ? new Predicate(field, 'equal', (valuecheck[i as number] as string))
-                            : predicate.or(field, 'equal', (valuecheck[i as number] as string));
-                    } else {
-                        predicate = i === 0 ? predicate = new Predicate(field, 'notequal', (value))
-                            : predicate.and(field, 'notequal', (value));
+                    // Build predicates in batches to prevent stack overflow
+                    const predicateBatches: Predicate[] = [];
+                    for (let batchStart: number = startindex; batchStart < endindex; batchStart += BATCH_SIZE) {
+                        let batchPredicate: Predicate;
+                        const batchEnd: number = Math.min(batchStart + BATCH_SIZE, endindex);
+                        for (let i: number = batchStart; i < batchEnd; i++) {
+                            const itemAtIndex: string | number | boolean | object = valuecheck[i as number];
+                            const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
+                                this.fields.value : '', (itemAtIndex as string)) : (itemAtIndex as string);
+                            if (i === batchStart) {
+                                batchPredicate = new Predicate(field, 'equal', (value));
+                            } else {
+                                batchPredicate = batchPredicate.or(field, 'equal', (value));
+                            }
+                        }
+                        predicateBatches.push(batchPredicate);
                     }
-                }
-                return new Query().where(predicate);
-            }
-
-        }
-        else {
-            for (let i: number = 0; i < valuecheck.length; i++) {
-                if (i === 0) {
-                    predicate = new Predicate(field, 'equal', (valuecheck[i as number] as string));
+                    // Combine all batch predicates
+                    predicate = predicateBatches[0];
+                    for (let i: number = 1; i < predicateBatches.length; i++) {
+                        predicate = predicate.or(predicateBatches[i as number]);
+                    }
+                    return new Query().where(predicate);
                 } else {
-                    predicate = predicate.or(field, 'equal', (valuecheck[i as number] as string));
+                    // Build predicates in batches to prevent stack overflow
+                    const predicateBatches: Predicate[] = [];
+                    const isAddNonPresentItems: boolean = this.isaddNonPresentItems;
+
+                    for (let batchStart: number = 0; batchStart < valuecheck.length; batchStart += BATCH_SIZE) {
+                        let batchPredicate: Predicate;
+                        const batchEnd: number = Math.min(batchStart + BATCH_SIZE, valuecheck.length);
+                        for (let i: number = batchStart; i < batchEnd; i++) {
+                            const itemAtIndex: string | number | boolean | object = valuecheck[i as number];
+                            const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
+                                this.fields.value : '', (itemAtIndex as string)) : (itemAtIndex as string);
+                            if (i === batchStart) {
+                                if (isAddNonPresentItems) {
+                                    batchPredicate = new Predicate(field, 'equal', (itemAtIndex as string));
+                                } else {
+                                    batchPredicate = new Predicate(field, 'notequal', (value));
+                                }
+                            } else {
+                                if (isAddNonPresentItems) {
+                                    batchPredicate = batchPredicate.or(field, 'equal', (itemAtIndex as string));
+                                } else {
+                                    batchPredicate = batchPredicate.and(field, 'notequal', (value));
+                                }
+                            }
+                        }
+                        predicateBatches.push(batchPredicate);
+                    }
+                    // Combine batch predicates
+                    predicate = predicateBatches[0];
+                    for (let i: number = 1; i < predicateBatches.length; i++) {
+                        if (isAddNonPresentItems) {
+                            predicate = predicate.or(predicateBatches[i as number]);
+                        } else {
+                            predicate = predicate.and(predicateBatches[i as number]);
+                        }
+                    }
+                    return new Query().where(predicate);
+                }
+
+            } else {
+                // Build predicates in batches to prevent stack overflow with large preselected values
+                const predicateBatches: Predicate[] = [];
+                for (let batchStart: number = 0; batchStart < valuecheck.length; batchStart += BATCH_SIZE) {
+                    let batchPredicate: Predicate;
+                    const batchEnd: number = Math.min(batchStart + BATCH_SIZE, valuecheck.length);
+                    for (let i: number = batchStart; i < batchEnd; i++) {
+                        const itemAtIndex: string | number | boolean | object = valuecheck[i as number];
+                        if (i === batchStart) {
+                            batchPredicate = new Predicate(field, 'equal', (itemAtIndex as string));
+                        } else {
+                            batchPredicate = batchPredicate.or(field, 'equal', (itemAtIndex as string));
+                        }
+                    }
+                    predicateBatches.push(batchPredicate);
+                }
+                // Combine all batch predicates
+                predicate = predicateBatches[0];
+                for (let i: number = 1; i < predicateBatches.length; i++) {
+                    predicate = predicate.or(predicateBatches[i as number]);
+                }
+            }
+        } else {
+            if (this.enableVirtualization && valuecheck) {
+                if (isCheckbox) {
+                    const startindex: number = this.viewPortInfo.startIndex;
+                    const endindex: number = (((startindex + this.viewPortInfo.endIndex) <= (valuecheck.length)) &&
+                        valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) &&
+                        (this.dataSource instanceof DataManager && this.totalItemCount !== 0 && this.totalItemCount > (this.itemCount * 2))
+                        ? (startindex + this.viewPortInfo.endIndex)
+                        : (valuecheck.length);
+                    for (let i: number = startindex; i < endindex; i++) {
+                        const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
+                            this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
+                        if (i === startindex) {
+                            predicate = new Predicate(field, 'equal', (value));
+                        } else {
+                            predicate = predicate.or(field, 'equal', (value));
+                        }
+                    }
+                    return new Query().where(predicate);
+                }
+                else {
+                    for (let i: number = 0; i < valuecheck.length; i++) {
+                        const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
+                            this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
+                        if (this.isaddNonPresentItems) {
+                            predicate = i === 0 ? new Predicate(field, 'equal', (valuecheck[i as number] as string))
+                                : predicate.or(field, 'equal', (valuecheck[i as number] as string));
+                        } else {
+                            predicate = i === 0 ? predicate = new Predicate(field, 'notequal', (value))
+                                : predicate.and(field, 'notequal', (value));
+                        }
+                    }
+                    return new Query().where(predicate);
+                }
+
+            }
+            else {
+                for (let i: number = 0; i < valuecheck.length; i++) {
+                    if (i === 0) {
+                        predicate = new Predicate(field, 'equal', (valuecheck[i as number] as string));
+                    } else {
+                        predicate = predicate.or(field, 'equal', (valuecheck[i as number] as string));
+                    }
                 }
             }
         }
+
         if (this.dataSource instanceof DataManager && (this.dataSource as DataManager).adaptor instanceof JsonAdaptor) {
             return new Query().where(predicate);
-        }
-        else {
+        } else {
             return this.getQuery(this.query).clone().where(predicate);
         }
     }
@@ -1403,7 +1523,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.initialValueUpdate();
                 }
             } else if (!(this.dataSource instanceof DataManager)) {
-                this.initialValueUpdate();
+                if (!this.isRemoveSelection) {
+                    this.initialValueUpdate(this.listData, true);
+                } else {
+                    this.initialValueUpdate();
+                }
             }
             this.initialUpdate();
             this.refreshPlaceHolder();
@@ -1416,6 +1540,16 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.beforePopupOpen = false;
             this.onPopupShown(e);
         }
+    }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element && this.element.closest ? this.element.closest('.cdk-overlay-pane') as HTMLElement : null;
+            const popoverEl: HTMLElement = this.element && this.element.closest ? this.element.closest('[popover]') as HTMLElement : null;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
     private refreshSelection(): void {
         let value: string | number | boolean;
@@ -1472,6 +1606,58 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.checkSelectAll();
         this.checkMaxSelection();
+    }
+    private extendSelectionToNewItems(): void {
+        if (!this.list) {
+            return;
+        }
+        const unselected: NodeListOf<Element> = this.list.querySelectorAll(
+            'li.' + dropDownBaseClasses.li + ':not(.e-active):not(.e-disabled):not(.e-reorder-hide)'
+        );
+        if (!unselected || unselected.length === 0) {
+            this.notify('checkSelectAll', {
+                module: 'CheckBoxSelection',
+                enable: this.mode === 'CheckBox',
+                value: 'check'
+            });
+            return;
+        }
+        if (!this.value) {
+            this.value = <string[]>[];
+        }
+        const currentValues: (string | number | boolean)[] = this.value as (string | number | boolean)[];
+        const seen: { [key: string]: boolean } = {};
+        for (let i: number = 0; i < currentValues.length; i++) {
+            seen[String(currentValues[i as number])] = true;
+        }
+        const newValues: (string | number | boolean)[] = currentValues.slice();
+        let changed: boolean = false;
+        for (let i: number = 0; i < unselected.length; i++) {
+            const li: HTMLElement = unselected[i as number] as HTMLElement;
+            const rawValue: string = li.getAttribute('data-value');
+            if (rawValue === null || seen[rawValue as string]) {
+                continue;
+            }
+            const formatted: string | number | boolean = this.getFormattedValue(rawValue);
+            newValues.push(formatted);
+            seen[rawValue as string] = true;
+            changed = true;
+            this.addListSelection(li);
+        }
+        if (changed) {
+            this.setProperties({ value: newValues }, true);
+            this.updateHiddenElement();
+            if (this.chipCollectionWrapper) {
+                this.removeChipSelection();
+            }
+            this.updateDelimView();
+            this.checkPlaceholderSize();
+        }
+        this.notify('checkSelectAll', {
+            module: 'CheckBoxSelection',
+            enable: this.mode === 'CheckBox',
+            value: 'check'
+        });
     }
 
     private hideGroupItem(value: string | number | boolean): void {
@@ -2473,7 +2659,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         this.UpdateSkeleton();
-        const scrollEle: NodeListOf<HTMLElement> = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
+        const hasOnlyVirtualItems: boolean = this.ulElement && this.ulElement.querySelector('li.e-virtual-list') &&
+            this.ulElement.querySelectorAll('li:not(.e-virtual-list)').length === 0;
+        const targetElement: HTMLElement = hasOnlyVirtualItems ? this.list as HTMLElement : this.ulElement as HTMLElement;
+        const scrollEle: NodeListOf<HTMLElement> = targetElement.querySelectorAll('li.' + dropDownBaseClasses.li
         + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
         if (scrollEle.length > 0) {
             let element: HTMLElement = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
@@ -2545,7 +2734,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
 
     private onKeyDown(e: KeyboardEventArgs): void {
-        if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
+        if (this.readonly || !this.enabled && this.mode !== 'CheckBox' || this.preventKeyboardInteraction) {
             return;
         }
         this.preventSetCurrentData = false;
@@ -3032,7 +3221,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             else{
                 const listUl: HTMLElement = this.list && this.list.querySelector('ul');
                 const isFullList: boolean = (this as any).isReact && this.itemTemplate && listUl != null &&
-                    listUl.querySelectorAll('.e-list-item').length === this.mainData.length && !this.groupTemplate;
+                    listUl.querySelectorAll('.e-list-item').length === this.mainData.length && !this.groupTemplate &&
+                    this.mode !== 'CheckBox';
                 this.onActionComplete(isFullList ? listUl : list, this.mainData);
             }
             this.focusAtLastListItem(data);
@@ -3423,6 +3613,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 });
         }
     }
+    private isDimColumnWithCustomStyle(): boolean {
+        return this.overAllWrapper.classList.contains('b-dbrd-dim-column-ms') &&
+            this.overAllWrapper.classList.contains('e-dbrd-cstyle');
+    }
     private removeValue(
         value: string | number | boolean | object,
         eve: MouseEvent | KeyboardEventArgs,
@@ -3459,6 +3653,38 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.currentRemoveValue = this.allowObjectBinding ? getValue(((this.fields.value) ?
                         this.fields.value : ''), value) : value;
                     this.virtualSelectAll = false;
+                    if (this.mode === 'CheckBox' && this.enableVirtualization && this.value.length > this.getSummaryTagThreshold()
+                        && !isNullOrUndefined(this.dataSource) && (!this.isDimColumnWithCustomStyle())) {
+                        const valueField: string = this.fields && this.fields.value ? this.fields.value : 'value';
+                        const dataSourceArray: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
+                        let fullItem: { [key: string]: Object };
+                        let dataSourceIndex: number = -1;
+                        for (let i: number = 0; i < dataSourceArray.length; i++) {
+                            const item: { [key: string]: Object } = dataSourceArray[i as number];
+                            if (getValue(valueField, item) === this.currentRemoveValue) {
+                                fullItem = item;
+                                dataSourceIndex = i;
+                                break;
+                            }
+                        }
+                        if (fullItem && dataSourceIndex !== -1) {
+                            const unchecked: { [key: string]: Object }[] =
+                                <{ [key: string]: Object }[]>this.uncheckedValues;
+                            this.uncheckedValues = unchecked.concat([fullItem]);
+                            const indexMap: { [key: string]: number } = {};
+                            for (let j: number = 0; j < dataSourceArray.length; j++) {
+                                const mapItem: { [key: string]: Object } = dataSourceArray[j as number];
+                                indexMap[getValue(valueField, mapItem) as string] = j;
+                            }
+                            (<{ [key: string]: Object }[]>this.uncheckedValues).sort(
+                                (a: { [key: string]: Object }, b: { [key: string]: Object }) => {
+                                    const aIdx: number = indexMap[getValue(valueField, a) as string];
+                                    const bIdx: number = indexMap[getValue(valueField, b) as string];
+                                    if (aIdx === bIdx) { return 0; }
+                                    return aIdx - bIdx;
+                                });
+                        }
+                    }
                     const removeVal: number[] | string[] | boolean[] | object[] = this.value.slice(0);
                     removeVal.splice(index, 1);
                     if (this.enableVirtualization && this.selectedListData) {
@@ -3576,6 +3802,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
+    }
+    private isFilteringWithRemoteData(): boolean {
+        return !isNullOrUndefined(this.mainData) && (this.mainData as any[]).length > 0 && this.allowFiltering;
     }
     private removeChip(value: string | number | boolean, isClearAll? : boolean): void {
         if (this.chipCollectionWrapper) {
@@ -3942,7 +4171,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (!this.popupObj) {
             if (!isNullOrUndefined(this.popupWrapper)) {
-                document.body.appendChild(this.popupWrapper);
+                const appendToElement: HTMLElement = this.getAppendToElement();
+                appendToElement.appendChild(this.popupWrapper);
                 const checkboxFilter: HTMLElement = this.popupWrapper.querySelector('.' + FILTERPARENT);
                 if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
                     checkboxFilter.remove();
@@ -4358,6 +4588,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private windowResize(): void {
         this.refreshPopup();
+        this.calculateWidth();
+        this.updateFloatLabelOverflowWidth();
         if ((!this.inputFocus || this.mode === 'CheckBox') && this.viewWrapper && this.viewWrapper.parentElement) {
             this.updateDelimView();
         }
@@ -4406,14 +4638,14 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.search(e);
         }
     }
-    private onWheelScroll(e: MouseEvent): void {
-        this.scrollEvent = e;
-    }
     private pasteHandler (event: KeyboardEventArgs): void {
         setTimeout((): void => {
             this.expandTextbox();
             this.search(event);
         });
+    }
+    private onWheelScroll(e: MouseEvent): void {
+        this.scrollEvent = e;
     }
     protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
         const eventArgs: { [key: string]: Object } = {
@@ -4605,6 +4837,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.preventSetCurrentData = false;
         this.initializeData();
+        this.sanitizeData();
         this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
     }
@@ -4634,6 +4867,53 @@ export class MultiSelect extends DropDownBase implements IInput {
             startIndex: 0,
             endIndex: this.itemCount
         };
+    }
+
+    private sanitizeData(): boolean {
+        if (this.enableVirtualization && this.mode === 'CheckBox') {
+            if (this.dataSource && Array.isArray(this.dataSource) && !(this.dataSource instanceof DataManager)) {
+                const cleanedDataSource: { [key: string]: Object }[] | string[] | number[] | boolean[] = [];
+                for (let i: number = 0; i < (this.dataSource as any[]).length; i++) {
+                    const item: any = (this.dataSource as any[])[i as number];
+                    if (item !== null && item !== undefined && item !== '') {
+                        if (typeof item === 'object') {
+                            const itemValue: any = getValue((this.fields.value ? this.fields.value : 'value'), item);
+                            if (this.fields.value !== null) {
+                                if (itemValue !== null && itemValue !== undefined && itemValue !== '') {
+                                    (cleanedDataSource as any[]).push(item);
+                                }
+                            } else{
+                                (cleanedDataSource as any[]).push(item);
+                            }
+                        } else if (typeof item === 'string') {
+                            if (item !== null && item !== undefined && item.trim() !== '') {
+                                (cleanedDataSource as any[]).push(item);
+                            }
+                        } else {
+                            (cleanedDataSource as any[]).push(item);
+                        }
+                    }
+                }
+                if (cleanedDataSource.length !== (this.dataSource as any[]).length) {
+                    this.setProperties({ dataSource: cleanedDataSource }, true);
+                }
+            }
+            if (this.value && Array.isArray(this.value) && this.value.length > 0) {
+                const cleanedValue: (string | number | boolean | object)[] = [];
+                for (let i: number = 0; i < this.value.length; i++) {
+                    const val: any = this.value[i as number];
+                    if (val !== null && val !== undefined && val !== '') {
+                        cleanedValue.push(val);
+                    }
+                }
+                if (cleanedValue.length !== this.value.length) {
+                    this.setProperties({ value: cleanedValue }, true);
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs, isInitialVirtualData?: boolean): void {
@@ -4782,11 +5062,40 @@ export class MultiSelect extends DropDownBase implements IInput {
             || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
             isEmptyData = true;
         }
+        this.sanitizeData();
         super.render(null, isEmptyData);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
         this.unwireListEvents();
         this.wireListEvents();
+    }
+    private getTextByValueFromDataSource(value: string | number | boolean): string {
+        const dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[] =
+            this.dataSource as { [key: string]: Object }[] | string[] | number[] | boolean[];
+        if (isNullOrUndefined(dataSource) || !(dataSource as any[]).length) {
+            return null;
+        }
+        if (this.isPrimitiveData) {
+            for (let i: number = 0; i < (dataSource as any[]).length; i++) {
+                if ((dataSource as any[])[i as number] === value) {
+                    return (dataSource as any[])[i as number] as string;
+                }
+            }
+            return null;
+        }
+        const fields: FieldSettingsModel = this.fields;
+        const valueField: string = fields.value ? fields.value : 'value';
+        const textField: string = fields.text ? fields.text : 'text';
+        for (let i: number = 0; i < (dataSource as { [key: string]: Object }[]).length; i++) {
+            const item: { [key: string]: Object } = (dataSource as { [key: string]: Object }[])[i as number];
+            if (!isNullOrUndefined(item) && getValue(valueField, item) === value) {
+                const resolvedText: string = getValue(textField, item) as string;
+                if (!isNullOrUndefined(resolvedText)) {
+                    return resolvedText;
+                }
+            }
+        }
+        return null;
     }
     private initialValueUpdate(listItems?: any, isInitialVirtualData?: boolean, isInitialRender?: boolean): void {
         if (this.list) {
@@ -4804,6 +5113,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         getValue(((this.fields.value) ? this.fields.value : ''), this.value[index as number]) :
                         this.value[index as number];
                     element = this.findListElement( this.hideSelectedItem ? this.ulElement : this.list, 'li', 'data-value', value);
+                    if (!element && !isNullOrUndefined(this.mainList) && this.isFilteringWithRemoteData()) {
+                        element = this.findListElement(this.mainList, 'li', 'data-value', value);
+                    }
                     let isCustomData: boolean = false;
                     if (this.enableVirtualization){
                         text = null;
@@ -4833,6 +5145,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 }
                             }
                         }
+                        if (this.isPropertyChanged && isNullOrUndefined(text) && !this.allowCustomValue &&
+                            !(this.dataSource instanceof DataManager)) {
+                            text = this.getTextByValueFromDataSource(value);
+                        }
                         if (
                             (isNullOrUndefined(text) && this.allowCustomValue) &&
                             (
@@ -4849,13 +5165,20 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 (!(this.dataSource instanceof DataManager)) ||
                                 (this.dataSource instanceof DataManager && isInitialVirtualData)
                             ) && (!this.isAngular || !isInitialRender ||
-                            (isNullOrUndefined(formElement) && listItems && listItems.length > 0))) {
+                            (isNullOrUndefined(formElement) && listItems && listItems.length > 0))
+                            && !(this.mode === 'CheckBox' && this.enableVirtualization && this.value.length > this.getSummaryTagThreshold())) {
                             this.value.splice(index, 1);
                             index -= 1;
                         }
                     }
                     else{
                         text = this.getTextByValue(value);
+                        if (text === value && this.isFilteringWithRemoteData()) {
+                            const savedListData: { [key: string]: Object }[] | string[] | number[] | boolean[] = this.listData;
+                            this.listData = this.mainData as { [key: string]: Object }[];
+                            text = this.getTextByValue(value);
+                            this.listData = savedListData;
+                        }
                     }
                     if (((element && (element.getAttribute('aria-selected') !== 'true')) ||
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
@@ -5221,7 +5544,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     if (this.closePopupOnSelect) {
                         this.hidePopup(e);
-                    } else {
+                    }
+                    else {
                         e.preventDefault();
                         if (this.mode !== 'CheckBox' && this.hideSelectedItem && this.value.length === this.listData.length && this.isPopupOpen()) {
                             this.hidePopup(e);
@@ -5510,6 +5834,54 @@ export class MultiSelect extends DropDownBase implements IInput {
             wrapperType.innerText = wrapperData;
         }
     }
+    private getSummaryTagThreshold(): number {
+        return this.summaryTagCount && this.summaryTagCount > 0 ? this.summaryTagCount : 1000;
+    }
+    private getSummaryTagText(): string {
+        const selectedCount: number = this.value ? this.value.length : 0;
+        const totalCount: number = this.totalItemCount ? this.totalItemCount : 0;
+        if (this.summaryTagTemplate && typeof this.summaryTagTemplate === 'string') {
+            let template: string = this.summaryTagTemplate;
+            if (this.mode === 'CheckBox') {
+                template = template.replace(/<[^>]+>/g, '');
+            }
+            if (this.viewWrapper) {
+                this.viewWrapper.classList.add(SUMMARY_TAG_VIEW);
+                this.applySummaryTagWidth();
+            }
+            return template
+                .replace(/\$\{selectedCount\}/g, selectedCount.toString())
+                .replace(/\$\{totalCount\}/g, totalCount.toString());
+        }
+        const l10nLocale: Object = { summaryTagTemplate: '${selectedCount} items selected' };
+        const summaryTagTemplate: string = this.l10n ? this.l10n.getConstant('summaryTagTemplate') :
+            new L10n(this.getLocaleName(), l10nLocale, this.locale).getConstant('summaryTagTemplate');
+        return summaryTagTemplate.replace(/\$\{selectedCount\}/g, selectedCount.toString());
+    }
+
+    private applySummaryTagWidth(): void {
+        if (!this.viewWrapper || !this.componentWrapper) {
+            return;
+        }
+        const componentStyle: CSSStyleDeclaration = window.getComputedStyle(this.componentWrapper);
+        const componentWidth: number = this.componentWrapper.clientWidth;
+        const horizontalPadding: number = (parseFloat(componentStyle.paddingLeft) || 0) +
+            (parseFloat(componentStyle.paddingRight) || 0);
+        const available: number = componentWidth - horizontalPadding;
+        let rightIcons: number = 0;
+        if (this.showClearButton && this.overAllClear) {
+            const display: string = this.overAllClear.style.display;
+            this.overAllClear.style.display = 'block';
+            rightIcons += this.overAllClear.offsetWidth;
+            this.overAllClear.style.display = display;
+        }
+        if (this.showDropDownIcon && this.dropIcon) {
+            const dropStyle: CSSStyleDeclaration = window.getComputedStyle(this.dropIcon);
+            rightIcons += this.dropIcon.offsetWidth + (parseFloat(dropStyle.marginRight) || 0);
+        }
+        const maxWidth: number = Math.max(0, available - rightIcons - 8);
+        this.viewWrapper.style.width = maxWidth + 'px';
+    }
     private updateDelimView(): void {
         if (this.delimiterWrapper) {
             this.hideDelimWrapper();
@@ -5523,6 +5895,16 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         }
         if (this.value && this.value.length) {
+            if (this.mode === 'CheckBox' && this.value.length > this.getSummaryTagThreshold()) {
+                const summaryText: string = this.getSummaryTagText();
+                this.updateWrapperText(this.viewWrapper, summaryText);
+                if (this.isSelectAllClicked) {
+                    this.showOverAllClear();
+                }
+                return;
+            } else if (this.mode === 'CheckBox' && this.viewWrapper) {
+                this.viewWrapper.classList.remove(SUMMARY_TAG_VIEW);
+            }
             let data: string = '';
             let temp: string;
             let tempData: string;
@@ -5777,6 +6159,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private selectAllItem(state: boolean, event?: MouseEvent | KeyboardEventArgs, list? : HTMLElement): void {
         let li: HTMLElement[] & NodeListOf<Element>;
+        this.isSelectAllClicked = state;
         if (!isNullOrUndefined(this.list)) {
             li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
                 'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-disabled):not(.e-virtual-list)' :
@@ -5914,13 +6297,35 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     index++;
                 }
+                let contentEl: HTMLElement | null = null;
+                let selectAllEl: HTMLElement | null = null;
+                let inputEl: HTMLElement | null = null;
                 if (length > 50) {
                     createSpinner({ target: this.filterParent, width: Browser.isDevice ? '16px' : '14px' }, this.createElement);
                     showSpinner(this.filterParent);
-                    if (this.popupObj && this.filterParent) {
-                        [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = '0.5'));
-                        this.filterParent.querySelector('.e-input').setAttribute('readonly', 'true');
+                    this.preventKeyboardInteraction = true;
+                    if (this.popupObj && this.popupObj.element && this.filterParent) {
+                        contentEl = this.popupObj.element.querySelector('.e-content') as HTMLElement | null;
+                        selectAllEl = this.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement | null;
+                        inputEl = this.filterParent.querySelector('.e-input') as HTMLElement | null;
+                        [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                            if (el) {
+                                el.style.opacity = '0.5';
+                            }
+                        });
+                        if (inputEl) {
+                            inputEl.setAttribute('readonly', 'true');
+                        }
                         this.filterParent.style.cursor = 'progress';
+                        [contentEl, selectAllEl].forEach((el: HTMLElement | null) => {
+                            if (!el) { return; }
+                            el.style.pointerEvents = 'none';
+                            el.style.userSelect = 'none';
+                            el.style.touchAction = 'none';
+                            if (el === contentEl) {
+                                el.style.overflow = 'hidden';
+                            }
+                        });
                     }
                     setTimeout(
                         (): void => {
@@ -5949,6 +6354,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 if (currentIndex < dataArray.length) {
                                     requestAnimationFrame(processBatch);
                                 } else {
+                                    this.preventKeyboardInteraction = false;
                                     this.updatedataValueItems(event);
                                     this.isSelectAllLoop = false;
                                     if (!this.changeOnBlur) {
@@ -5965,9 +6371,26 @@ export class MultiSelect extends DropDownBase implements IInput {
                                     this.checkSelectAll();
                                     hideSpinner(this.filterParent);
                                     if (this.popupObj && this.filterParent) {
-                                        [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = ''));
+                                        [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                                            if (el) {
+                                                el.style.opacity = '';
+                                            }
+                                        });
+                                        if (contentEl) {
+                                            contentEl.style.pointerEvents = 'auto';
+                                            contentEl.style.userSelect = 'auto';
+                                            contentEl.style.touchAction = 'auto';
+                                            contentEl.style.overflow = 'auto';
+                                        }
+                                        if (selectAllEl) {
+                                            selectAllEl.style.pointerEvents = 'auto';
+                                            selectAllEl.style.userSelect = 'auto';
+                                            selectAllEl.style.touchAction = 'auto';
+                                        }
+                                        if (inputEl) {
+                                            inputEl.removeAttribute('readonly');
+                                        }
                                         this.filterParent.style.cursor = '';
-                                        this.filterParent.querySelector('.e-input').removeAttribute('readonly');
                                     }
                                 }
                             };
@@ -5986,59 +6409,226 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         else {
             if (this.virtualSelectAllData && this.virtualSelectAllData.length > 0) {
-                const dataArray: any[] = this.virtualSelectAllData;
-                const batchSize: number = 500;
-                let currentIndex: number = 0;
-                this.isProcessingVirtualSelectAll = true;
-                createSpinner({ target: this.filterParent, width: Browser.isDevice ? '16px' : '14px' }, this.createElement);
-                showSpinner(this.filterParent);
-                if (this.popupObj && this.filterParent) {
-                    [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = '0.5'));
-                    this.filterParent.querySelector('.e-input').setAttribute('readonly', 'true');
-                    this.filterParent.style.cursor = 'progress';
-                }
-                const processBatch: any = (): void => {
-                    const endIndex: number = Math.min(currentIndex + batchSize, dataArray.length);
-                    const batch: any[] = dataArray.slice(currentIndex, endIndex);
-                    // Use map on the batch
-                    batch.map((obj: any) => {
-                        this.virtualSelectAll = true;
-                        // eslint-disable-next-line security/detect-object-injection
-                        this.removeValue(this.value[index], event, this.value.length - index);
-                    });
-                    currentIndex = endIndex;
-                    if (currentIndex < dataArray.length) {
-                        requestAnimationFrame(processBatch);
-                    } else {
-                        // All batches completed
-                        this.isProcessingVirtualSelectAll = false;
-                        hideSpinner(this.filterParent);
-                        if (this.popupObj && this.filterParent) {
-                            [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = ''));
-                            this.filterParent.querySelector('.e-input').removeAttribute('readonly');
-                            this.filterParent.style.cursor = '';
+                if (this.mode === 'CheckBox' && this.enableVirtualization && this.virtualSelectAllData.length > this.getSummaryTagThreshold()) {
+                    this.isProcessingVirtualSelectAll = true;
+                    createSpinner({ target: this.filterParent, width: Browser.isDevice ? '16px' : '14px' }, this.createElement);
+                    showSpinner(this.filterParent);
+                    this.preventKeyboardInteraction = true;
+                    let contentEl: HTMLElement | null = null;
+                    let selectAllEl: HTMLElement | null = null;
+                    let inputEl: HTMLElement | null = null;
+                    if (this.popupObj && this.popupObj.element && this.filterParent) {
+                        contentEl = this.popupObj.element.querySelector('.e-content') as HTMLElement | null;
+                        selectAllEl = this.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement | null;
+                        inputEl = this.filterParent.querySelector('.e-input') as HTMLElement | null;
+                        [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                            if (el) {
+                                el.style.opacity = '0.5';
+                            }
+                        });
+                        if (inputEl) {
+                            inputEl.setAttribute('readonly', 'true');
                         }
-                        if (!this.isSelectAllClicked) {
-                            this.showOverAllClear();
-                        }
-                        this.updatedataValueItems(event);
-                        if (!this.changeOnBlur) {
-                            this.updateValueState(event, this.value, this.tempValues);
-                            this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
-                        }
-                        this.updateHiddenElement();
-                        this.setProperties({ value: [] }, true);
-                        this.selectedListData = [];
-                        this.virtualSelectAll = false;
-                        if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
-                            this.notify('setCurrentViewDataAsync', {
-                                component: this.getModuleName(),
-                                module: 'VirtualScroll'
-                            });
-                        }
+                        this.filterParent.style.cursor = 'progress';
+                        [contentEl, selectAllEl].forEach((el: HTMLElement | null) => {
+                            if (!el) { return; }
+                            el.style.pointerEvents = 'none';
+                            el.style.userSelect = 'none';
+                            el.style.touchAction = 'none';
+                            if (el === contentEl) {
+                                el.style.overflow = 'hidden';
+                            }
+                        });
                     }
-                };
-                processBatch();
+                    setTimeout((): void => {
+                        requestAnimationFrame(() => {
+                            this.virtualSelectAll = false;
+                            this.selectedListData = [];
+                            if (this.chipCollectionWrapper) {
+                                this.chipCollectionWrapper.innerHTML = '';
+                            }
+                            if (this.list) {
+                                const selectedItems: NodeListOf<Element> = this.list.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '.e-active');
+                                removeClass(selectedItems, 'e-active');
+                                const checkedItems: NodeListOf<Element> = this.list.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '[aria-selected="true"]');
+                                checkedItems.forEach((el: Element) => el.setAttribute('aria-selected', 'false'));
+                            }
+                            if (this.mainList) {
+                                const mainSelected: NodeListOf<Element> = this.mainList.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '.e-active');
+                                removeClass(mainSelected, 'e-active');
+                                const mainChecked: NodeListOf<Element> = this.mainList.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '[aria-selected="true"]');
+                                mainChecked.forEach((el: Element) => el.setAttribute('aria-selected', 'false'));
+                            }
+                            if (this.list) {
+                                const disabledItems: NodeListOf<Element> = this.list.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '.e-disable');
+                                removeClass(disabledItems, 'e-disable');
+                            }
+                            if (this.mainList) {
+                                const mainDisabled: NodeListOf<Element> = this.mainList.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '.e-disable');
+                                removeClass(mainDisabled, 'e-disable');
+                            }
+                            this.setProperties({ value: <number[] | string[] | boolean[] | object[]>[] }, true);
+                            this.setProperties({ text: '' }, true);
+                            this.tempValues = null;
+                            this.notify('checkSelectAll', {
+                                module: 'CheckBoxSelection',
+                                enable: this.mode === 'CheckBox',
+                                value: 'uncheck'
+                            });
+                            const selectedAllArgs: ISelectAllEventArgs = {
+                                event: event,
+                                items: [],
+                                itemData: [],
+                                isInteracted: event ? true : false,
+                                isChecked: false
+                            };
+                            this.trigger('selectedAll', selectedAllArgs);
+                            if (this.changeOnBlur) {
+                                this.updateValueState(event, this.value, this.tempValues);
+                                this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
+                            } else {
+                                this.updateValueState(event, this.value, this.tempValues);
+                                this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+                            }
+                            this.updateHiddenElement();
+                            this.refreshInputHight();
+                            this.refreshPlaceHolder();
+                            this.updateDelimView();
+                            this.hideOverAllClear();
+                            this.isProcessingVirtualSelectAll = false;
+                            this.preventKeyboardInteraction = false;
+                            hideSpinner(this.filterParent);
+                            if (this.popupObj && this.filterParent) {
+                                [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                                    if (el) {
+                                        el.style.opacity = '';
+                                    }
+                                });
+                                if (contentEl) {
+                                    contentEl.style.pointerEvents = 'auto';
+                                    contentEl.style.userSelect = 'auto';
+                                    contentEl.style.touchAction = 'auto';
+                                    contentEl.style.overflow = 'auto';
+                                }
+                                if (selectAllEl) {
+                                    selectAllEl.style.pointerEvents = 'auto';
+                                    selectAllEl.style.userSelect = 'auto';
+                                    selectAllEl.style.touchAction = 'auto';
+                                }
+                                if (inputEl) {
+                                    inputEl.removeAttribute('readonly');
+                                }
+                                this.filterParent.style.cursor = '';
+                            }
+                            if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
+                                this.notify('setCurrentViewDataAsync', {
+                                    component: this.getModuleName(),
+                                    module: 'VirtualScroll'
+                                });
+                            }
+                        });
+                    }, this.virtualSelectAllData.length / 10);
+                } else {
+                    const dataArray: any[] = this.virtualSelectAllData;
+                    const batchSize: number = 500;
+                    let currentIndex: number = 0;
+                    this.isProcessingVirtualSelectAll = true;
+                    createSpinner({ target: this.filterParent, width: Browser.isDevice ? '16px' : '14px' }, this.createElement);
+                    showSpinner(this.filterParent);
+                    this.preventKeyboardInteraction = true;
+                    let contentEl: HTMLElement | null = null;
+                    let selectAllEl: HTMLElement | null = null;
+                    let inputEl: HTMLElement | null = null;
+                    if (this.popupObj && this.popupObj.element && this.filterParent) {
+                        contentEl = this.popupObj.element.querySelector('.e-content') as HTMLElement | null;
+                        selectAllEl = this.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement | null;
+                        inputEl = this.filterParent.querySelector('.e-input') as HTMLElement | null;
+                        [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                            if (el) {
+                                el.style.opacity = '0.5';
+                            }
+                        });
+                        if (inputEl) {
+                            inputEl.setAttribute('readonly', 'true');
+                        }
+                        this.filterParent.style.cursor = 'progress';
+                        [contentEl, selectAllEl].forEach((el: HTMLElement | null) => {
+                            if (!el) { return; }
+                            el.style.pointerEvents = 'none';
+                            el.style.userSelect = 'none';
+                            el.style.touchAction = 'none';
+                            if (el === contentEl) {
+                                el.style.overflow = 'hidden';
+                            }
+                        });
+                    }
+                    const processBatch: any = (): void => {
+                        const endIndex: number = Math.min(currentIndex + batchSize, dataArray.length);
+                        const batch: any[] = dataArray.slice(currentIndex, endIndex);
+                        // Use map on the batch
+                        batch.map((obj: any) => {
+                            this.virtualSelectAll = true;
+                            // eslint-disable-next-line security/detect-object-injection
+                            this.removeValue(this.value[index], event, this.value.length - index);
+                        });
+                        currentIndex = endIndex;
+                        if (currentIndex < dataArray.length) {
+                            requestAnimationFrame(processBatch);
+                        } else {
+                            // All batches completed
+                            this.isProcessingVirtualSelectAll = false;
+                            this.preventKeyboardInteraction = false;
+                            hideSpinner(this.filterParent);
+                            if (this.popupObj && this.filterParent) {
+                                [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                                    if (el) {
+                                        el.style.opacity = '';
+                                    }
+                                });
+                                if (contentEl) {
+                                    contentEl.style.pointerEvents = 'auto';
+                                    contentEl.style.userSelect = 'auto';
+                                    contentEl.style.touchAction = 'auto';
+                                    contentEl.style.overflow = 'auto';
+                                }
+                                if (selectAllEl) {
+                                    selectAllEl.style.pointerEvents = 'auto';
+                                    selectAllEl.style.userSelect = 'auto';
+                                    selectAllEl.style.touchAction = 'auto';
+                                }
+                                if (inputEl) {
+                                    inputEl.removeAttribute('readonly');
+                                }
+                                this.filterParent.style.cursor = '';
+                            }
+                            if (!this.isSelectAllClicked) {
+                                this.showOverAllClear();
+                            }
+                            this.updatedataValueItems(event);
+                            if (!this.changeOnBlur) {
+                                this.updateValueState(event, this.value, this.tempValues);
+                                this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+                            }
+                            this.updateHiddenElement();
+                            this.setProperties({ value: [] }, true);
+                            this.selectedListData = [];
+                            this.virtualSelectAll = false;
+                            if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
+                                this.notify('setCurrentViewDataAsync', {
+                                    component: this.getModuleName(),
+                                    module: 'VirtualScroll'
+                                });
+                            }
+                        }
+                    };
+                    processBatch();
+                }
             }
         }
         this.checkSelectAll();
@@ -6103,10 +6693,32 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (length > 50) {
                         createSpinner({ target: this.filterParent, width: Browser.isDevice ? '16px' : '14px' }, this.createElement);
                         showSpinner(this.filterParent);
-                        if (this.popupObj && this.filterParent) {
-                            [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = '0.5'));
-                            this.filterParent.querySelector('.e-input').setAttribute('readonly', 'true');
+                        this.preventKeyboardInteraction = true;
+                        let contentEl: HTMLElement | null = null;
+                        let selectAllEl: HTMLElement | null = null;
+                        let inputEl: HTMLElement | null = null;
+                        if (this.popupObj && this.popupObj.element && this.filterParent) {
+                            contentEl = this.popupObj.element.querySelector('.e-content') as HTMLElement | null;
+                            selectAllEl = this.popupObj.element.querySelector('.e-selectall-parent') as HTMLElement | null;
+                            inputEl = this.filterParent.querySelector('.e-input') as HTMLElement | null;
+                            [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                                if (el) {
+                                    el.style.opacity = '0.5';
+                                }
+                            });
+                            if (inputEl) {
+                                inputEl.setAttribute('readonly', 'true');
+                            }
                             this.filterParent.style.cursor = 'progress';
+                            [contentEl, selectAllEl].forEach((el: HTMLElement | null) => {
+                                if (!el) { return; }
+                                el.style.pointerEvents = 'none';
+                                el.style.userSelect = 'none';
+                                el.style.touchAction = 'none';
+                                if (el === contentEl) {
+                                    el.style.overflow = 'hidden';
+                                }
+                            });
                         }
                         this.isProcessingVirtualSelectAll = !this.isSelectAllClicked;
                         let indexLocal: number = index; // preserve original index value
@@ -6133,9 +6745,27 @@ export class MultiSelect extends DropDownBase implements IInput {
                                         }
                                     }
                                     hideSpinner(this.filterParent);
+                                    this.preventKeyboardInteraction = false;
                                     if (this.popupObj && this.filterParent) {
-                                        [this.popupObj.element.querySelector('.e-content'), this.popupObj.element.querySelector('.e-selectall-parent'), this.filterParent].forEach((el: any) => el && (el.style.opacity = ''));
-                                        this.filterParent.querySelector('.e-input').removeAttribute('readonly');
+                                        [contentEl, selectAllEl, this.filterParent].forEach((el: HTMLElement | null) => {
+                                            if (el) {
+                                                el.style.opacity = '';
+                                            }
+                                        });
+                                        if (contentEl) {
+                                            contentEl.style.pointerEvents = 'auto';
+                                            contentEl.style.userSelect = 'auto';
+                                            contentEl.style.touchAction = 'auto';
+                                            contentEl.style.overflow = 'auto';
+                                        }
+                                        if (selectAllEl) {
+                                            selectAllEl.style.pointerEvents = 'auto';
+                                            selectAllEl.style.userSelect = 'auto';
+                                            selectAllEl.style.touchAction = 'auto';
+                                        }
+                                        if (inputEl) {
+                                            inputEl.removeAttribute('readonly');
+                                        }
                                         this.filterParent.style.cursor = '';
                                     }
                                     return;
@@ -6210,8 +6840,15 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.updateValueState(event, this.value, this.tempValues);
                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
             }
-            if ((this.enableVirtualization && this.value && this.value.length > 0) || !this.enableVirtualization){
-                this.updateHiddenElement();
+            const skipLegacyUpdateHidden: boolean = !state
+                && this.mode === 'CheckBox'
+                && this.enableVirtualization
+                && this.virtualSelectAllData
+                && this.virtualSelectAllData.length > this.getSummaryTagThreshold();
+            if (!skipLegacyUpdateHidden) {
+                if ((this.enableVirtualization && this.value && this.value.length > 0) || !this.enableVirtualization){
+                    this.updateHiddenElement();
+                }
             }
         }
     }
@@ -6293,6 +6930,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected selectAllItems(state: boolean, event?: MouseEvent): void {
         this.isSelectAllClicked = state;
+        this.wasSelectAllActive = state;
         if (isNullOrUndefined(this.list)) {
             this.selectAllAction = () => {
                 if (this.mode === 'CheckBox' && this.showSelectAll) {
@@ -6341,6 +6979,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @returns {void}
      */
     public onPropertyChanged(newProp: MultiSelectModel, oldProp: MultiSelectModel): void {
+        this.isPropertyChanged = true;
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
         || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.mainList = null;
@@ -6356,12 +6995,23 @@ export class MultiSelect extends DropDownBase implements IInput {
             switch (prop) {
             case 'query':
             case 'dataSource':
+                this.sanitizeData();
                 if (this.mode === 'CheckBox' && this.showSelectAll) {
-                    if (!isNullOrUndefined(this.popupObj)) {
+                    if (!isNullOrUndefined(this.popupObj) && !this.isDimColumnWithCustomStyle()) {
                         this.popupObj.destroy();
                         this.popupObj = null;
                     }
                     this.renderPopup();
+                    if (this.isDimColumnWithCustomStyle() && this.isPopupOpen() && !isNullOrUndefined(this.popupObj) && this.list) {
+                        this.list.style.visibility = 'hidden';
+                        this.resetList(this.dataSource, this.fields, this.query);
+                        this.notify('selectAll', {});
+                        this.refreshSelection();
+                        if (this.wasSelectAllActive) {
+                            this.extendSelectionToNewItems();
+                        }
+                        this.list.style.visibility = '';
+                    }
                 }
                 break;
             case 'htmlAttributes': this.updateHTMLAttribute();
@@ -6375,11 +7025,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.updateVal(this.value, this.value, 'text');
                 break;
             case 'value':
+                this.sanitizeData();
                 if (this.fields.disabled) {
                     this.removeDisabledItemsValue(this.value);
                 }
                 if (this.enableVirtualization && !isNullOrUndefined(oldProp.value) && !isNullOrUndefined(newProp.value)
                 && !this.validateValues(newProp.value, oldProp.value)) {
+                    return;
+                }
+                if (this.isVue && this.mode === 'CheckBox' && !this.changeOnBlur && !isNullOrUndefined(oldProp.value) && !isNullOrUndefined(newProp.value)
+                    && !this.validateValues(newProp.value, oldProp.value)) {
                     return;
                 }
                 this.updateVal(this.value, oldProp.value, 'value', this.enableVirtualization);
@@ -6465,6 +7120,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 break;
             case 'enableSelectionOrder':
                 break;
+            case 'summaryTagCount':
+            case 'summaryTagTemplate':
+                if (this.mode === 'CheckBox') {
+                    this.updateDelimView();
+                }
+                break;
             case 'selectAllText': this.notify('selectAllText', false);
                 break;
             case 'popupHeight':
@@ -6502,6 +7163,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 break;
             }
         }
+        this.isPropertyChanged = false;
     }
     private reInitializePoup(): void {
         if (this.popupObj) {
@@ -6802,6 +7464,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         const args: BeforeOpenEventArgs = { cancel: false };
+        const oldValue: any[] = extend([], this.value, [], true) as any[];
+        const oldData: any[] = extend([], this.dataSource, [], true) as any[];
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
             if (!args.cancel) {
                 if (!this.ulElement) {
@@ -6811,6 +7475,55 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     super.render(e);
                     if (this.inputElement && this.mode !== 'CheckBox') { this.focusIn(); }
+                    if (this.enableVirtualization && this.mode === 'CheckBox') {
+                        if (JSON.stringify(oldData) !== JSON.stringify(this.dataSource) && this.sanitizeData() && this.showSelectAll) {
+                            this.renderPopup();
+                        }
+                        if (!isNullOrUndefined(oldValue) && !isNullOrUndefined(this.value) &&
+                        JSON.stringify(oldValue) !== JSON.stringify(this.value) && this.sanitizeData()) {
+                            if (this.fields.disabled) {
+                                this.removeDisabledItemsValue(this.value);
+                            }
+                            if (!this.validateValues(this.value as string[] | number[] | boolean[] | object[], oldValue as string[]
+                            | number[] | boolean[] | object[])) {
+                                return;
+                            }
+                            if (this.isVue && !this.changeOnBlur && !this.validateValues(this.value as string[] | number[] | boolean[]
+                            | object[], oldValue as string[] | number[] | boolean[] | object[])) {
+                                return;
+                            }
+                            this.updateVal(this.value, oldValue, 'value', this.enableVirtualization);
+                            this.addValidInputClass();
+                            if (this.showSelectAll) {
+                                this.renderPopup();
+                                const totalCount: number = this.dataSource instanceof DataManager ? 0 :
+                                    (this.dataSource as object[]).length;
+                                const selectedCount: number = this.value ? this.value.length : 0;
+                                if (selectedCount === totalCount) {
+                                    let frame: Element = null;
+                                    if (this.popupObj) {
+                                        frame = this.popupObj.element.querySelector(
+                                            '.e-selectall-parent .e-frame'
+                                        );
+                                    }
+                                    if (frame) {
+                                        frame.classList.add('e-check');
+                                        frame.classList.remove('e-uncheck');
+                                        frame.classList.remove('e-stop');
+                                    }
+                                }
+                            }
+                            if (!this.closePopupOnSelect && this.isPopupOpen()) {
+                                this.refreshPopup();
+                            }
+                            if (this.isPopupOpen() && this.list && this.list.querySelector('.e-active.e-disable')) {
+                                const activeItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll(
+                                    'li.' + dropDownBaseClasses.li + '.e-active' + '.e-disable');
+                                removeClass(activeItems, 'e-disable');
+                            }
+                            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
+                        }
+                    }
                     return;
                 }
                 if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering && this.isDeviceFullScreen) {
@@ -6819,8 +7532,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 const mainLiLength: number = this.ulElement.querySelectorAll('li.' + 'e-list-item').length;
                 const liLength: number = this.ulElement.querySelectorAll('li.'
                     + dropDownBaseClasses.li + '.' + HIDE_LIST).length;
+                const isRemoteData: boolean = this.dataSource instanceof DataManager;
+                const isFilterText: boolean = this.allowFiltering && !isNullOrUndefined(this.inputElement) && this.inputElement.value.trim() !== '';
                 if (mainLiLength > 0 && (mainLiLength === liLength) && (liLength === this.mainData.length) &&
-                    !(this.targetElement() !== '' && this.allowCustomValue)) {
+                    !(this.targetElement() !== '' && this.allowCustomValue) && (!isRemoteData || !isFilterText)) {
                     this.beforePopupOpen = false;
                     return;
                 }
@@ -6904,9 +7619,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     private updateFloatLabelOverflowWidth(): void {
         const container: HTMLElement = this.overAllWrapper;
         const label: HTMLElement | null = container.querySelector('.e-float-text');
-        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
-            label.style.width = calculateWidth + 'px';
+        if (label && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
+            const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+            if (calculateWidth) {
+                label.style.width = calculateWidth + 'px';
+            }
         }
     }
 
@@ -6967,6 +7684,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line
             this.value = [...this.value as any];
         }
+        this.sanitizeData();
         this.setDynValue = this.initStatus = false;
         this.isSelectAll = false;
         this.selectAllEventEle = [];
@@ -7003,6 +7721,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.chipCollectionWrapper = this.createElement('span', {
                 className: CHIP_WRAPPER
             });
+            this.chipCollectionWrapper.setAttribute('role', 'listbox');
+            this.chipCollectionWrapper.setAttribute('aria-label', 'multiselect');
             this.chipCollectionWrapper.style.display = 'none';
             if (this.mode === 'Default') {
                 this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_default'));
@@ -7247,7 +7967,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         const listParentHeight: string = formatUnit(this.popupHeight);
         listParent.style.height = (parseInt(listParentHeight, 10)).toString() + 'px';
         listParent.appendChild(item);
-        document.body.appendChild(listParent);
+        const appendToElement: HTMLElement = this.getAppendToElement();
+        appendToElement.appendChild(listParent);
         this.virtualListHeight = listParent.getBoundingClientRect().height;
         const listItemHeight: number = Math.ceil(item.getBoundingClientRect().height) +
             parseInt(window.getComputedStyle(item).marginBottom, 10);
@@ -7329,6 +8050,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.value && this.value.length) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let listItems: any;
+            const skipExpensiveQuery: boolean = this.mode === 'CheckBox' && this.enableVirtualization && this.value.length > this.getSummaryTagThreshold();
             if (this.enableVirtualization) {
                 const fields: string = !this.isPrimitiveData ? this.fields.value : '';
                 let predicate: Predicate;
@@ -7363,20 +8085,59 @@ export class MultiSelect extends DropDownBase implements IInput {
                         });
                 }
                 else {
-                    listItems = this.executeLocalForLargeSelection(
-                        this.dataSource as any[],
-                        this.value,
-                        {
-                            fields: this.fields,
-                            allowObjectBinding: this.allowObjectBinding,
-                            isPrimitiveData: this.isPrimitiveData
-                        }
-                    );
+                    if (!skipExpensiveQuery) {
+                        listItems = this.executeLocalForLargeSelection(
+                            this.dataSource as any[],
+                            this.value,
+                            {
+                                fields: this.fields,
+                                allowObjectBinding: this.allowObjectBinding,
+                                isPrimitiveData: this.isPrimitiveData
+                            }
+                        );
+                    }
                 }
             }
             if (!(this.dataSource instanceof DataManager)) {
-                this.initialValueUpdate(listItems, true, isInitialRender);
-                this.initialUpdate();
+                if (skipExpensiveQuery && !listItems) {
+                    const ds: any[] = this.dataSource as any[];
+                    const textMap: { [key: string]: string } = {};
+                    if (!this.isPrimitiveData) {
+                        const vf: string = (this.fields && this.fields.value) || 'value';
+                        const tf: string = (this.fields && this.fields.text) || 'text';
+                        for (let k: number = 0; k < ds.length; k++) {
+                            const it: any = ds[k as number];
+                            if (it) {
+                                const vk: any = getValue(vf, it);
+                                if (vk !== undefined && vk !== null) {
+                                    const tv: any = getValue(tf, it);
+                                    textMap[String(vk)] = tv == null ? String(vk) : String(tv);
+                                }
+                            }
+                        }
+                    }
+                    const parts: string[] = new Array<string>(this.value.length);
+                    if (this.isPrimitiveData) {
+                        for (let i2: number = 0; i2 < this.value.length; i2++) {
+                            parts[i2 as number] = String(this.value[i2 as number]);
+                        }
+                    } else {
+                        const fName: string = (this.fields && this.fields.value) || 'value';
+                        for (let i2: number = 0; i2 < this.value.length; i2++) {
+                            const raw: any = this.allowObjectBinding
+                                ? getValue(fName, this.value[i2 as number])
+                                : this.value[i2 as number];
+                            const key: string = raw == null ? '' : String(raw);
+                            parts[i2 as number] = textMap[key as string] != null ? textMap[key as string] : (key);
+                        }
+                    }
+                    this.setProperties({ text: parts.join(this.delimiterChar) }, true);
+                    this.updateDelimView();
+                    this.initialUpdate();
+                } else {
+                    this.initialValueUpdate(listItems, true, isInitialRender);
+                    this.initialUpdate();
+                }
             } else {
                 this.setInitialValue = () => {
                     this.initStatus = false;
@@ -7457,7 +8218,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 : getValue(fields.value, item);
             if (!uniqueMap.hasOwnProperty(key)) {
                 uniqueMap[key as string] = item;
-                resultArray.push(item as never);
+                resultArray.push(item);
             }
         }
         return resultArray;

@@ -648,6 +648,78 @@ describe('DropDownButton', () => {
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         });
 
+        const homeEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 36,
+            target: null
+        };
+
+        const endEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 35,
+            target: null
+        };
+
+        it('Home key focuses first item', () => {
+            drpButton = new DropDownButton({ items: items });
+            drpButton.appendTo('#drp-button');
+            drpButton.element.click();
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            li[2].classList.add('e-focused');
+            homeEventArgs.target = li[2];
+            drpButton.keyBoardHandler(homeEventArgs);
+            expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
+            expect((li[2] as Element).classList.contains('e-focused')).toBe(false);
+        });
+
+        it('End key focuses last item', () => {
+            drpButton = new DropDownButton({ items: items });
+            drpButton.appendTo('#drp-button');
+            drpButton.element.click();
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            li[0].classList.add('e-focused');
+            endEventArgs.target = li[0];
+            drpButton.keyBoardHandler(endEventArgs);
+            expect((li[2] as Element).classList.contains('e-focused')).toBe(false);
+            expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
+        });
+
+        it('Home key skips separator and disabled items', () => {
+            const homeItems: ItemModel[] = [
+                { separator: true },
+                { text: 'Cut', disabled: true },
+                { text: 'Copy' },
+                { text: 'Paste' }
+            ];
+            drpButton = new DropDownButton({ items: homeItems });
+            drpButton.appendTo('#drp-button');
+            drpButton.element.click();
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            homeEventArgs.target = li[3];
+            drpButton.keyBoardHandler(homeEventArgs);
+            expect((li[2] as Element).classList.contains('e-focused')).toBe(true);
+            expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
+            expect((li[1] as Element).classList.contains('e-focused')).toBe(false);
+        });
+
+        it('End key skips separator and disabled items', () => {
+            const endItems: ItemModel[] = [
+                { text: 'Cut' },
+                { text: 'Copy' },
+                { text: 'Paste', disabled: true },
+                { separator: true }
+            ];
+            drpButton = new DropDownButton({ items: endItems });
+            drpButton.appendTo('#drp-button');
+            drpButton.element.click();
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            endEventArgs.target = li[0];
+            drpButton.keyBoardHandler(endEventArgs);
+            expect((li[1] as Element).classList.contains('e-focused')).toBe(true);
+            expect((li[2] as Element).classList.contains('e-focused')).toBe(false);
+            expect((li[3] as Element).classList.contains('e-focused')).toBe(false);
+        });
+
         const altDownEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             altKey: true,

@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/bootstrap-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $listbox-font-family: $font-family !default;

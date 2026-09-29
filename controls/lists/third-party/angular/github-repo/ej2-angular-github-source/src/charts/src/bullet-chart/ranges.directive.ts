@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-bullet-range-collection>e-bullet-range',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class BulletRangeDirective extends ComplexBase<BulletRangeDirective> {
@@ -30,32 +30,32 @@ export class BulletRangeDirective extends ComplexBase<BulletRangeDirective> {
      * Default value for qualitative range Color.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Default value for qualitative range end value.
      * @default null
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Default value for qualitative range Color.
      * @default null
      */
-    public index: any;
+    public declare index: any;
     /** 
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
      * @default ''
      */
-    public legendImageUrl: any;
+    public declare legendImageUrl: any;
     /** 
      * Default value for qualitative range name.
      * @default null
      */
-    public name: any;
+    public declare name: any;
     /** 
      * Range opacity
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * The shape of the legend. Each ranges has its own legend shape. They are, 
      * * Circle 
@@ -71,7 +71,7 @@ export class BulletRangeDirective extends ComplexBase<BulletRangeDirective> {
      * * Image
      * @default 'Rectangle'
      */
-    public shape: any;
+    public declare shape: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -87,6 +87,7 @@ export class BulletRangeDirective extends ComplexBase<BulletRangeDirective> {
  */
 @Directive({
     selector: 'ej-bulletchart>e-bullet-range-collection',
+    standalone: true,
     queries: {
         children: new ContentChildren(BulletRangeDirective)
     },

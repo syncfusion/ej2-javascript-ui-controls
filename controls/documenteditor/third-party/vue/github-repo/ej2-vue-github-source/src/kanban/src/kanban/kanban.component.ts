@@ -16,7 +16,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ej-kanban` represents the VueJS Kanban Component.
- * ```vue
+ * ```
  * <ejs-kanban></ejs-kanban>
  * ```
  */

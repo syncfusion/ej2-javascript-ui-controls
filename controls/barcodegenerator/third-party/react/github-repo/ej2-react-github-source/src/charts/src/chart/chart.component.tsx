@@ -9,7 +9,7 @@ export interface ChartTypecast {
 }
 /**
  * Represents react Chart Component
- * ```tsx
+ * ```
  * <ChartComponent></ChartComponent>
  * ```
  */

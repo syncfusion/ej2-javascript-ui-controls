@@ -33,7 +33,7 @@ export const AnnotationsPlugin = {
 
 /**
  * Represents the directive to render and customize the annotations in an axis of circular gauge.
- * ```vue
+ * ```
  * <ejs-circulargauge>
  * <e-axes>
  * <e-axis>

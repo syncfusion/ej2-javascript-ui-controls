@@ -34,7 +34,7 @@ export const SankeyNodesCollectionPlugin = {
 /**
  * `SankeyNodeDirective` directive represent a node of the vue Sankey. 
  * It must be contained in a Sankey component(`SankeyComponent`). 
- * ```vue
+ * ```
  * <ejs-sankey>
  * <e-sankey-nodes>
  * <e-sankey-node></e-sankey-node>

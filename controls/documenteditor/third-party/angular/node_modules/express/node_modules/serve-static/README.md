@@ -2,8 +2,7 @@
 
 [![NPM Version][npm-version-image]][npm-url]
 [![NPM Downloads][npm-downloads-image]][npm-url]
-[![Linux Build][github-actions-ci-image]][github-actions-ci-url]
-[![Windows Build][appveyor-image]][appveyor-url]
+[![CI][github-actions-ci-image]][github-actions-ci-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
 
 ## Install
@@ -19,7 +18,7 @@ $ npm install serve-static
 ## API
 
 ```js
-var serveStatic = require('serve-static')
+const serveStatic = require('serve-static')
 ```
 
 ### serveStatic(root, options)
@@ -45,7 +44,7 @@ true. Disabling this will ignore the `immutable` and `maxAge` options.
 
 ##### dotfiles
 
- Set how "dotfiles" are treated when encountered. A dotfile is a file
+Set how "dotfiles" are treated when encountered. A dotfile is a file
 or directory that begins with a dot ("."). Note this check is done on
 the path itself without checking if the path actually exists on the
 disk. If `root` is specified, only the dotfiles above the root are
@@ -56,8 +55,7 @@ to "deny").
   - `'deny'` Deny a request for a dotfile and 403/`next()`.
   - `'ignore'` Pretend like the dotfile does not exist and 404/`next()`.
 
-The default value is similar to `'ignore'`, with the exception that this
-default will not ignore the files within a directory that begins with a dot.
+The default value is `'ignore'`.
 
 ##### etag
 
@@ -134,15 +132,15 @@ the arguments are:
 ### Serve files with vanilla node.js http server
 
 ```js
-var finalhandler = require('finalhandler')
-var http = require('http')
-var serveStatic = require('serve-static')
+const finalhandler = require('finalhandler')
+const http = require('http')
+const serveStatic = require('serve-static')
 
 // Serve up public/ftp folder
-var serve = serveStatic('public/ftp', { index: ['index.html', 'index.htm'] })
+const serve = serveStatic('public/ftp', { index: ['index.html', 'index.htm'] })
 
 // Create server
-var server = http.createServer(function onRequest (req, res) {
+const server = http.createServer((req, res) => {
   serve(req, res, finalhandler(req, res))
 })
 
@@ -153,13 +151,13 @@ server.listen(3000)
 ### Serve all files as downloads
 
 ```js
-var contentDisposition = require('content-disposition')
-var finalhandler = require('finalhandler')
-var http = require('http')
-var serveStatic = require('serve-static')
+const contentDisposition = require('content-disposition')
+const finalhandler = require('finalhandler')
+const http = require('http')
+const serveStatic = require('serve-static')
 
 // Serve up public/ftp folder
-var serve = serveStatic('public/ftp', {
+const serve = serveStatic('public/ftp', {
   index: false,
   setHeaders: setHeaders
 })
@@ -170,7 +168,7 @@ function setHeaders (res, path) {
 }
 
 // Create server
-var server = http.createServer(function onRequest (req, res) {
+const server = http.createServer((req, res) => {
   serve(req, res, finalhandler(req, res))
 })
 
@@ -185,10 +183,10 @@ server.listen(3000)
 This is a simple example of using Express.
 
 ```js
-var express = require('express')
-var serveStatic = require('serve-static')
+const express = require('express')
+const serveStatic = require('serve-static')
 
-var app = express()
+const app = express()
 
 app.use(serveStatic('public/ftp', { index: ['default.html', 'default.htm'] }))
 app.listen(3000)
@@ -201,11 +199,11 @@ Files are searched for in `public-optimized/` first, then `public/` second
 as a fallback.
 
 ```js
-var express = require('express')
-var path = require('path')
-var serveStatic = require('serve-static')
+const express = require('express')
+const path = require('path')
+const serveStatic = require('serve-static')
 
-var app = express()
+const app = express()
 
 app.use(serveStatic(path.join(__dirname, 'public-optimized')))
 app.use(serveStatic(path.join(__dirname, 'public')))
@@ -215,15 +213,15 @@ app.listen(3000)
 #### Different settings for paths
 
 This example shows how to set a different max age depending on the served
-file type. In this example, HTML files are not cached, while everything else
+file. In this example, HTML files are not cached, while everything else
 is for 1 day.
 
 ```js
-var express = require('express')
-var path = require('path')
-var serveStatic = require('serve-static')
+const express = require('express')
+const path = require('path')
+const serveStatic = require('serve-static')
 
-var app = express()
+const app = express()
 
 app.use(serveStatic(path.join(__dirname, 'public'), {
   maxAge: '1d',
@@ -232,8 +230,8 @@ app.use(serveStatic(path.join(__dirname, 'public'), {
 
 app.listen(3000)
 
-function setCustomCacheControl (res, path) {
-  if (serveStatic.mime.lookup(path) === 'text/html') {
+function setCustomCacheControl (res, file) {
+  if (path.extname(file) === '.html') {
     // Custom Cache-Control for HTML files
     res.setHeader('Cache-Control', 'public, max-age=0')
   }
@@ -244,8 +242,6 @@ function setCustomCacheControl (res, path) {
 
 [MIT](LICENSE)
 
-[appveyor-image]: https://badgen.net/appveyor/ci/dougwilson/serve-static/master?label=windows
-[appveyor-url]: https://ci.appveyor.com/project/dougwilson/serve-static
 [coveralls-image]: https://badgen.net/coveralls/c/github/expressjs/serve-static/master
 [coveralls-url]: https://coveralls.io/r/expressjs/serve-static?branch=master
 [github-actions-ci-image]: https://badgen.net/github/checks/expressjs/serve-static/master?label=linux

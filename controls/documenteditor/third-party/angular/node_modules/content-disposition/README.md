@@ -17,7 +17,7 @@ $ npm install content-disposition
 ## API
 
 ```js
-var contentDisposition = require('content-disposition')
+const contentDisposition = require('content-disposition')
 ```
 
 ### contentDisposition(filename, options)
@@ -67,7 +67,7 @@ it). The type is normalized to lower-case.
 ### contentDisposition.parse(string)
 
 ```js
-var disposition = contentDisposition.parse('attachment; filename="EURO rates.txt"; filename*=UTF-8\'\'%e2%82%ac%20rates.txt')
+const disposition = contentDisposition.parse('attachment; filename="EURO rates.txt"; filename*=UTF-8\'\'%e2%82%ac%20rates.txt')
 ```
 
 Parse a `Content-Disposition` header string. This automatically handles extended
@@ -86,13 +86,12 @@ are shown for the string `'attachment; filename="EURO rates.txt"; filename*=UTF-
 ### Send a file for download
 
 ```js
-var contentDisposition = require('content-disposition')
-var destroy = require('destroy')
-var fs = require('fs')
-var http = require('http')
-var onFinished = require('on-finished')
+const contentDisposition = require('content-disposition')
+const fs = require('fs')
+const http = require('http')
+const onFinished = require('on-finished')
 
-var filePath = '/path/to/public/plans.pdf'
+const filePath = '/path/to/public/plans.pdf'
 
 http.createServer(function onRequest (req, res) {
   // set headers
@@ -100,10 +99,10 @@ http.createServer(function onRequest (req, res) {
   res.setHeader('Content-Disposition', contentDisposition(filePath))
 
   // send file
-  var stream = fs.createReadStream(filePath)
+  const stream = fs.createReadStream(filePath)
   stream.pipe(res)
   onFinished(res, function () {
-    destroy(stream)
+    stream.destroy()
   })
 })
 ```
@@ -121,22 +120,22 @@ $ npm test
 - [RFC 6266: Use of the Content-Disposition Header Field in the Hypertext Transfer Protocol (HTTP)][rfc-6266]
 - [Test Cases for HTTP Content-Disposition header field (RFC 6266) and the Encodings defined in RFCs 2047, 2231 and 5987][tc-2231]
 
-[rfc-2616]: https://tools.ietf.org/html/rfc2616
-[rfc-5987]: https://tools.ietf.org/html/rfc5987
-[rfc-6266]: https://tools.ietf.org/html/rfc6266
+[rfc-2616]: https://datatracker.ietf.org/doc/html/rfc2616
+[rfc-5987]: https://datatracker.ietf.org/doc/html/rfc5987
+[rfc-6266]: https://datatracker.ietf.org/doc/html/rfc6266
 [tc-2231]: http://greenbytes.de/tech/tc2231/
 
 ## License
 
 [MIT](LICENSE)
 
-[npm-image]: https://img.shields.io/npm/v/content-disposition.svg
-[npm-url]: https://npmjs.org/package/content-disposition
-[node-version-image]: https://img.shields.io/node/v/content-disposition.svg
+[npm-image]: https://img.shields.io/npm/v/content-disposition
+[npm-url]: https://www.npmjs.com/package/content-disposition
+[node-version-image]: https://img.shields.io/node/v/content-disposition
 [node-version-url]: https://nodejs.org/en/download
-[coveralls-image]: https://img.shields.io/coveralls/jshttp/content-disposition.svg
-[coveralls-url]: https://coveralls.io/r/jshttp/content-disposition?branch=master
-[downloads-image]: https://img.shields.io/npm/dm/content-disposition.svg
-[downloads-url]: https://npmjs.org/package/content-disposition
-[github-actions-ci-image]: https://img.shields.io/github/workflow/status/jshttp/content-disposition/ci/master?label=ci
-[github-actions-ci-url]: https://github.com/jshttp/content-disposition?query=workflow%3Aci
+[coveralls-image]: https://img.shields.io/coverallsCoverage/github/jshttp/content-disposition
+[coveralls-url]: https://coveralls.io/github/jshttp/content-disposition?branch=master
+[downloads-image]: https://img.shields.io/npm/dm/content-disposition
+[downloads-url]: https://www.npmjs.com/package/content-disposition
+[github-actions-ci-image]: https://img.shields.io/github/actions/workflow/status/jshttp/content-disposition/ci.yml
+[github-actions-ci-url]: https://github.com/jshttp/content-disposition/actions/workflows/ci.yml

@@ -78,7 +78,6 @@ export enum _UniversalType {
     embeddedDataValue = 0x0B,
     utf8String = 0x0C,
     relativeObjectIdentifier = 0x0D,
-    reservedBit14 = 0x0E,
     time = 0x0E,
     reservedBit15 = 0x0F,
     sequence = 0x10,

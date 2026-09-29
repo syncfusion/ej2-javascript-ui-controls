@@ -396,6 +396,312 @@ describe('EJ2_1021756 Script error throws when using only skeleton without type 
     });    
 });
 
+describe('Empty Record Mode Feature Tests', () => {
+    describe('Normal Mode (Row Display) - Default Behavior', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'Freight', field: 'Freight' }
+                    ],
+                    emptyRecordMode: 'Normal'
+                }, done);
+        });
+
+        it('should render empty record as table row in Normal mode', () => {
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            expect(emptyRow).toBeTruthy();
+            expect(emptyRow.tagName.toLowerCase()).toBe('tr');
+        });
+
+        it('should not display overlay in Normal mode', () => {
+            const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+            expect(overlay).toBeFalsy();
+        });
+
+        it('should display default empty message in Normal mode', () => {
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            const td = emptyRow.querySelector('td');
+            expect(td.textContent).toContain('No records to display');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Sticky Mode (Overlay Display)', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'Freight', field: 'Freight' }
+                    ],
+                    emptyRecordMode: 'Sticky'
+                }, done);
+        });
+
+        it('should render empty record as overlay in Sticky mode', () => {
+            const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+            expect(overlay).toBeTruthy();
+            expect(overlay.classList.contains('e-empty-row-sticky')).toBe(true);
+        });
+
+        it('should display overlay content div with correct class', () => {
+            const overlayContent = gridObj.element.querySelector('.e-empty-row-sticky-content');
+            expect(overlayContent).toBeTruthy();
+            expect(overlayContent.classList.contains('e-empty-row-sticky-content')).toBe(true);
+        });
+
+        it('should display default empty message in overlay', () => {
+            const overlayContent = gridObj.element.querySelector('.e-empty-row-sticky-content');
+            expect(overlayContent.textContent).toContain('No records to display');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Empty Record Template in Normal Mode', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' }
+                    ],
+                    emptyRecordMode: 'Normal',
+                    emptyRecordTemplate: () => '<div class="custom-empty">Custom Empty Template</div>'
+                }, done);
+        });
+
+        it('should render custom template in empty row', () => {
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            const td = emptyRow.querySelector('td');
+            expect(td).toBeTruthy();
+        });
+
+        it('should display empty row as table row with custom template', () => {
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            expect(emptyRow.tagName.toLowerCase()).toBe('tr');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Empty Record Template in Sticky Mode', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' }
+                    ],
+                    emptyRecordMode: 'Sticky',
+                    emptyRecordTemplate: () => '<div class="custom-empty-sticky">Custom Sticky Template</div>'
+                }, done);
+        });
+
+        it('should render custom template in overlay', () => {
+            const overlayContent = gridObj.element.querySelector('.e-empty-row-sticky-content');
+            expect(overlayContent).toBeTruthy();
+        });
+
+        it('should display overlay with fixed positioning', () => {
+            const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+            expect(overlay).toBeTruthy();
+            expect(overlay.classList.contains('e-empty-row-sticky')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Dynamic Mode Switching', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' }
+                    ],
+                    emptyRecordMode: 'Normal'
+                }, done);
+        });
+
+        it('should switch from Normal to Sticky mode', (done: Function) => {
+            gridObj.emptyRecordMode = 'Sticky';
+            gridObj.dataBind();
+            setTimeout(() => {
+                const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+                expect(overlay).toBeTruthy();
+                done();
+            }, 100);
+        });
+
+        it('should switch from Sticky to Normal mode', (done: Function) => {
+            gridObj.emptyRecordMode = 'Normal';
+            gridObj.dataBind();
+            setTimeout(() => {
+                const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+                const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+                expect(emptyRow).toBeTruthy();
+                expect(overlay).toBeFalsy();
+                done();
+            }, 100);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Empty Data Clearing', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 5),
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' }
+                    ],
+                    emptyRecordMode: 'Sticky'
+                }, done);
+        });
+
+        it('should load data in Sticky mode', () => {
+            const rows = gridObj.element.querySelectorAll('.e-row');
+            expect(rows.length).toBeGreaterThan(0);
+            const overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+            expect(overlay).toBeFalsy();
+        });
+
+        it('should clear table rows when loading empty data', (done: Function) => {
+            gridObj.dataBound = function () {
+                var rows = gridObj.element.querySelectorAll('.e-row');
+                expect(rows.length).toBe(0);
+                var overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+                expect(overlay).toBeTruthy();
+                done();
+            }
+            gridObj.dataSource = [];
+        });
+
+        it('should clear overlay when loading new data', (done: Function) => {
+           gridObj.dataBound = function () {
+                var rows = gridObj.element.querySelectorAll('.e-row');
+                expect(rows.length).toBeGreaterThan(0);
+                var overlay = gridObj.element.querySelector('.e-empty-row-sticky');
+                expect(overlay).toBeFalsy();
+                done();
+            };
+            gridObj.dataSource = data.slice(0, 5);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Empty Mode with Data Loading', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'Freight', field: 'Freight' }
+                    ],
+                    emptyRecordMode: 'Normal'
+                }, done);
+        });
+
+        it('should show empty row when grid loads with no data', () => {
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            expect(emptyRow).toBeTruthy();
+        });
+
+        it('should replace empty row with data rows when data is loaded', (done: Function) => {
+            gridObj.dataBound = function () {
+                const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+                const dataRows = gridObj.element.querySelectorAll('.e-row');
+                expect(emptyRow).toBeFalsy();
+                expect(dataRows.length).toBe(3);
+                done();
+            };
+            gridObj.dataSource = data.slice(0, 3);
+        });
+
+        it('should show empty row again when data is cleared', (done: Function) => {
+            gridObj.dataBound = function () {
+                const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+                const dataRows = gridObj.element.querySelectorAll('.e-row');
+                expect(emptyRow).toBeTruthy();
+                expect(dataRows.length).toBe(0);
+                done();
+            };
+            gridObj.dataSource = [];
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Empty Mode Default Value', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' }
+                    ]
+                }, done);
+        });
+
+        it('should default to Normal mode when emptyRecordMode is not specified', () => {
+            expect(gridObj.emptyRecordMode).toBe('Normal');
+            const emptyRow = gridObj.element.querySelector('.e-emptyrow');
+            expect(emptyRow).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+});
+
 });
 interface Customer {
     CustomerID: string;

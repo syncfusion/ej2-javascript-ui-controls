@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ai-assist-scrollbar-width: 6px !default;
 $suggesstions-list-border-radius: 4px !default;
 $suggesstions-font-weight: 400 !default;
@@ -84,8 +84,6 @@ $tbar-header-hover-bg-color: rgba($grey-black, .12) !default;
 // Attachment support related styles
 $assist-attachment-icon-font-size: $send-icon-size !default;
 $assist-attachment-icon-font-size-bigger: $send-icon-size-bigger !default;
-$assist-file-document-icon-font-size: 24px !default;
-$assist-file-document-icon-color: rgba(112, 112, 112, 1) !default;
 
 $file-progress-bar-success-color: $accent !default;
 $file-progress-bar-failure-color: $error-font !default;
@@ -207,7 +205,6 @@ $rtl-footer-icons-wrapper-padding: unset !default;
 $uploaded-file-item-bottom: 4px !default;
 $uploaded-file-item-border-radius: 4px !default;
 $file-details-padding-right: 12px !default;
-$file-format-icon-padding: 3px !default;
 $assist-clear-icon-border-radius: 6px !default;
 $assist-progress-bar-border-radius: 4px !default;
 $prompt-content-padding-right: 8px !default;
@@ -267,3 +264,54 @@ $assist-stop-padding: 8px !default;
 $assist-stop-padding-bigger: 10px !default;
 $assist-footer-tbar-min-height: 28px !default;
 $assist-footer-tbar-min-height-bigger: 36px !default;
+$assist-footer-stt-btn-border-radius: 2px !default;
+
+// Thinking support related styles
+
+$thinking-single-stage-container-border-color: $grey-700 !default;
+$thinking-content-color: rgba($grey-light-font, .54) !default;
+$thinking-inline-context-color: rgba($grey-light-font, .87) !default;
+$thinking-timeline-progressline-color: $grey-300 !default;
+$thinking-timeline-progress-indicator-min-width: 28px !default;
+$thinking-timeline-progress-indicator-min-height: 28px !default;
+$thinking-timeline-progress-indicator-font-size: 14px !default;
+$thinking-timeline-progress-indicator-min-width-bigger: 40px !default;
+$thinking-timeline-progress-indicator-min-height-bigger: 40px !default;
+$thinking-timeline-progress-indicator-font-size-bigger: 18px !default;
+$aiassist-thinking-progress-line-height: 16px !default;
+$aiassist-thinking-progress-line-height-bigger: 10px !default;
+
+$aiassist-thinking-toggle-font-size: 12px !default;
+$aiassist-thinking-toggle-line-height: 18px !default;
+$aiassist-thinking-toggle-icon-font-size: 12px !default;
+$aiassist-thinking-toggle-icon-line-height: 100% !default;
+$aiassist-thinking-context-icon-font-size: 14px !default;
+$aiassist-thinking-context-icon-line-height: 100% !default;
+$aiassist-thinking-context-badge-font-size: 14px !default;
+$aiassist-thinking-context-badge-line-height: 100% !default;
+$aiassist-thinking-stage-icon-font-size: 16px !default;
+$aiassist-thinking-stage-icon-line-height: 100% !default;
+$aiassist-thinking-toggle-font-size-bigger: 14px !default;
+$aiassist-thinking-toggle-line-height-bigger: 22px !default;
+$aiassist-thinking-toggle-icon-font-size-bigger: 18px !default;
+$aiassist-thinking-toggle-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-context-icon-font-size-bigger: 14px !default;
+$aiassist-thinking-context-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-context-badge-font-size-bigger: 14px !default;
+$aiassist-thinking-context-badge-line-height-bigger: 100% !default;
+$aiassist-thinking-stage-icon-font-size-bigger: 18px !default;
+$aiassist-thinking-stage-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-toggle-color: rgba($grey-light-font, .87) !default;
+
+$aiassist-regenerate-tbar-focus-bg: rgba($grey-black, .12) !default;
+$aiassist-regenerate-tbar-btn-border-radius: 2px !default;
+$aiassist-regenerate-tbar-btn-focus-border-color: rgba($grey-black, .12) !default;
+$aiassist-regenerate-tbar-border-nav-type: solid !default;
+$aiassist-regenerate-tbar-btn-hover-border-size: 0 !default;
+$aiassist-regenerate-tbar-ext-btn-focus-box-shadow: none !default;
+$aiassist-regenerate-tbar-btn-icons-focus-color: rgba($grey-light-font, .54) !default;
+$aiassist-regenerate-tbar-hover-bg: rgba($grey-black, .12) !default;
+$aiassist-regenerate-tbar-hover-border-color: rgba($grey-black, .12) !default;
+
+$ai-assist-mention-chip-color: $primary !default;
+$ai-assist-mention-chip-bg-color: $primary-50 !default;

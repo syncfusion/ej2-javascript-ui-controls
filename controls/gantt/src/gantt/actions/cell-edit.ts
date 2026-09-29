@@ -2,8 +2,8 @@ import { isNullOrUndefined as isNOU, getValue, extend, isNullOrUndefined } from 
 import { Gantt } from '../base/gantt';
 import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs, ITaskSegment } from '../base/interface';
 import { ColumnModel } from '../models/column';
-import { EJ2Intance } from '@syncfusion/ej2-grids';
-import { TaskFieldsModel, EditDialogFieldSettingsModel, ResourceFieldsModel } from '../models/models';
+import { Data, EJ2Intance } from '@syncfusion/ej2-grids';
+import { TaskFieldsModel, EditDialogFieldSettingsModel, ResourceFieldsModel, ProjectCalendarModel } from '../models/models';
 import { TreeGrid, Edit } from '@syncfusion/ej2-treegrid';
 import { Deferred } from '@syncfusion/ej2-data';
 import { Tab } from '@syncfusion/ej2-navigations';
@@ -176,7 +176,11 @@ export class CellEdit {
      */
     public initiateCellEdit(args: object, editedObj: object): void {
         let isValid: boolean = true;
-        if (args['name'] === 'actionComplete' && args['previousData'] === args['data'][args['column'].field]) {
+        // Extract field name from new args structure (previously in args['column'].field)
+        const fieldName: string = args['columnName'] as keyof IGanttData;
+        const previousValue: Date | string = args['previousData'][fieldName as keyof IGanttData];
+        const currentValue: Date | string = args['data'][fieldName as keyof IGanttData];
+        if (args['name'] === 'actionComplete' && previousValue === currentValue) {
             isValid = false;
         }
         if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
@@ -187,32 +191,33 @@ export class CellEdit {
                 this.parent.undoRedoModule['createUndoCollection']();
                 const action: Object = {};
                 action['action'] = 'CellEditing';
-                action['editedColumn'] = args['column'].field;
+                action['editedColumn'] = fieldName;
                 action['modifiedRecords'] = [];
                 this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] = action;
             }
         }
-        const column: ColumnModel = getValue('column', args);
+        // Look up column object from ganttColumns using fieldName (column object no longer in args)
+        const column: ColumnModel = this.parent.getColumnByField(fieldName, this.parent.ganttColumns);
         const data: IGanttData = getValue('data', args);
         const editedArgs: ITaskbarEditedEventArgs = {};
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
-        const previousValue: Record<string, unknown> = getValue('previousData', args);
-        const isBaseline: boolean = this.parent.taskFields.baselineEndDate === column.field ||
-            this.parent.taskFields.baselineStartDate === column.field ? true : false;
-        const editedValue: object = this.parent.allowUnscheduledTasks && !isBaseline ? data[column.field] :
-            ((isNullOrUndefined(data[column.field])
-                || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
-                    this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field ||
-                    this.parent.taskFields.baselineDuration === column.field ||
-                    this.parent.taskFields.baselineEndDate === column.field || this.parent.taskFields.baselineStartDate === column.field)) ?
-                previousValue : data[column.field];
+        const editedFieldValue: any = previousValue;
+        const isBaseline: boolean = !isNOU(column) && (this.parent.taskFields.baselineEndDate === column.field ||
+            this.parent.taskFields.baselineStartDate === column.field) ? true : false;
+        const editedValue: object = this.parent.allowUnscheduledTasks && !isBaseline ? data[fieldName as keyof IGanttData] :
+            ((isNullOrUndefined(data[fieldName as keyof IGanttData])
+                || data[fieldName as keyof IGanttData] === '') && (this.parent.taskFields.duration === fieldName ||
+                    this.parent.taskFields.startDate === fieldName || this.parent.taskFields.endDate === fieldName ||
+                    this.parent.taskFields.baselineDuration === fieldName ||
+                    this.parent.taskFields.baselineEndDate === fieldName || this.parent.taskFields.baselineStartDate === fieldName)) ?
+                editedFieldValue : data[fieldName as keyof IGanttData];
         if (!isNOU(data)) {
-            data[column.field] = previousValue;
-            editedArgs.data[column.field] = previousValue;
+            data[fieldName as keyof IGanttData] = previousValue;
+            editedArgs.data[fieldName as keyof IGanttData] = previousValue;
             this.parent.initiateEditAction(true);
-            if (this.parent.weekWorkingTime.length > 0 && editedValue && (column.field === this.parent.taskFields.startDate ||
-                column.field === this.parent.taskFields.baselineStartDate)) {
+            if (this.parent.weekWorkingTime.length > 0 && editedValue && (fieldName === this.parent.taskFields.startDate ||
+                fieldName === this.parent.taskFields.baselineStartDate)) {
                 const sDate: Date = column.field === this.parent.taskFields.startDate ? data.ganttProperties.startDate :
                     data.ganttProperties.baselineStartDate;
                 const prevDay: number = this.parent['getStartTime'](sDate);
@@ -228,39 +233,41 @@ export class CellEdit {
             else {
                 this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
             }
-            if (column.field === this.parent.taskFields.name) {
+            if (fieldName === this.parent.taskFields.name) {
                 this.taskNameEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.startDate) {
+            } else if (fieldName === this.parent.taskFields.startDate) {
                 this.startDateEdited(editedArgs, false);
-            } else if (column.field === this.parent.taskFields.constraintDate || column.field === this.parent.taskFields.constraintType) {
+            } else if (fieldName === this.parent.taskFields.constraintDate || fieldName === this.parent.taskFields.constraintType) {
                 this.constraintEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.endDate) {
-                this.endDateEdited(editedArgs, args['previousData']);
-            } else if (column.field === this.parent.taskFields.duration) {
+            } else if (fieldName === this.parent.taskFields.endDate) {
+                this.endDateEdited(editedArgs, editedFieldValue as Date);
+            } else if (fieldName === this.parent.taskFields.duration) {
                 this.durationEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.resourceInfo) {
+            } else if (fieldName === this.parent.taskFields.resourceInfo) {
                 this.resourceEdited(editedArgs, editedObj, data);
-            } else if (column.field === this.parent.taskFields.progress) {
+            } else if (fieldName === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.baselineStartDate) {
+            } else if (fieldName === this.parent.taskFields.baselineStartDate) {
                 this.startDateEdited(editedArgs, true);
-            } else if (column.field === this.parent.taskFields.baselineEndDate) {
-                this.endDateEditedforBaseline(editedArgs, args['previousData']);
-            } else if (column.field === this.parent.taskFields.baselineDuration) {
+            } else if (fieldName === this.parent.taskFields.baselineEndDate) {
+                this.endDateEditedforBaseline(editedArgs, editedFieldValue as Date);
+            } else if (fieldName === this.parent.taskFields.baselineDuration) {
                 this.durationEdited(editedArgs, true);
-            } else if (column.field === this.parent.taskFields.dependency) {
-                this.dependencyEdited(editedArgs, previousValue);
-            } else if (column.field === this.parent.taskFields.notes) {
+            } else if (fieldName === this.parent.taskFields.calendarId) {
+                this.calendarEdited(editedArgs);
+            }else if (fieldName === this.parent.taskFields.dependency) {
+                this.dependencyEdited(editedArgs, editedFieldValue);
+            } else if (fieldName === this.parent.taskFields.notes) {
                 this.notedEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.work) {
+            } else if (fieldName === this.parent.taskFields.work) {
                 this.workEdited(editedArgs);
-            } else if ((column.field === this.parent.taskFields.type || column.field === 'taskType') &&
+            } else if ((fieldName === this.parent.taskFields.type || fieldName === 'taskType') &&
             !isNOU(this.parent.taskFields.work)) {
                 this.typeEdited(editedArgs, editedObj);
-            } else if (column.field === this.parent.taskFields.manual) {
+            } else if (fieldName === this.parent.taskFields.manual) {
                 this.taskmodeEdited(editedArgs);
             } else {
-                this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
+                this.parent.setRecordValue('taskData.' + fieldName, editedArgs.data[fieldName as keyof IGanttData], editedArgs.data);
                 this.parent.editModule.initiateSaveAction(editedArgs);
             }
         } else {
@@ -374,6 +381,20 @@ export class CellEdit {
         this.updateGanttDataProperties(args, currentValue, isBaseline);
         this.updateEditedRecord(args);
     }
+
+    private calendarEdited(args: ITaskbarEditedEventArgs): void {
+        const ganttData: IGanttData = args.data;
+        const ganttProp: ITaskData = args.data.ganttProperties;
+        const currentValue: string = args.data[this.parent.taskFields.calendarId];
+        this.parent.setRecordValue('calendarId', currentValue, ganttProp, true);
+        const calendarModel: ProjectCalendarModel = this.parent.calendarModule.getCalendarById(currentValue);
+        const context: CalendarContext = new CalendarContext(this.parent, calendarModel);
+        ganttProp.calendarContext = context;
+        this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+        this.parent.predecessorModule.validatePredecessorDates(ganttData);
+        this.updateEditedRecord(args);
+    }
+
     private constraintEdited(args: ITaskbarEditedEventArgs): void {
         const ganttData: IGanttData = args.data;
         const ganttProb: ITaskData = args.data.ganttProperties;
@@ -440,7 +461,7 @@ export class CellEdit {
                 segment.startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule,
                 ganttProp.isMilestone, undefined, calendarContext
             );
-            if (segments.length > 0 && endDate.getTime() < segment.startDate.getTime()
+            if (i > 0 && segments.length > 0 && endDate.getTime() < segment.startDate.getTime()
                 && endDate.getTime() <= ganttProp.endDate.getTime()) {
                 segments[i - 1].duration = this.parent.dataOperation.getDuration(
                     segments[i - 1].startDate, ganttProp.endDate, ganttProp.durationUnit,
@@ -463,6 +484,7 @@ export class CellEdit {
         const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.endDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
+        const calendarContext: CalendarContext = ganttProb.calendarContext;
         if (isNOU(currentValue)) {
             this.parent.setRecordValue('endDate', currentValue, ganttProb, true);
             if (!(ganttProb.startDate === null && ganttProb.endDate === null && ganttProb.duration !== null)) {
@@ -470,7 +492,7 @@ export class CellEdit {
             }
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
         } else {
-            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue);
+            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue, calendarContext);
             if ((currentValue.getHours() === 0 || (previousValue &&
                 currentValue.toTimeString().slice(0, 5) === previousValue.toTimeString().slice(0, 5))) && dayEndTime !== 86400) {
                 this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
@@ -480,7 +502,7 @@ export class CellEdit {
             if (!isNOU(ganttProb.startDate) && isNOU(ganttProb.duration)) {
                 if (this.parent.dateValidationModule.compareDates(ganttProb.endDate, ganttProb.startDate) === -1) {
                     this.parent.setRecordValue('endDate', new Date(ganttProb.startDate.getTime()), ganttProb, true);
-                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.endDate);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.endDate, calendarContext);
                     this.parent.dateValidationModule.setTime(dayEndTime, ganttProb.endDate);
                 }
             } else if (!isNOU(ganttProb.duration) && isNOU(ganttProb.startDate)) {
@@ -534,13 +556,14 @@ export class CellEdit {
         const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.baselineEndDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
+        const calendarContext: CalendarContext = ganttProb.calendarContext;
         if (isNOU(currentValue)) {
             this.parent.setRecordValue('baselineEndDate', currentValue, ganttProb, true);
             if (!(ganttProb.baselineStartDate === null && ganttProb.baselineEndDate === null && ganttProb.baselineDuration !== null)) {
                 this.parent.setRecordValue('baselineDuration', null, ganttProb, true);
             }
         } else {
-            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue);
+            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue, calendarContext);
             if ((currentValue.getHours() === 0 || (previousValue &&
                 currentValue.toTimeString().slice(0, 5) === previousValue.toTimeString().slice(0, 5))) && dayEndTime !== 86400) {
                 this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
@@ -550,7 +573,7 @@ export class CellEdit {
             if (!isNOU(ganttProb.baselineStartDate) && isNOU(ganttProb.baselineDuration)) {
                 if (this.parent.dateValidationModule.compareDates(ganttProb.baselineEndDate, ganttProb.baselineStartDate) === -1) {
                     this.parent.setRecordValue('baselineEndDate', new Date(ganttProb.baselineStartDate.getTime()), ganttProb, true);
-                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.baselineEndDate);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.baselineEndDate, calendarContext);
                     this.parent.dateValidationModule.setTime(dayEndTime, ganttProb.baselineEndDate);
                 }
             } else if (!isNOU(ganttProb.baselineDuration) && isNOU(ganttProb.baselineStartDate)) {

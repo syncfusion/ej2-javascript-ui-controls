@@ -3,7 +3,8 @@ import { WTableFormat, WRowFormat, WCellFormat, WColumnFormat, WTabStop } from '
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
-    TextWrappingStyle, TextWrappingType, CharacterRangeType, FontScriptType, BreakClearType
+    TextWrappingStyle, TextWrappingType, CharacterRangeType, FontScriptType, BreakClearType,
+    FillType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
@@ -57,6 +58,17 @@ export class Rect {
      */
     public isIntersecting(currentBound: Rect): boolean {
         if (currentBound.y > this.bottom || this.y > currentBound.bottom ||
+            currentBound.x > this.right || this.x > currentBound.right) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * @param currentBound
+     * @private
+     */
+    public isTableIntersecting(currentBound: Rect): boolean {
+        if (!(currentBound.y + currentBound.height > this.y && currentBound.y < this.bottom) ||
             currentBound.x > this.right || this.x > currentBound.right) {
             return false;
         }
@@ -178,7 +190,10 @@ export abstract class Widget implements IWidget {
         return -1;
     }
     public get firstChild(): IWidget {
-        return this.childWidgets.length > 0 ? this.childWidgets[0] : undefined;
+        if (this.childWidgets) {
+            return this.childWidgets.length > 0 ? this.childWidgets[0] : undefined;
+        }
+        return undefined;    
     }
     public get lastChild(): IWidget {
         if (this.childWidgets) {
@@ -585,6 +600,9 @@ export abstract class BlockContainer extends Widget {
         return index;
     }
     public getHierarchicalIndex(hierarchicalIndex: string): string {
+        if (isNullOrUndefined(this.page)) {
+            return hierarchicalIndex;
+        }
         let documentHelper: DocumentHelper = this.page.documentHelper;;
         let node: BlockContainer = this;
         if (node instanceof BodyWidget) {
@@ -925,9 +943,13 @@ export abstract class BlockWidget extends Widget {
                     while (!isNullOrUndefined(shape.containerShape)) {
                         shape = shape.containerShape;
                     }
-                    paragraph = shape.line.paragraph;
+                    if (!isNullOrUndefined(shape.line)) {  // ← Add this guard
+                        paragraph = shape.line.paragraph;
+                    }
                 } else {
-                    paragraph = widget.containerWidget.containerShape.line.paragraph;
+                    if (!isNullOrUndefined(widget.containerWidget.containerShape.line)) {  // ← Add this guard
+                        paragraph = widget.containerWidget.containerShape.line.paragraph;
+                    }
                 }
                 if (paragraph) {
                     return paragraph.bodyWidget;
@@ -1000,6 +1022,9 @@ export abstract class BlockWidget extends Widget {
     }
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let node: BlockWidget = this;
+        if (isNullOrUndefined(node.containerWidget) || isNullOrUndefined(node.containerWidget.childWidgets)) {
+            return hierarchicalIndex;
+        }
         hierarchicalIndex = node.containerWidget.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
         if (!isNullOrUndefined(node.containerWidget)) {
             if (node.containerWidget instanceof TextFrame) {
@@ -1414,6 +1439,7 @@ export class ParagraphWidget extends BlockWidget {
             let imageWidths: number[] = [];
             let isAutoWidth: boolean = false;
             let isAllColumnHasAutoWidthType: boolean = false;
+            let isAllowAutoFit: boolean = false;
             do {
                 if (element instanceof TextElementBox && (element as TextElementBox).text !== '') {
                     elements.add(element as TextElementBox, text.length);
@@ -1441,13 +1467,16 @@ export class ParagraphWidget extends BlockWidget {
             if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && (this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Auto' || (this.containerWidget.ownerTable.tableFormat.preferredWidthType === "Point" && this.containerWidget.ownerTable.tableFormat.preferredWidth === 0))) {
                 isAutoWidth = true;
             }
+            if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && !this.containerWidget.ownerTable.isInsideTable && this.containerWidget.ownerTable.tableFormat.allowAutoFit && this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Percent' ) {
+                isAllowAutoFit = true;
+            }
             //Word split
             let texts: { value: string; index: number }[] = [];
             let word: string;
             this.bodyWidget.page.documentHelper.textHelper.position = 0;
             do {
                 let pos: number = this.bodyWidget.page.documentHelper.textHelper.position
-                word = this.bodyWidget.page.documentHelper.textHelper.readWord(text, elements, isAutoWidth, isAllColumnHasAutoWidthType);
+                word = this.bodyWidget.page.documentHelper.textHelper.readWord(text, elements, isAutoWidth, isAllowAutoFit, isAllColumnHasAutoWidthType);
                 if (word) {
                     texts.push({ value: word, index: pos });
                 }
@@ -2259,7 +2288,7 @@ export class TableWidget extends BlockWidget {
         if (this.equals(tableCell.ownerTable)) {
             return true;
         }
-        while ((tableCell.ownerTable as BlockWidget).isInsideTable) {
+        while (!isNullOrUndefined(tableCell.ownerTable) && (tableCell.ownerTable as BlockWidget).isInsideTable) {
             if (this.equals(tableCell.ownerTable)) {
                 return true;
             }
@@ -2685,6 +2714,7 @@ export class TableWidget extends BlockWidget {
             this.splitWidthToTableCells(tableWidth, isZeroWidth);
         }
         let hasSpannedCells: boolean = false;
+        let hasAutoWidthSpannedCells: boolean = false;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             let rowFormat: WRowFormat = row.rowFormat;
@@ -2757,6 +2787,9 @@ export class TableWidget extends BlockWidget {
                 }
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
+                if (cellWidth < sizeInfo.minimumWordWidth && isAutoFit && cell.cellFormat.preferredWidthType == "Point" && Math.round(cellWidth) < Math.round(cell.cellFormat.cellWidth)) {
+                    hasAutoWidthSpannedCells = true;
+                }
                 this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType, isAutoWidth);
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfterWidth > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
@@ -2764,6 +2797,9 @@ export class TableWidget extends BlockWidget {
                     this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth, 'Point', isAutoWidth);
                 }
             }
+        }
+        if (hasSpannedCells && hasAutoWidthSpannedCells && this.tableFormat.preferredWidthType === 'Auto' && !this.isContainInsideTable && !this.isInsideTable) {
+            hasSpannedCells = false;
         }
         if (!isNullOrUndefined(this.bodyWidget.page) && this.bodyWidget.page.documentHelper && this.bodyWidget.page.documentHelper.layout
             && this.bodyWidget.page.documentHelper.layout.isAllColumnHasAutoWidthType) {
@@ -2777,8 +2813,12 @@ export class TableWidget extends BlockWidget {
             // Fits the column width automatically based on contents.
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.bodyWidget.page.viewer.clientArea.width, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType, gridBeforeWidth);
         } else {
+            let isRowOrCellResize: boolean = false;
+            if (!isNullOrUndefined(this.bodyWidget.page) && this.bodyWidget.page.documentHelper.isRowOrCellResizing) {
+                isRowOrCellResize = true;
+            }
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent);
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent, isRowOrCellResize);
         }
         // if (!isAutoFit && isAutoWidth) {
         //     tableWidth = this.tableHolder.tableWidth;
@@ -2806,6 +2846,9 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
+                if(isNullOrUndefined(cell)){
+                    continue;
+                }
                 if (cell.cellFormat.preferredWidthType === "Auto") {
                     cell.cellFormat.initialCellWidth = cell.cellFormat.cellWidth;
                 }
@@ -5019,7 +5062,9 @@ export class LineWidget implements IWidget {
      * @private
      */
     public getInline(offset: number, indexInInline: number, bidi?: boolean, isInsert?: boolean): ElementInfo {
-        bidi = isNullOrUndefined(bidi) ? this.paragraph.bidi : bidi;
+        if (isNullOrUndefined(bidi) && !isNullOrUndefined(this.paragraph)) {
+            bidi = this.paragraph.bidi;
+        }
         let inlineElement: ElementBox = undefined;
         let count: number = 0;
         let isStarted: boolean = false;
@@ -5095,6 +5140,9 @@ export class LineWidget implements IWidget {
      */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let node: LineWidget = this;
+        if(isNullOrUndefined(node.paragraph) || isNullOrUndefined(node.paragraph.childWidgets)) {
+            return hierarchicalIndex;
+        }
         hierarchicalIndex = node.paragraph.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
         if (node.paragraph instanceof BlockWidget) {
             return (node.paragraph as BlockWidget).getHierarchicalIndex(hierarchicalIndex);
@@ -5196,6 +5244,10 @@ export abstract class ElementBox {
     * @private
     */
     public isWidthUpdated: boolean = false;
+    /**
+     * @private
+     */
+    public isWrappedBreak: boolean = false;
     /**
      * @private
      */
@@ -5603,12 +5655,18 @@ export abstract class ElementBox {
             return (index < this.containerShape.childWidgets.length - 1) ? this.containerShape.childWidgets[index + 1] : undefined;
         }
         else {
+            if (isNullOrUndefined(this.line) || isNullOrUndefined(this.line.paragraph)) {
+                return undefined;
+            }
             let index: number = this.line.children.indexOf(this);
             let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
             if (index < this.line.children.length - 1) {
                 return this.line.children[index + 1];
             } else if (lineIndex < this.line.paragraph.childWidgets.length - 1) {
-                return (this.line.paragraph.childWidgets[lineIndex + 1] as LineWidget).children[0];
+                const nextLineWidget: LineWidget = this.line.paragraph.childWidgets[lineIndex + 1] as LineWidget;
+                if (!isNullOrUndefined(nextLineWidget) && !isNullOrUndefined(nextLineWidget.children) && nextLineWidget.children.length > 0) {
+                    return nextLineWidget.children[0];
+                }
             }
             return undefined;
         }
@@ -7174,6 +7232,46 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
+    public topMargin: number = 0;
+    /**
+     * @private
+     */
+    public leftMargin: number = 0;
+    /**
+     * @private
+     */
+    public coordinateSize: string = '';
+    /**
+     * @private
+     */
+    public coordinateXOrigin: number = 0;
+    /**
+     * @private
+     */
+    public coordinateYOrigin: number = 0;
+    /**
+     * @private
+     */
+    public is2007Shape: boolean = false;
+    /**
+     * @private
+     */
+    public lineFromXPosition: number = 0;
+    /**
+     * @private
+     */
+    public lineFromYPosition: number = 0;
+    /**
+     * @private
+     */
+    public lineToXPosition: number = 0;
+    /**
+     * @private
+     */
+    public lineToYPosition: number = 0;
+    /**
+     * @private
+     */
     public containerShape: GroupShapeElementBox;
     /**
      * @private
@@ -7294,6 +7392,12 @@ export class ShapeElementBox extends ShapeBase {
         shape.y = this.y;
         shape.width = this.width;
         shape.height = this.height;
+        shape.leftMargin = this.leftMargin;
+        shape.topMargin = this.topMargin;
+        shape.coordinateSize = this.coordinateSize;
+        shape.coordinateXOrigin = this.coordinateXOrigin;
+        shape.coordinateYOrigin = this.coordinateYOrigin;
+        shape.is2007Shape = this.is2007Shape;
         shape.shapeId = this.shapeId;
         shape.name = this.name;
         shape.alternateText = this.alternateText;
@@ -7399,6 +7503,12 @@ export class GroupShapeElementBox  extends ShapeBase {
         group.y = this.y;
         group.width = this.width;
         group.height = this.height;
+        group.leftMargin = this.leftMargin;
+        group.topMargin = this.topMargin;
+        group.coordinateSize = this.coordinateSize;
+        group.coordinateXOrigin = this.coordinateXOrigin;
+        group.coordinateYOrigin = this.coordinateYOrigin;
+        group.is2007Shape = this.is2007Shape;
         group.shapeId = this.shapeId;
         group.name = this.name;
         group.alternateText = this.alternateText;
@@ -7597,10 +7707,25 @@ export class FillFormat {
     /**
      * @private
      */
+    public isDefaultFill: boolean;
+    /**
+     * @private
+     */
+    public foreColor: string;
+    /**
+     * @private
+     */
+    public fillType: FillType;
+    /**
+     * @private
+     */
     public clone(): FillFormat {
         let fillFormat: FillFormat = new FillFormat();
         fillFormat.color = this.color;
         fillFormat.fill = this.fill;
+        fillFormat.isDefaultFill = this.isDefaultFill;
+        fillFormat.foreColor = this.foreColor;
+        fillFormat.fillType = this.fillType;
         return fillFormat;
     }
 }
@@ -7770,6 +7895,12 @@ export class ImageElementBox extends ShapeBase {
         image.shapeY = this.shapeY;
         image.shapeHeight = this.shapeHeight;
         image.shapeWidth = this.shapeWidth;
+        image.is2007Shape = this.is2007Shape;
+        image.coordinateSize = this.coordinateSize;
+        image.coordinateXOrigin = this.coordinateXOrigin;
+        image.coordinateYOrigin = this.coordinateYOrigin;
+        image.leftMargin = this.leftMargin;
+        image.topMargin = this.topMargin;
         if (this.margin) {
             image.margin = this.margin.clone();
         }
@@ -9652,6 +9783,12 @@ export class CommentCharacterElementBox extends ElementBox {
 
     public commentMark: HTMLElement;
 
+    public commentMarkSpan: HTMLElement;
+
+    public onCommentMarkMouseEnter: () => void;
+
+    public onCommentMarkMouseLeave: () => void;
+
     get comment(): CommentElementBox {
         return this.commentInternal;
     }
@@ -9686,8 +9823,34 @@ export class CommentCharacterElementBox extends ElementBox {
             let span: HTMLElement = document.createElement('span');
             span.classList.add('e-icons');
             span.classList.add('e-de-cmt-mark-icon');
+            this.commentMarkSpan = span;
             this.commentMark.appendChild(span);
+            
+            if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                const firstCommentInLine: CommentCharacterElementBox = this.getFirstCommentInLine();
+                const firstCommentAuthor: string = firstCommentInLine && firstCommentInLine.comment ? firstCommentInLine.comment.author : this.comment.author;
+                const firstAuthorColor: string = documentHelper.getAuthorColor(firstCommentAuthor);
+                (this.commentMarkSpan as HTMLElement).style.color = documentHelper.convertColorToRGBA(firstAuthorColor, 0.6);
+
+                this.onCommentMarkMouseEnter = (): void => {
+                    const firstComment: CommentCharacterElementBox = this.getFirstCommentInLine();
+                    firstComment.updateCommentMarkColorOnHover();
+                };
+
+                this.onCommentMarkMouseLeave = (): void => {
+                    const firstComment: CommentCharacterElementBox = this.getFirstCommentInLine();
+                    firstComment.updateCommentMarkColorOnUnhover();
+                };
+                (this.commentMarkSpan as HTMLElement).addEventListener('mouseenter', this.onCommentMarkMouseEnter);
+                (this.commentMarkSpan as HTMLElement).addEventListener('mouseleave', this.onCommentMarkMouseLeave);
+            }
         }
+        
+        // RE-RENDER: Update color when highlight is enabled (handles editing cases with overlapping)
+        if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor && this.commentType === 0 && this.commentMarkSpan && !isNullOrUndefined(this.commentMark)) {
+            this.refreshCommentMarkAppearance(documentHelper, commentMarkDictionary);
+        }
+        
         if (this.line && isNullOrUndefined(this.commentMark.parentElement)) {
             documentHelper.pageContainer.appendChild(this.commentMark);
             this.commentMark.addEventListener('click', this.selectComment.bind(this));
@@ -9712,6 +9875,11 @@ export class CommentCharacterElementBox extends ElementBox {
             }
             if(ifNotPresent){
                 commentMarkDictionary.get(overlapKey).push(this);
+                // Hide this new overlapping span (only first span should be visible)
+                if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor && this.commentMarkSpan) {
+                    this.commentMarkSpan.style.color = 'transparent';
+                    this.commentMarkSpan.style.textShadow = '';
+                }
             }
         }
         else{
@@ -9777,6 +9945,174 @@ export class CommentCharacterElementBox extends ElementBox {
         );
     }
 
+    public getFirstCommentInLine(): CommentCharacterElementBox {
+        if (isNullOrUndefined(this.line) || isNullOrUndefined(this.line.children)) {
+            return this;
+        }
+        for (let i: number = 0; i < this.line.children.length; i++) {
+            const startComment: ElementBox = this.line.children[i];
+            if (startComment instanceof CommentCharacterElementBox && startComment.commentType === 0) {
+                return startComment as CommentCharacterElementBox;
+            }
+        }
+        return this;
+    }
+
+    private refreshCommentMarkAppearance(documentHelper: DocumentHelper, commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]>): void {
+        const selectedComment: CommentElementBox | null = documentHelper.owner.documentHelper.currentSelectedComment;
+        const firstCommentInLine: CommentCharacterElementBox = this.getFirstCommentInLine();
+        const firstCommentAuthor: string = firstCommentInLine && firstCommentInLine.comment ? firstCommentInLine.comment.author : this.comment.author;
+        const firstAuthorColor: string = documentHelper.getAuthorColor(firstCommentAuthor);
+
+        // Get overlapping comments for this position
+        const topPosition: string = (this.commentMark as HTMLElement).style.top;
+        const leftPosition: string = (this.commentMark as HTMLElement).style.left;
+        let overlapKey: HTMLElement;
+        let overlappingComments: CommentCharacterElementBox[] = [];
+
+        for (let index: number = 0; index < commentMarkDictionary.length; index++) {
+            if (this.elementsOverlap(commentMarkDictionary.keys[index], topPosition, leftPosition)) {
+                overlapKey = commentMarkDictionary.keys[index];
+                overlappingComments = commentMarkDictionary.get(overlapKey) as CommentCharacterElementBox[];
+                break;
+            }
+        }
+
+        if (overlappingComments.length > 1) {
+            // Handle truly overlapping comments (multiple at same position)
+            if (overlappingComments[0] === this) {
+                // This is the first comment in overlapping group
+                let isAnyCommentInGroupSelected: boolean = false;
+
+                // Check if selectedComment is ANY of the overlapping comments
+                if (selectedComment) {
+                    for (let i: number = 0; i < overlappingComments.length; i++) {
+                        if (overlappingComments[i].comment === selectedComment) {
+                            isAnyCommentInGroupSelected = true;
+                            break;
+                        }
+                    }
+                }
+                if (isAnyCommentInGroupSelected) {
+                    // ANY comment in this group is selected: show selected author color + textShadow
+                    const selectedAuthorColor: string = documentHelper.getAuthorColor(selectedComment.author);
+                    (this.commentMarkSpan as HTMLElement).style.color = selectedAuthorColor;
+                    (this.commentMarkSpan as HTMLElement).style.textShadow = `0 0 2px ${selectedAuthorColor}`;
+                } else {
+                    // No selection in group: show first comment color with reduced opacity, reset textShadow
+                    (this.commentMarkSpan as HTMLElement).style.color = documentHelper.convertColorToRGBA(firstAuthorColor, 0.6);
+                    (this.commentMarkSpan as HTMLElement).style.textShadow = '';
+                }
+            } else {
+                // Not the first comment (overlapping): hide and reset textShadow
+                (this.commentMarkSpan as HTMLElement).style.color = 'transparent';
+                (this.commentMarkSpan as HTMLElement).style.textShadow = '';
+            }
+        } else {
+            // Single comment (not overlapping): check standard selection state
+            const isMarkSelected: boolean = (this.commentMark as HTMLElement).classList.contains('e-de-cmt-mark-selected');
+            if (isMarkSelected && selectedComment && selectedComment === this.comment) {
+                // Selected state: use full opacity color + textShadow
+                const selectedAuthorColor: string = documentHelper.getAuthorColor(selectedComment.author);
+                (this.commentMarkSpan as HTMLElement).style.color = selectedAuthorColor;
+                (this.commentMarkSpan as HTMLElement).style.textShadow = `0 0 2px ${selectedAuthorColor}`;
+            } else {
+                // Unselected state: use opacity color, reset textShadow
+                (this.commentMarkSpan as HTMLElement).style.color = documentHelper.convertColorToRGBA(firstAuthorColor, 0.6);
+                (this.commentMarkSpan as HTMLElement).style.textShadow = '';
+            }
+        }
+    }
+
+    /**
+     * @private
+     * Helper method to update comment mark colors on hover/enter state
+     * Applies full opacity color with textShadow enhancement
+     */
+    public updateCommentMarkColorOnHover(): void {
+        const documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+        const commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = documentHelper.render.commentMarkDictionary;
+        const overlappedComments: CommentCharacterElementBox[] | undefined = commentMarkDictionary.get(this.commentMark);
+
+        if (!overlappedComments || overlappedComments.length === 0) {
+            return;
+        }
+
+        const firstCommentInLine: CommentCharacterElementBox = overlappedComments[0];
+        const selectedComment: CommentElementBox | null = documentHelper.owner.documentHelper.currentSelectedComment;
+        const firstAuthorColor: string = documentHelper.getAuthorColor(firstCommentInLine.comment.author);
+
+        // Determine hover color: use selected comment's color if selected, otherwise first comment's color
+        let hoverColor: string = firstAuthorColor;
+        if (selectedComment) {
+            const selectedFirstCommentElement: CommentCharacterElementBox = selectedComment.commentStart.getFirstCommentInLine();
+            if (selectedFirstCommentElement && selectedFirstCommentElement.comment === firstCommentInLine.comment) {
+                hoverColor = documentHelper.getAuthorColor(selectedComment.author);
+            }
+        }
+
+        // Show only first span with hover color + textShadow
+        if (overlappedComments[0] && overlappedComments[0].commentMarkSpan) {
+            (overlappedComments[0].commentMarkSpan as HTMLElement).style.color = hoverColor;
+            (overlappedComments[0].commentMarkSpan as HTMLElement).style.textShadow = `0 0 2px ${hoverColor}`;
+        }
+        // Hide other overlapping spans and reset textShadow
+        for (let i: number = 1; i < overlappedComments.length; i++) {
+            const overlappedStart: CommentCharacterElementBox = overlappedComments[i];
+            if (overlappedStart && overlappedStart.commentMarkSpan) {
+                (overlappedStart.commentMarkSpan as HTMLElement).style.color = 'transparent';
+                (overlappedStart.commentMarkSpan as HTMLElement).style.textShadow = '';
+            }
+        }
+    }
+
+    /**
+     * @private
+     * Helper method to update comment mark colors on unhover/leave state
+     * Applies selected comment color with textShadow if selected, else reduced opacity without textShadow
+     */
+    public updateCommentMarkColorOnUnhover(): void {
+        const documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+        const commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = documentHelper.render.commentMarkDictionary;
+        const overlappedComments: CommentCharacterElementBox[] | undefined = commentMarkDictionary.get(this.commentMark);
+
+        if (!overlappedComments || overlappedComments.length === 0) {
+            return;
+        }
+
+        const firstCommentInLine: CommentCharacterElementBox = overlappedComments[0];
+        const selectedComment: CommentElementBox | null = documentHelper.owner.documentHelper.currentSelectedComment;
+        const firstAuthorColor: string = documentHelper.getAuthorColor(firstCommentInLine.comment.author);
+
+        let isAnyCommentOnLineSelected: boolean = false;
+
+        if (selectedComment) {
+            const selectedFirstCommentElement: CommentCharacterElementBox = selectedComment.commentStart.getFirstCommentInLine();
+            const selectedFirstComment: CommentElementBox | null = selectedFirstCommentElement ? selectedFirstCommentElement.comment : null;
+            isAnyCommentOnLineSelected = (selectedFirstComment === firstCommentInLine.comment);
+        }
+
+        // Show only first span with appropriate color + textShadow if still selected
+        if (overlappedComments[0] && overlappedComments[0].commentMarkSpan) {
+            if (isAnyCommentOnLineSelected) {
+                const selectedAuthorColor: string = documentHelper.getAuthorColor(selectedComment!.author);
+                (overlappedComments[0].commentMarkSpan as HTMLElement).style.color = selectedAuthorColor;
+                (overlappedComments[0].commentMarkSpan as HTMLElement).style.textShadow = `0 0 2px ${selectedAuthorColor}`;
+            } else {
+                (overlappedComments[0].commentMarkSpan as HTMLElement).style.color = documentHelper.convertColorToRGBA(firstAuthorColor, 0.6);
+                (overlappedComments[0].commentMarkSpan as HTMLElement).style.textShadow = '';
+            }
+        }
+        // Hide other overlapping spans and reset textShadow
+        for (let i: number = 1; i < overlappedComments.length; i++) {
+            const overlappedStart: CommentCharacterElementBox = overlappedComments[i];
+            if (overlappedStart && overlappedStart.commentMarkSpan) {
+                (overlappedStart.commentMarkSpan as HTMLElement).style.color = 'transparent';
+                (overlappedStart.commentMarkSpan as HTMLElement).style.textShadow = '';
+            }
+        }
+    }
+
     public selectComment(): void {
         let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
         let commentMarkDictionary:Dictionary<HTMLElement,CommentCharacterElementBox[]>=documentHelper.render.commentMarkDictionary;
@@ -9825,6 +10161,14 @@ export class CommentCharacterElementBox extends ElementBox {
     }
 
     public destroy(): void {
+        if (this.commentMarkSpan) {
+            if (this.onCommentMarkMouseEnter) {
+                this.commentMarkSpan.removeEventListener('mouseenter', this.onCommentMarkMouseEnter);
+            }
+            if (this.onCommentMarkMouseLeave) {
+                this.commentMarkSpan.removeEventListener('mouseleave', this.onCommentMarkMouseLeave);
+            }
+        }
         if (this.commentMark) {
             this.removeCommentMark();
         }
@@ -10303,6 +10647,7 @@ export class WTableHolder {
         // If all columns are set as 0 pixels, then this will work.
         let remainingWidthTotal: number = 0;
         let isAllColumnPointWidth: boolean = this.columns.every(column => column.widthType === 'Point');
+        let isTableHasPercentWidth: boolean = !isAuto && tablePreferredWidthType === 'Percent';
         let minWidthExceedCellWidth = 0;
         let columnIndexCollection: number[] = [];
         let totalColumnsPreferredWidth: number = this.getTotalWidth(0);
@@ -10415,6 +10760,39 @@ export class WTableHolder {
                     return;
                 }
                 this.fitColumns(containerWidth, considerMinAsTableWidth ? minTotal : preferredTableWidth, isAuto, isAutoFit);
+                if (isTableHasPercentWidth && !hasSpannedCells && !isNestedTable) {
+                    let deficitWidth: number = 0;
+                    let donorWidth: number = 0;
+                    let deficitColumns: number[] = [];
+                    let donorColumns: number[] = [];
+
+                    for (let i: number = 0; i < this.columns.length; i++) {
+                        let column: WColumn = this.columns[i];
+
+                        if (column.preferredWidth < column.minimumWordWidth) {
+                            deficitWidth += column.minimumWordWidth - column.preferredWidth;
+                            deficitColumns.push(i);
+                        } else if (column.preferredWidth > column.minimumWordWidth) {
+                            donorWidth += column.preferredWidth - column.minimumWordWidth;
+                            donorColumns.push(i);
+                        }
+                    }
+
+                    if (Math.floor(deficitWidth) > 0 && donorWidth >= deficitWidth) {
+                        for (let i: number = 0; i < deficitColumns.length; i++) {
+                            let deficitColumn: WColumn = this.columns[deficitColumns[i]];
+                            deficitColumn.preferredWidth = deficitColumn.minimumWordWidth;
+                        }
+
+                        for (let i: number = 0; i < donorColumns.length; i++) {
+                            let donorColumn: WColumn = this.columns[donorColumns[i]];
+                            let availableDonorWidth: number = donorColumn.preferredWidth - donorColumn.minimumWordWidth;
+                            let reduction: number = deficitWidth * availableDonorWidth / donorWidth;
+                            donorColumn.preferredWidth = Math.max(donorColumn.minimumWordWidth, donorColumn.preferredWidth - reduction);
+                        }
+                    }
+                }
+                this.tableWidth = this.getTotalWidth(0);
                 return;
                 //}
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
@@ -10548,7 +10926,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, isAutoFit: boolean, indent?: number): void {
+    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, isAutoFit: boolean, indent?: number, isRowCellResize?: boolean): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;
         }
@@ -10563,7 +10941,11 @@ export class WTableHolder {
         if (isAutoWidth) {
             this.tableWidth = totalColumnWidth;
         } else {
-            this.tableWidth = preferredTableWidth;
+            if (isRowCellResize) {
+                this.tableWidth = totalColumnWidth > preferredTableWidth ? totalColumnWidth : preferredTableWidth;
+            } else {
+                this.tableWidth = preferredTableWidth;
+            }
         }
         // If total columns width doesn't match table width, then all grid column widths will be updated by even factor.
         // If totalColumnWidth < TableWidth, all grid columns are enlarged. Otherwise shrinked.
@@ -10596,8 +10978,10 @@ export class WTableHolder {
     public getCellWidth(columnIndex: number, columnSpan: number, preferredTableWidth: number, isTableResizing?: boolean): number {
         let width: number = 0;
         for (let i: number = 0; i < columnSpan; i++) {
-            width += isTableResizing ? HelperMethods.round(this.tableColumns[i + columnIndex].preferredWidth, 2)
-                : this.tableColumns[i + columnIndex].preferredWidth;
+            if (!isNullOrUndefined(this.tableColumns[i + columnIndex])) {
+                width += isTableResizing ? HelperMethods.round(this.tableColumns[i + columnIndex].preferredWidth, 2)
+                    : this.tableColumns[i + columnIndex].preferredWidth;
+            }
         }
         return width;
     }

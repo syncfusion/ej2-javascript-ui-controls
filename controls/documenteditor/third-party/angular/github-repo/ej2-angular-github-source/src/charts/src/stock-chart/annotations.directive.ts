@@ -14,9 +14,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-stockchart-annotations>e-stockchart-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotationDirective> {
@@ -30,12 +31,12 @@ export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotat
      * * Point - Annotation renders based on x and y axis value.
      * @default 'Pixel'
      */
-    public coordinateUnits: any;
+    public declare coordinateUnits: any;
     /** 
      * Information about annotation for assistive technology.
      * @default null
      */
-    public description: any;
+    public declare description: any;
     /** 
      * Specifies the alignment of the annotation. They are 
      * * Near - Align the annotation element as left side. 
@@ -43,14 +44,14 @@ export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotat
      * * Center - Align the annotation element as mid point.
      * @default 'Center'
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Specifies the regions of the annotation. They are 
      * * Chart - Annotation renders based on chart coordinates. 
      * * Series - Annotation renders based on series coordinates.
      * @default 'Chart'
      */
-    public region: any;
+    public declare region: any;
     /** 
      * Specifies the position of the annotation. They are 
      * * Top - Align the annotation element as top side. 
@@ -58,38 +59,31 @@ export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotat
      * * Middle - Align the annotation element as mid point.
      * @default 'Middle'
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * if set coordinateUnit as `Pixel` X specifies the axis value 
      * else is specifies pixel or percentage of coordinate
      * @default '0'
      */
-    public x: any;
+    public declare x: any;
     /** 
      * The name of horizontal axis associated with the annotation. 
      * It requires `axes` of chart.
      * @default null
      */
-    public xAxisName: any;
+    public declare xAxisName: any;
     /** 
      * if set coordinateUnit as `Pixel` Y specifies the axis value 
      * else is specifies pixel or percentage of coordinate
      * @default '0'
      */
-    public y: any;
+    public declare y: any;
     /** 
      * The name of vertical axis associated with the annotation. 
      * It requires `axes` of chart.
      * @default null
      */
-    public yAxisName: any;
-    /** 
-     * Content of the annotation, which accepts the id of the custom element.
-     * @default null
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare yAxisName: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -98,6 +92,7 @@ export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotat
         this.directivePropList = input;
     }
 }
+Template()(StockChartAnnotationDirective.prototype, 'content');
 
 /**
  * StockChartAnnotation Array Directive
@@ -105,6 +100,7 @@ export class StockChartAnnotationDirective extends ComplexBase<StockChartAnnotat
  */
 @Directive({
     selector: 'ejs-stockchart>e-stockchart-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(StockChartAnnotationDirective)
     },

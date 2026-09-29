@@ -184,8 +184,8 @@ export class ConnectorLineEdit {
         const preIdArray: string[] = [];
         const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
         /* eslint-disable */
-        const suffixRegex: RegExp = /\s*([A-Z]{1,2})([+-]\d*\.?\d+\s*(?:days|day|hours|hour|minutes|minute|[DHM])?)?$/i;
-        const lagRegex: RegExp = /([+-]\d*\.?\d+\s*(?:days|day|hours|hour|minutes|minute|[DHM])?)$/i;
+        const suffixRegex: RegExp = /\s*([A-Z]{1,2})([+-]\d*\.?\d+\s*(?:days|day|hours|hour|week|weeks|month|months|minutes|minute|[DHM])?)?$/i;
+        const lagRegex: RegExp = /([+-]\d*\.?\d+\s*(?:days|day|hours|hour|week|weeks|month|months|minutes|minute|[DHM])?)$/i;
         const ids: string[] = this.parent.ids;
         for (let j: number = 0; j < preArray.length; j++) {
             const predecessor: string = preArray[j as number].trim();
@@ -281,6 +281,19 @@ export class ConnectorLineEdit {
      * @private
      */
     public validatePredecessorRelation(ganttRecord: IGanttData, predecessorString: string): boolean {
+        // RESTRICTION CHECK: Restrict dependency draw, if draw or edit type is not listed in `allowedDependencyTypes` for taskbar-edit connector line draw & Cell-edit action calls from dependencyEdited()
+        if (typeof predecessorString === 'string') {
+            // 'g' - Finds all dependency type matches in the string.
+            // 'i' - Matches dependency types irrespective of letter casing (Lower/Upper).
+            const typeMatches: RegExpMatchArray | null = predecessorString.match(/(FS|SS|FF|SF)/gi);
+            if (typeMatches && this.parent.predecessorModule['isAllowedDependencyActive']()) {
+                for (const depType of typeMatches) {
+                    if (!this.parent.predecessorModule.isAllowedDependencyType(depType.toUpperCase())) {
+                        return false;
+                    }
+                }
+            }
+        }
         let flag: boolean = true;
         const recordId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
             : ganttRecord.ganttProperties.rowUniqueID;
@@ -415,7 +428,9 @@ export class ConnectorLineEdit {
             this.parent.isOnEdit = true;
             let predecessorCollection: IPredecessor[] = [];
             if (!isNullOrUndefined(predecessorString) && predecessorString !== '') {
-                predecessorCollection = this.parent.predecessorModule.calculatePredecessor(predecessorString, ganttRecord);
+                const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+                const idsSet: Set<string> = new Set(ids);
+                predecessorCollection = this.parent.predecessorModule.calculatePredecessor(predecessorString, ganttRecord, undefined, idsSet);
             }
             this.parent.setRecordValue(
                 'predecessor',
@@ -440,8 +455,14 @@ export class ConnectorLineEdit {
             if (ganttRecord.taskData[this.parent.taskFields.dependency]) {
                 ganttRecord.taskData[this.parent.taskFields.dependency] = null;
             }
-            const err: string = `${predecessorString} is an invalid relation for task ${this.parent.taskFields.id}. Kindly ensure the ${this.parent.taskFields.dependency} field contains only valid predecessor relations.`;
-            this.parent.trigger('actionFailure', { error: err });
+            let error: string;
+            if (this.parent.predecessorModule['isAllowedDependencyActive']()) {
+                error = `The dependency type ${predecessorString} is not allowed. Allowed dependency types: ${this.parent.allowedDependencyTypes}.`;
+            }
+            else {
+                error = `${predecessorString} is an invalid predecessor relation. Ensure that the ${this.parent.taskFields.dependency} field contains only valid predecessor values.`;
+            }
+            this.parent.trigger('actionFailure', { error: error });
             return false;
         }
     }

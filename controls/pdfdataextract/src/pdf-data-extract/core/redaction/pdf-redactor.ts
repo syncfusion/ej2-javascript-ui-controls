@@ -8,6 +8,7 @@ import { _addFontResources, _getXObjectResources, canvasRenderCallback } from '.
 import { _TextGlyphMapper } from './text-glyph-mapper';
 import { _PdfRedactionProcessor } from './pdf-redaction-processor';
 import { PdfRedactionRegion } from './pdf-redaction-region';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * Represents a content redactor from an existing PDF document.
  *
@@ -214,6 +215,7 @@ export class PdfRedactor {
      * ```
      */
     redactSync(): void {
+        initializeTelemetryFeature('RedactContent', 'PDFLibrary');
         if (this._document && this._document.pageCount > 0) {
             for (let i: number = 0; i < this._document.pageCount; i++) {
                 const page: PdfPage = this._document.getPage(i);
@@ -278,6 +280,7 @@ export class PdfRedactor {
      * ```
      */
     async redact(callBack: canvasRenderCallback): Promise<void> {
+        initializeTelemetryFeature('RedactContent', 'PDFLibrary');
         if (this._document && this._document.pageCount > 0) {
             this._document.fileStructure.isIncrementalUpdate = false;
             for (let i: number = 0; i < this._document.pageCount; i++) {

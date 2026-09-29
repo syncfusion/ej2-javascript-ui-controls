@@ -578,6 +578,25 @@ describe('Sanitize Html Helper', () => {
             destroy(rteObj);
         });
     });
+    describe('844614 - The enableHtmlSanitizer property is not working properly in the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                value : "Rich Text Editor"
+            });
+        });
+        it('Sanitize the value if update dynamically ', (done: Function) => {
+            rteObj.value = '<p><img src=x onerror=alert(document.domain)></p>';
+            rteObj.dataBind();
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === `<p><img src="x" class="e-rte-image e-img-inline"></p>`).toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 
     describe('enableHtmlSanitizer is set to false when insertHTML is used in execueCommand', () => {
         let rteObj: RichTextEditor;

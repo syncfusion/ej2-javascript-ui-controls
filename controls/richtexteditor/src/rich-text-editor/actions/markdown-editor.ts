@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import { NotifyArgs, IToolbarItemModel } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, removeClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { MarkdownFormatter } from '../formatter/markdown-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
@@ -27,6 +27,7 @@ export class MarkdownEditor {
     private isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('MarkdownEditor', 'RichTextEditor');
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');

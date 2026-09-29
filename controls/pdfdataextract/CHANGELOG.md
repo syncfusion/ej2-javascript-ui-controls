@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
+## 35.1.37 (2026-09-29)
+
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved an issue where polygon annotations were not redacted when applying redactions.
+
+## 33.2.4 (2026-04-28)
 
 ### PDF Data Extract
 

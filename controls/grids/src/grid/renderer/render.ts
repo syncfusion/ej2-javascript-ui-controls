@@ -32,6 +32,7 @@ import { AriaService } from '../services/aria-service';
 import { PredicateModel } from '../base/grid-model';
 import { RowDragDropRenderer } from './row-drag-drop-renderer';
 import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-render';
+import { PinnedRowIndentCellRenderer } from '../renderer/pinned-row-indent-renderer';
 import * as literals from '../base/string-literals';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 import { Grid } from '../base/grid';
@@ -108,6 +109,7 @@ export class Render {
         }
         this.parent.scrollModule.setWidth();
         this.parent.scrollModule.setHeight();
+        this.parent.scrollModule.refresh();
         if (this.parent.height !== 'auto') {
             this.parent.scrollModule.setPadding();
         }
@@ -409,9 +411,122 @@ export class Render {
         this.emptyRow(true);
     }
 
+    /**
+     * Render empty record overlay when displayMode is 'Sticky'.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public renderEmptyOverlay(): void {
+        const gObj: IGrid = this.parent;
+        this.removeEmptyOverlay();
+        const overlay: HTMLElement = this.parent.createElement('div', {
+            className: 'e-empty-row-sticky-content'
+        });
+        const content: HTMLElement = this.parent.createElement('div', {
+            className: 'e-empty-row-sticky'
+        });
+        if (gObj.enableVirtualization || gObj.enableColumnVirtualization) {
+            (this.contentRenderer as VirtualContentRenderer).virtualEle.adjustTable(0, 0);
+            content.classList.add('e-virtual-emptyrecord');
+        }
+        if (gObj.emptyRecordTemplate) {
+            const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
+            const templateResult: any = gObj.getEmptyRecordTemplate()(
+                gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
+                undefined, undefined, undefined, this.parent['root']
+            );
+            const templateElement: HTMLElement = gObj.isVue ? templateResult[1] : templateResult[0];
+            content.appendChild(templateElement);
+            if (gObj.isReact) {
+                this.parent.renderTemplates();
+            }
+        } else {
+            content.innerHTML = this.l10n.getConstant('EmptyRecord');
+        }
+        overlay.appendChild(content);
+        const contentTable: HTMLElement = this.contentRenderer.getTable() as HTMLElement;
+        if (contentTable && contentTable.closest('.e-content')) {
+            contentTable.closest('.e-content').insertBefore(overlay, contentTable.closest('.e-content').firstElementChild);
+            contentTable.closest('.e-content').classList.add('e-empty-overlay-mode');
+        }
+    }
+
+    /**
+     * Remove empty record overlay if present.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public removeEmptyOverlay(): void {
+        const overlay: Element = this.parent.element.querySelector('.e-empty-row-sticky-content');
+        if (overlay) {
+            remove(overlay);
+        }
+        const content: Element = this.parent.element.querySelector('.e-content');
+        if (content) {
+            content.classList.remove('e-empty-overlay-mode');
+        }
+    }
+
+    private handleEmptyRowTrigger(): void {
+        if (!this.parent.isInitialLoad && this.parent.focusModule) {
+            this.parent.focusModule.setFirstFocusableTabIndex();
+        }
+        this.parent.trigger(events.dataBound, {});
+        this.parent.notify(
+            events.onEmpty,
+            { rows: [new Row<Column>({ isDataRow: true, cells: [new Cell<Column>({ isDataCell: true, visible: true })] })] }
+        );
+        const gObj: IGrid = this.parent;
+        if (gObj.editSettings.showAddNewRow) {
+            gObj.addRecord();
+            this.parent.notify(events.showAddNewRowFocus, {});
+        }
+    }
+
     public emptyRow(isTrigger?: boolean): void {
         const gObj: IGrid = this.parent;
-        let tbody: Element = this.contentRenderer.getTable().querySelector( literals.tbody);
+        let tbody: Element = this.contentRenderer.getTable().querySelector(literals.tbody);
+        if (gObj.emptyRecordMode === 'Sticky') {
+            if (!isNullOrUndefined(tbody)) {
+                remove(tbody);
+            }
+            tbody = this.parent.createElement(literals.tbody, { attrs: { role: 'rowgroup' } });
+            let spanCount: number = gObj.allowRowDragAndDrop && isNullOrUndefined(gObj.rowDropSettings.targetID) ? 1 : 0;
+            if (gObj.detailTemplate || gObj.childGrid) {
+                ++spanCount;
+            }
+            const className: string = gObj.editSettings.showAddNewRow && gObj.editSettings.newRowPosition === 'Bottom' ?
+                'e-emptyrow e-show-added-row' : 'e-emptyrow';
+            const tr: Element = this.parent.createElement('tr', { className: className, attrs: { role: 'row' } });
+            const td: HTMLElement = this.parent.createElement('td', {
+                innerHTML: '',
+                attrs: {
+                    colspan: (gObj.getVisibleColumns().length + spanCount + (!isNullOrUndefined(gObj.groupSettings.columns) ?
+                        gObj.groupSettings.columns.length : 0)).toString()
+                }
+            });
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            this.contentRenderer.renderEmpty(<HTMLElement>tbody);
+            if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length) {
+                this.parent.getHeaderContent().querySelector(literals.tbody).innerHTML = '';
+                if (gObj.element.querySelector('.e-frozenrow-border')) {
+                    this.parent.element.querySelector('.e-frozenrow-border').classList.add('e-frozenrow-empty');
+                }
+            }
+            this.removeEmptyOverlay();
+            this.renderEmptyOverlay();
+            if (gObj.emptyRecordTemplate && (gObj.isReact)) {
+                this.parent.renderTemplates();
+            }
+            if (isTrigger) {
+                this.handleEmptyRowTrigger();
+            }
+            return;
+        }
+        this.removeEmptyOverlay();
         if (!isNullOrUndefined(tbody)) {
             remove(tbody);
         }
@@ -755,6 +870,7 @@ export class Render {
             this.headerRenderer.refreshUI();
         }
         if (len) {
+            this.removeEmptyOverlay();
             if (isGroupAdaptive(gObj)) {
                 const content: string = 'content';
                 args.scrollTop = { top: this.contentRenderer[`${content}`].scrollTop };
@@ -801,6 +917,7 @@ export class Render {
         this.parent.notify(events.toolbarRefresh, {});
         if ((this.parent as Grid).toolbarModule && (this.parent as Grid).toolbarModule.isVue3ToolbarTemplate()) {
             (this.parent as Grid).toolbarModule.toolbar.refresh();
+            (this.parent as Grid).toolbarModule.renderSearchInput();
         }
         this.setRowCount(this.parent.getCurrentViewRecords().length);
         if ('query' in e) {
@@ -912,6 +1029,7 @@ export class Render {
         cellrender.addCellRenderer(CellType.DetailExpand, new DetailExpandCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.DetailFooterIntent, new IndentCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.RowDragIcon, new RowDragDropRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.PinnedIndent, new PinnedRowIndentCellRenderer(this.parent, this.locator));
     }
 
     private addEventListener(): void {

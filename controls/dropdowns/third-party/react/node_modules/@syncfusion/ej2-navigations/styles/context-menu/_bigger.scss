@@ -1,0 +1,111 @@
+@use 'variables' as *;
+@mixin bigger-rtl-blank-icon {
+  padding-left: $cmenu-caret-blank-icon;
+
+  &.e-menu-caret-icon {
+    padding-left: $cmenu-caret-li-padding;
+  }
+}
+
+@mixin bigger-ul-size {
+  font-size: $cmenu-bigger-font-size;
+  padding: $cmenu-ul-bigger-padding;
+  white-space: nowrap;
+}
+
+@mixin bigger-li-size {
+  height: $cmenu-bigger-li-height;
+  line-height: $cmenu-bigger-li-line-height;
+  @if $skin-name == 'fluent2' {
+    height: $cmenu-bigger-li-size-height;
+    line-height: $cmenu-bigger-li-size-line-height;
+    padding: $cmenu-bigger-li-size-padding;
+  }
+  &.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: $cmenu-caret-icon-padding;
+    }
+  }
+
+  & .e-menu-icon {
+    font-size: $cmenu-icon-bigger-font-size;
+    line-height: $cmenu-bigger-li-line-height;
+    @if $skin-name == 'tailwind' {
+      margin-right: $cmenu-icon-bigger-margin-right;
+    }
+  }
+
+  & .e-caret {
+    line-height: $cmenu-bigger-li-line-height;
+    @if $skin-name == 'fluent2' {
+      margin: $cmenu-bigger-caret-icon-margin;
+    }
+  }
+
+  &.e-separator {
+    height: $cmenu-auto-height;
+    line-height: $cmenu-normal-line-height;
+  }
+}
+
+@include export-module('contextmenu-bigger') {
+  .e-bigger .e-contextmenu-wrapper ul,
+  .e-bigger.e-contextmenu-wrapper ul,
+  .e-bigger .e-contextmenu-container ul,
+  .e-bigger.e-contextmenu-container ul {
+    @include bigger-ul-size;
+    box-shadow: $cmenu-parent-ul-box-shadow;
+    max-width: $cmenu-bigger-max-width;
+    min-width: $cmenu-bigger-min-width;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or  $skin-name == 'Material3' {
+      padding: $cmenu-bigger-ul-padding;
+    }
+
+    & .e-menu-item  {
+      @include bigger-li-size;
+
+      & .e-menu-icon {
+        @if $skin-name == 'fluent2' {
+          margin-bottom: $cmenu-item-icon-margin-top;
+        }
+      }
+
+      & .e-caret {
+        font-size: $cmenu-bigger-caret-font-size;
+        @if $skin-name == 'fluent2' {
+          padding: $cmenu-padding-none;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger .e-contextmenu-container.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-container.e-rtl ul .e-blankicon {
+    @if $skin-name != 'FluentUI' {
+      @include bigger-rtl-blank-icon;
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-menu-item.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: $cmenu-bigger-rtl-caret-icon-padding;
+    }
+  }
+
+  .e-bigger .e-small .e-contextmenu-wrapper ul .e-menu-item,
+  .e-bigger .e-small.e-contextmenu-wrapper ul .e-menu-item {
+    @if $skin-name == 'tailwind3' {
+      height: $cmenu-bigger-small-li-height;
+      font-size: $cmenu-bigger-font-size;
+      line-height: $cmenu-bigger-small-li-line-height;
+      &.e-separator {
+        height: $cmenu-auto-height;
+      }
+      .e-menu-icon {
+        line-height: $cmenu-bigger-small-li-line-height;
+      }
+    }
+  }
+}

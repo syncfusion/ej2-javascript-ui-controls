@@ -7,7 +7,7 @@ export interface ToolbarItemDirTypecast {
 /**
  * `ToolbarItemsDirective` represent a custom toolbar items of the react Schedule. 
  * It must be contained in a Schedule component(`SchduleComponent`). 
- * ```tsx
+ * ```ts
  * <ScheduleComponent>
  *  <ToolbarItemsDirective>
  *   <ToolbarItemDirective name= 'Today'></ToolbarItemDirective>

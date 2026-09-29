@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $inline-ai-assist-bg: $bg-base-0 !default;
 $inline-ai-assist-popup-border-radius: none !default;
 $inline-ai-assist-content-padding: 10px 10px 16px 10px !default;
@@ -25,6 +25,7 @@ $inline-ai-assist-send-font-size: 12px !default;
 $inline-ai-assist-popup-border: 1px solid $border-fg !default;
 $inline-ai-assist-response-text-color: $content-font !default;
 $inline-ai-assist-textarea-placeholder-color: $content-font-alt !default;
+$inline-ai-assist-textarea-color: $content-font !default;
 $inline-ai-assist-footer-focused-border-color: rgba(97, 97, 97, 1) !default;
 $inline-ai-assist-send-color: $content-font !default;
 $inline-ai-assist-send-disabled-color: $content-font-alt !default;

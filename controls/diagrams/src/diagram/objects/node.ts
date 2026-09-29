@@ -280,6 +280,7 @@ export class Html extends Shape {
      * <div id='diagram'></div>
      * ```
      * ```typescript
+     * {% raw %}
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
      * shape: { type: 'HTML',
@@ -291,8 +292,8 @@ export class Html extends Shape {
      * ...
      * });
      * diagram.appendTo('#diagram');
+     * {% endraw %}
      * ```
-     *
      * @default ''
      */
     @Property('')

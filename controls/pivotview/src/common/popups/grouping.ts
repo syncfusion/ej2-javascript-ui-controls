@@ -2,7 +2,7 @@ import { createElement, remove, extend, getInstance, addClass, removeClass, sele
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
 import { DateGroup } from '../../base/types';
-import { IFieldOptions, IDataOptions, IAxisSet, IGroupSettings, ICustomGroups, IDataSet, IField } from '../../base/engine';
+import { IFieldOptions, IDataOptions, IAxisSet, IGroupSettings, ICustomGroups, IDataSet, IField, FieldItemInfo } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
@@ -24,6 +24,7 @@ export class Grouping implements IAction {
     private parentElement: HTMLElement;
     /** @hidden */
     public isUpdate: boolean;
+    private groupingActionType: string;
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
 
     /**
@@ -48,10 +49,11 @@ export class Grouping implements IAction {
         return 'grouping';
     }
 
-    private render(args: { target: HTMLElement; option: string; parentElement: HTMLElement }): void {
+    private render(args: { target: HTMLElement; option: string; parentElement: HTMLElement; groupingActionType?: string }): void {
         const target: HTMLElement = args.target;
         const option: string = args.option;
         const parentElement: HTMLElement = args.parentElement;
+        this.groupingActionType = args.groupingActionType;
         let selectedCellsInfo: SelectedCellsInfo[] = [];
         this.parentElement = parentElement;
         this.isUpdate = false;
@@ -175,11 +177,11 @@ export class Grouping implements IAction {
                 const selectedOptions: string[] = this.getSelectedOptions(selectedCellsInfo);
                 groupFields = this.validateSettings(fieldName, groupFields, type, selectedOptions);
             }
-            this.updateDateSource(groupFields, type);
+            this.updateDateSource(groupFields, type, fieldName);
         }
     }
 
-    private updateDateSource(groupFields: IGroupSettings[], type: string): void {
+    private updateDateSource(groupFields: IGroupSettings[], type: string, fieldName?: string): void {
         if (this.isUpdate) {
             this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
             this.parent.updateGroupingReport(groupFields, (type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number'));
@@ -188,6 +190,17 @@ export class Grouping implements IAction {
             } else {
                 this.parent.initEngine();
             }
+            const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
+            if (this.groupingActionType === 'group') {
+                const groupField: IGroupSettings = groupFields.find((field: IGroupSettings) => field.name === fieldName);
+                PivotUtil.invokeActionMethod(
+                    this.parent, events.actionComplete, events.fieldGrouped, {
+                        groupingInfo: groupField
+                    }, fieldInfo);
+            } else {
+                PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.fieldUngrouped, { groupingInfo: {} }, fieldInfo);
+            }
+            this.groupingActionType = undefined;
         }
     }
 
@@ -710,7 +723,7 @@ export class Grouping implements IAction {
             groupFields = this.validateSettings(fieldName, groupFields, groupType, [], []);
         }
         groupDialog.close();
-        this.updateDateSource(groupFields, groupType);
+        this.updateDateSource(groupFields, groupType, fieldName);
     }
     private getGroupBasedSettings(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {
         const groups: { [key: string]: IGroupSettings[] } = {};

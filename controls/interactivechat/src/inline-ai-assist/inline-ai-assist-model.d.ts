@@ -1,4 +1,4 @@
-import { INotifyPropertyChanged, Property, NotifyPropertyChanges, isNullOrUndefined as isNOU, getUniqueID, Event, EmitType, L10n, SanitizeHtmlHelper, BaseEventArgs, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Toolbar, ClickEventArgs, ItemModel } from '@syncfusion/ej2-navigations';import { CloseEventArgs, OpenEventArgs, Popup } from '@syncfusion/ej2-popups';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { EventHandler, addClass, removeClass, formatUnit } from '@syncfusion/ej2-base';import { Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { AIAssistBase, ToolbarPosition } from '../ai-assist-base/ai-assist-base';import { ToolbarItemModel } from '../interactive-chat-base/interactive-chat-base-model';import { TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';
+import { INotifyPropertyChanged, Property, NotifyPropertyChanges, isNullOrUndefined as isNOU, getUniqueID, Event, EmitType, L10n, SanitizeHtmlHelper, BaseEventArgs, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Toolbar, ClickEventArgs, ItemModel } from '@syncfusion/ej2-navigations';import { CloseEventArgs, OpenEventArgs, Popup } from '@syncfusion/ej2-popups';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { EventHandler, addClass, removeClass, formatUnit } from '@syncfusion/ej2-base';import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';import { SpeechToText, StartListeningEventArgs, StopListeningEventArgs, TranscriptChangedEventArgs, ErrorEventArgs } from '@syncfusion/ej2-inputs';import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';import { ToolbarItemModel } from '../interactive-chat-base/interactive-chat-base-model';import { TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';
 import {CommandItemSelectEventArgs,ResponseItemSelectEventArgs,ToolbarItemClickEventArgs,ResponseMode,InlinePromptRequestEventArgs} from "./inline-ai-assist";
 import {AIAssistBaseModel} from "../ai-assist-base/ai-assist-base-model";
 
@@ -190,7 +190,7 @@ export interface CommandSettingsModel {
     popupHeight?: string
 
     /**
-     * SSpecifies the width of the command menu popup.
+     * Specifies the width of the command menu popup.
      * Specifies a CSS width value such as '320px' or '40%'.
      *
      * @type {string}
@@ -286,6 +286,8 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
      * Specifies how the AI response is displayed.
      * 'Inline' renders at the caret position; 'Popup' shows above the prompt.
      *
+     * {% codeBlock src='inline-ai-assist/responseMode/index.md' %}{% endcodeBlock %}
+     *
      * @isenumeration true
      * @default ResponseMode.Popup
      * @asptype ResponseMode
@@ -313,6 +315,8 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
     /**
      * Specifies the collection of prompts and their corresponding responses.
      * Specifies an array of PromptModel objects used to render the history.
+     *
+     * {% codeBlock src='inline-ai-assist/prompts/index.md' %}{% endcodeBlock %}
      *
      * @type {PromptResponseModel[]}
      * @default []
@@ -361,6 +365,8 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
      * Specifies the configuration for available AI commands and suggestions.
      * Specifies options such as enabling/disabling commands and customizing suggestion behavior.
      *
+     * {% codeBlock src='inline-ai-assist/commandSettings/index.md' %}{% endcodeBlock %}
+     *
      * @type {CommandSettingsModel | null}
      * @default null
      */
@@ -369,6 +375,8 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
     /**
      * Specifies the configuration for the toolbar displayed with the generated response.
      * Specifies buttons, actions, and behaviors applied to the response area.
+     *
+     * {% codeBlock src='inline-ai-assist/responseSettings/index.md' %}{% endcodeBlock %}
      *
      * @type {ResponseSettingsModel | null}
      * @default null
@@ -385,8 +393,24 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
     inlineToolbarSettings?: InlineToolbarSettingsModel;
 
     /**
+     * Specifies the configuration for the Speech-to-Text (voice input) feature in the inline prompt input.
+     * When `enable` is `true`, a microphone button is rendered in the footer toolbar and the Syncfusion
+     * `SpeechToText` control from `@syncfusion/ej2-inputs` is initialized to capture spoken prompts.
+     *
+     * @type {SpeechToTextSettingsModel}
+     * @default { enable: false }
+     * @remark When `editorTemplate` is set, `editableTextarea` is not created and the default
+     * transcript-to-prompt integration is disabled (transcript changes have nowhere to write).
+     * The microphone button still renders; consumers may handle `transcriptChanged` themselves
+     * against their custom template.
+     */
+    speechToTextSettings?: SpeechToTextSettingsModel;
+
+    /**
      * Specifies a custom template (string or function) for rendering AI-generated response content.
      * Specifies that a function receives a ResponseTemplateContext and returns markup or text.
+     *
+     * {% codeBlock src='inline-ai-assist/responseTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -399,6 +423,8 @@ export interface InlineAIAssistModel extends AIAssistBaseModel{
     /**
      * Specifies a custom template (string or function) for rendering the prompt input area.
      * Specifies a string template or a function that returns the editor UI markup.
+     *
+     * {% codeBlock src='inline-ai-assist/editorTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object

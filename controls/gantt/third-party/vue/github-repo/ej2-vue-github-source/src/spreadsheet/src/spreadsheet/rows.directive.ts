@@ -34,7 +34,7 @@ export const RowsPlugin = {
 /**
  * `e-row` directive represent a row of the VueJS Spreadsheet.
  * It must be contained in a `e-sheet` directive.
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-sheets>
  *    <e-sheet>

@@ -4,7 +4,7 @@ import { TreeView } from '@syncfusion/ej2-navigations';
 import { Template } from '@syncfusion/ej2-angular-base';
 
 
-export const inputs: string[] = ['allowDragAndDrop','allowEditing','allowMultiSelection','allowTextWrap','animation','autoCheck','checkDisabledChildren','checkOnClick','checkedNodes','cssClass','disableHtmlEncode','disabled','dragArea','enableHtmlSanitizer','enablePersistence','enableRtl','expandOn','expandedNodes','fields','fullRowNavigable','fullRowSelect','loadOnDemand','locale','nodeTemplate','selectedNodes','showCheckBox','sortOrder'];
+export const inputs: string[] = ['allowDragAndDrop','allowEditing','allowMultiSelection','allowTextWrap','animation','autoCheck','checkDisabledChildren','checkOnClick','checkedNodes','cssClass','disableHtmlEncode','disabled','dragArea','enableHtmlSanitizer','enablePersistence','enableRtl','enableVirtualization','expandOn','expandedNodes','fields','fullRowNavigable','fullRowSelect','height','loadOnDemand','locale','nodeTemplate','selectedNodes','showCheckBox','sortOrder'];
 export const outputs: string[] = ['actionFailure','created','dataBound','dataSourceChanged','destroyed','drawNode','keyPress','nodeChecked','nodeChecking','nodeClicked','nodeCollapsed','nodeCollapsing','nodeDragStart','nodeDragStop','nodeDragging','nodeDropped','nodeEdited','nodeEditing','nodeExpanded','nodeExpanding','nodeSelected','nodeSelecting'];
 export const twoWays: string[] = [''];
 
@@ -20,53 +20,39 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        nodeTemplate: new ContentChild('nodeTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class TreeViewComponent extends TreeView implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionFailure: any;
-	created: any;
-	dataBound: any;
-	dataSourceChanged: any;
-	destroyed: any;
-	drawNode: any;
-	keyPress: any;
-	nodeChecked: any;
-	nodeChecking: any;
-	nodeClicked: any;
-	nodeCollapsed: any;
-	nodeCollapsing: any;
-	nodeDragStart: any;
-	nodeDragStop: any;
-	nodeDragging: any;
-	nodeDropped: any;
-	nodeEdited: any;
-	nodeEditing: any;
-	nodeExpanded: any;
-	nodeExpanding: any;
-	nodeSelected: any;
-	public nodeSelecting: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionFailure: any;
+	declare created: any;
+	declare dataBound: any;
+	declare dataSourceChanged: any;
+	declare destroyed: any;
+	declare drawNode: any;
+	declare keyPress: any;
+	declare nodeChecked: any;
+	declare nodeChecking: any;
+	declare nodeClicked: any;
+	declare nodeCollapsed: any;
+	declare nodeCollapsing: any;
+	declare nodeDragStart: any;
+	declare nodeDragStop: any;
+	declare nodeDragging: any;
+	declare nodeDropped: any;
+	declare nodeEdited: any;
+	declare nodeEditing: any;
+	declare nodeExpanded: any;
+	declare nodeExpanding: any;
+	declare nodeSelected: any;
+	public declare nodeSelecting: any;
 
 
-    /** 
-     * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property 
-     * is set, the template content overrides the displayed node text. The property accepts template string 
-     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) 
-     * or HTML element ID holding the content. For more information on template concept, refer to 
-     * [Template](../../treeview/template/).
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('nodeTemplate')
-    @Template()
-    public nodeTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -96,7 +82,9 @@ export class TreeViewComponent extends TreeView implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(TreeViewComponent.prototype, 'nodeTemplate');
+
 

@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-input-font-size: 14px !default;
 $ddl-zero-value: 0 !default;
 $ddl-default-border-color: $grey-300 !default;

@@ -15,7 +15,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs Sparkline Component
- * ```vue
+ * ```
  * <ejs-sparkline></ejs-sparkline>
  * ```
  */

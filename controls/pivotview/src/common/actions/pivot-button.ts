@@ -78,6 +78,9 @@ export class PivotButton implements IAction {
             currentAxisElements.push((this.parent as PivotView).groupingBarModule.rowPanel);
             axisElement = (this.parent as PivotView).groupingBarModule.rowPanel;
         }
+        if (args.axis === 'rows' && this.parent instanceof PivotView && this.parent.isTabular) {
+            this.updateRowPanelFieldsClass();
+        }
         const field: IFieldOptions[] = extend([], args.field, null, true) as IFieldOptions[];
         const axis: string = args.axis; let valuePos: number = -1;
         const showValuesButton: boolean = (this.parent.dataType === 'pivot' ? (this.parent.getModuleName() === 'pivotfieldlist' &&
@@ -126,17 +129,20 @@ export class PivotButton implements IAction {
         }
         if (axisElement) {
             if (this.parent.getModuleName() === 'pivotview' && field.length === 0) {
-                for (let i: number = 0; i < currentAxisElements.length; i++) {
-                    const element: Element = currentAxisElements[i as number];
+                const axisPromptText: string = !(this.parent as PivotView).groupingBarSettings.allowDragAndDrop ? '' :
+                    axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
+                        axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
+                            axis === 'values' ? this.parent.localeObj.getConstant('valueAxisPrompt') :
+                                axis === 'filters' ? this.parent.localeObj.getConstant('filterAxisPrompt') :
+                                    this.parent.localeObj.getConstant('allFields');
+                const promptTargetElements: Element[] = (currentAxisElements || []).concat(currentChartAxisElements || []);
+                for (let i: number = 0; i < promptTargetElements.length; i++) {
+                    const element: Element = promptTargetElements[i as number];
                     if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
                         const axisPrompt: HTMLElement = createElement('span', {
                             className: cls.AXIS_PROMPT_CLASS
                         });
-                        axisPrompt.innerText = ((this.parent as PivotView).groupingBarSettings.allowDragAndDrop ? axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
-                            axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
-                                axis === 'values' ? this.parent.localeObj.getConstant('valueAxisPrompt') :
-                                    axis === 'filters' ? this.parent.localeObj.getConstant('filterAxisPrompt') :
-                                        this.parent.localeObj.getConstant('allFields') : '');
+                        axisPrompt.innerText = axisPromptText;
                         element.appendChild(axisPrompt);
                     } else if (axis === 'values' && element.classList.contains(cls.GROUP_CHART_VALUE) &&
                         (this.parent as PivotView).pivotChartModule) {
@@ -165,8 +171,8 @@ export class PivotButton implements IAction {
                                 elemIdx = (i === field.length - 1)
                                     ? elements.length - 1
                                     : i % (elements.length - 1);
-                            } else if ((valueBtnExist && !showValuesButton) || (this.parent.dataSourceSettings.alwaysShowValueHeader
-                                && this.parent.dataSourceSettings.values.length === 1)) {
+                            } else if (((valueBtnExist && !showValuesButton) || (this.parent.dataSourceSettings.alwaysShowValueHeader
+                                && this.parent.dataSourceSettings.values.length === 1)) && elements.length > 1) {
                                 elemIdx = i % (elements.length - 1);
                             } else {
                                 elemIdx = i % elements.length;
@@ -452,8 +458,7 @@ export class PivotButton implements IAction {
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                     text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
                         text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
-                'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
-                'data-type': valuePos === i ? '' : aggregation
+                'tabindex': '-1', 'aria-disabled': 'false', 'data-type': valuePos === i ? '' : aggregation
             },
             className: cls.PIVOT_BUTTON_CONTENT_CLASS + ' ' +
                 (this.parent.getModuleName() === 'pivotview' ?
@@ -836,6 +841,7 @@ export class PivotButton implements IAction {
         });
         contentElement.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(element.textContent) : element.textContent;
         cloneElement.appendChild(contentElement);
+        document.body.appendChild(cloneElement);
         PivotUtil.getAppendToElement(this.parentElement, this.parent.isAngular).appendChild(cloneElement);
         return cloneElement;
     }
@@ -1216,6 +1222,12 @@ export class PivotButton implements IAction {
             this.parent.pivotCommon.filterDialog.dialogPopUp.close();
             if (!observedArgs.cancel) {
                 this.refreshPivotButtonState(fieldName, true);
+                const filterInfo: IFilter = (!isNullOrUndefined(this.parent) && !isNullOrUndefined(this.parent.lastFilterInfo)
+                    && Object.keys(this.parent.lastFilterInfo).length > 0) ? this.parent.lastFilterInfo : filterItem;
+                const actionInfo: PivotActionInfo = {
+                    filterInfo: filterInfo
+                };
+                this.parent.actionObj.actionInfo = actionInfo;
                 this.updateDataSource(true);
             }
         });
@@ -1387,12 +1399,22 @@ export class PivotButton implements IAction {
         let isNodeUnChecked: boolean = false;
         let filterItem: IFilter = { items: [], name: fieldName, type: 'Include' };
         const engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        const isAppendMode: boolean = this.parent.pivotCommon.filterDialog.isAppendMode;
+        const existingFilterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         if (this.parent.dataType === 'olap' && engineModule &&
             !(engineModule.fieldList[fieldName as string] as IOlapField).isHierarchy) {
             const cMembers: IMembers = engineModule.fieldList[fieldName as string].members;
             const sMembers: IMembers = (engineModule as OlapEngine).fieldList[fieldName as string].currrentMembers;
             filterItem.items = this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes();
             filterItem.levelCount = (engineModule.fieldList[fieldName as string] as IOlapField).levelCount;
+            if (isAppendMode && existingFilterObject && existingFilterObject.items) {
+                const mergedSet: Set<string> = new Set([
+                    ...(existingFilterObject.items || []),
+                    ...(filterItem.items || [])
+                ]);
+                filterItem.items = Array.from(mergedSet);
+                filterItem.type = existingFilterObject.type || 'Include';
+            }
             isNodeUnChecked = (filterItem.items.length ===
                 (this.parent.pivotCommon.filterDialog.memberTreeView.fields.dataSource as { [key: string]: object }[]).length ?
                 false : true);
@@ -1410,6 +1432,7 @@ export class PivotButton implements IAction {
                 }
             }
         } else {
+            const newCheckedItems: string[] = [];
             for (const item of this.parent.pivotCommon.searchTreeItems) {
                 if (item.isSelected) {
                     let isGroupedField: boolean = false;
@@ -1423,16 +1446,28 @@ export class PivotButton implements IAction {
                         }
                     }
                     if (isDateField && !isGroupedField) {
-                        filterItem.items.push(item.actualText as string);
+                        newCheckedItems.push(item.actualText as string);
                     } else if (isGroupedField && isDateField) {
-                        filterItem.items.push(this.parent.dataSourceSettings.mode === 'Server' ? item.actualText as string : item.name as string);
+                        newCheckedItems.push(
+                            this.parent.dataSourceSettings.mode === 'Server' ? item.actualText as string : item.name as string
+                        );
                     } else {
-                        filterItem.items.push((item.htmlAttributes as { [key: string]: string })['data-memberId'] as string);
+                        newCheckedItems.push((item.htmlAttributes as { [key: string]: string })['data-memberId'] as string);
                     }
                 }
             }
-            isNodeUnChecked = (filterItem.items.length === this.parent.pivotCommon.currentTreeItems.length ?
-                false : true);
+            if (isAppendMode && existingFilterObject && existingFilterObject.items) {
+                filterItem.items = Array.from(
+                    new Set([
+                        ...(existingFilterObject.items || []),
+                        ...newCheckedItems
+                    ])
+                );
+                filterItem.type = existingFilterObject.type || 'Include';
+            } else {
+                filterItem.items = newCheckedItems;
+            }
+            isNodeUnChecked = (newCheckedItems.length === this.parent.pivotCommon.currentTreeItems.length ? false : true);
         }
         if (this.parent.dataType === 'olap') {
             this.removeDataSourceSettings(fieldName);
@@ -1614,6 +1649,51 @@ export class PivotButton implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.pivotButtonUpdate, this.handlers.load);
+    }
+
+    /**
+     * Updates the `e-tabular-group-rows-with-fields` class on the grouping bar's row panel
+     * (and on any `.e-group-rows` elements that already carry the `e-tabular-group-rows` class)
+     * to reflect the current state of `dataSourceSettings.rows`. The class is added only when
+     * at least one row field is present; otherwise it is removed. This keeps the watermark
+     * correctly aligned in Tabular layout when fields are added or removed dynamically.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    private updateRowPanelFieldsClass(): void {
+        const hasRowFields: boolean = this.hasRowFields();
+        const targetElements: Element[] = [];
+        if ((this.parent as PivotView).groupingBarModule && (this.parent as PivotView).groupingBarModule.rowPanel) {
+            targetElements.push((this.parent as PivotView).groupingBarModule.rowPanel);
+        }
+        const tabularGroupRows: NodeListOf<Element> = this.parentElement.querySelectorAll('.' + cls.GROUP_ROW_CLASS + '.' + cls.TABULAR_GROUP_ROWS);
+        for (let i: number = 0; i < tabularGroupRows.length; i++) {
+            if (targetElements.indexOf(tabularGroupRows[i as number]) === -1) {
+                targetElements.push(tabularGroupRows[i as number]);
+            }
+        }
+        for (let i: number = 0; i < targetElements.length; i++) {
+            const target: Element = targetElements[i as number];
+            if (hasRowFields) {
+                if (!target.classList.contains(cls.TABULAR_GROUP_ROWS_WITH_FIELDS)) {
+                    target.classList.add(cls.TABULAR_GROUP_ROWS_WITH_FIELDS);
+                }
+            } else if (target.classList.contains(cls.TABULAR_GROUP_ROWS_WITH_FIELDS)) {
+                target.classList.remove(cls.TABULAR_GROUP_ROWS_WITH_FIELDS);
+            }
+        }
+    }
+
+    /**
+     * Helper method to check if there are any row fields in the dataSourceSettings
+     *
+     * @returns {boolean} - True if row fields exist, false otherwise
+     * @hidden
+     */
+    private hasRowFields(): boolean {
+        return !!(this.parent.dataSourceSettings && this.parent.dataSourceSettings.rows &&
+            this.parent.dataSourceSettings.rows.length > 0);
     }
 
     /**

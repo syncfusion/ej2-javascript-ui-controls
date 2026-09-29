@@ -11,9 +11,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor, blazorTemplates, Fetch } from '@syncfusion/ej2-base';
+import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor, blazorTemplates, Fetch, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';
+import { Browser, ModuleDeclaration, Event, EmitType, initializeTelemetry } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { DiagramModel } from './diagram-model';
 import { CanvasRenderer } from './rendering/canvas-renderer';
@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs, ILayoutUpdatedEventArgs, IExportingEventArgs, IImportingEventArgs, IErEntityChangedEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs, ILayoutUpdatedEventArgs, IExportingEventArgs, IImportingEventArgs, IErEntityChangedEventArgs, WebMcpToolExecuteEventArgs, WebMcpTool, WebMcpToolResponse } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -98,11 +98,12 @@ import { ConnectorBridging } from './objects/connector-bridging';
 import { SpatialSearch } from './interaction/spatial-search/spatial-search';
 import { HistoryEntry, History } from './diagram/history';
 import { UndoRedo } from './objects/undo-redo';
+import { WebMcpAdapter } from './integrations/webmcp-adapter';
 import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex, clearDecoratorPathCache } from './utility/dom-util';
-import { getDiagramElement, getScrollerWidth, getHTMLLayer, createUserHandleTemplates } from './utility/dom-util';
+import { getDiagramElement, getScrollerWidth, getHTMLLayer, createUserHandleTemplates, getContent } from './utility/dom-util';
 import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg, getUserHandleLayer } from './utility/dom-util';
 import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './utility/dom-util';
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
@@ -156,6 +157,7 @@ import { DiagramSettingsModel } from '../diagram/diagram-settings-model';
 import { DiagramSettings } from '../diagram/diagram-settings';
 import { StackPanel } from './core/containers/stack-panel';
 import { UserHandleModel } from './interaction/selector-model';
+import { UserHandle } from './interaction/selector';
 import { ConnectorFixedUserHandle, NodeFixedUserHandle } from './objects/fixed-user-handle';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from './objects/fixed-user-handle-model';
 import { LinearGradient, RadialGradient } from './core/appearance';
@@ -306,6 +308,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public undoRedoModule: UndoRedo;
     /**
+     * `webMcpAdapterModule` is used for WebMCP tool integration
+     *
+     * @private
+     */
+    public webMcpAdapterModule: WebMcpAdapter;
+    /**
      * `diagramCollaborationModule` is used to enable collaborative editing.
      *
      * @private
@@ -384,6 +392,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property(false)
     public enableCollaborativeEditing: boolean;
+
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
 
     /**
      * Defines the diagram rendering mode.
@@ -1661,6 +1679,30 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public erEntityChanged: EmitType<IErEntityChangedEventArgs>;
 
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Use this event to inspect, modify, or cancel the tool execution before it takes effect.
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * new Diagram({
+     *     beforeWebMcpToolExecute: (args: WebMcpToolExecuteEventArgs) => {
+     *         // Cancel execution for restricted tools
+     *         if (args.toolName === 'deleteFromDiagram' && args.cancel !== true) {
+     *             args.showConfirmationDialog = true;
+     *         }
+     *     }
+     *     ...
+     * }, '#diagram');
+     * ```
+     *
+     * @event
+     *
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
     //private variables
     /** @private */
     public preventDiagramUpdate: boolean;
@@ -1697,6 +1739,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private renderer: CanvasRenderer;
     /** @private */
     public tooltipObject: Tooltip;
+    /** @private */
+    public isTooltipOpen: boolean = false;
     /** @private */
     public hRuler: Ruler;
     /** @private */
@@ -1856,6 +1900,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public currentScrollValues: ScrollValues;
     /** @private */
     public isCollaborativeContainerChanges: boolean = false;
+    /** @private */
+    public ignoreMouseUpSelection: boolean = false;
     /**
      * Constructor for creating the widget
      */
@@ -2095,6 +2141,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.renderSelector(true); break;
                         }
                         break;
+                    case 'nodeTemplate':
+                        if (!(this as any).isReact && !(this as any).isAngular && !(this as any).isVue && !(this as any).isVue3) {
+                            this.refreshDiagramTemplateInstances('Node');
+                        }
+                        break;
+                    case 'annotationTemplate':
+                        if (!(this as any).isReact && !(this as any).isAngular && !(this as any).isVue && !(this as any).isVue3) {
+                            this.refreshDiagramTemplateInstances('Annotation');
+                        }
+                        break;
+                    case 'fixedUserHandleTemplate':
+                        if (!(this as any).isReact && !(this as any).isAngular && !(this as any).isVue && !(this as any).isVue3) {
+                            this.refreshDiagramTemplateInstances('FixedUserHandle');
+                        }
+                        break;
+                    case 'userHandleTemplate':
+                        if (!(this as any).isReact && !(this as any).isAngular && !(this as any).isVue && !(this as any).isVue3) {
+                            this.refreshDiagramTemplateInstances('UserHandle');
+                        }
+                        break;
                     case 'snapSettings':
                         this.updateSnapSettings(newProp);
                         break;
@@ -2135,6 +2201,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.scrollActions &= ~ScrollActions.PropertyChange;
                         if (newProp.scrollSettings.scrollLimit) {
                             this.scroller.checkScroll(undefined, true);
+                        }
+                        // Bug 1046719: Diagram scroll drifts in Chromium browsers at browser zoom after node drag or pan
+                        // To update scrollLeft and scrollTop based on scroll padding
+                        if (newProp.scrollSettings.padding) {
+                            this.eventHandler.updateViewPortSize(this.element);
+                            this.scroller.updateScrollOffsets();
                         }
                         break;
                     case 'locale':
@@ -2618,6 +2690,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Renders the diagram control with nodes and connectors
      */
     public render(): void {
+        initializeTelemetry('Diagram');
         if (this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading) {
             this.nodes = []; this.connectors = [];
         }
@@ -2639,6 +2712,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.renderInitialCrud();
         }
         this.initHistory();
+        this.initWebMcp();
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), this.mode === 'SVG');
         this.initLayers();
         this.initializeDiagramLayers();
@@ -2938,6 +3012,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args: []
             });
         }
+        if (this.enableWebMcp) {
+            modules.push({
+                member: 'WebMcpAdapter',
+                args: [this]
+            });
+        }
         return modules;
     }
     /* tslint:enable */
@@ -2947,6 +3027,93 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 for (const elementId of this.views) {
                     removeElement(this.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_template_hiddenUserHandle', elementId);
                 }
+            }
+        }
+    }
+
+    /**
+     * Refreshes the diagram after a runtime template change so the DOM and selection state stay in sync.
+     *
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    private renderTemplateRuntimeUpdates(): void {
+        // Refresh the current selection and re-render any framework-specific template views after a runtime template change.
+        if (this.commandHandler && this.commandHandler.hasSelection()) {
+            this.renderSelector(true);
+        }
+        this.renderReactTemplates();
+        this.refreshDiagramLayer();
+    }
+
+    /**
+     * Hook invoked after a per-instance template refresh (node/annotation/fixed-user-handle) to
+     * ensure the host DOM reflects the freshly mounted template. Mirrors what
+     * `renderTemplateRuntimeUpdates` does, but without re-rendering the selector (which is
+     * unnecessary for a single-node refresh and would disturb selection state on JS/TS).
+     *
+     * - React/Vue/Angular: `renderReactTemplates()` mounts the framework-compiled template
+     *   into its host div.
+     * - JS/TS: templates are static HTML already placed by `refreshTemplateView`; the
+     *   `refreshDiagramLayer()` call repaints the layer so the new HTML is visible.
+     *
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    private refreshFrameworkTemplates(): void {
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+        this.refreshDiagramLayer();
+    }
+
+    /**
+     * Syncs the already-compiled `element.template` (produced once by `applyTemplateToWrapper` →
+     * `getContent`) into every open diagram view's `_html_element` host div.
+     *
+     * This performs a SINGLE mount by reusing the compiled template element — it does NOT call
+     * `getContent` again and does NOT flip the `isTemplate` flag. This is what makes the refresh
+     * safe on React / Vue / Angular, where double-mounting or switching compiler branches
+     * mid-render orphans the framework's reconciler and leaves the node empty.
+     *
+     * For the common single-view diagram the compiled template host node is moved directly into
+     * the view's `_html_element`. For multi-view diagrams (e.g. overview) each additional view
+     * gets a deep clone of the already-rendered template DOM.
+     *
+     * @param {string} contentId - The template content identifier used to resolve the host element.
+     * @param {DiagramHtmlElement} element - The compiled DOM element to re-mount across the views.
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    private refreshTemplateView(contentId: string, element: DiagramHtmlElement): void {
+        if (!element || !element.template || !this.views || !this.views.length) {
+            return;
+        }
+        // `this.views` is a string[] of view ids. Each view id is also the diagram container id
+        // used by `getDiagramElement(id, parentId)`. We iterate the ids directly (matching the
+        // canonical pattern in `updateContent` in diagram-util.ts) rather than resolving a
+        // `View` object, because some entries (e.g. overview) can be Diagram instances whose
+        // `.element` shape differs — accessing `view.element.id` throws.
+        for (let i: number = 0; i < this.views.length; i++) {
+            const viewId: string = this.views[parseInt(i.toString(), 10)];
+            const htmlElement: HTMLElement = getDiagramElement(contentId + '_html_element', viewId);
+            if (htmlElement) {
+                // Detach the previously mounted host node exactly once.
+                if (htmlElement.children.length > 0) {
+                    htmlElement.removeChild(htmlElement.children[0]);
+                }
+                // When updating with a direct function (not template ID), disable isTemplate flag
+                // so getContent will use the function directly instead of looking for getNodeTemplate()
+                if (typeof element.content === 'function') {
+                    element.isTemplate = false;
+                }
+                // First view: move the compiled template node directly (preserves React fiber,
+                // Vue instance, Angular component ref, etc.). Additional views: clone the rendered
+                // DOM so the original framework-managed tree is not disturbed.
+                const nodeToAppend: HTMLElement = (i === 0)
+                    ? (element.template as HTMLElement)
+                    : (element.template as HTMLElement).cloneNode(true) as HTMLElement;
+                htmlElement.appendChild(nodeToAppend);
             }
         }
     }
@@ -4145,6 +4312,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
+     * Initializes WebMCP adapter for tool integration
+     *
+     * @returns { void } Initializes the Wrb MCP actions \
+     * @private
+     */
+    private initWebMcp(): void {
+        if (this.webMcpAdapterModule) {
+            this.webMcpAdapterModule.init(this);
+        }
+    }
+
+    /**
      * Adds a history entry for a change in the diagram control to the track.
      *
      * @returns { void } Adds a history entry for a change in the diagram control to the track. \
@@ -4817,7 +4996,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     public hideTooltip(obj: NodeModel | ConnectorModel): void {
         if (obj && obj.tooltip.openOn === 'Custom') {
-            this.tooltipObject.close();
+            this.commandHandler.closeTooltip();
         }
     }
 
@@ -5115,7 +5294,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (args.cancel && this.drawingObject) {
                 this.removeElements(args.element as NodeModel | ConnectorModel);
-                this.tooltipObject.close();
+                this.commandHandler.closeTooltip();
                 const sourceNodee: NodeModel = this.getObject((args.element as Connector).sourceID);
                 let isOutEdgee: boolean;
                 if (getObjectType(args.element) === Connector) {
@@ -5805,7 +5984,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
 
-        this.tooltipObject.close();
+        this.commandHandler.closeTooltip();
         if (obj && obj.id !== 'helper' && this.lineRoutingModule && (this.constraints & DiagramConstraints.LineRouting) &&
             (obj instanceof Node) && (this.layout.type !== 'ComplexHierarchicalTree')) {
             const INFLATE_MARGIN: number = 40;
@@ -6086,8 +6265,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.diagramActions = this.diagramActions & ~DiagramAction.Clear;
+        this.commandHandler.closeTooltip();
         this.spatialSearch = new SpatialSearch(this.nameTable);
         this.initHistory();
+        this.initWebMcp();
     }
 
     private startEditCommad(): void {
@@ -6632,6 +6813,314 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         // Mark as clean after diagram is loaded
         this.markAsClean();
+    }
+
+    private applyTemplateToWrapper(wrapper: DiagramHtmlElement,
+                                   template: string | Function | HTMLElement | undefined,
+                                   data?: Node | Annotation | PathAnnotation | NodeFixedUserHandle | ConnectorFixedUserHandle): void {
+        if (isNullOrUndefined(template)) {
+            return;
+        }
+        if (typeof template === 'function' || typeof template === 'string') {
+            wrapper.setNodeTemplate(template as string | Function);
+            wrapper.isTemplate = true;
+            wrapper.template = getContent(wrapper, true, data) as HTMLElement;
+            return;
+        }
+        wrapper.isTemplate = false;
+        wrapper.content = template as string | HTMLElement;
+    }
+
+    /**
+     * Refreshes the rendered template content for HTML nodes, annotations, user handles, and fixed user handles.
+     * Update the data model and call this method to refresh the current view without reassigning the template.
+     *
+     * @param {string | string[] | NodeModel | AnnotationModel | UserHandleModel | NodeFixedUserHandleModel | ConnectorFixedUserHandleModel} element -
+     * The target template instance or ID(s) to refresh. If not provided, refreshes all configured diagram templates.
+     * @param {NodeModel | ConnectorModel} parent - The owning node or connector for annotation or fixed user handle refreshes.
+     * @returns {boolean} Returns true when at least one template instance is refreshed.
+     *
+     * @example
+     * // Update runtime data and refresh the rendered template.
+     * node.addInfo.title = 'Manager';
+     * diagram.refreshTemplate(node);
+     *
+     * @example
+     * // Refresh the current global template state.
+     * diagram.refreshTemplate();
+     */
+    public refreshTemplate(element?: NodeModel | AnnotationModel | UserHandleModel | NodeFixedUserHandleModel |
+    ConnectorFixedUserHandleModel | string | string[], parent?: NodeModel | ConnectorModel): boolean {
+        if (!element) {
+            let refreshed: boolean = false;
+            if (!isNullOrUndefined(this.nodeTemplate)) {
+                this.refreshDiagramTemplateInstances('Node');
+                refreshed = true;
+            }
+            if (!isNullOrUndefined(this.annotationTemplate)) {
+                this.refreshDiagramTemplateInstances('Annotation');
+                refreshed = true;
+            }
+            if (!isNullOrUndefined(this.userHandleTemplate)) {
+                this.refreshDiagramTemplateInstances('UserHandle');
+                refreshed = true;
+            }
+            if (!isNullOrUndefined(this.fixedUserHandleTemplate)) {
+                this.refreshDiagramTemplateInstances('FixedUserHandle');
+                refreshed = true;
+            }
+            return refreshed;
+        }
+        if (typeof element === 'string') {
+            const node: Node | undefined = this.nameTable[`${element}`] as Node | undefined;
+            if (node && node.shape && node.shape.type === 'HTML') {
+                return this.refreshNodeTemplateElement(node);
+            }
+            const selectedUserHandle: UserHandle | undefined = this.selectedItems.userHandles
+                .find((handle: UserHandle) => handle.name === element) as UserHandle | undefined;
+            if (selectedUserHandle) {
+                return this.refreshUserHandleTemplateElement(selectedUserHandle);
+            }
+            return false;
+        }
+        if (Array.isArray(element)) {
+            let refreshed: boolean = false;
+            for (const item of element) {
+                refreshed = this.refreshTemplate(item, parent) || refreshed;
+            }
+            return refreshed;
+        }
+        const elementObj: any = element as any;
+        if (elementObj && typeof elementObj === 'object' && typeof elementObj.id === 'string') {
+            const runtimeNode: Node | undefined = this.nameTable[`${elementObj.id}`] as Node | undefined;
+            if (runtimeNode && runtimeNode.shape && runtimeNode.shape.type === 'HTML') {
+                return this.refreshNodeTemplateElement(runtimeNode);
+            }
+        }
+        if (element instanceof Node) {
+            return this.refreshNodeTemplateElement(element as Node);
+        }
+        const actualOwner: Node | Connector = (parent && (parent as any).wrapper) ? parent as Node | Connector :
+            ((parent && (parent as any).id && this.nameTable[`${(parent as any).id}`]) || undefined) as Node | Connector | undefined;
+        if (actualOwner && element instanceof Annotation) {
+            return this.refreshAnnotationTemplateElement(element as Annotation, actualOwner);
+        }
+        if (actualOwner && (element instanceof NodeFixedUserHandle || element instanceof ConnectorFixedUserHandle)) {
+            return this.refreshFixedUserHandleTemplateElement(element as NodeFixedUserHandle | ConnectorFixedUserHandle, actualOwner);
+        }
+        if (
+            actualOwner && elementObj && typeof elementObj === 'object' &&
+            typeof elementObj.id === 'string' && actualOwner
+        ) {
+            const ownerNode: Node | Connector | undefined =
+                this.nameTable[`${(actualOwner as any).id}`] as Node | Connector | undefined || actualOwner;
+            const hasAnnotation: boolean = !!((ownerNode as any).annotations &&
+                (ownerNode as any).annotations.some((annotation: any) => annotation.id === elementObj.id));
+            if (hasAnnotation) {
+                const annotation: Annotation | undefined =
+                    (ownerNode as any).annotations.find((ann: any) => ann.id === elementObj.id) as Annotation | undefined;
+                if (annotation) {
+                    return this.refreshAnnotationTemplateElement(annotation, ownerNode as Node | Connector);
+                }
+            }
+            const ownerHandles: Array<NodeFixedUserHandle | ConnectorFixedUserHandle> =
+                ((ownerNode as any).fixedUserHandles || []) as Array<NodeFixedUserHandle | ConnectorFixedUserHandle>;
+            const fixedHandle: NodeFixedUserHandle | ConnectorFixedUserHandle | undefined =
+                ownerHandles.find((handle: NodeFixedUserHandle | ConnectorFixedUserHandle) =>
+                    handle.id === elementObj.id) as NodeFixedUserHandle | ConnectorFixedUserHandle | undefined;
+            if (fixedHandle) {
+                return this.refreshFixedUserHandleTemplateElement(fixedHandle, ownerNode as Node | Connector);
+            }
+        }
+        const selectedUserHandles: UserHandle[] = this.selectedItems.userHandles as unknown as UserHandle[];
+        if (element instanceof UserHandle || selectedUserHandles.indexOf(element as UserHandle) !== -1) {
+            return this.refreshUserHandleTemplateElement(element as UserHandle);
+        }
+        if (this.selectedItems.userHandles.some((handle: UserHandle) => handle.name === (element as any).name)) {
+            return this.refreshUserHandleTemplateElement((element as any) as UserHandle);
+        }
+        return false;
+    }
+
+    private refreshDiagramTemplateInstances(type: 'Node' | 'Annotation' | 'UserHandle' | 'FixedUserHandle'): void {
+        if (type === 'Node') {
+            for (const node of this.nodes as Node[]) {
+                const htmlShape: Html = (node as Node).shape as Html;
+                const htmlContent: any = htmlShape && htmlShape.type === 'HTML' ? htmlShape.content : undefined;
+                if (!htmlContent) {
+                    this.refreshNodeTemplateElement(node as Node);
+                }
+            }
+            return;
+        }
+        if (type === 'Annotation') {
+            for (const node of this.nodes as Node[]) {
+                for (const annotation of ((node as Node).annotations || []) as Annotation[]) {
+                    if (!annotation.template) {
+                        this.refreshAnnotationTemplateElement(annotation as Annotation, node as Node);
+                    }
+                }
+            }
+            for (const connector of this.connectors as Connector[]) {
+                for (const annotation of ((connector as Connector).annotations || []) as Annotation[]) {
+                    if (!annotation.template) {
+                        this.refreshAnnotationTemplateElement(annotation as Annotation, connector as Connector);
+                    }
+                }
+            }
+            return;
+        }
+        if (type === 'UserHandle') {
+            this.refreshAllUserHandleTemplates();
+            return;
+        }
+        for (const node of this.nodes as Node[]) {
+            const fixedHandles: Array<NodeFixedUserHandle | NodeFixedUserHandleModel> =
+                ((node as Node).fixedUserHandles || []) as Array<NodeFixedUserHandle | NodeFixedUserHandleModel>;
+            for (const handle of fixedHandles) {
+                if ((handle as NodeFixedUserHandle).pathData === '') {
+                    this.refreshFixedUserHandleTemplateElement(handle as NodeFixedUserHandle, node as Node);
+                }
+            }
+        }
+        for (const connector of this.connectors as Connector[]) {
+            const fixedHandles: Array<ConnectorFixedUserHandle | ConnectorFixedUserHandleModel> =
+                ((connector as Connector).fixedUserHandles || []) as Array<ConnectorFixedUserHandle | ConnectorFixedUserHandleModel>;
+            for (const handle of fixedHandles) {
+                if ((handle as ConnectorFixedUserHandle).pathData === '') {
+                    this.refreshFixedUserHandleTemplateElement(handle as ConnectorFixedUserHandle, connector as Connector);
+                }
+            }
+        }
+    }
+
+    private refreshNodeTemplateElement(node: Node): boolean {
+        const nodeObj: Node = node as Node;
+        if (!nodeObj.wrapper || !nodeObj.shape || (nodeObj.shape as Html).type !== 'HTML') {
+            return false;
+        }
+        const wrapper: DiagramHtmlElement = this.findHtmlTemplateWrapper(nodeObj.wrapper, nodeObj.id + '_content') as DiagramHtmlElement;
+        if (!wrapper) {
+            return false;
+        }
+        const htmlShape: Html = nodeObj.shape as Html;
+        const content: any = htmlShape && htmlShape.type === 'HTML' ? htmlShape.content : undefined;
+        const hasLocalContent: boolean = !!content;
+        if (!hasLocalContent && isNullOrUndefined(this.nodeTemplate)) {
+            return false;
+        }
+        this.clearTemplate(['nodeTemplate' + '_' + nodeObj.id]);
+        if (hasLocalContent) {
+            this.applyTemplateToWrapper(wrapper, content as string | Function | HTMLElement, nodeObj);
+        } else {
+            this.applyTemplateToWrapper(wrapper, this.nodeTemplate as string | Function | HTMLElement, nodeObj);
+        }
+        // Sync the already-compiled template (single mount) into every view — avoids the
+        // double-getContent / isTemplate-flip that orphaned React/Vue/Angular roots.
+        this.refreshTemplateView(wrapper.id, wrapper);
+        this.refreshFrameworkTemplates();
+        return true;
+    }
+
+    private refreshAnnotationTemplateElement(annotation: Annotation, owner: Node | Connector): boolean {
+        const annotationList: Annotation[] = ((owner as any).annotations || []) as Annotation[];
+        if (!owner.wrapper || annotationList.indexOf(annotation as Annotation) === -1) {
+            return false;
+        }
+        const wrapper: DiagramElement = this.getWrapper(owner.wrapper, annotation.id);
+        if (!(wrapper instanceof DiagramHtmlElement)) {
+            return false;
+        }
+        const hasLocalTemplate: boolean = !!annotation.template;
+        if (!hasLocalTemplate && isNullOrUndefined(this.annotationTemplate)) {
+            return false;
+        }
+        this.clearTemplate(['annotationTemplate' + '_' + owner.id + annotation.id]);
+        this.applyTemplateToWrapper(
+            wrapper as DiagramHtmlElement,
+            hasLocalTemplate ? annotation.template : this.annotationTemplate as string | Function | HTMLElement,
+            annotation
+        );
+        // Sync the already-compiled template (single mount) into every view — avoids the
+        // double-getContent / isTemplate-flip that orphaned React/Vue/Angular roots.
+        this.refreshTemplateView(wrapper.id, wrapper as DiagramHtmlElement);
+        this.refreshFrameworkTemplates();
+        return true;
+    }
+
+    private refreshUserHandleTemplateElement(handle: UserHandle): boolean {
+        const selectedUserHandles: UserHandle[] = this.selectedItems.userHandles as unknown as UserHandle[];
+        if (selectedUserHandles.indexOf(handle as UserHandle) === -1 || isNullOrUndefined(this.userHandleTemplate)) {
+            return false;
+        }
+        this.clearTemplate(['userHandleTemplate' + '_' + handle.name]);
+        for (const viewId of this.views) {
+            removeElement(handle.name + '_template_hiddenUserHandle', viewId);
+        }
+        const hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
+        if (!hiddenUserHandleTemplate || !hiddenUserHandleTemplate.length) {
+            return false;
+        }
+        createUserHandleTemplates(
+            this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems,
+            this.element.id, handle as unknown as UserHandleModel
+        );
+        if (this.commandHandler && this.commandHandler.hasSelection()) {
+            this.renderSelector(true);
+        }
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+        return true;
+    }
+
+    private refreshAllUserHandleTemplates(): boolean {
+        if (!this.selectedItems.userHandles.length || isNullOrUndefined(this.userHandleTemplate)) {
+            return false;
+        }
+        for (const handle of this.selectedItems.userHandles as UserHandle[]) {
+            this.clearTemplate(['userHandleTemplate' + '_' + handle.name]);
+        }
+        this.removeUserHandlesTemplate();
+        const hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
+        if (!hiddenUserHandleTemplate || !hiddenUserHandleTemplate.length) {
+            return false;
+        }
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems, this.element.id);
+        if (this.commandHandler && this.commandHandler.hasSelection()) {
+            this.renderSelector(true);
+        }
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+        return true;
+    }
+
+    private refreshFixedUserHandleTemplateElement(handle: NodeFixedUserHandle | ConnectorFixedUserHandle,
+                                                  owner: Node | Connector): boolean {
+        const ownerHandles: Array<NodeFixedUserHandle | ConnectorFixedUserHandle> =
+            ((owner as any).fixedUserHandles || []) as Array<NodeFixedUserHandle | ConnectorFixedUserHandle>;
+        const isOwnedHandle: boolean = owner instanceof Node
+            ? ownerHandles.indexOf(handle as NodeFixedUserHandle) !== -1
+            : ownerHandles.indexOf(handle as ConnectorFixedUserHandle) !== -1;
+        if (
+            !owner.wrapper || !isOwnedHandle || (handle as any).pathData !== '' ||
+            isNullOrUndefined(this.fixedUserHandleTemplate)
+        ) {
+            return false;
+        }
+        const wrapper: DiagramElement = this.getWrapper(owner.wrapper, handle.id);
+        if (!(wrapper instanceof DiagramHtmlElement)) {
+            return false;
+        }
+        this.clearTemplate(['fixedUserHandleTemplate' + '_' + owner.id + handle.id]);
+        this.applyTemplateToWrapper(wrapper as DiagramHtmlElement, this.fixedUserHandleTemplate as string | Function | HTMLElement,
+                                    handle as NodeFixedUserHandle | ConnectorFixedUserHandle);
+        // Sync the already-compiled template (single mount) into every view — avoids the
+        // double-getContent / isTemplate-flip that orphaned React/Vue/Angular roots.
+        this.refreshTemplateView(wrapper.id, wrapper as DiagramHtmlElement);
+        this.refreshFrameworkTemplates();
+        return true;
     }
 
     /**
@@ -7655,7 +8144,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public setScaleFromElement(bounds: ClientRect, container: HTMLElement): void {
         const width: number = bounds.width / container.clientWidth;
-        this.scaleValue = width;
+        this.scaleValue = Number(width.toFixed(1));
     }
     /**
      * @private
@@ -8936,15 +9425,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         node.wrapper.arrange(node.wrapper.desiredSize);
                     }
                 }
-                let groupWrapperCanvas: any = obj.wrapper.children[obj.wrapper.children.length - 1];
+                const groupWrapperCanvas: any = obj.wrapper.children[obj.wrapper.children.length - 1];
                 groupWrapperCanvas.flip = obj.wrapper.flip;
                 groupWrapperCanvas.flipMode = obj.wrapper.flipMode;
-                for (let j: number = 0; j < groupWrapperCanvas.children.length; j++) {
-                    var wrapperChild = groupWrapperCanvas.children[j];
-                    if (wrapperChild instanceof TextElement) {
+                for (const child of groupWrapperCanvas.children as Array<TextElement>) {
+                    if (child instanceof TextElement) {
                         if (obj.flipMode !== 'Port' && obj.flipMode !== 'None') {
-                            wrapperChild.flip = obj.wrapper.flip;
-                            wrapperChild.flipMode = obj.wrapper.flipMode;
+                            child.flip = obj.wrapper.flip;
+                            child.flipMode = obj.wrapper.flipMode;
                         }
                     }
                 }
@@ -9003,28 +9491,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             obj.wrapper.flipMode = obj.flipMode;
             obj.wrapper.children[0].flip = obj.flip;
             obj.wrapper.children[0].flipMode = obj.flipMode;
-            for (let i = 0; i < obj.wrapper.children.length; i++) {
-                let wrapperChild = obj.wrapper.children[i];
-                if (wrapperChild instanceof Canvas) {
+            for (const child of obj.wrapper.children as Array<Canvas | DiagramElement>) {
+                if (child instanceof Canvas) {
                     //To update the flip and flipmode for the node wrapper childs.
-                    this.applyWrapperCanvasFlip(wrapperChild, obj);
+                    this.applyWrapperCanvasFlip(child, obj);
                 }
                 else {
-                    wrapperChild.flip = obj.flip;
-                    wrapperChild.flipMode = obj.flipMode;
+                    child.flip = obj.flip;
+                    child.flipMode = obj.flipMode;
                 }
             }
         }
     }
     private applyWrapperCanvasFlip(wrapper: Canvas, obj: NodeModel) {
-        for (let i: number = 0; i < wrapper.children.length; i++) {
-            var wrapperChild = wrapper.children[parseInt(i.toString(), 10)];
-            if (wrapperChild instanceof Canvas) {
-                this.applyWrapperCanvasFlip(wrapperChild, obj);
+        for (const child of wrapper.children as Array<Canvas | DiagramElement>) {
+            if (child instanceof Canvas) {
+                this.applyWrapperCanvasFlip(child, obj);
             }
             else if (obj.flipMode !== 'None') {
-                wrapperChild.flip = obj.flip;
-                wrapperChild.flipMode = obj.flipMode;
+                child.flip = obj.flip;
+                child.flipMode = obj.flipMode;
             }
         }
     }
@@ -9705,9 +10191,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.updateCanupdateStyle(obj.wrapper.children, true);
                         }
                         const centerPoint: object = this.getMidPoint(obj);
+                        canIgnoreIndex = this.expandCollapseAction;
+                        const getZindex: number = canIgnoreIndex || this.itemType === 'Clipboard' ?
+                            undefined : this.getZindexPosition(obj, view.element.id);
+                        //1038481: Optimize Diagram Interaction Performance for Large-Scale Diagrams
                         this.diagramRenderer.updateNode(
                             obj.wrapper as DiagramElement, diagramElementsLayer,
-                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id),
+                            htmlLayer, undefined, getZindex,
                             centerPoint, this.portCenterPoint);
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
@@ -11114,6 +11604,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
+    public findHtmlTemplateWrapper(nodes: GroupableView, id: string): DiagramElement | undefined {
+        const container: GroupableView | undefined = nodes instanceof Canvas
+            ? nodes
+            : (nodes && this.nameTable[nodes.id] ? this.getPortContainer(this.nameTable[nodes.id]) : undefined);
+        if (!container || !container.children) {
+            return undefined;
+        }
+        for (let i: number = 0; i < container.children.length; i++) {
+            if (id === container.children[parseInt(i.toString(), 10)].id) {
+                return container.children[parseInt(i.toString(), 10)];
+            }
+        }
+        return undefined;
+    }
+
     public getWrapper(nodes: GroupableView, id: string): DiagramElement {
         let wrapper: DiagramElement;
         id = nodes.id + '_' + id;
@@ -15723,5 +16228,36 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             console.warn('[WARNING] :: Module "ImportAndExportVisio" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
         }
         return null;
+    }
+
+    /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+
+    /**
+     * Registers WebMCP tools on document.modelContext for this component instance.
+     *
+     * @param {string} [prefix] - Optional: unique prefix for tool names (ensures uniqueness when multiple instances exist)
+     *   - If null or undefined, the component element's `id` will be used
+     *   - If empty string (''), tools registered without prefix
+     * @param {string[] | WebMcpTool[]} [tools] - Optional: specific tools to register
+     *   - `string[]`: allowlist of tool names
+     *   - `WebMcpTool[]`: customized tool definitions
+     *   - Omit to register all available tools
+     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
+     * @returns {void}
+     *
+     */
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
     }
 }

@@ -213,6 +213,13 @@ export class Column {
      *
      * @default null
      */
+    public type: string;
+
+    /**
+     * Specifies the data type of the column.
+     *
+     * @default null
+     */
     public valueAccessor: ValueAccessor | string;
 
     /**
@@ -551,4 +558,10 @@ export interface ColumnModel {
      * @default false
      */
     lockColumn?: boolean;
+    /**
+     * Displays checkboxes in the column when enabled, allowing for selections and certain operations.
+     *
+     * @default false
+     */
+    showCheckbox?: boolean;
 }

@@ -366,11 +366,15 @@ describe('PdfForm additional coverage - highlighted branches', (): void => {
         expect(form._hasKids).toBe(true);
         expect(form._formNames.indexOf('TerminalField')).toBeGreaterThan(-1);
     });
-
     it('should cover _createFieldCollection continue branch for missing page dictionary', (): void => {
-        const form: PdfForm & TestFormShape = createFormShell() as PdfForm & TestFormShape;
-
-        const validPage: PdfPage = createPage(1, PdfFormFieldsTabOrder.none, []);
+        const form: PdfForm & TestFormShape =
+            createFormShell() as PdfForm & TestFormShape;
+        spyOn<any>(form, '_createFormFieldsFromWidgets').and.stub();
+        const validPage: PdfPage = createPage(
+            1,
+            PdfFormFieldsTabOrder.none,
+            []
+        );
         const document: TestDocument = {
             pageCount: 2,
             getPage(index: number): PdfPage {
@@ -380,16 +384,19 @@ describe('PdfForm additional coverage - highlighted branches', (): void => {
                 return validPage;
             }
         };
-
         (form as any)._crossReference._document = document;
-
         expect((): void => {
-            (form as any)._createFieldCollection([], new Map<_PdfDictionary, _PdfReference>());
+            (form as any)._createFieldCollection(
+                [],
+                new Map<_PdfDictionary, _PdfReference>()
+            );
         }).not.toThrow();
 
         expect(form._fields.length).toBe(0);
+        expect(
+            (form as any)._createFormFieldsFromWidgets
+        ).toHaveBeenCalledWith(0);
     });
-
     it('should cover _doPostProcess manual annotation rearrange and import removal path', (): void => {
         const form: PdfForm & TestFormShape = createFormShell() as PdfForm & TestFormShape;
 

@@ -1,0 +1,10 @@
+@use '../variables' as *;
+@include export-module('color-picker-fluent2-icons') {
+  .e-container {
+    & .e-value-switch-btn {
+      &::before {
+        content: '\e748';
+      }
+    }
+  }
+}

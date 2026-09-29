@@ -1,4 +1,5 @@
 /* eslint-disable valid-jsdoc */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Layout, ILayout, INode } from './layout-base';
 import { BranchTypes } from '../enum/enum';
 import { Rect } from '../primitives/rect';
@@ -21,6 +22,7 @@ export class MindMap {
      */
 
     constructor() {
+        initializeTelemetryFeature('MindMapChart', 'Diagram');
         //constructs the layout module
     }
 

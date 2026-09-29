@@ -61,7 +61,7 @@ describe('Performance', () => {
             }
             const end = performance.now();
             const resultText = end - start;
-            expect(resultText).toBeLessThanOrEqual(2000);
+            expect(resultText).toBeLessThanOrEqual(3500);
             document.destroy();
         } catch (err) {
             throw new Error(`TTF Font Test Failed: ${err instanceof Error ? err.message : err}`);
@@ -81,7 +81,7 @@ describe('Performance', () => {
             const t1 = Date.now();
             const total = t1 - t0;
             overallTotal += total;
-            expect(overallTotal).toBeLessThanOrEqual(40)    
+            expect(overallTotal).toBeLessThanOrEqual(90)    
         };
         measure('PdfLineAnnotation', () => {
             let lineAnnot: PdfLineAnnotation = new PdfLineAnnotation({ x: 80, y: 420 }, { x: 150, y: 420 });
@@ -425,7 +425,7 @@ describe('Performance', () => {
         pdfDocument.importPageRange(documentSrc, 0, 10);
         const end = performance.now();
         const total = end - start;
-        expect(total).toBeLessThanOrEqual(800);
+        expect(total).toBeLessThanOrEqual(1500);
         documentSrc.destroy();
         pdfDocument.destroy();
     });

@@ -1,4 +1,4 @@
-import { detach, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined, KeyboardEventArgs, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import { RenderType } from '../base/enum';
@@ -23,6 +23,7 @@ export class Count {
     private isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Count', 'RichTextEditor');
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -126,7 +127,11 @@ export class Count {
 
 
     private toggle(e: { member: string }): void {
-        this.element.style.display = (e.member === 'viewSource') ? 'none' : 'block';
+        if (e.member === 'viewSource') {
+            (this.parent.rootContainer as HTMLElement).classList.remove('e-count-enabled');
+        } else {
+            (this.parent.rootContainer as HTMLElement).classList.add('e-count-enabled');
+        }
     }
 
     protected addEventListener(): void {

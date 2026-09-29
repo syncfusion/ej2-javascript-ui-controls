@@ -10,7 +10,7 @@ import addMetaSchema2019 from "./refs/json-schema-2019-09"
 
 const META_SCHEMA_ID = "https://json-schema.org/draft/2019-09/schema"
 
-class Ajv2019 extends AjvCore {
+export class Ajv2019 extends AjvCore {
   constructor(opts: Options = {}) {
     super({
       ...opts,
@@ -44,6 +44,7 @@ class Ajv2019 extends AjvCore {
 }
 
 module.exports = exports = Ajv2019
+module.exports.Ajv2019 = Ajv2019
 Object.defineProperty(exports, "__esModule", {value: true})
 
 export default Ajv2019
@@ -76,3 +77,5 @@ export {DefinedError} from "./vocabularies/errors"
 export {JSONType} from "./compile/rules"
 export {JSONSchemaType} from "./types/json-schema"
 export {_, str, stringify, nil, Name, Code, CodeGen, CodeGenOptions} from "./compile/codegen"
+export {default as ValidationError} from "./runtime/validation_error"
+export {default as MissingRefError} from "./compile/ref_error"

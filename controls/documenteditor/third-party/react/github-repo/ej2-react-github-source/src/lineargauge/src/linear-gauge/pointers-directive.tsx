@@ -4,7 +4,7 @@ import { PointerModel } from '@syncfusion/ej2-lineargauge';
 
 /**
  * Represents the directive to render and customize the pointers in an axis of linear gauge.
- * ```tsx
+ * ```
  * <LinearGaugeComponent>
  * <AxesDirective>
  * <AxisDirective>

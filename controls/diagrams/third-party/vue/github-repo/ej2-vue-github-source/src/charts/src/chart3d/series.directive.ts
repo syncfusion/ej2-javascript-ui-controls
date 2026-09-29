@@ -33,7 +33,7 @@ export const Chart3DSeriesCollectionPlugin = {
 
 /**
  * Represents Vuejs 3D Chart Component
- * ```vue
+ * ```
  * <ejs-chart3d>
  * <e-chart3d-series-collection>
  * <e-chart3d-series></e-chart3d-series>

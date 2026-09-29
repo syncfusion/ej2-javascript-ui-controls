@@ -4,24 +4,21 @@ import { SankeyNodeDirective, SankeyNodesCollectionDirective } from './nodes.dir
 import { SankeyLinkDirective, SankeyLinksCollectionDirective } from './links.directive';
 import { SankeyComponent } from './sankey.component';
 
+const SANKEY_DIRECTIVES = [
+    SankeyComponent,
+        SankeyNodeDirective,
+        SankeyNodesCollectionDirective,
+        SankeyLinkDirective,
+        SankeyLinksCollectionDirective
+];
+
 /**
  * NgModule definition for the Sankey component.
+ * Re-exports standalone Sankey component and directives so existing apps can keep using:
+ * `imports: [SankeyModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        SankeyComponent,
-        SankeyNodeDirective,
-        SankeyNodesCollectionDirective,
-        SankeyLinkDirective,
-        SankeyLinksCollectionDirective
-    ],
-    exports: [
-        SankeyComponent,
-        SankeyNodeDirective,
-        SankeyNodesCollectionDirective,
-        SankeyLinkDirective,
-        SankeyLinksCollectionDirective
-    ]
+    imports: [CommonModule, ...SANKEY_DIRECTIVES],
+    exports: [...SANKEY_DIRECTIVES]
 })
 export class SankeyModule { }

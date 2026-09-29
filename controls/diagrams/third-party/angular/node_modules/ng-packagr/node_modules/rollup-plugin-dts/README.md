@@ -1,0 +1,161 @@
+# rollup-plugin-dts
+
+[![Build Status](https://github.com/Swatinem/rollup-plugin-dts/workflows/CI/badge.svg)](https://github.com/Swatinem/rollup-plugin-dts/actions?workflow=CI)
+[![Coverage Status](https://img.shields.io/codecov/c/github/Swatinem/rollup-plugin-dts.svg)](https://codecov.io/gh/Swatinem/rollup-plugin-dts)
+
+This is a plugin that lets you roll-up your `.d.ts` definition files.
+
+## Usage
+
+Install the package from `npm`:
+
+    $ npm install --save-dev rollup-plugin-dts
+
+Add it to your `rollup.config.js`:
+
+```js
+import { dts } from "rollup-plugin-dts";
+
+const config = [
+  // …
+  {
+    input: "./my-input/index.d.ts",
+    output: [{ file: "dist/my-library.d.ts", format: "es" }],
+    plugins: [dts()],
+  },
+];
+
+export default config;
+```
+
+**NOTE** A [default import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#default_import) of the plugin using `import dts from "rollup-plugin-dts";` is still supported for existing implementations of this package. However, a [named import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#named_import) is suggested to avoid the error `[!] TypeError: dts is not a function`[^1][^2] in certain rollup config file implementations.
+
+And then instruct typescript where to find your definitions inside your `package.json`:
+
+```json
+  "types": "dist/my-library.d.ts",
+```
+
+**NOTE** that the plugin will automatically mark any external library
+(`@types` for example) as `external`, so those will be excluded from bundling.
+
+## Options
+
+```js
+plugins: [dts({
+  // Enable detailed sourcemaps for Go-to-Definition support.
+  // When true: loads .d.ts.map files and captures TypeScript's declarationMap
+  // for .ts inputs, enabling navigation to original source files.
+  // NOTE: Also requires `output.sourcemap: true` in your Rollup config.
+  sourcemap: true,
+
+  // Path to tsconfig.json (default: finds nearest tsconfig.json)
+  tsconfig: "./tsconfig.json",
+
+  // TypeScript compiler options (e.g., for path mapping)
+  compilerOptions: { baseUrl: ".", paths: { "~/*": ["src/*"] } },
+
+  // Don't auto-externalize node_modules (default: false)
+  respectExternal: true,
+
+  // Bundle types from specific external packages (default: [])
+  includeExternal: ["some-package"],
+})]
+```
+
+## TypeScript 7 support
+
+TypeScript 7.0 (the native compiler) does not ship a compiler API, which this
+plugin relies on. When your project uses `typescript@7`, additionally install
+the official compatibility package that provides the TypeScript 6 API:
+
+    $ npm install --save-dev @typescript/typescript6
+
+The plugin uses the API from your `typescript` package when it provides one
+(TypeScript 4.5 – 6.x), and automatically falls back to
+`@typescript/typescript6` otherwise. Declaration files are parsed and emitted
+with the TypeScript 6 language behavior in that case, which is identical for
+declaration output. Once TypeScript 7.1+ ships its new compiler API, a future
+release will support it directly.
+
+Note that this plugin's public types reference the `typescript` package (e.g.,
+`ts.CompilerOptions`), which `typescript@7` does not currently provide. If you
+type-check a file that imports `rollup-plugin-dts` (such as `rollup.config.ts`)
+with TypeScript 7, enable [`skipLibCheck`](https://www.typescriptlang.org/tsconfig/#skipLibCheck)
+to avoid a spurious error inside the plugin's declaration file.
+
+## Maintenance Mode
+
+This project is in _maintenance mode_. That means there will be no more active feature development.
+There will still be occasional releases to maintain compatibility with future TypeScript releases.
+Pull Requests are always welcome, however reaction time on both Issues and PRs can be slow.
+
+## What to expect
+
+While this plugin is fairly complete, it does not support all imaginable use-cases.
+In particular, the plugin works best with already existing `.d.ts` files generated
+by the typescript compiler from idiomatic code.
+
+Working with `.ts(x)` or even `.js(x)` (when setting `allowJs: true`) does work,
+but is not recommended.
+
+The plugin does its own import resolution through the typescript compiler, and
+usage together with other resolution plugins, such as `node-resolve` can lead
+to errors and is not recommended.
+
+All external dependencies from `node_modules` are automatically excluded from
+bundling. This can be overridden using the `respectExternal` setting, but it is
+generally not recommended. While rollup of external `@types` generally works,
+it is not recommended.
+
+### TS2742 and shared declaration chunks
+
+When a bundled entry exposes a type that originally came from a private shared
+chunk, downstream `tsc --declaration` runs can fail with `TS2742`.
+
+This is part of a broader TypeScript declaration portability problem. For
+upstream context, see
+[`./*.d.ts` required in `exports` to avoid `...not portable...`](https://github.com/microsoft/TypeScript/issues/60913)
+for one shape of the bug, and
+[`Elaborate on non-portable types`](https://github.com/microsoft/TypeScript/issues/53764)
+for the related error-message discussion.
+
+This plugin will try to rewrite that path through an entry that already
+re-exports the type publicly. That keeps the existing public API and can make
+the bundled declarations portable for downstream consumers.
+
+The plugin does **not** invent new public exports. If no public entry re-exports
+the shared type, the bundled package can still trigger `TS2742`. In that case,
+the plugin emits a warning and the package should re-export the type from a
+public entry explicitly.
+
+## Why?
+
+Well, ideally TypeScript should just do all this itself, and it even has a
+[proposal](https://github.com/Microsoft/TypeScript/issues/4433) to do that.
+But there hasn’t been any progress in ~3 years.
+
+Some projects, like [rollup itself](https://github.com/rollup/rollup/blob/24fe07f39da8e4225f4bc4f797331930d8405ec2/src/rollup/types.d.ts)
+go the route of completely separating their public interfaces in a separate file.
+
+## Alternatives
+
+- [API Extractor](https://api-extractor.com/)
+- [dts-bundle-generator](https://github.com/timocov/dts-bundle-generator)
+- [rollup-plugin-ts](https://github.com/wessberg/rollup-plugin-ts)
+- [tsc-prog](https://github.com/jeremyben/tsc-prog)
+
+[See](https://github.com/Swatinem/rollup-plugin-dts/issues/5)
+[some](https://github.com/Swatinem/rollup-plugin-dts/issues/13)
+[discussions](https://github.com/timocov/dts-bundle-generator/issues/68)
+about some of these projects and their tradeoffs.
+
+## [How does it work](./docs/how-it-works.md)
+
+## License
+
+The code is licensed under the copyleft **LGPL-3.0**. I have no intention to
+license this under any non-copyleft license.
+
+[^1]: [StackOverflow thread](https://stackoverflow.com/questions/74255565/rollup-typescript-error-dts-is-not-a-function/74304876#74304876) of issue
+[^2]: [Github issue](https://github.com/Swatinem/rollup-plugin-dts/issues/247)

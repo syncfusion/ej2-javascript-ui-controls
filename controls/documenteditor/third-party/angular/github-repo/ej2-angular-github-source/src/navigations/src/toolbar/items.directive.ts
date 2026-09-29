@@ -20,14 +20,15 @@ let outputs: string[] = ['click'];
 @Directive({
     selector: 'e-items>e-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class ItemDirective extends ComplexBase<ItemDirective> {
     public directivePropList: any;
-	public click: any;
+	public declare click: any;
 
 
     /** 
@@ -39,7 +40,7 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * AutoComplete, etc.
      * @default 'Button'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the location for aligning Toolbar items on the Toolbar. Each command will be aligned according to the `align` property. 
      * The possible values for this property as follows 
@@ -50,28 +51,28 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * @default "Left"
      * @asppopulatedefaultvalue 
      */
-    public align: any;
+    public declare align: any;
     /** 
      * Defines single/multiple classes (separated by space) to be used for customization of commands.
      * @default ""
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Specifies whether an item should be disabled or not.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines htmlAttributes used to add custom attributes to Toolbar command. 
      * Supports HTML attributes such as style, class, etc.
      * @default null
      */
-    public htmlAttributes: any;
+    public declare htmlAttributes: any;
     /** 
      * Specifies the unique ID to be used with button or input element of Toolbar items.
      * @default ""
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the Toolbar command display area when an element's content is too large to fit available space. 
      * This is applicable only to `popup` mode. The possible values for this property as follows 
@@ -80,19 +81,19 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * * `None`: No priority for display, and as per normal order moves to popup when content exceeds.
      * @default 'None'
      */
-    public overflow: any;
+    public declare overflow: any;
     /** 
      * Defines single/multiple classes separated by space used to specify an icon for the button. 
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
      * @default ""
      */
-    public prefixIcon: any;
+    public declare prefixIcon: any;
     /** 
      * Defines the priority of items to display it in popup always. 
      * It allows to maintain toolbar item on popup always but it does not work for toolbar priority items.
      * @default false
      */
-    public showAlwaysInPopup: any;
+    public declare showAlwaysInPopup: any;
     /** 
      * Specifies where the button text will be displayed on *popup mode* of the Toolbar. 
      * The possible values for this property as follows 
@@ -101,52 +102,40 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * * `Both`: Text will be displayed on *popup* and *Toolbar*.
      * @default 'Both'
      */
-    public showTextOn: any;
+    public declare showTextOn: any;
     /** 
      * Defines single/multiple classes separated by space used to specify an icon for the button. 
      * The icon will be positioned after the text content if text is available.
      * @default ""
      */
-    public suffixIcon: any;
+    public declare suffixIcon: any;
     /** 
      * Specifies the tab order of the Toolbar items. When positive values assigned, it allows to switch focus to the next/previous toolbar items with Tab/ShiftTab keys. 
      * By default, user can able to switch between items only via arrow keys. 
      * If the value is set to 0 for all tool bar items, then tab switches based on element order.
      * @default -1
      */
-    public tabIndex: any;
+    public declare tabIndex: any;
     /** 
      * Specifies the text to be displayed on the Toolbar button.
      * @default ""
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Specifies the text to be displayed on hovering the Toolbar button.
      * @default ""
      */
-    public tooltipText: any;
+    public declare tooltipText: any;
     /** 
      * Specifies whether an item should be hidden or not.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Specifies the width of the Toolbar button commands.
      * @default 'auto'
      */
-    public width: any;
-    /** 
-     * Specifies the HTML element/element ID as a string that can be added as a Toolbar command. 
-     * 
-     * @default ""
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -155,6 +144,7 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
         this.directivePropList = input;
     }
 }
+Template()(ItemDirective.prototype, 'template');
 
 /**
  * Item Array Directive
@@ -162,6 +152,7 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
  */
 @Directive({
     selector: 'ejs-toolbar>e-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(ItemDirective)
     },

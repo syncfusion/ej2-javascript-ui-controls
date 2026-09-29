@@ -1,0 +1,11 @@
+@use 'sass:list';
+
+$css: '' !default;
+$imported-modules: () !default;
+
+@mixin export-module($module) {
+  @if (list.index($imported-modules, $module) == null) {
+    $imported-modules: list.append($imported-modules, $module) !global;
+    @content;
+  }
+}

@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,24 +30,23 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class TimePickerComponent extends TimePicker implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	blur: any;
-	change: any;
-	cleared: any;
-	close: any;
-	created: any;
-	destroyed: any;
-	focus: any;
-	itemRender: any;
-	open: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare blur: any;
+	declare change: any;
+	declare cleared: any;
+	declare close: any;
+	declare created: any;
+	declare destroyed: any;
+	declare focus: any;
+	declare itemRender: any;
+	declare open: any;
+	public declare valueChange: any;
 
 
 
@@ -98,7 +98,7 @@ export class TimePickerComponent extends TimePicker implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

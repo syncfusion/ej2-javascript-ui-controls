@@ -263,13 +263,15 @@ export class PdfPage {
      */
     get size(): Size {
         if (typeof this._size === 'undefined' || typeof this._size.width === 'undefined' || typeof this._size.height === 'undefined') {
-            const mBox: number[] = _getInheritableProperty(this._pageDictionary, 'MediaBox', false, true, 'Parent', 'P');
-            const cBox: number[] = _getInheritableProperty(this._pageDictionary, 'CropBox', false, true, 'Parent', 'P');
+            let mBox: number[] = _getInheritableProperty(this._pageDictionary, 'MediaBox', false, true, 'Parent', 'P');
+            let cBox: number[] = _getInheritableProperty(this._pageDictionary, 'CropBox', false, true, 'Parent', 'P');
             let width: number = 0;
             let height: number = 0;
             const rotate: number = this._pageDictionary && this._pageDictionary.has('Rotate')
                 ? _getInheritableProperty(this._pageDictionary, 'Rotate', false, true, 'Parent')
                 : 0;
+            cBox = this._parseBoxValues(cBox, 'CropBox');
+            mBox = this._parseBoxValues(mBox, 'MediaBox');
             if (cBox && rotate !== null && typeof rotate !== 'undefined') {
                 width = cBox[2] - cBox[0];
                 height = cBox[3] - cBox[1];
@@ -1144,6 +1146,28 @@ export class PdfPage {
         return result;
     }
     /**
+     * Parses a PDF box array and updates _PdfReference entries to numeric values.
+     *
+     * @param {any[]} boxValues - Array containing box coordinates.
+     * @param {string} key - Contains box name.
+     * @returns {number[]} Parsed box values as a number array.
+     */
+    private _parseBoxValues(boxValues: any[], key: string): number[] { // eslint-disable-line
+        if (!Array.isArray(boxValues) || boxValues.length !== 4) {
+            return boxValues as number[];
+        }
+        const value: number[] = new Array(4);
+        for (let i: number = 0; i < 4; i++) {
+            const ref: any = boxValues[parseInt(i.toString(), 10)]; // eslint-disable-line
+            if (!(ref instanceof _PdfReference)) {
+                return boxValues as number[];
+            }
+            value[parseInt(i.toString(), 10)] = Number(this._crossReference._fetch(ref));
+        }
+        this._pageDictionary.update(key, value);
+        return value;
+    }
+    /**
      * Lays out and renders text within the specified bounds on a page, supporting multi-column flow and FitElement behavior, and returns layout details including remaining text.
      *
      * @private
@@ -1889,7 +1913,7 @@ export class _PdfDestinationHelper {
                 zoom = destinationArray[4];
                 topValue = typeof top === 'number' ? (page.size.height - top) : 0;
                 leftValue = typeof left === 'number' ? left : 0;
-                if (page.rotation !== PdfRotationAngle.angle0) {
+                if (page.rotation !== PdfRotationAngle.angle0 && !this._dictionary.has('Type')) {
                     topValue = _checkRotation(page, top, left);
                 }
                 destination = new PdfDestination(page, {x: leftValue, y: topValue});

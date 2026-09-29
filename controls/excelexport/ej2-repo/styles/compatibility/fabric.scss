@@ -1,8 +1,0 @@
-@use "../../fabric" as *;
-$css: '.e-css' !default;
-$imported-modules: () !default;
-.e-lib {
-    & .e-js [class^='e-'], & .e-js [class*=' e-'] {
-        box-sizing: content-box;
-    }
-}

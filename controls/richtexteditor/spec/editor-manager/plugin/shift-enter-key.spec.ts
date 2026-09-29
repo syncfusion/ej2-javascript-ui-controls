@@ -1,14 +1,11 @@
-import { RichTextEditor } from "../../../src";
+import { RichTextEditor } from "../../../src/rich-text-editor/base/rich-text-editor";
+import { NodeSelection } from "../../../src/selection/selection";
 import { ENTERKEY_EVENT_INIT, SHFIT_ENTERKEY_EVENT_INIT } from "../../constant.spec";
 import { renderRTE, setCursorPoint, destroy, setSelection } from "../../rich-text-editor/render.spec";
 
 const ENTER_KEY_DOWN_EVENT: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
 
 const ENTER_KEY_UP_EVENT: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
-
-const SHIFT_ENTER_KEY_DOWN_EVENT: KeyboardEvent = new KeyboardEvent('keydown', SHFIT_ENTERKEY_EVENT_INIT);
-
-const SHIFT_ENTER_KEY_UP_EVENT: KeyboardEvent = new KeyboardEvent('keyup', SHFIT_ENTERKEY_EVENT_INIT);
 
 describe('Shift Enter Key ', ()=> {
 
@@ -489,5 +486,142 @@ describe('Shift Enter Key ', ()=> {
                 done();
             }, 100);
         })
+    });
+    describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
+            let rteObj: RichTextEditor;
+            let keyboardEventArgs: any;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    height: '200px',
+                    value: '<p>testing\u200B</p>',
+                    toolbarSettings: {
+                        items: ['Bold', 'Italic', 'Underline']
+                    }
+                });
+                keyboardEventArgs = {
+                    preventDefault: () => {},
+                    stopPropagation: () => {},
+                    altKey: false,
+                    ctrlKey: false,
+                    shiftKey: true,
+                    char: '',
+                    key: 'Enter',
+                    charCode: 13,
+                    keyCode: 13,
+                    which: 13,
+                    code: 'Enter',
+                    action: 'enter',
+                    type: 'keydown'
+                };
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it('should remove zero-width spaces, apply formatting, and handle Shift+Enter without errors', (done) => {
+                rteObj.focusIn();
+                const editPanel = rteObj.contentModule.getEditPanel() as HTMLElement;
+                const textNode: Element = editPanel.querySelector('p').firstChild as Element;
+                new NodeSelection().setCursorPoint(document, textNode, textNode.textContent.length);
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(
+                    rteObj.contentModule.getDocument(),
+                    textNode,
+                    textNode,
+                    textNode.textContent.length,
+                    textNode.textContent.length
+                );
+                const boldButton = rteObj.element.querySelector('.e-bold').parentElement as HTMLElement;
+                boldButton.click();
+                // Check for the unwanted textnode is normalised
+                expect(rteObj.inputElement.querySelector('p').childNodes.length).toBe(2);
+                let errorSpy: jasmine.Spy;
+
+                if ((console.error as any).and) {
+                    errorSpy = console.error as any;
+                    errorSpy.calls.reset();
+                } else {
+                    errorSpy = spyOn(console, 'error');
+                }
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                keyboardEventArgs.keyCode = 16;
+                keyboardEventArgs.charCode = 16;
+                keyboardEventArgs.which = 16;
+                keyboardEventArgs.shiftKey = false;
+                (<any>rteObj).keyUp(keyboardEventArgs);
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(editPanel.innerHTML).not.toContain('\u200B');
+                    expect(editPanel.innerHTML).toContain('<strong>');
+                    expect(editPanel.innerHTML).toContain('<br>');
+                    expect(rteObj.getRange().startContainer.nodeName.toLowerCase()).toBe('br');
+                    done();
+                }, 100);
+            });
+        });
+    describe('Bug 930146: Numeric Bullet List Does Not Work Properly on iOS Devices in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, action:'space', key: 'Space', stopPropagation: () => { }, shiftKey: false, which: 32};
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ol><li>RTE</li><li>Menu</li></ol><p><br>1.</p><p><br></p>'
+            });
+        });
+        it('Do not create list when shift enterkey is pressed', (done: DoneFn) => {
+            rteObj.dataBind();
+            setCursorPoint(rteObj.inputElement.querySelector('br').nextSibling as Element, 2);
+            keyBoardEvent.keyCode = 32;
+            keyBoardEvent.code = 'Space';
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === '<ol><li>RTE</li><li>Menu</li></ol><p><br>1.</p><p><br></p>').toBe(true); 
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('929233 - Cursor Moves to the Last Position When Pressing Shift + Enter.', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `RichTextEditor`,
+                enterKey: 'BR',
+                shiftEnterKey: 'P',
+            });
+        });
+        it('Press the Enter key in the middle of the text while configuring the enterKey as BR.', (done: DoneFn) => {
+            const SHIFT_ENTER_KEY_DOWN_EVENT: KeyboardEvent = new KeyboardEvent('keydown', SHFIT_ENTERKEY_EVENT_INIT);
+            const SHIFT_ENTER_KEY_UP_EVENT: KeyboardEvent = new KeyboardEvent('keyup', SHFIT_ENTERKEY_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.childNodes[0] as Element, 5);
+            rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_DOWN_EVENT);
+            rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_UP_EVENT);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML).toBe('RichT<p>extEditor</p>');
+                rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.childNodes[0] as Element, (rteObj.inputElement.childNodes[0] as Text).length);
+                rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_DOWN_EVENT);
+                rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_UP_EVENT);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.innerHTML).toBe('RichT<p><br></p><p>extEditor</p>');
+                    rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.childNodes[0] as Element, 0);
+                    rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_DOWN_EVENT);
+                    rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_UP_EVENT);
+                    setTimeout(() => {
+                        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p>RichT<p><br></p><p>extEditor</p>');
+                        rteObj.inputElement.innerHTML = '<br>';
+                        rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.childNodes[0] as Element, 0);
+                        rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_DOWN_EVENT);
+                        rteObj.inputElement.dispatchEvent(SHIFT_ENTER_KEY_UP_EVENT);
+                        setTimeout(() => {
+                            expect(rteObj.inputElement.innerHTML).toBe('<br><p><br></p>');
+                            done();
+                        })
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
     });
 });

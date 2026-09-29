@@ -16,112 +16,113 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-axes>e-axis',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-        childAnnotations: new ContentChild(AnnotationsDirective), 
-        childRanges: new ContentChild(RangesDirective), 
+        childAnnotations: new ContentChild(AnnotationsDirective),
+        childRanges: new ContentChild(RangesDirective),
         childPointers: new ContentChild(PointersDirective)
     }
 })
 export class AxisDirective extends ComplexBase<AxisDirective> {
     public directivePropList: any;
 	
-    public childAnnotations: any;
-    public childRanges: any;
-    public childPointers: any;
+    public declare childAnnotations: any;
+    public declare childRanges: any;
+    public declare childPointers: any;
     public tags: string[] = ['annotations', 'ranges', 'pointers'];
     /** 
      * Sets and gets the annotation elements for an axis in circular gauge.
      */
-    public annotations: any;
+    public declare annotations: any;
     /** 
      * Sets and gets the background color of an axis. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default null
      */
-    public background: any;
+    public declare background: any;
     /** 
      * Sets and gets the direction of an axis.
      * @default ClockWise
      */
-    public direction: any;
+    public declare direction: any;
     /** 
      * Sets and gets the end angle of an axis in circular gauge.
      * @default 160
      */
-    public endAngle: any;
+    public declare endAngle: any;
     /** 
      * Enables and disables the intersecting labels to be hidden in axis.
      * @default false
      */
-    public hideIntersectingLabel: any;
+    public declare hideIntersectingLabel: any;
     /** 
      * Sets and gets the style of the axis label in circular gauge.
      */
-    public labelStyle: any;
+    public declare labelStyle: any;
     /** 
      * Sets and gets the style of the line in axis of circular gauge.
      */
-    public lineStyle: any;
+    public declare lineStyle: any;
     /** 
      * Sets and gets the major tick lines of an axis in circular gauge.
      * @default { width: 2, height: 10 }
      */
-    public majorTicks: any;
+    public declare majorTicks: any;
     /** 
      * Sets and gets the maximum value of an axis in the circular gauge.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public maximum: any;
+    public declare maximum: any;
     /** 
      * Sets and gets the minimum value of an axis in the circular gauge.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public minimum: any;
+    public declare minimum: any;
     /** 
      * Sets and gets the minor tick lines of an axis in circular gauge.
      * @default { width: 2, height: 5 }
      */
-    public minorTicks: any;
+    public declare minorTicks: any;
     /** 
      * Sets and gets the pointers of an axis in circular gauge.
      */
-    public pointers: any;
+    public declare pointers: any;
     /** 
      * Sets and gets the radius of an axis in circular gauge.
      * @default null
      */
-    public radius: any;
+    public declare radius: any;
     /** 
      * Sets and gets the gap between the ranges by specified value in circular gauge.
      * @default null
      */
-    public rangeGap: any;
+    public declare rangeGap: any;
     /** 
      * Sets and gets the ranges of an axis in circular gauge.
      */
-    public ranges: any;
+    public declare ranges: any;
     /** 
      * Sets and gets the rounding off value in the an axis label.
      * @default null
      */
-    public roundingPlaces: any;
+    public declare roundingPlaces: any;
     /** 
      * Enables and disables the last label of axis when it is hidden in circular gauge.
      * @default false
      */
-    public showLastLabel: any;
+    public declare showLastLabel: any;
     /** 
      * Enables and disables the start and end gap between the ranges and axis in circular gauge.
      * @default false
      */
-    public startAndEndRangeGap: any;
+    public declare startAndEndRangeGap: any;
     /** 
      * Sets and gets the start angle of an axis in circular gauge.
      * @default 200
      */
-    public startAngle: any;
+    public declare startAngle: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -137,6 +138,7 @@ export class AxisDirective extends ComplexBase<AxisDirective> {
  */
 @Directive({
     selector: 'ej-circulargauge>e-axes',
+    standalone: true,
     queries: {
         children: new ContentChildren(AxisDirective)
     },

@@ -90,6 +90,68 @@ let innerHtmlRule1: string = `<form id="form-element" class="form-vertical">
             expect(onChange).toHaveBeenCalledTimes(1);
         });
     });
+    describe('EJ2-22524 - Default value should be set while restting form - ', () => {
+        let rteObj: RichTextEditor;
+        let form: FormValidator;
+        let editNode: HTMLElement;
+        let containerEle: HTMLElement;
+        let onChange: jasmine.Spy;
+        let innerHtmlRule: string = `<form id="form-element" class="form-vertical">
+        <div class="form-group">
+            <textarea id="defaultRTE" name="defaultRTE"> 
+            </textarea>
+        </div>
+        <div style="text-align: center">
+            <button id="validateSubmit" class="samplebtn e-control e-btn" type="submit" data-ripple="true">Submit</button>
+            <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" data-ripple="true">Reset</button>
+        </div>
+        </form>`;
+        beforeAll(() => {
+            containerEle = document.createElement('div');
+            containerEle.innerHTML = innerHtmlRule;
+            onChange = jasmine.createSpy('change');
+            document.body.appendChild(containerEle);
+            rteObj = new RichTextEditor({
+                showCharCount: true,
+                maxLength: 100,
+                saveInterval: 10,
+                value: '<p>RichTextEditor</p>',
+                change: onChange,
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo("#defaultRTE");
+            editNode = (rteObj as any).inputElement;
+            form = new FormValidator('#form-element', {
+                rules: {
+                    defaultRTE: {
+                        required: true,
+                        maxLength: "100",
+                        minLength: "20"
+                    }
+                }
+            });
+            rteObj.focusIn();
+            editNode.innerHTML = '<p>EJ2 RichTextEditor Component</p>';
+        })
+        afterAll(() => {
+            rteObj.destroy();
+            detach(containerEle);
+        });
+
+        it('Should reset the editor value on the form reset method call.', (done: DoneFn) => {
+            rteObj.focusOut();
+            let element: HTMLElement = rteObj.element.querySelector('#defaultRTE-info');
+            expect(rteObj.value === '<p>EJ2 RichTextEditor Component</p>').toBe(true);
+            expect(isNullOrUndefined(element)).toBe(true);
+            expect(onChange).toHaveBeenCalled();
+            form.reset();
+            setTimeout(() => {
+                expect(rteObj.value === '<p>RichTextEditor</p>').toBe(true);
+                expect(onChange).toHaveBeenCalledTimes(1);
+                done();
+            }, 100);
+        });
+    });
     describe('Blazor instance with reset  - ', () => {
         let rteObj: RichTextEditor;
         let form: FormValidator;

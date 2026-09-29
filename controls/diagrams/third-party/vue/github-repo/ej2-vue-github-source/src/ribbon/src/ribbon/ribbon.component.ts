@@ -19,7 +19,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents the Essential JS 2 VueJS Ribbon Component
- * ```vue
+ * ```
  * <ejs-ribbon></ejs-ribbon>
  * ```
  */

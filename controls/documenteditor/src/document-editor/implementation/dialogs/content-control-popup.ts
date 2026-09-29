@@ -134,6 +134,7 @@ export class ContentControlPopUp {
         this.textBoxButtonDiv.appendChild(this.textBoxOkButton);
         this.textBoxButtonDiv.appendChild(this.textBoxCancelButton);
         this.dropDownDiv.appendChild(this.textBoxButtonDiv);
+        ddl.isAngular = this.owner.isModalDialog;
         ddl.appendTo(dropDownInput);
         new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, this.textBoxOkButton);
         new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, this.textBoxCancelButton);

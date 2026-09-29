@@ -71,6 +71,7 @@ describe('gantt task creation with duration unit and work mapping in taskfields'
             splitterSettings: {
                 position: "50%",
             },
+            hoursPerDay: 24,
             gridLines: "Both",
             highlightWeekends: true,
             timelineSettings : {

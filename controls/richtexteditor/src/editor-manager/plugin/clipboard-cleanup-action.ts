@@ -48,7 +48,7 @@ export class ClipBoardCleanupAction {
         this.editableElement = editableElement;
         // Extract HTML and plain text from the selected range
         let { htmlContent, plainTextContent } = this.extractClipboardContentFromSelection(range);
-        const isFullBlockSelection: boolean = this.isSelectionCoveringSingleBlock(range, htmlContent);
+        const isFullBlockSelection: string = this.isSelectionCoveringSingleBlock(range, htmlContent);
         const isFullLISelected: boolean = this.isFullLISelected(range, htmlContent);
         // Wrap list items if selection is within a list
         if (this.parent.domNode.isList(range.commonAncestorContainer as Element)) {
@@ -56,24 +56,37 @@ export class ClipBoardCleanupAction {
                 this.wrapListStructureForClipboard(range, htmlContent, plainTextContent);
             htmlContent = formattedClipboardData.htmlContent;
             plainTextContent = formattedClipboardData.plainTextContent;
-        } else if (isFullLISelected) {
-            // when whole li is selected
-            let closestList: HTMLElement = range.commonAncestorContainer as HTMLElement;
-            // If it's a text node, move to its parent
-            if (closestList.nodeName === '#text') {
-                closestList = closestList.parentElement;
+        } else{
+            const fragment : DocumentFragment = document.createRange().createContextualFragment(htmlContent);
+            let container: HTMLElement | null = null;
+            if (isFullLISelected)
+            {
+                // when whole li is selected
+                let closestList: HTMLElement = range.commonAncestorContainer as HTMLElement;
+                // If it's a text node, move to its parent
+                if (closestList.nodeName === '#text') {
+                    closestList = closestList.parentElement;
+                }
+                // If it's an LI, use it; otherwise, find the closest LI
+                const liElement: HTMLElement = closestList.nodeName === 'LI' ? closestList : closestList.closest('li');
+                // Get the parent list (UL or OL)
+                const closestListParent: HTMLElement = liElement.parentElement;
+                container = createElement(closestListParent.tagName);
+                container.appendChild(createElement('li'));
+                container.firstElementChild.innerHTML = htmlContent;
+                htmlContent = container.outerHTML;
+                const temp: HTMLElement = document.createElement('div');
+                temp.innerHTML = htmlContent;
+                plainTextContent = this.extractTextFromHtmlNode(temp);
+            } else if ((operation === 'copy' || operation === 'cut') && isFullBlockSelection && range.commonAncestorContainer.nodeType === Node.TEXT_NODE && fragment.childElementCount === 0) {
+                const tagName : string = isFullBlockSelection;
+                container = document.createElement(tagName);
+                container.innerHTML = htmlContent;
+                htmlContent = container.outerHTML;
+                const temp: HTMLElement = document.createElement('div');
+                temp.innerHTML = htmlContent;
+                plainTextContent = this.extractTextFromHtmlNode(temp);
             }
-            // If it's an LI, use it; otherwise, find the closest LI
-            const liElement: HTMLElement = closestList.nodeName === 'LI' ? closestList : closestList.closest('li');
-            // Get the parent list (UL or OL)
-            const closestListParent: HTMLElement = liElement.parentElement;
-            const listContainer: HTMLElement = createElement(closestListParent.tagName);
-            listContainer.appendChild(createElement('li'));
-            listContainer.firstElementChild.innerHTML = htmlContent;
-            htmlContent = listContainer.outerHTML;
-            const temporaryWrapper: HTMLElement = createElement('div');
-            temporaryWrapper.innerHTML = htmlContent;
-            plainTextContent = this.extractTextFromHtmlNode(temporaryWrapper);
         }
         // Handle cut operation
         if (operation === 'cut') {
@@ -865,14 +878,19 @@ export class ClipBoardCleanupAction {
     }
 
     /* Checks if the current selection range fully covers a single block-level element. */
-    private isSelectionCoveringSingleBlock(selectionRange: Range, htmlContent: string): boolean {
+    private isSelectionCoveringSingleBlock(selectionRange: Range, htmlContent: string): string {
         let blockContainer: HTMLElement;
         if (!this.parent.domNode.isBlockNode(selectionRange.commonAncestorContainer as HTMLElement)) {
             blockContainer = this.parent.domNode.getImmediateBlockNode(selectionRange.commonAncestorContainer) as HTMLElement;
         } else {
             blockContainer = selectionRange.commonAncestorContainer as HTMLElement;
         }
-        return blockContainer.innerHTML.trim() === htmlContent.trim();
+        if (blockContainer.innerHTML.trim() === htmlContent.trim()) {
+            return blockContainer.tagName;
+        }
+        else {
+            return null;
+        }
     }
 
     /* Removes a specified DOM element from its container with special handling for <code> elements. */

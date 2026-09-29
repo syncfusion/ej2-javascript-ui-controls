@@ -1,8 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../interactive-chat-base/interactive-chat-base-model.d.ts'/>
-import { INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, NotifyPropertyChanges, Property, ChildProperty, Complex, Event, EmitType } from '@syncfusion/ej2-base';
 import { AIAssistBaseModel} from './ai-assist-base-model';
 import { InterActiveChatBase } from '../interactive-chat-base/interactive-chat-base';
+import { StartListeningEventArgs, StopListeningEventArgs, TranscriptChangedEventArgs, ErrorEventArgs, SpeechToTextState, ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';
 
 /**
  * Specifies the type of footer.
@@ -16,6 +17,136 @@ export enum ToolbarPosition {
      * Displays the toolbar at the bottom of the edit area.
      */
     Bottom = 'Bottom'
+}
+
+/**
+ * Configuration settings for rendering Syncfusion Speech-to-Text in the AssistView and InlineAIAssist footer.
+ * This property holds the settings required to initialize and display the Speech-to-Text component.
+ *
+ */
+export class SpeechToTextSettings extends ChildProperty<SpeechToTextSettings> {
+
+    /**
+     * Specifies whether speech-to-text functionality is enabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * Specifies whether interim results should be captured during speech recognition.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowInterimResults: boolean;
+
+    /**
+     * Specifies the language for speech recognition using ISO language codes.
+     *
+     * @default 'en-US'
+     */
+    @Property('en-US')
+    public lang: string;
+
+    /**
+     * Specifies whether the speech-to-text control is disabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
+
+    /**
+     * Configuration object for the mic button appearance and behavior.
+     * Defines the button text, icons, position, and styling for both start and stop states.
+     *
+     * @type {ButtonSettingsModel}
+     * @default {}
+     */
+    @Complex<ButtonSettingsModel>({}, ButtonSettings)
+    public buttonSettings: ButtonSettingsModel;
+
+    /**
+     * Specifies whether to show tooltip for the mic button.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showTooltip: boolean;
+
+    /**
+     * Configuration object for tooltip appearance and behavior.
+     * Defines the tooltip text and position for both listening and stop states.
+     *
+     * @type {TooltipSettingsModel}
+     * @default {}
+     */
+    @Complex<TooltipSettingsModel>({}, TooltipSettings)
+    public tooltipSettings: TooltipSettingsModel;
+
+    /**
+     * Applies custom CSS classes to the speech-to-text component.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public cssClass: string;
+
+    /**
+     * Stores the recognized speech transcript.
+     * This property is read-only and updated when speech recognition results are received.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public transcript: string;
+
+    /**
+     * Indicates whether the component is currently listening.
+     *
+     * @default 'Inactive'
+     */
+    @Property('Inactive')
+    public listeningState: SpeechToTextState;
+
+    /**
+     * Event raised when speech recognition starts.
+     * Triggered when the user clicks the mic button and begins speaking.
+     *
+     * @event onStart
+     */
+    @Event()
+    public onStart: EmitType<StartListeningEventArgs>;
+
+    /**
+     * Event raised when speech recognition stops.
+     * Triggered when the user stops speaking and clicks the mic button.
+     *
+     * @event onStop
+     */
+    @Event()
+    public onStop: EmitType<StopListeningEventArgs>;
+
+    /**
+     * Event raised when the transcript changes during speech recognition.
+     * Triggered for both interim results (if enabled) and final results.
+     *
+     * @event transcriptChanged
+     */
+    @Event()
+    public transcriptChanged: EmitType<TranscriptChangedEventArgs>;
+
+    /**
+     * Event raised when an error occurs during speech recognition.
+     *
+     * @event onError
+     */
+    @Event()
+    public onError: EmitType<ErrorEventArgs>;
 }
 
 /**

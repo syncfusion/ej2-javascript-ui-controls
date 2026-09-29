@@ -474,6 +474,68 @@ export function _getXObject(xObjectElement: string[], page: PdfPage, xObjectColl
     }
 }
 /**
+ * Retrieves a content stream object for a specified XObject, processing it according to the provided mode.
+ *
+ * @private
+ * @param {string[]} xObjectElement - The XObject elements to process.
+ * @param {PdfPage} page - The PDF page to which the content stream belongs.
+ * @param {Map<string, any>} xObjectCollection - A collection of XObject elements.
+ * @param {_PdfContentParserHelper | PdfDataExtractor} data - The data extractor or content parser helper.
+ * @param {_TextProcessingMode} [mode] - The mode of text processing.
+ * @param {_GraphicState} [graphicState] - The current graphic state.
+ * @returns {Promise<_PdfContentStream | void>} The processed PDF content stream or void.
+ */
+export async function _fetchXObject(xObjectElement: string[], page: PdfPage, xObjectCollection: Map<string, any>, data?: _PdfContentParserHelper | PdfDataExtractor, mode?: _TextProcessingMode, graphicState?: _GraphicState): Promise<_PdfContentStream | void> { //eslint-disable-line
+    const xobject: string = xObjectElement[0].replace('/', '');
+    let array: Uint8Array;
+    let contentParser: _PdfContentParserHelper;
+    let extractor: PdfDataExtractor;
+    if (data instanceof _PdfContentParserHelper) {
+        contentParser = data;
+    } else {
+        extractor = data;
+    }
+    if (xObjectCollection.has(xobject)) {
+        let base: any = xObjectCollection.get(xobject); //eslint-disable-line
+        if (base) {
+            if (base instanceof _PdfContentStream) {
+                array = new Uint8Array(base._bytes);
+            } else if (base instanceof _PdfBaseStream) {
+                array = base.getBytes();
+            }
+            if (array) {
+                const parser: _ContentParser = new _ContentParser(array);
+                const recordCollection: _PdfRecord[] = parser._readContent();
+                let childFontCollection: Map<string, _FontStructure> = new Map<string, _FontStructure>();
+                let xObjectCollection: Map<string, any> = new Map<string, any>();  //eslint-disable-line
+                if (base.dictionary.has('Resources')) {
+                    const childResources: _PdfDictionary = base.dictionary.get('Resources');
+                    childFontCollection = _addFontResources(childResources, childResources._crossReference);
+                    xObjectCollection = _getXObjectResources(childResources, childResources._crossReference);
+                }
+                let state: _GraphicState;
+                if (typeof(mode) !== 'undefined') {
+                    if (base.dictionary.has('Matrix')) {
+                        const currentState: _TextState = graphicState._state._clone();
+                        state = new _GraphicState(currentState);
+                        const matrix: number[] = base.dictionary.get('Matrix');
+                        if (matrix) {
+                            state._transform(matrix);
+                        }
+                    } else {
+                        state = graphicState;
+                    }
+                }
+                if (mode === _TextProcessingMode.textLineExtraction || mode === _TextProcessingMode.textExtraction) {
+                    await contentParser._fetchRecordCollection(recordCollection, page, childFontCollection, xObjectCollection, state);
+                } else {
+                    await extractor._renderPdfTextAsLayOut(recordCollection, page, childFontCollection, xObjectCollection);
+                }
+            }
+        }
+    }
+}
+/**
  * Parses encoded text and returns both the decoded string list and width table.
  *
  * @private

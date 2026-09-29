@@ -4,7 +4,7 @@ import { SuccessEventArgs, Uploader, UploadingEventArgs } from '@syncfusion/ej2-
 import { RichTextEditor } from '../base';
 import { NotifyArgs, ActionBeginEventArgs, ExportingEventArgs } from '../../common/interface';
 import { EXPORT_STYLES } from '../../common/export-styles';
-import { getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getComponent, isNullOrUndefined, initializeTelemetryFeature  } from '@syncfusion/ej2-base';
 import { ExportDocumentType } from '../../common/types';
 import { ProgressButton } from '@syncfusion/ej2-splitbuttons';
 /**
@@ -15,6 +15,7 @@ export class ImportExport {
     private parent: IRichTextEditor;
     private uploaderObj: Uploader;
     public constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('ImportExport', 'RichTextEditor');
         this.parent = parent;
         this.addEventListener();
     }

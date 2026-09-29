@@ -33,7 +33,7 @@ export const PointersPlugin = {
 
 /**
  * Represents the directive to render and customize the pointers in an axis of linear gauge.
- * ```vue
+ * ```
  * <ejs-lineargauge>
  * <e-axes>
  * <e-axis>

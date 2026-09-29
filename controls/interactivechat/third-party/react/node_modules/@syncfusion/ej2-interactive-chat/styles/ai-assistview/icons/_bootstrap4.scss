@@ -1,0 +1,63 @@
+@use '../variables' as *;
+@include export-module('aiassist-bootstrap4-icons') {
+  .e-assist-send::before {
+    content: '\e816';
+  }
+  .e-assistview-icon::before {
+    content: '\e9bf';
+  }
+  .e-assist-user::before {
+    content: '\e9c5';
+  }
+  .e-assist-like::before {
+    content: '\e9c1';
+  }
+  .e-assist-dislike::before {
+    content: '\e9c2';
+  }
+  .e-assist-copy::before {
+    content: '\e77b';
+  }
+  .e-assist-edit::before {
+    content: '\e78f';
+  }
+  .e-assist-check::before {
+    content: '\e96d';
+  }
+  .e-assist-stop::before {
+    content: '\e9d5';
+  }
+  .e-assist-like-filled::before {
+    content: '\e9d3';
+  }
+  .e-assist-dislike-filled::before {
+    content: '\e9d4';
+  }
+  .e-assist-clear-icon::before {
+    content: '\e745';
+  }
+  .e-assist-attachment-icon::before {
+    content: '\e9fc';
+  }
+  .e-assist-file-format-icon::before {
+    content: '\e9fd';
+  }
+  .e-assist-circle-close::before {
+    content: '\e761';
+  }
+  .e-assist-scroll-down::before {
+    content: '\e7bf';
+  }
+  .e-assist-audio::before {
+    content: '\e947';
+  }
+  .e-assist-regenerate::before {
+    content: '\e953';
+  }
+  .e-assist-next::before {
+    content: '\e70d';
+  }
+  .e-assist-previous::before {
+    content: '\e76a';
+  }
+}

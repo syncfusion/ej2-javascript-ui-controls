@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@mixin wrap-styles {
+@use 'variables' as *;
+@mixin wrap-style {
   float: right;
   height: $field-list-adaptive-btn-size;
   pointer-events: all;
@@ -13,6 +13,17 @@
 }
 
 @include export-module('field-list-theme') {
+
+  .e-drag-item {
+    &.e-treeview {
+      &.e-pivot-calc {
+        &.e-display-inline {
+          display: inline;
+        }
+      }
+    }
+  }
+
   .e-pivotfieldlist {
 
     .e-member-editor-dialog,
@@ -78,7 +89,7 @@
   }
 
   /* stylelint-disable */
-  #{if(&, "&", "*")}.e-rtl {
+  *.e-rtl {
 
     .e-select-table {
       padding: $field-list-spacing-8 $field-list-spacing-5;
@@ -1592,7 +1603,7 @@
 
             .e-field-list-btn,
             .e-calculated-field-btn {
-              @include wrap-styles;
+              @include wrap-style;
             }
           }
         }
@@ -1612,7 +1623,7 @@
         .e-calculated-field-btn,
         .e-cancel-btn,
         .e-defer-apply-button {
-          @include wrap-styles;
+          @include wrap-style;
 
           @if ($skin-name =='Material3') {
             border-radius: $field-list-device-footer-button-border-radius;

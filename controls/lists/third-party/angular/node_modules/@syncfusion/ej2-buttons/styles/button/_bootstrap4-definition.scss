@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/bootstrap4' as *;
-@forward 'ej2-base/styles/definition/bootstrap4';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //normal
 $btn-color: $white !default;

@@ -6,7 +6,7 @@ export interface ProgressAnnotationSettingsDirTypecast {
 }
 /**
  * `ProgressBarAnnotationsDirective` directive represent a annotation of the react progressbar.
- * ```tsx
+ * ```
  * <progressbarComponent>
  * <ProgressBarAnnotationsDirective>
  * <ProgressBarAnnotationDirective></ProgressBarAnnotationDirective>

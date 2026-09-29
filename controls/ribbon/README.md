@@ -2,6 +2,20 @@
 
 # Javascript Ribbon Control
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/javascript/llms.txt](https://ai.syncfusion.com/javascript/llms.txt)
+
 The [JavaScript Ribbon](https://www.syncfusion.com/javascript-ui-controls/js-ribbon?utm_source=npm&utm_medium=listing&utm_campaign=javascript-ribbon-npm) control provides a structured and easy-to-use user interface for users to access different features and functions through series of tabs, improving the overall user experience and making your application more efficient.
 
 <p align="center">

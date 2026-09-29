@@ -1,5 +1,5 @@
 import { MouseEventArgs, Draggable, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { removeClass, updateCSSText } from '@syncfusion/ej2-base';
+import { removeClass, updateCSSText, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs, extend } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
@@ -89,6 +89,7 @@ export class RowDD {
         removeElement(this.startedRow, '.e-indentcell');
         removeElement(this.startedRow, '.e-detailrowcollapse');
         removeElement(this.startedRow, '.e-detailrowexpand');
+        removeElement(this.startedRow, '.' + literals.rowNumberCell);
         if (!(gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
             this.removeCell(this.startedRow, literals.gridChkBox);
         }
@@ -439,7 +440,8 @@ export class RowDD {
                 if (gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
                     resetCachedRowIndex(gObj);
                 } else {
-                    resetRowIndex(this.parent, gObj.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr);
+                    resetRowIndex(this.parent, gObj.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr,
+                                  gObj.pinnedTopRowModels.length);
                 }
                 this.parent.notify(events.refreshExpandandCollapse, {
                     rows: gObj.enableVirtualization ? this.parent.vRows : this.parent.getRowsObject()
@@ -697,6 +699,7 @@ export class RowDD {
      * @hidden
      */
     constructor(parent?: IGrid) {
+        initializeTelemetryFeature('RowDD', 'DataGrid');
         this.parent = parent;
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialEnd, this.initializeDrag, this);
@@ -726,7 +729,7 @@ export class RowDD {
     private initializeDrag(): void {
         const gObj: IGrid = this.parent;
         this.draggable = new Draggable(gObj.element as HTMLElement, {
-            dragTarget: '.e-rowcelldrag, .e-rowdragdrop, .e-rowcell',
+            dragTarget: '.e-rowcelldrag, .e-rowdragdrop, .e-rowcell:not(.' + literals.rowNumberCell + ')',
             distance: 5,
             helper: this.helper,
             dragStart: this.dragStart,
@@ -1077,7 +1080,7 @@ export class RowDD {
         const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10) - 1;
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
-            if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {
+            if (gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
                 this.rows = [this.startedRow];
             } else {
                 this.rows = [gObj.getRowByIndex(dragIdx)];

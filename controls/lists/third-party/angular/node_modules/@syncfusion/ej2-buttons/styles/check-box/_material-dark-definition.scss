@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material-dark' as *;
-@forward 'ej2-base/styles/definition/material-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $cbox-bgcolor: transparent !default;
 $cbox-bigger-check-fontsize: 16px !default;
 $cbox-bigger-font-size: 14px !default;

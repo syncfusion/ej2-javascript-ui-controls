@@ -2,16 +2,6 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
-
-### Ribbon
-
-#### Bug Fixes
-
-- `#I831643` - Now the issue with Ribbon component `SplitButton` and `DropdownButton` popups render behind the Angular CDK Dialog overlay has been resolved.
-
-- Now the issue with gallery popup position misalignment in overflow state has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

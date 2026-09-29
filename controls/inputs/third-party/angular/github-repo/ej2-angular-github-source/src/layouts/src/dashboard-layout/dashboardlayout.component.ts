@@ -20,24 +20,25 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childPanels: new ContentChild(PanelsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class DashboardLayoutComponent extends DashboardLayout implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	change: any;
-	created: any;
-	destroyed: any;
-	drag: any;
-	dragStart: any;
-	dragStop: any;
-	resize: any;
-	resizeStart: any;
-	public resizeStop: any;
-    public childPanels: QueryList<PanelsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare change: any;
+	declare created: any;
+	declare destroyed: any;
+	declare drag: any;
+	declare dragStart: any;
+	declare dragStop: any;
+	declare resize: any;
+	declare resizeStart: any;
+	public declare resizeStop: any;
+    public declare childPanels: QueryList<PanelsDirective>;
     public tags: string[] = ['panels'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -68,7 +69,7 @@ export class DashboardLayoutComponent extends DashboardLayout implements ICompon
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

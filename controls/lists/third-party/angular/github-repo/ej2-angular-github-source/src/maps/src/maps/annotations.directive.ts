@@ -16,9 +16,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-maps-annotations>e-maps-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
@@ -30,35 +31,27 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * Gets or sets the type of the placement when the annotation is to be aligned horizontally.
      * @default None
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Gets or sets the type of the placement when the annotation is to be aligned vertically.
      * @default None
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * Gets or sets the x position of the annotation in pixel or percentage format.
      * @default '0px'
      */
-    public x: any;
+    public declare x: any;
     /** 
      * Gets or sets the y position of the annotation in pixel or percentage format.
      * @default '0px'
      */
-    public y: any;
+    public declare y: any;
     /** 
      * Gets or sets the z-index of the annotation in maps.
      * @default '-1'
      */
-    public zIndex: any;
-    /** 
-     * Gets or sets the content for the annotation in maps.
-     * @default ''
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -67,6 +60,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
         this.directivePropList = input;
     }
 }
+Template()(AnnotationDirective.prototype, 'content');
 
 /**
  * Annotation Array Directive
@@ -74,6 +68,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
  */
 @Directive({
     selector: 'ej-maps>e-maps-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(AnnotationDirective)
     },

@@ -1,11 +1,12 @@
 import { RowPosition } from '../base/enum';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IPredecessor } from '../base/interface';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 
 export class UndoRedo {
     private parent: Gantt;
     constructor(parent: Gantt) {
+        initializeTelemetryFeature('UndoRedo', 'Gantt');
         this.parent = parent;
     }
 

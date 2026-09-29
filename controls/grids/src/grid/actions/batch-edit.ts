@@ -550,19 +550,16 @@ export class BatchEdit {
         let isEdit: boolean = this.parent.isEdit;
         if (!this.parent.element.getElementsByClassName('e-popup-open').length) {
             isEdit = isEdit && !this.validateFormObj();
+            if (this.parent.editSettings.mode === 'Cell' && this.parent.enableVirtualization) {
+                const rowElement: Element | null = e.element.parentElement;
+                rowIndex = rowElement && parseInt(rowElement.getAttribute(literals.ariaRowIndex), 10) - 1;
+            }
             switch (e.keyArgs.action) {
             case 'tab':
             case 'shiftTab':
                 // eslint-disable-next-line no-case-declarations
-                const indent: number = this.parent.isRowDragable() && this.parent.isDetail() ? 2 :
-                    this.parent.isRowDragable() || this.parent.isDetail() ? 1 : 0;
-                // eslint-disable-next-line no-case-declarations
-                const col: Column = this.parent.getColumns()[cellIndex - indent];
-                if (this.parent.editSettings.mode === 'Cell' && this.parent.enableVirtualization) {
-                    const rowElement: Element | null = e.element.parentElement;
-                    rowIndex = rowElement && parseInt(rowElement.getAttribute(literals.ariaRowIndex), 10) - 1;
-                }
-                if (col && !this.parent.isEdit) {
+                const col: Column = this.parent.getColumns()[parseInt(cellIndex.toString(), 10)];
+                if (col && this.parent.editSettings.mode === 'Batch' && !this.parent.isEdit) {
                     this.editCell(rowIndex, col.field);
                 }
                 if (isEdit || this.parent.isLastCellPrimaryKey) {
@@ -1067,6 +1064,14 @@ export class BatchEdit {
                     gObj.element.querySelector('.e-frozenrow-empty').classList.remove('e-frozenrow-empty');
                 }
             }
+            const overlay: Element = gObj.element.querySelector('.e-empty-row-sticky-content');
+            if (overlay) {
+                overlay.parentElement.removeChild(overlay);
+                const content: Element = gObj.element.querySelector('.e-content');
+                if (content) {
+                    content.classList.remove('e-empty-overlay-mode');
+                }
+            }
             if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
                 tbody = gObj.getHeaderTable().querySelector(literals.tbody);
             } else {
@@ -1323,7 +1328,8 @@ export class BatchEdit {
 
     protected refreshTD(td: Element, column: Column, rowObj: Row<Column>, value: string | number | boolean | Date): void {
         const cell: CellRenderer = new CellRenderer(this.parent, this.serviceLocator);
-        value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value as string) : value;
+        value = column.type === 'number' && !isNullOrUndefined(value) && !(this.parent.editSettings.mode === 'Cell' &&
+            column.allowFormula) ? parseFloat(value as string) : value;
         if (rowObj) {
             this.setChanges(rowObj, column.field, value);
             refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);

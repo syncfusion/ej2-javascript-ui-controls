@@ -21,43 +21,42 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(CircularChart3DSeriesCollectionDirective), 
-        childSelectedDataIndexes: new ContentChild(CircularChart3DSelectedDataIndexesDirective)
+        childSeries: new ContentChild(CircularChart3DSeriesCollectionDirective),
+        childSelectedDataIndexes: new ContentChild(CircularChart3DSelectedDataIndexesDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class CircularChart3DComponent extends CircularChart3D implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	afterExport: any;
-	beforeExport: any;
-	beforePrint: any;
-	beforeResize: any;
-	circularChart3DMouseClick: any;
-	circularChart3DMouseDown: any;
-	circularChart3DMouseLeave: any;
-	circularChart3DMouseMove: any;
-	circularChart3DMouseUp: any;
-	legendClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	pointClick: any;
-	pointMove: any;
-	pointRender: any;
-	resized: any;
-	selectionComplete: any;
-	seriesRender: any;
-	textRender: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<CircularChart3DSeriesCollectionDirective>;
-    public childSelectedDataIndexes: QueryList<CircularChart3DSelectedDataIndexesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare afterExport: any;
+	declare beforeExport: any;
+	declare beforePrint: any;
+	declare beforeResize: any;
+	declare circularChart3DMouseClick: any;
+	declare circularChart3DMouseDown: any;
+	declare circularChart3DMouseLeave: any;
+	declare circularChart3DMouseMove: any;
+	declare circularChart3DMouseUp: any;
+	declare legendClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare pointClick: any;
+	declare pointMove: any;
+	declare pointRender: any;
+	declare resized: any;
+	declare selectionComplete: any;
+	declare seriesRender: any;
+	declare textRender: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<CircularChart3DSeriesCollectionDirective>;
+    public declare childSelectedDataIndexes: QueryList<CircularChart3DSelectedDataIndexesDirective>;
     public tags: string[] = ['series', 'selectedDataIndexes'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -132,7 +131,9 @@ export class CircularChart3DComponent extends CircularChart3D implements ICompon
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(CircularChart3DComponent.prototype, 'tooltip_template');
+
 

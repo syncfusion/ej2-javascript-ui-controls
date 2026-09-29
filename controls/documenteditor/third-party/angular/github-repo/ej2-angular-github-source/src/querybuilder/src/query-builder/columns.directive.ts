@@ -20,9 +20,11 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-querybuilder>e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        ruleTemplate: new ContentChild('ruleTemplate'),
+        template: new ContentChild('template')
     }
 })
 export class ColumnDirective extends ComplexBase<ColumnDirective> {
@@ -34,74 +36,59 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
      * Specifies the types in columns field.
      * @default null
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the category for columns.
      * @default null
      */
-    public category: any;
+    public declare category: any;
     /** 
      * Specifies the sub fields in columns.
      * @default null
      */
-    public columns: any;
+    public declare columns: any;
     /** 
      * Specifies the fields in columns.
      * @default null
      */
-    public field: any;
+    public declare field: any;
     /** 
      * Specifies the date format for columns.
      * @asptype string
      * @blazortype string
      * @default null
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Specifies the labels name in columns.
      * @default null
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Specifies the operators in columns.
      * @default null
      */
-    public operators: any;
+    public declare operators: any;
     /** 
      * Specifies the step value(numeric textbox) for columns.
      * @default null
      */
-    public step: any;
+    public declare step: any;
     /** 
      * Specifies the validation for columns (text, number and date).
      * @default { isRequired: true , min: 0, max: Number.MAX_VALUE }
      */
-    public validation: any;
+    public declare validation: any;
     /** 
      * Specifies the default value for columns.
      * @default null
      */
-    public value: any;
+    public declare value: any;
     /** 
      * Specifies the values in columns or bind the values from sub controls.
      * @default null
      */
-    public values: any;
-    /** 
-     * Specifies the rule template for the field with any other widgets.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('ruleTemplate')
-    @Template()
-    public ruleTemplate: any;
-    /** 
-     * Specifies the template for value field such as slider or any other widgets.
-     * @default null
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare values: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -110,6 +97,8 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
         this.directivePropList = input;
     }
 }
+Template()(ColumnDirective.prototype, 'ruleTemplate');
+Template()(ColumnDirective.prototype, 'template');
 
 /**
  * Column Array Directive
@@ -117,6 +106,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
  */
 @Directive({
     selector: 'ejs-querybuilder>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColumnDirective)
     },

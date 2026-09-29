@@ -5,7 +5,7 @@ import { PointPortModel } from '@syncfusion/ej2-diagrams';
 /**
  * `Node` directive represent a port of the react Diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <NodesDirective>
  * <NodeDirective>

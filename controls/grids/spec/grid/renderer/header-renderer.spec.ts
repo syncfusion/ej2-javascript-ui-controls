@@ -511,4 +511,43 @@ describe('EJ2-6660-Header template', () => {
         });
 
     });
+    describe('EJ2-1035012 - Provide header row height property support to EJ2 Grid', () => {
+        let gridObj: Grid;
+            
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'Customer ID' }
+                    ],
+                    headerRowHeight: 60, 
+                    rowHeight: 30
+                },
+                done
+            );
+        });
+
+        it('should prioritize headerRowHeight over rowHeight', (done: Function) => {
+           expect((gridObj.element.querySelector('.e-headercell') as any).offsetHeight).toBe(60);
+           done();
+        });
+
+        it('setting headerRowHeight as null', (done: Function) => {
+            gridObj.headerRowHeight = null;
+            gridObj.rowHeight = 40;
+            done();
+        });
+
+        it('should fallback to rowHeight when headerRowHeight is null', (done: Function) => {
+            expect((gridObj.element.querySelector('.e-headercell') as any).offsetHeight).toBe(40);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+
+    });
 });

@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fabric' as *;
-@forward 'ej2-base/styles/definition/fabric';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-input-font-size: 14px !default;
 $ddl-input-border: $border-size $border-type !default;
 $ddl-input-font-family: inherit !default;
@@ -62,8 +61,8 @@ $ddl-bigger-small-list-font-size: 14px !default;
     box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
     margin-top: 1px;
     @at-root {
-      #{if(&, '&', '*')} .e-input-group {
-        #{if(&, '&', '*')} input {
+      & .e-input-group {
+        & input {
           line-height: 15px;
         }
       }

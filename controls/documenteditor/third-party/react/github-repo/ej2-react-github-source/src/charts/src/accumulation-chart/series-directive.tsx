@@ -7,7 +7,7 @@ export interface AccumulationSeriesDirTypecast {
 /**
  * `AccumulationSeriesDirective` directive represent a series of the react AccumulationChart. 
  * It must be contained in a Pie component(`AccumulationChart`). 
- * ```tsx
+ * ```
  * <AccumulationChartComponent>
  * <AccumulationSeriesCollectionDirective>
  * <AccumulationSeriesDirective></AccumulationSeriesDirective>

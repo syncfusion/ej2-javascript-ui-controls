@@ -8,7 +8,7 @@ export interface Chart3DTypecast {
 }
 /**
  * Represents react 3D Chart Component
- * ```tsx
+ * ```
  * <Chart3DComponent></Chart3DComponent>
  * ```
  */

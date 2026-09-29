@@ -34,7 +34,7 @@ export const SankeyLinksCollectionPlugin = {
 /**
  * `SankeyLinkDirective` directive represent a link of the vue Sankey. 
  * It must be contained in a Sankey component(`SankeyComponent`). 
- * ```vue
+ * ```
  * <ejs-sankey>
  * <e-sankey-links>
  * <e-sankey-link></e-sankey-link>

@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-gantt>e-holidays>e-holidays',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class HolidayDirective extends ComplexBase<HolidayDirective> {
@@ -37,7 +37,7 @@ export class HolidayDirective extends ComplexBase<HolidayDirective> {
      *     
      * @default null
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Specifies the start date of the holiday.
      * 
@@ -45,7 +45,7 @@ export class HolidayDirective extends ComplexBase<HolidayDirective> {
      *     
      * @default null
      */
-    public from: any;
+    public declare from: any;
     /** 
      * Defines a label or description for the holiday.
      * 
@@ -53,7 +53,7 @@ export class HolidayDirective extends ComplexBase<HolidayDirective> {
      *     
      * @default null
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Specifies the end date of the holiday.
      * 
@@ -62,7 +62,7 @@ export class HolidayDirective extends ComplexBase<HolidayDirective> {
      *     
      * @default null
      */
-    public to: any;
+    public declare to: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -78,6 +78,7 @@ export class HolidayDirective extends ComplexBase<HolidayDirective> {
  */
 @Directive({
     selector: 'ejs-gantt>e-holidays',
+    standalone: true,
     queries: {
         children: new ContentChildren(HolidayDirective)
     },

@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/fabric' as *;
-@use 'ej2-buttons/styles/button/fabric-definition' as *;
-@forward 'ej2-base/styles/definition/fabric';
-@forward 'ej2-buttons/styles/button/fabric-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $btn-grp-margin: -1px !default;
 $btn-grp-margin-left: 0 !default;
 $btn-grp-wrapper-border: 0 !default;

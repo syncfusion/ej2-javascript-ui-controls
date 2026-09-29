@@ -307,16 +307,18 @@ export class ViewSource {
         }
     }
     private getHtmlTextLengthRegex(html: string): number {
-        const tempElement: HTMLElement = createElement('div');
+        const tempElement: HTMLTemplateElement = createElement('template') as HTMLTemplateElement;
         tempElement.innerHTML = html;
-        const textString : string = (tempElement).innerText;
+        const textString: string = tempElement.content.textContent || '';
         return textString.length;
     }
     private onSourceCodePaste (e: ClipboardEvent): void {
         const getTextArea: HTMLInputElement = this.parent.element.querySelector('.' + CLS_RTE_SOURCE_CODE_TXTAREA);
         const pastedText: string = e.clipboardData.getData('text/plain') || '';
+        const sanitizedText: string = this.parent.enableHtmlSanitizer ? this.parent.htmlEditorModule.sanitizeHelper(pastedText)
+            : pastedText;
         const selectionLength: number = Math.abs(getTextArea.selectionStart - getTextArea.selectionEnd);
-        const pastedLength: number = this.getHtmlTextLengthRegex(pastedText);
+        const pastedLength: number = this.getHtmlTextLengthRegex(sanitizedText);
         const currentContent: number = this.getHtmlTextLengthRegex(getTextArea.value);
         const finalLength: number = currentContent - selectionLength + pastedLength;
         if (finalLength > this.parent.maxLength) {

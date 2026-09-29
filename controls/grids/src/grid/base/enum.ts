@@ -77,6 +77,17 @@ export type SortDirection =
     'Descending';
 
 /**
+ * Defines modes for rendering empty record content. They are
+ * ```props
+ * * Normal :- Renders empty record as table row (default).
+ * * Sticky :- Renders empty record as fixed overlay.
+ * ```
+ */
+export type EmptyRecordMode =
+    'Normal' |
+    'Sticky';
+
+/**
  * `columnQueryMode`provides options to retrive data from the datasource. They are
  * ```props
  * * All :- Retrieves whole datasource.
@@ -167,7 +178,9 @@ export enum CellType {
     /**  Defines CellType as RowDrag */
     RowDragIcon,
     /**  Defines CellType as RowDragHeader */
-    RowDragHIcon
+    RowDragHIcon,
+    /**  Defines CellType as PinnedIndent */
+    PinnedIndent
 }
 
 /**
@@ -382,7 +395,9 @@ export type ToolbarItems =
     /** Undo the latest action */
     'Undo' |
     /** Redo the latest undone action */
-    'Redo';
+    'Redo' |
+    /** Advanced filter with QueryBuilder UI */
+    'AdvancedFilter';
 
 /**
  * Defines the cell content's overflow mode. The available modes are
@@ -1003,3 +1018,13 @@ export type ActiveName =
     'FrozenLeftContent' |
     'MovableContent' |
     'FrozenRightContent';
+
+/**
+ * Defines when formula values should be recalculated. The available modes are:
+ * * Automatic :- Recalculates formulas automatically when dependent values change.
+ * * Manual :- Recalculates formulas only when explicitly triggered.
+ * ```
+ */
+export type FormulaCalculationMode =
+    'Automatic' |
+    'Manual';

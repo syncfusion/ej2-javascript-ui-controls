@@ -1,5 +1,19 @@
 # Angular FileManager Component
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 The [Angular FileManager](https://www.syncfusion.com/angular-components/angular-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=angular-filemanager-npm) component is a graphical user interface that allows users to manage their file system in an intuitive and efficient manner. With this component, you can easily access, edit, upload, download, and organize files and folders. It also offers a convenient way to browse and select items from the file system.
 
 <p align="center">
@@ -71,7 +85,7 @@ import { Component } from '@angular/core';
   templateUrl: 'app/app.component.html'
 })
 export class AppComponent {
-  public hostUrl: string = 'https://ej2-aspcore-service.azurewebsites.net/';
+  public hostUrl: string = 'https://physical-service.syncfusion.com/';
   public ajaxSettings: object = {
 url: this.hostUrl + 'api/FileManager/FileOperations'
   };

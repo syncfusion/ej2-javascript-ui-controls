@@ -8,7 +8,7 @@ export interface SankeyTypecast {
 }
 /**
  * Represents react Sankey Component
- * ```tsx
+ * ```
  * <SankeyComponent></SankeyComponent>
  * ```
  */

@@ -153,6 +153,8 @@ export interface MessageReplyModel {
     /**
      * Represents the mentioned Users of the message sent by the replied user in the Chat UI component.
      *
+     * {% codeBlock src='chat-ui/mentionUsers/index.md' %}{% endcodeBlock %}
+     *
      * @type {UserModel[]}
      * @default []
      */
@@ -509,6 +511,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Specifies the list of message suggestions displayed above the input textarea in the Chat UI component.
      * This property represents an array of suggestions that can assist the user in composing messages, providing quick replies.
      *
+     * {% codeBlock src='chat-ui/suggestions/index.md' %}{% endcodeBlock %}
+     *
      * @type {string[]}
      * @default null
      */
@@ -526,6 +530,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
     /**
      * Specifies a collection of messages within the Chat UI component.
      * Each message is represented by a MessageModel object, containing properties such as text, author, timestamp, and status.
+     *
+     * {% codeBlock src='chat-ui/messages/index.md' %}{% endcodeBlock %}
      *
      * @type {MessageModel[]}
      * @default null
@@ -603,6 +609,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Defines the content or layout used to render suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
      *
+     * {% codeBlock src='chat-ui/suggestionTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @type {string | Function}
      * @default ''
      * @angularType string | object
@@ -616,6 +624,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Specifies the template for the footer area in the Chat UI component.
      * Defines the content or layout used to render the footer, which can be provided as a string or a function.
      *
+     * {% codeBlock src='chat-ui/footerTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -627,6 +637,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
     /**
      * Specifies the template for rendering the empty state of the Chat UI component.
      * This property can accept either a string or a function to customize the appearance when there are no messages to display in the chat.
+     *
+     * {% codeBlock src='chat-ui/emptyChatTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -640,6 +652,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Specifies the template for rendering individual messages in the Chat UI component.
      * This property can accept either a string or a function to customize the appearance of messages. The template context includes message and index.
      *
+     * {% codeBlock src='chat-ui/messageTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -652,6 +666,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Defines a custom template for rendering time breaks in the Chat UI component.
      * Accepts a string or function that formats the appearance of date-based separators, allowing customization of how messages are visually grouped by date.
      *
+     * {% codeBlock src='chat-ui/timebreakTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -663,6 +679,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
     /**
      * Template for displaying users currently typing in the chat interface.
      * Accepts a string or function to customize the display format.
+     *
+     * {% codeBlock src='chat-ui/typingUsersTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -687,6 +705,8 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Specifies the settings for the message toolbar in the Chat UI component.
      * Configures the toolbar options associated with each message such as Reply, Forward, Copy, Pin, and Delete.
      * If 'items' is not provided, default toolbar actions ['Copy', 'Reply', 'Pin', 'Delete'] will be rendered.
+     *
+     * {% codeBlock src='chat-ui/messageToolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -729,6 +749,7 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * Specifies the configuration options for attachment handling.
      *  Includes save URL, allowed file types, and maximum file size.
      *
+     * {% codeBlock src='chat-ui/attachmentSettings/index.md' %}{% endcodeBlock %}
      *
      * @default null
      */

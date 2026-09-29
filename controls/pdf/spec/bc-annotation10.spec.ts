@@ -225,7 +225,7 @@ describe('PdfFreeTextAnnotation internal coverage', (): void => {
 
         expect(annotation._drawCloudStyle).toHaveBeenCalled();
         const args: unknown[] = annotation._drawCloudStyle.calls.mostRecent().args as unknown[];
-        expect(args[3] as number).toBe(4);
+        expect(args[3] as number).toBe(5);
     });
 
     it('should cover _drawAppearance branch when BE.I != 1 (radius 9)', (): void => {
@@ -240,7 +240,7 @@ describe('PdfFreeTextAnnotation internal coverage', (): void => {
 
         expect(annotation._drawCloudStyle).toHaveBeenCalled();
         const args: unknown[] = annotation._drawCloudStyle.calls.mostRecent().args as unknown[];
-        expect(args[3] as number).toBe(9);
+        expect(args[3] as number).toBe(10);
     });
 
     it('should cover _drawFreeTextRectangle branch that delegates to _drawAppearance when BE exists', (): void => {

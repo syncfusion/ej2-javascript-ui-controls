@@ -5454,7 +5454,7 @@ describe('EJ2-919939: Keyboard navigation with the "down-arrow" keys is not func
 
     it('DropDown Boolean Edit', (done: Function) => {
         let ddEditCell = new DropDownEditCell({ isEdit: true, editSettings: { mode: 'Batch'}, editModule: { editCellDialogClose: false }} as any);
-        (ddEditCell as any).dropDownClose({ event: { action: 'enter', stopPropagation: () => {}}});
+        (ddEditCell as any).dropDownClose({ event: { action: 'enter', stopPropagation: () => {}, preventDefault: () => {}}});
         (ddEditCell as any).dropDownClose({ event: { action: 'escape' }});
         done();
     });

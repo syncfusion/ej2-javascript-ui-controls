@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('chatui-theme') {
   .e-chat-ui {
     border-color: $chat-border-color;
@@ -315,9 +315,6 @@
         .e-file-details {
           color: $preview-file-details-color;
         }
-        .e-file-document {
-          color: $preview-header-text-color;
-        }
       }
     }
     .e-attached-file {
@@ -351,10 +348,6 @@
       .e-file-wrapper {
         border: $file-wrapper-border-width solid $file-wrapper-border;
         background-color: $file-wrapper-bg;
-      }
-
-      .e-chat-file-icon {
-        color: $file-download-icon-color;
       }
 
       .e-chat-file-size {

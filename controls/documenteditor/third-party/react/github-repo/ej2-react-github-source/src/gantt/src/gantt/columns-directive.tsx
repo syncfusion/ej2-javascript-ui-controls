@@ -3,6 +3,7 @@ import { ColumnModel } from '@syncfusion/ej2-gantt';
 
 export interface ColumnDirTypecast {
     template?: string | Function | any;
+    toolbarTemplate?: string | Function | any;
     headerTemplate?: string | Function | any;
     editTemplate?: string | Function | any;
     filter?: any;

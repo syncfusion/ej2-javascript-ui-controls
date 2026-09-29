@@ -307,91 +307,6 @@ describe('_PdfBasicEncodingElement behavior coverage', () => {
         expect(visibleValue).toBe('VISIBLE');
         expect(generalValue).toBe('');
     });
-
-    it('_serialize should cover primitive return, recursion failure, OCTET STRING validation and generic constructed validation', () => {
-        // Arrange
-        const primitiveOctet: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.primitive,
-            _UniversalType.octetString
-        );
-        primitiveOctet._setOctetString(new Uint8Array([1, 2]));
-
-        const validOctetChildOne: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.primitive,
-            _UniversalType.octetString
-        );
-        validOctetChildOne._setOctetString(new Uint8Array([10]));
-
-        const validOctetChildTwo: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.primitive,
-            _UniversalType.octetString
-        );
-        validOctetChildTwo._setOctetString(new Uint8Array([20, 30]));
-
-        const validConstructedOctet: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.constructed,
-            _UniversalType.octetString
-        );
-        validConstructedOctet._setSequence([validOctetChildOne, validOctetChildTwo]);
-
-        const invalidOctetChild: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.application,
-            _ConstructionType.primitive,
-            _UniversalType.abstractSyntaxBoolean
-        );
-        invalidOctetChild._setValue(new Uint8Array([0xff]));
-
-        const invalidConstructedOctet: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.constructed,
-            _UniversalType.octetString
-        );
-        invalidConstructedOctet._setSequence([invalidOctetChild]);
-
-        const invalidVisibleChild: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.primitive,
-            _UniversalType.octetString
-        );
-        invalidVisibleChild._setOctetString(new Uint8Array([1]));
-
-        const invalidConstructedVisible: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.constructed,
-            _UniversalType.visibleString
-        );
-        invalidConstructedVisible._setSequence([invalidVisibleChild]);
-
-        const recursionElement: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.constructed,
-            _UniversalType.sequence
-        );
-        recursionElement._setSequence([validOctetChildOne]);
-        recursionElement._recursionCount = recursionElement._nestingRecursionLimit;
-
-        // Act
-        const primitiveResult: Uint8Array = primitiveOctet._serialize('OCTET STRING');
-        const constructedOctetResult: Uint8Array = validConstructedOctet._serialize('OCTET STRING');
-
-        // Assert
-        expect(Array.from(primitiveResult)).toEqual([1, 2]);
-        expect(Array.from(constructedOctetResult)).toEqual([10, 20, 30]);
-        expect((): Uint8Array => recursionElement._serialize('SEQUENCE')).toThrowError(
-            'Exceeded recursion limit while deconstructing SEQUENCE'
-        );
-        expect((): Uint8Array => invalidConstructedOctet._serialize('OCTET STRING')).toThrowError(
-            'Invalid constructed OCTET STRING: children must be OCTET STRING (tag 4).'
-        );
-        expect((): Uint8Array => invalidConstructedVisible._serialize('VisibleString')).toThrowError(
-            'Invalid constructed VisibleString: children must be of the same type as the parent.'
-        );
-    });
-
     it('_getComponents, _decodeBitString and _decodeBoolean should cover array, bytes and negative paths', () => {
         // Arrange
         const booleanElement: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
@@ -864,4 +779,688 @@ describe('_PdfBasicEncodingElement behavior coverage', () => {
 
 
 });
-
+describe('1041530 - Basic Encoding Element 1', () => {
+    it('1041530 - BER bit string recursion boundary', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        element._recursionCount = 9;
+        element._nestingRecursionLimit = 10;
+        const child: any = {_construction: _ConstructionType.primitive,_tagClass: element._tagClass,_getTagNumber: () => element._getTagNumber(),_getValue: () => new Uint8Array([]),_getBitString: () => new Uint8ClampedArray([1])};
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string allows empty primitive segment', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = {_construction: _ConstructionType.primitive,_tagClass: element._tagClass,_getTagNumber: () => element._getTagNumber(),_getValue: () => new Uint8Array([]),_getBitString: () => new Uint8ClampedArray([])};
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string should ignore non-primitive segments in validation', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = {_construction: _ConstructionType.constructed,_tagClass: element._tagClass,_getTagNumber: () => element._getTagNumber(),_getValue: () => new Uint8Array([1]), _getBitString: () => new Uint8ClampedArray([])};
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER getObjectDescriptor should serialize with ObjectDescriptor type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([65]));
+        spyOn(el, '_decodeObjectDescriptor').and.returnValue('decoded');
+        const result = el._getObjectDescriptor();
+        expect(result).toBe('decoded');
+        expect(serializeSpy).toHaveBeenCalledWith('ObjectDescriptor');
+    });
+    it('1041530 - BER getNumericString should serialize with NumericString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([49, 50, 51]));
+        spyOn(el, '_decodeNumericString').and.returnValue('123');
+        const result = el._getNumericString();
+        expect(result).toBe('123');
+        expect(serializeSpy).toHaveBeenCalledWith('NumericString');
+    });
+    it('1041530 - BER getUniversalString should serialize with UniversalString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x00, 0x00, 0x41]));
+        const result = el._getUniversalString();
+        expect(result).toEqual('A');
+        expect(serializeSpy).toHaveBeenCalledWith('UniversalString');
+    });
+    it('1041530 - BER getUniversalString should decode all four bytes correctly', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x00, 0x01, 0x41]));
+        const result = el._getUniversalString();
+        expect(result).toEqual(String.fromCharCode(0x0141));
+    });
+    it('1041530 - BER getUniversalString should preserve third byte contribution', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x00, 0x01, 0x41]));
+        expect(el._getUniversalString()).toBe('Ł');
+    });
+    it('1041530 - BER getUniversalString should preserve second byte contribution', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x01, 0x00, 0x41]));
+        const result = el._getUniversalString();
+        expect(result).toEqual(String.fromCharCode(0x10041));
+    });
+    it('1041530 - BER getUniversalString should decode non zero second byte correctly', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x01, 0x00, 0x41]));
+        const expected = String.fromCharCode((0x00 << 24) +(0x01 << 16) +(0x00 << 8) +0x41);
+        expect(el._getUniversalString()).toEqual(expected);
+    });
+    it('1041530 - BER getUniversalString should use the third byte correctly', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x00, 0x01, 0x41]));
+        const result = el._getUniversalString();
+        expect(result).toBe(String.fromCharCode(0x0141));
+    });
+    it('1041530 - BER setUniversalString should encode third byte correctly', () => {
+        const el = new _PdfBasicEncodingElement();
+        el._setUniversalString('Ł');
+        const value = el._getValue();
+        expect(Array.from(value)).toEqual([0x00, 0x00, 0x01, 0x41]);
+    });
+    it('1041530 - BER getBmpString should serialize with BMPString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x41]));
+        el._getBmpString();
+        expect(serializeSpy).toHaveBeenCalledWith('BMPString');
+    });
+    it('1041530 - BER setBmpString should encode exact number of characters', () => {
+        const el = new _PdfBasicEncodingElement();
+        el._setBmpString('A');
+        expect(Array.from(el._getValue())).toEqual([0x00, 0x41]);
+    });
+    it('1041530 - BER setBmpString should not perform an extra loop iteration', () => {
+        const el = new _PdfBasicEncodingElement();
+        el._setBmpString('AB');
+        expect(Array.from(el._getValue())).toEqual([0x00, 0x41,0x00, 0x42]);
+    });
+    it('1041530 - BER encode should not treat non integer numbers as integers', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const setIntegerSpy = spyOn(el, '_setInteger').and.callThrough();
+        el._encode(1.1);
+        expect(setIntegerSpy).not.toHaveBeenCalled();
+    });
+    it('1041530 - BER encode should only call setInteger for integers', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const setIntegerSpy = spyOn(el, '_setInteger').and.callThrough();
+        el._encode(123);
+        expect(setIntegerSpy).toHaveBeenCalledWith(123);
+        setIntegerSpy.calls.reset();
+        el._encode(1.1);
+        expect(setIntegerSpy).not.toHaveBeenCalled();
+    });
+    it('1041530 - BER encode should reject mixed arrays of ASN1 and non ASN1 values', () => {
+        const el = new _PdfBasicEncodingElement();
+        const asn1 = new _PdfUniqueEncodingElement();
+        expect(() => {el._encode([asn1, {}]);}).toThrow();
+    });
+    it('1041530 - BER encode array should create encoded sequence elements', () => {
+        const el = new _PdfBasicEncodingElement();
+        el._encode([1, 2]);
+        const sequence = el._getSequence();
+        expect(sequence.length).toBe(2);
+        expect(sequence[0]).toBeDefined();
+        expect(sequence[1]).toBeDefined();
+        expect(sequence[0] instanceof _PdfBasicEncodingElement).toBeTruthy();
+        expect(sequence[1] instanceof _PdfBasicEncodingElement).toBeTruthy();
+    });
+    it('1041530 - BER encode array should encode sequence item values', () => {
+        const el = new _PdfBasicEncodingElement();
+        el._encode([1]);
+        const sequence = el._getSequence();
+        expect(sequence.length).toBe(1);
+        expect(sequence[0] instanceof _PdfBasicEncodingElement).toBeTruthy();
+        expect(sequence[0]._getTagNumber()).toBe(_UniversalType.integer);
+    });
+    it('1041530 - getInner should throw detailed message for multiple encoded elements', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([0x02, 0x01, 0x01,0x02, 0x01, 0x02]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(3);
+        expect(() => {el._getInner(false);}).toThrowError(/encoded on 3 bytes/);
+    });
+    it('1041530 - getInner should include byte count in error message', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([1, 2, 3, 4]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(2);
+        spyOn(_PdfBasicEncodingElement.prototype, '_getTagNumber').and.returnValue(16);
+        expect(() => el._getInner(false)).toThrowError(/2 bytes/);
+    });
+    it('1041530 - getInner should throw detailed explicitly encoded element error', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([1, 2, 3, 4]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(2);
+        spyOn(_PdfBasicEncodingElement.prototype, '_getTagNumber').and.returnValue(16);
+        expect(() => {el._getInner(false);}).toThrowError(/An explicitly-encoding element contained more than one single/);
+    });
+    it('1041530 - getInner should include encoded byte count text in error message', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([1, 2, 3, 4]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(2);
+        spyOn(_PdfBasicEncodingElement.prototype, '_getTagNumber').and.returnValue(16);
+        expect(() => {el._getInner(false);}).toThrowError(/and it was encoded on/i);
+    });
+    it('1041530 - getInner should include bytes suffix in error message', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([1, 2, 3, 4]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(2);
+        spyOn(_PdfBasicEncodingElement.prototype, '_getTagNumber').and.returnValue(16);
+        expect(() => {el._getInner(false);}).toThrowError(/2 bytes\./);
+    });
+    it('1041530 - should stop parsing indefinite length content at EOC marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80, 0x02, 0x01, 0x05, 0x00, 0x00, 0x02, 0x01, 0x07]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(7);
+        expect(Array.from(element._getValue())).toEqual([0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a non-EOC empty-length element as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x05, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x05, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not stop at a universal primitive element before EOC', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x02, 0x01, 0x07,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x02, 0x01, 0x05,0x02, 0x01, 0x07]);
+    });
+    it('1041530 - should not treat a context-specific tag 0 with empty value as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x80, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x80, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a context-specific primitive tag 0 with empty value as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x80, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x80, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should stop parsing at a universal end-of-content marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x00, 0x00,0x02, 0x01, 0x07]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(7);
+        expect(Array.from(element._getValue())).toEqual([0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a constructed universal tag 0 with empty value as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x20, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x20, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a universal primitive empty NULL element as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x05, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x05, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a NULL element as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x05, 0x00,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x05, 0x00,0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should not treat a universal primitive tag 0 with a non-empty value as end-of-content', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x00, 0x01, 0xFF,0x02, 0x01, 0x05,0x00, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(bytes.length);
+        expect(Array.from(element._getValue())).toEqual([0x00, 0x01, 0xFF,0x02, 0x01, 0x05])
+    });
+    it('1041530 - should stop parsing at an end-of-content marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x00, 0x00,0x02, 0x01, 0x07]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(7);
+        expect(Array.from(element._getValue())).toEqual([0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should stop parsing at EOC marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x00, 0x00,0x02, 0x01, 0x07]);
+        const element = new _PdfBasicEncodingElement();
+        const consumed = element._fromBytes(bytes);
+        expect(consumed).toBe(7);
+        expect(Array.from(element._getValue())).toEqual([0x02, 0x01, 0x05]);
+    });
+    it('1041530 - should allow trailing bytes after the end-of-content marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x00, 0x00,0xFF]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).not.toThrow();
+    });
+    it('1041530 - should throw when an indefinite-length element is missing an end-of-content marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).toThrow();
+    });
+    it('1041530 - should throw when the first byte of the EOC marker is non-zero', () => {
+        const bytes = new Uint8Array([0x30, 0x80,0x02, 0x01, 0x05,0x01, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).toThrowError(/Invalid format: indefinite-length ASN1 elements must end with an End-of-Content marker/);
+    });
+    it('1041530 - should allow an element with long-form zero length', () => {
+        const bytes = new Uint8Array([0x04,0x81, 0x00]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).not.toThrow();
+        expect(element._getValue().length).toBe(0);
+    });
+    it('1041530 - should return 1 for indefinite length encoding', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._lengthEncodingPreference = _EncodingLength.indefinite;
+        expect(element._lengthLength(1000)).toBe(1);
+    });
+    it('1041530 - should return 1 for indefinite length encoding preference', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._lengthEncodingPreference = _EncodingLength.indefinite;
+        expect(element._lengthLength(128)).toBe(1);
+    });
+    it('1041530 - should use _valueLength when valueLength is null', () => {
+        const element = new _PdfBasicEncodingElement();
+        spyOn(element, '_valueLength').and.returnValue(128);
+        expect(element._lengthLength(null)).toBe(2);
+    });
+    it('1041530 - should use the provided valueLength when it is not null', () => {
+        const element = new _PdfBasicEncodingElement();
+        spyOn(element, '_valueLength').and.returnValue(10);
+        expect(element._lengthLength(128)).toBe(2);
+    });
+    it('1041530 - should return cached current value length when available', () => {
+        const element = new _PdfBasicEncodingElement();
+        (element as any)._currentValueLength = 10;
+        (element as any)._value = new Uint8Array([1, 2, 3]);
+        expect(element._valueLength()).toBe(10);
+    });
+    it('1041530 - should recompute value length when cached length is null', () => {
+        const element = new _PdfBasicEncodingElement();
+        (element as any)._currentValueLength = null;
+        (element as any)._value = new Uint8Array([1, 2, 3]);
+        expect(element._valueLength()).toBe(3);
+    });
+    it('1041530 - should return cached value length when currentValueLength is available', () => {
+        const element = new _PdfBasicEncodingElement();
+        (element as any)._currentValueLength = 10;
+        (element as any)._value = new Uint8Array([1, 2, 3]);
+        expect(element._valueLength()).toBe(10);
+    });
+    it('1041530 - should encode the first tag byte correctly for a primitive universal tag', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._tagClass = 0;
+        element._construction = _ConstructionType.primitive;
+        element._lengthEncodingPreference = _EncodingLength.definite;
+        spyOn(element, '_getTagNumber').and.returnValue(2);
+        spyOn(element, '_valueLength').and.returnValue(0);
+        const result = element._tagAndLengthBytes();
+        expect(result[0]).toBe(0x02);
+        expect(result[1]).toBe(0x00);
+    });
+    it('1041530 - should encode tag class and constructed bit correctly', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._tagClass = 2;
+        element._construction = _ConstructionType.constructed;
+        element._lengthEncodingPreference = _EncodingLength.definite;
+        spyOn(element, '_getTagNumber').and.returnValue(3);
+        spyOn(element, '_valueLength').and.returnValue(1);
+        const result = element._tagAndLengthBytes();
+        expect(result[0]).toBe(0xA3);
+        expect(result[1]).toBe(0x01);
+    });
+    it('1041530 - should include the initial tag octet for high tag numbers', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._tagClass = 0;
+        element._construction = _ConstructionType.primitive;
+        element._lengthEncodingPreference = _EncodingLength.definite;
+        spyOn(element, '_getTagNumber').and.returnValue(31);
+        spyOn(element, '_valueLength').and.returnValue(0);
+        const result = element._tagAndLengthBytes();
+        expect(result[0]).toBe(0x1F);
+    });
+    it('1041530 - should use high-tag-number encoding when tag number is 31', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._tagClass = 0;
+        element._construction = _ConstructionType.primitive;
+        element._lengthEncodingPreference = _EncodingLength.definite;
+        spyOn(element, '_getTagNumber').and.returnValue(31);
+        spyOn(element, '_valueLength').and.returnValue(0);
+        const result = element._tagAndLengthBytes();
+        expect(Array.from(result)).toEqual([0x1F,0x1F,0x00]);
+    });
+    it('1041530 - should append all child buffers without adding undefined entries', () => {
+        const child = {_toBuffers: () => [new Uint8Array([1])]};
+        const element = new _PdfBasicEncodingElement();
+        spyOn(element, '_tagAndLengthBytes').and.returnValue(new Uint8Array([0x30]));
+        (element as any)._value = [child];
+        (element as any)._lengthEncodingPreference = _EncodingLength.definite;
+        const result = element._toBuffers();
+        expect(result.length).toBe(2);
+        expect(result[0]).toEqual(new Uint8Array([0x30]));
+        expect(result[1]).toEqual(new Uint8Array([1]));
+        expect(result.some((x: any) => x === undefined)).toBeFalsy();
+    });
+    it('1041530 - should not push undefined when processing child buffers', () => {
+        const child = {_toBuffers: () => [new Uint8Array([1])]};
+        const element = new _PdfBasicEncodingElement();
+        spyOn(element, '_tagAndLengthBytes').and.returnValue(new Uint8Array([0x30]));
+        (element as any)._value = [child];
+        const result = element._toBuffers();
+        expect(result.length).toBe(2);
+        expect(result.every((x: any) => x !== undefined)).toBeTruthy();
+    });
+    it('1041530 - should allow recursion when recursionCount + 1 equals nestingRecursionLimit', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._recursionCount = 0;
+        (parent as any)._nestingRecursionLimit = 1;
+        (parent as any)._tagClass = _TagClassType.universal;
+        spyOn(parent as any, '_getTagNumber').and.returnValue(_UniversalType.octetString);
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        (child as any)._tagClass = _TagClassType.universal;
+        spyOn(child as any, '_getTagNumber').and.returnValue(_UniversalType.octetString);
+        spyOn(child as any, '_getValue').and.returnValue(new Uint8Array([1, 2, 3]));
+        expect(() => {(parent as any)._serialize('OCTET STRING');}).not.toThrow();
+    });
+    it('1041530 - should not throw when recursionCount + 1 equals nestingRecursionLimit', () => {
+        const element = new _PdfBasicEncodingElement();
+        (element as any)._construction = _ConstructionType.constructed;
+        (element as any)._recursionCount = 0;
+        (element as any)._nestingRecursionLimit = 1;
+        spyOn(element as any, '_getSequence').and.returnValue([]);
+        spyOn(element as any, '_getTagNumber').and.returnValue(_UniversalType.octetString);
+        expect(() => {(element as any)._serialize('test');}).not.toThrow();
+    });
+    it('1041530 - should throw when a constructed OCTET STRING contains a non-universal child', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._tagClass = _TagClassType.universal;
+        spyOn(parent as any, '_getTagNumber').and.returnValue(_UniversalType.octetString);
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        (child as any)._tagClass = _TagClassType.context;
+        spyOn(child as any, '_getTagNumber').and.returnValue(_UniversalType.octetString);
+        expect(() => {(parent as any)._serialize('OCTET STRING');}).toThrowError('Invalid constructed OCTET STRING: children must be OCTET STRING (tag 4).');
+    });
+    it('1041530 - should allow constructed elements whose children have the same tag class and tag number as the parent', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._tagClass = _TagClassType.context;
+        spyOn(parent as any, '_getTagNumber').and.returnValue(5);
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        (child as any)._tagClass = _TagClassType.context;
+        spyOn(child as any, '_getTagNumber').and.returnValue(5);
+        spyOn(child as any, '_getValue').and.returnValue(new Uint8Array([1, 2, 3]));
+        expect(() => {(parent as any)._serialize('test');}).not.toThrow();
+    });
+    it('1041530 - should not throw when child has same tag class and tag number as parent', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._tagClass = _TagClassType.context;
+        spyOn(parent as any, '_getTagNumber').and.returnValue(5);
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        (child as any)._tagClass = _TagClassType.context;
+        spyOn(child as any, '_getTagNumber').and.returnValue(5);
+        spyOn(child as any, '_getValue').and.returnValue(new Uint8Array([1, 2, 3]));
+        expect(() => {(parent as any)._serialize('TEST');}).not.toThrow();
+    });
+    it('1041530 - should increment recursion count for child elements', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._recursionCount = 2;
+        (parent as any)._tagClass = _TagClassType.context;
+        spyOn(parent as any, '_getTagNumber').and.returnValue(5);
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        (child as any)._tagClass = _TagClassType.context;
+        spyOn(child as any, '_getTagNumber').and.returnValue(5);
+        spyOn(child as any, '_getValue').and.callFake(() => {expect((child as any)._recursionCount).toBe(3);return new Uint8Array([1]);});
+        (parent as any)._serialize('TEST');
+    });
+    it('1041530 - should allow a one-byte BIT STRING containing only 0 unused bits', () => {
+        const element = new _PdfBasicEncodingElement();
+        const result = (element as any)._decodeBitString(new Uint8Array([0]));
+        expect(result).toEqual(new Uint8ClampedArray([]));
+    });
+    it('1041530 - should allow a BIT STRING with 7 unused bits', () => {
+        const element = new _PdfBasicEncodingElement();
+        expect(() => {(element as any)._decodeBitString(new Uint8Array([7, 0x80]));}).not.toThrow();
+    });
+    it('1041530 - should decode a BIT STRING with 7 unused bits', () => {
+        const element = new _PdfBasicEncodingElement();
+        const result = (element as any)._decodeBitString(new Uint8Array([7, 0x80]));
+        expect(Array.from(result)).toEqual([1]);
+    });
+    it('1041530 - should return an empty array without attempting to decode any elements for empty input', () => {
+        const element = new _PdfBasicEncodingElement();
+        const spy = spyOn(_PdfUniqueEncodingElement.prototype,'_fromBytes').and.callThrough();
+        const result = (element as any)._decodeSequence(new Uint8Array([]));
+        expect(result).toEqual([]);
+        expect(spy).not.toHaveBeenCalled();
+    });
+    it('1041530 - should expose definite encoding length with value 0', () => {
+        expect(_EncodingLength.definite).toBe(0);
+    });
+    it('1041530 - should map 0 to definite', () => {
+        expect(_EncodingLength[0]).toBe('definite');
+    });
+    it('1041530 - should have correct forward and reverse mapping for indefinite', () => {
+        expect(_EncodingLength.indefinite).toBe(1);
+        expect(_EncodingLength[1]).toBe('indefinite');
+    });
+});
+describe('1041530 - Basic Encoding Element 2', () => {
+    it('1041530 - constructor should pass provided value to _encode', () => {
+        const spy = spyOn(_PdfBasicEncodingElement.prototype as any, '_encode').and.callThrough();
+        new _PdfBasicEncodingElement(_TagClassType.universal, _ConstructionType.primitive, _UniversalType.integer, 456);
+        expect(spy).toHaveBeenCalledWith(456);
+    });
+    it('1041530 - constructor should pass provided value to _encode', () => {
+        const spy = spyOn(_PdfBasicEncodingElement.prototype as any, '_encode').and.callThrough();
+        new _PdfBasicEncodingElement(_TagClassType.universal, _ConstructionType.primitive, _UniversalType.integer, 456);
+        expect(spy).toHaveBeenCalledWith(456);
+    });
+    it('1041530 - constructor should initialize period character code correctly', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        expect(element._period).toBe('.'.charCodeAt(0));
+        expect(element._period).toBe(46);
+    });
+    it('1041530 - constructor should initialize comma character code correctly', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        expect(element._comma).toBe(','.charCodeAt(0));
+        expect(element._comma).toBe(44);
+    });
+    it('1041530 - BER bit string should not validate constructed segments for unused bit count', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = { _construction: _ConstructionType.constructed, _tagClass: element._tagClass, _getTagNumber: () => element._getTagNumber(), _getValue: () => new Uint8Array([1]), _getBitString: () => new Uint8ClampedArray([]) };
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string should allow primitive segment with zero unused bits', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = { _construction: _ConstructionType.primitive, _tagClass: element._tagClass, _getTagNumber: () => element._getTagNumber(), _getValue: () => new Uint8Array([0]), _getBitString: () => new Uint8ClampedArray([]) };
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string should ignore constructed segments when checking unused bits', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = {
+            _construction: _ConstructionType.constructed,
+            _tagClass: element._tagClass,
+            _getTagNumber: () => element._getTagNumber(),
+            _getValue: () => new Uint8Array([1]),
+            _getBitString: () => new Uint8ClampedArray([])
+        };
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string should allow empty primitive segment before final part', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._construction = _ConstructionType.constructed;
+        const child: any = {
+            _construction: _ConstructionType.primitive,
+            _tagClass: element._tagClass,
+            _getTagNumber: () => element._getTagNumber(),
+            _getValue: () => new Uint8Array([]),
+            _getBitString: () => new Uint8ClampedArray([])
+        };
+        spyOn(element, '_getSequence').and.returnValue([child]);
+        expect(() => element._getBitString()).not.toThrow();
+    });
+    it('1041530 - BER bit string should increment recursion count for child elements', () => {
+        const parent: any = new _PdfBasicEncodingElement();
+        const child: any = new _PdfBasicEncodingElement();
+        parent._construction = _ConstructionType.constructed;
+        parent._recursionCount = 2;
+        spyOn(parent, '_getSequence').and.returnValue([child]);
+        child._tagClass = parent._tagClass;
+        spyOn(child, '_getTagNumber').and.returnValue(parent._getTagNumber());
+        spyOn(child, '_getBitString').and.callFake(() => { expect(child._recursionCount).toBe(3); return new Uint8ClampedArray([]); });
+        parent._getBitString();
+    });
+    it('1041530 - BER getOctetString should serialize with OCTET STRING type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([1, 2, 3]));
+        el._getOctetString();
+        expect(serializeSpy).toHaveBeenCalledWith('OCTET STRING');
+    });
+    it('1041530 - BER getUtf8String should serialize with UTF8String type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([65]));
+        el._getUtf8String();
+        expect(serializeSpy).toHaveBeenCalledWith('UTF8String');
+    });
+    it('1041530 - BER getPrintableString should serialize with PrintableString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([65]));
+        spyOn(el, '_decodePrintableString').and.returnValue('A');
+        const result = el._getPrintableString();
+        expect(result).toBe('A');
+        expect(serializeSpy).toHaveBeenCalledWith('PrintableString');
+    });
+    it('1041530 - BER getTeleprinterText should serialize with TeletexString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([65]));
+        el._getTeleprinterText();
+        expect(serializeSpy).toHaveBeenCalledWith('TeletexString');
+    });
+    it('1041530 - BER getGeneralString should serialize with GeneralString type', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const serializeSpy = spyOn(el, '_serialize').and.returnValue(new Uint8Array([65]));
+        spyOn(el, '_decodeGeneralString').and.returnValue('A');
+        const result = el._getGeneralString();
+        expect(result).toBe('A');
+        expect(serializeSpy).toHaveBeenCalledWith('GeneralString');
+    });
+    it('1041530 - BER getUniversalString should decode non zero second byte correctly', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x01, 0x00, 0x41]));
+        const expected = String.fromCharCode((0x00 << 24) + (0x01 << 16) + (0x00 << 8) + 0x41);
+        expect(el._getUniversalString()).toEqual(expected);
+    });
+    it('1041530 - BER getUniversalString should preserve second byte contribution', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(el, '_serialize').and.returnValue(new Uint8Array([0x00, 0x01, 0x00, 0x41]));
+        expect(el._getUniversalString()).toBe(String.fromCharCode(0x10041));
+    });
+    it('1041530 - BER setUniversalString should encode exact number of characters', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        spyOn(String.prototype, 'charCodeAt').and.callThrough();
+        el._setUniversalString('A');
+        expect(String.prototype.charCodeAt).toHaveBeenCalledTimes(4);
+    });
+    it('1041530 - BER setBmpString should encode exact number of characters', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        const spy = spyOn(String.prototype, 'charCodeAt').and.callThrough();
+        el._setBmpString('AB');
+        expect(spy).toHaveBeenCalledTimes(2);
+    });
+    it('1041530 - getInner should include tag number in error message', () => {
+        const el: any = new _PdfBasicEncodingElement();
+        el._construction = _ConstructionType.constructed;
+        el._value = new Uint8Array([1, 2, 3, 4]);
+        spyOn(_PdfBasicEncodingElement.prototype, '_fromBytes').and.returnValue(2);
+        spyOn(_PdfBasicEncodingElement.prototype, '_getTagNumber').and.returnValue(16);
+        expect(() => { el._getInner(false); }).toThrowError(/element was 16/i);
+    });
+    it('1041530 - fromBytes should allow recursion when recursionCount plus one equals nestingRecursionLimit', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        element._recursionCount = 0;
+        element._nestingRecursionLimit = 1;
+        const bytes = new Uint8Array([0x02, 0x01, 0x05]);
+        expect(() => element._fromBytes(bytes)).not.toThrow();
+    });
+    it('1041530 - should throw when long tag number encoding is truncated', () => {
+        const element = new _PdfBasicEncodingElement();
+        expect(() => { element._fromBytes(new Uint8Array([0x1F, 0x81])); }).toThrowError(/ASN1 tag number appears to have been truncated/);
+    });
+    it('1041530 - should throw when length bytes are missing after a valid long tag number', () => {
+        const element = new _PdfBasicEncodingElement();
+        expect(() => {
+            element._fromBytes(new Uint8Array([0x1F, 0x1F]));
+        }).toThrowError(/Element length bytes appear to have been truncated/);
+    });
+    it('1041530 - should allow trailing bytes after a valid EOC marker', () => {
+        const bytes = new Uint8Array([0x30, 0x80, 0x02, 0x01, 0x05, 0x00, 0x00, 0xFF]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).not.toThrow();
+    });
+    it('1041530 - should throw when the final EOC byte is non zero', () => {
+        const bytes = new Uint8Array([0x30, 0x80, 0x02, 0x01, 0x05, 0x00, 0x01, 0xFF]);
+        const element = new _PdfBasicEncodingElement();
+        expect(() => element._fromBytes(bytes)).toThrowError(/Invalid format: indefinite-length ASN1 elements must end with an End-of-Content marker/);
+    });
+    it('1041530 - should include the first tag byte for a primitive universal tag', () => {
+        const element = new _PdfBasicEncodingElement();
+        element._tagClass = _TagClassType.universal;
+        element._construction = _ConstructionType.primitive;
+        element._lengthEncodingPreference = _EncodingLength.definite;
+        spyOn(element, '_getTagNumber').and.returnValue(2);
+        spyOn(element, '_valueLength').and.returnValue(0);
+        const result = element._tagAndLengthBytes();
+        expect(Array.from(result)).toEqual([0x02, 0x00]);
+    });
+    it('1041530 - should allow child with different tag class and same tag number', () => {
+        const parent = new _PdfBasicEncodingElement();
+        const child = new _PdfBasicEncodingElement();
+        (parent as any)._construction = _ConstructionType.constructed;
+        (parent as any)._tagClass = _TagClassType.context;
+        (parent as any)._tagNumber = 5;
+        (child as any)._tagClass = _TagClassType.application;
+        (child as any)._tagNumber = 5;
+        spyOn(parent as any, '_getSequence').and.returnValue([child]);
+        expect(() => { (parent as any)._serialize('TEST'); }).not.toThrow();
+    });
+    it('1041530 - should return empty array without creating elements for empty input', () => {
+        const element: any = new _PdfBasicEncodingElement();
+        const spy = spyOn(_PdfUniqueEncodingElement.prototype, '_fromBytes').and.callThrough();
+        const result = element._decodeSequence(new Uint8Array([]));
+        expect(result).toEqual([]);
+        expect(spy).not.toHaveBeenCalled();
+    });
+    it('1041530 - fromSequence should filter undefined elements', () => {
+        const valid = new _PdfBasicEncodingElement();
+        const helper: any = new _PdfBasicEncodingElement();
+        const result: any = helper._fromSequence([valid, undefined, null]);
+        const sequence = result._getSequence();
+        expect(sequence.length).toBe(1);
+        expect(sequence[0]).toBe(valid);
+    });
+});

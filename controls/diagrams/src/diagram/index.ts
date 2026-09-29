@@ -68,6 +68,7 @@ export * from './objects/layout-animation';
 export * from './objects/preview';
 export * from './objects/fixed-user-handle';
 export * from './objects/fixed-user-handle-model';
+export * from './integrations/webmcp-adapter';
 
 //interaction
 export * from './interaction/selector';

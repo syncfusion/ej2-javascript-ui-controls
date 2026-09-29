@@ -590,5 +590,83 @@ describe('Bug 1020265: Clear Format Completely Converts Content to Plain Text wi
             expect(document.querySelectorAll('th').length).toBe(0);
         });
     });
+     describe('Bug 997309: ClearFormat doesnt work properly when the content includes an empty line in the RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            let controlId: string;
+            let rteElement: HTMLElement;
+            let domSelection: NodeSelection = new NodeSelection();
+            const value = `<h1><br></h1><h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2><ul> <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li> <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul><blockquote><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p></blockquote><h2>Unlock the Power of Tables</h2><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h2>Elevating Your Content with Images</h2><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p id='paragraph'><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-img-inline"></p>`;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: value,
+                    toolbarSettings: {
+                        items: ['Bold', 'ClearFormat', 'Formats', 'Alignments', 'Indent', 'Outdent', 'OrderedList', 'UnorderedList']
+                    },
+                    
+                });
+                controlId = rteObj.element.id;
+                rteElement = rteObj.element;
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it('When a text selection begins with a br tag, the clear formatting function is not working as expected.', (done) => {
+                let endNode: HTMLElement = document.getElementById('paragraph');
+                domSelection.setSelectionText(document, rteObj.inputElement.firstChild, endNode, 0, 1);
+                const clearFormatButton = rteElement.querySelector(`#${controlId}_toolbar_ClearFormat`) as HTMLElement;
+                let mouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+                clearFormatButton.dispatchEvent(mouseEvent);
+                clearFormatButton.click();
+                expect(rteObj.inputElement.innerHTML).toEqual('<p><br></p><p>Welcome to the Syncfusion Rich Text Editor</p><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><p>Do you know the key features of the editor?</p><p>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</p><p>Inline styles include bold, italic, underline, strikethrough, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</p><p>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</p><p>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</p><p>Paste from MS Word - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</p><p>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</p><p>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</p><p>Unlock the Power of Tables</p><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table"><tr><th>S No<br></th><th>Name<br></th><th>Age<br></th><th>Gender<br></th><th>Occupation<br></th><th>Mode of Transport</th></tr><tbody><tr><td>1</td><td>Selma Rose</td><td>30</td><td>Female</td><td>Engineer<br></td><td>🚴</td></tr><tr><td>2</td><td>Robert<br></td><td>28</td><td>Male</td><td>Graphic Designer</td><td>🚗</td></tr><tr><td>3</td><td>William<br></td><td>35</td><td>Male</td><td>Teacher</td><td>🚗</td></tr><tr><td>4</td><td>Laura Grace<br></td><td>42</td><td>Female</td><td>Doctor</td><td>🚌</td></tr><tr><td>5</td><td>Andrew James<br></td><td>45</td><td>Male</td><td>Lawyer</td><td>🚕</td></tr></tbody></table><p>Elevating Your Content with Images</p><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them.</p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-img-inline"></p>');
+                done();
+            });
+        });
+
+    describe('Bug 1053619: Clear Format splits the RTE content into multiple elements when the editor is rendered inside a li element', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let rteElement: HTMLElement;
+        let ulElement: HTMLUListElement;
+        let liElement: HTMLLIElement;
+        let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
+        let errorSpy: jasmine.Spy;
+        beforeEach(() => {
+            ulElement = document.createElement('ul');
+            liElement = document.createElement('li');
+            ulElement.appendChild(liElement);
+            document.body.appendChild(ulElement);
+            rteObj = renderRTE({
+                value: '<p>sample test content</p>',
+                toolbarSettings: { items: ['ClearFormat'] }
+            });
+            liElement.appendChild(rteObj.element);
+            controlId = rteObj.element.id;
+            rteElement = rteObj.element;
+            originalConsoleError = console.error;
+            errorSpy = jasmine.createSpy('error');
+            console.error = errorSpy;
+        });
+        afterEach(() => {
+            console.error = originalConsoleError;
+            destroy(rteObj);
+            detach(ulElement);
+        });
+        it('Clearing format on entire content when RTE is rendered inside a li should not throw console error and should preserve content structure', (done: DoneFn) => {
+            rteObj.focusIn();
+            setTimeout(() => {
+                rteObj.selectAll();
+                const clearFormatButton = rteElement.querySelector(`#${controlId}_toolbar_ClearFormat`) as HTMLElement;
+                const mouseEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                clearFormatButton.dispatchEvent(mouseEvent);
+                clearFormatButton.click();
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(rteObj.inputElement.innerHTML).toBe('<p>sample test content</p>');
+                    expect(liElement.querySelectorAll('.e-richtexteditor').length).toBe(1);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
 
 }); // Do Not Add tests below this line.

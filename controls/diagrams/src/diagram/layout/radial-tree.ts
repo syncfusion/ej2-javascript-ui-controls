@@ -1,4 +1,5 @@
 /* eslint-disable valid-jsdoc */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { INode, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';
@@ -19,6 +20,7 @@ export class RadialTree {
      */
 
     constructor() {
+        initializeTelemetryFeature('RadialTree', 'Diagram');
         //constructs the layout module
     }
 

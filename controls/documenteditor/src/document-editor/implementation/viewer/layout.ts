@@ -21,7 +21,7 @@ import {
     FootnoteEndnoteMarkerElementBox,
     WTableHolder,
     GroupShapeElementBox,
-    HeaderFooters
+    HeaderFooters, BreakElementBox
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -34,7 +34,7 @@ import { SpellChecker } from '../spell-check';
 
 // Check box character is rendered smaller when compared to MS Word
 // So, mutiplied the font side by below factor to render check box character large.
-const CHECK_BOX_FACTOR: number = 1.35;
+let check_box_factor: number = 1.4;
 
 /**
  * @private
@@ -301,7 +301,9 @@ export class Layout {
         else if (paragraph.index === ownerCell.childWidgets.length - 1) {
             //If current para is last item in current cell then need to check next cell first item.
             let nextCell: TableCellWidget = ownerRow.childWidgets[ownerCell.index + 1] as TableCellWidget;
-            nextCellFirstItem = nextCell.firstChild as BlockWidget;
+            if (!isNullOrUndefined(nextCell) && !isNullOrUndefined(nextCell.firstChild)) {
+                nextCellFirstItem = nextCell.firstChild as BlockWidget;
+            }
 
             //If next cell first item is table then need to check inner table first para.
             //This is applicable for multiple nested table so when first item is table it try to get its first paragraph.
@@ -1655,7 +1657,7 @@ export class Layout {
                                 this.updateChildLocationForCellOrShape(element.y + topMargin, element as ShapeElementBox);
                             }
                         } else if (element instanceof ShapeElementBox && element.textWrappingStyle === "Inline") {
-                            element.y = (childWidget as Widget).y;
+                            element.y += shiftTop;
                             const topMargin: number = element.textFrame.marginTop;
                             this.updateChildLocationForCellOrShape(element.y + topMargin, element as ShapeElementBox);
                         }
@@ -1710,7 +1712,8 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number, isUpdatedList?: boolean, isAsync?: boolean): BlockWidget | Promise<BlockWidget> {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
-            if (this.isInitialLoad || !this.isRelayout || block.paragraphFormat.bidi || this.isDocumentContainsRtl) {
+            if (this.isInitialLoad || !this.isRelayout || block.paragraphFormat.bidi ||
+                (block.paragraphFormat.textAlignment === "Justify" && this.isRelayout) || this.isDocumentContainsRtl) {
                 block.splitTextRangeByScriptType(0);
                 block.splitLtrAndRtlText(0);
                 block.combineconsecutiveRTL(0);
@@ -1826,11 +1829,15 @@ export class Layout {
                 if (!table.wrapTextAround || table.isFieldCodeBlock) {
                     return table;
                 }
-                let tableRect: Rect = new Rect(table.x, table.y, table.getTableCellWidth(), table.height);
+                let tableRect: Rect = table.positioning ? 
+                new Rect(table.x - table.positioning.distanceLeft, table.y - table.positioning.distanceTop,
+                     table.getTableCellWidth() + table.positioning.distanceLeft + table.positioning.distanceRight,
+                     table.height + table.positioning.distanceTop + table.positioning.distanceBottom)
+                 : new Rect(table.x, table.y, table.getTableCellWidth(), table.height);
                 while (preivousBlock) {
                     if (preivousBlock instanceof ParagraphWidget) {
                         let blockRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
-                        if (tableRect.isIntersecting(blockRect) &&
+                        if (tableRect.isTableIntersecting(blockRect) && 
                             this.startOverlapWidget !== preivousBlock) {
                             this.startOverlapWidget = preivousBlock;
                             this.endOverlapWidget = block;
@@ -2306,6 +2313,9 @@ export class Layout {
             }
             line.marginTop = 0;
             line = this.layoutLine(line, 0);
+            if (line.height === 0 && !line.paragraph.characterFormat.hidden && this.checkIsHiddenElement(line)) {
+                this.layoutEmptyLineWidget(line.paragraph, false, line);
+            }
             paragraph = line.paragraph;
             line = line.nextLine;
             return true;
@@ -2355,6 +2365,18 @@ export class Layout {
                 if (element instanceof FieldElementBox && element.hasFieldEnd) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+    private checkIsHiddenElement(line: LineWidget): boolean {
+        if (isNullOrUndefined(line.children) || line.children.length === 0) {
+            return false;
+        }
+        for (let i: number = 0; i < line.children.length; i++) {
+            const element: ElementBox = line.children[i] as ElementBox;
+            if (element instanceof TextElementBox && element.characterFormat.hidden) {
+                return true;
             }
         }
         return false;
@@ -2417,6 +2439,15 @@ export class Layout {
                         }
                     }
                 }
+                if (!isNullOrUndefined((bodyWidget as BodyWidget).nextRenderedWidget)) {
+                    const nextBodyWidget: BlockContainer = (bodyWidget as BodyWidget).nextRenderedWidget as BlockContainer
+                    if (!isNullOrUndefined(nextBodyWidget.floatingElements)) {
+                        const nextIndex: number = nextBodyWidget.floatingElements.indexOf(element);
+                        if (nextIndex !== -1) {
+                            nextBodyWidget.floatingElements.splice(nextIndex, 1);
+                        }
+                    }
+                }
             }
             if (element.paragraph.floatingElements.indexOf(element) === -1) {
                 element.paragraph.floatingElements.push(element);
@@ -2465,6 +2496,34 @@ export class Layout {
         this.viewer.clientActiveArea = clientActiveArea;
         this.viewer.clientArea = clientArea;
     }
+    private getExtentXValue(parent: GroupShapeElementBox): number {
+        let maxWidth: number = 0;
+        let coordinateXOrigin: number = parent.coordinateXOrigin;
+        const shapes: any = parent.childWidgets;
+        for (let i: number = 0; i < shapes.length; i++) {
+            if (shapes[i] instanceof ShapeElementBox || shapes[i] instanceof ImageElementBox) {
+                let width = (shapes[i].leftMargin - coordinateXOrigin) + shapes[i].shapeWidth;
+                if (maxWidth < width) {
+                    maxWidth = width;
+                }
+            }
+        }
+        return maxWidth;
+    }
+    private getExtentYValue(parent: GroupShapeElementBox): number {
+        let maxHeight: number = 0;
+        let coordinateYOrigin: number = parent.coordinateYOrigin;
+        const shapes: any = parent.childWidgets;
+        for (let i: number = 0; i < shapes.length; i++) {
+            if (shapes[i] instanceof ShapeElementBox || shapes[i] instanceof ImageElementBox) {
+                let height = (shapes[i].topMargin - coordinateYOrigin) + shapes[i].shapeHeight;
+                if (maxHeight < height) {
+                    maxHeight = height;
+                }
+            }
+        }
+        return maxHeight;
+    }
     private updateShapeTextPosition(shapes: GroupShapeElementBox): void {
         for (let i: number = 0; i < shapes.childWidgets.length; i++) {
             const shape: any = shapes.childWidgets[i];
@@ -2487,15 +2546,24 @@ export class Layout {
         }
     }
     private updateChildShapePosition(parent: GroupShapeElementBox, shape: any): void {
-        let xPosition: number = shape.shapeX - parent.shapeX;
-        let YPosition: number = shape.shapeY - parent.shapeY;
+        let xPosition: number = 0;
+        let YPosition: number = 0;
+        if (shape.is2007Shape) {
+            xPosition = shape.leftMargin - parent.coordinateXOrigin;
+            YPosition = shape.topMargin - parent.coordinateYOrigin;
+        } else {
+            xPosition = shape.shapeX - parent.shapeX;
+            YPosition = shape.shapeY - parent.shapeY;
+        }
+        parent.extentXValue = parent.is2007Shape ? this.getExtentXValue(parent) : parent.extentXValue;
+        parent.extentYValue = parent.is2007Shape ? this.getExtentYValue(parent) : parent.extentYValue;
         let heightFact: number = parent.height / parent.extentYValue;
         let widthFact: number = parent.width / parent.extentXValue;
         shape.x = parent.x + (xPosition * widthFact); 
         shape.y = parent.y + (YPosition * heightFact);
         shape.height = shape.shapeHeight * heightFact;
         shape.width = shape.shapeWidth * widthFact;
-        if (shape instanceof GroupShapeElementBox) {
+        if (shape instanceof GroupShapeElementBox && shape.shapeX <= 0) {
             shape.x += (shape.offsetXValue * widthFact);
             shape.y += (shape.offsetYValue * heightFact);
         }
@@ -2892,7 +2960,7 @@ export class Layout {
                             row.editRangeID.add(element.editRangeId, element);
                         }
                     }
-                } else if (element instanceof EditRangeEndElementBox && (this.documentHelper.owner.currentUser === element.editRangeStart.user || (element.editRangeStart.group === "Everyone" && element.editRangeStart.user === ""))) {
+                } else if (element instanceof EditRangeEndElementBox && !isNullOrUndefined(element.editRangeStart) && (this.documentHelper.owner.currentUser === element.editRangeStart.user || (element.editRangeStart.group === "Everyone" && element.editRangeStart.user === ""))) {
                     if (element.editRangeStart.columnFirst != -1 && element.editRangeStart.columnLast != -1) {
                         let row = element.paragraph.associatedCell.ownerRow;
                         if (row.editRangeID.containsKey(element.editRangeStart.editRangeId)) {
@@ -3088,7 +3156,7 @@ export class Layout {
         if (line.isFirstLine()) {
             for (let i: number = 0; i < line.children.length; i++) {
                 let child: ElementBox = line.children[i];
-                if (child.width > 0) {
+                if (child.width > 0 && !(child instanceof ListTextElementBox)) {
                     if (child === element) {
                         beforeSpacing = this.getBeforeSpacing(paragraph);
                     }
@@ -3109,7 +3177,7 @@ export class Layout {
             if (element instanceof FieldTextElementBox) {
                 this.updateFieldText(element);
             }
-            if (element.previousElement &&
+            if (element.previousElement && !this.hasPreviousListElement(element) && 
                 (((element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox) && element.previousElement.textWrappingStyle === 'Inline') ||
                     !(element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox))) {
                 this.cutClientWidth(element.previousElement, undefined, ((element instanceof TextElementBox && element.text === '\f') || element instanceof ImageElementBox) ? true : false);
@@ -3148,7 +3216,7 @@ export class Layout {
                 }
             }
         }
-        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap || (element instanceof TextElementBox && element.text === '\v')) {
+        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || (parseFloat(width.toFixed(3)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(3)) && paragraph.isInsideTable) || !this.viewer.textWrap || (element instanceof TextElementBox && element.text === '\v')) {
             if (paragraph.paragraphFormat.textAlignment === "Justify" && element instanceof TextElementBox && element.characterFormat.bidi && !element.isCombinedRTLText) {
                 if (element.text.trim() !== "") {
                     const nextWordWidth: number = this.getWholeTextWidth(element, true);
@@ -3244,7 +3312,7 @@ export class Layout {
         }
         if ((text === '\v' || text === '\f' || text === '\r' || text === String.fromCharCode(14)) && !contentControl) {
             let elementIndex: number = line.children.indexOf(element);
-            if (elementIndex > -1) {
+            if (elementIndex > -1 && !(text === '\v' && element.isWrappedBreak)) {
                 this.addSplittedLineWidget(line, elementIndex);
             }
         }
@@ -3253,7 +3321,10 @@ export class Layout {
                 this.isXPositionUpdated = false;
                 return;
             }
-            this.moveToNextLine(element.line);
+            if (!(text === '\v' && element.isWrappedBreak)) {
+                this.moveToNextLine(element.line);
+            }
+            element.isWrappedBreak = false;
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 // Need to add empty line widget for line's paragraph because paragraph may be splitted. So passed the arguement as line's paragraph
                 this.layoutEmptyLineWidget(line.paragraph, true, line, true);
@@ -3281,6 +3352,14 @@ export class Layout {
         if (!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.editorModule.isPaste) && this.owner.editorModule.isPaste && (element.line.paragraph.containerWidget instanceof BodyWidget ||  element.line.paragraph.containerWidget instanceof HeaderFooterWidget) && element instanceof TextElementBox  && element.text !== "\u000b" && element.text !== '\t' &&  element.text !== '\f') {
              this.owner.editorModule.lastElementForPasteIcon = element;
         }
+    }
+
+    private hasPreviousListElement(element: ElementBox): boolean {
+        let current = element.previousElement;
+        while (current instanceof BookmarkElementBox || current instanceof EditRangeEndElementBox || current instanceof EditRangeStartElementBox) {
+            current = current.previousElement;
+        }
+        return current instanceof ListTextElementBox;
     }
 
     /**
@@ -3389,6 +3468,17 @@ export class Layout {
             return true;
         }
         return false;
+    }
+    private isNeedToWrapParaMarkToRightSide(elementBox: ElementBox, ownerPara: ParagraphWidget, textWrappingBounds: Rect, bottom: number, clientLayoutArea: Rect, textWrappingType: string, minimumWidthRequired: number): boolean {
+        if (!ownerPara || ownerPara.isInsideTable ||
+            textWrappingType !== 'Both' ||
+            clientLayoutArea.right <= textWrappingBounds.x ||
+            clientLayoutArea.x >= textWrappingBounds.x ||
+            textWrappingBounds.right >= clientLayoutArea.right - minimumWidthRequired || (textWrappingBounds.x - clientLayoutArea.x) < minimumWidthRequired || elementBox instanceof BreakElementBox) {
+            return false;
+        }
+        // Single interval-overlap test: bounds rectangle vertically intersects [clientLayoutArea.y, bottom].
+        return textWrappingBounds.y <= bottom && textWrappingBounds.bottom >= clientLayoutArea.y;
     }
     private isTextFitBelow(rect: Rect, top: number, element: ElementBox | TableWidget): boolean {
         //TODO: After shape implementation.
@@ -3713,6 +3803,12 @@ export class Layout {
                         }
                     }
                     if (this.isNeedToWrapForSquareTightAndThrough(bodyWidget, elementBox, -1, -1, textWrappingStyle, textWrappingBounds, allowOverlap, 1, floatingItem, false, rect, elementBox.width, elementBox.height)) {
+                        if (elementBox instanceof TextElementBox && elementBox.text === '\v' && this.isNeedToWrapParaMarkToRightSide(elementBox, ownerPara, textWrappingBounds, bottom, rect, textWrappingType, minimumWidthRequired)) {
+                            elementBox.isWrappedBreak = true;
+                            rect.width -= textWrappingBounds.right - rect.x;
+                            rect.x = textWrappingBounds.right;
+                            this.viewer.updateClientAreaForTextWrap(rect);
+                        }
                         let rightIndent: number = 0;
                         let leftIndent: number = 0;
                         let listLeftIndent: number = 0;
@@ -4609,11 +4705,15 @@ export class Layout {
      * @returns {void}
      */
     public setCheckBoxFontSize(formFieldData: CheckBoxFormField, format: WCharacterFormat): void {
-        if (formFieldData.sizeType !== 'Auto') {
-            format.fontSize = formFieldData.size * CHECK_BOX_FACTOR;
-        } else {
-            format.fontSize = format.fontSize * CHECK_BOX_FACTOR;
+        if (format.ownerBase instanceof TextElementBox && ((format.ownerBase.paragraph && format.ownerBase.paragraph.isInsideTable) || isNullOrUndefined(format.ownerBase.paragraph))) {
+            check_box_factor = 1.35;
         }
+        if (formFieldData.sizeType !== 'Auto') {
+            format.fontSize = formFieldData.size * check_box_factor;
+        } else {
+            format.fontSize = format.fontSize * check_box_factor;
+        }
+        check_box_factor = 1.4;
     }
     private layoutEmptyLineWidget(paragraph: ParagraphWidget, isEmptyLine: boolean, line?: LineWidget, isShiftEnter?: boolean): void {
         this.clearLineMeasures();
@@ -4713,6 +4813,9 @@ export class Layout {
         }
         topMargin += beforeSpacing;
         bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
+        if (lineSpacingType === 'Multiple' && paragraph.isEmpty() && !isNullOrUndefined(paragraph.bodyWidget) && this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paragraph.bodyWidget.page.index !== 0 && !(paragraph.bodyWidget instanceof HeaderFooterWidget) && !paragraph.isSectionBreak && paragraph.bodyWidget.columnIndex === 0 && !isNullOrUndefined(paragraph.bodyWidget.previousSplitWidget)) {
+            topMargin -= beforeSpacing;
+        }
         if (borders.top.lineStyle != 'None') {
             if (lineWidget.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
                 topMargin += HelperMethods.convertPointToPixel(borders.top.lineWidth + borders.top.space);
@@ -5033,10 +5136,10 @@ export class Layout {
             movedElementBox.push(splittedElementBox);
         }
         let newLineWidget: LineWidget = undefined;
-        let previousElement :ElementBox = lineWidget.children[index];
-        if(previousElement instanceof CommentCharacterElementBox && previousElement.commentType === 0 && index != 0){
+        let previousElement: ElementBox = lineWidget.children[index];
+        if (previousElement instanceof CommentCharacterElementBox && previousElement.commentType === 0 && index != 0) {
             index = index - 1;
-        } else if(previousElement.isColumnBreak && isNullOrUndefined(previousElement.nextNode)) {
+        } else if (previousElement.isColumnBreak && isNullOrUndefined(previousElement.nextNode)) {
             columneBreak = true;
         }
         //Move Next element box to temp collection
@@ -5809,14 +5912,17 @@ export class Layout {
                 maxElementBottomMargin = elementBox.margin.bottom;
                 maxElementTopMargin = elementBox.margin.top;
             }
-            if (elementBox instanceof ShapeElementBox && elementBox.textWrappingStyle === "Inline") {
+            if ((elementBox instanceof ShapeElementBox || elementBox instanceof GroupShapeElementBox ) && elementBox.textWrappingStyle === "Inline") {
                 if (i !== 0 || elementBox.margin.left > 0) {
                     let elementLeftMargin: number = children[0].margin.left;
                     elementBox.x += elementLeftMargin;
-                    for (let i: number = 0; i < elementBox.textFrame.childWidgets.length; i++) {
-                        let widget: BlockWidget = elementBox.textFrame.childWidgets[i] as BlockWidget;
+                    const childWidgets: any = elementBox instanceof ShapeElementBox ? elementBox.textFrame.childWidgets : elementBox.childWidgets;
+                    for (let i: number = 0; i < childWidgets.length; i++) {
+                        let widget: BlockWidget = childWidgets[i] as BlockWidget;
                         if (widget instanceof TableWidget) {
                             widget.updateChildWidgetLeft(widget.x + elementLeftMargin);
+                        } else if (widget instanceof GroupShapeElementBox) {
+                            this.updateNestedGroupShapeX(widget, elementLeftMargin);
                         } else {
                             (widget as Widget).x += elementLeftMargin;
                         }
@@ -5860,15 +5966,50 @@ export class Layout {
         }
         return true;
     }
+    private updateNestedGroupShapeX(widget: any, elementLeftMargin: number): void {
+        const childWidgets: any = widget.childWidgets;
+        for (let j: number = 0; j < childWidgets.length; j++) {
+            let widget: any = childWidgets[j];
+            widget.x += elementLeftMargin;
+            if (widget instanceof ShapeElementBox) {
+                for (let k: number = 0; k < widget.textFrame.childWidgets.length; k++) {
+                    (widget.textFrame.childWidgets[k] as Widget).x += elementLeftMargin;
+                }
+            }
+            if (widget instanceof GroupShapeElementBox){
+                this.updateNestedGroupShapeX(widget, elementLeftMargin);
+            }
+        }
+    }
 
-    private updateShapeYPosition(elementBox: ShapeElementBox): void {
+    private updateNestedGroupShapeY(widget: any, topMargin: number): void {
+        const childWidgets: any = widget.childWidgets;
+        for (let j: number = 0; j < childWidgets.length; j++) {
+            let widget: any = childWidgets[j];
+            widget.y += topMargin;
+            if (widget instanceof ShapeElementBox) {
+                for (let k: number = 0; k < widget.textFrame.childWidgets.length; k++) {
+                    (widget.textFrame.childWidgets[k] as Widget).y += topMargin;
+                }
+            }
+            if (widget instanceof GroupShapeElementBox) {
+                this.updateNestedGroupShapeY(widget, topMargin);
+            }
+        }
+    }
+
+    private updateShapeYPosition(elementBox: ShapeElementBox | GroupShapeElementBox): void {
         elementBox.y += elementBox.margin.top;
-        for (let j: number = 0; j < elementBox.textFrame.childWidgets.length; j++) {
-            const widget = elementBox.textFrame.childWidgets[j] as BlockWidget;
+        const childWidgets: any = elementBox instanceof ShapeElementBox ? elementBox.textFrame.childWidgets : elementBox.childWidgets;
+        for (let j: number = 0; j < childWidgets.length; j++) {
+            const widget = childWidgets[j] as BlockWidget;
             widget.y += elementBox.margin.top;
             if (widget instanceof TableWidget) {
                 this.updateChildLocationForTable(widget.y, widget);
                 this.updateWidgetsToPage([widget], [], widget, true);
+            }
+            if (widget instanceof GroupShapeElementBox) {
+                this.updateNestedGroupShapeY(widget, elementBox.margin.top);
             }
         }
     }
@@ -5976,6 +6117,21 @@ export class Layout {
         }
         return lineY;
     }
+    private isFormFieldCheckBox(element: TextElementBox): boolean {
+        if (!element.isCheckBoxElement) {
+            return false;
+        }
+        // The checkbox text element created for a form field lives between
+        // a field separator (FieldElementBox, fieldType === 2) and the field end.
+        const previous: ElementBox = element.previousNode;
+        if (previous instanceof FieldElementBox
+            && previous.fieldType === 2
+            && previous.fieldBegin
+            && previous.fieldBegin.formFieldData instanceof CheckBoxFormField) {
+            return true;
+        }
+        return false;
+    }
     private updateLineWidget(line: LineWidget, paragraphFormat: WParagraphFormat): void {
         let spaceHeight: number = 0;
         let spaceBaseline: number = 0;
@@ -6006,15 +6162,21 @@ export class Layout {
                 let elementHeight: number = element.height;
                 let baselineOffset: number = element.baselineOffset;
                 let isCellContentControl: boolean = false;
-                //We have increased the checkbox form field font size using a constant factor `CHECK_BOX_FACTOR`
+                //We have increased the checkbox form field font size using a constant factor `check_box_factor`
                 //To match the MS Word check box rendering size.
                 //Due to it line height also get increased. So, handled adjusting height while updating line height.
                 if (element instanceof TextElementBox && element.isCheckBoxElement && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof ContentControl && (element.previousNode.contentControlWidgetType === 'Cell' || element.previousNode.contentControlWidgetType === 'Inline')) {
                     isCellContentControl = true;
                 }
                 if (element instanceof TextElementBox && element.isCheckBoxElement && !isCellContentControl) {
-                    elementHeight = elementHeight / CHECK_BOX_FACTOR;
-                    baselineOffset = baselineOffset / CHECK_BOX_FACTOR;
+                    if (this.isFormFieldCheckBox(element)) {
+                        if (element.paragraph.isInsideTable) {
+                            check_box_factor = 1.35;
+                        }
+                        elementHeight = elementHeight / check_box_factor;
+                        baselineOffset = baselineOffset / check_box_factor;
+                        check_box_factor = 1.4;
+                    }
                 }
                 if (this.maxTextHeight < elementHeight) {
                     this.maxTextHeight = elementHeight;
@@ -6490,8 +6652,12 @@ export class Layout {
             } else if (previousBlock instanceof TableRowWidget) {
                 let childWidget = previousBlock.childWidgets[0] as TableCellWidget;
                 if (childWidget.childWidgets.length > 0) {
+                    let isVerticallymergedCell = false;
+                    if (childWidget.columnIndex > 0) {
+                        isVerticallymergedCell = true;
+                    }
                     let firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(childWidget as TableCellWidget);
-                    if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext) {
+                    if ((!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext && childWidget.columnIndex === 0) || (isVerticallymergedCell && childWidget.cellFormat && childWidget.cellFormat.verticallyMergedCellsKeepWithNext)) {
                         if (isNullOrUndefined(this.getPreviousBlock(previousBlock as BlockWidget))) {
                             startBlock = undefined;
                         } else {
@@ -6755,10 +6921,19 @@ export class Layout {
                 || isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.rowFormat)) {
                 return;
             }
-            if (paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'Exactly') {
+            let heightType: string = paragraphWidget.associatedCell.ownerRow.rowFormat.heightType;
+            if (paragraphWidget.associatedCell.cellFormat.rowSpan > 1 && paragraphWidget.associatedCell.ownerTable
+                && paragraphWidget.associatedCell.ownerRow) {
+                let row: TableRowWidget = paragraphWidget.associatedCell.ownerTable
+                    .childWidgets[paragraphWidget.associatedCell.ownerRow.index + paragraphWidget.associatedCell.cellFormat.rowSpan - 1] as TableRowWidget;
+                if (!isNullOrUndefined(row)) {
+                    heightType = row.rowFormat.heightType;
+                }
+            }
+            if (heightType === 'Exactly') {
                 cellWidget.height = HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height);
             } else {
-                if ([cellWidget].length <= 1 && paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'AtLeast' && !skipCellContentHeightCalc) {
+                if ([cellWidget].length <= 1 && heightType === 'AtLeast' && !skipCellContentHeightCalc) {
                     if (this.documentHelper.isRowOrCellResizing && this.documentHelper.owner.editorModule.tableResize.resizeNode !== 0) {
                         cellWidget.height = Math.max(paragraphWidget.associatedCell.ownerRow.rowFormat.height, this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
                     } else {
@@ -7731,6 +7906,10 @@ export class Layout {
         }
         return undefined;
     }
+
+    private isNeedToConsiderTabStopPosition(paragraph: ParagraphWidget, tabs: WTabStop[], isList: boolean): boolean {
+        return !(paragraph.paragraphFormat.firstLineIndent < 0 && tabs.length !== 0 && tabs[0].position < Math.abs(paragraph.paragraphFormat.firstLineIndent) && isList);
+    }
     
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
         if (element.characterFormat.hidden) {
@@ -7761,7 +7940,7 @@ export class Layout {
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
-        if (clientActiveX < clientWidth && (this.documentHelper.compatibilityMode !== 'Word2003' || tabs.length === 0)) {
+        if (clientActiveX < clientWidth && this.isNeedToConsiderTabStopPosition(paragraph, tabs, isList)) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         let position: number = viewer.clientActiveArea.x -
@@ -7779,7 +7958,7 @@ export class Layout {
         }
         if (lineWidget.isFirstLine() && leftIndent > 0 && firstLineIndent < 0
             && (element instanceof ListTextElementBox || !tabBeforeLeftIndent)) {
-            if ((viewer.clientArea.x - viewer.clientActiveArea.x) > 0) {
+            if ((viewer.clientArea.x - viewer.clientActiveArea.x) > 0 && this.isNeedToConsiderTabStopPosition(paragraph, tabs, isList)) {
                 return viewer.clientArea.x - viewer.clientActiveArea.x;
             } else if (tabs.length === 0 && paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listLevel) {
                 tabs = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat.tabs;
@@ -7989,7 +8168,7 @@ export class Layout {
         let lineText: string = '';
         let trimmedSpaceWidth: number = 0;
         let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
-        if (this.wrapPosition.length > 0) {
+        if (this.wrapPosition.length > 0 && !(lineWidget.paragraph.containerWidget instanceof TextFrame)) {
             let subWidths: SubWidthInfo[] = this.getSubWidthBasedOnTextWrap(lineWidget, justify, spaceCount, firstLineIndent, isParagraphEnd);
             if (subWidths.length > 0) {
                 return subWidths;
@@ -8701,8 +8880,8 @@ export class Layout {
     private updateSpannedRowCollection(rowSpan: number, row: TableRowWidget, cellWidget: TableCellWidget): void {
         if (rowSpan > 1 && !isNullOrUndefined(row.ownerTable)) {
             //Checks the rowspan is already exist in the list
-            if (!row.ownerTable.spannedRowCollection.containsKey(row.index + rowSpan - 1)) {
-                row.ownerTable.spannedRowCollection.add(row.index + rowSpan - 1, row.index);
+            if (!row.ownerTable.spannedRowCollection.containsKey(cellWidget.rowIndex + rowSpan - 1)) {
+                row.ownerTable.spannedRowCollection.add(cellWidget.rowIndex + rowSpan - 1, cellWidget.rowIndex);
             }
         }
     }
@@ -9267,7 +9446,6 @@ export class Layout {
                     }
                     bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : 
                         (keepNext && isTableFirstRow) ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext, undefined, undefined, undefined, true);
-
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
                     if (moveRowToNextTable && removeTable) {
@@ -9295,6 +9473,10 @@ export class Layout {
                         }
                         this.moveNextWidgetsToTable(tableWidgets, currentRow, !moveRowToNextTable);
                         rowToMove = row;
+                    }
+                     // Update the before spacing of a paragraph when moved to the next page
+                    if (bodyWidget.firstChild instanceof ParagraphWidget) {
+                        this.updateParaOnBeforeSpacing(bodyWidget.firstChild, bodyWidget, true);
                     }
                     if (keepNext) {
                         this.updateClientPositionForBlock(removeTable ? curretTable : block, row);
@@ -9819,11 +10001,10 @@ export class Layout {
                 if (Math.round(previousLeft) !== Math.round(cellWidget.x - cellWidget.margin.left - cellspace)) {
                     previousLeft = (cellWidget.x - cellWidget.margin.left - cellspace);
                 }
-                if (Math.round(left) === Math.round(previousLeft)) {
+                if (Math.round(left) === Math.round(previousLeft) || ((currentRow.lastChild as TableCellWidget).x + (currentRow.lastChild as TableCellWidget).width === cellWidget.x) && Math.abs(left-previousLeft) <= 5) {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
-                    if (rowSpan > 1 && ((rowWidget.firstChild as TableCellWidget).columnIndex === 0)
-                        && !this.isColumnExistsInCurrentRow(currentRow, cellWidget.columnIndex)) {
+                    if (rowSpan > 1 && !this.isColumnExistsInCurrentRow(currentRow, cellWidget.columnIndex)) {
                         if (this.isVerticalMergedCellContinue(currentRow) && currentRow.rowFormat.heightType !== "Exactly" && !isNullOrUndefined(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget instanceof TableRowWidget && currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height < cellWidget.y + cellWidget.height) {
                             this.isRelayoutneed = true;
                             let splittedCell: TableCellWidget = this.getSplittedWidget(currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height, true, tableCollection, undefined, cellWidget, undefined, undefined, undefined, undefined, true);
@@ -10965,7 +11146,7 @@ export class Layout {
                 this.isBidiReLayout = false;
             } else {
                 // this.isRelayout = true;
-                this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip, undefined);
+                this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip, undefined, elementBoxIndex);
             }
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
@@ -11121,6 +11302,9 @@ export class Layout {
         if (table.wrapTextAround) {
             let prevWidget: Widget = table.previousWidget;
             while (prevWidget) {
+                if (prevWidget.y > table.y && isNullOrUndefined(prevWidget.previousWidget)) {
+                    return this.viewer.clientActiveArea.y + prevWidget.height
+                }
                 if (prevWidget instanceof ParagraphWidget) {
                     return prevWidget.y + prevWidget.height;
                 } else if (prevWidget instanceof TableWidget) {
@@ -12468,6 +12652,44 @@ export class Layout {
         }
         return false;
     }
+    // To skip the before spacing while shifting the paragraph. If it is the first child of the BodyWidget.
+    private updateParaOnBeforeSpacing(widget: BlockWidget, bodyWidget: BodyWidget, updateBeforeSpace: Boolean) {
+        if (this.isInitialLoad || widget.bodyWidget instanceof HeaderFooterWidget || widget instanceof TableWidget || isNullOrUndefined((widget.firstChild as LineWidget).margin)) {
+            return;
+        }
+        let paragraph: ParagraphWidget = widget as ParagraphWidget;
+        let beforeSpacing: number = 0;
+        let isPrevWidgetPara: boolean = !isNullOrUndefined(paragraph.previousRenderedWidget) && paragraph.previousRenderedWidget instanceof ParagraphWidget;
+        if (isPrevWidgetPara && (paragraph.previousRenderedWidget as ParagraphWidget).paragraphFormat.afterSpacing <= paragraph.paragraphFormat.beforeSpacing) {
+            beforeSpacing = paragraph.paragraphFormat.beforeSpacing - (paragraph.previousRenderedWidget as ParagraphWidget).paragraphFormat.afterSpacing;
+        }
+        if (!isPrevWidgetPara) {
+            beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
+        }
+        beforeSpacing = HelperMethods.convertPointToPixel(beforeSpacing);
+        let line: LineWidget = paragraph.firstChild as LineWidget;
+        if (updateBeforeSpace) {
+            if (isNullOrUndefined(paragraph.previousSplitWidget) && isPrevWidgetPara && bodyWidget.indexInOwner === 0 && bodyWidget.page.index > 0 && paragraph.indexInOwner === 0 && line.margin.top > 0) {
+                paragraph.height -= beforeSpacing;
+                line.height -= beforeSpacing;
+                line.margin.top = 0;
+                for (let i: number = 0; i < line.children.length; i++) {
+                    let element: ElementBox = line.children[i];
+                    element.margin.top = 0;
+                }
+            }
+        } else {
+            if (isNullOrUndefined(paragraph.previousSplitWidget) && beforeSpacing > 0 && line.margin.top === 0) {
+                paragraph.height += beforeSpacing;
+                line.height += beforeSpacing;
+                line.margin.top = beforeSpacing;
+                for (let i: number = 0; i < line.children.length; i++) {
+                    let element: ElementBox = line.children[i];
+                    element.margin.top = beforeSpacing;
+                }
+            }
+        }
+    }
     private shiftWidgetsBlock(block: BlockWidget, viewer: LayoutViewer, footnoteCollection?: BodyWidget[]): void {
         if (block instanceof ParagraphWidget) {
             this.shiftWidgetsForPara(block as ParagraphWidget, viewer, footnoteCollection);
@@ -12529,6 +12751,10 @@ export class Layout {
             }
             skipFootNoteHeight = false;
             //let isContainsFootnote: boolean = false;
+            //Recheck the paragraph height by considering the before-spacing to ensure it fits within the page layout.
+            if (!(this.viewer.clientActiveArea.y === this.viewer.clientArea.y && widget.indexInOwner === 0)) {
+                this.updateParaOnBeforeSpacing(widget, widget.bodyWidget, false);
+            }
             if ((this.isFitInClientArea(widget, viewer, footWidget) && !isSplit) || (viewer.clientActiveArea.height < (widget.firstChild as LineWidget).height && this.viewer.clientActiveArea.y === this.viewer.clientArea.y)
                 || (this.isMultiColumnSplit && widget.bodyWidget.sectionFormat.numberOfColumns - 1 !== widget.bodyWidget.columnIndex)) {
                 if (!isNullOrUndefined(footnoteCollection) && !isNullOrUndefined(footWidget) && footWidget.length > 0) {
@@ -12648,6 +12874,9 @@ export class Layout {
                     }
                 }
                 index = prevBodyWidget.childWidgets.indexOf(widget);
+                if (index === 0) {
+                    this.updateParaOnBeforeSpacing(widget, widget.bodyWidget, true);
+                }
                 if (isSplittedToNewPage) {
                     prevBodyWidget = (paragraph.getSplitWidgets()[i + 1] as ParagraphWidget).containerWidget as BodyWidget;
                 }
@@ -13417,6 +13646,9 @@ export class Layout {
     }
     private getMaxElementHeight(lineWidget: LineWidget): number {
         let height: number = 0;
+        if (isNullOrUndefined(lineWidget) || isNullOrUndefined(lineWidget.children)) {
+            return 0;
+        }
         /* eslint-disable-next-line max-len */
         if (lineWidget.children.length === 0 || ((lineWidget.children.length === 1 && lineWidget.children[0] instanceof ListTextElementBox) || (lineWidget.children.length === 2 && lineWidget.children[0] instanceof ListTextElementBox && lineWidget.children[1] instanceof ListTextElementBox))) {
             const topMargin: number = 0;
@@ -13653,6 +13885,9 @@ export class Layout {
         }
         bodyWidget.height += bodyWidget.height;
         widget.containerWidget = bodyWidget;
+        if (widget instanceof ParagraphWidget) {
+            this.updateParaOnBeforeSpacing(widget, widget.bodyWidget, true);
+        }
     }
     private getBodyWidgetOfPreviousBlock(block: BlockWidget, index: number): BodyWidgetInfo {
         index = 0;
@@ -13865,7 +14100,7 @@ export class Layout {
     //#region Relayout Parargaph
 
     /* eslint-disable  */
-    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean): void {
+    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean, elementIndex?: number): void {
         if (!this.documentHelper.owner.editorModule.isFootnoteElementRemoved) {
             this.isFootnoteContentChanged = false;
         }
@@ -13883,7 +14118,11 @@ export class Layout {
             lineToLayout = lineWidget.previousLine;
         }
         if (isNullOrUndefined(lineToLayout)) {
-            lineToLayout = lineWidget;
+            if (!isNullOrUndefined(elementIndex) && !isNullOrUndefined(lineWidget.previousLine) && lineWidget.previousLine.indexInOwner < lineWidget.indexInOwner) {
+                lineToLayout = lineWidget.previousLine;
+            } else {
+                lineToLayout = lineWidget;
+            }
         }
         if (this.allowLayout && !(this.owner.spellCheckerModule && this.owner.spellCheckerModule.skipChangeDetection)) {
             lineToLayout.paragraph.splitTextRangeByScriptType(lineToLayout.indexInOwner);
@@ -14589,6 +14828,9 @@ export class Layout {
     //RTL feature layout end
     private getFloatingItemPoints(floatElement: ShapeBase): Point {
         let paragraph: ParagraphWidget = floatElement.line.paragraph;
+        if (isNullOrUndefined(paragraph) || isNullOrUndefined(paragraph.bodyWidget) || isNullOrUndefined(paragraph.bodyWidget.sectionFormat)) {
+            return new Point(0, 0);
+        }
         let sectionFormat: WSectionFormat = paragraph.bodyWidget.sectionFormat;
         let indentX: number = 0;
         let indentY: number = 0;
@@ -15272,7 +15514,9 @@ export class Layout {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(position.verticalPosition);
                         }
                     } else if (position.verticalOrigin === 'Paragraph') {
-                        if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
+                        if (position.verticalAlignment === 'Bottom' || position.verticalAlignment === 'Center' || position.verticalAlignment === 'Top' || position.verticalAlignment === 'Inside' || position.verticalAlignment === 'Outside') {
+                            this.viewer.clientActiveArea.y = table.y;
+                        } else if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
                             this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
                         }
                     }

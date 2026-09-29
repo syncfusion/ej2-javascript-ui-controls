@@ -562,6 +562,7 @@ export class ExportHelper {
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.baselineStartDate = ganttProp.baselineStartDate;
             taskbar.baselineEndDate = ganttProp.baselineEndDate;
+            taskbar.baselineDuration = ganttProp.baselineDuration;
             taskbar.baselineLeft = ganttProp.baselineLeft;
             taskbar.baselineWidth = ganttProp.baselineWidth;
             if (taskbar.baselineLeft < 0) {

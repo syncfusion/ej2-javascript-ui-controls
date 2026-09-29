@@ -5,12 +5,16 @@
  * * Minute  - Defines the unit of duration as minutes.
  * * Hour    - Defines the unit of duration as hours.
  * * Day     - Defines the unit of duration as days.
+ * * Week    - Defines the unit of duration as weeks.
+ * * Month   - Defines the unit of duration as months.
  * ```
  */
 export type DurationUnit =
     'Minute' |
     'Hour' |
-    'Day';
+    'Day' |
+    'Week' |
+    'Month';
 
 /**
  * Defines grid lines in the Gantt chart.
@@ -617,3 +621,19 @@ export type ViolationType =
   | 'StartNoLaterThan'
   | 'FinishNoLaterThan'
   | 'PredecessorLink';
+
+/**
+ * Defines the dependency types that can be allowed during data load and editing operations.
+ *
+ * ```props
+ * * FS :- Finish-to-Start dependency
+ * * SS :- Start-to-Start dependency
+ * * FF :- Finish-to-Finish dependency
+ * * SF :- Start-to-Finish dependency
+ * ```
+ */
+export type DependencyType =
+    'FS' |
+    'SS' |
+    'FF' |
+    'SF';

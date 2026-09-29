@@ -20,30 +20,20 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 @ComponentMixins([ComponentBase])
 export class MessageComponent extends Message implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	closed: any;
-	created: any;
-	public destroyed: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare closed: any;
+	declare created: any;
+	public declare destroyed: any;
 
 
-    /** 
-     * Specifies the content to be displayed in the Message component. It can be a paragraph, a list, or any other HTML element.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -73,7 +63,8 @@ export class MessageComponent extends Message implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MessageComponent.prototype, 'content');
 

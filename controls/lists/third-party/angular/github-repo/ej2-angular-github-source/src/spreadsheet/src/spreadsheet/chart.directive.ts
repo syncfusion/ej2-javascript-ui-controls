@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-charts>e-chart',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ChartDirective extends ComplexBase<ChartDirective> {
@@ -23,67 +23,67 @@ export class ChartDirective extends ComplexBase<ChartDirective> {
      * Specifies the type of a chart.
      * @default 'Line'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * The data label for the series.
      * @default {}
      */
-    public dataLabelSettings: any;
+    public declare dataLabelSettings: any;
     /** 
      * Specifies the height of the chart.
      * @default 290
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Specifies chart element id.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies to switch the row or a column.
      * @default false
      */
-    public isSeriesInRows: any;
+    public declare isSeriesInRows: any;
     /** 
      * Options for customizing the legend of the chart.
      * @default {}
      */
-    public legendSettings: any;
+    public declare legendSettings: any;
     /** 
      * Options to configure the marker
      * @default {}
      */
-    public markerSettings: any;
+    public declare markerSettings: any;
     /** 
      * Options to configure the horizontal axis.
      * @default {}
      */
-    public primaryXAxis: any;
+    public declare primaryXAxis: any;
     /** 
      * Options to configure the vertical axis.
      * @default {}
      */
-    public primaryYAxis: any;
+    public declare primaryYAxis: any;
     /** 
      * Specifies the selected range or specified range.
      * @default ''
      */
-    public range: any;
+    public declare range: any;
     /** 
      * Specifies the theme of a chart.
      * @default 'Material'
      */
-    public theme: any;
+    public declare theme: any;
     /** 
      * Title of the chart
      * @default ''
      */
-    public title: any;
+    public declare title: any;
     /** 
      * Specifies the width of the chart.
      * @default 480
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -99,6 +99,7 @@ export class ChartDirective extends ComplexBase<ChartDirective> {
  */
 @Directive({
     selector: 'e-cell>e-charts',
+    standalone: true,
     queries: {
         children: new ContentChildren(ChartDirective)
     },

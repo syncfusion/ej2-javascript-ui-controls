@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fabric-dark' as *;
-@forward 'ej2-base/styles/definition/fabric-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-header-font-weight: 600 !default;

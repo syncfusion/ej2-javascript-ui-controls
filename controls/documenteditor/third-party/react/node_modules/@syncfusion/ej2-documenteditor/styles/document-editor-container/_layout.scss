@@ -15,6 +15,11 @@
   .e-documenteditorcontainer {
     display: block;
   }
+  
+  .e-popup .e-ribbon-popup-container .e-de-ribbon-style-gallery .e-ribbon-gallery-item {
+    width: 100% !important; /* stylelint-disable-line declaration-no-important */
+    height: 40px !important; /* stylelint-disable-line declaration-no-important */
+  }
 
   .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
     height: $e-de-text-wrap-height;
@@ -151,6 +156,10 @@
 
   .e-de-sub-label-block {
     display: block;
+  }
+
+  .e-de-hidden-display {
+    display: none;
   }
 
   .e-de-hidden {

@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/tailwind' as *;
-@forward 'ej2-base/styles/definition/tailwind';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: $skin-name !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -203,6 +202,8 @@ $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $icon-color !default;
 $ddl-close-icon-hover-color: $icon-color-hover !default;
 $multi-select-delim-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji' !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 $ddl-bigger-filled-wrapper-chip-padding: 0 12px !default;
 $ddl-rtl-bigger-small-wrapper-chips-padding: 0 0 0 4px !default;

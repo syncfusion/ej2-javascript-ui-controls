@@ -1,7 +1,7 @@
 import { IRichTextEditor } from '../base/interface';
 import { IEditorModel, ActionBeginEventArgs, ICodeBlockLanguageModel, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs, IToolbarItems } from '../../common/interface';
 import * as events from '../base/constant';
-import { isNullOrUndefined as isNOU, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, KeyboardEventArgs, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ClickEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
 import { CodeBlockSettingsModel } from '../../models';
 import { CodeBlockPosition } from '../../editor-manager/base/interface';
@@ -26,6 +26,7 @@ export class CodeBlock {
      * @returns {void}
      */
     public constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('CodeBlock', 'RichTextEditor');
         this.parent = parent;
         this.isDestroyed = false;
         this.isItemsDisabled = false;

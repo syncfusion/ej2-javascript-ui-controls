@@ -38,6 +38,19 @@ export class DiagramHtmlElement extends DiagramElement {
         return this.templateFn;
     }
 
+    /**
+     * Sets the node template for internal rendering.
+     *
+     * @returns {void}
+     * @private
+     * @param {string | Function} value - provide the template value.
+     */
+    public setNodeTemplate(value: string | Function): void {
+        this.templateFn = templateCompiler(value);
+        this.isTemplate = true;
+        this.content = value as string | Function;
+    }
+
     // eslint-disable-next-line @typescript-eslint/ban-types
     private templateFn: Function;
 

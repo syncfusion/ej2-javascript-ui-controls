@@ -1,9 +1,9 @@
 import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
-import { _PdfCrossReference } from './../pdf-cross-reference';
+import { _PdfCrossReference, _PdfObjectInformation } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontStyle, _createFontStream, _encode, _getFontFromDescriptor, _decodeFontFamily, _updateDashedBorderStyle } from './../utils';
-import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType, _SignatureFlag } from './../enumerator';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontStyle, _createFontStream, _encode, _getFontFromDescriptor, _decodeFontFamily, _updateDashedBorderStyle, _bytesEqual, _areArrayEqual, _toRectangle } from './../utils';
+import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType, _SignatureFlag, PdfCertificationFlag, RevocationStatus, SignatureStatus, RevocationType } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
 import { _PdfBaseStream } from './../base-stream';
@@ -16,7 +16,18 @@ import { PdfPath } from './../graphics/pdf-path';
 import { PdfAnnotationCollection } from '../annotations/annotation-collection';
 import { PdfFieldActions, PdfJavaScriptAction } from '../pdf-action';
 import { PdfSignature } from '../security/digital-signature/signature/pdf-signature';
-import { Point, Size, Rectangle, PdfColor } from './../pdf-type';
+import { Point, Size, Rectangle, PdfColor, PdfSignatureValidationResult, TimestampInformation, RevocationResult, LtvVerificationInformation, PdfSignatureValidationOptions, PdfSignerCertificate, PdfRevocationCertificate, PdfX509CertificateProperties } from './../pdf-type';
+import { _PdfCryptographicMessageSyntaxSigner } from '../security/digital-signature/signature/cryptographic-signer';
+import { _PdfX509CertificateStructure } from '../security/digital-signature/x509/x509-certificate-structure';
+import { _PdfSignedCertificate } from '../security/digital-signature/x509/x509-signed-certificate';
+import { _PdfCipherParameter, _PdfRonCipherParameter } from '../security/digital-signature/x509/x509-cipher-handler';
+import { _PdfX509Extension, _PdfX509Extensions } from '../security/digital-signature/x509/x509-extensions';
+import { _PdfObjectIdentifier } from '../security/digital-signature/asn1/identifier-mapping';
+import { _PdfAbstractSyntaxElement } from '../security/digital-signature/asn1/abstract-syntax';
+import { _ICipherParam } from '../security/digital-signature/signature/pdf-interfaces';
+import { _PdfUniqueEncodingElement } from '../security/digital-signature/asn1/unique-encoding-element';
+import { _PdfRsaPublicKeyParam } from '../security/digital-signature/signature/ron-cipher';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * `PdfField` class represents the base class for form field objects.
  * ```typescript
@@ -1657,6 +1668,219 @@ export abstract class PdfField {
             }
         }
         return item;
+    }
+    /**
+     * Gets the form field appearances as PDF templates.
+     *
+     * @returns {PdfTemplate[]} Returns the appearance templates of the form field.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first form field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Gets the form field appearances as PDF templates.
+     * let template: PdfTemplate[] = field.createTemplate();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public createTemplate(): PdfTemplate[] {
+        let templates: PdfTemplate[];
+        if (this instanceof PdfRadioButtonListField) {
+            templates = this._getPdfRadioButtonListFieldTemplates();
+        } else if (this instanceof PdfCheckBoxField) {
+            templates = this._getCheckboxFieldTemplates();
+        } else {
+            templates = this._getFieldsTemplate();
+        }
+        return templates;
+    }
+    /**
+     * Builds the appearance template list for the field widgets.
+     *
+     * @private
+     * @returns {PdfTemplate[]} Collected appearance templates; empty when no widget could be resolved.
+     */
+    _getFieldsTemplate(): PdfTemplate[] {
+        const templates: PdfTemplate[] = [];
+        const count: number = this._kidsCount;
+        if (count > 0) {
+            for (let i: number = 0; i < count; i++) {
+                const item: PdfWidgetAnnotation = this.itemAt(i);
+                if (item) {
+                    const template: PdfTemplate = item.createTemplate();
+                    templates.push(template);
+                }
+            }
+        } else {
+            let widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+            if (!widget && this._dictionary) {
+                widget = PdfWidgetAnnotation._load(this._dictionary, this._crossReference);
+            }
+            if (widget) {
+                const template: PdfTemplate = widget.createTemplate();
+                templates.push(template);
+            }
+        }
+        return templates;
+    }
+    /**
+     * Builds the appearance templates for the checkbox field across checked/unchecked states.
+     *
+     * @private
+     * @returns {PdfTemplate[]} Collected checkbox appearance templates; empty when no item qualifies.
+     */
+    _getCheckboxFieldTemplates(): PdfTemplate[] {
+        const templates: PdfTemplate[] = [];
+        const count: number = this._kidsCount;
+        if (count > 0) {
+            for (let i: number = 0; i < this._kidsCount; i++) {
+                const item: PdfWidgetAnnotation = this.itemAt(i);
+                if (item && item instanceof PdfStateItem && !this._checkFieldFlag(item._dictionary)) {
+                    const state: _PdfCheckFieldState = item.checked ?
+                        _PdfCheckFieldState.checked :
+                        _PdfCheckFieldState.unchecked;
+                    const template: PdfTemplate = this._getStateTemplate(state, item);
+                    if (template) {
+                        templates.push(template);
+                    }
+                }
+            }
+        } else if (this instanceof PdfCheckBoxField) {
+            const style: _PdfCheckFieldState = this.checked ?
+                _PdfCheckFieldState.checked :
+                _PdfCheckFieldState.unchecked;
+            const template: PdfTemplate = this._getStateTemplate(style, this);
+            if (template) {
+                templates.push(template);
+            }
+        }
+        return templates;
+    }
+    /**
+     * Builds the appearance templates for the radio button list per selected/unselected state.
+     *
+     * @private
+     * @returns {PdfTemplate[]} Collected radio button appearance templates; empty when no item qualifies.
+     */
+    _getPdfRadioButtonListFieldTemplates(): PdfTemplate[] {
+        const templates: PdfTemplate[] = [];
+        const count: number = this._kidsCount;
+        if (count > 0) {
+            if (this instanceof PdfRadioButtonListField) {
+                for (let i: number = 0; i < this._kidsCount; i++) {
+                    const item: PdfWidgetAnnotation = this.itemAt(i);
+                    if (item && item instanceof PdfRadioButtonListItem && !this._checkFieldFlag(item._dictionary)) {
+                        const state: _PdfCheckFieldState = this.selectedIndex === i ?
+                            _PdfCheckFieldState.checked :
+                            _PdfCheckFieldState.unchecked;
+                        const template: PdfTemplate = this._getStateTemplate(state, item);
+                        if (template) {
+                            templates.push(template);
+                        }
+                    }
+                }
+            }
+        } else if (this instanceof PdfRadioButtonListField) {
+            const style: _PdfCheckFieldState = this.selectedIndex !== -1 ?
+                _PdfCheckFieldState.checked :
+                _PdfCheckFieldState.unchecked;
+            const template: PdfTemplate = this._getStateTemplate(style, this);
+            if (template) {
+                templates.push(template);
+            }
+        }
+        return templates;
+    }
+    /**
+     * Resolves the appearance template for the requested check or radio state.
+     *
+     * @private
+     * @param {_PdfCheckFieldState} state - Check field state.
+     * @param {PdfStateItem | PdfField} item - Source widget (or its parent field).
+     * @returns {PdfTemplate} Appearance template, or `undefined` when no stream matches.
+     */
+    _getStateTemplate(state: _PdfCheckFieldState, item: PdfStateItem | PdfField): PdfTemplate {
+        const value: string = state === _PdfCheckFieldState.checked ? _getItemValue(item._dictionary) : 'Off';
+        let template: PdfTemplate;
+        if (item._dictionary.has('AP')) {
+            const dictionary: _PdfDictionary = item._dictionary.get('AP');
+            if (dictionary && dictionary.has('N')) {
+                let appearance: any = dictionary.get('N'); // eslint-disable-line
+                if (appearance && appearance instanceof _PdfBaseStream) {
+                    appearance = appearance.dictionary;
+                }
+                if (appearance && appearance instanceof _PdfDictionary && (value && value !== '' && appearance.has(value))) {
+                    const stream: _PdfBaseStream = appearance.get(value);
+                    const reference: _PdfReference = appearance.getRaw(value);
+                    if (reference) {
+                        stream.reference = reference;
+                    }
+                    if (stream && stream.dictionary instanceof _PdfDictionary) {
+                        const resolvedWidget: PdfWidgetAnnotation = (item instanceof PdfStateItem)
+                            ? item
+                            : this.itemAt(this._defaultIndex || 0);
+                        if (resolvedWidget) {
+                            template = new PdfTemplate();
+                            template._isExported = true;
+                            const templateDictionary: _PdfDictionary = stream.dictionary;
+                            const hasDictionary: boolean = templateDictionary !== undefined && templateDictionary !== null;
+                            const matrix: number[] = hasDictionary ? templateDictionary.getArray('Matrix') : undefined;
+                            const bounds: number[] = hasDictionary ? templateDictionary.getArray('BBox') : undefined;
+                            if (matrix) {
+                                const mMatrix: number[] = [];
+                                for (let i: number = 0; i < matrix.length; i++) {
+                                    const mValue: number = matrix[<number>i];
+                                    mMatrix[<number>i] = mValue;
+                                }
+                                if (bounds && bounds.length > 3) {
+                                    const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
+                                    const rectangle: number[] = resolvedWidget._transformBBox(rect, mMatrix);
+                                    template._size = {width: rectangle[2], height: rectangle[3]};
+                                    template._templateOriginalSize = {width: rect.width, height: rect.height};
+                                }
+                                if (stream && typeof stream.offset === 'number' && stream.offset !== 0) {
+                                    stream.offset = 0;
+                                }
+                            } else if (bounds && (bounds[2] === resolvedWidget.bounds.width && bounds[3] === resolvedWidget.bounds.height)
+                                    || (bounds && _areArrayEqual(resolvedWidget._dictionary.get('Rect'), bounds))) {
+                                if (hasDictionary) {
+                                    templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                                }
+                                if (resolvedWidget._dictionary.has('Vertices')) {
+                                    template._size = {width: bounds[2], height: bounds[3]};
+                                } else {
+                                    template._size = {width: resolvedWidget.bounds.width, height: resolvedWidget.bounds.height};
+                                    resolvedWidget._crossReference._cacheMap.set(reference, stream);
+                                }
+                            } else if (bounds) {
+                                const identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
+                                const templateSize: number[] = resolvedWidget._getTransformMatrix(resolvedWidget._dictionary.get('Rect'), bounds, identityMatrix);
+                                if (resolvedWidget.bounds.width === templateSize[0] && resolvedWidget.bounds.height === templateSize[3]) {
+                                    if (hasDictionary) {
+                                        templateDictionary.update('Matrix', [templateSize[0], 0, 0, templateSize[3], 0, 0]);
+                                    }
+                                    template._size = {width: templateSize[0], height: templateSize[3]};
+                                    resolvedWidget._crossReference._cacheMap.set(reference, stream);
+                                } else {
+                                    if (hasDictionary) {
+                                        templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                                    }
+                                    template._size = bounds
+                                        ? {width: bounds[2], height: bounds[3]}
+                                        : {width: resolvedWidget.bounds.width, height: resolvedWidget.bounds.height};
+                                }
+                            }
+                            template._exportStream(appearance, resolvedWidget._crossReference, value);
+                        }
+                    }
+                }
+            }
+        }
+        return template;
     }
     /**
      * Sets the flag to indicate the new appearance creation.
@@ -9040,7 +9264,42 @@ export class PdfSignatureField extends PdfField {
      * @private
      */
     _isSigned: boolean = false;
+    /**
+     * Stores the revision number associated with the signature.
+     *
+     * @private
+     */
     private _revision: number = -1;
+    /**
+     * Indicates whether the signature has been verified.
+     *
+     * @private
+     */
+    private _verified: boolean = false;
+    /**
+     * Stores the CMS signer information used for signing and validation.
+     *
+     * @private
+     */
+    _cmsSigner: _PdfCryptographicMessageSyntaxSigner;
+    /**
+     * Stores the trusted root certificates used during certificate validation.
+     *
+     * @private
+     */
+    _trustedRoots: any[]; // eslint-disable-line
+    /**
+     * Stores the revocation validation type used during certificate validation.
+     *
+     * @private
+     */
+    _revocationValidationType: RevocationType;
+    /**
+     * Indicates whether certificate revocation validation is enabled.
+     *
+     * @private
+     */
+    _validateRevocation: boolean;
     /**
      * Represents a signature field of the PDF document.
      *
@@ -9298,6 +9557,12 @@ export class PdfSignatureField extends PdfField {
      */
     public setSignature(signature: PdfSignature): void {
         if (this._crossReference) {
+            if (this._widgetAnnot && this._widgetAnnot.bounds) {
+                signature._bounds = this._widgetAnnot.bounds;
+            }
+            if (this._page) {
+                signature._page = this._page;
+            }
             const form: PdfForm = this._crossReference._document.form;
             form._signatureFlag = _SignatureFlag.signatureExists | _SignatureFlag.appendOnly;
             signature._signatureField = this;
@@ -9432,13 +9697,17 @@ export class PdfSignatureField extends PdfField {
         !this._signature._certify && !this._signature._signed) {
             this._signature._lockSignature();
         }
-        const needAppearance: boolean = this._setAppearance || this._form._setAppearance;
+        const needAppearance: boolean = this._setAppearance || this._form._setAppearance ||
+            (this._signature && this._signature._enabledValiadtionAppearance);
         if (isFlatten || needAppearance || this._appearance) {
             const count: number = this._kidsCount;
             if (count > 0) {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfWidgetAnnotation = this.itemAt(i);
-                    if (this._appearance) {
+                    if (this._appearance || (this._signature && this._signature._enabledValiadtionAppearance)) {
+                        if (this._signature && this._signature._enabledValiadtionAppearance && !this._appearance) {
+                            this._appearance = this.getAppearance();
+                        }
                         const template: PdfTemplate =  this._appearance.normal;
                         this._rotateAngle = this._widgetAnnot._getRotationAngle();
                         _setMatrix(template, this.rotate);
@@ -9698,6 +9967,12 @@ export class PdfSignatureField extends PdfField {
             }
         }
     }
+    /**
+     * Gets the document revision associated with the signed byte range.
+     *
+     * @returns {number} The signed revision number; otherwise, -1 if the revision cannot be determined.
+     * @private
+     */
     private _getSignedRevision(): number {
         const signatureDictionary: _PdfDictionary = this._dictionary.get('V');
         const range: number[] = signatureDictionary.getArray('ByteRange');
@@ -9717,6 +9992,2148 @@ export class PdfSignatureField extends PdfField {
             }
         }
         return revision;
+    }
+    /**
+     * Validates the digital signature and returns the validation result.
+     *
+     * ```typescript
+     * // Load the signed PDF document
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Access the signature field
+     * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+     * // Validate the signature
+     * const result: PdfSignatureValidationResult = field.validateSignature();
+     * // Check the validation status
+     * const isSignatureValid: boolean = result.isSignatureValid;
+     * const signatureStatus: SignatureStatus = result.signatureStatus;
+     * // Access revocation information
+     * const revocationStatus: RevocationStatus = result.revocationResult.ocspRevocationStatus;
+     * // Access signer certificates
+     * const certificates: PdfSignerCertificate[] = result.signerCertificates;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfSignatureValidationOptions} [options] The options that control signature validation behavior.
+     * @returns {PdfSignatureValidationResult} The result containing signature validity, certificate validation status, revocation information, and any validation errors.
+     */
+    validateSignature(options?: PdfSignatureValidationOptions): PdfSignatureValidationResult {
+        initializeTelemetryFeature('Signature Validation', 'PDFLibrary');
+        const result: PdfSignatureValidationResult = {
+            cryptographicStandard: undefined as any, // eslint-disable-line
+            digestAlgorithm: undefined as any, // eslint-disable-line
+            isDocumentModified: false,
+            validityAtCurrentTime: false,
+            validityAtSignedTime: false,
+            validityAtTimestampTime: false,
+            isCertifiedSignature: false,
+            documentPermissions: PdfCertificationFlag.forbidChanges,
+            revocationResult: undefined,
+            ltvVerificationInformation: {
+                isCrlEmbedded: false,
+                isLtvEmbedded: false,
+                isOcspEmbedded: false
+            },
+            signatureAlgorithm: '',
+            signatureName: '',
+            signatureStatus: SignatureStatus.unknown,
+            validationErrorMessages: [],
+            timestampInformation: {
+                isDocumentTimestamp: false,
+                isValid: false,
+                timestampTime: new Date(0),
+                timestampPolicyId: '',
+                certificate: undefined,
+                signerCertificates: undefined
+            },
+            isSignatureValid: false,
+            signerCertificates: []
+        };
+        try {
+            if (!this._signature) {
+                this._signature = this.getSignature();
+                this._isSigned = true;
+            }
+            const revocationValidationType: RevocationType = options && options.revocationValidationType ?
+                options.revocationValidationType : RevocationType.ocspAndCrl;
+            const validateRevocation: boolean = revocationValidationType !== RevocationType.none;
+            if (this._signature && !this._cmsSigner) {
+                this._cmsSigner = this._signature._signatureDictionary._cmsSigner;
+            }
+            this._trustedRoots = [];
+            if (options && options.trustedCertificates && options.trustedCertificates.length > 0) {
+                for (let i: number = 0; i < options.trustedCertificates.length; i++) {
+                    const der: Uint8Array = options.trustedCertificates[<number>i];
+                    if (!(der instanceof Uint8Array) || der.length === 0) {
+                        continue;
+                    }
+                    const certPassword: string =
+                        (options.passwords && options.passwords[<number>i] !== undefined)
+                            ? options.passwords[<number>i]
+                            :  '';
+                    const extracted: any[] = this._signature._signatureDictionary._extractTrustedCertsFromBytes(der, certPassword); // eslint-disable-line
+                    for (const cert of extracted) {
+                        this._trustedRoots.push(cert);
+                    }
+                }
+            }
+            if (!this._verified) {
+                this._verified = true;
+                this._revocationValidationType = revocationValidationType;
+                this._validateRevocation = validateRevocation;
+            }
+            const innerResult: PdfSignatureValidationResult = this._validateSignature(revocationValidationType, validateRevocation,
+                                                                                      options && options.ocspExternalData,
+                                                                                      options && options.crlExternalData);
+            if (innerResult) {
+                Object.assign(result, innerResult);
+            }
+            if (this._trustedRoots.length > 0) {
+                const embedded: any[] = this._getEmbeddedCertificates(); // eslint-disable-line
+                if (!embedded || embedded.length === 0) {
+                    result.signatureStatus = SignatureStatus.invalid;
+                    result.validationErrorMessages.push(
+                        'Signer certificate not found in signature.'
+                    );
+                    return result;
+                }
+                const signedDate: Date = this._signature.getSignedDate();
+                const trustedVerification: boolean = this._validateCertificateWithCollection(
+                    embedded, this._trustedRoots, signedDate, result
+                );
+                if (trustedVerification && result.signatureStatus === SignatureStatus.unknown) {
+                    result.signatureStatus = SignatureStatus.valid;
+                } else if (!trustedVerification) {
+                    result.signatureStatus = SignatureStatus.invalid;
+                    result.validationErrorMessages.push(
+                        'Cannot be verified against the trusted certificate store or the certificate chain.'
+                    );
+                }
+            }
+        } catch (e) {
+            result.signatureStatus = SignatureStatus.invalid;
+            result.validationErrorMessages.push(
+                e && e.message ? e.message : 'Unknown error during signature validation.'
+            );
+        }
+        return result;
+    }
+    /**
+     * Retrieves the certificates embedded in the CMS signature.
+     *
+     * @returns {any[]} The collection of embedded certificates; otherwise, undefined if no certificates are available.
+     * @private
+     */
+    _getEmbeddedCertificates(): any[] { // eslint-disable-line
+        if (this._cmsSigner && this._cmsSigner._certificates && this._cmsSigner._certificates.length > 0) {
+            return this._cmsSigner._certificates;
+        }
+        return undefined;
+    }
+    /**
+     * Retrieves the signing certificate from the collection of embedded certificates.
+     *
+     * @param {any[]} embedded The collection of embedded certificates.
+     * @returns {any} The signing certificate; otherwise, undefined if no certificate is available.
+     * @private
+     */
+    _getSignerCertificate(embedded: any[]): any { // eslint-disable-line
+        if (embedded && embedded.length > 0) {
+            return embedded[0];
+        }
+        return undefined;
+    }
+    /**
+     * Validates the embedded CMS certificates against a collection of trusted root certificates,
+     * mirroring the .NET ValidateCertificateWithCollection logic.
+     *
+     * @private
+     * @param {any[]} embedded The embedded certificates from the CMS signature.
+     * @param {any[]} trustedRoots The trusted root certificates provided by the caller.
+     * @param {Date} signDate The date at which the signature was signed.
+     * @param {PdfSignatureValidationResult} signatureResult The result object to append errors to.
+     * @returns {boolean} `true` if any embedded certificate is verified by a trusted root; otherwise `false`.
+     */
+    _validateCertificateWithCollection(embedded: any[], trustedRoots: any[], signDate: Date, signatureResult: PdfSignatureValidationResult): boolean { // eslint-disable-line
+        if (!embedded || embedded.length === 0 || !trustedRoots || trustedRoots.length === 0) {
+            return false;
+        }
+        for (let i: number = 0; i < embedded.length; i++) {
+            const cert: any = embedded[<number>i]; // eslint-disable-line
+            for (const rootCert of trustedRoots) {
+                if (this._isCertificateTimeValid(rootCert, signDate) &&
+                    this._verifyCertificateSignature(cert, rootCert)) {
+                    return true;
+                }
+            }
+            let verifiedByChain: boolean = false;
+            for (let j: number = 0; j < embedded.length; j++) {
+                if (j !== i) {
+                    const certNext: any = embedded[<number>j]; // eslint-disable-line
+                    if (this._verifyCertificateSignature(cert, certNext)) {
+                        verifiedByChain = true;
+                        break;
+                    }
+                }
+            }
+            if (!verifiedByChain && i === embedded.length - 1) {
+                signatureResult.validationErrorMessages.push(
+                    'Cannot be verified against the KeyStore or the certificate chain'
+                );
+            }
+        }
+        return false;
+    }
+    /**
+     * Builds and validates a certificate chain from the signing certificate to a trusted root certificate.
+     *
+     * @param {any} leaf The signing certificate from which to start chain validation.
+     * @param {any[]} intermediates The intermediate certificates used to build the certificate chain.
+     * @param {any[]} roots The trusted root certificates used as trust anchors.
+     * @param {Date} validationTime The date and time at which certificate validity should be evaluated.
+     * @returns {object} An object containing the trust result,
+     * the constructed certificate chain, and a failure reason when validation is unsuccessful.
+     * @private
+     */
+    _buildAndValidateCertificateChain(leaf: any, intermediates: any[], // eslint-disable-line
+        roots: any[], validationTime: Date): { trusted: boolean; chain: any[]; failureReason?: string } {  // eslint-disable-line
+        const pool: any[] = [...intermediates, ...roots]; // eslint-disable-line
+        const chain: any[] = [leaf]; // eslint-disable-line
+        const keyUsage: boolean[] = leaf._keyUsage;
+        const allowsSigning: boolean = keyUsage ? (keyUsage[0] === true || keyUsage[1] === true) : true;
+        if (!allowsSigning) {
+            return { trusted: false, chain, failureReason: 'Signer keyUsage does not allow digital signing.' };
+        }
+        if (!this._isCertificateTimeValid(leaf, validationTime)) {
+            return { trusted: false, chain, failureReason: 'Signer certificate is expired or not yet valid.' };
+        }
+        let current: any = leaf; // eslint-disable-line
+        while (!this._isSelfSigned(current)) {
+            const issuer: any = this._findIssuer(current, pool); // eslint-disable-line
+            if (!issuer) {
+                return { trusted: false, chain, failureReason: 'Issuer certificate not found.' };
+            }
+            const ok: boolean = this._verifyCertificateSignature(current, issuer);
+            if (!ok) {
+                return { trusted: false, chain, failureReason: 'Certificate signature verification failed.' };
+            }
+            if (!this._isCertificateTimeValid(issuer, validationTime)) {
+                return { trusted: false, chain, failureReason: 'Issuer certificate is expired or not yet valid.' };
+            }
+            chain.push(issuer);
+            current = issuer;
+        }
+        const root: any = current; // eslint-disable-line
+        const anchored: boolean = roots.some((r: any) => this._sameCertificate(r, root)); // eslint-disable-line
+        if (!anchored) {
+            return { trusted: false, chain, failureReason: 'Chain terminates at an untrusted root.' };
+        }
+        if (!this._verifyCertificateSignature(root, root)) {
+            return { trusted: false, chain, failureReason: 'Root certificate self-signature invalid.' };
+        }
+        return { trusted: true, chain };
+    }
+    _findIssuer(child: any, pool: any[]): any { // eslint-disable-line
+        const akiKeyId: Uint8Array = this._tryGetAuthorityKeyIdentifier(child);
+        if (akiKeyId) {
+            const match: boolean = pool.find((c: any) => _bytesEqual(this._tryGetSubjectKeyIdentifier(c), akiKeyId)); // eslint-disable-line
+            if (match) {
+                return match;
+            }
+        }
+        const childSigned: _PdfSignedCertificate = child._structure._getSignedCertificate();
+        const issuerDn: any = childSigned._issuer; // eslint-disable-line
+        const candidates: any[] = pool.filter((c: any) => { // eslint-disable-line
+            if (!c) {
+                return false;
+            }
+            let signed: _PdfSignedCertificate;
+            try {
+                signed = c._structure._getSignedCertificate();
+            } catch {
+                return false;
+            }
+            if (!signed || !signed._subject) {
+                return false;
+            }
+            return this._areDistinguishedNamesEqual(issuerDn, signed._subject);
+        });
+        if (candidates.length === 0) {
+            return null;
+        }
+        const sigBytes: Uint8Array = child._structure._getSignatureValue();
+        const kSig: number = sigBytes.length;
+        const ordered: any[] = candidates.sort((a: any, b: any) => { // eslint-disable-line
+            const kA: number = ((a._getPublicKey() as any)._modulus instanceof Uint8Array) ? (a._getPublicKey() as any)._modulus.length : 0; // eslint-disable-line
+            const kB: number = ((b._getPublicKey() as any)._modulus instanceof Uint8Array) ? (b._getPublicKey() as any)._modulus.length : 0; // eslint-disable-line
+            const da: number = Math.abs(kA - kSig);
+            const db: number = Math.abs(kB - kSig);
+            return da - db;
+        });
+        for (const cand of ordered) {
+            if (this._verifyCertificateSignature(child, cand)) {
+                return cand;
+            }
+        }
+        return null;
+    }
+    /**
+     * Maps a certificate signature algorithm OID to its corresponding hash algorithm name.
+     *
+     * @param {string} oid The object identifier (OID) of the certificate signature algorithm.
+     * @returns {'SHA1' | 'SHA256' | 'SHA384' | 'SHA512'} The corresponding hash algorithm name; otherwise, null if the OID is not supported.
+     * @private
+     */
+    _mapCertificateSigAlgOidToHash(oid: string): 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512' {
+        switch (oid) {
+        case '1.2.840.113549.1.1.5':
+            return 'SHA1';
+        case '1.2.840.113549.1.1.11':
+            return 'SHA256';
+        case '1.2.840.113549.1.1.12':
+            return 'SHA384';
+        case '1.2.840.113549.1.1.13':
+            return 'SHA512';
+        default:
+            return null;
+        }
+    }
+    /**
+     * Verifies that a certificate was signed by the specified issuer certificate.
+     *
+     * @param {any} child The certificate whose signature is to be verified.
+     * @param {any} issuer The issuer certificate containing the public key used for verification.
+     * @returns {boolean} true if the certificate signature is valid; otherwise, false.
+     * @private
+     */
+    _verifyCertificateSignature(child: any, issuer: any): boolean { // eslint-disable-line
+        const structure: _PdfX509CertificateStructure = child._structure;
+        const algoOid: string = structure._getSignatureAlgorithmOid();
+        const hashName: 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512' = this._mapCertificateSigAlgOidToHash(algoOid);
+        if (!hashName) {
+            return false;
+        }
+        const tbs: Uint8Array = child._getTobeSignedCertificate();
+        const signature: Uint8Array = structure._getSignatureValue();
+        if (!signature || signature.length === 0) {
+            return false;
+        }
+        const pubParam: _PdfCipherParameter = issuer._getPublicKey(false);
+        if (!(pubParam instanceof _PdfRonCipherParameter)) {
+            return false;
+        }
+        const icp: _ICipherParam = this._toICipherParam(pubParam);
+        return this._cmsSigner._verifyRsaPkcs1Signature(hashName, tbs, signature, icp);
+    }
+    /**
+     * Determines whether the specified certificate is valid at the given date and time.
+     *
+     * @param {any} cert The certificate whose validity period is to be checked.
+     * @param {Date} at The date and time against which the certificate validity is evaluated.
+     * @returns {boolean} true if the certificate is valid at the specified time; otherwise, false.
+     * @private
+     */
+    _isCertificateTimeValid(cert: any, at: Date): boolean { // eslint-disable-line
+        const signed: _PdfSignedCertificate = cert._structure._getSignedCertificate();
+        const validFrom: Date =
+            signed._startDate && typeof signed._startDate._toDate === 'function'
+                ? signed._startDate._toDate()
+                : undefined;
+        const validTo: Date | undefined =
+            signed._endDate && typeof signed._endDate._toDate === 'function'
+                ? signed._endDate._toDate()
+                : undefined;
+        if (!validFrom || !validTo) {
+            return false;
+        }
+        return at.getTime() >= validFrom.getTime() && at.getTime() <= validTo.getTime();
+    }
+    /**
+     * Determines whether the specified certificate is self-signed.
+     *
+     * @param {any} cert The certificate to evaluate.
+     * @returns {boolean} true if the certificate is self-signed and its signature is valid; otherwise, false.
+     * @private
+     */
+    _isSelfSigned(cert: any): boolean { // eslint-disable-line
+        const signed: _PdfSignedCertificate = cert._structure._getSignedCertificate();
+        const subject: any = signed._subject; // eslint-disable-line
+        const issuer: any = signed._issuer; // eslint-disable-line
+        const dnEqual: boolean = this._areDistinguishedNamesEqual(subject, issuer);
+        if (!dnEqual) {
+            return false;
+        }
+        return this._verifyCertificateSignature(cert, cert);
+    }
+    /**
+     * Determines whether two certificates represent the same certificate.
+     *
+     * @param {any} a The first certificate to compare.
+     * @param {any} b The second certificate to compare.
+     * @returns {boolean} true if the certificates are identical; otherwise, false.
+     * @private
+     */
+    _sameCertificate(a: any, b: any): boolean { // eslint-disable-line
+        const derA: Uint8Array = a._getEncoded();
+        const derB: Uint8Array = b._getEncoded();
+        if (_bytesEqual(derA, derB)) {
+            return true;
+        }
+        const sa: _PdfSignedCertificate = a._structure._getSignedCertificate();
+        const sb: _PdfSignedCertificate = b._structure._getSignedCertificate();
+        const serialA: Uint8Array = sa._serialNumber;
+        const serialB: Uint8Array = sb._serialNumber;
+        const sameDn: boolean = this._areDistinguishedNamesEqual(sa._subject, sb._subject);
+        const sameSerial: boolean = _bytesEqual(serialA, serialB);
+        return sameDn && sameSerial;
+    }
+    /**
+     * Retrieves the Authority Key Identifier (AKI) from the specified certificate.
+     *
+     * @param {any} cert The certificate from which to retrieve the Authority Key Identifier.
+     * @returns {Uint8Array} The Authority Key Identifier value; otherwise, null if the extension is not present or cannot be parsed.
+     * @private
+     */
+    _tryGetAuthorityKeyIdentifier(cert: any): Uint8Array { // eslint-disable-line
+        const exts: _PdfX509Extensions = cert._getExtensions();
+        if (exts) {
+            const akiOid: _PdfObjectIdentifier = exts._authorityKeyIdentifier;
+            const ext: _PdfX509Extension = exts._getExtension(akiOid);
+            if (!ext || !ext._value) {
+                return null;
+            }
+            const inner: _PdfAbstractSyntaxElement = this._unwrapExtensionValue(ext._value);
+            if (!inner) {
+                return null;
+            }
+            let seq: _PdfAbstractSyntaxElement[];
+            try {
+                seq = inner._getSequence();
+            } catch {
+                const nested: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+                const innerVal: Uint8Array = (inner as any)._getValue ? (inner as any)._getValue() : new Uint8Array(0); // eslint-disable-line
+                nested._fromBytes(innerVal);
+                seq = nested._getSequence();
+            }
+            if (seq && seq.length > 0) {
+                for (const el of seq) {
+                    const isTaggedFn: any = el._isTagged(); // eslint-disable-line
+                    if (typeof isTaggedFn === 'function' && isTaggedFn.call(el)) {
+                        let tagNo: number = -1;
+                        const getTagNo: any = (el as any)._getTagNumber; // eslint-disable-line
+                        if (typeof getTagNo === 'function') {
+                            tagNo = getTagNo.call(el);
+                        }
+                        if (tagNo === 0) {
+                            let kid: Uint8Array = null;
+                            const getValue: any = el._getValue(); // eslint-disable-line
+                            if (typeof getValue === 'function') {
+                                kid = getValue.call(el);
+                            }
+                            if (kid && kid.length > 0) {
+                                return kid;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+    /**
+     * Extracts and decodes the inner ASN.1 value from a certificate extension.
+     *
+     * @param {_PdfAbstractSyntaxElement} extValue The encoded extension value to unwrap.
+     * @returns {_PdfAbstractSyntaxElement} The decoded ASN.1 element contained within the extension value; otherwise, undefined if the value is empty.
+     * @private
+     */
+    _unwrapExtensionValue(extValue: _PdfAbstractSyntaxElement): _PdfAbstractSyntaxElement {
+        const innerDer: Uint8Array = extValue && typeof extValue._getValue === 'function'
+            ? extValue._getValue() : new Uint8Array(0);
+        if (innerDer && innerDer.length > 0) {
+            const asn1: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            asn1._fromBytes(innerDer);
+            return asn1;
+        }
+        return undefined;
+    }
+    /**
+     * Retrieves the Subject Key Identifier (SKI) from the specified certificate.
+     *
+     * @param {any} cert The certificate from which to retrieve the Subject Key Identifier.
+     * @returns {Uint8Array} The Subject Key Identifier value; otherwise, null if the extension is not present or cannot be parsed.
+     * @private
+     */
+    _tryGetSubjectKeyIdentifier(cert: any): Uint8Array { // eslint-disable-line
+        const exts: _PdfX509Extensions = cert._getExtensions();
+        if (!exts) {
+            return null;
+        }
+        const skiOid: _PdfObjectIdentifier = new _PdfObjectIdentifier()._fromString('2.5.29.14');
+        const extElem: _PdfAbstractSyntaxElement = cert._getExtension(skiOid);
+        if (!extElem) {
+            return null;
+        }
+        const inner: _PdfAbstractSyntaxElement = this._unwrapExtensionValue(extElem);
+        if (!inner) {
+            return null;
+        }
+        try {
+            let keyId: Uint8Array = null;
+            const getValue: any = (inner as any)._getValue; // eslint-disable-line
+            if (typeof getValue === 'function') {
+                keyId = getValue.call(inner);
+            }
+            return (keyId && keyId.length > 0) ? keyId : null;
+        } catch {
+            return null;
+        }
+    }
+    /**
+     * Determines whether two distinguished names are equivalent.
+     *
+     * @param {any} a The first distinguished name to compare.
+     * @param {any} b The second distinguished name to compare.
+     * @returns {boolean} true if the distinguished names contain the same normalized values; otherwise, false.
+     * @private
+     */
+    _areDistinguishedNamesEqual(a: any, b: any): boolean { // eslint-disable-line
+        if (!a || !b) {
+            return false;
+        }
+        const normalize: any = (val: any) => (val || '').toString().trim().toLowerCase(); // eslint-disable-line
+        const valuesA: any = (a._values || []).map(normalize); // eslint-disable-line
+        const valuesB: any = (b._values || []).map(normalize); // eslint-disable-line
+        if (valuesA.length !== valuesB.length) {
+            return false;
+        }
+        valuesA.sort();
+        valuesB.sort();
+        for (let i: number = 0; i < valuesA.length; i++) {
+            if (valuesA[<number>i] !== valuesB[<number>i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * Validates the signature content, certificate information, revocation status,
+     * timestamp data, and document integrity, and returns the validation result.
+     *
+     * @param {RevocationType} revocationValidationType The revocation validation method to use.
+     * @param {boolean} validateRevocation Indicates whether certificate revocation validation should be performed.
+     * @param {Uint8Array} [ocsp] The external OCSP response data used for revocation validation.
+     * @param {Uint8Array} [crl] The external CRL data used for revocation validation.
+     * @returns {PdfSignatureValidationResult} The result containing signature validation details, certificate information, revocation status, and any validation errors.
+     * @private
+     */
+    _validateSignature(revocationValidationType: RevocationType,
+                       validateRevocation: boolean, ocsp?: Uint8Array, crl?: Uint8Array): PdfSignatureValidationResult {
+        const result: PdfSignatureValidationResult = {
+            cryptographicStandard: undefined as any, // eslint-disable-line
+            digestAlgorithm: undefined as any, // eslint-disable-line
+            isDocumentModified: false,
+            validityAtCurrentTime: false,
+            validityAtSignedTime: false,
+            validityAtTimestampTime: false,
+            isCertifiedSignature: false,
+            documentPermissions: PdfCertificationFlag.forbidChanges,
+            revocationResult: undefined,
+            ltvVerificationInformation: {
+                isCrlEmbedded: false,
+                isLtvEmbedded: false,
+                isOcspEmbedded: false
+            },
+            signatureAlgorithm: '',
+            signatureName: '',
+            signatureStatus: SignatureStatus.unknown,
+            validationErrorMessages: [],
+            timestampInformation: {
+                isDocumentTimestamp: false,
+                isValid: false,
+                timestampTime: new Date(0),
+                timestampPolicyId: '',
+                certificate: undefined,
+                signerCertificates: undefined
+            },
+            isSignatureValid: false,
+            signerCertificates: []
+        };
+        result.signatureName = this._getFieldName();
+        result.cryptographicStandard = this._signature._cryptographicStandard;
+        result.digestAlgorithm = this._signature._digestAlgorithm;
+        result.isCertifiedSignature = this._signature._certify;
+        result.documentPermissions = this._signature._documentPermissions ?
+            this._signature._documentPermissions : PdfCertificationFlag.forbidChanges;
+        result.signatureAlgorithm = this._cmsSigner._encryptionAlgorithm;
+        const certificates: any[] = this._cmsSigner._certificates; // eslint-disable-line
+        this._detectLtvData(result.ltvVerificationInformation);
+        if (!this._verifyChecksum()) {
+            result.isDocumentModified = true;
+            result.signatureStatus = SignatureStatus.invalid;
+            result.validationErrorMessages.push(
+                'The document has been altered or corrupted since the signature was applied'
+            );
+            return result;
+        }
+        result.signatureStatus = SignatureStatus.valid;
+        if (this._checkIncrementUpdate()) {
+            result.isDocumentModified = true;
+            result.signatureStatus = SignatureStatus.invalid;
+            result.validationErrorMessages.push(
+                'The document has been altered or corrupted since the signature was applied'
+            );
+            return result;
+        }
+        if (validateRevocation) {
+            result.revocationResult = this._validateRevocationCore(revocationValidationType, ocsp, crl);
+        }
+        if (certificates && Array.isArray(certificates) && certificates.length > 0) {
+            const isOcspGood: boolean = !!(result.revocationResult &&
+                (result.revocationResult.ocspRevocationStatus === RevocationStatus.good ||
+                 result.revocationResult.ocspRevocationStatus === RevocationStatus.none));
+            const isCrlGood: boolean = !!(result.revocationResult && !result.revocationResult.isRevokedCRL);
+            const isOcspEmbedded: boolean = result.ltvVerificationInformation.isOcspEmbedded;
+            const isCrlEmbedded: boolean = result.ltvVerificationInformation.isCrlEmbedded;
+            let ocspResponderCert: any = null; // eslint-disable-line
+            let ocspThisUpdate: Date = undefined;
+            let ocspNextUpdate: Date = undefined;
+            if (validateRevocation && isOcspGood) {
+                const ocspBytes: Uint8Array = this._extractOcspFromDss();
+                if (ocspBytes) {
+                    const ocspInfo: { cert: any; validFrom: Date; validTo: Date } = // eslint-disable-line
+                        this._signature._signatureDictionary._extractOcspResponderInfo(ocspBytes);
+                    if (ocspInfo) {
+                        ocspResponderCert = ocspInfo.cert;
+                        ocspThisUpdate = ocspInfo.validFrom;
+                        ocspNextUpdate = ocspInfo.validTo;
+                    }
+                }
+            }
+            let crlIssuerCert: any = null; // eslint-disable-line
+            let crlThisUpdate: Date = undefined;
+            let crlNextUpdate: Date = undefined;
+            if (validateRevocation && isCrlGood) {
+                if (certificates.length > 1) {
+                    crlIssuerCert = certificates[1];
+                }
+                const crlBytes: Uint8Array = this._extractCrlFromDss();
+                if (crlBytes) {
+                    const crlTimes: { thisUpdate: Date; nextUpdate: Date } =
+                        this._extractCrlTimes(crlBytes);
+                    if (crlTimes) {
+                        crlThisUpdate = crlTimes.thisUpdate;
+                        crlNextUpdate = crlTimes.nextUpdate;
+                    }
+                }
+            }
+            const orderedCerts: any[] = certificates.slice().reverse(); // eslint-disable-line
+            for (let ci: number = 0; ci < orderedCerts.length; ci++) {
+                const cert: any = orderedCerts[<number>ci]; // eslint-disable-line
+                const certProps: PdfX509CertificateProperties = cert._extractProperties();
+                const signerEntry: PdfSignerCertificate = {
+                    certificate: certProps
+                };
+                if (validateRevocation && isOcspGood && ci === 0) {
+                    const ocspCert: any = ocspResponderCert || cert; // eslint-disable-line
+                    const ocspProps: PdfX509CertificateProperties = ocspCert._extractProperties();
+                    const ocspEntry: PdfRevocationCertificate = {
+                        isEmbedded: isOcspEmbedded,
+                        certificates: [ocspProps],
+                        validFrom: ocspThisUpdate,
+                        validTo: ocspNextUpdate
+                    };
+                    signerEntry.ocspCertificate = ocspEntry;
+                }
+                if (validateRevocation && isCrlGood && ci === 1) {
+                    const issuerCert: any = crlIssuerCert || cert; // eslint-disable-line
+                    const crlProps: PdfX509CertificateProperties = issuerCert._extractProperties();
+                    const crlEntry: PdfRevocationCertificate = {
+                        isEmbedded: isCrlEmbedded,
+                        certificates: [crlProps],
+                        validFrom: crlThisUpdate,
+                        validTo: crlNextUpdate
+                    };
+                    signerEntry.crlCertificate = crlEntry;
+                }
+                result.signerCertificates.push(signerEntry);
+            }
+        }
+        if (this._signature && typeof this._signature._verifyTimeStampCore === 'function') {
+            result.timestampInformation = this._signature._verifyTimeStampCore();
+        }
+        if (certificates && Array.isArray(certificates) && certificates.length > 0) {
+            const signerCert: any = certificates[0]; // eslint-disable-line
+            const signedCert: any = signerCert._structure._getSignedCertificate(); // eslint-disable-line
+            const validFrom: Date = signedCert._startDate ? signedCert._startDate._toDate() : undefined;
+            const validTo: Date = signedCert._endDate ? signedCert._endDate._toDate() : undefined;
+            const checkValidity: (d: Date) => boolean = (d: Date): boolean => {
+                if (!d || !validFrom || !validTo) {
+                    return false;
+                }
+                return d.getTime() >= validFrom.getTime() && d.getTime() <= validTo.getTime();
+            };
+            const isValidOCSPorCRLtime: boolean = !!(result.revocationResult &&
+                (result.revocationResult.ocspRevocationStatus === RevocationStatus.good ||
+                 result.revocationResult.ocspRevocationStatus === RevocationStatus.none) &&
+                !result.revocationResult.isRevokedCRL);
+            const signedDate: Date = (this._signature && typeof this._signature.getSignedDate === 'function')
+                ? this._signature.getSignedDate() : (this._signature ? this._signature._signedDate : undefined);
+            if (checkValidity(signedDate)) {
+                result.validityAtSignedTime = true;
+            } else if (!isValidOCSPorCRLtime) {
+                result.validationErrorMessages.push(
+                    'The signature is not valid at signing date. Signing time is from the clock on the signer\'s computer'
+                );
+            }
+            if (checkValidity(new Date())) {
+                result.validityAtCurrentTime = true;
+            } else if (!isValidOCSPorCRLtime) {
+                result.validationErrorMessages.push('The signature is not valid at current date.');
+            }
+            if (result.timestampInformation && result.timestampInformation.isValid && result.timestampInformation.timestampTime) {
+                const tsTime: Date = result.timestampInformation.timestampTime;
+                if (checkValidity(tsTime)) {
+                    result.validityAtTimestampTime = true;
+                } else {
+                    result.validationErrorMessages.push(
+                        'The signature includes an embedded timestamp but it could not be verified.'
+                    );
+                }
+            }
+        }
+        if (result.isDocumentModified) {
+            result.signatureStatus = SignatureStatus.invalid;
+        } else {
+            const isValid: boolean = result.validityAtCurrentTime || result.validityAtSignedTime ||
+                result.validityAtTimestampTime;
+            const revocationResult: RevocationResult = result.revocationResult;
+            let hasValidRevocation: boolean = false;
+            if (revocationResult) {
+                if ((revocationResult.ocspRevocationStatus === RevocationStatus.good ||
+                    revocationResult.ocspRevocationStatus === RevocationStatus.none) &&
+                    !revocationResult.isRevokedCRL) {
+                    hasValidRevocation = true;
+                }
+            }
+            if (isValid && hasValidRevocation) {
+                result.signatureStatus = SignatureStatus.unknown;
+                result.isSignatureValid = true;
+            } else if (!validateRevocation && isValid) {
+                result.signatureStatus = SignatureStatus.unknown;
+                result.isSignatureValid = true;
+            } else {
+                result.signatureStatus = SignatureStatus.invalid;
+            }
+        }
+        return result;
+    }
+    /**
+     * Retrieves the fully qualified name of the signature field.
+     *
+     * @returns {string} The fully qualified field name; otherwise, undefined if the field name cannot be determined.
+     * @private
+     */
+    _getFieldName(): string {
+        const fieldDict: _PdfDictionary = this._signature && this._signature._signatureField
+            ? this._signature._signatureField._dictionary : undefined;
+        if (!fieldDict) {
+            return undefined;
+        }
+        let name: string;
+        let leaf: string;
+        const fetchParent: any = (dic: _PdfDictionary): _PdfDictionary => { // eslint-disable-line
+            if (!dic || !dic.has('Parent')) {
+                return undefined;
+            }
+            const parentRaw: any = dic.get('Parent'); // eslint-disable-line
+            if (parentRaw && parentRaw instanceof _PdfDictionary) {
+                return parentRaw as _PdfDictionary;
+            }
+            if (parentRaw && parentRaw instanceof _PdfReference && this._crossReference) {
+                return this._crossReference._fetch(parentRaw as _PdfReference);
+            }
+            return undefined;
+        };
+        if (!fieldDict.has('Parent')) {
+            if (fieldDict.has('T')) {
+                const t: string = fieldDict.get('T');
+                if (typeof t === 'string') {
+                    leaf = t;
+                }
+            }
+        } else {
+            let dic: _PdfDictionary = fetchParent(fieldDict);
+            if (dic) {
+                while (dic && dic.has('Parent')) {
+                    if (dic.has('T')) {
+                        const t: string = dic.get('T');
+                        if (typeof t === 'string') {
+                            name = (name === null) ? t : `${t}.${name}`;
+                        }
+                    }
+                    const next: _PdfDictionary = fetchParent(dic);
+                    if (next && !next.has('T')) {
+                        dic = next;
+                        break;
+                    }
+                    dic = next;
+                    if (!dic) {
+                        break;
+                    }
+                }
+                if (dic && dic.has('T')) {
+                    const t: string = dic.get('T');
+                    if (typeof t === 'string') {
+                        name = (name === null) ? t : `${t}.${name}`;
+                    }
+                }
+                if (fieldDict.has('T')) {
+                    const leafT: string = fieldDict.get('T');
+                    if (typeof leafT === 'string') {
+                        name = (name === null) ? leafT : `${name}.${leafT}`;
+                    }
+                }
+            } else {
+                if (fieldDict.has('T')) {
+                    const t: string = fieldDict.get('T');
+                    if (typeof t === 'string') {
+                        leaf = t;
+                    }
+                }
+            }
+        }
+        if (leaf !== null && typeof leaf !== 'undefined') {
+            return leaf;
+        }
+        return name;
+    }
+    /**
+     * Verifies the integrity of the signed content by validating its checksum.
+     *
+     * @returns {boolean} true if the checksum is valid; otherwise, false.
+     * @private
+     */
+    _verifyChecksum(): boolean {
+        if (this._cmsSigner) {
+            try {
+                return this._cmsSigner._validateCheckSum();
+            } catch {
+                return false;
+            }
+        }
+        return false;
+    }
+    /**
+     * Checks whether the document has been modified after the signature was applied
+     * by analyzing incremental updates and permitted document changes.
+     *
+     * @returns {boolean} true if unauthorized modifications are detected; otherwise, false.
+     * @private
+     */
+    _checkIncrementUpdate(): boolean {
+        const xref: _PdfCrossReference = this._crossReference as _PdfCrossReference;
+        if (!xref) {
+            return false;
+        }
+        const trailer: _PdfDictionary = xref._trailer;
+        if (trailer && !trailer.has('Prev')) {
+            return false;
+        }
+        let ranges: number[];
+        const sig: any = this._signature; // eslint-disable-line
+        if (sig && Array.isArray(sig._ranges) && sig._ranges.length >= 4) {
+            ranges = sig._ranges.slice(0, 4);
+        } else {
+            let sigDict: any = this._dictionary; // eslint-disable-line
+            if (sigDict && sigDict.has && sigDict.has('V')) {
+                const v: any = sigDict.get('V'); // eslint-disable-line
+                if (v instanceof _PdfDictionary) {
+                    sigDict = v;
+                }
+            }
+            if (sigDict instanceof _PdfDictionary) {
+                const br: any[] = sigDict.getArray('ByteRange'); // eslint-disable-line
+                if (Array.isArray(br) && br.length >= 4) {
+                    ranges = br.slice(0, 4).map((n: any) => Number(n)); // eslint-disable-line
+                }
+            }
+        }
+        if (!ranges || ranges.length < 4 || ranges.some((n: number) => !Number.isFinite(n))) {
+            return true;
+        }
+        const [s1, l1, s2, l2]: number[] = ranges;
+        const hasPermission: boolean = !!(sig && sig._certify === true);
+        const permission: PdfCertificationFlag = (sig && sig._documentPermissions !== null)
+            ? sig._documentPermissions : PdfCertificationFlag.forbidChanges;
+        const forbidChanges: boolean = hasPermission && permission === PdfCertificationFlag.forbidChanges;
+        const allowsFormFillOrComments: boolean = hasPermission &&
+            (permission === PdfCertificationFlag.allowFormFill || permission === PdfCertificationFlag.allowComments);
+        const skipObjects: Set<number> = new Set<number>();
+        const catalog: _PdfDictionary = xref._root;
+        if (catalog && catalog.has('AcroForm')) {
+            this._addTopRefIfAny(catalog.getRaw('AcroForm'), skipObjects);
+        }
+        if (trailer && trailer.has('Info')) {
+            this._addTopRefIfAny(trailer.getRaw('Info'), skipObjects);
+        }
+        const skippedObjects: Set<number> = new Set<number>();
+        const appendedFieldObjNums: Set<number> = new Set<number>();
+        const laterSignatureObjects: Set<number> = new Set<number>();
+        let acroTopRefNum: number = undefined;
+        if (catalog && catalog.has('AcroForm')) {
+            const acroRaw: any = catalog.getRaw('AcroForm'); // eslint-disable-line
+            if (acroRaw instanceof _PdfReference) {
+                acroTopRefNum = acroRaw.objectNumber;
+            }
+        }
+        const histories: any = xref._entriesHistory; // eslint-disable-line
+        let signedRevisionId: number = 0;
+        if (this._ref && this._ref.objectNumber && histories && histories.length > this._ref.objectNumber) {
+            const sigHist: _PdfObjectInformation[] = histories[this._ref.objectNumber];
+            if (sigHist && sigHist.length > 0) {
+                for (const e of sigHist) {
+                    if (!e || e.free) {
+                        continue;
+                    }
+                    const phys: number = xref._getPhysicalOffsetForEntry(e);
+                    if (Number.isFinite(phys) && this._isInByteRange(phys, s1, l1, s2, l2)) {
+                        signedRevisionId = e.revisionId ? e.revisionId : 0;
+                        break;
+                    }
+                }
+            }
+        }
+        if (catalog && catalog.has('AcroForm')) {
+            const acroFormRaw: any = catalog.getRaw('AcroForm'); // eslint-disable-line
+            if (acroFormRaw instanceof _PdfReference) {
+                const acroFormInSignedRev: any = xref._fetchReferenceInRevision(acroFormRaw, signedRevisionId); // eslint-disable-line
+                this._readAllSubRefs(acroFormInSignedRev, signedRevisionId, xref, skippedObjects);
+            } else {
+                this._readAllSubRefs(acroFormRaw, signedRevisionId, xref, skippedObjects);
+            }
+        }
+        if (catalog && catalog.has('AcroForm')) {
+            const acroRaw: any = catalog.getRaw('AcroForm'); // eslint-disable-line
+            if (acroRaw instanceof _PdfReference) {
+                const signedAcro: any = xref._fetchReferenceInRevision(acroRaw, signedRevisionId); // eslint-disable-line
+                const currentAcro: any = xref._fetch(acroRaw); // eslint-disable-line
+                const sFields: any = signedAcro && signedAcro.has('Fields') ? signedAcro.getRaw('Fields') : null; // eslint-disable-line
+                const cFields: any = currentAcro && currentAcro.has('Fields') ? currentAcro.getRaw('Fields') : null; // eslint-disable-line
+                if (Array.isArray(sFields) && Array.isArray(cFields) && cFields.length < sFields.length) {
+                    return true;
+                }
+            }
+        }
+        if (trailer && trailer.has('Info')) {
+            const infoRaw: any = trailer.getRaw('Info'); // eslint-disable-line
+            if (infoRaw instanceof _PdfReference) {
+                const infoInSignedRev: any = xref._fetchReferenceInRevision(infoRaw, signedRevisionId); // eslint-disable-line
+                this._readAllSubRefs(infoInSignedRev, signedRevisionId, xref, skippedObjects);
+            } else {
+                this._readAllSubRefs(infoRaw, signedRevisionId, xref, skippedObjects);
+            }
+        }
+        const signatureIsLocked: boolean = !!(sig && sig._isLocked);
+        if (histories && histories.length > 0) {
+            for (let objNum: number = 1; objNum < histories.length; objNum++) {
+                if (laterSignatureObjects.has(objNum)) {
+                    continue;
+                }
+                const hist: _PdfObjectInformation[] = histories[<number>objNum];
+                if (!hist || hist.length === 0) {
+                    continue;
+                }
+                let newestEntry: _PdfObjectInformation;
+                for (const e of hist) {
+                    if (e && !e.free) {
+                        newestEntry = e; break;
+                    }
+                }
+                if (!newestEntry) {
+                    continue;
+                }
+                let signedEntry: _PdfObjectInformation;
+                let hasOutsideNewer: boolean = false;
+                for (const e of hist) {
+                    if (!e || e.free) {
+                        continue;
+                    }
+                    const phys: number = xref._getPhysicalOffsetForEntry(e);
+                    if (!Number.isFinite(phys)) {
+                        if (e === newestEntry) {
+                            return true;
+                        }
+                        continue;
+                    }
+                    if (this._isInByteRange(phys, s1, l1, s2, l2)) {
+                        signedEntry = e;
+                        break;
+                    } else {
+                        hasOutsideNewer = true;
+                    }
+                }
+                if (!hasOutsideNewer) {
+                    continue;
+                }
+                if (forbidChanges) {
+                    return true;
+                }
+                const newDict: _PdfDictionary = this._fetchDictAtEntry(objNum, newestEntry, xref);
+                if (!newDict) {
+                    const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                    const rawObj: any = xref._fetchAtEntry(ref, newestEntry, false); // eslint-disable-line
+                    if (this._isLtvObject(rawObj)) {
+                        continue;
+                    }
+                    if (signedEntry) {
+                        continue;
+                    }
+                    return true;
+                }
+                if (newDict.has('Type')) {
+                    const t: any = newDict.get('Type'); // eslint-disable-line
+                    const tName: any = t instanceof _PdfName ? t.name : undefined; // eslint-disable-line
+                    if (tName === 'Catalog') {
+                        continue;
+                    }
+                }
+                if (skippedObjects.has(objNum) || (newDict && newDict.has && newDict.has('Fields'))) {
+                    const lockDecision: boolean = this._evaluateLockRules(newDict, newestEntry.revisionId ?
+                        newestEntry.revisionId : 0, xref);
+                    if (lockDecision === true) {
+                        return true;
+                    }
+                    if (lockDecision === false) {
+                        continue;
+                    }
+                    const isTopLevelAcroForm: boolean = typeof acroTopRefNum === 'number' && objNum === acroTopRefNum;
+                    if (hasPermission && isTopLevelAcroForm) {
+                        const allowsFormFillOrCommentsLocal: boolean = permission === PdfCertificationFlag.allowFormFill ||
+                            permission === PdfCertificationFlag.allowComments;
+                        if (allowsFormFillOrCommentsLocal && signedEntry) {
+                            const oldAcro: _PdfDictionary = this._fetchDictAtEntry(objNum, signedEntry, xref);
+                            if (oldAcro.has('Fields') && newDict.has('Fields')) {
+                                const illegal: boolean = xref._readFormReferences(oldAcro, newDict,
+                                                                                  signedEntry.revisionId ? signedEntry.revisionId : 0,
+                                                                                  newestEntry.revisionId ? newestEntry.revisionId : 0);
+                                if (illegal) {
+                                    return true;
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                }
+                if (!signedEntry) {
+                    if (laterSignatureObjects.has(objNum)) {
+                        continue;
+                    }
+                    if (this._isSigOrTimestampDict(newDict)) {
+                        const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                        this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                        continue;
+                    }
+                    if (newDict.has('Type')) {
+                        const t: any = newDict.get('Type'); // eslint-disable-line
+                        const tName: string = t instanceof _PdfName ? t.name : (typeof t === 'string' ? t : undefined);
+                        if (tName === 'Page') {
+                            const annots: any = newDict.getRaw('Annots'); // eslint-disable-line
+                            if (Array.isArray(annots) && annots.length > 0) {
+                                let onlyWidgetAnnots: boolean = true;
+                                for (const annot of annots) {
+                                    const annotObj: any = // eslint-disable-line
+                                        annot instanceof _PdfReference ? xref._fetchReferenceInRevision(annot,
+                                                                                                        newestEntry.revisionId ?
+                                                                                                            newestEntry.revisionId : 0)
+                                            : annot;
+                                    const annotDict: _PdfDictionary = xref._asDictionary(annotObj);
+                                    if (!annotDict) {
+                                        onlyWidgetAnnots = false;
+                                        break;
+                                    }
+                                    const subtypeObj: any = annotDict.get('Subtype'); // eslint-disable-line
+                                    const subtypeName: string = subtypeObj instanceof _PdfName ? subtypeObj.name : subtypeObj;
+                                    if (subtypeName !== 'Widget') {
+                                        onlyWidgetAnnots = false;
+                                        break;
+                                    }
+                                }
+                                if (onlyWidgetAnnots) {
+                                    continue;
+                                }
+                            }
+                            return true;
+                        }
+                        if (tName === 'Pages') {
+                            const kids: any = newDict.getRaw('Kids'); // eslint-disable-line
+                            if (Array.isArray(kids) && kids.length > 0) {
+                                let onlyPageKids: boolean = true;
+                                for (const kid of kids) {
+                                    const kidObj: any = kid instanceof _PdfReference ? // eslint-disable-line
+                                        xref._fetchReferenceInRevision(kid, newestEntry.revisionId
+                                            ? newestEntry.revisionId : 0) : kid;
+                                    const kidDict: _PdfDictionary = xref._asDictionary(kidObj);
+                                    if (!kidDict) {
+                                        onlyPageKids = false;
+                                        break;
+                                    }
+                                    const kidType: any = kidDict.get('Type'); // eslint-disable-line
+                                    const kidTypeName: string = kidType instanceof _PdfName ? kidType.name : kidType;
+                                    if (kidTypeName !== 'Page' && kidTypeName !== 'Pages') {
+                                        onlyPageKids = false;
+                                        break;
+                                    }
+                                }
+                                if (onlyPageKids) {
+                                    continue;
+                                }
+                            }
+                            return true;
+                        }
+                        if (tName === 'ObjStm' || tName === 'XRef') {
+                            continue;
+                        }
+                        if (tName === 'DSS') {
+                            const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                            this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                            continue;
+                        }
+                        if (tName === 'Font') {
+                            const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                            this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                            continue;
+                        }
+                        if (tName === 'Annot') {
+                            const entry: number = newestEntry.revisionId ? newestEntry.revisionId : 0;
+                            if (typeof xref._checkSubTypeSingle === 'function') {
+                                const ok: any = xref._checkSubTypeSingle(newDict, hasPermission, permission, entry, xref); // eslint-disable-line
+                                if (ok) {
+                                    continue;
+                                }
+                                return true;
+                            }
+                            return true;
+                        }
+                        if (tName === 'XObject') {
+                            const subtype: any = newDict.get('Subtype'); // eslint-disable-line
+                            const subtypeName: string = subtype instanceof _PdfName ? subtype.name : subtype;
+                            if (subtypeName === 'Form') {
+                                const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                                this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                                continue;
+                            }
+                        }
+                    }
+                    if (newDict.has('Subtype')) {
+                        if (xref._checkSubTypeSingle(newDict, hasPermission, permission, newestEntry.revisionId ?
+                            newestEntry.revisionId : 0, xref)) {
+                            continue;
+                        }
+                    }
+                    const noType: any = !newDict.has('Type') || !newDict.get('Type'); // eslint-disable-line
+                    const noSubtype: any = !newDict.has('Subtype') || !newDict.get('Subtype'); // eslint-disable-line
+                    if (noType && noSubtype && hasPermission && allowsFormFillOrComments) {
+                        if (newDict.has('FT')) {
+                            return true;
+                        }
+                        continue;
+                    }
+                    if (newDict.has('FT')) {
+                        const ft: any = newDict.get('FT'); // eslint-disable-line
+                        const ftName: string = ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : '');
+                        if (ftName === 'Sig') {
+                            continue;
+                        }
+                    }
+                    const keys: string[] = [];
+                    newDict.forEach((k: string) => keys.push(k));
+                    if (keys.length === 0) {
+                        continue;
+                    }
+                    const isDssDictionary: boolean =
+                        keys.every((k: string) =>
+                            k === 'OCSPs' ||
+                            k === 'CRLs' ||
+                            k === 'VRI' ||
+                            k === 'Certs'
+                        );
+                    const isVriDictionary: any = // eslint-disable-line
+                        keys.every((k: any) =>  // eslint-disable-line
+                            /^[A-Fa-f0-9]{40}$/.test(k)
+                        );
+                    const isVriEntryDictionary: any = // eslint-disable-line
+                        keys.every((k: any) => // eslint-disable-line
+                            k === 'OCSP' ||
+                            k === 'CRL' ||
+                            k === 'Cert'
+                        );
+                    const isRevocationStream: any = keys.indexOf('Length') !== -1 && keys.indexOf('Filter') !== -1 && keys.length <= 3; // eslint-disable-line
+                    if (isDssDictionary || isVriDictionary || isVriEntryDictionary || isRevocationStream) {
+                        const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                        this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                        continue;
+                    }
+                    const isResourceDictionary: any = // eslint-disable-line
+                        keys.every((k: string) =>
+                            k === 'Font' ||
+                            k === 'ExtGState' ||
+                            k === 'XObject' ||
+                            k === 'ProcSet' ||
+                            k === 'ColorSpace' ||
+                            k === 'Pattern'
+                        );
+                    if (isResourceDictionary) {
+                        const ref: _PdfReference = _PdfReference.get(objNum, newestEntry.gen || 0);
+                        this._collectLaterSignatureObjects(ref, xref, laterSignatureObjects);
+                        continue;
+                    }
+                    return true;
+                }
+                const oldDict: _PdfDictionary = this._fetchDictAtEntry(objNum, signedEntry, xref);
+                if (!oldDict) {
+                    return true;
+                }
+                if (this._isSigOrTimestampDict(newDict)) {
+                    continue;
+                }
+                const lockDecision: any = this._evaluateLockRules(newDict, newestEntry.revisionId ? newestEntry.revisionId : 0, xref); // eslint-disable-line
+                if (lockDecision === true) {
+                    return true;
+                }
+                if (lockDecision === false) {
+                    continue;
+                }
+                if (newDict.has('Subtype') && xref._checkSubTypeSingle(newDict, hasPermission, permission,
+                                                                       newestEntry.revisionId ? newestEntry.revisionId : 0, xref)) {
+                    continue;
+                }
+                if (newDict.has('Type')) {
+                    const t: _PdfName = newDict.get('Type');
+                    const tName: string = t instanceof _PdfName ? t.name : undefined;
+                    if (tName === 'Page' && typeof xref._verifyPageIsModify === 'function') {
+                        if (xref._verifyPageIsModify(oldDict, newDict, hasPermission, permission)) {
+                            return true;
+                        }
+                        continue;
+                    }
+                    if (tName === 'Annot' && typeof xref._checkSubType === 'function') {
+                        const subtypeObj: any = newDict.get('Subtype'); // eslint-disable-line
+                        const subtypeName: any = subtypeObj instanceof _PdfName ? subtypeObj.name : (typeof subtypeObj === 'string' ? subtypeObj : undefined); // eslint-disable-line
+                        if (subtypeName === 'Widget') {
+                            if (hasPermission && (permission === PdfCertificationFlag.allowFormFill ||
+                                permission === PdfCertificationFlag.allowComments)) {
+                                continue;
+                            }
+                            if (signatureIsLocked) {
+                                continue;
+                            }
+                            try {
+                                const parentRef: any = newDict.getRaw('Parent') || newDict.getRaw('F') || newDict.getRaw('T'); // eslint-disable-line
+                                if (parentRef instanceof _PdfReference) {
+                                    if (appendedFieldObjNums.has(parentRef.objectNumber)) {
+                                        continue;
+                                    }
+                                } else if (parentRef && typeof parentRef === 'object') {
+                                    try {
+                                        const oid: number = (parentRef as any).objId; // eslint-disable-line
+                                        if (oid) {
+                                            const m: RegExpMatchArray = String(oid).match(/(\d+)/);
+                                            if (m && appendedFieldObjNums.has(Number(m[1]))) {
+                                                continue;
+                                            }
+                                        }
+                                    } catch {
+                                        /* Ignore */
+                                    }
+                                }
+                            } catch {
+                                /* Ignore */
+                            }
+                            return true;
+                        }
+                        const oldEntry: number = signedEntry.revisionId ? signedEntry.revisionId : 0;
+                        const newEntry: number = newestEntry.revisionId ? newestEntry.revisionId : 0;
+                        const ok: boolean = xref._checkSubType(newDict, oldDict, hasPermission, permission, oldEntry, newEntry);
+                        if (ok) {
+                            continue;
+                        }
+                        return true;
+                    }
+                }
+                const hasNoType: boolean = !newDict.has('Type') || !newDict.get('Type');
+                const hasNoSubtype: boolean = !newDict.has('Subtype') || !newDict.get('Subtype');
+                if (skippedObjects.has(objNum) || (newDict && newDict.has && newDict.has('Fields'))) {
+                    const oldFieldsRaw: boolean = oldDict && oldDict.has('Fields') ? oldDict.getRaw('Fields') : null;
+                    const newFieldsRaw: boolean = newDict && newDict.has('Fields') ? newDict.getRaw('Fields') : null;
+                    if (Array.isArray(oldFieldsRaw) && Array.isArray(newFieldsRaw)) {
+                        if (newFieldsRaw.length < oldFieldsRaw.length) {
+                            return true;
+                        }
+                        if (newFieldsRaw.length >= oldFieldsRaw.length) {
+                            const oldPresent: any = oldFieldsRaw.every((oref: any) => { // eslint-disable-line
+                                if (oref instanceof _PdfReference) {
+                                    return newFieldsRaw.some((nref: any) => nref instanceof _PdfReference && nref.objectNumber === oref.objectNumber); // eslint-disable-line
+                                }
+                                return newFieldsRaw.some((nref: any) => String(nref) === String(oref)); // eslint-disable-line
+                            });
+                            if (oldPresent) {
+                                const added: any = newFieldsRaw.filter((nref: any) => !oldFieldsRaw.some((oref: any) => { // eslint-disable-line
+                                    if (oref instanceof _PdfReference && nref instanceof _PdfReference) {
+                                        return oref.objectNumber === nref.objectNumber;
+                                    }
+                                    return String(oref) === String(nref);
+                                }));
+                                if (added.length > 0) {
+                                    for (const a of added) {
+                                        if (!(a instanceof _PdfReference)) {
+                                            return true;
+                                        }
+                                        const fd: any = xref._fetchReferenceInRevision(a, newestEntry.revisionId ? newestEntry.revisionId : 0); // eslint-disable-line
+                                        const fdict: _PdfDictionary = xref._asDictionary(fd);
+                                        if (!fdict) {
+                                            return true;
+                                        }
+                                        let ftName: string;
+                                        if (fdict.has('FT')) {
+                                            const ft: any = fdict.get('FT'); // eslint-disable-line
+                                            ftName = ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : undefined);
+                                        }
+                                        if (!ftName && fdict.has('V')) {
+                                            const vRaw: any = fdict.getRaw('V'); // eslint-disable-line
+                                            const vObj: any = vRaw instanceof _PdfReference ? xref._fetchReferenceInRevision(vRaw, newestEntry.revisionId ?  newestEntry.revisionId : 0) : vRaw; // eslint-disable-line
+                                            const vDict: any = xref._asDictionary(vObj); // eslint-disable-line
+                                            if (vDict) {
+                                                const typeObj: any = vDict.has('Type') ? vDict.get('Type') : undefined; // eslint-disable-line
+                                                const typeName: any = typeObj instanceof _PdfName ? typeObj.name : (typeof typeObj === 'string' ? typeObj : undefined); // eslint-disable-line
+                                                if (typeName === 'Sig' || vDict.has('ByteRange') || vDict.has('Contents')) {
+                                                    ftName = 'Sig';
+                                                }
+                                            }
+                                        }
+                                        if (ftName !== 'Sig') {
+                                            return true;
+                                        }
+                                        appendedFieldObjNums.add(a.objectNumber);
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (hasNoType && hasNoSubtype && allowsFormFillOrComments) {
+                    const isAcroForm: any = skipObjects.has(objNum); // eslint-disable-line
+                    if (isAcroForm && oldDict) {
+                        const oldFieldsRaw: _PdfReference = oldDict.has('Fields') ? oldDict.getRaw('Fields') : null;
+                        const newFieldsRaw: _PdfReference = newDict.has('Fields') ? newDict.getRaw('Fields') : null;
+                        if (Array.isArray(oldFieldsRaw) && Array.isArray(newFieldsRaw)) {
+                            if (newFieldsRaw.length < oldFieldsRaw.length) {
+                                return true;
+                            }
+                        }
+                    }
+                    continue;
+                }
+                if (skipObjects.has(objNum) && hasNoType && hasNoSubtype && !newDict.has('Fields') && !newDict.has('FT')) {
+                    continue;
+                }
+                const changed: any = xref._compareObjects(oldDict, newDict, // eslint-disable-line
+                                                          skippedObjects, objNum, hasPermission, permission,
+                                                          signedEntry.revisionId ? signedEntry.revisionId : 0,
+                                                          newestEntry.revisionId ? newestEntry.revisionId : 0);
+                if (changed) {
+                    if (hasPermission && allowsFormFillOrComments) {
+                        const t: any = newDict.has('Type') ? newDict.get('Type') : undefined; // eslint-disable-line
+                        const tName: any = t instanceof _PdfName ? t.name : undefined; // eslint-disable-line
+                        if (tName === 'Annot') {
+                            const subtypeObj: _PdfName = newDict.get('Subtype');
+                            const subtypeName: string = subtypeObj instanceof _PdfName ? subtypeObj.name : subtypeObj;
+                            if (subtypeName === 'Widget') {
+                                continue;
+                            }
+                        }
+                        if (!tName && hasNoType && hasNoSubtype) {
+                            continue;
+                        }
+                    }
+                    if (signatureIsLocked) {
+                        const t: any = newDict.has('Type') ? newDict.get('Type') : undefined; // eslint-disable-line
+                        const tName: any = t instanceof _PdfName ? t.name : undefined; // eslint-disable-line
+                        if (tName === 'Annot') {
+                            const subtypeObj: any = newDict.get('Subtype'); // eslint-disable-line
+                            const subtypeName: string = subtypeObj instanceof _PdfName ? subtypeObj.name : (typeof subtypeObj === 'string' ? subtypeObj : undefined);
+                            if (subtypeName === 'Widget') {
+                                continue;
+                            }
+                        }
+                        if (hasNoType && hasNoSubtype && newDict.has('FT')) {
+                            continue;
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * Checks whether a position falls within the signed byte ranges.
+     *
+     * @param {number} pos The physical offset to test.
+     * @param {number} s1 Start of first range.
+     * @param {number} l1 Length of first range.
+     * @param {number} s2 Start of second range.
+     * @param {number} l2 Length of second range.
+     * @returns {boolean} true if pos is within either range.
+     * @private
+     */
+    _isInByteRange(pos: number, s1: number, l1: number, s2: number, l2: number): boolean {
+        if (!Number.isFinite(pos)) {
+            return false;
+        }
+        return (pos >= s1 && pos <= (s1 + l1)) ||
+            (pos >= s2 && pos <= (s2 + l2));
+    }
+    /**
+     * Adds the object number of a top-level reference to the skip-objects set.
+     *
+     * @param {any} raw The raw value from a dictionary entry.
+     * @param {Set<number>} skipObjects The set to add the object number into.
+     * @returns {void}
+     * @private
+     */
+    _addTopRefIfAny(raw: any, skipObjects: Set<number>): void { // eslint-disable-line
+        if (raw instanceof _PdfReference) {
+            skipObjects.add(raw.objectNumber);
+        }
+    }
+    /**
+     * Recursively walks all sub-references reachable from obj in a given revision
+     * and records their object numbers in skippedObjects.
+     *
+     * @param {any} obj The object to walk.
+     * @param {number} revId The revision id to use when fetching references.
+     * @param {_PdfCrossReference} xref The cross-reference table.
+     * @param {Set<number>} skippedObjects The set used to track already-visited objects.
+     * @param {number} depth Current recursion depth (default 0).
+     * @returns {void}
+     * @private
+     */
+    _readAllSubRefs(obj: any, revId: number, xref: _PdfCrossReference, skippedObjects: Set<number>, depth: number = 0): void { // eslint-disable-line
+        if (!obj) {
+            return;
+        }
+        if (depth > 50) {
+            return;
+        }
+        if (obj instanceof _PdfReference) {
+            const n: number = obj.objectNumber;
+            if (skippedObjects.has(n)) {
+                return;
+            }
+            skippedObjects.add(n);
+            const fetched: any = xref._fetchReferenceInRevision(obj, revId); // eslint-disable-line
+            this._readAllSubRefs(fetched, revId, xref, skippedObjects, depth + 1);
+            return;
+        }
+        if (obj instanceof _PdfBaseStream) {
+            this._readAllSubRefs(obj.dictionary, revId, xref, skippedObjects, depth + 1);
+            return;
+        }
+        if (obj instanceof _PdfDictionary) {
+            const keys: string[] = [];
+            obj.forEach((k: string) => keys.push(k));
+            for (const k of keys) {
+                if (k === 'P' || k === 'Parent') {
+                    continue;
+                }
+                const val: any = obj.get(k); // eslint-disable-line
+                this._readAllSubRefs(val, revId, xref, skippedObjects, depth + 1);
+            }
+            return;
+        }
+        if (Array.isArray(obj)) {
+            for (const it of obj) {
+                this._readAllSubRefs(it, revId, xref, skippedObjects, depth + 1);
+            }
+        }
+    }
+    /**
+     * Recursively collects all objects reachable from obj and records their
+     * object numbers in laterSignatureObjects, using the live xref for fetching.
+     *
+     * @param {any} obj The object to walk.
+     * @param {_PdfCrossReference} xref The cross-reference table.
+     * @param {Set<number>} laterSignatureObjects The set used to track collected objects.
+     * @param {number} depth Current recursion depth (default 0).
+     * @returns {void}
+     * @private
+     */
+    _collectLaterSignatureObjects(obj: any, xref: _PdfCrossReference, laterSignatureObjects: Set<number>, depth: number = 0): void { // eslint-disable-line
+        if (!obj || depth > 50) {
+            return;
+        }
+        if (obj instanceof _PdfReference) {
+            const n: number = obj.objectNumber;
+            const alreadyVisited: any = laterSignatureObjects.has(n); // eslint-disable-line
+            if (!alreadyVisited) {
+                laterSignatureObjects.add(n);
+            }
+            const fetched: any = xref._fetch(obj); // eslint-disable-line
+            if (!alreadyVisited || fetched) {
+                this._collectLaterSignatureObjects(fetched, xref, laterSignatureObjects, depth + 1);
+            }
+            return;
+        }
+        if (obj instanceof _PdfBaseStream) {
+            this._collectLaterSignatureObjects(obj.dictionary, xref, laterSignatureObjects, depth);
+            return;
+        }
+        if (obj instanceof _PdfDictionary) {
+            const keys: string[] = [];
+            obj.forEach((k: string) => keys.push(k));
+            for (const k of keys) {
+                if (k === 'P' || k === 'Parent') {
+                    continue;
+                }
+                const raw: any = obj.getRaw(k); // eslint-disable-line
+                this._collectLaterSignatureObjects(raw, xref, laterSignatureObjects, depth + 1);
+            }
+            return;
+        }
+        if (Array.isArray(obj)) {
+            for (const item of obj) {
+                this._collectLaterSignatureObjects(item, xref, laterSignatureObjects, depth + 1);
+            }
+        }
+    }
+    /**
+     * Fetches the PDF dictionary for a specific object entry from the cross-reference table.
+     *
+     * @param {number} objNum The object number.
+     * @param {_PdfObjectInformation} entry The specific entry in the object history.
+     * @param {_PdfCrossReference} xref The cross-reference table.
+     * @returns {_PdfDictionary} The dictionary, or undefined if the entry is free or absent.
+     * @private
+     */
+    _fetchDictAtEntry(objNum: number, entry: _PdfObjectInformation, xref: _PdfCrossReference): _PdfDictionary {
+        if (!entry || entry.free) {
+            return undefined;
+        }
+        const ref: any = _PdfReference.get(objNum, entry.gen || 0); // eslint-disable-line
+        const obj: any = xref._fetchAtEntry(ref, entry, false); // eslint-disable-line
+        return xref._asDictionary(obj);
+    }
+    /**
+     * Returns true if the given dictionary represents a signature or timestamp object.
+     *
+     * @param {_PdfDictionary} dict The dictionary to test.
+     * @returns {boolean} true if the dictionary has Type/Subtype/FT of 'Sig', 'DocTimeStamp', or 'Timestamp'.
+     * @private
+     */
+    _isSigOrTimestampDict(dict: _PdfDictionary): boolean {
+        const type: _PdfName = dict.has('Type') ? dict.get('Type') : undefined;
+        const subtype: _PdfName = dict.has('Subtype') ? dict.get('Subtype') : undefined;
+        const ft: any = dict.has('FT') ? dict.get('FT') : undefined; // eslint-disable-line
+        const tName: string = type instanceof _PdfName ? type.name : undefined;
+        const sName: string = subtype instanceof _PdfName ? subtype.name : undefined;
+        const ftName: string = ft instanceof _PdfName ? ft.name : undefined;
+        return tName === 'Sig' || sName === 'Sig' || ftName === 'Sig' || tName === 'DocTimeStamp' || tName === 'Timestamp';
+    }
+    /**
+     * Dereferences a value within a specific revision.
+     *
+     * @param {any} val The value to dereference.
+     * @param {number} revId The revision id.
+     * @param {_PdfCrossReference} xref The cross-reference table.
+     * @returns {any} The dereferenced object or the original value.
+     * @private
+     */
+    _derefInRevision(val: any, revId: number, xref: _PdfCrossReference): any { // eslint-disable-line
+        if (val instanceof _PdfReference) {
+            return xref._fetchReferenceInRevision(val, revId);
+        }
+        return val;
+    }
+    /**
+     * Extracts the string name from a _PdfName or a plain string value.
+     *
+     * @param {any} val The value to extract the name from.
+     * @returns {string} The name string, or undefined if not applicable.
+     * @private
+     */
+    _nameValue(val: any): string { // eslint-disable-line
+        if (val instanceof _PdfName) {
+            return val.name;
+        }
+        if (typeof val === 'string') {
+            return val;
+        }
+        return undefined;
+    }
+    /**
+     * Evaluates signature field lock rules and reference transform actions to determine
+     * whether changes to the dictionary are permitted.
+     *
+     * @param {_PdfDictionary} dictionary The field or form dictionary to examine.
+     * @param {number} revId The revision id used for dereferencing.
+     * @param {_PdfCrossReference} xref The cross-reference table.
+     * @returns {boolean | null} true if changes are forbidden, false if allowed, null if undetermined.
+     * @private
+     */
+    _evaluateLockRules(dictionary: _PdfDictionary, revId: number, xref: _PdfCrossReference): boolean {
+        let hasInclude: boolean = false;
+        let fieldDictArr: any[]; // eslint-disable-line
+        const lockObj: any = this._derefInRevision(dictionary.get('Lock'), revId, xref); // eslint-disable-line
+        const lockDict: _PdfDictionary = lockObj instanceof _PdfDictionary ? lockObj : undefined;
+        if (lockDict && lockDict.has('Fields')) {
+            const fieldsObj: any = this._derefInRevision(lockDict.get('Fields'), revId, xref); // eslint-disable-line
+            if (Array.isArray(fieldsObj)) {
+                fieldDictArr = fieldsObj;
+                if (fieldDictArr.length > 0) {
+                    hasInclude = true;
+                }
+            }
+        }
+        if (typeof fieldDictArr === 'undefined' || fieldDictArr === null) {
+            if (dictionary.has('V')) {
+                const vObj: any = this._derefInRevision(dictionary.get('V'), revId, xref); // eslint-disable-line
+                const vDict: any = vObj instanceof _PdfDictionary ? vObj : undefined; // eslint-disable-line
+                if (vDict && vDict.has('Reference')) {
+                    const refArrObj: any = this._derefInRevision(vDict.get('Reference'), revId, xref); // eslint-disable-line
+                    if (Array.isArray(refArrObj) && refArrObj.length > 0) {
+                        for (const r of refArrObj) {
+                            const refDictObj: any = this._derefInRevision(r, revId, xref); // eslint-disable-line
+                            const refDict: _PdfDictionary = refDictObj instanceof _PdfDictionary ? refDictObj : undefined;
+                            if (!refDict || !refDict.has('TransformParams')) {
+                                continue;
+                            }
+                            const tpObj: any = this._derefInRevision(refDict.get('TransformParams'), revId, xref); // eslint-disable-line
+                            const tpDict: _PdfDictionary = tpObj instanceof _PdfDictionary ? tpObj : undefined;
+                            if (!tpDict || !tpDict.has('Action')) {
+                                continue;
+                            }
+                            const actionObj: any = this._derefInRevision(tpDict.get('Action'), revId, xref); // eslint-disable-line
+                            const action: any = this._nameValue(actionObj); // eslint-disable-line
+                            if (action === 'Include' && !hasInclude) {
+                                return true;
+                            }
+                            if (action === 'Include' && hasInclude) {
+                                return false;
+                            }
+                            if (action === 'All') {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    /**
+     * Returns true if the given object is a Long-Term Validation (LTV) data object —
+     * an array, stream, or dictionary whose keys are exclusively OCSP/CRL/VRI entries.
+     *
+     * @param {any} obj The object to test.
+     * @returns {boolean} true if the object is an LTV object; otherwise, false.
+     * @private
+     */
+    _isLtvObject(obj: any): boolean { // eslint-disable-line
+        if (Array.isArray(obj)) {
+            return true;
+        }
+        if (obj instanceof _PdfBaseStream) {
+            return true;
+        }
+        if (obj instanceof _PdfDictionary) {
+            const keys: string[] = [];
+            obj.forEach((k: string) => keys.push(k));
+            return keys.every((k: string) =>
+                k === 'OCSPs' ||
+                k === 'CRLs' ||
+                k === 'VRI'
+            );
+        }
+        return false;
+    }
+    /**
+     * Validates the revocation status of the signing certificate using the specified
+     * revocation validation method and available OCSP or CRL data.
+     *
+     * @param {RevocationType} revocationValidationType The revocation validation method to use.
+     * @param {Uint8Array} [ocsp] The external OCSP response data used when embedded OCSP information is unavailable.
+     * @param {Uint8Array} [crl] The external CRL data used when embedded CRL information is unavailable.
+     * @returns {RevocationResult} The revocation validation result containing the OCSP status and CRL revocation information.
+     * @private
+     */
+    _validateRevocationCore(revocationValidationType: RevocationType, ocsp?: Uint8Array, crl?: Uint8Array): RevocationResult {
+        const result: RevocationResult = { isRevokedCRL: false, ocspRevocationStatus: RevocationStatus.none };
+        if (revocationValidationType === RevocationType.none) {
+            return result;
+        }
+        const certificates: any[] = this._cmsSigner ? this._cmsSigner._certificates : []; // eslint-disable-line
+        if (!certificates || certificates.length === 0) {
+            return result;
+        }
+        const signerCert: any = certificates[0]; // eslint-disable-line
+        const hasOcsp: boolean = revocationValidationType === RevocationType.ocsp ||
+            revocationValidationType === RevocationType.ocspAndCrl;
+        const hasCrl: boolean = revocationValidationType === RevocationType.crl ||
+            revocationValidationType === RevocationType.ocspAndCrl;
+        if (hasOcsp) {
+            let ocspData: Uint8Array = this._extractOcspFromDss();
+            if (!ocspData && ocsp && ocsp.length > 0) {
+                ocspData = ocsp;
+            }
+            if (ocspData) {
+                result.ocspRevocationStatus = this._signature._validateLtvOcsp(ocspData);
+            }
+        }
+        if (hasCrl) {
+            let crlData: Uint8Array = this._extractCrlFromDss();
+            if (!crlData && crl && crl.length > 0) {
+                crlData = crl;
+            }
+            if (crlData) {
+                result.isRevokedCRL = this._validateLtvCrl(crlData, signerCert);
+            }
+        }
+        return result;
+    }
+    /**
+     * Extracts thisUpdate and nextUpdate times from a raw CRL byte array.
+     *
+     * @private
+     * @param {Uint8Array} crlBytes Raw CRL DER bytes.
+     * @returns {Object} CRL validity information, or null if unavailable.
+     */
+    _extractCrlTimes(crlBytes: Uint8Array): { thisUpdate: Date; nextUpdate: Date } {
+        try {
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(crlBytes);
+            const tbsCertList: any = element._getComponents()[0]; // eslint-disable-line
+            if (!tbsCertList) {
+                return null;
+            }
+            const tbsChildren: any[] = tbsCertList._getComponents() || []; // eslint-disable-line
+            const elemToDate: any = (el: any): Date => { // eslint-disable-line
+                if (!el) {
+                    return undefined;
+                }
+                const tagNo: number = typeof el._getTagNumber === 'function' ? el._getTagNumber() : -1;
+                if (tagNo !== 23 && tagNo !== 24) {
+                    return undefined;
+                }
+                const val: any = el._getValue(); // eslint-disable-line
+                let str: string = '';
+                if (typeof val === 'string') {
+                    str = val.trim();
+                } else if (val instanceof Uint8Array) {
+                    for (let i: number = 0; i < val.length; i++) {
+                        str += String.fromCharCode(val[<number>i]);
+                    }
+                    str = str.trim();
+                }
+                if (!str) {
+                    return undefined;
+                }
+                let m: any = str.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(?:\.\d+)?Z$/); // eslint-disable-line
+                if (m) {
+                    return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+                }
+                m = str.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})Z$/);
+                if (m) {
+                    let yr: number = parseInt(m[1], 10);
+                    yr += yr < 50 ? 2000 : 1900;
+                    return new Date(Date.UTC(yr, +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+                }
+                return undefined;
+            };
+            const timeElements: any[] = tbsChildren.filter((child: any) => { // eslint-disable-line
+                if (!child || typeof child._getTagNumber !== 'function') {
+                    return false;
+                }
+                const tag: number = child._getTagNumber();
+                return tag === 23 || tag === 24;
+            });
+            const thisUpdate: Date = elemToDate(timeElements[0]);
+            const nextUpdate: Date = elemToDate(timeElements[1]);
+            return { thisUpdate, nextUpdate };
+        } catch {
+            return null;
+        }
+    }
+    /**
+     * Returns the first element from a PDF array-like object.
+     *
+     * @param {any} arr The array-like object.
+     * @returns {any} The first element if available; otherwise, null.
+     * @private
+     */
+    private _getFirstArrayElement(arr: any): any { // eslint-disable-line
+        if (!arr) {
+            return null;
+        }
+        if (typeof arr.get === 'function') {
+            return arr.get(0);
+        }
+        if (Array.isArray(arr) && arr.length > 0) {
+            return arr[0];
+        }
+        return null;
+    }
+    /**
+     * Gets the number of elements in a PDF array-like object.
+     *
+     * @param {any} arr The array-like object.
+     * @returns {number} The length of the array-like object.
+     * @private
+     */
+    private _getArrayLength(arr: any): number { // eslint-disable-line
+        if (!arr) {
+            return 0;
+        }
+        if (typeof arr.size === 'function') {
+            return arr.size();
+        }
+        if (typeof arr.length === 'number') {
+            return arr.length;
+        }
+        return 0;
+    }
+    /**
+     * Extracts OCSP response bytes from DSS dictionary.
+     *
+     * @private
+     * @returns {Uint8Array} OCSP response bytes or null
+     */
+    private _extractOcspFromDss(): Uint8Array {
+        try {
+            const dssDictionary: _PdfDictionary = this._getDssDictionary();
+            if (dssDictionary && dssDictionary.has('OCSPs')) {
+                const ocspsArray: any = dssDictionary.get('OCSPs'); // eslint-disable-line
+                if (this._getArrayLength(ocspsArray) > 0) {
+                    const ocspObject: any = this._getFirstArrayElement(ocspsArray); // eslint-disable-line
+                    const ocspStream: any = // eslint-disable-line
+                        ocspObject instanceof _PdfReference
+                            ? this._crossReference._fetch(ocspObject)
+                            : ocspObject;
+                    if (ocspStream && typeof ocspStream.getBytes === 'function') {
+                        return ocspStream.getBytes();
+                    }
+                }
+            }
+            const vriDict: _PdfDictionary = this._getVriDictionary();
+            if (vriDict) {
+                const dictAny: any = vriDict; // eslint-disable-line
+                const keys: string[] = dictAny._map ? Object.keys(dictAny._map) : [];
+                for (const key of keys) {
+                    const vriEntry: any = dictAny._map[key]; // eslint-disable-line
+                    if (!vriEntry || typeof vriEntry.has !== 'function') {
+                        continue;
+                    }
+                    if (!vriEntry.has('OCSP')) {
+                        continue;
+                    }
+                    const vriOcsp: any = vriEntry.get('OCSP'); // eslint-disable-line
+                    if (this._getArrayLength(vriOcsp) > 0) {
+                        const ocspObject: any = this._getFirstArrayElement(vriOcsp); // eslint-disable-line
+                        const ocspStream: any = // eslint-disable-line
+                            ocspObject instanceof _PdfReference
+                                ? this._crossReference._fetch(ocspObject)
+                                : ocspObject;
+                        if (ocspStream && typeof ocspStream.getBytes === 'function') {
+                            return ocspStream.getBytes();
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            return null;
+        }
+        return null;
+    }
+    /**
+     * Resolves a PDF reference object and returns the corresponding PDF object.
+     *
+     * @param {any} obj The object to resolve.
+     * @returns {any} The resolved PDF object; otherwise, the original object or null if the object is not available.
+     * @private
+     */
+    private _resolvePdfObject(obj: any): any { // eslint-disable-line
+        if (!obj) {
+            return null;
+        }
+        if (typeof obj.objectNumber === 'number' && this._crossReference &&
+            typeof this._crossReference._fetch === 'function') {
+            return this._crossReference._fetch(obj);
+        }
+        return obj;
+    }
+    /**
+     * Extracts CRL bytes from DSS dictionary.
+     *
+     * @private
+     * @returns {Uint8Array} CRL bytes or null
+     */
+    _extractCrlFromDss(): Uint8Array {
+        try {
+            const dssDictionary: _PdfDictionary = this._getDssDictionary();
+            if (dssDictionary && dssDictionary.has('CRLs')) {
+                const crlsArray: any = dssDictionary.get('CRLs'); // eslint-disable-line
+                if (this._getArrayLength(crlsArray) > 0) {
+                    const crlObject: any = this._getFirstArrayElement(crlsArray); // eslint-disable-line
+                    const crlStream: any = this._resolvePdfObject(crlObject); // eslint-disable-line
+                    if (crlStream && typeof crlStream.getBytes === 'function') {
+                        return crlStream.getBytes();
+                    }
+                }
+            }
+            const vriDict: _PdfDictionary = this._getVriDictionary();
+            if (vriDict) {
+                const dictAny: any = vriDict; // eslint-disable-line
+                const entries: string[] = dictAny._map
+                    ? Object.keys(dictAny._map)
+                    : [];
+                for (const key of entries) {
+                    const vriEntry: any = dictAny._map[key]; // eslint-disable-line
+                    if (!vriEntry || typeof vriEntry.has !== 'function' ||
+                        !vriEntry.has('CRL')) {
+                        continue;
+                    }
+                    const vriCrl: any = vriEntry.get('CRL'); // eslint-disable-line
+                    if (this._getArrayLength(vriCrl) > 0) {
+                        const crlObject: any = this._getFirstArrayElement(vriCrl); // eslint-disable-line
+                        const crlStream: any = this._resolvePdfObject(crlObject); // eslint-disable-line
+                        if (crlStream && typeof crlStream.getBytes === 'function') {
+                            return crlStream.getBytes();
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+    /**
+     * Determines whether the signature is a document timestamp signature.
+     *
+     * @returns {boolean} true if the signature uses the ETSI.RFC3161 document timestamp format; otherwise, false.
+     * @private
+     */
+    _isDocumentTimestamp(): boolean {
+        return this._signature &&
+            this._signature._signatureDictionary._dictionary.get('SubFilter').name === 'ETSI.RFC3161';
+    }
+    /**
+     * Extracts timestamp token from PKCS#7 unsigned attributes.
+     *
+     * @private
+     * @returns {Uint8Array} Raw timestamp token bytes or null if not found
+     */
+    _extractTimestampToken(): Uint8Array {
+        if (!this._cmsSigner) {
+            return null;
+        }
+        if (this._cmsSigner._hasTimeStamp && this._cmsSigner._timeStampTokenBytes) {
+            return this._cmsSigner._timeStampTokenBytes;
+        }
+        return null;
+    }
+    /**
+     * Extracts timestamp generation time from parsed TSTInfo.
+     *
+     * @private
+     * @param {object} tstInfo Parsed timestamp info structure.
+     * @param {Date} tstInfo.genTime Timestamp generation time.
+     * @returns {Date} Timestamp generation time in UTC.
+     */
+    _extractTimestampTime(tstInfo: { genTime: Date }): Date {
+        if (!tstInfo || !tstInfo.genTime) {
+            throw new Error('TSTInfo does not contain genTime');
+        }
+        return tstInfo.genTime;
+    }
+    /**
+     * Determines the validation time to use for certificate validity checks.
+     * Priority: timestamp time > signed time > current time.
+     *
+     * @private
+     * @param {TimestampInformation} timestampInfo Timestamp information if available
+     * @param {Date} signedDate Signed date from signature dictionary
+     * @returns {Date} Validation time to use for certificate checks
+     */
+    _determineValidationTime(timestampInfo: TimestampInformation, signedDate: Date): Date {
+        if (timestampInfo && timestampInfo.isValid && timestampInfo.timestampTime &&
+            timestampInfo.timestampTime instanceof Date && timestampInfo.timestampTime.getTime() > 0) {
+            return timestampInfo.timestampTime;
+        }
+        if (signedDate && signedDate instanceof Date) {
+            return signedDate;
+        }
+        return new Date();
+    }
+    /**
+     * Detects and flags embedded LTV data in the PDF document.
+     *
+     * @private
+     * @param {LtvVerificationInformation} ltvInfo LTV information object to populate
+     * @returns {void} Nothing
+     */
+    _detectLtvData(ltvInfo: LtvVerificationInformation): void {
+        const arrayHasItems = (arr: any): boolean => { // eslint-disable-line
+            if (!arr) {
+                return false;
+            }
+            if (typeof arr.size === 'function') {
+                return arr.size() > 0;
+            }
+            if (typeof arr.length === 'number') {
+                return arr.length > 0;
+            }
+            return false;
+        };
+        try {
+            const dssDictionary: _PdfDictionary = this._getDssDictionary();
+            if (!dssDictionary) {
+                return;
+            }
+            let hasOcsp: boolean = false;
+            let hasCrl: boolean = false;
+            if (dssDictionary.has('OCSPs')) {
+                const ocspsRaw: any = dssDictionary.get('OCSPs'); // eslint-disable-line
+                if (arrayHasItems(ocspsRaw)) {
+                    hasOcsp = true;
+                }
+            }
+            if (dssDictionary.has('CRLs')) {
+                const crlsRaw: any = dssDictionary.get('CRLs'); // eslint-disable-line
+                if (arrayHasItems(crlsRaw)) {
+                    hasCrl = true;
+                }
+            }
+            if (dssDictionary.has('VRI')) {
+                const vriDict: _PdfDictionary = this._getVriDictionary();
+                if (vriDict) {
+                    const dictAny: any = vriDict; // eslint-disable-line
+                    const keys: string[] = dictAny._map ? Object.keys(dictAny._map) : [];
+                    for (const key of keys) {
+                        const vriEntry: any = dictAny._map[key]; // eslint-disable-line
+                        if (!vriEntry || typeof vriEntry.has !== 'function') {
+                            continue;
+                        }
+                        if (vriEntry.has('OCSP')) {
+                            const vriOcsp: any = vriEntry.get('OCSP'); // eslint-disable-line
+                            if (arrayHasItems(vriOcsp)) {
+                                hasOcsp = true;
+                            }
+                        }
+                        if (vriEntry.has('CRL')) {
+                            const vriCrl: any = vriEntry.get('CRL'); // eslint-disable-line
+                            if (arrayHasItems(vriCrl)) {
+                                hasCrl = true;
+                            }
+                        }
+                    }
+                }
+            }
+            ltvInfo.isOcspEmbedded = hasOcsp;
+            ltvInfo.isCrlEmbedded = hasCrl;
+            ltvInfo.isLtvEmbedded = hasOcsp || hasCrl;
+        } catch {
+            ltvInfo.isOcspEmbedded = false;
+            ltvInfo.isCrlEmbedded = false;
+            ltvInfo.isLtvEmbedded = false;
+        }
+    }
+    /**
+     * Retrieves the DSS (Document Security Store) dictionary from PDF catalog.
+     *
+     * @private
+     * @returns {_PdfDictionary} DSS dictionary or null if not present
+     */
+    _getDssDictionary(): _PdfDictionary {
+        try {
+            const xref: _PdfCrossReference = this._crossReference || (this._page ? this._page._crossReference : null);
+            if (!xref) {
+                return null;
+            }
+            const catalog: _PdfDictionary = xref._root;
+            if (!catalog || !catalog.has('DSS')) {
+                return null;
+            }
+            const dssRaw: any = catalog.get('DSS'); // eslint-disable-line
+            if (dssRaw instanceof _PdfDictionary) {
+                return dssRaw;
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+    /**
+     * Retrieves the VRI (Validation-Related Information) dictionary from DSS.
+     *
+     * @private
+     * @returns {_PdfDictionary} VRI dictionary or null if not present
+     */
+    _getVriDictionary(): _PdfDictionary {
+        try {
+            const dssDictionary: _PdfDictionary = this._getDssDictionary();
+            if (!dssDictionary || !dssDictionary.has('VRI')) {
+                return null;
+            }
+            const vriRaw: any = dssDictionary.get('VRI'); // eslint-disable-line
+            if (vriRaw instanceof _PdfDictionary) {
+                return vriRaw;
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
+    }
+    /**
+     * Validates embedded CRL data from DSS dictionary.
+     *
+     * @private
+     * @param {Uint8Array} crlBytes CRL data bytes
+     * @param {any} cert Certificate to check
+     * @returns {boolean} True if certificate is revoked in CRL
+     */
+    _validateLtvCrl(crlBytes: Uint8Array, cert: any): boolean { // eslint-disable-line
+        try {
+            return this._cmsSigner._checkCertificateSerialInCrl(crlBytes, cert._structure._toBeSignedCertificate._serialNumber.toString());
+        } catch (error) {
+            return false;
+        }
+    }
+    /**
+     * Converts an RSA public key parameter into an ICipherParam instance used for
+     * cryptographic signature verification.
+     *
+     * @param {_PdfRonCipherParameter} pub The RSA public key parameter to convert.
+     * @returns {_ICipherParam} The converted cipher parameter instance.
+     * @throws {Error} Thrown when the RSA public key parameter does not contain a valid modulus or exponent.
+     * @private
+     */
+    _toICipherParam(pub: _PdfRonCipherParameter): _ICipherParam {
+        const anyPub: any = pub as any; // eslint-disable-line
+        if (typeof anyPub._getHashCode === 'function' && typeof anyPub._equals === 'function') {
+            return anyPub as _ICipherParam;
+        }
+        if (!(pub._modulus instanceof Uint8Array) || !(pub._exponent instanceof Uint8Array)) {
+            throw new Error('Invalid RSA public key parameter: missing modulus/exponent.');
+        }
+        const keyParam: _PdfRsaPublicKeyParam  =  new _PdfRsaPublicKeyParam(pub._modulus, pub._exponent);
+        if (!pub._isPrivate) {
+            keyParam._isPrivate = false;
+            keyParam._enableCertificationVerification = true;
+        }
+        return keyParam;
     }
 }
 /**

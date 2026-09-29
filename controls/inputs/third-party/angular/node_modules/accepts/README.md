@@ -74,7 +74,7 @@ appears in the `types` array). If nothing in `types` is accepted, then `false`
 is returned.
 
 The `types` array can contain full MIME types or file extensions. Any value
-that is not a full MIME types is passed to `require('mime-types').lookup`.
+that is not a full MIME type is passed to `require('mime-types').lookup`.
 
 #### .types()
 

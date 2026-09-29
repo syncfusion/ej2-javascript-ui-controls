@@ -1345,7 +1345,129 @@ describe('Enter Key plugin', ()=> {
             }, 100);
         });
     });
-
+    describe('BLAZ-7176 - Enter key press before the image in a paragraph', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 13, which: 13, shiftKey: false
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p id="p1">Paragraph <img src="blob:null/abfb97c2-cd30-4405-81e0-2993d05bfa35" class="e-rte-image e-img-inline" alt="blazor.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"> </p>'
+            });
+        });
+        it(' Enter key press before the image in a paragraph ', (done: DoneFn) => {
+            rteEle = rteObj.element;
+            let start: HTMLElement = document.getElementById('p1');
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, (start.childNodes[0] as Element), 10);
+            (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 1).toBe(true);
+                done()
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('847097 - Image get duplicated when we press enter key next to the copy pasted image content from Word', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT)
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="EN-IN" style="font-size:16.0pt;line-height:107%;">Quote 1 -</span></b></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span id="msWordImg-clip_image001"><img width="624" height="196" src="blob:http://127.0.0.1:5500/a11f1f65-5f82-4231-bac2-2370d08635d0" v:shapes="Picture_x0020_1" id="msWordImg-clip_image002" class="e-rte-image e-img-inline" style="opacity: 1;"></span></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="EN-IN" style="font-size:18.0pt;line-height:107%;">Explore 1 -</span></b></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span><img width="624" height="163" src="blob:http://127.0.0.1:5500/fd4c90de-5cb5-4ef0-89ba-2105a769bfb5" v:shapes="Picture_x0020_2" id="msWordImg-clip_image004" class="e-rte-image e-img-inline" style="opacity: 1;"> </span></p>'
+            });
+        });
+        it('Image gets duplicate paste from ms word ', (done: DoneFn) => {
+            let start: HTMLElement = document.getElementById('msWordImg-clip_image001');;
+            setCursorPoint(start, 1);
+            rteObj.inputElement.dispatchEvent(keyboardEventArgs);
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 5).toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe("857980 - The rich text editor content is removed when the enter key is in BR mode ", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enterKey: 'BR',
+                value:`Hello Andrew,<br><br><p class="currentStartMark">Test.<br><br><br><br>test<br><br>dumy</p><span></span>Regards<br>Andrew`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("enter key br mode", (done: DoneFn) => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('.currentStartMark').childNodes[5] as Element, 0);
+            const enterKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyEvent);
+            setTimeout(() => {
+                // in previous childNodes length is 11 empty texxt also getting added as child now it is 10
+                expect(rteObj.inputElement.querySelector('.currentStartMark').childNodes.length === 10).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('879007 - Pressing enter key after inserting table, freezes the RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 65, which: 65, shiftKey: false
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table table-element" style="width: 41.3737%; min-width: 0px; height: 67px;"><tbody><tr style="height: 32.8358%;"><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 32.8358%;"><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 32.8358%;"><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>',
+            });
+        });
+        it('Keydown in after the table element', function (done) {
+            let focusElement = rteObj.inputElement.querySelector(".e-rte-table.table-element");
+            focusElement.parentElement.append(document.createTextNode("RichTextEditor"));
+            let range = document.createRange();
+            let selection = window.getSelection();
+            range.setStart(focusElement.nextSibling, 5);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            (rteObj as any).formatter.editorManager.formatObj.onKeyUp({ event: keyboardEventArgs, enterAction : rteObj.enterKey });
+            setTimeout(() => {
+                expect(focusElement.nextSibling.nodeName.toLocaleLowerCase() === 'p').toBe(true);
+                done();
+            }, 100);
+        });
+        it('Keydown with a text node', function (done) {
+            let focusElement = rteObj.inputElement;
+            focusElement.innerHTML = "RichTextEditor";
+            let range = document.createRange();
+            let selection = window.getSelection();
+            range.setStart(focusElement.childNodes[0], 5);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            (rteObj as any).formatter.editorManager.formatObj.onKeyUp({ event: keyboardEventArgs, enterAction : rteObj.enterKey });
+            setTimeout(() => {
+                expect(focusElement.childNodes[0].nodeName.toLocaleLowerCase() === 'p').toBe(true);
+                done();
+            }, 100);
+          });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('1011774: Unwanted empty <p> tags inserted when pressing Enter after selecting image and text (image first variant)', () => {
         let editor: RichTextEditor;
         beforeEach(() => {
@@ -1387,5 +1509,40 @@ describe('Enter Key plugin', ()=> {
             }, 100);
         });
     });
+    describe('Bug 992121: Enter doesnt work properly after using Shift-Enter in the Vue RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            let EnterkeyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: '<p>Hi<br>Hello</p>'
+                });
+            });
+            it(' when enter is pressed after br followed by text, new block node should be created', (done: DoneFn) => {
+                rteObj.dataBind();
+                let pElement: HTMLElement = rteObj.inputElement.querySelector('p');
+                setCursorPoint(pElement.lastChild, pElement.lastChild.textContent.length);
+                (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.innerHTML === '<p>Hi<br>Hello</p><p><br></p>').toBe(true); 
+                    done();
+                }, 100);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
 });
 

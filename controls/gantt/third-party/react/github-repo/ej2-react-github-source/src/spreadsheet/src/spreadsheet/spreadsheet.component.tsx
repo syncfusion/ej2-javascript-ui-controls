@@ -8,7 +8,7 @@ export interface SpreadsheetTypecast {
 }
 /**
  * `SpreadsheetComponent` represents the react Spreadsheet.
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent />
  * ```
  */

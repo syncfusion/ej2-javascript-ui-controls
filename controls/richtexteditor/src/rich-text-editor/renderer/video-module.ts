@@ -1,4 +1,4 @@
-import { addClass, Browser, closest, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { addClass, Browser, closest, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, initializeTelemetryFeature  } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -78,6 +78,7 @@ export class Video {
     private inputUrlHandler: (e: Event) => void;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Video', 'RichTextEditor');
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');

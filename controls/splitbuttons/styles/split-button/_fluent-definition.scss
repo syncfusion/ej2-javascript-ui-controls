@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/fluent' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/fluent-definition' as *;
-@forward 'ej2-base/styles/definition/fluent';
-@forward '../drop-down-button/fluent-definition';
+
 $split-btn-zindex: 2 !default;
 $split-btn-border-radius: 0 !default;
 $split-btn-focus-outline-offset: -3px !default;
@@ -47,6 +46,8 @@ $split-rtl-btn-icon-padding-left: 4px !default;
 
 $drop-dbtn-bigger-padding-left: 4px !default;
 $drop-dbtn-bigger-padding-right: 4px !default;
+$drop-dbtn-icon-font-size: $text-base !default;
+$drop-dbtn-icon-font-size-bigger: $text-xl !default;
 
 $split-rtl-btn-padding-left: 4px !default;
 $split-rtl-btn-padding-right: 10px !default;

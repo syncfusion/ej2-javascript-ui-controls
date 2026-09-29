@@ -6,7 +6,7 @@ export interface AnnotationDirTypecast {
 }
 /**
  * Represents the directive to render and customize the annotations in the linear gauge.
- * ```tsx
+ * ```
  * <LinearGaugeComponent>
  * <AnnotationsDirective>
  * <AnnotationDirective></AnnotationDirective>

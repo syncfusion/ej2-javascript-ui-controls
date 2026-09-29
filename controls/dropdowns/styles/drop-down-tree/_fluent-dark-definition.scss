@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fluent-dark' as *;
-@forward 'ej2-base/styles/definition/fluent-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 /* stylelint-disable */
 $ddt-skin-name: $skin-name !default;

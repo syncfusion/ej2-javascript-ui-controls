@@ -11,6 +11,9 @@ export const rowCell: string = 'e-rowcell';
 export const gridHeader: string = 'e-gridheader';
 
 /** @hidden */
+export const rowNumberCell: string = 'e-rownumbercell';
+
+/** @hidden */
 export const gridContent: string = 'e-gridcontent';
 
 /** @hidden */

@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('grid-highcontrast-icons') {
 
   .e-icon-check::before {
@@ -280,6 +280,10 @@
     .e-menu-icon {
       &.e-columnchooser::before {
         content: '\e9e9';
+      }
+
+      &.e-find-icon::before {
+        content: '\e97d';
       }
 
       &.e-pdfexport::before {

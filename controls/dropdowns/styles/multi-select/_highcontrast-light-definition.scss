@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-chip-mobile-close-font: 16px !default;
@@ -200,6 +198,8 @@ $ddl-small-closer-margin-top: -2.9em !default;
 $ddl-chip-close-hooker-small-left: 7px !default;
 $ddl-chip-close-hooker-small-bigger-left: 7px !default;
 $ddl-delimviewheight-small: 24px !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 // Touch Small size
 $ddl-select-all-height-bigger-small: 40px !default;
@@ -247,34 +247,37 @@ $multi-select-wrapper-chip-width: 92%;
 //enddefault
 @include export-module('multiselect-highcontrast-light') {
   .e-multi-select-wrapper {
-    #{if(&, '&', '*')} .e-chips-close {
-      #{if(&, '&', '*')}.e-close-hooker::before {
+    & .e-chips-close {
+      &.e-close-hooker::before {
         color: $content-font;
         top: 12px;
       }
     }
-    .e-multiselect #{if(&, '&', '*')} {
-      #{if(&, '&', '*')} input {
-        /* stylelint-disable property-no-vendor-prefix */
-        #{if(&, '&', '*')}.e-dropdownbase:-moz-placeholder {
+    .e-multiselect & {
+      & input {
+        /* stylelint-disable-next-line selector-no-vendor-prefix */
+        &.e-dropdownbase:-moz-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }
-        #{if(&, '&', '*')}.e-dropdownbase::-moz-placeholder {
+        /* stylelint-disable-next-line selector-no-vendor-prefix */
+        &.e-dropdownbase::-moz-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }
-        #{if(&, '&', '*')}.e-dropdownbase:-ms-input-placeholder {
+        /* stylelint-disable-next-line selector-no-vendor-prefix */
+        &.e-dropdownbase:-ms-input-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }
-        #{if(&, '&', '*')}.e-dropdownbase::-webkit-input-placeholder {
+        /* stylelint-disable-next-line selector-no-vendor-prefix */
+        &.e-dropdownbase::-webkit-input-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
@@ -282,60 +285,60 @@ $multi-select-wrapper-chip-width: 92%;
         }
       }
     }
-    #{if(&, '&', '*')} .e-chips-collection {
-      #{if(&, '&', '*')} .e-chips {
-        #{if(&, '&', '*')}:hover {
-          #{if(&, '&', '*')} .e-chipcontent {
+    & .e-chips-collection {
+      & .e-chips {
+        &:hover {
+          & .e-chipcontent {
             color: $content-font;
           }
-          #{if(&, '&', '*')} .e-chips-close.e-icon::before {
+          & .e-chips-close.e-icon::before {
             color: $content-font;
           }
         }
-        #{if(&, '&', '*')} .e-chips-close.e-icon::before {
+        & .e-chips-close.e-icon::before {
           line-height: 26px;
           top: 0;
         }
       }
     }
-    #{if(&, '&', '*')} .e-delim-values {
-      #{if(&, '&', '*')}.e-delim-view {
+    & .e-delim-values {
+      &.e-delim-view {
         color: $border-fg;
       }
     }
-    #{if(&, '&', '*')}.e-delimiter {
-      #{if(&, '&', '*')} .e-delim-values {
+    &.e-delimiter {
+      & .e-delim-values {
         color: $border-fg;
       }
     }
-    #{if(&, '&', '*')} .e-searcher input[type='text'] {
+    & .e-searcher input[type = 'text'] {
       color: $content-font;
       height: 100%;
       min-height: 28px;
-      #{if(&, '&', '*')}::selection {
+      &::selection {
         background-color: $selection-bg;
       }
     }
   }
   #{&}.e-popup {
-    #{if(&, '&', '*')}.e-multi-select-list-wrapper {
-      #{if(&, '&', '*')}.e-ddl {
-        #{if(&, '&', '*')}.e-checkbox .e-filter-parent .e-clear-icon {
+    &.e-multi-select-list-wrapper {
+      &.e-ddl {
+        &.e-checkbox .e-filter-parent .e-clear-icon {
           padding-left: 0;
         }
       }
-      #{if(&, '&', '*')}.e-checkbox {
-        #{if(&, '&', '*')} .e-selectall-parent {
+      &.e-checkbox {
+        & .e-selectall-parent {
           border-bottom: 1px solid $content-font;
         }
-        #{if(&, '&', '*')} .e-list-parent {
-          #{if(&, '&', '*')} .e-list-item.e-item-focus.e-active.e-hover {
+        & .e-list-parent {
+          & .e-list-item.e-item-focus.e-active.e-hover {
             background-color: $selection-bg;
           }
-          #{if(&, '&', '*')} .e-list-item.e-item-focus.e-active {
+          & .e-list-item.e-item-focus.e-active {
             border: 2px solid $selection-bg;
           }
-          #{if(&, '&', '*')} .e-list-item.e-active.e-hover:not(.e-item-focus) {
+          & .e-list-item.e-active.e-hover:not(.e-item-focus) {
             border-bottom: 2px solid $content-font;
             border-left: 2px solid $content-font;
             border-right: 2px solid $content-font;
@@ -343,24 +346,24 @@ $multi-select-wrapper-chip-width: 92%;
           }
         }
       }
-      #{if(&, '&', '*')} .e-list-parent {
-        #{if(&, '&', '*')} .e-list-item.e-item-focus {
+      & .e-list-parent {
+        & .e-list-item.e-item-focus {
           border: 2px solid $hover-bg;
         }
-        #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        & .e-list-item.e-active.e-hover {
           background-color: $content-font;
           border-bottom: $ddl-popup-active-border-width solid $content-font;
           border-left: $ddl-popup-active-border-width solid $content-font;
           border-right: $ddl-popup-active-border-width solid $content-font;
           border-top: $ddl-popup-active-border-width solid $content-font;
         }
-        #{if(&, '&', '*')} .e-list-item.e-hover:not(.e-active) {
+        & .e-list-item.e-hover:not(.e-active) {
           border: 2px solid $hover-border;
         }
-        #{if(&, '&', '*')} .e-list-item:not(.e-hover):not(.e-item-focus) {
+        & .e-list-item:not(.e-hover):not(.e-item-focus) {
           border: 2px solid $bg-base-0;
         }
-        #{if(&, '&', '*')} .e-list-item.e-active {
+        & .e-list-item.e-active {
           border: 2px solid $selection-border;
         }
       }

@@ -1,0 +1,589 @@
+@use 'variables' as *;
+@include export-module('calendar-layout') { /*! calendar layout */
+
+  #{&}ejs-calendar {
+    display: block;
+  }
+
+  #{&}.e-calendar.e-disabled {
+    & .e-header {
+      & .e-prev,
+      & .e-next {
+        cursor: $calendar-cursor-default-style;
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+      }
+
+      & .e-title {
+        cursor: $calendar-cursor-default-style;
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+      }
+    }
+
+    & .e-content td {
+      pointer-events: $calendar-none-style;
+      touch-action: $calendar-none-style;
+    }
+
+    & .e-btn.e-today {
+      pointer-events: $calendar-none-style;
+      touch-action: $calendar-none-style;
+    }
+  }
+
+  #{&}.e-calendar {
+    /* stylelint-disable property-no-vendor-prefix */
+    -webkit-tap-highlight-color: transparent;
+    border-radius: $calendar-wrapper-border-radius;
+    display: $calendar-block-style;
+    overflow: auto;
+    user-select: $calendar-none-style;
+
+    &.e-rtl .e-header .e-title {
+      float: $calendar-float-right-style;
+      text-align: $calendar-float-right-style;
+    }
+    &.e-rtl .e-header .e-icon-container {
+      float: $calendar-float-left-style;
+    }
+    & .e-header {
+      background: $calendar-none-style;
+      display: table;
+      font-weight: $calendar-spanicon-font-weight-style;
+      position: relative;
+      text-align: center;
+      width: $calendar-full-width;
+
+      & button {
+        background: transparent;
+        border: $border-zero;
+        margin-right: $calendar-icon-button-margin;
+        padding: $padding-zero;
+        text-decoration: $calendar-none-style;
+      }
+      & span {
+        cursor: $calendar-cursor-pointer-style;
+        display: inline-block;
+        font-size: $calendar-icon-font-size-style;
+        font-weight: $calendar-spanicon-font-weight-style;
+        line-height: $calendar-icon-line-height;
+        padding: $calendar-icon-padding;
+        vertical-align: middle;
+
+        &.e-disabled {
+          cursor: $calendar-cursor-default-style;
+        }
+      }
+    }
+    & .e-week-header {
+      padding: $calendar-thead-padding;
+    }
+    & th {
+      cursor: $calendar-cursor-default-style;
+      font-size: $calendar-header-font-size;
+      font-weight: normal;
+      text-align: center;
+    }
+    & .e-content {
+      & .e-selected,
+      & .e-state-hover {
+        border-radius: $calendar-zero-border-radius;
+      }
+      & span.e-day {
+        border-radius: $calendar-zero-border-radius;
+        cursor: $calendar-cursor-pointer-style;
+        display: $calendar-inline-block-style;
+        font-size: $calendar-date-font-size;
+        overflow: hidden;
+        padding: $padding-zero;
+        text-align: center;
+        text-decoration: $calendar-none-style;
+        vertical-align: middle;
+      }
+      & th,
+      & td {
+        box-sizing: border-box;
+      }
+      & td.e-disabled {
+        opacity: $calendar-disable-opacity;
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+      }
+      & td.e-disabled.e-today {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'highcontrast' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          opacity: 1;
+          & span.e-day {
+            box-shadow: $calendar-disabled-today-box-shadow;
+            color: $calendar-disabled-today-font-color;
+          }
+        }
+      }
+      & td {
+        cursor: pointer;
+        padding: $calendar-yeardeacde-span-padding;
+        text-align: center;
+        &.e-week-number {
+          color: $calendar-week-number-font-color;
+          font-size: $calendar-week-number-font-size-style;
+          font-style: $calendar-week-number-font-style;
+          font-weight: $calendar-week-number-font-weight;
+          @if $skin-name == 'FluentUI' {
+            background-color: $calendar-week-number-bg-color;
+            border-right: $calendar-week-number-border;
+          }
+          @if $skin-name == 'fluent2' {
+            border-right: $calendar-week-number-border;
+          }
+        }
+        &.e-overlay {
+          background: $calendar-none-style;
+          width: initial;
+        }
+      }
+      & td:hover {
+        @if skin-name == 'fluent2' {
+          border-radius: $calendar-td-hover-border-radius;
+          background: $calendar-hover-border-color;
+        }
+      }
+
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-width: $border-zero;
+        float: $calendar-float-left-style;
+        margin: $margin-zero;
+        outline: 0;
+        padding: $calendar-table-padding;
+        table-layout: fixed;
+        width: $calendar-full-width;
+      }
+      & td.e-other-month > span.e-day,
+      & td.e-other-year > span.e-day {
+        display: $calendar-other-month-display-style;
+        font-weight: $calendar-link-font-weight-style;
+      }
+      & tr.e-month-hide {
+        display: $calendar-other-month-row-display-style;
+        font-weight: $calendar-link-font-weight-style;
+      }
+      & tr.e-month-hide,
+      & td.e-other-month,
+      & td.e-other-year {
+        pointer-events: $calendar-pointer-events;
+        touch-action: $calendar-pointer-events;
+      }
+      & tr.e-month-hide,
+      & td.e-other-month.e-disabled,
+      & td.e-other-year.e-disabled {
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+      }
+      & td.e-week-number:hover span.e-day,
+      & td.e-week-number:hover {
+        @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
+          background-color: $calendar-bg-color;
+        }
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          background: $calendar-bg-color;
+        }
+        cursor: $calendar-cursor-default-style;
+        @if $skin-name == 'FluentUI' {
+          background-color: $calendar-week-number-bg-color;
+        }
+      }
+    }
+    & .e-header {
+      & .e-prev,
+      & .e-next {
+        border-radius: $calendar-border-radius;
+        display: inline-block;
+        font-size: $calendar-next-prev-icon-size;
+        vertical-align: middle;
+      }
+      & .e-title {
+        cursor: $calendar-cursor-pointer-style;
+        display: $calendar-inline-block-style;
+        float: $calendar-float-left-style;
+        font-size: $calendar-title-font-size;
+        font-weight: $calendar-title-font-weight-style;
+        text-align: $calendar-float-left-style;
+        padding: $calendar-header-title-padding;
+        border: $calendar-none-style;
+        border-radius: $calendar-title-border-radius;
+      }
+      & .e-title {
+        margin-left: $calendar-title-margin-left-style;
+      }
+      & .e-prev:hover,
+      & .e-next:hover {
+        cursor: $calendar-cursor-pointer-style;
+      }
+      & .e-prev.e-overlay,
+      & .e-next.e-overlay {
+        background: $calendar-none-style;
+      }
+    }
+    & .e-header.e-decade .e-title,
+    & .e-header.e-year .e-title {
+      margin-left: $calendar-decade-title-left-margin-style;
+    }
+    & .e-header.e-decade .e-title {
+      cursor: $calendar-cursor-default-style;
+    }
+    & .e-header .e-icon-container {
+      display: $calendar-inline-block-style;
+      float: $calendar-float-right-style;
+      padding-top: $calendar-icon-padding-top;
+      @if $skin-name == 'tailwind3' {
+        position: inherit;
+        top: $calendar-header-icon-top;
+      }
+    }
+    & .e-footer-container {
+      text-transform: uppercase;
+    }
+  }
+
+  .e-calendar .e-content td.e-today:hover {
+    @if $skin-name == 'fluent2' {
+      background: $calendar-hover-border-color;
+      border-radius: $calendar-td-hover-border-radius;
+    }
+  }
+
+  .e-calendar .e-date-icon-prev {
+    @if $skin-name =='tailwind3' {
+      transform: scale(1.1);
+    }
+  }
+
+  //normal style
+  #{&}.e-calendar {
+    @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
+      border-spacing: 0;
+      max-width: $calendar-normal-max-width;
+      min-width: $calendar-normal-min-width;
+      padding: $calendar-popup-padding;
+    }
+    @else {
+      border-spacing: 0;
+      max-width: $calendar-normal-max-width;
+      min-width: $calendar-normal-min-width;
+      padding: $calendar-popup-padding;
+      min-height: $calendar-normal-min-height;
+    }
+
+    &.e-calendar-day-header-lg {
+      max-width: $calendar-lg-day-header-format-max-width;
+      min-width: $calendar-lg-day-header-format-min-width;
+    }
+    &.e-week-number {
+      min-width: $calendar-weeknumber-min-width;
+    }
+
+    &.e-week {
+      max-width: $calendar-week-normal-max-width;
+      min-width: $calendar-week-normal-min-width;
+    }
+    & .e-header .e-title {
+      line-height: $calendar-normal-header-height;
+    }
+    &.e-rtl .e-header .e-title {
+      text-align: $calendar-float-right-style;
+      text-indent: $calendar-rtl-text-indent;
+    }
+    & .e-header {
+      height: $calendar-normal-header-height;
+
+      &.e-month {
+        padding: $calendar-normal-header-padding;
+      }
+
+      &.e-year,
+      &.e-decade {
+        padding: $calendar-yeardecade-header-padding;
+      }
+    }
+    & th {
+      font-weight: $calendar-normal-day-header-font-weight;
+      height: $calendar-normal-day-header-height;
+      text-transform: $calendar-normal-day-header-text;
+    }
+    & .e-content {
+      & .e-selected,
+      & .e-state-hover {
+        border-radius: $calendar-zero-border-radius;
+      }
+      & span.e-day {
+        border: $calendar-default-border-color;
+        font-size: $calendar-date-font-size;
+        font-weight: $calendar-link-font-weight-style;
+        height: $calendar-normal-month-view-height;
+        line-height: $calendar-normal-month-view-height;
+        width: $calendar-normal-month-view-width;
+      }
+    }
+    & .e-content.e-month td.e-today span.e-day {
+      line-height: $calendar-normal-month-view-line-height;
+    }
+    & .e-content td.e-today span.e-day {
+      @if $skin-name == 'FluentUI' {
+        height: 25px;
+        width: 25px;
+        line-height: 25px;
+      }
+    }
+    & .e-content.e-year table,
+    & .e-content.e-decade table {
+      border-spacing: 0;
+      padding: $calendar-yeardecade-padding;
+    }
+    & .e-content.e-month td {
+      height: $calendar-normal-month-view-height;
+      padding: $calendar-normal-month-cell-padding;
+    }
+    & .e-content .tfooter > tr > td {
+      height: $calendar-normal-today-button-height;
+      line-height: $calendar-normal-today-button-height;
+    }
+    & .e-content.e-year td,
+    & .e-content.e-decade td {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
+        height: $calendar-normal-year-decade-height;
+        padding: $calendar-normal-year-decade-padding;
+      }
+      @else {
+        height: $calendar-normal-year-decade-height;
+        padding: $calendar-normal-year-decade-padding;
+        width: $calendar-normal-year-decade-width;
+      }
+    }
+    & .e-content.e-year td .e-selected,
+    & .e-content.e-decade td .e-selected {
+      @if $skin-name == 'tailwind3' {
+        background: $calendar-active-bg-color;
+        border-radius: $calendar-active-content-border-radius;
+      }
+    }
+
+    & .e-content.e-year td > span.e-day,
+    & .e-content.e-decade td > span.e-day {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
+        font-weight: $calendar-yeardecade-font-weight;
+        height: $calendar-normal-year-decade-height;
+        line-height: $calendar-normal-year-decade-height;
+        width: $calendar-normal-year-decade-width;
+      }
+      @else {
+        font-weight: $calendar-yeardecade-font-weight;
+        height: $calendar-normal-year-decade-height-inside;
+        line-height: $calendar-normal-year-decade-height-inside;
+        width: $calendar-normal-year-decade-width;
+      }
+    }
+    & .e-content.e-year td.e-selected:not(.e-focused-date) > span.e-day,
+    & .e-content.e-decade td.e-selected:not(.e-focused-date) > span.e-day,
+    & .e-content.e-year td.e-selected:not(.e-focused-date):hover > span.e-day,
+    & .e-content.e-decade td.e-selected:not(.e-focused-date):hover > span.e-day {
+      @if ($skin-name == 'FluentUI') {
+        box-shadow: $calendar-none-style;
+      }
+    }
+    & .e-header .e-icon-container {
+      & .e-prev,
+      & .e-next {
+        height: $calendar-normal-icon-size;
+        width: $calendar-normal-icon-size;
+      }
+
+      & .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-normal-down-icon-margin;
+        }
+      }
+    }
+    & .e-footer-container {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
+        background-color: $calendar-footer-background;
+      }
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        background: $calendar-footer-background;
+      }
+      @if $skin-name == 'tailwind3' {
+        text-align: right;
+      }
+      @if $skin-name != 'tailwind3' {
+        border-top: $calendar-footer-border;
+        text-align: center;
+      }
+      cursor: $calendar-cursor-default-style;
+      display: $calendar-display-style;
+      flex-direction: row;
+      justify-content: flex-end;
+      padding: $calendar-footer-container-padding;
+      width: $calendar-full-width;
+    }
+    &.e-rtl .e-header .e-title {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        text-indent: $calendar-rtl-bigger-small-text-indent;
+      }
+    }
+  }
+
+  .e-small#{&}.e-calendar,
+  .e-small #{&}.e-calendar {
+    @if ($skin-name != 'Material3' and $skin-name != 'Material3-dark' and $skin-name != 'fluent2') {
+      max-width: $calendar-small-max-width;
+      min-width: $calendar-small-min-width;
+      padding: $calendar-small-popup-padding;
+      min-height: $calendar-small-min-height;
+    }
+    @else {
+      max-width: $calendar-small-max-width;
+      min-width: $calendar-small-min-width;
+      padding: $calendar-small-popup-padding;
+    }
+    & .e-footer-container {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-small-footer-container-padding;
+      }
+    }
+
+    &.e-calendar-day-header-lg {
+      max-width: $calendar-lg-day-header-format-max-width;
+      min-width: $calendar-lg-day-header-format-min-width;
+    }
+    &.e-week-number .e-content table {
+      @if $skin-name == 'FluentUI' {
+        padding: 0 5px;
+      }
+    }
+    & .e-content {
+      & span.e-day {
+        font-size: $calendar-small-date-font-size;
+        height: $calendar-small-month-view-height;
+        line-height: $calendar-small-month-view-height;
+        width: $calendar-small-month-view-width;
+      }
+
+      &.e-month td.e-today span.e-day {
+        line-height: $calendar-small-month-view-line-height;
+      }
+      & td.e-today span.e-day {
+        @if $skin-name == 'FluentUI' {
+          height: 21px;
+          width: 21px;
+          line-height: 21px;
+        }
+      }
+    }
+
+    & .e-content.e-month td {
+      height: $calendar-small-month-view-height;
+    }
+
+    & .e-header {
+      height: $calendar-small-header-height;
+      & button{
+        & span {
+          font-size: $calendar-small-icon-font-size-style;
+          padding: $calendar-small-icon-padding;
+          line-height: $line-height;
+        }
+      }
+
+      & .e-title {
+        font-size: $calendar-small-title-font-size;
+        line-height: $calendar-small-header-height;
+      }
+
+      &.e-month,
+      &.e-year,
+      &.e-decade {
+        @if $skin-name == 'tailwind' {
+          padding: $calendar-small-header-padding;
+        }
+      }
+    }
+
+    & .e-content.e-month table,
+    & .e-content.e-year table,
+    & .e-content.e-decade table {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-small-table-padding;
+      }
+    }
+
+    &.e-rtl .e-header .e-title {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        text-indent: $calendar-rtl-text-indent;
+      }
+    }
+
+    & .e-header .e-icon-container {
+      & .e-prev,
+      & .e-next {
+        height: $calendar-small-icon-size;
+        width: $calendar-small-icon-size;
+      }
+
+      & .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-small-down-icon-margin;
+        }
+      }
+    }
+
+    & th {
+      font-size: $calendar-small-font-size;
+      height: $calendar-small-day-header-height;
+    }
+
+    & .e-header .e-title {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        margin-left: $calendar-title-margin-small-left-style;
+      }
+    }
+
+    & .e-content.e-year td > span.e-day,
+    & .e-content.e-decade td > span.e-day {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        width: $calendar-small-year-decade-width;
+      }
+    }
+
+    & .e-content.e-year td > span.e-day,
+    & .e-content.e-decade td > span.e-day {
+      @if $skin-name == 'tailwind' {
+        height: $calendar-small-year-decade-height;
+        line-height: $calendar-small-year-decade-height;
+        width: $calendar-small-year-decade-width;
+      }
+    }
+  }
+
+  #{&}.e-calendar {
+    & .e-btn.e-today.e-flat.e-disabled,
+    & .e-btn.e-today.e-flat.e-disabled:hover,
+    & .e-btn.e-today.e-flat.e-disabled:active,
+    & .e-btn.e-today.e-flat.e-disabled:focus,
+    & .e-btn.e-today.e-flat.e-disabled:hover:active {
+      background: $calendar-today-disabled-background-style;
+      border-color: $calendar-today-disabled-border-style;
+      box-shadow: $calendar-today-disabled-box-shadow;
+      color: $calendar-today-disabled-color;
+      cursor: $calendar-cursor-default-style;
+      opacity: $calendar-disable-opacity;
+      outline: $calendar-none-style;
+      pointer-events: $calendar-none-style;
+      touch-action: $calendar-none-style;
+    }
+  }
+
+  .e-content-placeholder.e-calendar.e-placeholder-calendar {
+    background-size: 250px 336px;
+    min-height: 336px;
+  }
+}

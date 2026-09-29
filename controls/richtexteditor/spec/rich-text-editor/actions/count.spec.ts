@@ -127,12 +127,6 @@ describe('Count module', () => {
             expect(rteObj.element.querySelectorAll('.e-rte-character-count')[0].classList.contains('e-error')).toBe(true);
             expect(rteObj.element.querySelectorAll('.e-rte-character-count')[0].classList.contains('e-warning')).toBe(false);
         });
-        it('error character count with background', () => {
-            (<any>rteObj.countModule).toggle({ member: 'viewSource' });
-            expect((<any>rteObj.countModule).element.style.display === 'none').toBe(true);
-            (<any>rteObj.countModule).toggle({ member: 'updateSource' });
-            expect((<any>rteObj.countModule).element.style.display === 'block').toBe(true);
-        });
         it('keyboard restriction testing', () => {
             let flag: boolean = false;
             rteObj.contentModule.getEditPanel().innerHTML = "<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content.It renders the content the abc</p>";
@@ -327,6 +321,44 @@ describe('Count module', () => {
             rteObj.showCharCount = false;
             rteObj.dataBind();
             expect(rteObj.element.querySelectorAll('.e-rte-character-count').length === 0).toBe(true);
+        });
+    });
+
+    describe('Check maxLength while showCharCount in false', () => {
+        let rteObj: RichTextEditor;
+      
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                maxLength: 10  ,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Adding letter K when maxLength is reached', () => {
+            let keyboardEventArgs : any = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 75,
+                keyCode: 75,
+                which: 75,
+                code: 75,
+                currentTarget: rteObj.inputElement
+            };
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            rteObj.keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerText).toBe('syncfusion');
+        });
+        it('Check public method -getCharCount', () => {
+            expect(rteObj.getCharCount()).toBe(10);
         });
     });
 

@@ -78,4 +78,14 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property(false)
     public allowNextRowEdit : boolean;
+
+    /**
+     * Enables or disables taskbar drawing.
+     * When enabled, an existing eligible unscheduled task can be scheduled by dragging within the timeline area of its row.
+     * Requires `allowUnscheduledTasks` to be enabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowTaskbarDraw: boolean;
 }

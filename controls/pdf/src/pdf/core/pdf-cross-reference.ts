@@ -3,13 +3,15 @@ import { _PdfDictionary, _PdfReferenceSet, _isCommand, _PdfReference, _PdfComman
 import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize, _compressStream, _hasUnicodeCharacters, _stringToBytes, _byteArrayToHexString } from './utils';
 import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
-import { PdfCrossReferenceType } from './enumerator';
+import { PdfCrossReferenceType, PdfEncryptionType, PdfPermissionFlag, PdfCertificationFlag } from './enumerator';
 import { PdfDocument } from './pdf-document';
-import { _PdfEncryptor } from './security/encryptor';
+import { _PdfEncryptionHelper, _PdfEncryptor } from './security/encryptor';
 import { _PdfSignatureDictionary } from './security/digital-signature/signature/signature-dictionary';
 import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
 import { _CipherTransform } from './security/encryptors/cipher-tranform';
 import { _MD5 } from './security/encryptors/messageDigest5';
+import { PdfSecurityOptions } from './pdf-type';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * Manages PDF cross-reference tables and streams, object lookup, and saving operations.
  *
@@ -137,6 +139,24 @@ export class _PdfCrossReference {
      */
     _encrypt: _PdfEncryptor;
     /**
+     * Encryptor instance when document is newly encrypted.
+     *
+     * @private
+     */
+    _newEncrypt: _PdfEncryptor;
+    /**
+     * Encryption state for document writing operations.
+     *
+     * @private
+     */
+    _encryptionState: PdfSecurityOptions;
+    /**
+     * Indicates whether encryption needs to be updated or not.
+     *
+     * @private
+     */
+    _isUpdateEncrypt: boolean = false;
+    /**
      * Document ID array from the trailer.
      *
      * @private
@@ -227,11 +247,15 @@ export class _PdfCrossReference {
      */
     _isCrossReferenceStream: boolean = false;
     _objectCollection: _PdfMainObjectCollection;
+    _entriesHistory: _PdfObjectInformation[][] = [];
+    _revisionCounter: number = 0;
+    _currentRevisionId: number = 0;
     constructor(document: PdfDocument, password?: string) {
         this._password = password;
         this._document = document;
         this._stream = document._stream;
         this._entries = [];
+        this._entriesHistory = [];
         this._crossReferencePosition = Object.create(null);
         this._cacheMap = new Map<_PdfReference, any>(); // eslint-disable-line
         this._offsetReference = new Map<_PdfReference, any>(); // eslint-disable-line
@@ -276,10 +300,11 @@ export class _PdfCrossReference {
         this._trailer = trailerDictionary;
         const encrypt: _PdfDictionary = trailerDictionary.get('Encrypt');
         if (encrypt) {
+            initializeTelemetryFeature('DecryptPDF', 'PDFLibrary');
             this._document._isEncrypted = true;
             this._ids = trailerDictionary.get('ID');
             this._permissionFlags = encrypt.get('P');
-            const fileId: string = this._ids && this._ids.length ? this._ids[0] : '';
+            const fileId: string = (this._ids && this._ids.length > 0 && typeof this._ids[0] === 'string') ? this._ids[0] : (this._ids = [this._generateDocumentId()])[0];
             encrypt.suppressEncryption = true;
             this._encrypt = new _PdfEncryptor(encrypt, fileId, this._password);
             this._document._isUserPassword = this._encrypt._isUserPassword;
@@ -336,8 +361,8 @@ export class _PdfCrossReference {
      * @returns {_PdfObjectInformation|null} Entry info or null.
      */
     _getEntry(i: number): _PdfObjectInformation {
-        const xrefEntry: _PdfObjectInformation = this._entries[i]; // eslint-disable-line
-        if (xrefEntry && !xrefEntry.free && xrefEntry.offset) {
+        const xrefEntry: _PdfObjectInformation = this._entries[<number>i];
+        if (xrefEntry && !xrefEntry.free && Number.isFinite(xrefEntry.offset)) {
             return xrefEntry;
         }
         return null;
@@ -516,6 +541,7 @@ export class _PdfCrossReference {
                     continue;
                 }
                 startXRefParsedCache.add(startXRef);
+                this._currentRevisionId = this._revisionCounter++;
                 stream.position = startXRef + stream.start;
                 const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true);
                 let obj: any = parser.getObject(); // eslint-disable-line
@@ -708,6 +734,8 @@ export class _PdfCrossReference {
                         info.gen = gen;
                         info.uncompressed = true;
                         this._entries[objectNumber] = info; // eslint-disable-line
+                        info.revisionId = -1;
+                        this._recordEntryHistory(objectNumber, info, false);
                     }
                     while (startPos < buffer.length) {
                         const endPos: number = startPos + this._skipUntil(buffer, startPos, objBytes) + 4;
@@ -877,6 +905,8 @@ export class _PdfCrossReference {
                 if (!this._entries[i + first]) {
                     this._entries[i + first] = entry;
                 }
+                entry.revisionId = this._currentRevisionId;
+                this._recordEntryHistory(i + first, entry, true);
             }
             this._tableState.entryNum = 0;
             this._tableState.streamPos = stream.position;
@@ -978,6 +1008,7 @@ export class _PdfCrossReference {
                     entry.uncompressed = true;
                     break;
                 case 2:
+                    entry.compressed = true;
                     break;
                 default:
                     throw new FormatError(`Invalid XRef entry type: ${type}`);
@@ -985,6 +1016,8 @@ export class _PdfCrossReference {
                 if (!this._entries[first + i]) {
                     this._entries[first + i] = entry;
                 }
+                entry.revisionId = this._currentRevisionId;
+                this._recordEntryHistory(first + i, entry, true);
             }
             this._streamState.entryNum = 0;
             this._streamState.streamPos = stream.position;
@@ -1021,6 +1054,10 @@ export class _PdfCrossReference {
     _save(): Uint8Array {
         this._uint8Chunks = [];
         this._bufferLength = 0;
+        if (this._isUpdateEncrypt) {
+            this._document.fileStructure.isIncrementalUpdate = false;
+            this._document.fileStructure._crossReferenceType = PdfCrossReferenceType.stream;
+        }
         const buffer: Array<number> = [37, 80, 68, 70, 45];
         this._writeString(`${this._version}${this._newLine}`, buffer);
         buffer.push(0x25, 0x83, 0x92, 0xfa, 0xfe);
@@ -1035,12 +1072,19 @@ export class _PdfCrossReference {
             }
             const totalSignatures: number = this._signatureCollection.length;
             for (let i: number = 0; i < totalSignatures; i++) {
-                this._signatureCollection[<number>i]._catalogBeginSave();
+                const signature: PdfSignature = this._signatureCollection[<number>i];
+                if (signature._enabledValiadtionAppearance) {
+                    signature._setValidationAppearance();
+                }
+                signature._catalogBeginSave();
             }
         }
         if (!this._document.fileStructure.isIncrementalUpdate) {
             this._currentLength = 0;
             this._objectCollection = new _PdfMainObjectCollection(this);
+            if (this._isUpdateEncrypt && this._newEncrypt) {
+                this._encrypt = this._newEncrypt;
+            }
             this._writeObjectCollection(this._objectCollection._mainObjectCollection, buffer);
             if (buffer.length > 0) {
                 this._flushBuffer(buffer);
@@ -1172,9 +1216,6 @@ export class _PdfCrossReference {
         newXref.set('Index', this._indexes);
         newXref.set('W', [1, formatValue, 1]);
         this._copyTrailer(newXref);
-        if (this._ids && this._ids.length > 0) {
-            newXref.update('ID', [this._ids[0], this._computeMessageDigest(newStartXref)]);
-        }
         const newXrefData: Array<number> = [];
         this._writeLong(0, 1, newXrefData);
         this._writeLong(0, formatValue, newXrefData);
@@ -1316,6 +1357,13 @@ export class _PdfCrossReference {
         if (typeof encrypt !== 'undefined' && encrypt !== null) {
             newXref.set('Encrypt', encrypt);
         }
+        if (this._ids && this._ids.length > 0) {
+            this._ids = [
+                this._ids[0],
+                this._computeMessageDigest(this._currentLength)
+            ];
+            newXref.set('ID', this._ids);
+        }
     }
     /**
      * Computes a message digest used for signature or ID updates.
@@ -1380,7 +1428,7 @@ export class _PdfCrossReference {
             this._writeDictionary(obj, buffer, this._newLine, transform, isCrossReference);
         } else if (obj instanceof _PdfBaseStream) {
             this._writeStream(obj, buffer, transform, isCrossReference);
-        } else if (Array.isArray(obj) && obj.length > 0) {
+        } else if (Array.isArray(obj)) {
             this._writeString('[ ', buffer);
             obj.forEach((value: any, index: number) => { // eslint-disable-line
                 if (value instanceof _PdfReference) {
@@ -1775,8 +1823,9 @@ export class _PdfCrossReference {
             } else if (value instanceof _PdfBaseStream) {
                 dictionary = value.dictionary;
             }
-            if (dictionary) {
-                if (dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) || dictionary._isSignature) {
+            if (dictionary || Array.isArray(value)) {
+                if (Array.isArray(value) ||
+                (dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) || dictionary._isSignature)) {
                     const offsetString: string = this._processString((currentLength + this._bufferLength + buffer.length).toString(), 10);
                     const genString: string = this._processString(key.generationNumber.toString(), 5);
                     tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
@@ -1832,13 +1881,20 @@ export class _PdfCrossReference {
         } else {
             if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
-                if (dictionary && dictionary._updated && !dictionary.isCatalog) {
+                if (this._isUpdateEncrypt) {
+                    if (dictionary && !dictionary.isCatalog) {
+                        if (this._encrypt) {
+                            cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
+                        }
+                        dictionary._updated = false;
+                    }
+                } else if (dictionary && dictionary._updated && !dictionary.isCatalog) {
                     if (this._encrypt) {
                         cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
                     }
                     dictionary._updated = false;
                 }
-            } else if ((!Array.isArray(value) || value.length === 0) && typeof value !== 'number' && typeof value !== 'string') {
+            } else if (!Array.isArray(value) && typeof value !== 'number' && typeof value !== 'string') {
                 return;
             }
             this._writeToBuffer(buffer, key, value, cipher);
@@ -2092,21 +2148,1156 @@ export class _PdfCrossReference {
     async _writeXrefAsync(buffer: number[], tempBuffer: string, newStartXref: number): Promise<void> {
         this._writeXref(buffer, tempBuffer, newStartXref);
     }
+    /**
+     * Creates encryption dictionary with all required fields based on security options.
+     *
+     * @private
+     * @param {PdfSecurityOptions} options - Security configuration options.
+     * @param {string} userPassword - User password.
+     * @param {string} ownerPassword - Owner password.
+     * @returns {_PdfDictionary} The encryption dictionary.
+     */
+    _createEncryptDictionary(options: PdfSecurityOptions, userPassword: string, ownerPassword: string): _PdfDictionary {
+        const dict: _PdfDictionary = new _PdfDictionary();
+        const helper: _PdfEncryptionHelper = new _PdfEncryptionHelper();
+        const fileId: string = (this._ids && this._ids.length > 0 && typeof this._ids[0] === 'string')
+            ? this._ids[0]
+            : (this._ids = [this._generateDocumentId()])[0];
+        const fileIdBytes: Uint8Array = _stringToBytes(fileId, false, true) as Uint8Array;
+        dict.set('Filter', new _PdfName('Standard'));
+        const { version, revision, length } = this._mapEncryptionTypeToVRL(options.encryptionType);
+        dict.set('V', version);
+        dict.set('R', revision);
+        dict.set('Length', length);
+        const permissions: number = options.permissions | PdfPermissionFlag.default;
+        dict.set('P', permissions);
+        if (version >= 4) {
+            const cf: _PdfDictionary = new _PdfDictionary();
+            const stdcf: _PdfDictionary = new _PdfDictionary();
+            if (version === 4) {
+                stdcf.set('CFM', new _PdfName('AESV2'));
+                stdcf.set('Length', 16);
+            } else if (version === 5) {
+                stdcf.set('CFM', new _PdfName('AESV3'));
+                stdcf.set('Length', 32);
+            }
+            cf.set('StdCF', stdcf);
+            dict.set('CF', cf);
+            stdcf.set('AuthEvent', new _PdfName('DocOpen'));
+            dict.set('StmF', new _PdfName('StdCF'));
+            dict.set('StrF', new _PdfName('StdCF'));
+        }
+        if (version < 5) {
+            const userBytes: Uint8Array = _stringToBytes(userPassword || '', false, true) as Uint8Array;
+            const ownerBytes: Uint8Array = _stringToBytes(ownerPassword || userPassword || '', false, true) as Uint8Array;
+            const ownerValue: Uint8Array = helper._computeOwnerPassword(ownerBytes, userBytes, revision, length);
+            dict.set('O', _bytesToString(ownerValue));
+            const encryptionKey: Uint8Array = helper._generateKey(fileIdBytes, userBytes, ownerValue, permissions, revision, length,
+                                                                  true);
+            const userValue: Uint8Array = helper._computeUserPassword(encryptionKey, fileIdBytes, revision);
+            dict.set('U', _bytesToString(userValue));
+        }
+        if (version === 5) {
+            const encryptionKey: Uint8Array = new Uint8Array(32);
+            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+                crypto.getRandomValues(encryptionKey);
+            } else {
+                for (let i: number = 0; i < 32; i++) {
+                    encryptionKey[<number>i] = Math.floor(Math.random() * 256);
+                }
+            }
+            const uSalt: Uint8Array = new Uint8Array(16);
+            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+                crypto.getRandomValues(uSalt);
+            } else {
+                for (let i: number = 0; i < 16; i++) {
+                    uSalt[<number>i] = Math.floor(Math.random() * 256);
+                }
+            }
+            const oSalt: Uint8Array = new Uint8Array(16);
+            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+                crypto.getRandomValues(oSalt);
+            } else {
+                for (let i: number = 0; i < 16; i++) {
+                    oSalt[<number>i] = Math.floor(Math.random() * 256);
+                }
+            }
+            const userKeySalt: Uint8Array = uSalt.subarray(8, 16);
+            const ownerKeySalt: Uint8Array = oSalt.subarray(8, 16);
+            const uValue: Uint8Array = helper._computeUserPassword256(userPassword, uSalt, revision);
+            dict.set('U', _bytesToString(uValue));
+            const oValue: Uint8Array = helper._computeOwnerPassword256(ownerPassword, uValue, oSalt, revision);
+            dict.set('O', _bytesToString(oValue));
+            const ueValue: Uint8Array = helper._computeUserEncryptionKey(userPassword, userKeySalt, encryptionKey, revision);
+            dict.set('UE', _bytesToString(ueValue));
+            const oeValue: Uint8Array = helper._computeOwnerEncryptionKey(ownerPassword, ownerKeySalt, uValue, encryptionKey, revision);
+            dict.set('OE', _bytesToString(oeValue));
+            const permsValue: Uint8Array = helper._computeEncryptedPermissions(permissions, encryptionKey, true);
+            dict.set('Perms', _bytesToString(permsValue));
+        }
+        return dict;
+    }
+    /**
+     * Generates a unique document identifier by creating random bytes.
+     *
+     * @private
+     * @returns {string} The generated document ID as a hexadecimal string.
+     */
+    _generateDocumentId(): string {
+        const random: Uint8Array = new Uint8Array(16);
+        if (typeof crypto !== 'undefined' && crypto !== null) {
+            crypto.getRandomValues(random);
+        } else {
+            for (let i: number = 0; i < 16; i++) {
+                random[<number>i] = Math.floor(256 * Math.random());
+            }
+        }
+        const md5: _MD5 = new _MD5();
+        const hash: Uint8Array = md5.hash(random, 0, random.length);
+        return _bytesToString(hash);
+    }
+    /**
+     * Maps encryption type enum to V/R/Length values.
+     *
+     * @private
+     * @param {PdfEncryptionType} type - Encryption type.
+     * @returns {{version: number, revision: number, length: number}} V, R, and key length values.
+     */
+    _mapEncryptionTypeToVRL(type: PdfEncryptionType): { version: number; revision: number; length: number } {
+        switch (type) {
+        case PdfEncryptionType.rc4Bit40:
+            return { version: 1, revision: 2, length: 40 };
+        case PdfEncryptionType.rc4Bit128:
+            return { version: 2, revision: 3, length: 128 };
+        case PdfEncryptionType.aesBit128:
+            return { version: 4, revision: 4, length: 128 };
+        case PdfEncryptionType.aesBit256Rev5:
+            return { version: 5, revision: 5, length: 256 };
+        case PdfEncryptionType.aesBit256Rev6:
+            return { version: 5, revision: 6, length: 256 };
+        default:
+            throw new FormatError('Unsupported encryption type');
+        }
+    }
+    /**
+     * Adds encryption dictionary to trailer and registers as indirect object.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary - Encryption dictionary to add.
+     * @returns {void} Nothing.
+     */
+    _addEncryptDictionaryToTrailer(dictionary: _PdfDictionary): void {
+        if (!this._trailer) {
+            throw new FormatError('Trailer not initialized');
+        }
+        const ref: _PdfReference = this._getNextReference();
+        this._cacheMap.set(ref, dictionary);
+        this._trailer.set('Encrypt', ref);
+        if (this._ids && this._ids.length > 0) {
+            this._trailer.set('ID', [ `${this._ids[0]}`, `${this._ids[0]}`]);
+        }
+    }
+    /**
+     * Initializes encryption state for new documents.
+     *
+     * @private
+     * @param {PdfSecurityOptions} options - Security configuration options.
+     * @returns {void} Nothing.
+     */
+    _initializeEncryptionState(options: PdfSecurityOptions): void {
+        const userPassword: string = options.userPassword || '';
+        const ownerPassword: string = options.ownerPassword || userPassword;
+        const newPassword: string = userPassword || ownerPassword;
+        if (newPassword && this._password !== newPassword) {
+            this._password = newPassword;
+        }
+        if (!options.encryptionType && options.encryptionType !== 0) {
+            options.encryptionType = PdfEncryptionType.rc4Bit40;
+        }
+        if (!options.permissions && options.permissions !== 0) {
+            options.permissions = PdfPermissionFlag.default;
+        }
+        const dictionary: _PdfDictionary = this._createEncryptDictionary(options, userPassword, ownerPassword);
+        this._newEncrypt = new _PdfEncryptor(dictionary, this._ids[0], this._password);
+        this._encryptionState = options;
+        this._isUpdateEncrypt = true;
+        this._addEncryptDictionaryToTrailer(dictionary);
+    }
+    /**
+     * Updates encryption settings on loaded documents.
+     *
+     * @private
+     * @param {PdfSecurityOptions} options - New security configuration options.
+     * @returns {void} Nothing.
+     */
+    _updateEncryptionSettings(options: PdfSecurityOptions): void {
+        if (!this._trailer) {
+            throw new FormatError('Trailer not initialized');
+        }
+        const parsedOptions: PdfSecurityOptions = this._document.getSecurity();
+        if (!options.encryptionType) {
+            options.encryptionType = parsedOptions.encryptionType;
+        }
+        if (!options.encryptionType && options.encryptionType !== 0) {
+            options.encryptionType = PdfEncryptionType.rc4Bit40;
+        }
+        if (!options.permissions && options.permissions !== 0) {
+            options.permissions = PdfPermissionFlag.default;
+        }
+        const userPassword: string = options.userPassword || '';
+        const ownerPassword: string = options.ownerPassword || userPassword;
+        const encryptRef: any = this._trailer._map['Encrypt']; // eslint-disable-line
+        const dictionary: _PdfDictionary = this._createEncryptDictionary(options, userPassword, ownerPassword);
+        if (encryptRef && encryptRef instanceof _PdfReference) {
+            this._cacheMap.set(encryptRef, dictionary);
+        } else {
+            this._addEncryptDictionaryToTrailer(dictionary);
+        }
+        this._newEncrypt = new _PdfEncryptor(dictionary, this._ids[0], userPassword || ownerPassword);
+        this._isUpdateEncrypt = true;
+        this._encryptionState = options;
+    }
+    /**
+     * Retrieves the object associated with the specified cross-reference entry.
+     *
+     * @param {_PdfReference} ref The reference of the object to retrieve.
+     * @param {_PdfObjectInformation} xrefEntry The cross-reference entry that describes the object location.
+     * @param {boolean} [suppressEncryption] Indicates whether decryption should be skipped when retrieving the object.
+     * @returns {any} The resolved PDF object; otherwise, null if the object cannot be found.
+     * @private
+     */
+    _fetchAtEntry(ref: _PdfReference, xrefEntry: _PdfObjectInformation, suppressEncryption?: boolean): any { // eslint-disable-line
+        if (!xrefEntry || xrefEntry.free) {
+            return null;
+        }
+        if (xrefEntry.uncompressed) {
+            return this._fetchUncompressedAtOffset(ref, xrefEntry, suppressEncryption);
+        }
+        if (xrefEntry.compressed) {
+            return this._fetchCompressedAtEntry(ref, xrefEntry);
+        }
+        return null;
+    }
+    /**
+     * Retrieves an uncompressed PDF object from the specified cross-reference entry.
+     *
+     * @param {_PdfReference} reference The reference of the object to retrieve.
+     * @param {_PdfObjectInformation} xrefEntry The cross-reference entry containing the object's offset and generation information.
+     * @param {boolean} [suppressEncryption] Indicates whether decryption should be skipped when retrieving the object.
+     * @returns {any} The retrieved PDF object.
+     * @throws {Error} Thrown when the generation number does not match the cross-reference entry.
+     * @throws {BaseException} Thrown when the cross-reference entry is invalid or the object cannot be parsed.
+     * @private
+     */
+    _fetchUncompressedAtOffset(reference: _PdfReference, xrefEntry: _PdfObjectInformation,
+        suppressEncryption?: boolean): any {  // eslint-disable-line
+        const generationNumber: number = reference.generationNumber;
+        const objectNumber: number = reference.objectNumber;
+        if (xrefEntry.gen !== generationNumber) {
+            throw new Error(`Inconsistent generation in XRef: ${reference}`);
+        }
+        const stream: _PdfStream = this._stream.makeSubStream(xrefEntry.offset + this._stream.start, undefined);
+        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true, false, this._encrypt);
+        const obj1: any = parser.getObject();  // eslint-disable-line
+        const obj2: any = parser.getObject();  // eslint-disable-line
+        const obj3: any = parser.getObject();  // eslint-disable-line
+        if (obj1 !== objectNumber || obj2 !== generationNumber || typeof obj3 === 'undefined' || obj3 === null) {
+            throw new BaseException(`Bad uncompressed XRef entry: ${reference}`, 'XRefEntryException');
+        }
+        let entry: any;  // eslint-disable-line
+        if (this._encrypt && !suppressEncryption) {
+            entry = parser.getObject(reference.objectNumber, reference.generationNumber, true);
+        } else {
+            entry = parser.getObject(null, suppressEncryption);
+        }
+        return entry;
+    }
+    /**
+     * Retrieves the cross-reference history entry for the specified object and revision.
+     *
+     * @param {number} objNum The object number whose history entry is to be retrieved.
+     * @param {number} revisionId The revision identifier associated with the history entry.
+     * @returns {_PdfObjectInformation | undefined} The matching history entry; otherwise, undefined if no entry exists for the specified revision.
+     * @private
+     */
+    _getHistoryEntryForRevision(objNum: number, revisionId: number): _PdfObjectInformation | undefined {
+        const history: _PdfObjectInformation[] = this._entriesHistory[<number>objNum];
+        if (!history) {
+            return history.find((e: any) => e && e.revisionId === revisionId);  // eslint-disable-line
+        }
+        return undefined;
+    }
+    /**
+     * Retrieves a compressed PDF object from an object stream using the specified
+     * cross-reference entry.
+     *
+     * @param {_PdfReference} ref The reference of the object to retrieve.
+     * @param {_PdfObjectInformation} xrefEntry The cross-reference entry describing the compressed object.
+     * @returns {any} The retrieved PDF object from the object stream.
+     * @throws {FormatError} Thrown when the object stream contains invalid data or parameters.
+     * @throws {BaseException} Thrown when the compressed object cannot be located or parsed.
+     * @private
+     */
+    _fetchCompressedAtEntry(ref: _PdfReference, xrefEntry: _PdfObjectInformation): any { // eslint-disable-line
+        const objStmObjNum: number = xrefEntry.offset;
+        let indexObject: number = xrefEntry.gen;
+        const revisionId: number = xrefEntry.revisionId ? xrefEntry.revisionId : 0;
+        const objStmEntry: _PdfObjectInformation = this._getHistoryEntryForRevision(objStmObjNum, revisionId);
+        if (!objStmEntry) {
+            return this._fetchCompressed(ref, xrefEntry);
+        }
+        const objStmRef: _PdfReference = _PdfReference.get(objStmObjNum, objStmEntry.gen || 0);
+        const objStmStreamAny: any = this._fetchAtEntry(objStmRef, objStmEntry);  // eslint-disable-line
+        const objStmStream: _PdfBaseStream =
+            objStmStreamAny instanceof _PdfBaseStream ? objStmStreamAny : undefined as any; // eslint-disable-line
+        if (!objStmStream || !objStmStream.dictionary) {
+            throw new FormatError('bad ObjStm stream');
+        }
+        const first: number = objStmStream.dictionary.get('First');
+        const n: number = objStmStream.dictionary.get('N');
+        if (!Number.isInteger(first) || !Number.isInteger(n)) {
+            throw new FormatError('invalid First/N parameters for ObjStm stream');
+        }
+        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(objStmStream as any), this, true); // eslint-disable-line
+        const nums: number[] = new Array(n);
+        const offsets: number[] = new Array(n);
+        for (let i: number = 0; i < n; i++) {
+            const num: any = parser.getObject();  // eslint-disable-line
+            const off: any = parser.getObject();  // eslint-disable-line
+            if (!Number.isInteger(num) || !Number.isInteger(off)) {
+                throw new FormatError(`invalid object number/offset in ObjectStream: ${num}, ${off}`);
+            }
+            nums[<number>i] = num;
+            offsets[<number>i] = off;
+        }
+        if (indexObject < 0 || indexObject >= n || nums[<number>indexObject] !== ref.objectNumber) {
+            const realIndex: number = nums.indexOf(ref.objectNumber);
+            if (realIndex < 0) {
+                throw new BaseException(`Bad (compressed) XRef entry: ${ref}`, 'XRefEntryException');
+            }
+            indexObject = realIndex;
+        }
+        const objDataStart: number = first;
+        const objStart: number = objDataStart + offsets[<number>indexObject];
+        const objLen: number = (indexObject < n - 1) ? (offsets[indexObject + 1] - offsets[<number>indexObject]) : undefined;
+        if (objLen !== undefined && objLen < 0) {
+            throw new FormatError('Invalid offset ordering in ObjStm');
+        }
+        const sub: _PdfBaseStream = objStmStream.makeSubStream(objStart, objLen, objStmStream.dictionary) as _PdfBaseStream;
+        const objParser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(sub as any), this, true);  // eslint-disable-line
+        const obj: any = objParser.getObject();  // eslint-disable-line
+        if (typeof obj === 'undefined') {
+            throw new BaseException(`Bad compressed XRef entry: ${ref}`, 'XRefEntryException');
+        }
+        return obj;
+    }
+    /**
+     * Records a cross-reference entry in the object history for the specified object number.
+     *
+     * @param {number} index The object number whose history is being recorded.
+     * @param {_PdfObjectInformation} entry The cross-reference entry to add to the history.
+     * @param {boolean} latestFirstEncounter Indicates whether the entry belongs to the latest encountered revision.
+     * @returns {void}
+     * @private
+     */
+    _recordEntryHistory(index: number, entry: _PdfObjectInformation, latestFirstEncounter: boolean): void {
+        if (!this._entriesHistory[<number>index]) {
+            this._entriesHistory[<number>index] = [];
+        }
+        const list: _PdfObjectInformation[] = this._entriesHistory[<number>index];
+        if (latestFirstEncounter) {
+            list.push(entry);
+        } else {
+            list.unshift(entry);
+        }
+    }
+    /**
+     * Retrieves the history entries for the specified object, including the latest entry
+     * and the entry associated with the signed byte range, if available.
+     *
+     * @param {number} objectNumber The object number whose history entries are to be retrieved.
+     * @param {number[]} [byteRange] The signature byte range used to locate the entry within the signed revision.
+     * @returns {object} An object containing the latest history entry and the entry that falls within the specified byte range.
+     * @private
+     */
+    _getEntryVersions(objectNumber: number, byteRange?: number[]): { inside?: _PdfObjectInformation; latest?: _PdfObjectInformation } {
+        const history: _PdfObjectInformation[] = this._entriesHistory[<number>objectNumber];
+        const result: { inside?: _PdfObjectInformation; latest?: _PdfObjectInformation } = {};
+        if (!history || history.length === 0) {
+            return result;
+        }
+        result.latest = history[0];
+        if (Array.isArray(byteRange) && byteRange.length >= 4) {
+            const [s1, l1, s2, l2]: number[] = byteRange;
+            const inRange: any = (off: number) =>   // eslint-disable-line
+                (off >= s1 && off < s1 + l1) || (off >= s2 && off < s2 + l2);
+            for (const e of history) {
+                const phys: number = this._getPhysicalOffsetForEntry(e);
+                if (Number.isFinite(phys) && inRange(phys)) {
+                    result.inside = e;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * Gets the physical file offset associated with the specified cross-reference entry.
+     *
+     * @param {_PdfObjectInformation} entry The cross-reference entry whose physical offset is to be determined.
+     * @returns {number} The physical offset of the object in the PDF file; otherwise, undefined if the offset cannot be resolved.
+     * @private
+     */
+    _getPhysicalOffsetForEntry(entry: _PdfObjectInformation): number {
+        if (entry.uncompressed) {
+            return entry.offset;
+        }
+        if (entry.compressed) {
+            const objStmObjNum: number = entry.offset;
+            const rev: number = entry.revisionId;
+            if (Number.isInteger(rev)) {
+                const hist: _PdfObjectInformation[] = this._entriesHistory[<number>objStmObjNum];
+                if (hist) {
+                    const sameRev: _PdfObjectInformation = hist.find((e: any) => e && e.revisionId === rev);  // eslint-disable-line
+                    if (sameRev && sameRev.uncompressed) {
+                        return sameRev.offset;
+                    }
+                }
+            }
+            const latestContainer: _PdfObjectInformation = this._entries[<number>objStmObjNum];
+            if (latestContainer && latestContainer.uncompressed) {
+                return latestContainer.offset;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Retrieves the object referenced by the specified reference from a particular document revision.
+     *
+     * @param {_PdfReference} ref The reference of the object to retrieve.
+     * @param {number} revisionId The revision identifier from which to fetch the object.
+     * @returns {any} The resolved PDF object; otherwise, null if the object cannot be found.
+     * @private
+     */
+    _fetchReferenceInRevision(ref: _PdfReference, revisionId: number): any {  // eslint-disable-line
+        const objNum: number = ref.objectNumber;
+        const hist: _PdfObjectInformation[] = this._entriesHistory[<number>objNum];
+        let entry: _PdfObjectInformation;
+        if (hist && Number.isInteger(revisionId)) {
+            entry = hist.find((e: any) => e && e.revisionId === revisionId);  // eslint-disable-line
+        }
+        if (!entry) {
+            entry = this._entries[<number>objNum];
+        }
+        if (!entry) {
+            return null;
+        }
+        const refForEntry: _PdfReference = _PdfReference.get(objNum, entry.gen || 0);
+        return this._fetchAtEntry(refForEntry, entry);
+    }
+    /**
+     * Determines whether the specified value is a PDF reference.
+     *
+     * @param {any} v The value to evaluate.
+     * @returns {boolean} true if the value is a PDF reference; otherwise, false.
+     * @private
+     */
+    _isRef(v: any): v is _PdfReference {  // eslint-disable-line
+        return v instanceof _PdfReference;
+    }
+    /**
+     * Determines whether the specified value is a PDF name object.
+     *
+     * @param {any} v The value to evaluate.
+     * @returns {boolean} true if the value is a PDF name object; otherwise, false.
+     * @private
+     */
+    _isName(v: any): v is _PdfName {  // eslint-disable-line
+        return v instanceof _PdfName;
+    }
+    /**
+     * Determines whether the specified value is a PDF dictionary.
+     *
+     * @param {any} v The value to evaluate.
+     * @returns {boolean} true if the value is a PDF dictionary; otherwise, false.
+     * @private
+     */
+    _isDict(v: any): v is _PdfDictionary {  // eslint-disable-line
+        return v instanceof _PdfDictionary;
+    }
+    /**
+     * Determines whether the specified value is a PDF stream.
+     *
+     * @param {any} v The value to evaluate.
+     * @returns {boolean} true if the value is a PDF stream; otherwise, false.
+     * @private
+     */
+    _isStream(v: any): v is _PdfBaseStream {  // eslint-disable-line
+        return v instanceof _PdfBaseStream;
+    }
+    /**
+     * Converts the specified value to a PDF dictionary, resolving stream dictionaries when necessary.
+     *
+     * @param {any} v The value to convert.
+     * @returns {_PdfDictionary} The corresponding PDF dictionary; otherwise, undefined.
+     * @private
+     */
+    _asDictionary(v: any): _PdfDictionary {  // eslint-disable-line
+        return this._isStream(v) ? v.dictionary : this._isDict(v) ? v : undefined;
+    }
+    /**
+     * Determines whether the specified subtype represents a supported PDF annotation.
+     *
+     * @param {string} subType The annotation subtype to evaluate.
+     * @returns {boolean} true if the subtype is an annotation subtype; otherwise, false.
+     * @private
+     */
+    _isAnnotationSubtype(subType: string): boolean {
+        switch (subType) {
+        case 'Text':
+        case 'Link':
+        case 'FreeText':
+        case 'Line':
+        case 'Square':
+        case 'Circle':
+        case 'PolyLine':
+        case 'Polygon':
+        case 'Highlight':
+        case 'Underline':
+        case 'StrikeOut':
+        case 'Squiggly':
+        case 'Stamp':
+        case 'Caret':
+        case 'Ink':
+        case 'Popup':
+        case 'FileAttachment':
+        case 'Sound':
+        case 'Movie':
+        case 'Screen':
+        case 'PrinterMark':
+        case 'TrapNet':
+        case 'Watermark':
+        case 'U3D':
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Validates annotation and widget changes against the document certification permissions.
+     *
+     * @param {_PdfDictionary} newer The updated annotation or widget dictionary.
+     * @param {_PdfDictionary} older The original annotation or widget dictionary.
+     * @param {boolean} hasPermission Indicates whether the document contains certification permissions.
+     * @param {PdfCertificationFlag} permission The certification permission applied to the document.
+     * @param {number} olderRevId The revision identifier of the original object.
+     * @param {number} newerRevId The revision identifier of the updated object.
+     * @returns {boolean} true if the change is permitted or does not invalidate the signature; otherwise, false.
+     * @private
+     */
+    _checkSubType(newer: _PdfDictionary, older: _PdfDictionary, hasPermission: boolean, permission: PdfCertificationFlag,
+                  olderRevId: number, newerRevId: number): boolean {
+        const subtypeObj: string = newer.get('Subtype');
+        const subtypeName: string = this._isName(subtypeObj) ? subtypeObj.name :
+            (typeof subtypeObj === 'string' ? subtypeObj : undefined);
+        const resolveWidgetFT: any = (widget: _PdfDictionary, revId: number): string => {  // eslint-disable-line
+            if (widget.has('FT')) {
+                const ft: string = widget.get('FT');
+                return this._isName(ft) ? ft.name : (typeof ft === 'string' ? ft : undefined);
+            }
+            const parent: any = widget.getRaw('Parent');  // eslint-disable-line
+            if (parent instanceof _PdfReference) {
+                const parentObj: any = this._fetchReferenceInRevision(parent, revId);  // eslint-disable-line
+                const parentDict: _PdfDictionary = this._asDictionary(parentObj);
+                if (parentDict && parentDict.has('FT')) {
+                    const ft: string = parentDict.get('FT');
+                    return this._isName(ft) ? ft.name : (typeof ft === 'string' ? ft : undefined);
+                }
+            }
+            return undefined;
+        };
+        if (subtypeName === 'Widget') {
+            const ftName: any = resolveWidgetFT(newer, newerRevId);  // eslint-disable-line
+            if (ftName === 'Sig') {
+                return true;
+            }
+            if ((ftName === 'Tx' || ftName === 'Btn' || ftName === 'Ch') &&
+                hasPermission && (permission === PdfCertificationFlag.allowFormFill || permission === PdfCertificationFlag.allowComments)) {
+                return true;
+            }
+            return this._areEqual(newer, older, false, hasPermission, permission, olderRevId, newerRevId);
+        }
+        if (subtypeName && this._isAnnotationSubtype(subtypeName)) {
+            if (hasPermission && permission === PdfCertificationFlag.allowComments) {
+                return true;
+            }
+            return this._areEqual(newer, older, false, hasPermission, permission, olderRevId, newerRevId);
+        }
+        return false;
+    }
+    /**
+     * Compares two PDF dictionaries and determines whether their contents are equivalent,
+     * taking certification permissions and annotation rules into account.
+     *
+     * @param {_PdfDictionary} older The original dictionary to compare.
+     * @param {_PdfDictionary} newer The updated dictionary to compare.
+     * @param {boolean} ignoreAnnotation Indicates whether annotation-specific validation should be performed.
+     * @param {boolean} hasPermission Indicates whether the document contains certification permissions.
+     * @param {PdfCertificationFlag} permission The certification permission applied to the document.
+     * @param {number} olderRevId The revision identifier of the original dictionary.
+     * @param {number} newerRevId The revision identifier of the updated dictionary.
+     * @returns {boolean} true if the dictionaries are considered equivalent or the changes are permitted; otherwise, false.
+     * @private
+     */
+    _areEqual(older: _PdfDictionary, newer: _PdfDictionary, ignoreAnnotation: boolean, hasPermission: boolean,
+              permission: PdfCertificationFlag, olderRevId: number, newerRevId: number): boolean {
+        let areEqual: boolean = true;
+        const newerAsDict: any = newer;  // eslint-disable-line
+        const newerIsXmlStream: any = (newerAsDict instanceof _PdfBaseStream || newer instanceof _PdfBaseStream)  // eslint-disable-line
+            ? (() => {
+                const dict: _PdfDictionary = this._asDictionary(newer);
+                if (!dict || !dict.has('Subtype')) {
+                    return false;
+                }
+                const st: string = dict.get('Subtype');
+                const stName: string = this._isName(st) ? st.name : undefined;
+                return stName === 'XML';
+            })() : false;
+        if (!older || !newer || newerIsXmlStream) {
+            return true;
+        }
+        if (ignoreAnnotation && newer.has('Type')) {
+            const newerType: any = newer.get('Type');  // eslint-disable-line
+            const tName: string = this._isName(newerType) ? newerType.name : undefined;
+            if (tName === 'Annot') {
+                return this._checkSubType(newer, older, hasPermission, permission, olderRevId, newerRevId);
+            }
+        }
+        if (newer.has('FT')) {
+            const ft: any= newer.get('FT');  // eslint-disable-line
+            const ftName: string = this._isName(ft) ? ft.name : (typeof ft === 'string' ? ft : undefined);
+            if (!ftName) {
+                return false;
+            }
+            if (ftName === 'Sig') {
+                return true;
+            }
+            if (ftName === 'Tx' || ftName === 'Btn' || ftName === 'Ch') {
+                if (hasPermission && (permission === PdfCertificationFlag.allowFormFill ||
+                    permission === PdfCertificationFlag.allowComments)) {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+        const olderKeys: string[] = [];
+        older.forEach((k: string) => {
+            olderKeys.push(k);
+        });
+        for (const key of olderKeys) {
+            if (!newer.has(key)) {
+                return false;
+            }
+            if (key === 'Annots') {
+                continue;
+            }
+            const olderVal: any = older.get(key);  // eslint-disable-line
+            const newerVal: any = newer.get(key);  // eslint-disable-line
+            areEqual = this._isEqual(olderVal, newerVal, olderRevId, newerRevId, hasPermission, permission);
+            if (!areEqual) {
+                break;
+            }
+        }
+        return areEqual;
+    }
+    /**
+     * Compares two PDF objects and determines whether they are equivalent,
+     * resolving references and applying certification permission rules when necessary.
+     *
+     * @param {any} olderVal The original object value.
+     * @param {any} newerVal The updated object value.
+     * @param {number} olderRevId The revision identifier of the original object.
+     * @param {number} newerRevId The revision identifier of the updated object.
+     * @param {boolean} hasPermission Indicates whether the document contains certification permissions.
+     * @param {PdfCertificationFlag} permission The certification permission applied to the document.
+     * @returns {boolean} true if the objects are considered equivalent or the changes are permitted; otherwise, false.
+     * @private
+     */
+    _isEqual(olderVal: any, newerVal: any, olderRevId: number, newerRevId: number,  // eslint-disable-line
+             hasPermission: boolean, permission: PdfCertificationFlag): boolean {
+        if (olderVal == null && newerVal == null) {
+            return true;
+        }
+        if (olderVal == null || newerVal == null) {
+            return false;
+        }
+        if (this._isName(olderVal) && this._isName(newerVal)) {
+            return olderVal.name === newerVal.name;
+        }
+        if (typeof olderVal === 'number' || typeof olderVal === 'string' || typeof olderVal === 'boolean') {
+            return olderVal === newerVal;
+        }
+        if (this._isRef(olderVal) && this._isRef(newerVal)) {
+            const oldObj: any = this._fetchReferenceInRevision(olderVal, olderRevId);  // eslint-disable-line
+            const newObj: any = this._fetchReferenceInRevision(newerVal, newerRevId);  // eslint-disable-line
+            const oldDict: any = this._asDictionary(oldObj);  // eslint-disable-line
+            const newDict: any = this._asDictionary(newObj);  // eslint-disable-line
+            if (oldDict && newDict) {
+                return this._areEqual(oldDict, newDict, true, hasPermission, permission, olderRevId, newerRevId);
+            }
+            return JSON.stringify(oldObj) === JSON.stringify(newObj);
+        }
+        if (Array.isArray(olderVal) && Array.isArray(newerVal)) {
+            if (olderVal.length !== newerVal.length) {
+                return false;
+            }
+            for (let i: number = 0; i < olderVal.length; i++) {
+                if (!this._isEqual(olderVal[<number>i], newerVal[<number>i], olderRevId, newerRevId, hasPermission, permission)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (this._isDict(olderVal) && this._isDict(newerVal)) {
+            return this._areEqual(olderVal, newerVal, true, hasPermission, permission, olderRevId, newerRevId);
+        }
+        if (this._isStream(olderVal) && this._isStream(newerVal)) {
+            const oldD: any = olderVal.dictionary;  // eslint-disable-line
+            const newD: any = newerVal.dictionary;  // eslint-disable-line
+            return this._areEqual(oldD, newD, true, hasPermission, permission, olderRevId, newerRevId);
+        }
+        return JSON.stringify(olderVal) === JSON.stringify(newerVal);
+    }
+    /**
+     * Compares two PDF dictionaries and determines whether changes between them
+     * affect the validity of the signed document.
+     *
+     * @param {_PdfDictionary} olderDict The original dictionary from the signed revision.
+     * @param {_PdfDictionary} newerDict The updated dictionary from the latest revision.
+     * @param {Set<number>} skipObjects The collection of object numbers that require special comparison handling.
+     * @param {number} objectNumber The object number being compared.
+     * @param {boolean} hasPermission Indicates whether the document contains certification permissions.
+     * @param {PdfCertificationFlag} permission The certification permission applied to the document.
+     * @param {number} olderRevId The revision identifier of the original dictionary.
+     * @param {number} newerRevId The revision identifier of the updated dictionary.
+     * @returns {boolean} true if the object has changed in a way that affects signature validation; otherwise, false.
+     * @private
+     */
+    _compareObjects(olderDict: _PdfDictionary, newerDict: _PdfDictionary,
+                    skipObjects: Set<number>, objectNumber: number,
+                    hasPermission: boolean, permission: PdfCertificationFlag,
+                    olderRevId: number, newerRevId: number): boolean {
+        if (!olderDict || !newerDict) {
+            return false;
+        }
+        if (skipObjects && skipObjects.has(objectNumber)) {
+            if (olderDict.has && newerDict.has && olderDict.has('Fields') && newerDict.has('Fields')) {
+                return this._readFormReferences(olderDict, newerDict, olderRevId, newerRevId);
+            }
+            if (!hasPermission) {
+                const res: boolean = !this._areEqual(olderDict, newerDict, true, hasPermission, permission, olderRevId, newerRevId);
+                return res;
+            }
+            return this._readFormReferences(olderDict, newerDict, olderRevId, newerRevId);
+        }
+        const areEqual: boolean = this._areEqual(olderDict, newerDict, true, hasPermission, permission, olderRevId, newerRevId);
+        const changed: boolean = !areEqual;
+        return changed;
+    }
+    /**
+     * Compares the form field references in two AcroForm dictionaries and determines
+     * whether changes made between revisions are permitted for signature validation.
+     *
+     * @param {_PdfDictionary} oldAcroForm The AcroForm dictionary from the signed revision.
+     * @param {_PdfDictionary} newAcroForm The AcroForm dictionary from the latest revision.
+     * @param {number} olderRevId The revision identifier of the original AcroForm.
+     * @param {number} newerRevId The revision identifier of the updated AcroForm.
+     * @returns {boolean} true if unauthorized form field changes are detected; otherwise, false.
+     * @private
+     */
+    _readFormReferences(oldAcroForm: _PdfDictionary, newAcroForm: _PdfDictionary,
+                        olderRevId: number, newerRevId: number): boolean {
+        if (!oldAcroForm.has('Fields') || !newAcroForm.has('Fields')) {
+            return false;
+        }
+        const oldFields: any = oldAcroForm.get('Fields');  // eslint-disable-line
+        const newFields: any = newAcroForm.get('Fields');  // eslint-disable-line
+        if (!Array.isArray(oldFields) || !Array.isArray(newFields)) {
+            return false;
+        }
+        const refEquals = (a: any, b: any): boolean => {  // eslint-disable-line
+            if (a === b) {
+                return true;
+            }
+            if (a instanceof _PdfReference && b instanceof _PdfReference) {
+                return a.objectNumber === b.objectNumber && a.generationNumber === b.generationNumber;
+            }
+            return false;
+        };
+        const arrayContains: any = (arr: any[], item: any): boolean => {  // eslint-disable-line
+            for (const el of arr) {
+                if (refEquals(el, item)) {
+                    return true;
+                }
+                if (!(el instanceof _PdfReference) && !(item instanceof _PdfReference) && el === item) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        const resolveFT: any = (fieldDict: _PdfDictionary, revId: number): string => {  // eslint-disable-line
+            if (fieldDict.has('FT')) {
+                const ft: any = fieldDict.get('FT');  // eslint-disable-line
+                return ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : undefined);
+            }
+            const parent: any = fieldDict.getRaw('Parent');  // eslint-disable-line
+            if (parent instanceof _PdfReference) {
+                const parentObj: any = this._fetchReferenceInRevision(parent, revId);  // eslint-disable-line
+                const parentDict: _PdfDictionary = this._asDictionary(parentObj);
+                if (parentDict && parentDict.has('FT')) {
+                    const ft: any = parentDict.get('FT');  // eslint-disable-line
+                    return ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : undefined);
+                }
+            }
+            return undefined;
+        };
+        if (newFields.length < oldFields.length) {
+            return true;
+        }
+        if (newFields.length === oldFields.length) {
+            for (const f of newFields) {
+                if (!arrayContains(oldFields, f)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        for (const f of newFields) {
+            if (arrayContains(oldFields, f)) {
+                continue;
+            }
+            if (!(f instanceof _PdfReference)) {
+                return true;
+            }
+            const fieldObj: any = this._fetchReferenceInRevision(f, newerRevId);  // eslint-disable-line
+            const fieldDict: _PdfDictionary = this._asDictionary(fieldObj);
+            if (!fieldDict) {
+                return true;
+            }
+            let ftName: string = resolveFT(fieldDict, newerRevId);
+            if (!ftName) {
+                if (fieldDict.has('V')) {
+                    const vRaw: any = fieldDict.getRaw('V');  // eslint-disable-line
+                    const vObj: any = vRaw instanceof _PdfReference  // eslint-disable-line
+                        ? this._fetchReferenceInRevision(vRaw, newerRevId)
+                        : vRaw;
+                    const vDict: _PdfDictionary = this._asDictionary(vObj);
+                    if (vDict) {
+                        const typeObj: any = vDict.has('Type') ? vDict.get('Type') : undefined;  // eslint-disable-line
+                        const typeName: string = typeObj instanceof _PdfName ? typeObj.name : (typeof typeObj === 'string' ? typeObj : undefined);
+                        if (typeName === 'Sig' || vDict.has('ByteRange') || vDict.has('Contents')) {
+                            ftName = 'Sig';
+                        }
+                    }
+                }
+            }
+            if (!ftName) {
+                return true;
+            }
+            if (ftName !== 'Sig') {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Reads all references contained in the specified form dictionary for the given revision.
+     *
+     * @param {_PdfDictionary} formDict The form dictionary whose references are to be processed.
+     * @param {number} revisionId The revision identifier used to resolve referenced objects.
+     * @returns {void}
+     * @private
+     */
+    _readAllReferences(formDict: _PdfDictionary, revisionId: number): void {
+        const keys: string[] = [];
+        formDict.forEach((k: string) => keys.push(k));
+        for (const k of keys) {
+            if (k === 'P' || k === 'Parent') {
+                continue;
+            }
+            const v: any = formDict.get(k);  // eslint-disable-line
+            this._readAllSubReferences(v, revisionId);
+        }
+    }
+    /**
+     * Recursively traverses and resolves all referenced objects contained within the specified object for a given revision.
+     *
+     * @param {any} obj The object whose references are to be resolved and processed.
+     * @param {number} revisionId The revision identifier used when retrieving referenced objects.
+     * @returns {void}
+     * @private
+     */
+    _readAllSubReferences(obj: any, revisionId: number): void {  // eslint-disable-line
+        if (this._isRef(obj)) {
+            const fetched: any = this._fetchReferenceInRevision(obj, revisionId);  // eslint-disable-line
+            this._readAllSubReferences(fetched, revisionId);
+        } else if (this._isDict(obj)) {
+            obj.forEach((k: string, v: any) => this._readAllSubReferences(v, revisionId));  // eslint-disable-line
+        } else if (this._isStream(obj)) {
+            this._readAllSubReferences(obj.dictionary, revisionId);
+        } else if (Array.isArray(obj)) {
+            for (const it of obj) {
+                this._readAllSubReferences(it, revisionId);
+            }
+        }
+    }
+    /**
+     * Verifies whether a page has been modified in a manner that violates the document's
+     * certification permissions or invalidates the applied signature.
+     *
+     * @param {_PdfDictionary} oldPage The page dictionary from the signed revision.
+     * @param {_PdfDictionary} newPage The page dictionary from the latest revision.
+     * @param {boolean} hasPermission Indicates whether certification permissions are defined for the document.
+     * @param {PdfCertificationFlag} permission The certification permission level applied to the document.
+     * @returns {boolean} true if an unauthorized page modification is detected; otherwise, false.
+     * @private
+     */
+    _verifyPageIsModify(oldPage: _PdfDictionary, newPage: _PdfDictionary,
+                        hasPermission: boolean, permission: PdfCertificationFlag): boolean {
+        if (hasPermission && permission === PdfCertificationFlag.forbidChanges) {
+            return true;
+        }
+        if (newPage.has('Contents') && oldPage.has('Contents')) {
+            const n: any = newPage.get('Contents');  // eslint-disable-line
+            const o: any = oldPage.get('Contents');  // eslint-disable-line
+            if (this._isRef(n) && this._isRef(o) && n.objectNumber !== o.objectNumber) {
+                return true;
+            }
+        }
+        const keys: string[] = [];
+        newPage.forEach((k: string) => keys.push(k));
+        const allowAnnots: boolean =
+            (hasPermission && permission === PdfCertificationFlag.allowComments) ||
+            (hasPermission && permission === PdfCertificationFlag.allowFormFill) ||
+            (!hasPermission);
+        for (const k of keys) {
+            if (!oldPage.has(k)) {
+                if (!(k === 'Annots' && allowAnnots)) {
+                    return true;
+                }
+            } else {
+                const nv: any = newPage.get(k);  // eslint-disable-line
+                const ov: any = oldPage.get(k);  // eslint-disable-line
+                if (k === 'Annots' && allowAnnots) {
+                    if (Array.isArray(nv) && Array.isArray(ov)) {
+                        if (this._checkFormFieldRemoved(ov, nv, 0)) {
+                            return true;
+                        }
+                        const allMatch: boolean = ov.every((oref: any) => {  // eslint-disable-line
+                            return nv.some((nref: any) =>  // eslint-disable-line
+                                this._isRef(oref) &&
+                                this._isRef(nref) &&
+                                oref.objectNumber === nref.objectNumber
+                            );
+                        });
+                        if (!allMatch) {
+                            return true;
+                        }
+                        if (nv.length > ov.length) {
+                            const added = nv.filter((nref: any) => {  // eslint-disable-line
+                                return !ov.some((oref: any) =>  // eslint-disable-line
+                                    this._isRef(oref) &&
+                                    this._isRef(nref) &&
+                                    oref.objectNumber === nref.objectNumber
+                                );
+                            });
+                            for (const a of added) {
+                                if (!(a instanceof _PdfReference)) {
+                                    return true;
+                                }
+                                const obj: any = this._fetchReferenceInRevision(a, 0);  // eslint-disable-line
+                                const dict: _PdfDictionary = this._asDictionary(obj);
+                                if (!dict) {
+                                    return true;
+                                }
+                                if (dict.has('Subtype')) {
+                                    const subtype: any = dict.get('Subtype');  // eslint-disable-line
+                                    let name: string = '';
+                                    if (this._isName(subtype)) {
+                                        name = (subtype.name || '').trim();
+                                        if (!name && typeof subtype.toString === 'function') {
+                                            name = (subtype.toString() || '').trim();
+                                        }
+                                    } else if (typeof subtype === 'string') {
+                                        name = subtype.trim();
+                                    }
+                                    if (name === 'Widget') {
+                                        continue;
+                                    }
+                                    if (allowAnnots && name && this._isAnnotationSubtype(name)) {
+                                        continue;
+                                    }
+                                    return true;
+                                }
+                                return true;
+                            }
+                        }
+                        continue;
+                    }
+                    continue;
+                }
+                if (this._isRef(nv) && this._isRef(ov)) {
+                    if (nv.objectNumber !== ov.objectNumber) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * Checks whether a form field widget annotation has been removed between revisions.
+     *
+     * @param {any[]} oldAnnots The annotation collection from the original revision.
+     * @param {any[]} newAnnots The annotation collection from the updated revision.
+     * @param {number} newerRevId The revision identifier used to resolve annotation references.
+     * @returns {boolean} true if a widget annotation has been removed; otherwise, false.
+     * @private
+     */
+    _checkFormFieldRemoved(oldAnnots: any[], newAnnots: any[], newerRevId: number): boolean {  // eslint-disable-line
+        for (const el of oldAnnots) {
+            if (!this._arrayContains(newAnnots, el)) {
+                if (this._isRef(el)) {
+                    const annotObj: any = this._fetchReferenceInRevision(el, newerRevId);  // eslint-disable-line
+                    const annotDict: any = this._asDictionary(annotObj);  // eslint-disable-line
+                    if (annotDict && annotDict.has('Subtype')) {
+                        const st: any = annotDict.get('Subtype');  // eslint-disable-line
+                        const stName: string = this._isName(st) ? st.name : undefined;
+                        if (stName === 'Widget') {
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return false;
+    }
+    /**
+     * Determines whether two PDF references refer to the same object.
+     *
+     * @param {any} a The first reference to compare.
+     * @param {any} b The second reference to compare.
+     * @returns {boolean} true if both references identify the same object number and generation number; otherwise, false.
+     * @private
+     */
+    _refEquals(a: any, b: any): boolean {  // eslint-disable-line
+        if (a === b) {
+            return true;
+        }
+        if (a instanceof _PdfReference && b instanceof _PdfReference) {
+            return a.objectNumber === b.objectNumber && a.generationNumber === b.generationNumber;
+        }
+        return false;
+    }
+    /**
+     * Determines whether the specified array contains the given item.
+     *
+     * @param {any[]} arr The array to search.
+     * @param {any} item The item to locate in the array.
+     * @returns {boolean} true if the item exists in the array; otherwise, false.
+     * @private
+     */
+    _arrayContains(arr: any[], item: any): boolean {  // eslint-disable-line
+        for (const el of arr) {
+            if (this._refEquals(el, item)) {
+                return true;
+            }
+            if (!(el instanceof _PdfReference) && !(item instanceof _PdfReference) && el === item) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Determines whether the specified annotation subtype represents a permitted change
+     * according to the document certification permissions.
+     *
+     * @param {_PdfDictionary} dict The annotation or form field dictionary to evaluate.
+     * @param {boolean} hasPermission Indicates whether certification permissions are present.
+     * @param {PdfCertificationFlag} permission The certification permission level applied to the document.
+     * @param {number} revisionId The revision identifier used to resolve referenced field information.
+     * @param {_PdfCrossReference} xref The cross-reference table used to resolve PDF objects.
+     * @returns {boolean} true if the subtype represents an allowed change; otherwise, false.
+     * @private
+     */
+    _checkSubTypeSingle(dict: _PdfDictionary, hasPermission: boolean, permission: PdfCertificationFlag, revisionId: number,
+                        xref: _PdfCrossReference): boolean {
+        const subtypeObj: any = dict.get('Subtype');  // eslint-disable-line
+        const subtypeName: string = subtypeObj instanceof _PdfName ? subtypeObj.name :
+            (typeof subtypeObj === 'string' ? subtypeObj : undefined);
+        if (subtypeName === 'Form') {
+            return true;
+        }
+        if (subtypeName === 'Widget') {
+            const resolveFT: any = (): string => {  // eslint-disable-line
+                if (dict.has('FT')) {
+                    const ft: any = dict.get('FT');  // eslint-disable-line
+                    return ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : undefined);
+                }
+                const parent: any = dict.getRaw('Parent');  // eslint-disable-line
+                if (parent instanceof _PdfReference) {
+                    const parentObj: any = xref._fetchReferenceInRevision(parent, revisionId);  // eslint-disable-line
+                    const parentDict: _PdfDictionary = xref._asDictionary(parentObj);
+                    if (parentDict && parentDict.has('FT')) {
+                        const ft: any = parentDict.get('FT');  // eslint-disable-line
+                        return ft instanceof _PdfName ? ft.name : (typeof ft === 'string' ? ft : undefined);
+                    }
+                }
+                return undefined;
+            };
+            const ftName: string = resolveFT();
+            return ftName === 'Sig';
+        }
+        if (subtypeName && this._isAnnotationSubtype(subtypeName)) {
+            return hasPermission && (
+                permission === PdfCertificationFlag.allowComments
+                || permission === PdfCertificationFlag.allowFormFill
+            );
+        }
+        return false;
+    }
 }
 /**
  * Represents metadata for a single object entry in the XRef table/stream.
  *
  * @private
  */
-class _PdfObjectInformation {
-    /** Object byte offset or object stream index. */
+export class _PdfObjectInformation {
+    /**
+     * Gets or sets the byte offset of the object or the object stream identifier.
+     */
     offset: number;
-    /** Generation number for the entry. */
+    /**
+     * Gets or sets the generation number associated with the entry.
+     */
     gen: number;
-    /** Whether the object is stored uncompressed (in file) */
+    /**
+     * Indicates whether the object is stored as an uncompressed object in the PDF file.
+     */
     uncompressed: boolean;
-    /** Whether the entry is free. */
+    /**
+     * Indicates whether the entry is marked as free in the cross-reference table.
+     */
     free: boolean;
+    /**
+     * Indicates whether the object is stored in a compressed object stream.
+     */
+    compressed: boolean;
+    /**
+     * Gets or sets the revision identifier associated with the object entry.
+     */
+    revisionId: number;
 }
 /**
  * Internal state used when parsing an XRef table across reads.
@@ -2387,6 +3578,10 @@ class _PdfMainObjectCollection {
      * @returns {void} nothing.
      */
     _parseDictionary(element: _PdfDictionary): void {
+        if (element._isVisited) {
+            return;
+        }
+        element._isVisited = true;
         element.forEach((key: string, value: any) => { // eslint-disable-line
             const processReference: any = (ref: _PdfReference) => { // eslint-disable-line
                 if (!this._mainObjectCollection.has(ref) && this._reference.indexOf(ref) === -1) {
@@ -2431,12 +3626,19 @@ class _PdfMainObjectCollection {
             const subtype: _PdfName = element.dictionary.get('Subtype');
             const isUpdated: boolean = element.dictionary._updated;
             let uncompressedValue: _PdfBaseStream;
-            if (isUpdated || (type && (type.name === 'XObject' || type.name === 'Metadata') &&
-            (subtype.name === 'Form' || subtype.name === 'XML'))) {
+            if (this._crossReference._isUpdateEncrypt && this._crossReference._document.isEncrypted) {
                 uncompressedValue = this._crossReference._fetch(key);
+                if (type && type.name === 'XObject' && subtype && subtype.name === 'Image') {
+                    uncompressedValue._isImage = true;
+                }
             } else {
-                uncompressedValue = this._crossReference._fetch(key, true);
-                uncompressedValue._isCompress = false;
+                if (isUpdated || (type && (type.name === 'XObject' || type.name === 'Metadata') &&
+                    (subtype.name === 'Form' || subtype.name === 'XML'))) {
+                    uncompressedValue = this._crossReference._fetch(key);
+                } else {
+                    uncompressedValue = this._crossReference._fetch(key, true);
+                    uncompressedValue._isCompress = false;
+                }
             }
             this._addToMainObjectCollection(key, uncompressedValue);
         }

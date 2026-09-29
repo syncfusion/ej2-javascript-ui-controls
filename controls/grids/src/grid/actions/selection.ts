@@ -25,6 +25,7 @@ import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArg
 import { addRemoveEventListener } from '../base/util';
 import * as literals from '../base/string-literals';
 import { GroupLazyLoadRenderer, VirtualContentRenderer } from '../renderer';
+import { ReferenceConverter } from './formula';
 
 /**
  * The `Selection` module is used to handle cell and row selection.
@@ -595,7 +596,8 @@ export class Selection implements IAction {
         const indexes: number[] = gObj.getSelectedRowIndexes().concat(rowIndexes);
         let selectedRow: Element = !this.isSingleSel() ? gObj.getRowByIndex(rowIndexes[0]) :
             gObj.getRowByIndex(rowIndexes[rowIndexes.length - 1]);
-        const checkboxSelect: boolean = isNullOrUndefined(selectedRow.querySelector('.e-checkselect')) && isNullOrUndefined(selectedRow.querySelector('.e-edit-checkselect'));
+        const checkboxSelect: boolean = isNullOrUndefined(selectedRow) ? false :
+            (isNullOrUndefined(selectedRow.querySelector('.e-checkselect')) && isNullOrUndefined(selectedRow.querySelector('.e-edit-checkselect')));
         if ((!this.isRowType() || this.isEditing()) && checkboxSelect) {
             return;
         }
@@ -755,7 +757,7 @@ export class Selection implements IAction {
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
         this.selectRowIndex(-1);
-        if (this.isSingleSel() && this.parent.isPersistSelection) {
+        if (this.isSingleSel() && !this.parent.isPersistSelection) {
             this.selectedRowState = {};
         }
     }
@@ -797,6 +799,11 @@ export class Selection implements IAction {
             if (pKey === null) { return; }
             rowObj.isSelected = chkState;
             if ((chkState && !this.isPartialSelection) || (this.isPartialSelection && rowObj.isSelectable && rowObj.isSelected)) {
+                if (this.isSingleSel() && this.parent.isPersistSelection && !this.selectedRowState[`${pKey}`]) {
+                    this.selectedRowState = {};
+                    this.persistSelectedData = [];
+                    this.persistSelectedRecordsCount = 0;
+                }
                 this.selectedRowState[`${pKey}`] = chkState;
                 delete (this.unSelectedRowState[`${pKey}`]);
                 if (!this.persistSelectedData.some((data: Object) => this.getPkValue(this.primaryKey, data) === pKey)) {
@@ -1556,6 +1563,10 @@ export class Selection implements IAction {
     }
 
     private mouseMoveHandler(e: MouseEventArgs): void {
+        if (this.parent.isEdit && this.parent.element.querySelector('.e-formula-edit') && (e.target as Element).classList.contains('e-rowcell') && this.parent.enableAutoFill && this.selectionSettings.mode === 'Cell' &&
+            this.selectionSettings.type === 'Multiple' && this.selectionSettings.cellSelectionMode.indexOf('Box') > -1) {
+            return;
+        }
         e.preventDefault();
         this.stopTimer();
         const gBRect: ClientRect = this.parent.element.getBoundingClientRect();
@@ -2360,7 +2371,7 @@ export class Selection implements IAction {
         if (!args.cancel) {
             const col: Column = this.parent.getColumnByIndex(cellIndex);
             if (this.parent.editModule && cell) {
-                if (col.type === 'number') {
+                if (col.type === 'number' && !(col.allowFormula && args.value.startsWith('='))) {
                     const value: number = this.serviceLocator.fromView(args.value as string, col.getParser(), col.type) as number;
                     this.parent.editModule.updateCell(rowIndex, col.field, value);
                 } else {
@@ -2375,9 +2386,31 @@ export class Selection implements IAction {
 
     private createBeforeAutoFill(rowIndex: number, colIndex: number, cell: HTMLElement): BeforeAutoFillEventArgs {
         const col: Column = this.parent.getColumnByIndex(colIndex);
+        let value: string = cell.innerText;
+        if (this.parent.formulaModule && col && col.allowFormula && this.parent.editSettings && this.parent.editSettings.mode === 'Cell') {
+            const sourceRowElem: Element = parentsUntil(cell, literals.row);
+            const sourceRowIndex: number = sourceRowElem ? parseInt(sourceRowElem.getAttribute(literals.ariaRowIndex), 10) - 1 : undefined;
+            const sourceColIndex: number = cell && cell.getAttribute ?
+                parseInt(cell.getAttribute(literals.ariaColIndex), 10) - 1 : undefined;
+            if (!isNullOrUndefined(sourceRowIndex) && !isNaN(sourceRowIndex)) {
+                const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+                const primaryKeyValue: string | number =
+                    this.parent.getCurrentViewRecords()[parseInt(sourceRowIndex.toString(), 10)][`${primaryKeyField}`];
+                const sourceColumn: Column = this.parent.getColumnByIndex(sourceColIndex);
+                const rawFormula: string = this.parent.getCellFormula(primaryKeyValue, sourceColumn.field);
+                if (typeof rawFormula === 'string' && rawFormula.trim().length) {
+                    const rowDelta: number = rowIndex - sourceRowIndex;
+                    const colDelta: number = (!isNullOrUndefined(sourceColIndex) && !isNaN(sourceColIndex)) ?
+                        (colIndex - sourceColIndex) : 0;
+                    value = rawFormula.charAt(0) === '='
+                        ? '=' + ReferenceConverter.adjustReferences(rawFormula.slice(1), rowDelta, colDelta)
+                        : ReferenceConverter.adjustReferences(rawFormula, rowIndex, colDelta);
+                }
+            }
+        }
         const args: BeforeAutoFillEventArgs = {
             column: col,
-            value: cell.innerText
+            value: value
         };
         this.parent.trigger(events.beforeAutoFill, args);
         return args;
@@ -2658,7 +2691,8 @@ export class Selection implements IAction {
             const isFrozenRow: boolean = rindex < (this.parent.frozenRows || this.parent.pinnedTopRecords.length);
             const isFrozenRight: boolean = this.parent.getFrozenMode() === literals.leftRight
                 && col.getFreezeTableName() === literals.frozenRight;
-            if (!select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, literals.table))) {
+            if (!isNullOrUndefined(parentsUntil(this.target, literals.table)) &&
+                !select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, literals.table))) {
                 if (select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
                     select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
                 }
@@ -3157,7 +3191,7 @@ export class Selection implements IAction {
             this.persistSelectedRecordsCount = this.persistSelectedData.length &&
                 this.getAvailableSelectedData(this.persistSelectedData).length;
             if (this.isSingleSel() && indexes.length > 0) {
-                this.selectRow(indexes[0], true);
+                this.selectRow(indexes[0], false);
             } else {
                 this.selectRows(indexes);
             }
@@ -3882,6 +3916,10 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
+        if (this.parent.isEdit && this.parent.element.querySelector('.e-formula-edit') && target.classList.contains('e-rowcell') && this.parent.enableAutoFill && this.selectionSettings.mode === 'Cell' &&
+            this.selectionSettings.type === 'Multiple' && this.selectionSettings.cellSelectionMode.indexOf('Box') > -1) {
+            return;
+        }
         if (!this.isAutoFillSel && !e.ctrlKey && !e.shiftKey) {
             this.startAFCell = this.endAFCell = null;
         }
@@ -4370,8 +4408,12 @@ export class Selection implements IAction {
             const cells: Element[] = [].slice.call(row.getElementsByClassName(literals.rowCell));
             const detailIndentCell: Element = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
             const dragdropIndentCell: Element = row.querySelector('.e-rowdragdrop');
+            const pinnedIndentCells: Element[] = [].slice.call(row.querySelectorAll('.e-pindentcell'));
             if (detailIndentCell) { cells.push(detailIndentCell); }
             if (dragdropIndentCell) { cells.push(dragdropIndentCell); }
+            for (let i: number = 0; i < pinnedIndentCells.length; i++) {
+                cells.push(pinnedIndentCells[parseInt(i.toString(), 10)]);
+            }
             addRemoveActiveClasses(cells, isAdd, ...args);
         }
         this.getRenderer().setSelection(row ? row.getAttribute('data-uid') : null, isAdd, clearAll);
@@ -4774,8 +4816,7 @@ export class Selection implements IAction {
     public dataReady(e: { requestType: string }): void {
         this.isHeaderCheckboxClicked = false;
         const isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
-        if (e.requestType !== 'virtualscroll' && e.requestType !== 'dom-virtualscroll' && (!this.parent.isPersistSelection || (this.parent.isPersistSelection &&
-            this.selectionSettings.type === 'Single')) && !isInfinitecroll) {
+        if (e.requestType !== 'virtualscroll' && e.requestType !== 'dom-virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = !this.parent.enableImmutableMode && !(e.requestType === 'save' && e['action'] === 'add');
             this.clearSelection();
             this.setCheckAllState();

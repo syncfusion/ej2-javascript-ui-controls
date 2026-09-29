@@ -9,6 +9,8 @@ import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation } from './../
 import { PdfDocument } from '../pdf-document';
 import { _PdfCatalog } from '../pdf-catalog';
 import { PdfFont } from './../fonts/pdf-standard-font';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
+import { PdfSignatureValidationOptions, PdfSignatureValidationResult } from './../pdf-type';
 /**
  * Represents a PDF form.
  * ```typescript
@@ -594,6 +596,7 @@ export class PdfForm {
      * @returns {number} Field index.
      */
     public add(field: PdfField): number {
+        initializeTelemetryFeature('AcroForm', 'PDFLibrary');
         if (this._fields.length > 0) {
             const fieldsCollection: PdfField[] = this._getFields();
             const old: PdfField = fieldsCollection.find(oldField => oldField.name === field.name); // eslint-disable-line
@@ -1599,7 +1602,8 @@ export class PdfForm {
      * @returns {void}
      */
     _createFormFieldsFromWidgets(startIndex: number): void {
-        if (!(this._terminalFields && this._terminalFields.length > 0)) {
+        if (!(this._crossReference && this._crossReference._document && this._crossReference._document._allowDeepParsingFromPages) &&
+            (!this._terminalFields || this._terminalFields.length === 0)) {
             return;
         }
         this._processTerminalFields(startIndex);
@@ -2277,6 +2281,51 @@ export class PdfForm {
             }
         }
         return result;
+    }
+    /**
+     * Validates all signature fields in the PDF form.
+     *
+     * ```typescript
+     * // Load the PDF document
+     * const document: PdfDocument = new PdfDocument(data);
+     * // Access the PDF form
+     * const form: PdfForm = document.form;
+     * // Validate all signatures in the form
+     * const validationResult = form.validateSignatures({
+     *     validateRevocation: true
+     * });
+     * // Check whether all signatures are valid
+     * const isDocumentValid: boolean = validationResult.isValid;
+     * // Access individual signature validation results
+     * for (const result of validationResult.results) {
+     *     const status: SignatureStatus = result.signatureStatus;
+     *     const isSignatureValid: boolean = result.isSignatureValid;
+     * }
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfSignatureValidationOptions} [options] Optional signature validation options.
+     * @returns {Object} Validation result.
+     */
+    public validateSignatures(options?: PdfSignatureValidationOptions):
+    { isValid: boolean; results: PdfSignatureValidationResult[] } {
+        let isValid: boolean = true;
+        const results: PdfSignatureValidationResult[] = [];
+        for (let i: number = 0; i < this.count; i++) {
+            const field: PdfField = this.fieldAt(i);
+            if (field && field instanceof PdfSignatureField) {
+                const result: PdfSignatureValidationResult = field.validateSignature(options);
+                if (result) {
+                    results.push(result);
+                    isValid = isValid && result.isSignatureValid;
+                }
+            }
+        }
+        if (results.length === 0) {
+            return { isValid: false, results: null };
+        }
+        return { isValid, results };
     }
     /**
      * Clears the form’s field reference list and the parsed field cache.

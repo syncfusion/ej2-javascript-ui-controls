@@ -19,6 +19,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/vue/llms.txt](https://ai.syncfusion.com/vue/llms.txt)
+
 ## Setup
 
 ### Create a Vue Application
@@ -104,7 +118,7 @@ PdfViewer: [Toolbar, Magnification, Navigation, LinkAnnotation, BookmarkView, Th
 </script>
 ```
 
-> Refer the [Getting Started with Vue3](https://ej2.syncfusion.com/vue/documentation/pdfviewer/getting-started-application/) for using Syncfusion&reg; Vue components in Vue 3 applications.
+> Refer the [Getting Started with Vue3](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/getting-started-application) for using Syncfusion&reg; Vue components in Vue 3 applications.
 
 ## Supported frameworks
 
@@ -115,21 +129,21 @@ PDF Viewer component is also offered in the following list of frameworks.
 
 ## Key features
 
-* [View PDF Document](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/getting-started/) - Open and display both the normal and the protected PDF files with AES and RC4 encryption.
-* [Annotations](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/annotation/text-markup-annotation/) - Annotate with text markup, shapes, stamps, ink, and sticky notes.
-* [Form Fields](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/form-designer/create-fillable-pdf-forms/create-programmatically/) - Form filling and form designing can be done.
-* [Signature](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/angular/handwritten-signature/) - Hand-written and digital signatures are allowed.
-* [Toolbar](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/toolbar/) - Built-in-toolbar and custom toolbars to perform user interaction of PDF Viewer functionalities.
-* [Navigation](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/navigation/) - Easy navigation with the help of bookmarks, thumbnails, hyperlinks, and table of contents.
-* [Magnification](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/magnification/) - Fit to page, fit to width, and automatic (fits to the visible area).
-* [Search](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/text-search/) - Search a text easily across the PDF document.	
-* [Core Interactions](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/interaction-mode/) - Allows scrolling, zooming, panning, selection, and page navigation.
-* [Print](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/print/) - Print the entire document or a specific page directly from the browser.
-* [Globalization](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/globalization/) - Provides inherent support to localize the UI.
+* [View PDF Document](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/getting-started) - Open and display both the normal and the protected PDF files with AES and RC4 encryption.
+* [Annotations](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/annotation/text-markup-annotation) - Annotate with text markup, shapes, stamps, ink, and sticky notes.
+* [Form Fields](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/forms/overview) - Form filling and form designing can be done.
+* [Signature](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/annotation/signature-annotation) - Hand-written and digital signatures are allowed.
+* [Toolbar](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/toolbar) - Built-in-toolbar and custom toolbars to perform user interaction of PDF Viewer functionalities.
+* [Navigation](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/navigation) - Easy navigation with the help of bookmarks, thumbnails, hyperlinks, and table of contents.
+* [Magnification](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/magnification) - Fit to page, fit to width, and automatic (fits to the visible area).
+* [Search](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/text-search/overview) - Search a text easily across the PDF document.	
+* [Core Interactions](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/interaction-mode) - Allows scrolling, zooming, panning, selection, and page navigation.
+* [Print](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/print/overview) - Print the entire document or a specific page directly from the browser.
+* [Globalization](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/vue/localization/default-language) - Provides inherent support to localize the UI.
 
 ## Resources
 
-* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/?theme=tailwind3)
 * [What's New](https://www.syncfusion.com/products/whatsnew/pdf-viewer-sdk?utm_medium=listing&utm_source=github)
 * [Road Map](https://www.syncfusion.com/products/roadmap/pdf-viewer-sdk)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=vue&type=all)

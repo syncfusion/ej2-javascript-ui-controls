@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/bds' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/bds-definition' as *;
-@forward 'ej2-base/styles/definition/bds';
-@forward '../drop-down-button/bds-definition';
+
 $split-btn-zindex: 2 !default;
 $split-btn-border-radius: 8px !default;
 $split-btn-focus-outline-offset: 0 !default;
@@ -41,6 +40,8 @@ $drop-down-bigger-rtl-padding-right: 12px !default;
 $drop-down-bgr-rtl-icon-padding-left: 10px !default;
 $drop-dbtn-bigger-padding-left: 4px !default;
 $drop-dbtn-bigger-padding-right: 4px !default;
+$drop-dbtn-icon-font-size: $text-sm !default;
+$drop-dbtn-icon-font-size-bigger: $text-lg !default;
 
 $split-rtl-btn-padding-left: 4px !default;
 $split-rtl-btn-padding-right: 10px !default;

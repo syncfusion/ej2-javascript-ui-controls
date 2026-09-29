@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, UndoRedo, CriticalPath} from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3, baselinedurationdata } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3, baselinedurationdata, MT1050112 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj, getRandom } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input, TextBox } from '@syncfusion/ej2-inputs';
@@ -237,7 +237,7 @@ describe('Gantt editing action', () => {
     it('Editing parent progress column', () => {
         let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(7)') as HTMLElement;
         triggerMouseEvent(progress, 'dblclick');
-        expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
+        expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedcell').length > 0).toBe(false)
     });
     it('Editing baseline start date column', () => {
         let baselineStartDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(8)') as HTMLElement;
@@ -565,7 +565,7 @@ describe('Gantt editing action', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
         triggerMouseEvent(element, 'click');
-        expect(ganttObj.currentViewData[0].expanded).toBe(true);
+        expect(ganttObj.currentViewData[0].expanded).toBe(false);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -933,7 +933,7 @@ describe('Gantt editing action', () => {
         triggerMouseEvent(taskName, 'dblclick');
         let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
         input.value = 'TaskName updated';
-        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
         ganttObj.keyboardModule.keyAction(args);
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
         expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
@@ -2049,9 +2049,9 @@ describe('taskType with resourceUnit mapping', () => {
         it('Tab navigation to next row', () => {
             let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
             triggerMouseEvent(customColumn, 'dblclick');
-            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
             ganttObj.keyboardModule.keyAction(args);
-            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
             ganttObj.keyboardModule.keyAction(args1);
             expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
         });
@@ -4646,8 +4646,8 @@ describe('Editing End Date with Null Value', () => {
         ganttObj.actionBegin = function (args: any): void {
             if (args.type === "save") {
                 args.value = null
-                args.rowData.EndDate = null
-                args.rowData.ganttProperties.endDate = null
+                args.data.EndDate = null
+                args.data.ganttProperties.endDate = null
             }
         };
         ganttObj.actionComplete = function (args: any): void {
@@ -7509,7 +7509,7 @@ describe('The behavior for editing parent tasks differs between cell edit and di
     it('checking endDate is editable or not for parent record', function () {
         let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
         triggerMouseEvent(endDate, 'dblclick');
-        expect(endDate.classList.contains('e-editedbatchcell')).toBe(false)
+        expect(endDate.classList.contains('e-editedcell')).toBe(false)
     });
     afterAll(() => {
         if (ganttObj) {
@@ -7852,5 +7852,340 @@ describe('CellEdit - openNotesEditor and typeEdited branch coverage', () => {
                 destroyGantt(ganttObj);
             }
         });
+    });
+});
+describe('Gantt endDate validation - no console error on invalid segment edit', () => {
+    let ganttObj: Gantt;
+    let consoleErrorSpy: jasmine.Spy;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Project Schedule',
+                        StartDate: new Date('02/04/2019'),
+                        EndDate: new Date('03/10/2019'),
+                        subtasks: [
+                            {
+                                TaskID: 2,
+                                TaskName: 'Planning',
+                                StartDate: new Date('02/04/2019'),
+                                subtasks: [
+                                    {
+                                        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/19/2019'),
+                                        Progress: '60',
+                                        Segments: [
+                                            { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                            { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                            { StartDate: new Date('02/08/2019'), Duration: 3 }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            },
+            done
+        );
+    });
+
+    beforeEach(() => {
+        consoleErrorSpy = spyOn(console, 'error');
+    });
+
+    it('should not throw console error when endDate is edited before startDate (TaskID 3)', () => {
+        ganttObj.dataBind();
+        let endDateCell: HTMLElement = ganttObj.element.querySelector(
+            '#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)'
+        ) as HTMLElement;
+        triggerMouseEvent(endDateCell, 'dblclick');
+        let input: any = (document.querySelector(
+            '#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate'
+        ) as any).ej2_instances[0];
+        input.value = new Date('02/01/2019');
+        let saveCell: HTMLElement = ganttObj.element.querySelector(
+            '#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)'
+        ) as HTMLElement;
+
+        triggerMouseEvent(saveCell, 'click');
+        let record = ganttObj.currentViewData[2].ganttProperties;
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
+        expect(record.endDate.getTime()).toBeGreaterThanOrEqual(
+            record.startDate.getTime()
+        );
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Cell edit calendar settings column', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'PLO Kickoff',
+                        StartDate: new Date('07/06/2026'),
+                        EndDate: new Date('07/15/2026'),
+                        isManual: false,
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'PLO Charter sign-off', StartDate: new Date('07/05/2026'), Duration: 4, Progress: 100 },
+                            { TaskID: 3, TaskName: 'Stakeholder mapping', StartDate: new Date('07/05/2026'), Duration: 4, calendar: 'Steering-committee', Progress: 80 },
+                            { TaskID: 4, TaskName: 'Initial risk register', StartDate: new Date('07/05/2026'), Duration: 4, calendar: 'Compliance-audit', Progress: 60 }
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    calendarId: 'calendar'
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'calendar'},
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                calendarSettings: {
+                    projectCalendar: {
+                        holidays: [
+                            { from: '07/06/2026', to: '07/06/2026', label: 'Company Foundation Day' },
+                            { from: '07/14/2026', to: '07/14/2026', label: 'Regional Office Closure' },
+                        ],
+                        exceptions: [
+                            { from: '07/05/2026', to: '07/05/2026', label: 'Extended Work Day' }
+                        ]
+                    },
+                    taskCalendars: [
+                        {
+                            calendarId: 'Steering-committee',
+                            holidays: [
+                                { from: '07/07/2026', to: '07/07/2026', label: 'SC Strategy Day' },
+                                { from: '07/22/2026', to: '07/22/2026', label: 'Board Offsite' }
+                            ],
+                            exceptions: [
+                                { from: '07/06/2026', to: '07/06/2026', label: 'Compensatory Working' },
+                                { from: '07/19/2026', to: '07/19/2026', label: 'Compensatory Working' }
+                            ]
+                        },
+                        {
+                            calendarId: 'Compliance-audit',
+                            holidays: [
+                                { from: '07/09/2026', to: '07/10/2026', label: 'Compliance Blackout' }
+                            ],
+                            exceptions: [
+                                { from: '07/25/2026', to: '07/25/2026', label: 'Mandatory Audit Working Day' }
+                            ]
+                        }
+                    ]
+                },
+            },
+            done
+        );
+    });
+    it('Calender setting cell edit', () => {
+        let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(taskName, 'dblclick');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.calendarId).toBe(null);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Parent startDate update on scheduling unscheduled child through cell edit', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Parent Task',
+                        subtasks: [
+                            {
+                                TaskID: 2,
+                                TaskName: 'Child Task 1',
+                                Duration: 5
+                            },
+                            {
+                                TaskID: 3,
+                                TaskName: 'Child Task 2',
+                                Duration: 5
+                            }
+                        ]
+                    }
+                ],
+                allowUnscheduledTasks: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowEditing: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should update parent startDate when an unscheduled child is scheduled and saved by outside click', () => {
+
+        // Child Task 1 StartDate cell
+        const startDateCell: HTMLElement = ganttObj.element.querySelector(
+            '#treeGrid' + ganttObj.element.id +
+            '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)'
+        ) as HTMLElement;
+
+        triggerMouseEvent(startDateCell, 'dblclick');
+
+        const datePicker: any = (
+            document.querySelector(
+                '#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate'
+            ) as any
+        ).ej2_instances[0];
+
+        const scheduledDate: Date = new Date('04/10/2019');
+
+        datePicker.value = scheduledDate;
+
+        let saveCell: HTMLElement = ganttObj.element.querySelector(
+            '#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)'
+        ) as HTMLElement;
+
+        triggerMouseEvent(saveCell, 'click');
+
+        const parentRecord = ganttObj.currentViewData[0];
+        const childRecord = ganttObj.currentViewData[1];
+
+        expect(
+            parentRecord.ganttProperties.startDate.getTime()
+        ).toBe(
+            childRecord.ganttProperties.startDate.getTime()
+        );
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('MT-1050112:Console error occurs after trying to remove the start and end date values', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: MT1050112,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                allowTaskbarDraw: true,
+                allowAdding: true
+            },
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2026')
+        }, done);
+    });
+    it('Editing end date column', () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(4)')
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(null);
+
+        let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(startDate, 'dblclick');
+        let startDateInput: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
+        startDateInput.value ='';
+        let element1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element1, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'M/d/yyyy')).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

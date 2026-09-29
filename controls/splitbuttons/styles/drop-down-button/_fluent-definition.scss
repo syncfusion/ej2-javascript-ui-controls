@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/fluent' as *;
-@use 'ej2-buttons/styles/button/fluent-definition' as *;
-@forward 'ej2-base/styles/definition/fluent';
-@forward 'ej2-buttons/styles/button/fluent-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $drop-down-btn-arrow-content: '\e70d' !default;
 $drop-down-btn-vertical-btn-padding: 6px 12px !default;
 $drop-down-btn-vertical-bigger-padding: 8px 16px !default;

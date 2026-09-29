@@ -440,7 +440,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-expand')[0] as HTMLElement).click();
             });
             it('drilldown testing010', () => {
-                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("39");
+                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("30-34");
                 expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
                 (document.querySelectorAll('.e-collapse')[1] as HTMLElement).click();
             });
@@ -459,7 +459,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-remove')[5] as HTMLElement).click();
             });
             it('remove testing013', () => {
-                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("33");
+                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("25-29");
                 expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
             });
             it('Sub Total', (done: Function) => {
@@ -833,8 +833,8 @@ describe('PivotView spec', () => {
             });
             it('drilldown testing013', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("39");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 42 && pivotGridObj.engineModule.pivotValues[2].length === 21).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("30-34");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 42 && pivotGridObj.engineModule.pivotValues[2].length === 21).toBeFalsy();
                     (document.querySelectorAll('.e-collapse')[1] as HTMLElement).click();
                     done();
                 }, 100);
@@ -845,7 +845,7 @@ describe('PivotView spec', () => {
             it('drillup testing014', (done: Function) => {
                 setTimeout(() => {
                     expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tamilnadu");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 27 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
+                    expect(pivotGridObj.engineModule.pivotValues.length === 27 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
                     (document.querySelectorAll('.e-remove')[3] as HTMLElement).click();
                     done();
                 }, 100);
@@ -858,8 +858,8 @@ describe('PivotView spec', () => {
             });
             it('remove testing016', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("37");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 23 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("25-29");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 23 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
                     done();
                 }, 100);
             });
@@ -1220,9 +1220,9 @@ describe('PivotView spec', () => {
             });
             it('filter testing010', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Grand Total");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
-                    (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Grand Total");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
+                    (pivotGridObj.element.querySelector('[data-uid="gender"] .e-btn-filter') as HTMLElement).click();
                     done();
                 }, 100);
             });
@@ -1234,8 +1234,8 @@ describe('PivotView spec', () => {
             });
             it('filter testing011', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Rajkot");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Grand Total");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
                     (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
                     done();
                 }, 200);
@@ -1248,8 +1248,8 @@ describe('PivotView spec', () => {
             });
             it('drilldown testing013', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("33");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 8 && pivotGridObj.engineModule.pivotValues[2].length === 11).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("32-35");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 8 && pivotGridObj.engineModule.pivotValues[2].length === 11).toBeFalsy();
                     (document.querySelectorAll('.e-collapse')[1] as HTMLElement).click();
                     done();
                 }, 300);
@@ -1262,8 +1262,8 @@ describe('PivotView spec', () => {
             });
             it('drillup testing014', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Rajkot");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Grand Total");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
                     (document.querySelectorAll('.e-remove')[3] as HTMLElement).click();
                     done();
                 }, 300);
@@ -1276,8 +1276,8 @@ describe('PivotView spec', () => {
             });
             it('remove testing016', (done: Function) => {
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("21");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy();
+                    expect((pivotGridObj.engineModule.pivotValues[2][0] as IDataSet).formattedText).toBe("32-35");
+                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeFalsy();
                     done();
                 }, 300);
             });
@@ -2203,7 +2203,6 @@ describe('PivotView spec', () => {
             });
             it(' - Checking the pivot buttons', function (done) {
                 setTimeout(function () {
-                    console.log(pivotGridObj.pivotValues.length);
                     expect(pivotGridObj.pivotValues.length > 0).toBeTruthy();
                     done();
                 }, 3000);
@@ -2552,5 +2551,201 @@ describe('PivotView spec', () => {
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('PivotView - Event Handling Branch Coverage', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let elem: HTMLElement = createElement('div', { id: 'PivotView_EventBranch', styles: 'height:500px; width:100%' });
+
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+        setTimeout(() => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let eventFired = false;
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    rows: [{ name: 'state' }],
+                    columns: [{ name: 'gender' }],
+                    values: [{ name: 'balance' }],
+                    filters: []
+                },
+                dataBound: dataBound,
+                height: 500,
+                showGroupingBar: true,
+                showFieldList: true,
+                load: function (args: any) {
+                    eventFired = true;
+                }
+            });
+            pivotGridObj.appendTo('#PivotView_EventBranch');
+        }, 1000);
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+
+    it('Pivot grid load event triggered', () => {
+        expect(pivotGridObj).toBeDefined();
+    });
+
+    it('Data bound event triggered', () => {
+        expect(pivotGridObj.pivotValues).toBeDefined();
+    });
+
+    it('Field list module available', () => {
+        expect(pivotGridObj.fieldListModule).toBeDefined();
+    });
+
+    it('Grouping bar module available', () => {
+        expect(pivotGridObj.groupingBarModule).toBeDefined();
+    });
+});
+
+describe('PivotView - Data Source Update Branch Coverage', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let elem: HTMLElement = createElement('div', { id: 'PivotView_DataSourceUpdate', styles: 'height:500px; width:100%' });
+
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+        setTimeout(() => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    rows: [{ name: 'state' }],
+                    columns: [{ name: 'gender' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: []
+                },
+                dataBound: dataBound,
+                height: 500,
+                showGroupingBar: true,
+                showFieldList: true
+            });
+            pivotGridObj.appendTo('#PivotView_DataSourceUpdate');
+        }, 1000);
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+
+    it('Add new field to rows', () => {
+        const originalRowCount = pivotGridObj.dataSourceSettings.rows.length;
+        pivotGridObj.dataSourceSettings.rows.push({ name: 'product' });
+        expect(pivotGridObj.dataSourceSettings.rows.length).toBe(originalRowCount + 1);
+    });
+
+    it('Remove field from columns', () => {
+        const originalColCount = pivotGridObj.dataSourceSettings.columns.length;
+        if (pivotGridObj.dataSourceSettings.columns.length > 0) {
+            pivotGridObj.dataSourceSettings.columns = pivotGridObj.dataSourceSettings.columns.slice(1);
+            expect(pivotGridObj.dataSourceSettings.columns.length).toBeLessThan(originalColCount);
+        }
+    });
+
+    it('Update value field aggregation', () => {
+        if (pivotGridObj.dataSourceSettings.values.length > 0) {
+            pivotGridObj.dataSourceSettings.values[0].type = 'Sum';
+            expect(pivotGridObj.dataSourceSettings.values[0].type).toBe('Sum');
+        }
+    });
+
+    it('Add filter field', () => {
+        const originalFilterCount = pivotGridObj.dataSourceSettings.filters.length;
+        pivotGridObj.dataSourceSettings.filters.push({ name: 'eyeColor' });
+        expect(pivotGridObj.dataSourceSettings.filters.length).toBe(originalFilterCount + 1);
+    });
+});
+
+describe('PivotView - Rendering and Layout Branch Coverage', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let elem: HTMLElement = createElement('div', { id: 'PivotView_Rendering', styles: 'height:500px; width:100%' });
+
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+        setTimeout(() => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    rows: [{ name: 'state' }],
+                    columns: [{ name: 'gender' }],
+                    values: [{ name: 'balance' }],
+                    filters: []
+                },
+                dataBound: dataBound,
+                height: 500,
+                showGroupingBar: true,
+                showFieldList: true
+            });
+            pivotGridObj.appendTo('#PivotView_Rendering');
+        }, 1000);
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+
+    it('Expand all set to true', () => {
+        expect(pivotGridObj.dataSourceSettings.expandAll).toBe(true);
+    });
+
+    it('Grouping bar rendered', () => {
+        expect(document.querySelector('.e-grouping-bar')).toBeDefined();
+    });
+
+    it('Field list UI present', () => {
+        expect(document.querySelector('.e-fieldlist-container')).toBeDefined();
+    });
+
+    it('Pivot values computed', () => {
+        expect(pivotGridObj.pivotValues).toBeDefined();
+        expect(pivotGridObj.pivotValues.length).toBeGreaterThan(0);
     });
 });

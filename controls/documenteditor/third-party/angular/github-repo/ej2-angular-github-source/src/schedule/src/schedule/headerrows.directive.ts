@@ -20,9 +20,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-header-rows>e-header-row',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class HeaderRowDirective extends ComplexBase<HeaderRowDirective> {
@@ -39,20 +40,7 @@ export class HeaderRowDirective extends ComplexBase<HeaderRowDirective> {
      * * `Hour`: Denotes the hour row in the header bar.
      * @default null
      */
-    public option: any;
-    /** 
-     * Template option to customize the individual header rows. It accepts either the string or HTMLElement as template design 
-     *  content and parse it appropriately before displaying it onto the header cells. The field that 
-     *  can be accessed via this template is `date`.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare option: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -61,6 +49,7 @@ export class HeaderRowDirective extends ComplexBase<HeaderRowDirective> {
         this.directivePropList = input;
     }
 }
+Template()(HeaderRowDirective.prototype, 'template');
 
 /**
  * HeaderRow Array Directive
@@ -68,6 +57,7 @@ export class HeaderRowDirective extends ComplexBase<HeaderRowDirective> {
  */
 @Directive({
     selector: 'ejs-schedule>e-header-rows',
+    standalone: true,
     queries: {
         children: new ContentChildren(HeaderRowDirective)
     },

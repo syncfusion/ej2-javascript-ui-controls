@@ -290,10 +290,10 @@ export abstract class PdfFont {
     constructor(size: number)
     public constructor(size: number, style: PdfFontStyle)
     public constructor(size?: number, style?: PdfFontStyle) {
-        if (typeof size === 'number' && typeof style === 'undefined') {
+        if (typeof size === 'number') {
             this._size = size;
-        } else {
-            this._size = size;
+        }
+        if (typeof style !== 'undefined') {
             this._style = style;
         }
     }
@@ -370,9 +370,6 @@ export abstract class PdfFont {
     _getHeight(format: PdfStringFormat): number
     _getHeight(format?: PdfStringFormat): number {
         let height: number;
-        const clearTypeFonts: string[] = [ 'cambria', 'candara', 'constantia', 'corbel', 'cariadings' ];
-        const clearTypeFontCollection: string[] = [];
-        clearTypeFontCollection.push(...clearTypeFonts);
         if (this._getDescent(format) < 0) {
             height = (this._getAscent(format) - this._getDescent(format) + this._getLineGap(format));
         } else {
@@ -1598,7 +1595,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new PDF truetype font
+     * // Create a new PDF TrueType font
      * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
@@ -1638,7 +1635,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new PDF truetype font
+     * // Create a new PDF TrueType font
      * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
      * // Gets a font variant from the base font with the given size and style
      * const titleFont: PdfTrueTypeFont = font.getFont(14, PdfFontStyle.bold);

@@ -6,7 +6,7 @@ export interface BubbleSettingsDirTypecast {
 }
 /**
  * Represents the directive to define the bubbles in the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective>

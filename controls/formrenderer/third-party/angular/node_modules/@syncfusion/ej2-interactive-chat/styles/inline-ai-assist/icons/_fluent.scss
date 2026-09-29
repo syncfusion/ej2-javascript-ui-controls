@@ -1,0 +1,15 @@
+@use '../variables' as *;
+@include export-module('inlineaiassist-fluent-icons') {
+  .e-inline-send::before {
+    content: '\e71d';
+  }
+  .e-inline-accept::before {
+    content: '\e8b1';
+  }
+  .e-inline-discard::before {
+    content: '\e7e7';
+  }
+  .e-inline-stop::before {
+    content: '\e919';
+  }
+}

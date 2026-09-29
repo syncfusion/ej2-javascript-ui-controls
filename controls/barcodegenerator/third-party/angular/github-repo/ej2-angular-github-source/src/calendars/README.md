@@ -1,5 +1,19 @@
 # Angular Calendars Components
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 The [Angular Calendars](https://www.syncfusion.com/angular-components/angular-calendar?utm_source=npm&utm_medium=listing&utm_campaign=angular-calendar-npm) package contains date and time components such as calendar, date picker, date range picker, date time picker, and time picker. These components come with options to disable dates, restrict selection, and show custom events.
 
 ## What's Included in the Angular Calendars Package

@@ -1,8 +1,8 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('dropdownlist-layout') {
 
   .e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-input-group {
+    & .e-input-group {
       @if ($skin-name == 'Material3') {
         padding-top: $ddl-popup-input-group-mat-margin-top;
       }
@@ -80,8 +80,8 @@
 
   .e-ddl#{&}.e-popup.e-ddl-device-filter {
     @at-root {
-      #{if(&, '&', '*')} .e-input-group.e-input-focus::before,
-      #{if(&, '&', '*')} .e-input-group.e-input-focus::after {
+      & .e-input-group.e-input-focus::before,
+      & .e-input-group.e-input-focus::after {
         width: $ddl-zero-margin-padding;
       }
     }
@@ -97,32 +97,32 @@
     }
     position: absolute;
     @at-root {
-      #{if(&, '&', '*')} .e-search-icon {
+      & .e-search-icon {
         margin: $ddl-input-zero-padding;
         opacity: .57;
         padding: $ddl-list-search-icon-padding;
       }
 
-      #{if(&, '&', '*')} .e-filter-parent .e-back-icon {
+      & .e-filter-parent .e-back-icon {
         padding: $ddl-back-icon-padding;
       }
 
-      #{if(&, '&', '*')}.e-rtl .e-filter-parent .e-input-group.e-control-wrapper .e-input-filter,
-      #{if(&, '&', '*')} .e-filter-parent .e-input-filter,
-      #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
-      #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
-      #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
+      &.e-rtl .e-filter-parent .e-input-group.e-control-wrapper .e-input-filter,
+      & .e-filter-parent .e-input-filter,
+      & .e-filter-parent .e-input-filter:focus,
+      & .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
+      & .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
         @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind' and $skin-name != 'tailwind3') {
           padding: $ddl-list-filter-text-indent;
         }
       }
 
-      #{if(&, '&', '*')} .e-input-group {
+      & .e-input-group {
         margin-bottom: $ddl-zero-margin-padding;
       }
 
-      #{if(&, '&', '*')} .e-ddl-footer,
-      #{if(&, '&', '*')} .e-ddl-header {
+      & .e-ddl-footer,
+      & .e-ddl-header {
         cursor: default;
       }
     }
@@ -230,11 +230,11 @@
 
   .e-small .e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-small-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-small-list-font-size;
       }
@@ -243,11 +243,11 @@
 
   .e-small.e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-small-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-small-list-font-size;
       }

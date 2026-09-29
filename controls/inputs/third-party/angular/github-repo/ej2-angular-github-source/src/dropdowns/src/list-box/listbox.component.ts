@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,58 +30,35 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        itemTemplate: new ContentChild('itemTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class ListBoxComponent extends ListBox implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforeDrop: any;
-	beforeItemRender: any;
-	change: any;
-	created: any;
-	dataBound: any;
-	destroyed: any;
-	drag: any;
-	dragStart: any;
-	drop: any;
-	filtering: any;
-	select: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforeDrop: any;
+	declare beforeItemRender: any;
+	declare change: any;
+	declare created: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare drag: any;
+	declare dragStart: any;
+	declare drop: any;
+	declare filtering: any;
+	declare select: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Accepts the template design and assigns it to each list item present in the popup. 
-     * We have built-in `template engine`
-     * 
-     * which provides options to compile template string into a executable function.
-     *For EX: We have expression evolution as like ES6 expression string literals.
-     *     
-     * @default null
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to popup list of component 
-     * when no data is available on the component.
-     * @default 'No records found'
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No records found')
-    public noRecordsTemplate: any;
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -128,7 +106,9 @@ export class ListBoxComponent extends ListBox implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ListBoxComponent.prototype, 'itemTemplate');
+Template('No records found')(ListBoxComponent.prototype, 'noRecordsTemplate');
 

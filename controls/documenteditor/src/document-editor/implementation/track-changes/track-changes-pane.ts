@@ -1,4 +1,4 @@
-import { createElement, L10n, isNullOrUndefined, select, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, select, Browser, SanitizeHtmlHelper, updateCSSText } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { Revision } from './track-changes';
@@ -114,13 +114,17 @@ export class TrackChangesPane {
         if (this.owner.enableRtl) {
             this.closeButton = createElement('button', {
                 className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
-                attrs: { type: 'button', style: 'position:absolute;top:6px;left:1px' }
+                attrs: { type: 'button'}
             }) as HTMLButtonElement;
+            const cssText: string = 'position:absolute;top:6px;left:1px';
+            updateCSSText(this.closeButton, cssText);
         } else {
             this.closeButton = createElement('button', {
                 className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
-                attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
+                attrs: { type: 'button'}
             }) as HTMLButtonElement;
+            const cssText: string = 'position:absolute;top:6px;right:1px';
+            updateCSSText(this.closeButton, cssText);
         }
         this.closeButton.title = this.locale.getConstant('Close');
         this.closeButton.setAttribute('aria-label', this.locale.getConstant('Close'));
@@ -164,6 +168,9 @@ export class TrackChangesPane {
 
     private initPaneHeader(): HTMLElement {
         this.toolbarElement = createElement('div', { className: 'e-de-track-toolbar' });
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const trackChangesDiv: any = this;
+        const isAngularModal: boolean = this.owner.isModalDialog;
         this.toolbar = new Toolbar({
             enableRtl: this.owner.enableRtl,
             items: [
@@ -208,7 +215,9 @@ export class TrackChangesPane {
             items: this.userDropDownitems,
             cssClass: 'e-de-track-pane-drop-btn e-tc-btn-bg-clr',
             select: this.onUserSelect.bind(this),
-            beforeOpen: this.onUserOpen.bind(this),
+            beforeOpen: function (this: DropDownButton, e: any): void {
+                trackChangesDiv.onUserOpen(e, this);
+            },
             beforeItemRender: (args: MenuEventArgs) => {
                 this.beforeDropDownItemRender(args, this.selectedUser);
             }
@@ -239,14 +248,20 @@ export class TrackChangesPane {
             items: menuOptions,
             select: this.onMenuSelect.bind(this),
             iconCss: 'e-de-menu-icon',
-            cssClass: 'e-caret-hide e-tc-btn-bg-clr'
+            cssClass: 'e-caret-hide e-tc-btn-bg-clr',
+            beforeOpen: function (this: DropDownButton, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
+                    trackChangesDiv.owner.movePopupToCdkOverlay(dropDownButtonEl, popupEl);
+                }
+            }
         };
         this.menuDropDownButton = new DropDownButton(menuDropDown);
         this.menuDropDownButton.appendTo(this.menuoptionEle);
 
         return this.toolbarElement;
     }
-
     private beforeDropDownItemRender(args: MenuEventArgs, content: string): void {
         args.element.innerHTML = '<span></span>' + args.item.text;
         const span: HTMLElement = args.element.children[0] as HTMLElement;
@@ -260,10 +275,16 @@ export class TrackChangesPane {
         }
     }
 
-    private onUserOpen(arg: OpenCloseMenuEventArgs): void {
-        const ele: HTMLElement = arg.element;
+    private onUserOpen(e: any, dropdown: DropDownButton): void {
+        const ele: HTMLElement = e.element;
         ele.style.maxHeight = '200px';
         ele.style.overflowY = 'auto';
+        const isAngularModal: boolean = this.owner.isModalDialog;
+        if (isAngularModal) {
+            const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+            const buttonEl: HTMLElement = dropdown.element as HTMLElement;
+            this.owner.movePopupToCdkOverlay(buttonEl, popupEl);
+        }
     }
 
     private enableDisableToolbarItem(enable: boolean): void {

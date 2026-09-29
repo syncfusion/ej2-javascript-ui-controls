@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('drop-down-button-layout') {
   .e-dropdown-btn,
@@ -9,7 +10,7 @@
     text-transform: none;
     white-space: normal;
     @if $skin-name == 'Material3' {
-      border-radius: $btn-border-radius;
+      border-radius: btn.$btn-border-radius;
       box-shadow: $drop-down-btn-box-shadow;
       line-height: $drop-down-btn-line-height;
     }
@@ -33,12 +34,12 @@
 
     &:focus-visible { // only for keybord
       @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-        box-shadow: $btn-keyboard-focus-box-shadow;
+        box-shadow: btn.$btn-keyboard-focus-box-shadow;
       }
     }
 
     &:active {
-      box-shadow: $btn-active-box-shadow;
+      box-shadow: btn.$btn-active-box-shadow;
     }
 
     .e-btn-icon {

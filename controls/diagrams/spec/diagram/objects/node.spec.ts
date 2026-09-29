@@ -1911,6 +1911,84 @@ describe('Diagram Control', () => {
 
     });
 
+    describe('Template runtime update', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramTemplateRuntimeUpdate' });
+            document.body.appendChild(ele);
+            const node: NodeModel = {
+                id: 'runtimeNode',
+                offsetX: 250,
+                offsetY: 150,
+                width: 180,
+                height: 80,
+                shape: { type: 'HTML' },
+                annotations: [{ id: 'runtimeLabel', offset: { x: 0.5, y: 1.2 } }],
+                style: { fill: '#6BA5D7', strokeColor: 'white' }
+            };
+            const connector: ConnectorModel = {
+                id: 'runtimeConnector',
+                sourcePoint: { x: 100, y: 100 },
+                targetPoint: { x: 200, y: 200 },
+                annotations: [{ id: 'runtimeConnectorLabel', offset: 0.5 }]
+            };
+            const handle: UserHandleModel[] = [{
+                name: 'handle4',
+                tooltip: { content: 'Template user handle' },
+                offset: 1,
+                side: 'Top'
+            }];
+            diagram = new Diagram({
+                width: '500px',
+                height: '300px',
+                nodes: [node],
+                connectors: [connector],
+                selectedItems: { userHandles: handle },
+                nodeTemplate: (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;border:1px solid #d9d9d9;">' +
+                    '<button type="button" style="width:110px;height:32px;cursor:pointer;">Initial</button></div>',
+                annotationTemplate: (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;">' +
+                    '<input type="button" value="Initial Annotation" style="cursor:pointer;padding:4px 8px;" /></div>',
+                userHandleTemplate: (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;">' +
+                    '<input type="color" value="#0000ff" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;" /></div>'
+            });
+            diagram.appendTo('#diagramTemplateRuntimeUpdate');
+            diagram.select([diagram.nodes[0]]);
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+        });
+
+        it('updates nodeTemplate at runtime', () => {
+            diagram.nodeTemplate = (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;border:1px solid #d9d9d9;">' +
+                '<button type="button" style="width:110px;height:32px;cursor:pointer;">Updated Node</button></div>';
+            diagram.dataBind();
+            const content: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+            expect(content && content.innerHTML.indexOf('Updated Node') > -1).toBe(true);
+        });
+
+        it('updates annotationTemplate at runtime', () => {
+            diagram.annotationTemplate = (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;">' +
+                '<input type="button" value="Updated Annotation" style="cursor:pointer;padding:4px 8px;" /></div>';
+            diagram.dataBind();
+            const annotation: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'runtimeLabel' + '_html_element');
+            expect(annotation && annotation.innerHTML.indexOf('Updated Annotation') > -1).toBe(true);
+        });
+
+        it('updates userHandleTemplate at runtime', () => {
+            diagram.userHandleTemplate = (obj: any) => '<div style="height:100%;width:100%;display:flex;align-items:center;justify-content:center;">' +
+                '<input type="color" value="#ff0000" style="width:40px;height:40px;cursor:pointer;border:none;padding:0;" /></div>';
+            diagram.dataBind();
+            const handle: HTMLElement = document.getElementById('handle4_template_hiddenUserHandle');
+            const input: HTMLInputElement = handle && handle.getElementsByTagName('input')[0] as HTMLInputElement;
+            expect(input && input.value.toLowerCase() === '#ff0000').toBe(true);
+        });
+    });
+
     describe('Pan Status on Mouse events', () => {
         let diagram: Diagram; let elements: HTMLElement; let status: State;
         beforeAll((): void => {
@@ -4979,9 +5057,208 @@ describe('Fixed User Handle collection removal', () => {
         // Assert
         setTimeout(() => {
             const fixedUserHandle = diagram.nodes[0].fixedUserHandles[0];
-            expect(fixedUserHandle).toBeDefined(); 
+            expect(fixedUserHandle).toBeDefined();
             done();
         }, 500);
     });
 
+});
+
+describe('NodeTemplate - global variable update', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let currentTheme: { name: string; color: string };
+
+    function getThemedTemplate(): Function {
+        return (obj: any): string => {
+            return `<div style="background:${currentTheme.color};">Theme: ${currentTheme.name} | ${obj.id}</div>`;
+        };
+    }
+
+    beforeAll((): void => {
+        currentTheme = { name: 'Ocean', color: '#EAF3FF' };
+        ele = createElement('div', { id: 'diagramNodeTemplateGlobalTheme' });
+        document.body.appendChild(ele);
+        const nodes: NodeModel[] = [
+            { id: 'nodeA', offsetX: 150, offsetY: 100, width: 120, height: 60, shape: { type: 'HTML' } as HtmlModel },
+            { id: 'nodeB', offsetX: 350, offsetY: 100, width: 120, height: 60, shape: { type: 'HTML' } as HtmlModel }
+        ];
+        diagram = new Diagram({
+            width: '500px', height: '300px', nodes: nodes,
+            nodeTemplate: getThemedTemplate()
+        });
+        diagram.appendTo('#diagramNodeTemplateGlobalTheme');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+        (diagram as any) = null;
+        (ele as any) = null;
+    });
+
+    it('renders the initial theme via nodeTemplate closure', (done: Function) => {
+        const a: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+        const b: HTMLElement = document.getElementById(diagram.nodes[1].id + '_content_html_element');
+        expect(a && a.innerHTML.indexOf('Theme: Ocean') > -1).toBe(true);
+        expect(b && b.innerHTML.indexOf('Theme: Ocean') > -1).toBe(true);
+        done();
+    });
+
+    it('updates the rendered theme after refreshTemplate when the global variable changes', (done: Function) => {
+        currentTheme = { name: 'Sunset', color: '#FFF1F1' };
+        diagram.refreshTemplate();
+
+        const a: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+        const b: HTMLElement = document.getElementById(diagram.nodes[1].id + '_content_html_element');
+        expect(a.innerHTML.indexOf('Theme: Sunset') > -1).toBe(true);
+        expect(b.innerHTML.indexOf('Theme: Sunset') > -1).toBe(true);
+        expect(a.innerHTML.indexOf('Theme: Ocean') === -1).toBe(true);
+        done();
+    });
+});
+
+describe('NodeTemplate - per-node content function bound to addInfo', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let variant: number;
+
+    function makeEmployeeTemplate(): Function {
+        return (obj: any): string => {
+            const v: number = ((obj && obj.addInfo) || {}).variant || 0;
+            return `<div>${v === 0 ? 'Employee' : 'Visitor'} | Variant: ${v}</div>`;
+        };
+    }
+
+    beforeAll((): void => {
+        variant = 0;
+        ele = createElement('div', { id: 'diagramNodeTemplatePerNode' });
+        document.body.appendChild(ele);
+        const nodes: NodeModel[] = [
+            {
+                id: 'employeeNode',
+                offsetX: 200, offsetY: 120, width: 160, height: 80,
+                addInfo: { variant: 0 },
+                shape: { type: 'HTML', content: makeEmployeeTemplate() } as HtmlModel
+            }
+        ];
+        diagram = new Diagram({ width: '500px', height: '300px', nodes: nodes });
+        diagram.appendTo('#diagramNodeTemplatePerNode');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+        (diagram as any) = null;
+        (ele as any) = null;
+    });
+
+    it('renders the initial addInfo.variant via the shape.content function', (done: Function) => {
+        const c: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+        expect(c && c.innerHTML.indexOf('Employee') > -1).toBe(true);
+        expect(c.innerHTML.indexOf('Variant: 0') > -1).toBe(true);
+        done();
+    });
+
+    it('re-renders the node after refreshTemplate when addInfo.variant changes', (done: Function) => {
+        variant = (variant + 1) % 2;
+        const node: any = diagram.getObject('employeeNode');
+        if (node && node.addInfo) {
+            node.addInfo.variant = variant;
+        }
+        diagram.refreshTemplate('employeeNode');
+
+        const c: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+        expect(c.innerHTML.indexOf('Visitor') > -1).toBe(true);
+        expect(c.innerHTML.indexOf('Variant: 1') > -1).toBe(true);
+        expect(c.innerHTML.indexOf('Variant: 0') === -1).toBe(true);
+        done();
+    });
+});
+
+describe('NodeTemplate - unified runtime refreshTemplate API', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramRefreshTemplateAPI' });
+        document.body.appendChild(ele);
+        const nodes: NodeModel[] = [
+            {
+                id: 'templateRefreshNode',
+                offsetX: 220, offsetY: 160, width: 180, height: 80,
+                addInfo: { title: 'Before', variant: 0 },
+                shape: { type: 'HTML' } as HtmlModel
+            }
+        ];
+        diagram = new Diagram({
+            width: '500px', height: '300px', nodes: nodes,
+            nodeTemplate: (obj: any): string => `<div>Theme: ${obj.addInfo.title} | ${obj.id}</div>`
+        });
+        diagram.appendTo('#diagramRefreshTemplateAPI');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+        (diagram as any) = null;
+        (ele as any) = null;
+    });
+
+    it('refreshes a node using the unified refreshTemplate API', (done: Function) => {
+        const node: any = diagram.getObject('templateRefreshNode');
+        node.addInfo.title = 'After';
+        const refreshed: boolean = diagram.refreshTemplate(node);
+
+        expect(refreshed).toBe(true);
+        const c: HTMLElement = document.getElementById(diagram.nodes[0].id + '_content_html_element');
+        expect(c.innerHTML.indexOf('Theme: After') > -1).toBe(true);
+        done();
+    });
+});
+describe('1051270 - Programmatic selection replace issue', () => {
+    let diagram: Diagram; let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSelectionReplace14' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 },
+            { id: 'node2', width: 100, height: 100, offsetX: 600, offsetY: 300 },
+            { id: 'node3', width: 100, height: 100, offsetX: 900, offsetY: 300 },
+        ];
+        let connectors: ConnectorModel[] = [
+            { id: 'connector1', sourceID: 'node1', targetID: 'node2' },
+            { id: 'connector2', sourceID: 'node2', targetID: 'node3' },
+        ];
+        diagram = new Diagram({
+            width: '100%',
+            height: '600px',
+            nodes: nodes,
+            connectors: connectors
+        });
+        diagram.appendTo('#diagramSelectionReplace14');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+    });
+    it('Selecting node1 and connector2 replaces connector1 from the current selection',  (done: Function) => {
+        diagram.select([diagram.nodes[0], diagram.connectors[0]], true);
+        expect(diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 1).toBe(true);
+        diagram.select([diagram.nodes[0], diagram.connectors[1]], false);
+        expect(diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 1).toBe(true);
+        expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
+        expect(diagram.selectedItems.connectors[0].id === 'connector2').toBe(true);
+        done();
+    });
+    it('Retained node stays selected and stale connector is deselected on programmatic selection update',  (done: Function) => {
+        diagram.select([diagram.nodes[0], diagram.connectors[1]], true);
+        expect(diagram.selectedItems.connectors[0].id === 'connector2').toBe(true);
+        diagram.select([diagram.nodes[0], diagram.connectors[0]], false);
+        expect(diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 1).toBe(true);
+        expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
+        expect(diagram.selectedItems.connectors[0].id === 'connector1').toBe(true);
+        done();
+    });
 });

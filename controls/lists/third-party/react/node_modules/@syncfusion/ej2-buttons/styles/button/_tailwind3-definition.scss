@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/tailwind3' as *;
-@forward 'ej2-base/styles/definition/tailwind3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //layout variables
 $btn-font-size: $text-sm !default;

@@ -189,6 +189,8 @@ export class DiagramEventHandler {
 
     private isSwimlaneSelected: boolean;
 
+    private hasScrollPadding: boolean = false;
+
     private initialEventArgs: MouseEventArgs;
     /** @private */
     public touchStartList: ITouches[] | TouchList;
@@ -232,7 +234,9 @@ export class DiagramEventHandler {
      * @private
      */
     public windowResize(evt: Event): boolean {
-
+        // Bug 1046719: Diagram scroll drifts in Chromium browsers at browser zoom after node drag or pan
+        const { left, right, top, bottom }: MarginModel = this.diagram.scrollSettings.padding;
+        this.hasScrollPadding = left !== 0 || right !== 0 || top !== 0 || bottom !== 0;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo as number);
         }
@@ -341,7 +345,6 @@ export class DiagramEventHandler {
     private isDeleteKey(key: string, value: string): boolean {
         return (navigator.platform.match('Mac') && key === 'Backspace' && value === 'delete');
     }
-
     //1034868: Selection is lost when navigating the diagram using scrollbar
     private isMouseOnScrollBar(evt: PointerEvent): boolean {
         const diagramCanvas: HTMLElement = this.diagram.diagramCanvas;
@@ -449,7 +452,7 @@ export class DiagramEventHandler {
                 //892828: Flickering of tooltip while hovering userhandle
                 if (arg.element.tooltip.openOn === 'Auto' && (arg.element !== this.isUserHandleHover)) {
                     this.isUserHandleHover = arg.element;
-                    (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                    this.diagram.commandHandler.openTooltip(targetEle);
                 }
             }
             this.diagram.triggerEvent(eventName, arg);
@@ -492,7 +495,7 @@ export class DiagramEventHandler {
         if (eventName === DiagramEvent.onUserHandleMouseLeave || eventName === DiagramEvent.onFixedUserHandleMouseLeave){
             if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
                 this.isUserHandleHover = null;
-                this.diagram.tooltipObject.close();
+                this.commandHandler.closeTooltip();
             }
             this.diagram.triggerEvent(eventName, arg);
         }
@@ -1227,7 +1230,10 @@ export class DiagramEventHandler {
                 let isGroupAction: boolean; this.addUmlNode();
                 this.inAction = false; this.isMouseDown = false;
                 //912163- Restricting node selection
-                if (this.diagram.selectedObject.helperObject) { isGroupAction = this.updateContainerBounds(); }
+                if (this.diagram.selectedObject.helperObject) {
+                    this.diagram.ignoreMouseUpSelection = true;
+                    isGroupAction = this.updateContainerBounds();
+                }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
                     const padding: number = this.getConnectorPadding(this.eventArgs);
@@ -1733,7 +1739,7 @@ export class DiagramEventHandler {
                 up = evt.deltaY < 0;
             }
             const mousePosition: PointModel = this.getMousePosition(evt);
-            this.diagram.tooltipObject.close();
+            this.commandHandler.closeTooltip();
             const ctrlKey: boolean = this.isMetaKey(evt);
             if (ctrlKey) {
                 // SF-362356 - Command below line to implement smooth scroll in diagram.
@@ -2317,7 +2323,7 @@ export class DiagramEventHandler {
                     targetEle = document.getElementById((obj as Node).id + idName);
                 }
                 if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                    (this.diagram.tooltipObject as Tooltip).close();
+                    this.commandHandler.closeTooltip();
                     (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                     //Removed isBlazor code
                     (this.diagram.tooltipObject as Tooltip).dataBind();
@@ -2325,10 +2331,10 @@ export class DiagramEventHandler {
                 if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                     (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
                     if (this.hoverElement.tooltip.relativeMode === 'Mouse') {
-                        (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                        this.diagram.commandHandler.openTooltip(this.diagram.element);
                     }
                     else {
-                        (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                        this.diagram.commandHandler.openTooltip(targetEle);
                     }
                 }
             }
@@ -2377,7 +2383,11 @@ export class DiagramEventHandler {
 
     /** @private */
     public scrolled(evt: PointerEvent): void {
-        this.diagram.updateScrollOffset();
+        // Bug 1046719: Diagram scroll drifts in Chromium browsers at browser zoom after node drag or pan
+        // To skip automatic scrolling when scroll padding enabled.
+        if (!this.hasScrollPadding) {
+            this.diagram.updateScrollOffset();
+        }
         //Removed isBlazor code
     }
     private isMobileOrIPadDevice(): string {

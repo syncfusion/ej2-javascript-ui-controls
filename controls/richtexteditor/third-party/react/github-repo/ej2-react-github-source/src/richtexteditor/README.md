@@ -1,12 +1,26 @@
 # React Rich Text Editor Component | React Markdown Editor
 
-The [React Rich Text Editor](https://www.syncfusion.com/react-ui-components/react-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The control provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/react/llms.txt](https://ai.syncfusion.com/react/llms.txt)
+
+The [React Rich Text Editor](https://www.syncfusion.com/rich-text-editor-sdk/react-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The control provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.
 
 <div align="center">
     <h4>
-        <a href="https://ej2.syncfusion.com/react/documentation/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm">📖Getting started</a> &#x2022; 
+        <a href="https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/getting-started">📖Getting started</a> &#x2022; 
         <a href="https://ej2.syncfusion.com/react/demos/?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm#/tailwind3/rich-text-editor/tools">🚀Online demos</a> &#x2022; 
-        <a href="https://www.syncfusion.com/react-components/react-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm">🌐Learn more</a>
+        <a href="https://www.syncfusion.com/rich-text-editor-sdk/react-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm">🌐Learn more</a>
     </h4>
 </div>
 
@@ -23,51 +37,48 @@ Trusted by the world's leading companies
 
 ## ⚡️ Quick Start
 
-Syncfusion<sup>®</sup> Rich Text Editor is easy to integrate into React applications. Just install the package, configure styles, inject required modules, and render the component.
+This guide uses Vite as the bundler and development environment for the React Rich Text Editor. Install [Node.js](https://nodejs.org/) before proceeding. For detailed information about Vite's capabilities and configuration options, refer to the [Vite documentation](https://vitejs.dev/).
 
-### 🛠️ Installation
+### Create a React application
 
-Install the Rich Text Editor and its dependencies using npm:
+To set up a React application, run the following command.
 
-```bash
+```sh
+npm create vite@latest my-app -- --template react-ts
+```
+
+This command prompts you to configure the React application. As Syncfusion packages are not installed yet, select the `No` option when prompted.
+
+Then, navigate to the project directory and install the dependencies:
+
+```sh
+cd my-app
+npm install
+```
+
+### Install the Rich Text Editor package
+
+```sh
 npm install @syncfusion/ej2-react-richtexteditor --save
 ```
 
-This command will:
+### Add the CSS reference
 
-- Add the `@syncfusion/ej2-react-richtexteditor` package and its peer dependencies to your `package.json` file.
+Install the Syncfusion<sup>®</sup> [Tailwind 3](https://www.npmjs.com/package/@syncfusion/ej2-tailwind3-theme) theme package:
 
-### ⚙️ Setup
-
-#### 1. Create a React Application
-
-Use `Vite` to scaffold a new React + TypeScript project:
-
-```bash
-npm create vite@latest my-app -- --template react-ts
-cd my-app
-npm run dev
+```sh
+npm install @syncfusion/ej2-tailwind3-theme --save
 ```
 
-#### 2. Add CSS References
-
-Add CSS references needed for Rich Text Editor in **src/App.css** from **../node_modules/@syncfusion** package folder.
+Then add the following CSS reference to the `src/App.css` file:
 
 ```css
-@import '../../node_modules/@syncfusion/ej2-base/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-icons/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-buttons/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-splitbuttons/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-inputs/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-lists/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-navigations/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-popups/styles/tailwind3.css';
-@import '../../node_modules/@syncfusion/ej2-richtexteditor/styles/tailwind3.css';
+@import '../node_modules/@syncfusion/ej2-tailwind3-theme/styles/rich-text-editor/index.css';
 ```
 
-### 🔌 Inject Required Services
+### Add the Rich Text Editor component with required modules
 
-To enable features like toolbar, image, link, and HTML editing, inject the required services using the `<Inject />` directive.
+Add the Rich Text Editor component to the `src/App.tsx` file with the basic required modules, `Toolbar`, `Image`, `Link`, `HtmlEditor`, and `QuickToolbar`, injected using the `Inject` component:
 
 ```typescript
 import * as React from 'react';
@@ -85,41 +96,7 @@ import {
 function App() {
   return (
     <div className="App">
-      <RichTextEditorComponent>
-        <Inject services={[Toolbar, Image, Link, HtmlEditor, QuickToolbar]} />
-      </RichTextEditorComponent>
-    </div>
-  );
-}
-
-export default App;
-```
-<blockquote>
-    <p>ℹ️ <b>Note:</b></p>
-    <span>For detailed information on module injection and available services, refer to the Syncfusion Rich Text Editor Module <a href="https://ej2.syncfusion.com/react/documentation/rich-text-editor/module">Documentation</a>.</span>
-</blockquote>
-
-### 🧩 Add the Rich Text Editor Component
-
-In **src/App.tsx** file, use the following code snippet to render the Syncfusion<sup>®</sup> React Rich Text Editor component.
-
-```tsx
-import * as React from 'react';
-import './App.css';
-import {
-  HtmlEditor,
-  Image,
-  Inject,
-  Link,
-  QuickToolbar,
-  RichTextEditorComponent,
-  Toolbar
-} from '@syncfusion/ej2-react-richtexteditor';
-
-function App() {
-  return (
-    <div className="App">
-      <RichTextEditorComponent>
+      <RichTextEditorComponent height="300px">
         <p>Start editing your content here.</p>
         <Inject services={[Toolbar, Image, Link, HtmlEditor, QuickToolbar]} />
       </RichTextEditorComponent>
@@ -129,6 +106,19 @@ function App() {
 
 export default App;
 ```
+
+<blockquote>
+    <p>ℹ️ <b>Note:</b></p>
+    <span>For detailed information on module injection and available services, refer to the Syncfusion<sup>®</sup> Rich Text Editor Module <a href="https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/module">Documentation</a>.</span>
+</blockquote>
+
+### Run the application
+
+```sh
+npm run dev
+```
+
+Now, open your project in a browser, and the Rich Text Editor will be displayed! 🚀
 
 ## 🛠️ Supported frameworks
 
@@ -158,41 +148,41 @@ Rich Text Editor control is also offered in following list of frameworks.
 
 * [Checklist](https://ej2.syncfusion.com/react/demos/#/tailwind3/rich-text-editor/tools) - Checklist support enables users to create interactive task lists in the editor. It is useful for organizing work items and tracking progress within content.
 
-* [Accessibility & WCAG 2.0 Compliance](https://ej2.syncfusion.com/react/documentation/rich-text-editor/accessibility) - Accessibility support helps the editor work with assistive technologies and keyboard navigation. It ensures the component can be used more effectively by a broader audience.
+* [Accessibility & WCAG 2.0 Compliance](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/accessibility) - Accessibility support helps the editor work with assistive technologies and keyboard navigation. It ensures the component can be used more effectively by a broader audience.
 
-* [Preventing Cross-Site Scripting (XSS)](https://ej2.syncfusion.com/react/documentation/rich-text-editor/validation-security/xhtml-validation#cross-site-scripting-xss-prevention) - XSS protection helps validate and sanitize editor content before it is used or rendered. It reduces security risks by blocking malicious scripts and unsafe markup.
+* [Preventing Cross-Site Scripting (XSS)](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/validation-security/xhtml-validation#cross-site-scripting-xss-prevention) - XSS protection helps validate and sanitize editor content before it is used or rendered. It reduces security risks by blocking malicious scripts and unsafe markup.
 
-* [HTML code editing](https://ej2.syncfusion.com/react/documentation/rich-text-editor/editor-value#source-code-editing) - HTML code editing lets users view and edit the underlying markup directly. It is helpful when precise control over the document structure is required.
+* [HTML code editing](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/editor-value#source-code-editing) - HTML code editing lets users view and edit the underlying markup directly. It is helpful when precise control over the document structure is required.
 
-* [Markdown editor](https://ej2.syncfusion.com/react/documentation/rich-text-editor/editor-types/editor-modes#markdown-editor) - Markdown editor mode lets users create and edit content using Markdown syntax. It is ideal for lightweight authoring and text-based workflows.
+* [Markdown editor](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/editor-types/editor-modes#markdown-editor) - Markdown editor mode lets users create and edit content using Markdown syntax. It is ideal for lightweight authoring and text-based workflows.
 
-* [Custom Toolbar Items](https://ej2.syncfusion.com/react/documentation/rich-text-editor/toolbar/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm#toolbar-items) - Custom toolbar items allow additional actions to be added to the editor toolbar. They help tailor the editing experience to specific application needs.
+* [Custom Toolbar Items](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/toolbar/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm#toolbar-items) - Custom toolbar items allow additional actions to be added to the editor toolbar. They help tailor the editing experience to specific application needs.
 
-* [Quick Toolbar](https://ej2.syncfusion.com/react/documentation/rich-text-editor/toolbar/quick-toolbar) - Quick Toolbar shows contextual actions for selected content such as text, images, and tables. It helps users apply common operations without leaving the editing area.
+* [Quick Toolbar](help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/toolbar/quick-toolbar) - Quick Toolbar shows contextual actions for selected content such as text, images, and tables. It helps users apply common operations without leaving the editing area.
 
 * [File Browser](https://ej2.syncfusion.com/react/demos/#/tailwind3/rich-text-editor/file-browser) - File Browser integration allows users to browse and select files within editor workflows. It supports file-based content management in a more seamless way.
 
-* [Emoji Picker](https://ej2.syncfusion.com/react/documentation/rich-text-editor/smart-editing/emoji-picker) - Emoji picker support lets users insert emojis into the editor content. It helps make messages and content more expressive and engaging.
+* [Emoji Picker](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/smart-editing/emoji-picker) - Emoji picker support lets users insert emojis into the editor content. It helps make messages and content more expressive and engaging.
 
 * [Insert Media](https://ej2.syncfusion.com/react/demos/#/tailwind3/rich-text-editor/insert-media) - Insert Media allows audio and video content to be embedded in the editor. It is useful for creating richer and more interactive documents.
 
-* [Toolbar](https://ej2.syncfusion.com/react/documentation/rich-text-editor/toolbar/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm#toolbar-items) - Toolbar support provides editing controls and customization options for the editor. It supports floating behavior, multiple layout types, and toolbar positioning for flexible UI setups.
+* [Toolbar](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/toolbar/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm#toolbar-items) - Toolbar support provides editing controls and customization options for the editor. It supports floating behavior, multiple layout types, and toolbar positioning for flexible UI setups.
 
 * [Export and Import](https://ej2.syncfusion.com/react/demos/#/tailwind3/rich-text-editor/export-document) - Export and Import support allows content to be moved between the editor and document formats such as PDF and Word. It simplifies content sharing, archiving, and document processing.
 
-* [Undo and redo](https://ej2.syncfusion.com/react/documentation/rich-text-editor/undo-redo) - Undo and redo support lets users reverse or repeat recent editing actions. It improves editing confidence by making changes easier to correct.
+* [Undo and redo](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/undo-redo) - Undo and redo support lets users reverse or repeat recent editing actions. It improves editing confidence by making changes easier to correct.
 
-* [Module injection](https://ej2.syncfusion.com/react/documentation/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm/#module-injection) - Module injection lets the editor load only the features that are needed. It helps reduce bundle size and keeps the component more efficient.
+* [Module injection](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm/#module-injection) - Module injection lets the editor load only the features that are needed. It helps reduce bundle size and keeps the component more efficient.
 
-* [Third-party integration](https://ej2.syncfusion.com/react/documentation/rich-text-editor/third-party-integration/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm) - Third-party integration lets the editor work with external libraries and services. It extends the editor with additional capabilities beyond the built-in feature set.
+* [Third-party integration](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/third-party-integration/?utm_source=npm&utm_medium=listing&utm_campaign=react-rich-text-editor-npm) - Third-party integration lets the editor work with external libraries and services. It extends the editor with additional capabilities beyond the built-in feature set.
 
 ## 📚 Resources
 
-* [Documentation](https://ej2.syncfusion.com/react/documentation/rich-text-editor/getting-started)
+* [Documentation](https://help.syncfusion.com/rich-text-editor-sdk/react/rich-text-editor/getting-started)
 * [AI Coding Assistant](https://ej2.syncfusion.com/react/documentation/ai-coding-assistants/overview)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [What's New](https://www.syncfusion.com/products/whatsnew/react?utm_medium=listing&utm_source=github)
-* [Road Map](https://www.syncfusion.com/products/roadmap/react)
+* [What's New](https://www.syncfusion.com/products/whatsnew/rich-text-editor-sdk)
+* [Road Map](https://www.syncfusion.com/products/roadmap/rich-text-editor-sdk)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=react&type=all)
 
 ## 🤝 Support
@@ -200,10 +190,51 @@ Rich Text Editor control is also offered in following list of frameworks.
 Product support is available through the following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
-* [Community forum](https://www.syncfusion.com/forums/react-js2?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm)
+* [Community forum](https://www.syncfusion.com/forums/rich-text-editor-sdk)
 * [GitHub issues](https://github.com/syncfusion/ej2-react-ui-components/issues/new)
 * [Request feature or report bug](https://www.syncfusion.com/feedback/react?utm_source=npm&utm_medium=listing&utm_campaign=react-richtexteditor-npm)
 * Live chat
+
+## Other Popular React Components
+
+Explore other popular Syncfusion<sup>®</sup> React components curated from UI components, standalone SDKs, and document solution suites.
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-data-grid">React DataGrid</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-charts">React Charts</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-file-manager">React File Manager</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/gantt-sdk/react-gantt-chart">React Gantt Chart</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/diagram-sdk/react-diagram">React Diagram</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/scheduler-sdk/react-scheduler">React Scheduler</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/docx-editor-sdk/react-docx-editor">React DOCX Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/pdf-viewer-sdk/react-pdf-viewer">React PDF Viewer</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/spreadsheet-editor-sdk/react-spreadsheet-editor">React Spreadsheet Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-maps-library">React Maps</a>
+        </td>
+    </tr>
+</table>
 
 ## 🔄 Change log
  

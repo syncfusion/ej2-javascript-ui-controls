@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-pointers>e-pointer',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class PointerDirective extends ComplexBase<PointerDirective> {
@@ -28,120 +28,120 @@ export class PointerDirective extends ComplexBase<PointerDirective> {
      * Sets and gets the type of pointer for an axis in Circular gauge.
      * @default Needle
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Sets and gets the options for the animation of the pointers that propagate while rendering the axis and updating the pointer value in the circular gauge.
      */
-    public animation: any;
+    public declare animation: any;
     /** 
      * Sets and gets the options to customize the style properties of the border for the needle pointer in an axis.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * Sets and gets the options to customize the cap element of the needle pointer in an axis.
      */
-    public cap: any;
+    public declare cap: any;
     /** 
      * Sets and gets the color of the pointer in an axis.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Sets and gets the information about pointer for assistive technology.
      * @default null
      */
-    public description: any;
+    public declare description: any;
     /** 
      * Enables and disables drag movement of the pointer in the circular gauge.
      * @default false
      */
-    public enableDrag: any;
+    public declare enableDrag: any;
     /** 
      * Sets and gets the URL for the image that is to be displayed as pointer. 
      * It requires marker shape value to be `Image`.
      * @default null
      */
-    public imageUrl: any;
+    public declare imageUrl: any;
     /** 
      * Sets and gets the properties to render a linear gradient for the pointer. 
      * If both linear and radial gradient is set, then the linear gradient will be rendered in the pointer.
      * @default null
      */
-    public linearGradient: any;
+    public declare linearGradient: any;
     /** 
      * Sets and gets the height of the marker pointer in an axis.
      * @default 5
      */
-    public markerHeight: any;
+    public declare markerHeight: any;
     /** 
      * Sets and gets the shape of the marker pointer in an axis.
      * @default Circle
      */
-    public markerShape: any;
+    public declare markerShape: any;
     /** 
      * Sets and gets the width of the marker pointer in an axis.
      * @default 5
      */
-    public markerWidth: any;
+    public declare markerWidth: any;
     /** 
      * Sets or gets the width at the ending edge of the needle pointer in an axis.
      * @default null
      */
-    public needleEndWidth: any;
+    public declare needleEndWidth: any;
     /** 
      * Sets or gets the width at the starting edge of the needle pointer in an axis.
      * @default null
      */
-    public needleStartWidth: any;
+    public declare needleStartWidth: any;
     /** 
      * Sets and gets the options to customize the tail element of the needle pointer in an axis.
      */
-    public needleTail: any;
+    public declare needleTail: any;
     /** 
      * Sets and gets the offset value of pointer from scale.
      * @default '0'
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Sets and gets the width of the pointer in axis.
      * @default 20
      */
-    public pointerWidth: any;
+    public declare pointerWidth: any;
     /** 
      * Sets and gets the position of pointer for an axis.
      * @default Auto
      */
-    public position: any;
+    public declare position: any;
     /** 
      * Sets and gets the properties to render a radial gradient for pointer.
      * @default null
      */
-    public radialGradient: any;
+    public declare radialGradient: any;
     /** 
      * Sets and gets the radius of pointer for marker and range type pointer and fix length of pointer for needle pointer.
      * @default null
      */
-    public radius: any;
+    public declare radius: any;
     /** 
      * Sets and gets the corner radius for pointer in axis.
      * @default 0
      */
-    public roundedCornerRadius: any;
+    public declare roundedCornerRadius: any;
     /** 
      * Sets and gets the text for the marker pointer. To render the text in the marker pointer, the marker shape must be set as `Text`.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Sets and gets the style of text in marker pointer of an axis.
      */
-    public textStyle: any;
+    public declare textStyle: any;
     /** 
      * Sets and gets the value of the pointer in circular gauge.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -157,6 +157,7 @@ export class PointerDirective extends ComplexBase<PointerDirective> {
  */
 @Directive({
     selector: 'ej-circulargauge>e-axes>e-axis>e-pointers',
+    standalone: true,
     queries: {
         children: new ContentChildren(PointerDirective)
     },

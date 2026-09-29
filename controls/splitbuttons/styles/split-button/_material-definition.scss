@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/material' as *;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 @use '../drop-down-button/material-definition' as *;
-@forward 'ej2-base/styles/definition/material';
-@forward '../drop-down-button/material-definition';
+
 $split-btn-zindex: 0 !default;
 $split-btn-border-radius: 2px !default;
 $split-btn-focus-border-color: transparent !default;
@@ -43,6 +42,8 @@ $drop-down-bigger-rtl-padding-right: 12px !default;
 $drop-down-bgr-rtl-icon-padding-left: 10px !default;
 $drop-dbtn-bigger-padding-left: 4px !default;
 $drop-dbtn-bigger-padding-right: 4px !default;
+$drop-dbtn-icon-font-size: 14px !default;
+$drop-dbtn-icon-font-size-bigger: 18px !default;
 
 $split-rtl-btn-padding-left: 4px !default;
 $split-rtl-btn-padding-right: 10px !default;

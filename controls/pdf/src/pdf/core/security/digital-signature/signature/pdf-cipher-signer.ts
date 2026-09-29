@@ -5,8 +5,8 @@ import { _PdfCryptographicEncoding } from './cryptographic-encoder';
 import { _PdfNativeAccumulatorSink, _PdfNativeAlgorithmIdentifier, _PdfNativeHashInput } from './pdf-accumulator';
 import { _PdfDigestInformation } from './pdf-digest-handler';
 import { _ISigner } from './pdf-interfaces';
-import { _Sha384, _Sha512 } from '../../encryptors/secureHash-algorithm512';
 import { _RaceEvaluationMessageDigest } from '../../encryptors/evaluation-digest';
+import { _Sha384, _Sha512 } from '../../encryptors/secureHash-algorithm512';
 /**
  * Provides an internal RSA‑based message‑digest signer that computes a hash,
  * DER‑encodes the DigestInfo, and produces an RSA signature using PKCS#1 padding.
@@ -205,5 +205,75 @@ export class _PdfRmdSigner implements _ISigner {
             }
         }
         return true;
+    }
+    /**
+     * Validates the specified digital signature against the computed message digest.
+     *
+     * @param {Uint8Array} signature The signature value to validate.
+     * @returns {boolean} true if the signature is valid; otherwise, false.
+     * @private
+     */
+    _validateSignature(signature: Uint8Array): boolean {
+        if (this._isSigning) {
+            throw new Error('Invalid operation: not in signing mode');
+        }
+        this._input._close();
+        const hash: Uint8Array = this._output._getResult();
+        if (!hash || hash.length === 0) {
+            return false;
+        }
+        let sig: Uint8Array;
+        let expected: Uint8Array;
+        try {
+            sig = this._ronCipherEngine._processBlock(signature, 0, signature.length);
+            expected = this._derEncode(hash);
+        } catch (e) {
+            return false;
+        }
+        if (sig.length === expected.length) {
+            for (let i: number = 0; i < sig.length; i++) {
+                if (sig[<number>i] !== expected[<number>i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (sig.length === expected.length - 2) {
+            const sigOffset: number = sig.length - hash.length - 2;
+            const expectedOffset: number = expected.length - hash.length - 2;
+            expected[1] -= 2;
+            expected[3] -= 2;
+            for (let i: number = 0; i < hash.length; i++) {
+                if (sig[sigOffset + i] !== expected[expectedOffset + i]) {
+                    return false;
+                }
+            }
+            for (let i: number = 0; i < sigOffset; i++) {
+                if (sig[<number>i] !== expected[<number>i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (sig.length > expected.length && sig[0] === 0x00 && sig[1] === 0x01) {
+            let index: number = 2;
+            while (index < sig.length && sig[<number>index] === 0xFF) {
+                index++;
+            }
+            if (index >= sig.length || sig[<number>index] !== 0x00) {
+                return false;
+            }
+            const recovered: Uint8Array = sig.subarray(index + 1);
+            if (recovered.length !== expected.length) {
+                return false;
+            }
+            for (let i: number = 0; i < expected.length; i++) {
+                if (recovered[<number>i] !== expected[<number>i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

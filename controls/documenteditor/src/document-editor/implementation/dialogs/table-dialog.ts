@@ -130,15 +130,30 @@ export class TableDialog {
      * @returns {void}
      */
     public onInsertTableClick = (): void => {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value
             > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
             const columnAlertPopup: string = this.localeValue.getConstant('Number of columns must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
-            DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
+            DialogUtility.alert({
+                content: columnAlertPopup,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            }).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > this.documentHelper.owner.documentEditorSettings.maximumRows) {
             const rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
-            DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
+            DialogUtility.alert({
+                content: rowAlertPopup,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            }).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows

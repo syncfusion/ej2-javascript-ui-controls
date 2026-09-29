@@ -2,7 +2,7 @@ import { IRichTextEditor } from '../base/interface';
 import { ActionBeginEventArgs, ICodeBlockLanguageModel, NotifyArgs } from '../../common/interface';
 import * as events from '../base/constant';
 import { AutoFormatPlugin } from '../../editor-manager/plugin/autoformat';
-import { isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEventArgs, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 
 /**
  * AutoFormat module provides functionality for autoformatting text in the Rich Text Editor.
@@ -23,6 +23,7 @@ export class AutoFormat {
      * @returns {void}
      */
     public constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('AutoFormat', 'RichTextEditor');
         this.parent = parent;
         this.isDestroyed = false;
         this.addEventListener();

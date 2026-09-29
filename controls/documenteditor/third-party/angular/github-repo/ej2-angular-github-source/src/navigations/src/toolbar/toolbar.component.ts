@@ -20,20 +20,21 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childItems: new ContentChild(ItemsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class ToolbarComponent extends Toolbar implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeCreate: any;
-	clicked: any;
-	created: any;
-	destroyed: any;
-	public keyDown: any;
-    public childItems: QueryList<ItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeCreate: any;
+	declare clicked: any;
+	declare created: any;
+	declare destroyed: any;
+	public declare keyDown: any;
+    public declare childItems: QueryList<ItemsDirective>;
     public tags: string[] = ['items'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -64,7 +65,7 @@ export class ToolbarComponent extends Toolbar implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

@@ -4,8 +4,8 @@ import { PivotView } from '@syncfusion/ej2-pivotview';
 import { Template } from '@syncfusion/ej2-angular-base';
 
 
-export const inputs: string[] = ['aggregateTypes','allowCalculatedField','allowConditionalFormatting','allowDataCompression','allowDeferLayoutUpdate','allowDrillThrough','allowExcelExport','allowGrouping','allowNumberFormatting','allowPdfExport','cellTemplate','chartSettings','chartTypes','cssClass','dataSourceSettings','displayOption','editSettings','enableFieldSearching','enableHtmlSanitizer','enablePaging','enablePersistence','enableRtl','enableValueSorting','enableVirtualization','exportAllPages','gridSettings','groupingBarSettings','height','hyperlinkSettings','loadOnDemandInMemberEditor','locale','maxNodeLimitInMemberEditor','maxRowsInDrillThrough','pageSettings','pagerSettings','pivotValues','showFieldList','showGroupingBar','showToolbar','showTooltip','showValuesButton','spinnerTemplate','toolbar','toolbarTemplate','tooltipTemplate','virtualScrollSettings','width'];
-export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','afterServiceInvoke','aggregateCellInfo','aggregateMenuOpen','beforeExport','beforeServiceInvoke','beginDrillThrough','calculatedFieldCreate','cellClick','cellSelected','cellSelecting','chartSeriesCreated','conditionalFormatting','created','dataBound','destroyed','drill','drillThrough','editCompleted','enginePopulated','enginePopulating','exportComplete','fetchReport','fieldDragStart','fieldDrop','fieldListRefreshed','fieldRemove','hyperlinkCellClick','load','loadReport','memberEditorOpen','memberFiltering','newReport','numberFormatting','onFieldDropped','onHeadersSort','onPdfCellRender','removeReport','renameReport','saveReport','toolbarClick','toolbarRender'];
+export const inputs: string[] = ['aggregateTypes','allowCalculatedField','allowConditionalFormatting','allowDataCompression','allowDeferLayoutUpdate','allowDrillThrough','allowExcelExport','allowGrouping','allowNumberFormatting','allowPdfExport','cellTemplate','chartSettings','chartTypes','cssClass','dataSourceSettings','displayOption','editSettings','enableFieldSearching','enableHtmlSanitizer','enablePaging','enablePersistence','enableRtl','enableValueSorting','enableVirtualization','enableWebMcp','exportAllPages','gridSettings','groupingBarSettings','height','hyperlinkSettings','loadOnDemandInMemberEditor','locale','maxNodeLimitInMemberEditor','maxRowsInDrillThrough','pageSettings','pagerSettings','pivotValues','showFieldList','showGroupingBar','showToolbar','showTooltip','showValuesButton','spinnerTemplate','toolbar','toolbarTemplate','tooltipTemplate','virtualScrollSettings','width'];
+export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','afterServiceInvoke','aggregateCellInfo','aggregateMenuOpen','beforeExport','beforeServiceInvoke','beforeWebMcpToolExecute','beginDrillThrough','calculatedFieldCreate','cellClick','cellSelected','cellSelecting','chartSeriesCreated','conditionalFormatting','created','dataBound','destroyed','drill','drillThrough','editCompleted','enginePopulated','enginePopulating','exportComplete','fetchReport','fieldDragStart','fieldDrop','fieldListRefreshed','fieldRemove','hyperlinkCellClick','load','loadReport','memberEditorOpen','memberFiltering','newReport','numberFormatting','onFieldDropped','onHeadersSort','onPdfCellRender','removeReport','renameReport','saveReport','toolbarClick','toolbarRender'];
 export const twoWays: string[] = [];
 
 /**
@@ -20,78 +20,63 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        cellTemplate: new ContentChild('cellTemplate'),
+        tooltipTemplate: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class PivotViewComponent extends PivotView implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	afterServiceInvoke: any;
-	aggregateCellInfo: any;
-	aggregateMenuOpen: any;
-	beforeExport: any;
-	beforeServiceInvoke: any;
-	beginDrillThrough: any;
-	calculatedFieldCreate: any;
-	cellClick: any;
-	cellSelected: any;
-	cellSelecting: any;
-	chartSeriesCreated: any;
-	conditionalFormatting: any;
-	created: any;
-	dataBound: any;
-	destroyed: any;
-	drill: any;
-	drillThrough: any;
-	editCompleted: any;
-	enginePopulated: any;
-	enginePopulating: any;
-	exportComplete: any;
-	fetchReport: any;
-	fieldDragStart: any;
-	fieldDrop: any;
-	fieldListRefreshed: any;
-	fieldRemove: any;
-	hyperlinkCellClick: any;
-	load: any;
-	loadReport: any;
-	memberEditorOpen: any;
-	memberFiltering: any;
-	newReport: any;
-	numberFormatting: any;
-	onFieldDropped: any;
-	onHeadersSort: any;
-	onPdfCellRender: any;
-	removeReport: any;
-	renameReport: any;
-	saveReport: any;
-	toolbarClick: any;
-	public toolbarRender: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare afterServiceInvoke: any;
+	declare aggregateCellInfo: any;
+	declare aggregateMenuOpen: any;
+	declare beforeExport: any;
+	declare beforeServiceInvoke: any;
+	declare beforeWebMcpToolExecute: any;
+	declare beginDrillThrough: any;
+	declare calculatedFieldCreate: any;
+	declare cellClick: any;
+	declare cellSelected: any;
+	declare cellSelecting: any;
+	declare chartSeriesCreated: any;
+	declare conditionalFormatting: any;
+	declare created: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare drill: any;
+	declare drillThrough: any;
+	declare editCompleted: any;
+	declare enginePopulated: any;
+	declare enginePopulating: any;
+	declare exportComplete: any;
+	declare fetchReport: any;
+	declare fieldDragStart: any;
+	declare fieldDrop: any;
+	declare fieldListRefreshed: any;
+	declare fieldRemove: any;
+	declare hyperlinkCellClick: any;
+	declare load: any;
+	declare loadReport: any;
+	declare memberEditorOpen: any;
+	declare memberFiltering: any;
+	declare newReport: any;
+	declare numberFormatting: any;
+	declare onFieldDropped: any;
+	declare onHeadersSort: any;
+	declare onPdfCellRender: any;
+	declare removeReport: any;
+	declare renameReport: any;
+	declare saveReport: any;
+	declare toolbarClick: any;
+	public declare toolbarRender: any;
 
 
-    /** 
-     * Allows the table cell elements to be customized with either an HTML string or the element’s ID, 
-     * that can be used to add additional HTML elements with custom formats to the cell elements that are displayed in the pivot table.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('cellTemplate')
-    @Template()
-    public cellTemplate: any;
-    /** 
-     * Allows the tooltip element to be customized with either an HTML string or the element’s ID, 
-     * can be used to displayed with custom formats either by mouse hovering or by touch in the pivot table.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltipTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -175,6 +160,12 @@ export class PivotViewComponent extends PivotView implements IComponentBase {
                     this.injectedModules.push(mod)
                 }
             } catch { }
+        try {
+                let mod = this.injector.get('PivotViewWebMcpAdapter');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
 
         this.registerEvents(outputs);
         this.addTwoWay.call(this, twoWays);
@@ -199,7 +190,10 @@ export class PivotViewComponent extends PivotView implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(PivotViewComponent.prototype, 'cellTemplate');
+Template()(PivotViewComponent.prototype, 'tooltipTemplate');
+
 

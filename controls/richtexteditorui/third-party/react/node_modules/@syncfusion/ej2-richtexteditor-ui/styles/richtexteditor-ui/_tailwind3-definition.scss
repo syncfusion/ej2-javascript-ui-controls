@@ -1,0 +1,243 @@
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
+$rte-ui-content-bg: $content-bg-color !default;
+$rte-ui-table-popup-border-radius: $radius-6 !default;
+$rte-ui-table-popup-box: $shadow !default;
+$rte-ui-popup-open-font-size: 14px !default;
+$rte-ui-popup-open-font-weight: 400 !default;
+$rte-ui-table-popup-padding: 10px !default;
+$rte-ui-table-popup-border: 0 solid $gray-300 !default;
+$rte-ui-insert-table-btn-width: 100%;
+$rte-ui-table-span-border: 1px solid $border-light !default;
+$rte-ui-table-popup-tablecell-height: 14px;
+$rte-ui-table-popup-tablecell-margin: 1px;
+$rte-ui-table-popup-tablecell-width: 14px;
+$rte-ui-insert-dialog-label-padding-top: 12px !default;
+$rte-ui-table-dialog-label-padding-top: 0 !default;
+$rte-ui-content-bg: $content-bg-color !default;
+$rte-ui-item-color: $content-text-color !default;
+$rte-ui-table-popup-bg: $flyout-bg-color !default;
+$rte-ui-table-popup-color: $border-light !default;
+$rte-ui-border-color: $border-light !default;
+$rte-ui-container-border: 1px solid $rte-ui-border-color !default;
+$rte-ui-table-span-margin-bottom: 8px !default;
+$rte-ui-table-span-margin-top: 12px !default;
+$rte-ui-table-header-color: $content-text-color-alt1 !default;
+$rte-ui-font-family: $font-family !default;
+$rte-ui-table-header-font-size: 14px !default;
+$rte-ui-table-span-bg-color: $content-bg-color !default;
+$rte-ui-table-span-active-bg-color: $primary-lighter !default;
+$rte-ui-table-span-active-border-color: $primary !default;
+$rte-ui-table-span-active-border: 1px solid $rte-ui-table-span-active-border-color !default;
+$rte-ui-container-width: 100% !default;
+$rte-ui-container-height: 100% !default;
+$rte-ui-content-width: 100% !default;
+$rte-ui-content-font-size: 14px !default;
+$rte-ui-content-font-color: $content-text-color !default;
+$rte-ui-placeholder-line-height: $leading-normal !default;
+$rte-ui-placeholder-padding: 16px !default;
+$rte-ui-content-height: 100% !default;
+$rte-ui-e-content-width: 100% !default;
+$rte-ui-iframe-content-padding: 16px !default;
+$rte-ui-content-font-weight: 400 !default;
+$rte-ui-content-line-height: 1.5 !default;
+
+// Toolbar
+$rte-ui-toolbar-item-first-child-margin-left: 0 !default;
+$rte-ui-toolbar-poup-extended-margin-left: 0 !default;
+$rte-ui-pop-toolbar-extended-width: 100% !default;
+$rte-ui-expended-nav-min-height: 48px !default;
+$rte-ui-top-right-border-radius: $radius-0 !default;
+$rte-ui-top-left-border-radius: $radius-0 !default;
+$rte-ui-split-btn-height: 32px !default;
+$rte-ui-toolbar-tbar-btn-padding: 0 !default;
+$rte-ui-hover-split-btn-border: 1px solid transparent !default;
+$rte-ui-toolbar-tbar-btn-hover-padding: 0 !default;
+$rte-ui-toolbar-tbar-btn-icons-padding: 0 !default;
+$rte-ui-hover-split-btn-border: 1px solid transparent !default;
+$rte-ui-dropdown-color: $content-text-color !default;
+$rte-ui-split-btn-hover-bg: $secondary-bg-color-hover !default;
+$rte-ui-icon-color: $secondary-text-color-hover !default;
+$rte-ui-active-btn-icons-color: $secondary-text-color-pressed !default;
+$rte-ui-btn-active-bg: $secondary-bg-color-pressed !default;
+$rte-ui-popup-bg: $content-bg-color-alt1 !default;
+$rte-ui-popup-item-min-height: 32px !default;
+$rte-ui-toolbar-wrapper-container-height: auto !default;
+$rte-ui-toolbar-wrapper-border-radius: $radius-4 $radius-4 $radius-0 $radius-0 !default;
+$rte-ui-toolbar-pop-border: none !default;
+$rte-ui-border-color: $border-light !default;
+$rte-ui-wrapper-tb-bottom-border-top: 1px solid $rte-ui-border-color !default;
+$rte-ui-container-border-radius: $radius-4 !default;
+$rte-ui-tbar-btn-small-margin: 0 !default;
+
+// Themes variables
+$rte-ui-border-color: $border-light !default;
+$rte-ui-container-border: 1px solid $rte-ui-border-color !default;
+$rte-ui-popup-item-padding: 4px 4px !default;
+$rte-ui-popup-padding: 0 8px !default;
+$rte-ui-content-bg: $content-bg-color !default;
+$rte-ui-content-color: $content-text-color !default;
+$rte-ui-content-blockquote-border-left-color: solid 3px $content-bg-color-alt4 !default;
+$rte-ui-split-btn-border: 1px solid transparent !default;
+$rte-ui-anchor-color: $primary !default;
+$rte-ui-toolbar-wrapper-container-border-bottom: 1px solid $rte-ui-border-color !default;
+$rte-ui-tbar-default-bg: $content-bg-color-alt1 !default;
+
+//Quick Toolbar Variables
+$rte-ui-quick-popup-border: 1px solid $flyout-border !default;
+$rte-ui-quick-popup-border-radius: $radius-6 !default;
+$rte-ui-quick-popup-outer-margin: 3px 7px !default;
+$rte-ui-quick-popup-inner-padding: 0 4px !default;
+$rte-ui-quick-big-popup-outer-margin: 3px 11px !default;
+$rte-ui-quick-big-popup-inner-padding: 0 4px !default;
+$rte-ui-quick-popup-bg-color: $content-bg-color-alt1 !default;
+$rte-ui-quick-popup-box-shadow: $shadow-lg !default;
+$rte-ui-quick-popup-hide-border: 0 !default;
+$rte-ui-quick-popup-toolbar-border: none !default;
+$rte-ui-quick-popup-filter-color: rgba(0, 0, 0, .15) !default;
+
+$rte-ui-quick-pop-border: none !default;
+$rte-ui-quick-tb-border: 1px solid $border-light !default;
+$rte-ui-quick-pop-bg: $content-bg-color-alt1 !default;
+$rte-ui-quick-vr-line-color: $border-light !default;
+$rte-ui-quick-pop-item-focus-bg: $secondary-bg-color-pressed !default;
+$rte-ui-quick-tb-btn-hover: $secondary-bg-color-hover !default;
+$rte-ui-quick-item-active-bg: $secondary-bg-color-pressed !default;
+$rte-ui-quick-item-active-font-color: $secondary-text-color-hover !default;
+$rte-ui-quick-item-hover-border-color: $secondary-border-color-hover !default;
+$rte-ui-quick-item-active-border-color: $secondary-border-color-pressed !default;
+$rte-ui-quick-item-line-height: 20px !default;
+$rte-ui-quick-item-icon-min-width: 24px !default;
+
+$rte-ui-quick-toolbar-min-height: auto !default;
+$rte-ui-quick-toolbar-min-width: auto !default;
+$rte-ui-quick-toolbar-items-not-tbar-pos-min-height: auto !default;
+$rte-ui-quick-toolbar-items-not-tbar-pos-min-width: auto !default;
+$rte-ui-quick-toolbar-horizontal-separator-margin: 0 !default;
+$rte-ui-quick-horizontal-separator-first-margin: 0 !default;
+
+$rte-ui-toolbar-item-frist-last-child-margin: 0 !default;
+$rte-ui-popup-toolbar-item-margin: 0 !default;
+$rte-ui-popup-toolbar-item-min-height: auto !default;
+$rte-ui-popup-toolbar-item-min-width: auto !default;
+
+$rte-ui-quick-toolbar-tip-pointer-border: $flyout-border !default;
+$rte-ui-quick-toolbar-tip-pointer-content: $content-bg-color-alt1 !default;
+$rte-ui-tip-pointer-before-after-height: 0 !default;
+$rte-ui-tip-pointer-before-after-width: 0 !default;
+
+$rte-ui-color-picker-font-weight: 400 !default;
+$rte-ui-color-picker-line-height: 1 !default;
+$rte-ui-color-picker-margin-top: 3px !default;
+$rte-ui-color-picker-width: 100% !default;
+$rte-ui-color-picker-height: auto !default;
+
+$rte-ui-split-btn-border-radius: $radius-4 !default;
+
+// Image Dialog styles
+
+$rte-ui-insert-dialog-label-padding-top: 12px !default;
+$rte-ui-img-label-first-child-padding-top: 0 !default;
+$rte-ui-img-dlg-max-height: 390px !default;
+$rte-ui-dlg-modal-browse-btn-mobile-height: 36px;
+$rte-ui-dlg-modal-browse-btn-margin: 0 auto 10px !default;
+$rte-ui-dlg-modal-browse-btn-padding: 0 18px !default;
+$rte-ui-import-word-upload-border: 0 solid transparent !default;
+$rte-ui-dialog-word-upload-text-line-height: normal;
+$rte-ui-droparea-browsebtn-height: 36px;
+$rte-ui-droparea-browsebtn-margin: 0 auto 10px !default;
+$rte-ui-droparea-browsebtn-padding: 0 18px;
+$rte-ui-insert-dialog-font-size: 15px !default;
+$rte-ui-insert-dialog-label-padding-bottom: 12px !default;
+$rte-ui-upload-drag-border-radius: 4px !default;
+$rte-ui-drop-text-font-size: 14px !default;
+$rte-ui-drop-text-height: 128px !default;
+$rte-ui-upload-drag-border-clr: $border-dark !default;
+$rte-ui-drop-text-border: 2px dashed $rte-ui-upload-drag-border-clr !default;
+$rte-ui-media-droparea-upload-border: 0 solid transparent !default;
+
+// Slash Commands
+
+$rte-ui-slash-command-content-font-size: 30px !default;
+$rte-ui-slash-command-content-line-height: 20px !default;
+$rte-ui-slash-command-para-before-font-size: 15px !default;
+$rte-ui-slash-command-h1-before-font-size: 13px !default;
+$rte-ui-slash-command-h2-before-font-size: 13px !default;
+$rte-ui-slash-command-h3-before-font-size: 13px !default;
+$rte-ui-slash-command-h4-before-font-size: 13px !default;
+$rte-ui-slash-command-item-text-font-size: 14px !default;
+$rte-ui-slash-command-item-text-line-height: 20px !default;
+$rte-ui-slash-command-item-text-padding: 5px 0 1px !default;
+$rte-ui-slash-command-item-description-line-height: 20px !default;
+$rte-ui-slash-command-item-description-font-size: 11px !default;
+$rte-ui-slash-command-item-description-padding: 1px 0 5px !default;
+$rte-ui-slash-command-description-gap: 10px !default;
+$rte-ui-slash-command-icon-padding: 15px !default;
+$rte-ui-slash-command-content-text-font-weight: 500 !default;
+$rte-ui-slash-command-icon-margin-left: 15px !default;
+
+// Dropdown styles
+$rte-ui-default-btn-bg: $transparent !default;
+$rte-ui-active-btn-icons-color: $secondary-text-color-pressed !default;
+$rte-ui-drop-btn-active-color: $secondary-text-color-hover !default;
+$rte-ui-dropdown-transition-color: $icon-color !default;
+$rte-ui-button-focus-box-shadow: $shadow-focus-ring2 !default;
+$rte-ui-content-ul-h1-font-size: 2em !default;
+$rte-ui-content-ul-h1-font-weight: 700 !default;
+$rte-ui-content-ul-h1-height: 40px;
+$rte-ui-content-ul-h1-small-line-height: 25px !default;
+$rte-ui-content-ul-h1-line-height: 40px !default;
+$rte-ui-content-ul-h2-line-height: 40px !default;
+$rte-ui-content-ul-h2-small-line-height: 25px !default;
+$rte-ui-content-ul-h2-font-size: 1.5em !default;
+$rte-ui-content-ul-h2-font-weight: 700 !default;
+$rte-ui-content-ul-h3-font-weight: 700 !default;
+$rte-ui-content-ul-h4-font-weight: 700 !default;
+$rte-ui-content-ul-h2-height: 40px;
+$rte-ui-content-ul-h4-font-size: 1em !default;
+$rte-ui-content-ul-h3-font-size: 1.16em !default;
+$font-weight: $font-weight-light !default;
+$rte-ui-dropdown-selection-bgcolor: $secondary-bg-color-pressed !default;
+$rte-ui-dropdown-selection-color: $secondary-text-color-pressed !default;
+$rte-ui-font-colorpicker-selection-icon-color: $white !default;
+$rte-ui-background-colorpicker-selection-icon-color: $black !default;
+
+// Split button styles
+$rte-ui-split-btn-border-radius: $radius-4 !default;
+$rte-ui-default-btn-bg: $transparent !default;
+$rte-ui-split-btn-border: 1px solid transparent !default;
+$rte-ui-dropdown-color: $content-text-color !default;
+$rte-ui-split-btn-hover-bg: $secondary-bg-color-hover !default;
+$rte-ui-hover-split-btn-border: 1px solid transparent !default;
+$rte-ui-split-btn-span-hover-bg: $secondary-bg-color-pressed !default;
+$rte-ui-icon-color: $secondary-text-color-hover !default;
+$rte-ui-hover-icons-color: $secondary-text-color-hover !default;
+$rte-ui-active-btn-icons-color: $secondary-text-color-pressed !default;
+$rte-ui-default-icon-color: $icon-color !default;
+$rte-ui-drop-btn-active-bg: $secondary-bg-color-pressed !default;
+
+//bigger theme sass variables start
+
+$rte-ui-big-split-btn-height: 40px !default;
+$rte-ui-big-expended-nav-min-height: 56px !default;
+$rte-ui-big-popup-item-min-height: 40px !default;
+$rte-ui-big-hover-split-btn-border: 1px solid transparent !default;
+$rte-ui-big-split-btn-border: 1px solid transparent !default;
+$rte-ui-big-table-popup-min-height: 158px !default;
+$rte-ui-big-dialog-min-height: 324 !default;
+$rte-ui-big-img-upload-abort-icon-btn-margin-top: 6px !default;
+$rte-ui-big-img-upload-abort-icon-btn-padding: 18px !default;
+
+//bigger theme sass variables end
+
+// Dialog
+$rte-ui-insert-dialog-label-padding-top: 12px !default;
+$rte-ui-container-border-radius: $radius-4 !default;
+$rte-ui-border-radius: $radius-4 !default;
+$rte-ui-insert-dialog-label-padding-top: 12px !default;
+$rte-ui-link-label-first-child-padding-top: 0 !default;
+$rte-ui-protocol-dropdown-width: 80px !default;
+$rte-ui-protocol-dropdown-height: 32px !default;
+$rte-ui-protocol-dropdown-border-radius-top-right: 0 !default;
+$rte-ui-protocol-dropdown-border-radius-bottom-right: 0 !default;
+$rte-ui-protocol-dropdown-lable-gap: 10px !default;

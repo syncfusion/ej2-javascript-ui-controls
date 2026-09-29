@@ -33,7 +33,7 @@ export const RangesPlugin = {
 
 /**
  * Represents the directive to render and customize the ranges in an axis of linear gauge.
- * ```vue
+ * ```
  * <ejs-lineargauge>
  * <e-axes>
  * <e-axis>

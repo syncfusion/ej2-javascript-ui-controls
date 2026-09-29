@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chart3daxes>e-chart3daxis',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
@@ -30,13 +30,13 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * 
      * @default 0
      */
-    public columnIndex: any;
+    public declare columnIndex: any;
     /** 
      * With this property, you can request axis to calculate intervals approximately equal to your specified interval.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public desiredIntervals: any;
+    public declare desiredIntervals: any;
     /** 
      * Specifies the position of labels at the edge of the axis.They are, 
      * * None: No action will be performed. 
@@ -44,18 +44,18 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * * Shift: Shifts the edge labels.
      * @default 'None'
      */
-    public edgeLabelPlacement: any;
+    public declare edgeLabelPlacement: any;
     /** 
      * Specifies the Trim property for an axis.
      * @default false
      */
-    public enableTrim: any;
+    public declare enableTrim: any;
     /** 
      * Specifies the interval for an axis.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public interval: any;
+    public declare interval: any;
     /** 
      * Specifies the types like `Years`, `Months`, `Days`, `Hours`, `Minutes`, `Seconds` in date time axis.They are, 
      * * Auto: Defines the interval of the axis based on data. 
@@ -66,23 +66,23 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * * Minutes: Defines the interval of the axis in minutes.
      * @default 'Auto'
      */
-    public intervalType: any;
+    public declare intervalType: any;
     /** 
      * Specifies indexed category  axis.
      * @default false
      */
-    public isIndexed: any;
+    public declare isIndexed: any;
     /** 
      * It specifies whether the axis to be rendered in inversed manner or not.
      * @default false
      */
-    public isInversed: any;
+    public declare isInversed: any;
     /** 
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc. 
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
      * @default ''
      */
-    public labelFormat: any;
+    public declare labelFormat: any;
     /** 
      * Specifies the actions like `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, and `Rotate90` 
      * when the axis labels intersect with each other.They are, 
@@ -95,110 +95,110 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * * Rotate90: Rotates the label to 90 degree when it intersects.
      * @default Trim
      */
-    public labelIntersectAction: any;
+    public declare labelIntersectAction: any;
     /** 
      * Specifies the labelPadding from axis.
      * @default 5
      */
-    public labelPadding: any;
+    public declare labelPadding: any;
     /** 
      * Specifies the placement of a label for category axis. They are, 
      * * betweenTicks: Renders the label between the ticks. 
      * * onTicks: Renders the label on the ticks.
      * @default 'OnTicks'
      */
-    public labelPlacement: any;
+    public declare labelPlacement: any;
     /** 
      * The angle to which the axis label gets rotated.
      * @default 0
      */
-    public labelRotation: any;
+    public declare labelRotation: any;
     /** 
      * Options to customize the axis label.
      */
-    public labelStyle: any;
+    public declare labelStyle: any;
     /** 
      * The base value for logarithmic axis. It requires `valueType` to be `Logarithmic`.
      * @default 10
      */
-    public logBase: any;
+    public declare logBase: any;
     /** 
      * Options for customizing major grid lines.
      */
-    public majorGridLines: any;
+    public declare majorGridLines: any;
     /** 
      * Options for customizing major tick lines.
      */
-    public majorTickLines: any;
+    public declare majorTickLines: any;
     /** 
      * Specifies the maximum range of an axis.
      * @default null
      */
-    public maximum: any;
+    public declare maximum: any;
     /** 
      * Specifies the maximum width of an axis label.
      * @default 34.
      */
-    public maximumLabelWidth: any;
+    public declare maximumLabelWidth: any;
     /** 
      * The maximum number of label count per 100 pixels with respect to the axis length.
      * @default 3
      */
-    public maximumLabels: any;
+    public declare maximumLabels: any;
     /** 
      * Specifies the minimum range of an axis.
      * @default null
      */
-    public minimum: any;
+    public declare minimum: any;
     /** 
      * Options for customizing minor grid lines.
      */
-    public minorGridLines: any;
+    public declare minorGridLines: any;
     /** 
      * Options for customizing minor tick lines.
      */
-    public minorTickLines: any;
+    public declare minorTickLines: any;
     /** 
      * Specifies the number of minor ticks per interval.
      * @default 0
      */
-    public minorTicksPerInterval: any;
+    public declare minorTicksPerInterval: any;
     /** 
      * Unique identifier of an axis. 
      * To associate an axis with the series, set this name to the xAxisName/yAxisName properties of the series.
      * @default ''
      */
-    public name: any;
+    public declare name: any;
     /** 
      * If set to true, the axis will render at the opposite side of its default position.
      * @default false
      */
-    public opposedPosition: any;
+    public declare opposedPosition: any;
     /** 
      * Left and right padding for the plot area in pixels.
      * @default 0
      */
-    public plotOffset: any;
+    public declare plotOffset: any;
     /** 
      * Bottom padding for the plot area in pixels.
      * @default null
      */
-    public plotOffsetBottom: any;
+    public declare plotOffsetBottom: any;
     /** 
      * Left padding for the plot area in pixels.
      * @default null
      */
-    public plotOffsetLeft: any;
+    public declare plotOffsetLeft: any;
     /** 
      * Right padding for the plot area in pixels.
      * @default null
      */
-    public plotOffsetRight: any;
+    public declare plotOffsetRight: any;
     /** 
      * Top padding for the plot area in pixels.
      * @default null
      */
-    public plotOffsetTop: any;
+    public declare plotOffsetTop: any;
     /** 
      * Specifies the padding for the axis range in terms of interval.They are, 
      * * none: Padding cannot be applied to the axis. 
@@ -207,53 +207,53 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * * round: Axis range is rounded to the nearest possible value divided by the interval.
      * @default 'Auto'
      */
-    public rangePadding: any;
+    public declare rangePadding: any;
     /** 
      * Specifies the index of the row where the axis is associated, when the chart area is divided into multiple plot areas by using `rows`. 
      * 
      * @default 0
      */
-    public rowIndex: any;
+    public declare rowIndex: any;
     /** 
      * Specifies the skeleton format in which the dateTime format will process.
      * @default ''
      */
-    public skeleton: any;
+    public declare skeleton: any;
     /** 
      * It specifies the type of format to be used in dateTime format process.
      * @default 'DateTime'
      * @deprecated 
      */
-    public skeletonType: any;
+    public declare skeletonType: any;
     /** 
      * Specifies the number of `columns` or `rows` an axis has to span horizontally or vertically.
      * @default 1
      */
-    public span: any;
+    public declare span: any;
     /** 
      * It specifies whether the axis to be start from zero.
      * @default true
      */
-    public startFromZero: any;
+    public declare startFromZero: any;
     /** 
      * Specifies the title of an axis.
      * @default ''
      */
-    public title: any;
+    public declare title: any;
     /** 
      * Specifies the titlePadding from axis label.
      * @default 5
      */
-    public titlePadding: any;
+    public declare titlePadding: any;
     /** 
      * Defines an angle to rotate axis title. By default, angle auto calculated based on position and orientation of axis.
      * @default null
      */
-    public titleRotation: any;
+    public declare titleRotation: any;
     /** 
      * Options for customizing the axis title.
      */
-    public titleStyle: any;
+    public declare titleStyle: any;
     /** 
      * Specifies the data types that the axis can handle: 
      * * Double: This type is used for rendering a numeric axis to accommodate numeric data. 
@@ -264,12 +264,12 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
      * @default 'Double'
      * @isenumeration true
      */
-    public valueType: any;
+    public declare valueType: any;
     /** 
      * If set to true, axis label will be visible.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -285,6 +285,7 @@ export class Chart3DAxisDirective extends ComplexBase<Chart3DAxisDirective> {
  */
 @Directive({
     selector: 'ejs-chart3d>e-chart3daxes',
+    standalone: true,
     queries: {
         children: new ContentChildren(Chart3DAxisDirective)
     },

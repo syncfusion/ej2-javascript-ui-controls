@@ -259,7 +259,6 @@ export class UndoRedo {
         let undoObj: HistoryEntry;
         let redoObj: HistoryEntry;
 
-        currEntry = diagram.historyManager.currentEntry;
         if (diagram.historyManager.canUndo || diagram.historyManager.undoStack.length === 0) {
             this.getHistroyObject(undoStack, currEntry);
         } else {
@@ -284,11 +283,12 @@ export class UndoRedo {
 
     private getHistroyObject(list: HistoryEntry[], obj: HistoryEntry): void {
         if (obj && obj.type !== 'StartGroup' && obj.type !== 'EndGroup') {
+            //1038481: Optimize Diagram Interaction Performance for Large-Scale Diagrams
             list.push({
-                redoObject: obj.redoObject ? obj.redoObject : null,
-                undoObject: obj.undoObject ? obj.undoObject : null,
-                type: obj.type ? obj.type : null,
-                category: obj.category ? obj.category : null
+                redoObject: obj.redoObject,
+                undoObject: obj.undoObject,
+                type: obj.type,
+                category: obj.category
             });
         }
     }
@@ -791,7 +791,8 @@ export class UndoRedo {
         } else {
             addErField(parent, diagram, obj.field, obj.index, obj.fieldNodeId);
         }
-
+        // 1044378: Update the connector edges after adding or removing an ER field to ensure proper connections.
+        diagram.updateConnectorEdges(diagram.nameTable[(parent as Node).id]);
         diagram.clearSelection();
     }
 

@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('split-button-layout') {
   .e-split-btn-wrapper {
@@ -7,7 +8,7 @@
     width: min-content;
     @if $skin-name == 'Material3' {
       border-radius: $split-bgr-btn-border-radius;
-      box-shadow: $btn-box-shadow;
+      box-shadow: btn.$btn-box-shadow;
     }
 
     .e-split-btn {
@@ -60,14 +61,14 @@
 
       &:focus-visible { // only for keybord
         @if $skin-name == 'Material3' {
-          box-shadow: $btn-keyboard-focus-box-shadow;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow;
         }
       }
 
       &.e-btn:focus-visible { // only for keybord
         @if $skin-name == 'fluent2' {
           border-right-color: $grey-black !important; /* stylelint-disable-line declaration-no-important */
-          box-shadow: $btn-keyboard-focus-box-shadow;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow;
         }
       }
 
@@ -82,12 +83,12 @@
       }
 
       .e-btn-icon {
-        font-size: $drop-down-btn-icon-font-size;
+        font-size: $drop-dbtn-icon-font-size;
         margin-left: $drop-down-zero-padding-margin;
         padding-right: $split-btn-icon-padding-right;
         width: $split-auto-width;
         @if $skin-name == 'Material3' {
-          border-radius: $btn-border-radius;
+          border-radius: btn.$btn-border-radius;
         }
       }
 
@@ -154,7 +155,7 @@
       &.e-btn:focus-visible { // only for keybord
         @if $skin-name == 'fluent2' {
           margin-left: $drop-down-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
-          box-shadow: $btn-keyboard-focus-box-shadow;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow;
         }
       }
     }
@@ -182,7 +183,7 @@
 
       &:focus-visible { // only for keybord
         @if $skin-name == 'Material3' {
-          box-shadow: $btn-keyboard-focus-box-shadow;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow;
         }
       }
 
@@ -233,7 +234,7 @@
           padding-left: $split-rtl-btn-icon-padding-left;
           padding-right: $drop-down-zero-padding-margin;
           @if $skin-name == 'Material3' {
-            border-radius: $btn-border-radius;
+            border-radius: btn.$btn-border-radius;
           }
         }
 

@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-palettes>e-palette',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class PaletteDirective extends ComplexBase<PaletteDirective> {
@@ -28,33 +28,33 @@ export class PaletteDirective extends ComplexBase<PaletteDirective> {
      * Sets whether the palette items to be expanded or not
      * @default true
      */
-    public expanded: any;
+    public declare expanded: any;
     /** 
      * Sets the height of the symbol group
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Defines the content of the symbol group
      * @default ''
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Defines the unique id of a symbol group
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the collection of predefined symbols
      * @asptype object
      */
-    public symbols: any;
+    public declare symbols: any;
     /** 
      * Defines the title of the symbol group
      * @default ''
      */
-    public title: any;
+    public declare title: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -70,6 +70,7 @@ export class PaletteDirective extends ComplexBase<PaletteDirective> {
  */
 @Directive({
     selector: 'ejs-symbolpalette>e-palettes',
+    standalone: true,
     queries: {
         children: new ContentChildren(PaletteDirective)
     },

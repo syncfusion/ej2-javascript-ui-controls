@@ -20,17 +20,17 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class RecurrenceEditorComponent extends RecurrenceEditor implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	change: any;
-	created: any;
-	public destroyed: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare change: any;
+	declare created: any;
+	public declare destroyed: any;
 
 
 
@@ -62,7 +62,8 @@ export class RecurrenceEditorComponent extends RecurrenceEditor implements IComp
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

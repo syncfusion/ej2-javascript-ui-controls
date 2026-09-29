@@ -1,7 +1,7 @@
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { DocumentEditor } from '../../../document-editor/document-editor';
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 import { ParagraphWidget, WAbstractList, WList, WListLevel } from '../../../document-editor/implementation';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
@@ -85,16 +85,15 @@ export class NumberingGroup {
 
         // Create the HTML template for numbering dropdown
         const numberListDropDiv: HTMLElement = createElement('div', {
-            id: this.ribbonId + '_number_list_div',
-            styles: 'width: 211px;height: auto;visibility: hidden'
+            id: this.ribbonId + '_number_list_div'
         });
-
+        const numberListDropDivStyle: string = 'width:211px;height:auto;visibility:hidden;';
+        updateCSSText(numberListDropDiv, numberListDropDivStyle);
         const numberListDropUlTag: HTMLElement = createElement('ul', {
-            styles: 'visibility: visible; outline: 0px;',
             id: this.ribbonId + '_numberListMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
-
+        updateCSSText(numberListDropUlTag, 'visibility:visible;outline:0px;');
         numberListDropDiv.appendChild(numberListDropUlTag);
 
         // Create numbering list options using BulletListHelper
@@ -133,12 +132,12 @@ export class NumberingGroup {
             content: this.localObj.getConstant('Numbering'),
             select: this.handleNumberingSelection.bind(this),
             beforeOpen: (): void => {
-                numberListDropDiv.style.visibility = 'visible';
+                updateCSSText(numberListDropDiv, 'visibility:visible;');
                 const levelPattern: string = BulletListHelper.getCurrentListPattern(this.documentEditor);
                 this.updateSelectedNumberedListType(levelPattern);
             },
             beforeClose: (): void => {
-                numberListDropDiv.style.visibility = 'hidden';
+                updateCSSText(numberListDropDiv, 'visibility:hidden;');
                 this.removeSelectedList();
             },
             click: () => {

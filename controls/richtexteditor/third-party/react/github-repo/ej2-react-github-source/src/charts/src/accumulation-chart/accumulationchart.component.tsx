@@ -9,7 +9,7 @@ export interface AccumulationChartTypecast {
 }
 /**
  * Represents react AccumulationChart Component
- * ```tsx
+ * ```
  * <AccumulationChartComponent></AccumulationChartComponent>
  * ```
  */

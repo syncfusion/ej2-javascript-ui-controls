@@ -1,0 +1,50 @@
+@use 'variables' as *;
+@include export-module('speechtotext-bigger') {
+  // Speechtotext component styles
+
+  .e-bigger .e-speech-to-text.e-btn,
+  .e-bigger.e-speech-to-text.e-btn {
+    align-items: center;
+    border-radius: $stt-bigger-border-radius;
+    display: inline-flex;
+    font-size: $stt-bigger-font-size;
+    min-width: $stt-bigger-min-width;
+    min-height: $stt-bigger-min-height;
+    padding: $stt-bigger-padding;
+    @if ($skin-name == 'FluentUI') {
+      line-height: $stt-bigger-btn-line-height;
+      display: inline;
+    }
+    &.e-round {
+      width: $stt-bigger-round-width;
+      height: $stt-bigger-round-height;
+      padding: $stt-bigger-round-padding;
+    }
+    .e-btn-icon {
+      font-size: $stt-bigger-font-size;
+      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3') {
+        line-height: $stt-bigger-btn-icon-line-height;
+        width: 2em;
+      }
+      @if ($skin-name != 'bootstrap4' or $skin-name != 'bootstrap' or $skin-name != 'bootstrap-dark') {
+        margin-top: $stt-bigger-margin-top;
+      }
+    }
+  }
+
+  .e-bigger .e-speech-to-text.e-round,
+  .e-bigger.e-speech-to-text.e-round {
+    .e-btn-icon {
+      font-size: $stt-bigger-btn-font-size;
+      @if ($skin-name == 'FluentUI') {
+        margin-top: $stt-bigger-round-btn-margin-top;
+      }
+      @if ($skin-name == 'fluent2'or $skin-name == 'Material3') {
+        margin-top: $stt-bigger-round-btn-margin-top;
+      }
+      @if ($skin-name == 'material' or $skin-name == 'fabric-dark') {
+        margin-top: $stt-bigger-round-btn-margin-top;
+      }
+    }
+  }
+}

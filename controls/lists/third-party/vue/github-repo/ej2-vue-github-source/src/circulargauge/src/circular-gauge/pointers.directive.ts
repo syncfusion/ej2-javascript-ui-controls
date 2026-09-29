@@ -33,7 +33,7 @@ export const PointersPlugin = {
 
 /**
  * Represents the directive to render and customize the pointers in an axis of circular gauge.
- * ```vue
+ * ```
  * <ejs-circulargauge>
  * <e-axes>
  * <e-axis>

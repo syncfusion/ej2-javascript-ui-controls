@@ -210,6 +210,9 @@ export class OptionsGroup extends RibbonGroupBase {
         const selection: any = this.documentEditor.selectionModule;
 
         if (selection) {
+            if (!selection.start || !selection.start.paragraph || !selection.start.paragraph.bodyWidget) {
+                return;  // Safe: Skip UI updates if selection chain is incomplete
+            }
             // Update Different First Page checkbox
             if (differentFirstCheckbox) {
                 const prevDifferentFirstCheckbox: boolean = differentFirstCheckbox.checkBoxSettings.checked;

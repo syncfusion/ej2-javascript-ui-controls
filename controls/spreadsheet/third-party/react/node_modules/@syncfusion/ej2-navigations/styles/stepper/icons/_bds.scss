@@ -1,6 +1,0 @@
-@use '../variables' as *;
-@include export-module('stepper-bds-icons') {
-  .e-step-indicator::before {
-    content: '\e8db';
-  }
-}

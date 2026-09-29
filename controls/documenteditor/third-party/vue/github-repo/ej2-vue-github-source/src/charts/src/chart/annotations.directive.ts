@@ -34,7 +34,7 @@ export const AnnotationsPlugin = {
 /**
  * `e-annotation` directive represent a annotation of the VueJS Chart. 
  * It must be contained in a Chart component(`ejs-chart`). 
- * ```vue
+ * ```
  * <ejs-chart> 
  *   <e-annotations>
  *    <e-annotation content='ID' />

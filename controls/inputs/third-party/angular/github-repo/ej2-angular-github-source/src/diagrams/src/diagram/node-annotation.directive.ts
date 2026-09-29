@@ -21,9 +21,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-node>e-node-annotations>e-node-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective> {
@@ -37,21 +37,21 @@ export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective
      *  * Path - Sets the annotation type as Path
      * @default 'Shape'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Allows the user to save custom information/data about an annotation 
      * 
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public addInfo: any;
+    public declare addInfo: any;
     /** 
      *  Defines the type of annotation template 
      * String -  Defines annotation template to be in string 
      * Template - Defines annotation template to be in html content
      * @default 'String'
      */
-    public annotationType: any;
+    public declare annotationType: any;
     /** 
      * Enables or disables the default behaviors of the label. 
      * * ReadOnly - Enables/Disables the ReadOnly Constraints 
@@ -59,23 +59,23 @@ export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective
      * @default 'InheritReadOnly'
      * @aspnumberenum 
      */
-    public constraints: any;
+    public declare constraints: any;
     /** 
      * Sets the textual description of the node/connector
      * @default ''
      */
-    public content: any;
+    public declare content: any;
     /** 
      * Sets the space to be left between an annotation and its parent node/connector
      * @default new Margin(20,20,20,20)
      */
-    public dragLimit: any;
+    public declare dragLimit: any;
     /** 
      * Sets the height of the text
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Sets the horizontal alignment of the text with respect to the parent node/connector 
      * * Stretch - Stretches the diagram element throughout its immediate parent 
@@ -85,55 +85,55 @@ export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
      * @default 'Center'
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Sets the hyperlink of the label 
      * 
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public hyperlink: any;
+    public declare hyperlink: any;
     /** 
      * Defines the unique id of the annotation
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Sets the space to be left between an annotation and its parent node/connector
      * @default new Margin(0,0,0,0)
      */
-    public margin: any;
+    public declare margin: any;
     /** 
      * Sets the position of the annotation with respect to its parent bounds
      * @default { x: 0.5, y: 0.5 }
      * @blazortype NodeAnnotationOffset
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Sets the rotate angle of the text
      * @default 0
      */
-    public rotateAngle: any;
+    public declare rotateAngle: any;
     /** 
      * Gets or sets the reference mode for annotation rotation.
      * @default 'Parent'
      */
-    public rotationReference: any;
+    public declare rotationReference: any;
     /** 
      * Defines the appearance of the text
      * @default new TextStyle()
      */
-    public style: any;
+    public declare style: any;
     /** 
      * Sets the textual description of the node/connector
      * @default 'undefined'
      */
-    public template: any;
+    public declare template: any;
     /** 
      * This property is used to show tooltip for annotation on mouse over.
      * @default new DiagramToolTip();
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * Sets the vertical alignment of the text with respect to the parent node/connector 
      * * Stretch - Stretches the diagram element throughout its immediate parent 
@@ -143,18 +143,18 @@ export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
      * @default 'Center'
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * Defines the visibility of the label
      * @default true
      */
-    public visibility: any;
+    public declare visibility: any;
     /** 
      * Sets the width of the text
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -170,6 +170,7 @@ export class NodeAnnotationDirective extends ComplexBase<NodeAnnotationDirective
  */
 @Directive({
     selector: 'e-node>e-node-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(NodeAnnotationDirective)
     },

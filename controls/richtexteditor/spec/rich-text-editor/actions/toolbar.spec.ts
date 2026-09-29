@@ -2,11 +2,11 @@
  * Toolbar spec
  */
 import { selectAll, select, Browser, L10n, createElement, getUniqueID, detach, isNullOrUndefined, closest } from "@syncfusion/ej2-base";
-import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/base/rich-text-editor";
 import { ToolbarType } from "../../../src/common/enum";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
-import { NodeSelection } from "../../../src/selection/index";
+import { NodeSelection } from "../../../src/selection/selection";
 import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../constant.spec";
 
 
@@ -2983,6 +2983,461 @@ describe('955929 - Opening the Number and Bullet Format List Button popup while 
     });
 });
 
+    describe('EJ2-22404 - Setting default font styles is not maintained on typing into RTE.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        it(' Check the default value as null to format, fontSize, fontFamily', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                value: `<p>a</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            expect(rteObj.fontFamily.default).toBeNull();
+            expect(rteObj.format.default).toBeNull();
+            expect(rteObj.fontSize.default).toBeNull();
+        });
+        it(' Set default value to format, fontSize, fontFamily ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                fontSize: { default: '14pt' },
+                fontFamily: { default: 'Arial' },
+                format: {
+                    default: 'Preformatted'
+                },
+                value: `<p><br></p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Preformatted').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
+        });
+
+        it(' Dynamic Set the default value to format, fontSize, fontFamily', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                
+                value: `<p>a</p>`
+            });
+            rteObj.fontSize = { default: '14pt' };
+            rteObj.fontFamily = { default: 'Arial' };
+            rteObj.format = {
+                default: 'Preformatted'
+            };
+            rteObj.dataBind();
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Preformatted').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
+        });
+
+        it(' Dynamic Set the default value as null to format, fontSize, fontFamily ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                fontSize: { default: '14pt' },
+                fontFamily: { default: 'Arial' },
+                format: {
+                    default: 'Preformatted'
+                },
+                value: `<p>a</p>`
+            });
+            rteObj.fontSize = { default: null };
+            rteObj.fontFamily = { default: null };
+            rteObj.format = {
+                default: null
+            };
+            rteObj.dataBind();
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === 'Font Size').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Font Name').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Paragraph').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === '').toBe(true);
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+});
+    describe("Test the toolbar based on focus and blur events", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                        "StrikeThrough",
+                        "FontName",
+                        "FontSize",
+                        "FontColor",
+                        "BackgroundColor",
+                        "LowerCase",
+                        "UpperCase",
+                        "SuperScript",
+                        "SubScript",
+                        "|",
+                        "Formats",
+                        "Alignments",
+                        "OrderedList",
+                        "UnorderedList",
+                        "Outdent",
+                        "Indent",
+                        "|",
+                        "CreateTable",
+                        "CreateLink",
+                        "Image",
+                        "|",
+                        "ClearFormat",
+                        "Print",
+                        "SourceCode",
+                        "FullScreen",
+                        "|",
+                        "Undo",
+                        "Redo"
+                    ]
+                },
+                focus: function () {
+                    rteObj.toolbarSettings.enable = true;
+                    rteObj.dataBind();
+                },
+                blur: function () {
+                    rteObj.toolbarSettings.enable = false;
+                    rteObj.dataBind();
+                }
+            });
+
+            rteEle = rteObj.element;
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check toolbar", () => {
+            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
+            rteObj.focusIn();
+            expect(rteEle.querySelectorAll(".e-toolbar").length).not.toBe(0);
+            rteObj.focusOut();
+            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
+        });
+    });
+    describe('EJ2-63042 - Tooltip not shown for NumberFormat and BulletFormat List in RTE Toolbar items', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'NumberFormatList', 'BulletFormatList'
+                    ]
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the tooltip', () => {
+            expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List (Ctrl+Shift+O)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List (Ctrl+Alt+O)');
+        });
+    });
+    describe('844717 - The toolbar Button Tooltip not get destroyed when the dialog is opened and closed issue resolved', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'FullScreen']
+                },
+                value : "Rich Text Editor"
+            });
+        });
+        it('Tooltip hide while click fullscreen', (done: Function) => {
+            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            let toolbarEle = document.querySelector('[title="Maximize (Ctrl+Shift+F)"]')
+            toolbarEle.dispatchEvent(event);
+            expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
+            (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+            setTimeout( function () {
+                (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+                setTimeout( function () {
+                    expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
+                    done();
+                },100)
+            },100)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('844717 - The toolbar Button Tooltip not get destroyed when the dialog is opened and closed issue resolved', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'FullScreen']
+                },
+                value : "Rich Text Editor"
+            });
+        });
+        it('Tooltip hide while click fullscreen', (done: Function) => {
+            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            let toolbarEle = document.querySelector('[title="Maximize (Ctrl+Shift+F)"]')
+            toolbarEle.dispatchEvent(event);
+            expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
+            (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+            setTimeout( function () {
+                (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+                setTimeout( function () {
+                    expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
+                    done();
+                },100)
+            },100)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe("849875 - Cursor position get lost when having empty span tag in RichTextEditor", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let toolbarEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: true,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                    ]
+                },
+                blur: function () {
+                    rteObj.toolbarSettings.enable = false;
+                    rteObj.dataBind();
+                }
+            });
+            rteEle = rteObj.element;
+            toolbarEle = document.createElement('div');
+            toolbarEle.className = 'e-rte-elements';
+            toolbarEle.innerHTML = '<ul><li class="e-list1">Object1</li><li class="e-list2">Object2</li></ul>'
+            document.body.appendChild(toolbarEle);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            detach(toolbarEle);
+        });
+        it("Custom toolbar", () => {
+            rteObj.focusIn();
+            const list: HTMLElement= document.querySelector('.e-list1');
+            (rteObj as any).blurHandler({ relatedTarget: list });
+            expect(rteObj.toolbarSettings.enable).toBe(true);
+        });
+    });
+    describe('853088 - Script error throws when clicking preview toolbar while using itemConfigs with ToolbarSettings in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|', 
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode'],
+                    itemConfigs: {
+                        undo: {
+                            icon: 'undo',
+                        },
+                        redo: {
+                            icon: 'redo',
+                        },
+                        justifyLeft: {
+                            icon: 'justifyLeft',
+                        },
+                        alignments: {
+                            icon: 'alignments',
+                        },
+                        bold: {
+                            icon: 'bold',
+                        },
+                        italic: {
+                            icon: 'italic',
+                        },
+                        underline: {
+                            icon: 'underline',
+                        },
+                    },
+                },  
+                value: '<p><b>Description:</b></p>'
+            });
+        });
+        it('click the preview toolbar while using itemConfigs with ToolbarSettings ', () => {
+            rteEle = rteObj.element;
+            let previewEle: HTMLElement = document.querySelector('[title= "Code View (Ctrl+Shift+H)"]');
+            previewEle.click();
+            expect(rteObj.value === '<p><b>Description:</b></p>').toBe(true); 
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe("863459 - Applying different text styles format out of focus Leads to Issues in RichTextEditor.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let toolbarEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: true,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                    ]
+                },
+                value: "<p>Rich Text Editor</p>"
+            });
+            rteEle = rteObj.element;
+            toolbarEle = document.createElement('div');
+            toolbarEle.className = 'e-rte-test-elements';
+            toolbarEle.innerHTML = '<div>Rich Text Editor</div>';
+            document.body.appendChild(toolbarEle);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            detach(toolbarEle);
+        });
+        it("Focus leads to a console error in the Rich Text Editor.", () => {
+            (document.querySelector(".e-rte-test-elements div") as any).click();
+            (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[0] as any).click();
+            (document.querySelector(".e-rte-test-elements div") as any).click();
+            (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[1] as any).click();
+            expect(rteObj.inputElement.innerHTML == '<p><strong><em>​</em></strong>Rich Text Editor</p>').toBe(true);
+        });
+    });
+    
+describe('866230 - Script error throws when using click event with custom toolbar template in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: [{
+                    click:function(){
+                        rteObj.executeCommand('insertHTML','<div>testing</div>');
+                },
+                undo:true,
+                tooltipText: 'Insert Symbol',
+                template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%">'
+                + '<div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div></button>'
+                },'Undo','Redo']
+            },
+            value:'RichTextEditor'
+        });
+    });
+    it('check the value undo redo action in custom toolbar click', () => {
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).click();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as any).click();
+        expect(rteObj.inputElement.innerHTML === '<p>RichTextEditor</p>').toBe(true);
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[2] as any).click();
+        expect(rteObj.inputElement.innerHTML === '<div>testing</div><p>RichTextEditor</p>').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-21470 - RichTextEditor Font Size "px" not update in toolbar status and fontFamily "veranda" style not updated properly', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['FontName', 'FontSize']
+            },
+            fontSize: {
+                default: '10px',
+                items: [
+                    { text: '8 px', value: '8px' },
+                    { text: '10 px', value: '10px' },
+                    { text: '12 px', value: '12px' },
+                    { text: '14 px', value: '14px' },
+                    { text: '18 px', value: '18px' },
+                    { text: '24 px', value: '24px' },
+                    { text: '36 px', value: '36px' }
+                ]
+            },
+            value: `<p id="rte"><span id="first-span">RichTextEditor</span><span id="rte-span" style="font-size: 14px;FONT-FAMILY: Verdana;FONT-WEIGHT: normal;FONT-STYLE: normal;">
+            The rich text editor is WYSIWYG</span></p>`
+        });
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+    });
+    it(' Check the toolbar status while click on fontsize and fontName element ', (done) => {
+        let spanEle: HTMLElement = rteObj.element.querySelector('#rte-span');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, spanEle.childNodes[0], spanEle.childNodes[0], 0, 3);
+        dispatchEvent(spanEle, 'mousedown');
+        dispatchEvent(spanEle, 'mouseup');
+        spanEle.click();
+        setTimeout(() => {
+            let fontSize: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+            expect((fontSize.firstElementChild as HTMLElement).innerText.trim()).toBe('14 px');
+            expect((fontName.firstElementChild as HTMLElement).innerText.trim()).toBe('Verdana');
+            done();
+        }, 50)
+    });
+    it(' Check the toolbar status while click without fontsize element ', (done) => {
+        let spanEle: HTMLElement = rteObj.element.querySelector('#first-span');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, spanEle.childNodes[0], spanEle.childNodes[0], 0, 3);
+        dispatchEvent(spanEle, 'mousedown');
+        dispatchEvent(spanEle, 'mouseup');
+        spanEle.click();
+        setTimeout(() => {
+            let fontSize: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+            expect((fontSize.firstElementChild as HTMLElement).innerText.trim()).toBe('10 px');
+            done();
+        }, 50)
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 describe('962827: Fails to change bullet list to numbered list in Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -3019,3 +3474,125 @@ describe('962827: Fails to change bullet list to numbered list in Rich Text Edit
         destroy(rteObj);
     });
 });
+describe('883844: When using the Refresh method, RichTextEditor doesnot get refreshed to initial rendering', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: [ 'FullScreen','Bold', 'Italic', 'Underline', 'StrikeThrough', 'SuperScript', 'SubScript', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'NumberFormatList', 'BulletFormatList', '|',
+                    'Outdent', 'Indent', '|', 'CreateLink', 'Image', 'FileManager', 'Video', 'Audio', 'CreateTable', '|', 'FormatPainter', 'ClearFormat',
+                    '|', 'EmojiPicker', 'Print', '|',
+                    'SourceCode','|', 'Undo', 'Redo']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should remove the classnames properly when using refresh method.', () => {
+            editor.focusIn();
+            const toolbarElems:NodeListOf<HTMLElement> = editor.element.querySelectorAll('.e-toolbar-item');
+            toolbarElems[0].click();
+            expect(editor.element.classList.contains('e-rte-full-screen')).toBe(true);
+            editor.refresh();
+            expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
+        });
+    });
+describe('Bug 989404: Tooltips are not shown when dynamically enabling the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                enabled: false
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' title attributte should be added to toolbar items irrespective to rte enabled or disabled state', () => {
+            const boldToolbarItem: HTMLElement = rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement;
+            expect(boldToolbarItem.getAttribute("title")).not.toBe(null);
+            rteObj.enabled = true;
+            rteObj.dataBind();
+            expect(boldToolbarItem.getAttribute("title")).not.toBe(null);
+        });
+    });
+describe('937864 - Inline Code Tooltip Missing Keyboard Shortcut', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['InlineCode']
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the tooltip for custom toolbar item', () => {
+            expect(document.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Inline Code (Ctrl+`)");
+        });
+    });
+describe('920157: The "Minimize" toolbar icon does not update when dynamically enabling and disabling the toolbar.', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote', 'OrderedList',
+                        'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Print',
+                        {
+                            tooltipText: 'Custom Toolbar',
+                            template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;">Custom Toolbar</div></button>'
+                        }, '|', 'Undo', 'Redo', 'FullScreen'
+                    ]               
+                },          
+                focus: focus,
+                blur: blur
+            });
+        });
+        function blur() {
+            editorObj.toolbarSettings.enable = false;
+            editorObj.dataBind();
+        }
+        function focus() {
+            editorObj.toolbarSettings.enable = true;
+            editorObj.dataBind();
+        }
+        it('should update minimize icon when toolbar is dynamically enabled/disabled', () => {
+            const maximizeButton: HTMLElement = editorObj.element.querySelector('.e-maximize');
+            expect(maximizeButton).not.toBeNull();
+            maximizeButton.click();
+            expect(editorObj.element.classList.contains("e-rte-full-screen")).toBe(true);
+            blur();
+            expect(editorObj.toolbarSettings.enable).toBe(false);
+            focus();
+            expect(editorObj.toolbarSettings.enable).toBe(true);
+            expect(editorObj.element.classList).toContain('e-rte-full-screen');       
+            const toolbarMinimizeElement = editorObj.element.querySelector('.e-minimize');
+            expect(toolbarMinimizeElement).not.toBeNull();
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+    });
+describe('911834 - Tooltip not shown correctly for custom toolbar items', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ { tooltipText: 'Insert Video', template: "<button class=\"e-tbar-btn e-control e-btn e-lib e-icon-btn\" tabindex=\"-1\" id=\"custom_tbarbtn_3\" style=\"width:100%\"><span class=\"e-icons e-video e-btn-icon\"></span></button>" }, 'Bold', 'CreateLink' ] 
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the tooltip for custom toolbar item', () => {
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Insert Video');
+        });
+    });

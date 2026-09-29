@@ -10,8 +10,8 @@ import { WeekWorkingTimesDirective } from './weekworkingtime.directive';
 import { HolidaysDirective } from './holidays.directive';
 import { EventMarkersDirective } from './eventmarkers.directive';
 
-export const inputs: string[] = ['addDialogFields','allowExcelExport','allowFiltering','allowKeyboard','allowParentDependency','allowPdfExport','allowReordering','allowResizing','allowRowDragAndDrop','allowSelection','allowSorting','allowTaskbarDragAndDrop','allowTaskbarOverlap','allowUnscheduledTasks','autoCalculateDateScheduling','autoFocusTasks','autoUpdatePredecessorOffset','baselineColor','baselineTemplate','calendarSettings','collapseAllParentTasks','columnMenuItems','columns','connectorLineBackground','connectorLineWidth','contextMenuItems','dataSource','dateFormat','dayWorkingTime','disableHtmlEncode','durationUnit','editDialogFields','editSettings','emptyRecordTemplate','enableAdaptiveUI','enableAutoWbsUpdate','enableContextMenu','enableCriticalPath','enableHover','enableHtmlSanitizer','enableImmutableMode','enableInfiniteTimelineScroll','enableMultiTaskbar','enablePersistence','enablePredecessorValidation','enableRtl','enableTimelineVirtualization','enableUndoRedo','enableVirtualMaskRow','enableVirtualization','enableWBS','eventMarkers','filterSettings','frozenColumns','gridLines','height','highlightWeekends','holidays','includeWeekend','labelSettings','loadChildOnDemand','loadingIndicator','locale','milestoneTemplate','parentTaskbarTemplate','projectEndDate','projectStartDate','query','readOnly','renderBaseline','resourceFields','resourceIDMapping','resourceNameMapping','resources','rowHeight','searchSettings','segmentData','selectedRowIndex','selectionSettings','showColumnMenu','showInlineNotes','showOverAllocation','sortSettings','splitterSettings','taskFields','taskMode','taskType','taskbarHeight','taskbarTemplate','timelineSettings','timelineTemplate','timezone','toolbar','tooltipSettings','treeColumnIndex','undoRedoActions','undoRedoStepsCount','updateOffsetOnTaskbarEdit','validateManualTasksOnLinking','viewType','weekWorkingTime','width','workUnit','workWeek','zoomingLevels'];
-export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','beforeDataBound','beforeExcelExport','beforePdfExport','beforeTooltipRender','cellDeselected','cellDeselecting','cellEdit','cellSave','cellSelected','cellSelecting','collapsed','collapsing','columnDrag','columnDragStart','columnDrop','columnMenuClick','columnMenuOpen','contextMenuClick','contextMenuOpen','created','dataBound','dataSourceChanged','dataStateChange','destroyed','endEdit','excelExportComplete','excelHeaderQueryCellInfo','excelQueryCellInfo','expanded','expanding','headerCellInfo','load','onMouseMove','onTaskbarClick','pdfColumnHeaderQueryCellInfo','pdfExportComplete','pdfQueryCellInfo','pdfQueryTaskbarInfo','pdfQueryTimelineCellInfo','queryCellInfo','queryTaskbarInfo','recordDoubleClick','resizeStart','resizeStop','resizing','rowDataBound','rowDeselected','rowDeselecting','rowDrag','rowDragStart','rowDragStartHelper','rowDrop','rowSelected','rowSelecting','splitterResizeStart','splitterResized','splitterResizing','taskbarEdited','taskbarEditing','toolbarClick','dataSourceChange'];
+export const inputs: string[] = ['addDialogFields','allowExcelExport','allowFiltering','allowKeyboard','allowParentDependency','allowPdfExport','allowReordering','allowResizing','allowRowDragAndDrop','allowSelection','allowSorting','allowTaskbarDragAndDrop','allowTaskbarOverlap','allowUnscheduledTasks','allowedDependencyTypes','autoCalculateDateScheduling','autoFocusTasks','autoUpdatePredecessorOffset','baselineColor','baselineTemplate','calendarSettings','collapseAllParentTasks','columnMenuItems','columns','connectorLineBackground','connectorLineWidth','contextMenuItems','dataSource','dateFormat','dayWorkingTime','daysPerMonth','daysPerWeek','disableHtmlEncode','durationUnit','editDialogFields','editSettings','emptyRecordTemplate','enableAdaptiveUI','enableAutoWbsUpdate','enableContextMenu','enableCriticalPath','enableHover','enableHtmlSanitizer','enableImmutableMode','enableInfiniteTimelineScroll','enableMultiTaskbar','enablePersistence','enablePredecessorValidation','enableRtl','enableSerialNumber','enableTimelineVirtualization','enableUndoRedo','enableVirtualMaskRow','enableVirtualization','enableWBS','enableWebMcp','eventMarkers','filterSettings','frozenColumns','gridLines','height','hierarchyCheckboxMode','highlightWeekends','holidays','hoursPerDay','includeWeekend','labelSettings','loadChildOnDemand','loadingIndicator','locale','milestoneTemplate','parentTaskbarTemplate','projectEndDate','projectStartDate','query','readOnly','renderBaseline','resourceFields','resourceIDMapping','resourceNameMapping','resources','rowHeight','searchSettings','segmentData','selectedRowIndex','selectionSettings','showColumnMenu','showInlineNotes','showOverAllocation','sortSettings','splitterSettings','taskFields','taskMode','taskType','taskbarHeight','taskbarTemplate','timelineSettings','timelineTemplate','timezone','toolbar','tooltipSettings','treeColumnIndex','undoRedoActions','undoRedoStepsCount','updateOffsetOnTaskbarEdit','validateManualTasksOnLinking','viewType','weekWorkingTime','width','workUnit','workWeek','zoomingLevels'];
+export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','beforeDataBound','beforeExcelExport','beforePdfExport','beforeTooltipRender','cellDeselected','cellDeselecting','cellEdit','cellSave','cellSelected','cellSelecting','collapsed','collapsing','columnDrag','columnDragStart','columnDrop','columnMenuClick','columnMenuOpen','contextMenuClick','contextMenuOpen','created','dataBound','dataSourceChanged','dataStateChange','destroyed','endEdit','excelExportComplete','excelHeaderQueryCellInfo','excelQueryCellInfo','expanded','expanding','headerCellInfo','load','onMouseMove','onTaskbarClick','pdfColumnHeaderQueryCellInfo','pdfExportComplete','pdfQueryCellInfo','pdfQueryTaskbarInfo','pdfQueryTimelineCellInfo','queryCellInfo','queryTaskbarInfo','recordDoubleClick','resizeStart','resizeStop','resizing','rowDataBound','rowDeselected','rowDeselecting','rowDrag','rowDragStart','rowDragStartHelper','rowDrop','rowSelected','rowSelecting','splitterResizeStart','splitterResized','splitterResizing','taskbarEdited','taskbarEditing','toolbarClick','beforeWebMcpToolExecute','dataSourceChange'];
 export const twoWays: string[] = ['dataSource'];
 
 /**
@@ -26,184 +26,112 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childColumns: new ContentChild(ColumnsDirective), 
-        childAddDialogFields: new ContentChild(AddDialogFieldsDirective), 
-        childEditDialogFields: new ContentChild(EditDialogFieldsDirective), 
-        childDayWorkingTime: new ContentChild(DayWorkingTimeCollectionDirective), 
-        childWeekWorkingTime: new ContentChild(WeekWorkingTimesDirective), 
-        childHolidays: new ContentChild(HolidaysDirective), 
-        childEventMarkers: new ContentChild(EventMarkersDirective)
+        childColumns: new ContentChild(ColumnsDirective),
+        childAddDialogFields: new ContentChild(AddDialogFieldsDirective),
+        childEditDialogFields: new ContentChild(EditDialogFieldsDirective),
+        childDayWorkingTime: new ContentChild(DayWorkingTimeCollectionDirective),
+        childWeekWorkingTime: new ContentChild(WeekWorkingTimesDirective),
+        childHolidays: new ContentChild(HolidaysDirective),
+        childEventMarkers: new ContentChild(EventMarkersDirective),
+        parentTaskbarTemplate: new ContentChild('parentTaskbarTemplate'),
+        toolbarTemplate: new ContentChild('toolbarTemplate'),
+        timelineTemplate: new ContentChild('timelineTemplate'),
+        milestoneTemplate: new ContentChild('milestoneTemplate'),
+        baselineTemplate: new ContentChild('baselineTemplate'),
+        taskbarTemplate: new ContentChild('taskbarTemplate'),
+        editTemplate: new ContentChild('editTemplate'),
+        labelSettings_rightLabel: new ContentChild('labelSettingsRightLabel'),
+        labelSettings_leftLabel: new ContentChild('labelSettingsLeftLabel'),
+        labelSettings_taskLabel: new ContentChild('labelSettingsTaskLabel'),
+        tooltipSettings_taskbar: new ContentChild('tooltipSettingsTaskbar'),
+        tooltipSettings_baseline: new ContentChild('tooltipSettingsBaseline'),
+        tooltipSettings_connectorLine: new ContentChild('tooltipSettingsConnectorLine'),
+        tooltipSettings_editing: new ContentChild('tooltipSettingsEditing'),
+        tooltipSettings_timeline: new ContentChild('tooltipSettingsTimeline'),
+        filter_itemTemplate: new ContentChild('filterItemTemplate'),
+        filterTemplate: new ContentChild('filterTemplate'),
+        emptyRecordTemplate: new ContentChild('emptyRecordTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class GanttComponent extends Gantt implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforeDataBound: any;
-	beforeExcelExport: any;
-	beforePdfExport: any;
-	beforeTooltipRender: any;
-	cellDeselected: any;
-	cellDeselecting: any;
-	cellEdit: any;
-	cellSave: any;
-	cellSelected: any;
-	cellSelecting: any;
-	collapsed: any;
-	collapsing: any;
-	columnDrag: any;
-	columnDragStart: any;
-	columnDrop: any;
-	columnMenuClick: any;
-	columnMenuOpen: any;
-	contextMenuClick: any;
-	contextMenuOpen: any;
-	created: any;
-	dataBound: any;
-	dataSourceChanged: any;
-	dataStateChange: any;
-	destroyed: any;
-	endEdit: any;
-	excelExportComplete: any;
-	excelHeaderQueryCellInfo: any;
-	excelQueryCellInfo: any;
-	expanded: any;
-	expanding: any;
-	headerCellInfo: any;
-	load: any;
-	onMouseMove: any;
-	onTaskbarClick: any;
-	pdfColumnHeaderQueryCellInfo: any;
-	pdfExportComplete: any;
-	pdfQueryCellInfo: any;
-	pdfQueryTaskbarInfo: any;
-	pdfQueryTimelineCellInfo: any;
-	queryCellInfo: any;
-	queryTaskbarInfo: any;
-	recordDoubleClick: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	rowDataBound: any;
-	rowDeselected: any;
-	rowDeselecting: any;
-	rowDrag: any;
-	rowDragStart: any;
-	rowDragStartHelper: any;
-	rowDrop: any;
-	rowSelected: any;
-	rowSelecting: any;
-	splitterResizeStart: any;
-	splitterResized: any;
-	splitterResizing: any;
-	taskbarEdited: any;
-	taskbarEditing: any;
-	toolbarClick: any;
-	public dataSourceChange: any;
-    public childColumns: QueryList<ColumnsDirective>;
-    public childAddDialogFields: QueryList<AddDialogFieldsDirective>;
-    public childEditDialogFields: QueryList<EditDialogFieldsDirective>;
-    public childDayWorkingTime: QueryList<DayWorkingTimeCollectionDirective>;
-    public childWeekWorkingTime: QueryList<WeekWorkingTimesDirective>;
-    public childHolidays: QueryList<HolidaysDirective>;
-    public childEventMarkers: QueryList<EventMarkersDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforeDataBound: any;
+	declare beforeExcelExport: any;
+	declare beforePdfExport: any;
+	declare beforeTooltipRender: any;
+	declare cellDeselected: any;
+	declare cellDeselecting: any;
+	declare cellEdit: any;
+	declare cellSave: any;
+	declare cellSelected: any;
+	declare cellSelecting: any;
+	declare collapsed: any;
+	declare collapsing: any;
+	declare columnDrag: any;
+	declare columnDragStart: any;
+	declare columnDrop: any;
+	declare columnMenuClick: any;
+	declare columnMenuOpen: any;
+	declare contextMenuClick: any;
+	declare contextMenuOpen: any;
+	declare created: any;
+	declare dataBound: any;
+	declare dataSourceChanged: any;
+	declare dataStateChange: any;
+	declare destroyed: any;
+	declare endEdit: any;
+	declare excelExportComplete: any;
+	declare excelHeaderQueryCellInfo: any;
+	declare excelQueryCellInfo: any;
+	declare expanded: any;
+	declare expanding: any;
+	declare headerCellInfo: any;
+	declare load: any;
+	declare onMouseMove: any;
+	declare onTaskbarClick: any;
+	declare pdfColumnHeaderQueryCellInfo: any;
+	declare pdfExportComplete: any;
+	declare pdfQueryCellInfo: any;
+	declare pdfQueryTaskbarInfo: any;
+	declare pdfQueryTimelineCellInfo: any;
+	declare queryCellInfo: any;
+	declare queryTaskbarInfo: any;
+	declare recordDoubleClick: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare rowDataBound: any;
+	declare rowDeselected: any;
+	declare rowDeselecting: any;
+	declare rowDrag: any;
+	declare rowDragStart: any;
+	declare rowDragStartHelper: any;
+	declare rowDrop: any;
+	declare rowSelected: any;
+	declare rowSelecting: any;
+	declare splitterResizeStart: any;
+	declare splitterResized: any;
+	declare splitterResizing: any;
+	declare taskbarEdited: any;
+	declare taskbarEditing: any;
+	declare toolbarClick: any;
+	declare beforeWebMcpToolExecute: any;
+	public declare dataSourceChange: any;
+    public declare childColumns: QueryList<ColumnsDirective>;
+    public declare childAddDialogFields: QueryList<AddDialogFieldsDirective>;
+    public declare childEditDialogFields: QueryList<EditDialogFieldsDirective>;
+    public declare childDayWorkingTime: QueryList<DayWorkingTimeCollectionDirective>;
+    public declare childWeekWorkingTime: QueryList<WeekWorkingTimesDirective>;
+    public declare childHolidays: QueryList<HolidaysDirective>;
+    public declare childEventMarkers: QueryList<EventMarkersDirective>;
     public tags: string[] = ['columns', 'addDialogFields', 'editDialogFields', 'dayWorkingTime', 'weekWorkingTime', 'holidays', 'eventMarkers'];
-    /** 
-     * Defines a custom template for rendering parent task bars in the Gantt chart. This template allows you to customize the appearance of parent task bars. 
-     * {% codeBlock src='gantt/parentTaskbarTemplate/index.md' %}{% endcodeBlock %}
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('parentTaskbarTemplate')
-    @Template()
-    public parentTaskbarTemplate: any;
-    /** 
-     * Specifies the template used to render custom HTML content in timeline cells. 
-     * {% codeBlock src='gantt/timelineTemplate/index.md' %}{% endcodeBlock %}
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('timelineTemplate')
-    @Template()
-    public timelineTemplate: any;
-    /** 
-     * Defines a custom template for rendering milestone tasks in the Gantt chart. This template allows you to customize the appearance of milestone tasks. 
-     * {% codeBlock src='gantt/milestoneTemplate/index.md' %}{% endcodeBlock %}
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('milestoneTemplate')
-    @Template()
-    public milestoneTemplate: any;
-    /** 
-     * . 
-     * Accepts an element ID selector, HTML string, or function returning `string` or `HTMLElement`. 
-     * Defines a custom template for rendering baseline bars in the Gantt chart.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('baselineTemplate')
-    @Template()
-    public baselineTemplate: any;
-    /** 
-     * The task bar template that renders customized child task bars from the given template. 
-     * This property allows users to define a custom template for rendering child task bars in the Gantt chart. 
-     * {% codeBlock src='gantt/taskbarTemplate/index.md' %}{% endcodeBlock %}
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('taskbarTemplate')
-    @Template()
-    public taskbarTemplate: any;
-    @ContentChild('editTemplate')
-    @Template()
-    public editTemplate: any;
-    @ContentChild('labelSettingsRightLabel')
-    @Template()
-    public labelSettings_rightLabel: any;
-    @ContentChild('labelSettingsLeftLabel')
-    @Template()
-    public labelSettings_leftLabel: any;
-    @ContentChild('labelSettingsTaskLabel')
-    @Template()
-    public labelSettings_taskLabel: any;
-    @ContentChild('tooltipSettingsTaskbar')
-    @Template()
-    public tooltipSettings_taskbar: any;
-    @ContentChild('tooltipSettingsBaseline')
-    @Template()
-    public tooltipSettings_baseline: any;
-    @ContentChild('tooltipSettingsConnectorLine')
-    @Template()
-    public tooltipSettings_connectorLine: any;
-    @ContentChild('tooltipSettingsEditing')
-    @Template()
-    public tooltipSettings_editing: any;
-    @ContentChild('tooltipSettingsTimeline')
-    @Template()
-    public tooltipSettings_timeline: any;
-    @ContentChild('filterItemTemplate')
-    @Template()
-    public filter_itemTemplate: any;
-    @ContentChild('filterTemplate')
-    @Template()
-    public filterTemplate: any;
-    /** 
-     * Defines a custom template to display when the Gantt chart has no records.
-     * 
-     * This template replaces the default empty record message and can include text, HTML elements, or images.
-     *Accepts either a template string or an HTML element ID.
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('emptyRecordTemplate')
-    @Template()
-    public emptyRecordTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -359,7 +287,26 @@ export class GanttComponent extends Gantt implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(GanttComponent.prototype, 'parentTaskbarTemplate');
+Template()(GanttComponent.prototype, 'toolbarTemplate');
+Template()(GanttComponent.prototype, 'timelineTemplate');
+Template()(GanttComponent.prototype, 'milestoneTemplate');
+Template()(GanttComponent.prototype, 'baselineTemplate');
+Template()(GanttComponent.prototype, 'taskbarTemplate');
+Template()(GanttComponent.prototype, 'editTemplate');
+Template()(GanttComponent.prototype, 'labelSettings_rightLabel');
+Template()(GanttComponent.prototype, 'labelSettings_leftLabel');
+Template()(GanttComponent.prototype, 'labelSettings_taskLabel');
+Template()(GanttComponent.prototype, 'tooltipSettings_taskbar');
+Template()(GanttComponent.prototype, 'tooltipSettings_baseline');
+Template()(GanttComponent.prototype, 'tooltipSettings_connectorLine');
+Template()(GanttComponent.prototype, 'tooltipSettings_editing');
+Template()(GanttComponent.prototype, 'tooltipSettings_timeline');
+Template()(GanttComponent.prototype, 'filter_itemTemplate');
+Template()(GanttComponent.prototype, 'filterTemplate');
+Template()(GanttComponent.prototype, 'emptyRecordTemplate');
+
 

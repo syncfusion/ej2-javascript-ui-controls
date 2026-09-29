@@ -161,15 +161,15 @@ export class _PdfMessageDigestAlgorithms {
             }
         });
         const normalizedDigest: string = digest.toLowerCase();
-        if (normalizedDigest === 'sha1' || normalizedDigest === 'sha-1' || normalizedDigest === 'sha_1') {
+        if (normalizedDigest === 'sha-1' || normalizedDigest === 'sha_1') {
             return new _Sha1();
-        } else if (normalizedDigest === 'sha256' || normalizedDigest === 'sha-256' || normalizedDigest === 'sha_256') {
+        } else if (normalizedDigest === 'sha-256' || normalizedDigest === 'sha_256') {
             return new _Sha256();
-        } else if (normalizedDigest === 'sha384' || normalizedDigest === 'sha-384' || normalizedDigest === 'sha_384') {
+        } else if (normalizedDigest === 'sha-384' || normalizedDigest === 'sha_384') {
             return new _Sha384();
-        } else if (normalizedDigest === 'sha512' || normalizedDigest === 'sha-512' || normalizedDigest === 'sha_512') {
+        } else if (normalizedDigest === 'sha-512' || normalizedDigest === 'sha_512') {
             return new _Sha512();
-        } else if (normalizedDigest === 'ripemd160' || normalizedDigest === 'ripemd-160' || normalizedDigest === 'ripemd_160') {
+        } else if (normalizedDigest === 'ripemd160' || normalizedDigest === 'ripemd_160') {
             return new _RaceEvaluationMessageDigest();
         } else {
             throw new Error(`Invalid message digest algorithm: ${hashAlgorithm}`);

@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 34.1.30 (2026-07-09)
-
-### GanttChart
-
-#### Bug fix
-
-- `#F198447` - Performance degradation after repeated expand/collapse and row drag-and-drop actions with multiple column templates has been fixed.
-
 ## 30.1.37 (2025-06-25)
 
 ### GanttChart

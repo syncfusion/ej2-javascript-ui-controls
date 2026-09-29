@@ -1,5 +1,6 @@
-@use 'ej2-base/styles/definition/bootstrap-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-navigations/styles/treeview/bootstrap-dark-definition' as *;
+
 $pivotgrid-active-color: $brand-primary !default;
 $pivotgrid-primary-color: $brand-primary !default;
 $pivotgrid-default-font-color: $grey-f8 !default;
@@ -122,6 +123,9 @@ $pivotgrid-member-editor-node-limit-bigger-height: 450px !default;
 $pivotgrid-cell-value-margin: 0 !default;
 $pivotgrid-grouping-height: 36px !default;
 $pivotgrid-editor-search-padding-size: 12px !default;
+$pivotgrid-add-filter-selection-margin: 19px !default;
+$pivotgrid-add-filter-selection-bigger-height: $treeview-big-item-height !default;
+$pivotgrid-add-filter-selection-height: $treeview-item-height !default;
 $pivotgrid-member-editor-search-padding: 0 $pivotgrid-editor-search-padding-size 10px !default;
 $pivotview-grid-indent-padding: 8px !default;
 $pivotview-grid-bigger-indent-padding: 16px !default;

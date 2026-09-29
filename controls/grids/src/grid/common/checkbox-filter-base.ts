@@ -1093,7 +1093,9 @@ export class CheckBoxFilterBase {
             if (!this.infiniteRenderMod) {
                 query.take(args.filterChoiceCount);
             }
-            if (!args.query.distincts.length || this.infiniteRenderMod){
+            const moduleName: Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+            const isODataV4: boolean = moduleName && moduleName() === 'ODataV4Adaptor';
+            if (!args.query.distincts.length || this.infiniteRenderMod || (args.query.distincts.length && isODataV4)) {
                 this.customQuery = true;
                 this.queryGenerate(query);
             }
@@ -2056,7 +2058,7 @@ export class CheckBoxFilterBase {
                 this.infiniteLoadedElem.push(...[].slice.call(cBoxes.children));
                 this.itemsCnt = nullCounter !== -1 ? this.infiniteLoadedElem.length - nullCounter : this.infiniteLoadedElem.length;
             }
-            if (this.infiniteUnloadParentExistPred.length && (this.infiniteLoadedElem.length >= this.infiniteDataCount
+            if (this.infiniteUnloadParentExistPred.length && (this.infiniteLoadedElem.length > this.infiniteDataCount
                 || !this.options.parentCurrentViewDataCount || (this.options.parentTotalDataCount === this.infiniteDataCount
                     && this.options.parentCurrentViewDataCount))) {
                 this.infiniteUnloadParentExistPred = [];

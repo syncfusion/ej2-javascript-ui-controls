@@ -1,12 +1,13 @@
 /**
  * RTE - Quick Toolbar action spec
  */
-import { Browser, select, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { Browser, select, isNullOrUndefined, detach, isVisible, createElement } from "@syncfusion/ej2-base";
 import { RichTextEditor, IQuickToolbar, QuickToolbar, HtmlEditor } from "../../../src/rich-text-editor/index";
 import { BaseToolbar } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy, androidUA, iPhoneUA, currentBrowserUA, clickImage,setCursorPoint, setSelection } from "./../render.spec";
+import { renderRTE, destroy, androidUA, iPhoneUA, currentBrowserUA, clickImage,setCursorPoint, setSelection ,dispatchEvent} from "./../render.spec";
 import { CLS_IMG_QUICK_TB, CLS_LINK_QUICK_TB, CLS_QUICK_POP, CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
 import { ARROWRIGHT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, CONTROL_A_EVENT_INIT, ENTERKEY_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT, SHIFT_END_EVENT_INIT, SHIFT_HOME_EVENT_INIT, SHITFT_PAGE_DOWN_EVENT_INIT, SHITFT_PAGE_UP_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../constant.spec";
+import { ImageCommand } from '../../../src/editor-manager/plugin/image';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -2089,6 +2090,128 @@ describe("Quick Toolbar Module", () => {
                 }, 100);
             });
         });
+        describe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor.', function () {
+            let rteObj : RichTextEditor;
+            let controlId: string;
+            let rteEle: HTMLElement;
+            let div: HTMLElement;
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+    
+            beforeEach(function (done: DoneFn) {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                            'UnorderedList', 'Outdent', 'Indent']
+                    },
+                    quickToolbarSettings: {
+                        table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                            'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                    },
+                    value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="tdElement" style="width: 25%;"><br></td><td style="width: 25%;" class=""><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;" class="e-cell-select"><br></td><td style="width: 25%;" class=""><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table>`
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+                done();
+            });
+            afterEach(function (done: DoneFn) {
+                destroy(rteObj);
+                done();
+            });
+            it('Dashed borders', function (done) {
+                rteObj.focusIn();
+                rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
+                var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+                setCursorPoint(tbElement, 0);
+                tbElement.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(function () {
+                    div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+                    (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                    (document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders") as any).click();
+                    detach(div);
+                    setCursorPoint(tbElement, 0);
+                    (rteObj as any).mouseDownHandler(eventsArg);
+                    (rteObj as any).mouseUp(eventsArg);
+                    div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+                    (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                    expect(document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders").classList.contains('e-active')).toBe(true);
+                    detach(div);
+                    done();
+                },100);
+            });
+            it('Alternate rows', function (done) {
+                rteObj.focusIn();
+                rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
+                var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+                setCursorPoint(tbElement, 0);
+                tbElement.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(function () {
+                    div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+                    (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                    (document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows") as any).click();
+                    detach(div);
+                    setCursorPoint(tbElement, 0);
+                    (rteObj as any).mouseDownHandler(eventsArg);
+                    (rteObj as any).mouseUp(eventsArg);
+                    div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+                    (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                    expect(document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows").classList.contains('e-active')).toBe(true);
+                    detach(div);
+                    done();
+                },100);
+            });
+            it('Alignments', function (done) {
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Alignments');
+                item.click();
+                setTimeout(() => {
+                    let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Alignments-popup .e-item');
+                    expect(items[0].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 100)
+            });
+        });
+        xdescribe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor. for image', () => {
+            let editor: RichTextEditor;
+            beforeAll(() => {
+                editor = renderRTE({
+                    toolbarSettings: {
+                        items: ['Image', 'Bold']
+                    },
+                    insertImageSettings: { resize: false },
+                    value: `<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-img-inline" /></p>`
+                });
+                editor.formatter.editorManager.imgObj = new ImageCommand(editor.formatter.editorManager);
+            });
+            afterAll(() => {
+                destroy(editor);
+            });
+    
+            it('Should have active class when the dropdown is opened.', (done) => {
+                editor.focusIn();
+                const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                const target: HTMLElement = editor.inputElement.querySelector('img');
+                setCursorPoint(target, 0);
+                expect(editor.quickToolbarSettings.image.length).toBe(14);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Image_Quick_Popup') >= 0).toBe(true);
+                    const caretIcon: HTMLElement = editor.quickToolbarModule.imageQTBar.element.querySelector('.e-justify-left').nextElementSibling as HTMLElement;
+                    caretIcon.click();
+                    setTimeout(() => {
+                        const openDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                        const listElements: NodeListOf<HTMLLIElement> = openDropDownPopup.querySelectorAll('li');
+                        expect(listElements[0].classList.contains('e-active')).toBe(true);
+                        expect(listElements[1].classList.contains('e-active')).not.toBe(true);
+                        expect(listElements[2].classList.contains('e-active')).not.toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
         describe("982140 - Check with audio quick toolbar", () => {
             let editor: RichTextEditor;
             let innerHTML: string = `<p>testing&nbsp;<audio controls><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3" /></audio><br></p>`;
@@ -2129,6 +2252,66 @@ describe("Quick Toolbar Module", () => {
                     }, 100);
                 }, 100);
             });
+        });
+    });
+    describe('EJ2-21612  -  To prevent the table quick toolbar when render RTE inside the table ', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <table>
+                <tbody>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="defaultRTE">
+                            <p id="rte-p"><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                            client side.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p>&nbsp;Customer easy to edit the contents and get the HTML content for
+                            the displayed content. </p>
+                            </div>
+    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                ` });
+        beforeEach(() => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo("#defaultRTE");
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+        })
+        afterEach(() => {
+            rteObj.destroy();
+            detach(element);
+        });
+
+        it(' click on inside of table content for prevent the quick toolbar ', (done) => {
+            let firstP: Element = (rteObj as any).inputElement.querySelector('#rte-p');
+            setCursorPoint(firstP, 0);
+            dispatchEvent(firstP, 'mousedown');
+            (firstP as HTMLElement).click();
+            dispatchEvent(firstP, 'mouseup');
+            setTimeout(() => {
+                let popup: HTMLElement = document.querySelector("#defaultRTE_quick_TableRows");
+                expect(!isNullOrUndefined(popup)).toBe(false);
+                done();
+            }, 100)
+        });
+        it(' click on outside of table content for prevent the quick toolbar ', (done) => {
+            let firstP: Element = (rteObj as any).inputElement.querySelector('tr td');
+            setCursorPoint(firstP, 0);
+            dispatchEvent(firstP, 'mousedown');
+            (firstP as HTMLElement).click();
+            dispatchEvent(firstP, 'mouseup');
+            setTimeout(() => {
+                let popup: HTMLElement = document.querySelector("#defaultRTE_quick_TableRows");
+                expect(!isNullOrUndefined(popup)).toBe(true);
+                done();
+            }, 100)
         });
     });
 });

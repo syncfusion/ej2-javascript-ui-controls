@@ -5,7 +5,7 @@ import { StockEventsSettingsModel } from '@syncfusion/ej2-charts';
 /**
  * `StockChartStockEvents` directive represent a stockevent of the react chart. 
  * It must be contained in a Chart component(`StockChartComponent`). 
- * ```tsx
+ * ```
  * <StockChartComponent>
  * <StockChartStockEventsDirective>
  * <StockChartStockEventDirective></StockChartStockEventDirective>

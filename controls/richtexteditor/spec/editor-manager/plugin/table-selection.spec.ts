@@ -2826,6 +2826,62 @@ describe('Table Cell Selection ', () => {
             }, 100);
         });
     });
+    describe('1015294: Table delete row via quickToolbar throws console error when entire table is selected', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Undo', 'Redo']
+                },
+                value: '<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="e-cell-select" style="width: 50%;">Cell 1</td><td style="width: 50%;">Cell 2</td></tr><tr><td style="width: 50%;">Cell 3</td><td style="width: 50%;">Cell 4</td></tr></tbody></table><p><br></p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('select the entire table via gripper and delete the row via quicktoolbar', (done: Function) => {
+            rteObj.focusIn();
+            let firstP: Element = (rteObj as any).inputElement.querySelector('tr td');
+            setCursorPoint(firstP, 0);
+            dispatchEvent(firstP, 'mousedown');
+            (firstP as HTMLElement).click();
+            dispatchEvent(firstP, 'mouseup');
+            setTimeout(() => {
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                setCursorPoint(td, 0);
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = rteObj.contentModule.getEditPanel().querySelector('.e-move') as HTMLElement;
+                        circleIcon.click();
+                        const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+                        circleIcon.dispatchEvent(MOUSEUP_EVENT);
+                        setTimeout(() => {
+                            let quickPop: HTMLElement = document.querySelector('.e-rte-quick-toolbar');
+                            expect(!isNullOrUndefined(quickPop)).toBe(true);
+                            const tableRowsBtn = quickPop.querySelector('#' + rteObj.element.id + '_quick_TableRows');
+                            expect(tableRowsBtn).not.toBeNull();
+                            (tableRowsBtn as HTMLElement).click();
+                            const deleteRowOption = document.querySelector('.e-delete-row').parentElement;
+                            expect(deleteRowOption).not.toBeNull();
+                            (deleteRowOption as HTMLElement).click();
+                            expect(rteObj.inputElement.querySelector('table')).toBeNull;
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            });
+        });
+    });
     describe('1015296: Table tag not removed and cursor position incorrect after Delete Column via quickToolbar when entire table is selected', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

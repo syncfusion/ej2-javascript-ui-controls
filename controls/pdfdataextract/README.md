@@ -2,6 +2,20 @@
 
 # JavaScript PDF Library For Data Extraction
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion® code, ask your AI coding agent to run the Syncfusion® setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion® before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion® skill pack. No Syncfusion® account or MCP key is required to install or read Syncfusion® agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/javascript/llms.txt](https://ai.syncfusion.com/javascript/llms.txt)
+
 ## Overview
 
 The Syncfusion&reg; [JavaScript PDF](https://www.syncfusion.com/document-sdk/javascript-pdf-library) library is a feature-rich and high-performance non-UI PDF library that is written natively in JavaScript. It enables you to seamlessly incorporate robust PDF functionalities into your JavaScript applications. The library allows users to extract text content from PDF documents with accuracy and efficiency in both Node.js and browser environments.

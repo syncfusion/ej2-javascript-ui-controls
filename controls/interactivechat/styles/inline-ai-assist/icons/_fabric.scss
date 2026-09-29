@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('inlineaiassist-fabric-icons') {
   .e-inline-send::before {
     content: '\e816';

@@ -533,6 +533,131 @@ describe(' HTML editor update toolbar ', () => {
             destroy(rteObj);
        });
     });
+    describe('Bug 1009430: Font Family dropdown does not display the actual font name (Times New Roman, Arial) when content is copied from Microsoft Word', () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let controlId: string;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['FontName', 'FontSize']
+                    },
+                    value: `<p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif;"><span class="rte-span" style="font-size: 14pt; line-height: 115%; font-family: &quot;Times New Roman&quot;, serif;">This is Times New Roman</span></p><p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif;"><span style="font-size: 16pt; line-height: 115%;">This is Aptos </span></p><p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif;"><br> <span style="font-size: 18pt; line-height: 115%; font-family: Verdana, sans-serif;">This is Verdana</span></p><p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif;"><span style="font-family: Arial, sans-serif;">This is Arial</span></p>`
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+            });
+            it('Check the toolbar status while click on fontName element ', (done) => {
+                let spanEle: HTMLElement = rteObj.element.querySelector('.rte-span');
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, spanEle.childNodes[0], spanEle.childNodes[0], 0, 3);
+                dispatchEvent(spanEle, 'mousedown');
+                dispatchEvent(spanEle, 'mouseup');
+                spanEle.click();
+                setTimeout(() => {
+                    let fontName: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+                    expect((fontName.firstElementChild as HTMLElement).innerText.trim()).toBe('Times New Roman');
+                    done();
+                }, 50)
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
+    describe('851908 - When selecting multiple fonts applied texts, the font family toolbar should not show the font name as empty', () => {
+            let rteObj: RichTextEditor;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['FontName', 'FontSize', 'Formats']
+                    },
+                });
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it('CASE 1 - Check the toolbar values after selecting multiple font size in singel line', (done: DoneFn) => {
+                rteObj.value = `<h2 title="heading1">
+                <span style="font-size: 24pt;">
+                    <span style="font-family: Tahoma, Geneva, sans-serif;">
+                        <span style="color: rgb(68, 114, 196); text-decoration: inherit;">
+                            <span style="background-color: rgb(204, 255, 255);">
+                                <b><u>FORMAT PAINTER:</u></b>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+                is used to copy the <span style="font-family: Verdana, Geneva, sans-serif;">formatting</span> of a <span style="font-size: 24pt;">selected text or object and apply it to another text or object.
+                </span> 
+            </h2>`
+                rteObj.dataBind();
+                rteObj.selectAll();
+                dispatchEvent(rteObj.contentModule.getEditPanel(), 'mouseup');
+                setTimeout(() => {
+                    expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-size-tbar-btn').textContent).toBe('');
+                    done();
+                }, 200);
+            });
+            it('CASE 2 - Check the toolbar values after selecting multiple font size in multiple line', (done: DoneFn) => {
+                rteObj.value = `                <h2 title="heading1">
+                    <span style="font-size: 24pt;">
+                        <span style="font-family: Tahoma, Geneva, sans-serif;">
+                            <span style="color: rgb(68, 114, 196); text-decoration: inherit;">
+                                <span style="background-color: rgb(204, 255, 255);">
+                                    <b><u>FORMAT PAINTER:</u></b>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                    is used to copy the <span style="font-family: Verdana, Geneva, sans-serif;">formatting</span> of a <span style="font-size: 24pt;">selected text or object and apply it to another text or object.
+                    </span> 
+                </h2>
+                <p><span style="background-color: rgb(255, 204, 204);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">
+                    <span style="font-size: 14pt;"><strong><em><span style="text-decoration: underline;">
+                    <span style="text-decoration: line-through;">Getting started with the format painter:</span></span></em>
+                </strong></span></span></span></p>
+                <p>The format painter toolbar button allows you to copy the <span style="font-size: 24pt;"><span
+                            style="font-family: Arial, Helvetica, sans-serif;"><strong>formatting </strong></span></span>of a selected
+                    text or object and
+                    apply it to another text or object.
+                    This is a quick and easy way to ensure consistent formatting throughout your document or website.
+                </p>
+                <p><br></p>
+                <h3>The format painter toolbar button allows you to copy the formatting of a selected text or object and 
+                    apply it to another text or object. 
+                    This is a quick and easy way to ensure consistent formatting throughout your document or website.
+                </h3>`;
+                rteObj.dataBind();
+                rteObj.selectAll();
+                dispatchEvent(rteObj.contentModule.getEditPanel(), 'mouseup');
+                setTimeout(() => {
+                    if (rteObj.toolbarModule.getToolbarElement()) {
+                        expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-size-tbar-btn').textContent).toBe('');
+                        expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-name-tbar-btn').textContent).toBe('');
+                        expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-formats-tbar-btn').textContent).toBe('');
+                    }
+                    done();
+                }, 200);
+            });
+        });
+     describe('855271 - Toolbar status not updated properly when we dynamically enable the toolbar in RichTextEditor', ()=> {
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        enable: false,
+                    }
+                });
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it('Testing the html toolbar status class is null or undefined', () => {
+                expect((rteObj.htmlEditorModule as any).toolbarUpdate).toBe(undefined);;
+                rteObj.toolbarSettings.enable = true;
+                rteObj.dataBind();
+                expect((rteObj.htmlEditorModule as any).toolbarUpdate).not.toBe(undefined);
+            });
+        });
 
     describe('HTML Editor coverage issue ', () => {
         let rteObj: RichTextEditor;

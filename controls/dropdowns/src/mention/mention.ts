@@ -60,7 +60,6 @@ export class Mention extends DropDownBase {
     private selectedElementID : string;
     private isSelectCancel: boolean;
     private isTyped: boolean;
-    private didPopupOpenByTypingInitialChar: boolean;
     private isUpDownKey: boolean;
     private isRTE: boolean;
     private keyEventName: string;
@@ -530,10 +529,8 @@ export class Mention extends DropDownBase {
     }
 
     private bindCommonEvent(): void {
-        if (!Browser.isDevice) {
-            this.keydownHandler = this.keyDownHandler.bind(this);
-            this.inputElement.addEventListener('keydown', this.keydownHandler, !this.isRTE);
-        }
+        this.keydownHandler = this.keyDownHandler.bind(this);
+        this.inputElement.addEventListener('keydown', this.keydownHandler, !this.isRTE);
     }
 
     /**
@@ -708,7 +705,7 @@ export class Mention extends DropDownBase {
     }
 
     private unBindCommonEvent(): void {
-        if (!Browser.isDevice && this.keydownHandler) {
+        if (this.keydownHandler) {
             this.inputElement.removeEventListener('keydown', this.keydownHandler, !this.isRTE);
             this.keydownHandler = null;
         }
@@ -725,14 +722,9 @@ export class Mention extends DropDownBase {
             return;
         }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
-        const activeParent: HTMLElement = document.activeElement && document.activeElement.parentElement;
-        const isRteImage: boolean = activeParent && !!activeParent.querySelector('.e-rte-image');
-        const isBECodeDropdownFocused: boolean = activeParent && !!activeParent.querySelector(
-            '.e-blockeditor .e-code-block-container .e-input-group.e-input-focus'
-        );
-        if (document.activeElement !== this.inputElement && !isRteImage && !isBECodeDropdownFocused) {
-            this.inputElement.focus();
-        }
+        const isRteImage: boolean = document.activeElement.parentElement && document.activeElement.parentElement.querySelector('.e-rte-image') ? true : false;
+        if (document.activeElement !== this.inputElement && !isRteImage) {
+            this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
             if (this.range) {
@@ -815,7 +807,7 @@ export class Mention extends DropDownBase {
                 ? lastWordRange.substring(lastWordRange.lastIndexOf(this.mentionChar) + 1).trim()
                 : lastWordRange.replace(this.mentionChar, '');
         }
-        if (this.queryString !== '' && e.keyCode === 8 && (lastWordRange as any).includes(this.mentionChar) && !this.isPopupOpen &&
+        if (this.queryString !== '' && e.keyCode === 8 && (lastWordRange as any).includes(this.mentionChar) && !this.isPopupOpen && !isNullOrUndefined(this.displayTemplate) &&
             ((typeof this.displayTemplate === 'function' ? this.displayTemplate() : this.displayTemplate)).includes(this.mentionChar)) {
             this.queryString = '';
         }
@@ -842,7 +834,6 @@ export class Mention extends DropDownBase {
                 this.initValue();
             }
             if (!this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40 && this.queryString.length >= this.minLength) {
-                this.didPopupOpenByTypingInitialChar = true;
                 this.showPopup();
                 if (this.initRemoteRender && this.list.querySelectorAll('li').length === 0) { this.showWaitingSpinner(); }
                 this.lineBreak = false;
@@ -1101,8 +1092,6 @@ export class Mention extends DropDownBase {
         if (document.activeElement !== this.inputElement) {
             this.inputElement.focus();
         }
-        this.queryString = this.didPopupOpenByTypingInitialChar ? this.queryString : '';
-        this.didPopupOpenByTypingInitialChar = false;
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
         }
@@ -1406,8 +1395,12 @@ export class Mention extends DropDownBase {
             }
             this.isTyped = false;
             range.collapse(false);
-            rect = range.getBoundingClientRect().top === 0 ? (range.startContainer as any).getClientRects()[0] :
-                range.getBoundingClientRect();
+            const node: any = range.startContainer;
+            const clientRects: DOMRectList | undefined = node.nodeType === Node.TEXT_NODE ? node.parentElement.getClientRects()
+                : node.getClientRects();
+            rect = range.getBoundingClientRect().top === 0 ?
+                (clientRects && clientRects.length ? clientRects[0] : range.getBoundingClientRect())
+                : range.getBoundingClientRect();
         }
         let rectTop: number = rect.top;
         let rectLeft: number = rect.left;
@@ -1798,11 +1791,12 @@ export class Mention extends DropDownBase {
             value = this.displayTempElement.innerHTML;
         }
         if (this.isContentEditable(this.inputElement)) {
-            const defaultSuffix: string = this.isRTE ? '&#8203;' : '';
+            const isMozilla: boolean = Browser.info.name === 'mozilla';
+            const defaultSuffix: string = this.isRTE || isMozilla ? '&#8203;' : '';
             if (Browser.isAndroid) {
                 return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : defaultSuffix);
             }
-            else if (Browser.info.name === 'mozilla') {
+            else if (isMozilla) {
                 return '<span>&#65279;<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>&#65279;</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : defaultSuffix);
             }
             else {

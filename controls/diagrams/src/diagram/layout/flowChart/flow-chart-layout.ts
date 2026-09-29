@@ -1,4 +1,5 @@
 
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Margin } from '../../core/appearance';
 import { Diagram } from '../../diagram';
 import { BranchDirection, LayoutOrientation } from '../../enum/enum';
@@ -53,6 +54,7 @@ export class FlowchartLayout {
     private flowChartData: FlowchartLayout;
 
     constructor() {
+        initializeTelemetryFeature('FlowchartLayout', 'Diagram');
         this.rootNodes = [];
         this.vertexMapper = new Map<string, FlowChartVertex>();
         this.edgesMapper = new Map();

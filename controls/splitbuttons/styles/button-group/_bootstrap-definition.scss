@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
-@forward 'ej2-buttons/styles/button/bootstrap-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/bootstrap-definition' as *;
+
 $btn-grp-margin: -1px !default;
 $btn-grp-margin-left: -1px !default;
 $btn-grp-wrapper-border: 4px !default;

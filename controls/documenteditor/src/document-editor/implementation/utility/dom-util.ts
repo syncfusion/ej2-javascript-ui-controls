@@ -480,6 +480,11 @@ export class RulerHelper {
                 finalvalue = e.clientX - this.columnInitialValue;
                 const secFormat: WSectionFormat =
                 this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.cloneFormat();
+                if (isNullOrUndefined(secFormat) || isNullOrUndefined(secFormat.columns) || secFormat.columns.length === 0) {
+                    this.isLeftMultiColumn = false;
+                    this.isRightMultiColumn = false;
+                    return;
+                }
                 const pageWidth: number = this.documentEditor.selectionModule.sectionFormat.pageWidth
                     - this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin -
                     this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;
@@ -523,6 +528,9 @@ export class RulerHelper {
 
     private onVMouseMove(e: MouseEvent): void {
         if (this.documentEditor.isDestroyed || !this.documentEditor.documentEditorSettings.showRuler) {
+            return;
+        }
+        if (isNullOrUndefined(this.documentEditor.selectionModule.end) || isNullOrUndefined(this.documentEditor.selectionModule.end.paragraph) || isNullOrUndefined(this.documentEditor.selectionModule.end.paragraph.bodyWidget) || isNullOrUndefined(this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat)) {
             return;
         }
         const divRect: DOMRect = this.vRuler.getBoundingClientRect() as DOMRect;
@@ -1358,13 +1366,15 @@ export class RulerHelper {
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const attributes: Object = {
             'id': documentEditor.element.id + '_markIndicator',
-            style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;margin-left:0;margin-top:0;z-index:5;border:1px solid #ccc;display:' + (documentEditor.layoutType === 'Pages' ? 'block;' : 'none;'),
+            style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:sticky;top:0;margin-left:0;margin-top:0;z-index:5;border:1px solid #ccc;display:' + (documentEditor.layoutType === 'Pages' ? 'block;' : 'none;'),
             class: 'e-de-ruler-markIndicator'
         };
         this.markIndicator = this.createHtmlElement('div', attributes);
         this.tabStopStwitch = this.markIndicator;
-        const element: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_viewerContainer');
-        element.insertBefore(this.markIndicator, element.firstChild);
+        const rulerBottom: HTMLElement = this.documentEditor.element.querySelector( '#' + documentEditor.element.id + '_hRulerBottom') as HTMLElement;
+        if (rulerBottom) {
+            rulerBottom.appendChild(this.markIndicator);
+        }
         const ownerId: string = documentEditor.element.id;
         this.firstLineIndentRuler = this.documentEditor.element.querySelector('#' + ownerId + '_firstLineIndent').cloneNode(true) as HTMLElement;
         this.hangingIndentRuler = this.documentEditor.element.querySelector('#' + ownerId + '_hangingIndent').cloneNode(true) as HTMLElement;
@@ -1442,7 +1452,12 @@ export class RulerHelper {
         this.rulerDiv.addEventListener('dblclick', this.onRulerDblClickHandler);
         const pageElement: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer');
         const style: string = 'height:' + (isHorizontal ? rulerSize.height : pageElement.getBoundingClientRect().height) + 'px;overflow:hidden;width:' +
-            (isHorizontal ? pageElement.getBoundingClientRect().width : rulerSize.width) + 'px;position:absolute;z-index: 3;';
+            (isHorizontal ? pageElement.getBoundingClientRect().width : rulerSize.width) + 'px;' + (isHorizontal ? 'position:sticky;top:0;' : 'position:absolute;left:0;') + 'z-index:3;';
+        const pageContainer: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer') as HTMLElement;
+        if (isHorizontal && pageContainer) {
+            this.applyPageContainerMargin(documentEditor, pageContainer, rulerSize, documentEditor.documentEditorSettings
+                && documentEditor.documentEditorSettings.showRuler);
+        }
         const attributes: Object = {
             'id': documentEditor.element.id + (isHorizontal ? '_hRulerBottom' : '_vRulerBottom'),
             style: style, class: (isHorizontal ? 'e-de-hRuler' : 'e-de-vRuler')
@@ -1456,7 +1471,18 @@ export class RulerHelper {
             this.vRulerBottom = this.rulerOverlap;
         }
         const parentElement: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_viewerContainer');
-        parentElement.insertBefore(this.rulerOverlap, parentElement.firstChild);
+        if (!isHorizontal) {
+            const wrapper: HTMLElement = this.createHtmlElement('div', {
+                id: documentEditor.element.id + '_vRulerWrapper',
+                style: 'position:sticky;' + 'left:0;' + 'top:0;' + 'z-index:3;'
+            });
+            wrapper.appendChild(this.rulerOverlap);
+
+            parentElement.insertBefore(wrapper, parentElement.firstChild);
+        }
+        else {
+            parentElement.insertBefore(this.rulerOverlap, parentElement.firstChild);
+        }
         const element: HTMLElement = isHorizontal ? this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_hRulerBottom') : this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_vRulerBottom');
         element.insertBefore(this.rulerDiv, element.firstChild);
         this.renderRulerMargins(documentEditor, isHorizontal, this.rulerDiv);
@@ -1511,6 +1537,34 @@ export class RulerHelper {
 
             document.addEventListener('mouseup', this.onVMouseUpHandler);
 
+        }
+    }
+    /**
+     * @param {boolean} show - True when the ruler is being shown, false when hidden.
+     * @returns {void}
+     * @private
+     */
+    public updatePageContainerMargin(show: boolean): void {
+        if (isNullOrUndefined(this.documentEditor)) {
+            return;
+        }
+        const pageContainer: HTMLElement = this.documentEditor.element.querySelector(
+            '#' + this.documentEditor.element.id + '_pageContainer') as HTMLElement;
+        if (isNullOrUndefined(pageContainer)) {
+            return;
+        }
+        const rulerSize: Size = this.getRulerSize(this.documentEditor);
+        this.applyPageContainerMargin(this.documentEditor, pageContainer, rulerSize, show);
+    }
+    private applyPageContainerMargin(documentEditor: DocumentEditor, pageContainer: HTMLElement, rulerSize: Size, show: boolean): void {
+        if (documentEditor.documentEditorSettings && show) {
+            pageContainer.style.marginTop = '-' + rulerSize.height + 'px';
+        } else {
+            // Ruler is being hidden/torn down: clear the negative margin so the
+            // page returns to its original position. Without this, disabling the
+            // ruler leaves the page shifted up by rulerSize.height px and
+            // re-enabling it appears to do nothing visually.
+            pageContainer.style.marginTop = '';
         }
     }
     private updateHRulerCursor(leftMargin: number, rightMargin: number, mouseXRelativeToDiv: number, clientX: number): void {
@@ -2692,6 +2746,12 @@ export class RulerHelper {
      */
     private getRulerGeometry(documentEditor: DocumentEditor): Size {
         const rulerSize: Size = this.getRulerSize(documentEditor);
+        if (isNullOrUndefined(documentEditor.selectionModule.end)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph.bodyWidget)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph.bodyWidget.page)) {
+            return new Size(0, 0);
+        }
         const height: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height
             * documentEditor.zoomFactor);
         const width: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.width
@@ -2963,6 +3023,13 @@ export class RulerHelper {
     }
 
     public updateMargin(ruler: Ruler, documentEditor: DocumentEditor, isHorizontal: boolean): void {
+        if (isNullOrUndefined(documentEditor.selectionModule)
+            || isNullOrUndefined(documentEditor.selectionModule.end)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph.bodyWidget)
+            || isNullOrUndefined(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat)) {
+            return;
+        }
         if (isHorizontal) {
             ruler.startMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin;
             ruler.endMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;

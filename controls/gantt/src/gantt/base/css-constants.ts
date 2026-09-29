@@ -161,3 +161,4 @@ export const rangeChildContainer: string = 'e-rg-rangdiv';
 export const rangeChildMiddleContainer: string = 'e-rg-middlerangdiv';
 //Pop Up
 export const constraintLabel: string = 'e-constraint-label';
+export const drawPreviewTaskbar: string = 'e-draw-preview-taskbar';

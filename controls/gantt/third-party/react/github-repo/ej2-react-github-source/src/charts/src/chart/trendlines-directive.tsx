@@ -5,7 +5,7 @@ import { TrendlineModel } from '@syncfusion/ej2-charts';
 /**
  * `TrendlineDirective` directive represent a trendline of the react chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent>
  * <SeriesCollectionDirective>
  * <SeriesDirective>

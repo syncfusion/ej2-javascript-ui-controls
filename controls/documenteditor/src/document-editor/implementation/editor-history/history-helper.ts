@@ -119,6 +119,7 @@ export class RowHistoryFormat {
         const row: TableRowWidget = table.childWidgets[this.rowFormat.ownerBase.index] as TableRowWidget;
         const targetHeight: number = isRedo ? this.finalHeight : this.originalHeight;
         row.rowFormat.height = targetHeight;
+        owner.editorModule.layoutItemBlock(table, false);
         owner.documentHelper.layout.reLayoutTable(table);
         if (this.rowFormat.heightType !== this.rowHeightType) {
             this.rowFormat.heightType = this.rowHeightType;

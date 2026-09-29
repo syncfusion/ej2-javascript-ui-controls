@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-cursormaps>e-cursormap',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class CustomCursorDirective extends ComplexBase<CustomCursorDirective> {
@@ -29,12 +29,12 @@ export class CustomCursorDirective extends ComplexBase<CustomCursorDirective> {
     /** 
      * Defines the property of a Data Map Items
      */
-    public action: any;
+    public declare action: any;
     /** 
      * Defines the Fields for the Data Map Items
      * @default ''
      */
-    public cursor: any;
+    public declare cursor: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -50,6 +50,7 @@ export class CustomCursorDirective extends ComplexBase<CustomCursorDirective> {
  */
 @Directive({
     selector: 'ej-diagram>e-cursormaps',
+    standalone: true,
     queries: {
         children: new ContentChildren(CustomCursorDirective)
     },

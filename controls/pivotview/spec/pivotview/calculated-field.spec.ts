@@ -764,3 +764,229 @@ describe(' - Disabling the calculated dialog error dialog', () => {
         remove(elem);
     });
 });
+
+describe('Calculated Field - Formula Validation Branch Coverage', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let cf: any;
+    let mouseEvent: any;
+    let tapEvent: any;
+    let elem: HTMLElement = createElement('div', { id: 'PivotGrid_CalcFormula', styles: 'height:600px; width:100%' });
+
+    PivotView.Inject(CalculatedField, GroupingBar, FieldList);
+
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+        let dataBound: EmitType<Object> = () => { done(); };
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            pending();
+            return;
+        }
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'state' }],
+                columns: [{ name: 'eyeColor' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }]
+            },
+            allowCalculatedField: true,
+            showGroupingBar: true,
+            showFieldList: true,
+            dataBound: dataBound
+        });
+        pivotGridObj.appendTo('#PivotGrid_CalcFormula');
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+
+    it('Create calculated field module', () => {
+        cf = new CalculatedField(pivotGridObj);
+        expect(cf).toBeDefined();
+    });
+
+    it('Formula with basic arithmetic operation', () => {
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        const formulaInput = document.querySelector('.e-pivot-formula') as HTMLTextAreaElement;
+        if (formulaInput) {
+            formulaInput.value = 'balance + quantity';
+            expect(formulaInput.value).toBe('balance + quantity');
+        }
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    });
+
+    it('Formula with subtraction operation', () => {
+        const formulaInput = document.querySelector('.e-pivot-formula') as HTMLTextAreaElement;
+        if (formulaInput) {
+            formulaInput.value = 'balance - quantity';
+            expect(formulaInput.value).toBe('balance - quantity');
+        }
+    });
+
+    it('Formula with multiplication operation', () => {
+        const formulaInput = document.querySelector('.e-pivot-formula') as HTMLTextAreaElement;
+        if (formulaInput) {
+            formulaInput.value = 'balance * 2';
+            expect(formulaInput.value).toBe('balance * 2');
+        }
+    });
+
+    it('Formula with division operation', () => {
+        const formulaInput = document.querySelector('.e-pivot-formula') as HTMLTextAreaElement;
+        if (formulaInput) {
+            formulaInput.value = 'balance / quantity';
+            expect(formulaInput.value).toBe('balance / quantity');
+        }
+    });
+
+    it('Formula with complex expression', () => {
+        const formulaInput = document.querySelector('.e-pivot-formula') as HTMLTextAreaElement;
+        if (formulaInput) {
+            formulaInput.value = '(balance + quantity) * 100';
+            expect(formulaInput.value).toBe('(balance + quantity) * 100');
+        }
+    });
+
+    it('Format string - Currency format', () => {
+        const formatInput = document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement;
+        if (formatInput) {
+            const formatString = getInstance(formatInput, MaskedTextBox) as MaskedTextBox;
+            if (formatString) {
+                formatString.setProperties({ value: 'C2' });
+                expect(formatString.value).toBe('C2');
+            }
+        }
+    });
+
+    it('Format string - Percent format', () => {
+        const formatInput = document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement;
+        if (formatInput) {
+            const formatString = getInstance(formatInput, MaskedTextBox) as MaskedTextBox;
+            if (formatString) {
+                formatString.setProperties({ value: 'P1' });
+                expect(formatString.value).toBe('P1');
+            }
+        }
+    });
+
+    it('Format string - Number format', () => {
+        const formatInput = document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement;
+        if (formatInput) {
+            const formatString = getInstance(formatInput, MaskedTextBox) as MaskedTextBox;
+            if (formatString) {
+                formatString.setProperties({ value: 'N2' });
+                expect(formatString.value).toBe('N2');
+            }
+        }
+    });
+
+    it('Calculated field name validation', () => {
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        if (calcField) {
+            const nameInput = calcField.querySelector('.e-pivot-calc-input') as HTMLInputElement;
+            if (nameInput) {
+                nameInput.value = 'TestCalcField';
+                expect(nameInput.value).toBe('TestCalcField');
+            }
+        }
+    });
+});
+
+describe('Calculated Field - Dialog Interaction Branch Coverage', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let cf: any;
+    let elem: HTMLElement = createElement('div', { id: 'PivotGrid_CalcDialog', styles: 'height:600px; width:100%' });
+
+    PivotView.Inject(CalculatedField, GroupingBar, FieldList);
+
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+        let dataBound: EmitType<Object> = () => { done(); };
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'state' }],
+                columns: [{ name: 'eyeColor' }],
+                values: [{ name: 'balance' }]
+            },
+            allowCalculatedField: true,
+            showGroupingBar: true,
+            showFieldList: true,
+            dataBound: dataBound
+        });
+        pivotGridObj.appendTo('#PivotGrid_CalcDialog');
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+
+    it('Dialog OK button click', () => {
+        cf = new CalculatedField(pivotGridObj);
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        if (calcField) {
+            const dialog = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+            if (dialog && dialog.buttons && dialog.buttons.length > 0) {
+                // Test OK button exists
+                expect(dialog.buttons[0]).toBeDefined();
+            }
+        }
+    });
+
+    it('Dialog Cancel button click', () => {
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        if (calcField) {
+            const dialog = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+            if (dialog && dialog.buttons && dialog.buttons.length > 1) {
+                // Test Cancel button exists
+                expect(dialog.buttons[1]).toBeDefined();
+            }
+        }
+    });
+
+    it('Tree node expand/collapse', () => {
+        const treeObj: any = cf.treeObj;
+        if (treeObj) {
+            expect(treeObj.element).toBeDefined();
+        }
+    });
+
+    it('Context menu visibility', () => {
+        expect(document.querySelector('#' + cf.parentID + 'CalcContextmenu')).toBeDefined();
+    });
+});

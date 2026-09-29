@@ -61,12 +61,12 @@ describe('Security', () => {
     });
 });
 describe('Import and Export', () => {
-    it("Extract Text", () => {
+    it("Extract Text", async() => {
         const normalize = (s: string) =>s.replace(/\r\n/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
         const pdfBytes = template;
         const pdf = new PdfDocument(pdfBytes);
         const extractor = new PdfDataExtractor(pdf);
-        const text1: string = extractor.extractText({
+        const text1: string = await extractor.extractText({
             startPageIndex: 0,
             endPageIndex: 4
         });

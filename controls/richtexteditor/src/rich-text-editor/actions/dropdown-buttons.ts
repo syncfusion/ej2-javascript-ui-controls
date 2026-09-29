@@ -63,7 +63,11 @@ export class DropDownButtons {
         }
     }
 
-    private dropdownContent(width: string, type: string, content: string): string {
+    private dropdownContent(content: string): string {
+        return ('<span class="e-rte-dropdown-btn-text-wrapper"><span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
+    }
+
+    private dropdownContentChange(width: string, type: string, content: string): string {
         return ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + ((type === 'quick') ? 'auto' : width) + '" >' +
             '<span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
     }
@@ -158,12 +162,10 @@ export class DropDownButtons {
                         this.parent.format.default;
                     this.formatDropDown = this.toolbarRenderer.renderDropDownButton({
                         content: this.dropdownContent(
-                            this.parent.format.width,
-                            type,
                             ((type === 'quick' && !isInlineToolbar) ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FORMATS_TB_BTN,
                         itemName: 'Formats', items: formatItem, element: targetElement
-                    } as IDropDownModel);
+                    } as IDropDownModel, this.parent.format.width, type);
                     break;
                 }
                 case 'fontname': {
@@ -181,12 +183,10 @@ export class DropDownButtons {
                         this.parent.fontFamily.default;
                     this.fontNameDropDown = this.toolbarRenderer.renderDropDownButton({
                         content: this.dropdownContent(
-                            this.parent.fontFamily.width,
-                            type,
                             ((fontItem.length === 0) ? this.i10n.getConstant('fontName') : (type === 'quick' && !isInlineToolbar) ? '' : (getDropDownValue(fontItem, fontNameContent, 'text', 'text') === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItem, fontNameContent, 'text', 'text')))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
                         itemName: 'FontName', items: fontItem, element: targetElement
-                    } as IDropDownModel);
+                    } as IDropDownModel, this.parent.fontFamily.width, type);
                     break;
                 }
                 case 'fontsize': {
@@ -207,12 +207,10 @@ export class DropDownButtons {
                     const fontSizeDropDownContent: string = ((fontSizeContent === 'Default') ? getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'text', 'text') : getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'));
                     this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
                         content: this.dropdownContent(
-                            this.parent.fontSize.width,
-                            type,
                             fontsize.length === 0 ? this.i10n.getConstant('fontSize') : (getFormattedFontSize((fontSizeDropDownContent === 'Default') ? this.i10n.getConstant('fontSize') : fontSizeDropDownContent))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
                         itemName: 'FontSize', items: fontsize, element: targetElement
-                    } as IDropDownModel);
+                    } as IDropDownModel, this.parent.fontSize.width, type);
                     break;
                 }
                 case 'alignments':
@@ -326,7 +324,7 @@ export class DropDownButtons {
                                 'quick' : 'toolbar';
                             const fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
                                 this.parent.fontFamily.default;
-                            content = this.dropdownContent(
+                            content = this.dropdownContentChange(
                                 this.parent.fontFamily.width, type,
                                 ((type === 'quick') ? '' : (getDropDownValue(fontItems, fontNameContent, 'text', 'text')) === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                             this.fontNameDropDown.setProperties({ content: content });
@@ -358,7 +356,7 @@ export class DropDownButtons {
                             const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[0].text :
                                 this.parent.fontSize.default;
                             const fontSizeDropDownContent: string = ((fontSizeContent === 'Default') ? getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'text', 'text') : getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'));
-                            content = this.dropdownContent(
+                            content = this.dropdownContentChange(
                                 this.parent.fontSize.width, type,
                                 getFormattedFontSize((fontSizeDropDownContent === 'Default') ? this.i10n.getConstant('fontSize') : fontSizeDropDownContent));
                             this.fontSizeDropDown.setProperties({ content: content });
@@ -389,7 +387,7 @@ export class DropDownButtons {
                                 closest(this.formatDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                             const formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
                                 this.parent.format.default;
-                            content = this.dropdownContent(
+                            content = this.dropdownContentChange(
                                 this.parent.format.width, type,
                                 ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
                             this.formatDropDown.setProperties({ content: content });

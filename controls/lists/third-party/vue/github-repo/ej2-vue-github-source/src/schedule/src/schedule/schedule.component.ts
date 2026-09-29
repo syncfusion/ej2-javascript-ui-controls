@@ -9,7 +9,7 @@ import { HeaderRowsDirective, HeaderRowDirective, HeaderRowsPlugin, HeaderRowPlu
 import { ToolbarItemsDirective, ToolbarItemDirective, ToolbarItemsPlugin, ToolbarItemPlugin } from './toolbaritems.directive'
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'agendaDaysCount', 'allowClipboard', 'allowDragAndDrop', 'allowInline', 'allowKeyboardInteraction', 'allowMultiCellSelection', 'allowMultiDrag', 'allowMultiRowSelection', 'allowOverlap', 'allowResizing', 'allowSwiping', 'calendarMode', 'cellHeaderTemplate', 'cellTemplate', 'cssClass', 'currentView', 'dateFormat', 'dateHeaderTemplate', 'dateRangeTemplate', 'dayHeaderTemplate', 'editorFooterTemplate', 'editorHeaderTemplate', 'editorTemplate', 'enableAdaptiveUI', 'enableAllDayScroll', 'enableHtmlSanitizer', 'enablePersistence', 'enableRecurrenceValidation', 'enableRtl', 'endHour', 'eventDragArea', 'eventSettings', 'firstDayOfWeek', 'firstMonthOfYear', 'group', 'headerIndentTemplate', 'headerRows', 'height', 'hideEmptyAgendaDays', 'locale', 'maxDate', 'minDate', 'monthHeaderTemplate', 'monthsCount', 'overscanCount', 'prerenderDialogs', 'quickInfoOnSelectionEnd', 'quickInfoTemplates', 'readonly', 'resourceHeaderTemplate', 'resources', 'rowAutoHeight', 'selectedDate', 'selectedResource', 'showHeaderBar', 'showQuickInfo', 'showTimeIndicator', 'showWeekNumber', 'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'timezoneDataSource', 'toolbarItems', 'views', 'weekRule', 'width', 'workDays', 'workHours', 'actionBegin', 'actionComplete', 'actionFailure', 'beforePaste', 'beforePrint', 'cellClick', 'cellDoubleClick', 'created', 'dataBinding', 'dataBound', 'destroyed', 'drag', 'dragStart', 'dragStop', 'eventClick', 'eventDoubleClick', 'eventRendered', 'excelExport', 'hover', 'moreEventsClick', 'navigating', 'popupClose', 'popupOpen', 'renderCell', 'resizeStart', 'resizeStop', 'resizing', 'select', 'tooltipOpen', 'virtualScrollStart', 'virtualScrollStop'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'agendaDaysCount', 'allowClipboard', 'allowDragAndDrop', 'allowInline', 'allowKeyboardInteraction', 'allowMultiCellSelection', 'allowMultiDrag', 'allowMultiRowSelection', 'allowOverlap', 'allowResizing', 'allowSwiping', 'calendarMode', 'cellHeaderTemplate', 'cellTemplate', 'cssClass', 'currentTimeIndicatorSettings', 'currentView', 'dateFormat', 'dateHeaderTemplate', 'dateRangeTemplate', 'dayHeaderTemplate', 'editorFooterTemplate', 'editorHeaderTemplate', 'editorTemplate', 'enableAdaptiveUI', 'enableAllDayScroll', 'enableHtmlSanitizer', 'enablePersistence', 'enableRecurrenceValidation', 'enableRtl', 'enableWebMcp', 'endHour', 'eventDragArea', 'eventSettings', 'firstDayOfWeek', 'firstMonthOfYear', 'group', 'headerIndentTemplate', 'headerRows', 'height', 'hideEmptyAgendaDays', 'locale', 'maxDate', 'minDate', 'monthHeaderTemplate', 'monthsCount', 'overscanCount', 'prerenderDialogs', 'quickInfoOnSelectionEnd', 'quickInfoTemplates', 'readonly', 'resourceHeaderTemplate', 'resources', 'rowAutoHeight', 'selectedDate', 'selectedResource', 'showHeaderBar', 'showQuickInfo', 'showTimeIndicator', 'showWeekNumber', 'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'timezoneDataSource', 'toolbarItems', 'views', 'weekRule', 'width', 'workDays', 'workHours', 'actionBegin', 'actionComplete', 'actionFailure', 'beforePaste', 'beforePrint', 'beforeWebMcpToolExecute', 'cellClick', 'cellDoubleClick', 'created', 'dataBinding', 'dataBound', 'destroyed', 'drag', 'dragStart', 'dragStop', 'eventClick', 'eventDoubleClick', 'eventRendered', 'excelExport', 'hover', 'moreEventsClick', 'navigating', 'popupClose', 'popupOpen', 'renderCell', 'resizeStart', 'resizeStop', 'resizing', 'select', 'tooltipOpen', 'virtualScrollStart', 'virtualScrollStop'];
 export const modelProps: string[] = ['currentView', 'selectedDate'];
 
 export const testProp: any = getProps({props: properties});
@@ -19,7 +19,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ej-schedule` represents the VueJS Schedule Component.
- * ```vue
+ * ```js
  * <ejs-schedule></ejs-schedule>
  * ```
  */
@@ -236,6 +236,9 @@ export let ScheduleComponent: DefineVueComponent<ScheduleModel> =  vueDefineComp
         getViewDates(type: Object): Object[] {
             return this.ej2Instances.getViewDates(type);
         },
+        getWebMcpTools(toolNames?: string[]): Object[] {
+            return this.ej2Instances.getWebMcpTools(toolNames);
+        },
         hideSpinner(): void {
             return this.ej2Instances.hideSpinner();
         },
@@ -268,6 +271,9 @@ export let ScheduleComponent: DefineVueComponent<ScheduleModel> =  vueDefineComp
         },
         refreshTemplates(templateName?: string): void {
             return this.ej2Instances.refreshTemplates(templateName);
+        },
+        registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void {
+            return this.ej2Instances.registerWebMcpTools(prefix, tools, exposedTo);
         },
         removeResource(resourceId: string | string[] | number | number[], name: string): void {
             return this.ej2Instances.removeResource(resourceId, name);
@@ -352,6 +358,7 @@ export type ScheduleComponent = typeof ComponentBase & {
     getResourcesByIndex(index: number): Object;
     getSelectedElements(): Object[];
     getViewDates(type: Object): Object[];
+    getWebMcpTools(toolNames?: string[]): Object[];
     hideSpinner(): void;
     importICalendar(fileContent: Object | string): void;
     isSlotAvailable(startTime: Object | Object, endTime?: Object, groupIndex?: number): boolean;
@@ -363,6 +370,7 @@ export type ScheduleComponent = typeof ComponentBase & {
     refreshEvents(isRemoteRefresh: boolean): void;
     refreshLayout(): void;
     refreshTemplates(templateName?: string): void;
+    registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void;
     removeResource(resourceId: string | string[] | number | number[], name: string): void;
     resetWorkHours(dates: Object[], start?: string, end?: string, groupIndex?: number): void;
     saveEvent(data: Object | Object[], currentAction?: Object): void;

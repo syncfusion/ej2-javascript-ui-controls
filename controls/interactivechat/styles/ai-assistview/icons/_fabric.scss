@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('aiassist-fabric-icons') {
   .e-assist-send::before {
     content: '\e816';
@@ -47,5 +47,17 @@
   }
   .e-assist-scroll-down::before {
     content: '\e305';
+  }
+  .e-assist-audio::before {
+    content: '\e940';
+  }
+  .e-assist-regenerate::before {
+    content: '\e948';
+  }
+  .e-assist-next::before {
+    content: '\e219';
+  }
+  .e-assist-previous::before {
+    content: '\e654';
   }
 }

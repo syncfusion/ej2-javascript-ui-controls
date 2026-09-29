@@ -1,5 +1,19 @@
 # ej2-vue-lists
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/vue/llms.txt](https://ai.syncfusion.com/vue/llms.txt)
+
 The vue listview component allows you to select an item or multiple items from a list-like interface and represents the data in interactive hierarchical structure across different layouts or views. Lists are used for displaying data, data navigation, and data entry.
 
 ![ej2-vue-lists](https://ej2.syncfusion.com/products/images/listview/readme.gif)

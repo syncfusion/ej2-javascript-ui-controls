@@ -4,6 +4,7 @@ import { _PdfUniqueEncodingElement } from '../asn1/unique-encoding-element';
 import { _PdfAlgorithms } from './x509-algorithm';
 import { _PdfUniqueBitString } from './x509-bit-string-handler';
 import { _PdfSignedCertificate } from './x509-signed-certificate';
+import { _PdfObjectIdentifier } from '../asn1/identifier-mapping';
 /**
  * Representation of the top-level X.509 certificate structure (tbsCertificate + signature).
  *
@@ -38,15 +39,10 @@ export class _PdfX509CertificateStructure {
      * @type {_PdfAbstractSyntaxElement[]}
      */
     _sequence: _PdfAbstractSyntaxElement[];
+    _signatureBytes: Uint8Array;
     constructor(seq?: _PdfAbstractSyntaxElement[]) {
         if (seq) {
-            if (!Array.isArray(seq) || seq.length !== 3) {
-                throw new Error(`Invalid certificate sequence length: ${seq.length}`);
-            }
-            this._sequence = seq;
-            this._toBeSignedCertificate = new _PdfSignedCertificate(seq[0]);
-            this._signatureAlgorithmIdentifier = new _PdfAlgorithms(seq[1]);
-            this._signature = new _PdfUniqueBitString(seq[2]._getValue());
+            this._applySequence(seq);
         }
     }
     /**
@@ -85,5 +81,68 @@ export class _PdfX509CertificateStructure {
         der._setTagNumber(_UniversalType.sequence);
         der._setSequence(this._sequence);
         return der._toBytes();
+    }
+    /**
+     * Gets the object identifier (OID) of the certificate signature algorithm.
+     *
+     * @returns {string} The signature algorithm OID; otherwise, an empty string if the OID is unavailable.
+     * @private
+     */
+    _getSignatureAlgorithmOid(): string {
+        const oid: _PdfObjectIdentifier = (this._signatureAlgorithmIdentifier as any)._objectID; //eslint-disable-line
+        return (oid && typeof oid.toString === 'function') ? oid.toString() : '';
+    }
+    /**
+     * Gets the certificate signature value.
+     *
+     * @returns {Uint8Array} The certificate signature bytes.
+     * @private
+     */
+    _getSignatureValue(): Uint8Array {
+        return new Uint8Array(this._signatureBytes ? this._signatureBytes : []);
+    }
+    /**
+     * Initializes the certificate structure from the specified ASN.1 certificate sequence.
+     *
+     * @param {_PdfAbstractSyntaxElement[]} seq The ASN.1 sequence representing the X.509 certificate.
+     * @returns {void}
+     * @throws {Error} Thrown when the certificate sequence is invalid.
+     * @private
+     */
+    private _applySequence(seq: _PdfAbstractSyntaxElement[]): void {
+        if (!Array.isArray(seq) || seq.length !== 3) {
+            throw new Error(`Invalid certificate sequence length: ${seq.length}`);
+        }
+        this._sequence = seq;
+        this._toBeSignedCertificate = new _PdfSignedCertificate(seq[0]);
+        this._signatureAlgorithmIdentifier = new _PdfAlgorithms(seq[1]);
+        const rawBitString: Uint8Array = seq[2]._getValue();
+        let signatureBytes: Uint8Array = new Uint8Array(0);
+        if (rawBitString && rawBitString.length >= 1) {
+            signatureBytes = rawBitString.subarray(1);
+        }
+        this._signatureBytes = signatureBytes;
+        this._signature = new _PdfUniqueBitString(rawBitString);
+    }
+    /**
+     * Loads the certificate structure from DER-encoded X.509 certificate data.
+     *
+     * @param {Uint8Array} der The DER-encoded certificate bytes.
+     * @returns {_PdfX509CertificateStructure} The current certificate structure instance.
+     * @throws {Error} Thrown when the DER data is invalid or the certificate format is malformed.
+     * @private
+     */
+    _fromDer(der: Uint8Array): _PdfX509CertificateStructure {
+        if (!(der instanceof Uint8Array) || der.length === 0) {
+            throw new Error('Invalid DER input for X.509 certificate.');
+        }
+        const top: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+        top._fromBytes(der);
+        const seq: _PdfAbstractSyntaxElement[] | null = top._getSequence();
+        if (!seq || seq.length !== 3) {
+            throw new Error('Malformed X.509 certificate: top-level is not a 3-element SEQUENCE.');
+        }
+        this._applySequence(seq);
+        return this;
     }
 }

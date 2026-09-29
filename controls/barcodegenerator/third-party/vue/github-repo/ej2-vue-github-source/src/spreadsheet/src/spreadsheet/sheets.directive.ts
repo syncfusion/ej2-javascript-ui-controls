@@ -34,7 +34,7 @@ export const SheetsPlugin = {
 /**
  * `e-sheet` directive represent a sheet of the VueJS Spreadsheet.
  * It must be contained in a Spreadsheet component(`ejs-spreadsheet`).
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-sheets>
  *    <e-sheet></e-sheet>

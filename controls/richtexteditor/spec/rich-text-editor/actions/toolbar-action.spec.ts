@@ -3,7 +3,8 @@
  */
 import { RichTextEditor, NodeSelection } from './../../../src/index';
 import { MarkdownFormatter } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy,dispatchEvent } from "./../render.spec";
+import { Browser } from "@syncfusion/ej2-base";
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -1143,6 +1144,252 @@ describe('Toolbar actions ', () => {
             expect((selectNode as HTMLElement).style.textAlign === 'justify').toBe(true);
         });
     });
+  describe('EJ2-20436 - Changing font color of underlined text doesn’t changes the color of the line in RTE', () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let controlId: string;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Underline', 'StrikeThrough',
+                            'FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                    },
+                    value: `<p id="rte">RichTextEditor</p>`
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+            });
+            it(' Apply the underline and then apply the fontcolor', (done) => {
+                let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 3);
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Underline');
+                dispatchEvent(item, 'mousedown');
+                item.click();
+                item = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+                dispatchEvent(item, 'mousedown');
+                item = (item.nextElementSibling.childNodes[0] as HTMLElement);
+                item.click();
+                dispatchEvent(item, 'mousedown');
+                setTimeout(() => {
+                    let span: HTMLSpanElement = pEle.querySelector('span span');
+                    expect(span.parentElement.style.color === 'rgb(255, 0, 0)').toBe(true);
+                    expect(span.parentElement.style.textDecoration === 'inherit').toBe(true);
+                    done();
+                }, 100);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
+    
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 1' , () => {
+        let rteObject : RichTextEditor ;
+        beforeEach( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontSize','SuperScript', 'SubScript', 'FontColor']
+                } ,value:'Testing'
+            });
+        })
+        afterEach( (done: DoneFn) => {
+            destroy(rteObject);
+            done();
+        })
+        it('should add span element with font size to around the text node', (done: Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const toolbarButtons : NodeList = document.body.querySelectorAll('.e-tbar-btn');
+            ( toolbarButtons[0] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[1] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[2] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[3] as HTMLElement ).click(); // StrikeThrough
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            (dropButton[0] as HTMLElement).click(); // Font size
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            (dropItems[7] as HTMLElement).click(); // Apply 34 pt
+            const correctElementString : string = `<p><span style="font-size: 36pt;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></p>`;
+            expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
+            ( toolbarButtons[3] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[2] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[1] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[0] as HTMLElement ).click(); // StrikeThrough
+            expect( rteObject.inputElement.innerHTML === '<p><span style="font-size: 36pt;">Testing</span></p>' ).toBe( true );
+            done();
+        });
+        it('Test for only font size of selected text',(done: Function) =>{
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn');
+            (dropButton[0] as HTMLElement).click();
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            (dropItems[7] as HTMLElement).click();
+            const correctElementString : string = `<p><span style="font-size: 36pt;">Testing</span></p>`;
+            expect( rteObject.inputElement.innerHTML === correctElementString ).toBe( true );
+            done();
+        });
+    });
+
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 2' , () => {
+        let rteObject : RichTextEditor ;
+        beforeAll( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value:'Testing'
+            });
+        })
+        afterAll( () => {
+            destroy( rteObject );
+        })
+        it('should add span element with font size to around the text node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const toolbarButtons : NodeList = document.body.querySelectorAll('.e-tbar-btn');
+            ( toolbarButtons[0] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[1] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[2] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[3] as HTMLElement ).click(); // StrikeThrough
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[0] as HTMLElement ).click(); // Font 
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( dropItems[2] as HTMLElement ).click(); // Apply font
+            ( dropButton[2] as HTMLElement ).click(); // Font color
+            const row : NodeList= document.body.querySelectorAll('.e-row');
+            const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
+            ( tileItems[9] as HTMLElement ).click();
+            // Background color
+            (rteObject.element.querySelector('.e-rte-background-colorpicker .e-split-colorpicker .e-selected-color') as HTMLElement).click();
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            const correctElementString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);"><span style="font-family: Arial, Helvetica, sans-serif;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></span></span></span></p>`;
+            expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
+            ( toolbarButtons[3] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[2] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[1] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[0] as HTMLElement ).click(); // StrikeThrough
+            const correctString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);"><span style="font-family: Arial, Helvetica, sans-serif;">Testing</span></span></span></span></p>`;
+            expect( rteObject.inputElement.innerHTML === correctString ).toBe( true );
+            done();
+        });
+    });
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 6 Heading' , () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string = '<h1><span style="text-decoration: line-through;"><strong>Testing 1</strong></span></h1><h2><span style="text-decoration: underline;"><strong>Testing 2</strong></span></h2><h3><span style="text-decoration: line-through;"><em><span style="text-decoration: underline;">Testing 3</span></em></span></h3><h4><strong><em><span style="text-decoration: underline;">Testing 4</span></em></strong></h4>';
+        beforeAll( () => {
+            rteObject = renderRTE({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+        })
+        afterAll( () => {
+            destroy( rteObject );
+        })
+        it('should wrap font size span element immediate to h1 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h1');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            setTimeout(() => {
+                expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+                done();
+            }, 100);
+        } );
+        it('should wrap font size span element immediate to h2 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h2');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            setTimeout(() => {
+                expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+                done();
+            }, 100);
+        } );
+        it('should wrap font size span element immediate to h3 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h3');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            setTimeout(() => {
+                expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+                done();
+            }, 100);
+        } );
+        it('should wrap font size span element immediate to h4 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h4');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
+            setTimeout(() => {
+                expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+                done();
+            }, 100);
+        });   
+    });
+    describe('865259: Script error throws and line breaks added when clicking Bold toolbar item in the RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            let rteObj2: RichTextEditor;
+            let defaultUserAgent= navigator.userAgent;
+            let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+            beforeAll(() => {
+                Browser.userAgent = fireFox;
+                rteObj = renderRTE({
+                    value: `First RTEC`
+                });
+                rteObj2 = renderRTE({
+                    value: `second RTEC`
+                });
+            });
+    
+            it('Checking with firefox browser', () => {
+                rteObj.value = "";
+                rteObj.focusIn();
+                let range: Range = document.createRange();
+                range.setStart(rteObj2.element.querySelector('.e-content'), 1);
+                rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);
+                rteObj2.executeCommand('bold');
+                expect(rteObj2.inputElement.innerHTML === '<p><strong>​</strong>second RTEC</p>').toBe(true);
+                rteObj2.value= `<p><strong></strong>second RTEC</p><p><strong></strong>second RTEC</p>`;
+                range.setStart(rteObj2.element.querySelector('.e-content'), 1);
+                rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);
+                rteObj2.executeCommand('bold');
+                expect(rteObj2.inputElement.nodeName === 'DIV').toBe(true);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+                destroy(rteObj2);
+                Browser.userAgent =defaultUserAgent;
+            });
+        });
     describe('964195 - In IFrame mode, Font and Background Color dropdown not closed properly when focus on the editor. ', () => {
         let rteObj: RichTextEditor;
         let innerHTMLStr = "<p>First p node-0</p><p>First p node-1</p>\n\n    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>\n\n    <p class='second-p-node'><label class='second-label'>label node</label></p>\n    <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>\n    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>\n    <p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>";

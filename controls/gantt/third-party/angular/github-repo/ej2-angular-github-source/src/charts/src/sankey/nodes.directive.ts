@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-sankey-nodes>e-sankey-node',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class SankeyNodeDirective extends ComplexBase<SankeyNodeDirective> {
@@ -31,23 +31,23 @@ export class SankeyNodeDirective extends ComplexBase<SankeyNodeDirective> {
      * The node color is applied based on the current theme if this property is not specified.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * A unique string identifier for the node. 
      * Ensure the `id` is unique across all nodes in the Sankey chart.
      * @default null
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Options for customizing the data label of the Sankey node.
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Specifies a custom offset position for the node. 
      * This allows shifting the node horizontally (in Horizontal orientation) or vertically (in Vertical orientation), relative to its computed layout position.
      * @default 0
      */
-    public offset: any;
+    public declare offset: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -63,6 +63,7 @@ export class SankeyNodeDirective extends ComplexBase<SankeyNodeDirective> {
  */
 @Directive({
     selector: 'ejs-sankey>e-sankey-nodes',
+    standalone: true,
     queries: {
         children: new ContentChildren(SankeyNodeDirective)
     },

@@ -183,6 +183,33 @@ export interface GridSettingsModel {
     clipMode?: ClipMode;
 
     /**
+     * Allows row header labels to be repeated in the pivot table.
+     *
+     * When set to `true`, row header labels are repeated for each hierarchical level
+     * within a field, ensuring that parent labels remain visible for all expanded rows.
+     *
+     * > This property is applicable only for tabular layout with relational data source.
+     *
+     * > The `repeatItemLabels` property is deprecated and will no longer be used. Use `repeatRowHeaderLabels` instead to achieve the same behavior.
+     *
+     * @default false
+     * @deprecated
+     */
+    repeatItemLabels?: boolean;
+
+    /**
+     * Allows row header labels to be repeated in the pivot table.
+     *
+     * When set to `true`, row header labels are repeated for each hierarchical level
+     * within a field, ensuring that parent labels remain visible for all expanded rows.
+     *
+     * > This property is applicable only for tabular layout with a relational data source.
+     *
+     * @default false
+     */
+    repeatRowHeaderLabels?: boolean;
+
+    /**
      * Allows a row or column or cell to be highlighted by simply clicking or arrow key in the pivot table.
      *
      * @default false

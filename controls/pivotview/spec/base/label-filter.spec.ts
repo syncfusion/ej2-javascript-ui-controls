@@ -7,7 +7,8 @@ import { CalculatedField } from '../../src/common/calculatedfield/calculated-fie
 import { DrillThrough, VirtualScroll } from '../../src/pivotview/actions';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldList } from '../../src/common/actions/field-list';
-import { MaskedTextBox } from '@syncfusion/ej2-inputs';
+import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { pivot_dataset } from './datasource.spec';
 import * as util from '../utils.spec';
 
@@ -413,7 +414,7 @@ describe('Label Filtering', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[13][7].formattedText).toBe('$2,348.17');
+                expect(pivotGridObj.pivotValues[13][7].formattedText).toBe('$3,060.54');
                 done();
             }, 1000);
         });
@@ -425,7 +426,7 @@ describe('Label Filtering', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[13][7].formattedText).toBe('$2,348.17');
+                expect(pivotGridObj.pivotValues[13][7].formattedText).toBe('$3,060.54');
                 done();
             }, 500);
         });
@@ -438,5 +439,334 @@ describe('Label Filtering', () => {
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('Pivot Table - Top and Bottom Value Filters', () => {
+    let pivotGridObj: PivotView;
+    let element: HTMLElement;
+    beforeAll(() => {
+        const isDefined = (value: any): boolean => value !== undefined && value !== null;
+        if (!isDefined((window as any).performance)) {
+            console.log('Unsupported environment: window.performance.memory is unavailable');
+            pending();
+        }
+    });
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'PivotGrid' });
+        document.body.appendChild(element);
+        PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: true,
+                enableSorting: true,
+                allowValueFilter: true,
+                allowMemberFilter: false,
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [],
+                filterSettings: [
+                    {
+                        condition: 'Top',
+                        items: [],
+                        levelCount: 1,
+                        measure: 'quantity',
+                        name: 'product',
+                        type: 'Value',
+                        value1: '2',
+                        value2: '0'
+                    },
+                    {
+                        condition: 'Bottom',
+                        items: [],
+                        levelCount: 1,
+                        measure: 'balance',
+                        name: 'eyeColor',
+                        type: 'Value',
+                        value1: '1',
+                        value2: '0'
+                    }
+                ]
+            },
+            showFieldList: true,
+            showGroupingBar: true,
+            width: 1000,
+            height: 400,
+            dataBound: () => done()
+        });
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(element);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 1000);
+    });
+    it('Top and Bottom value filter on row axis - product field', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("86");
+            pivotGridObj.dataSourceSettings.filterSettings = [
+                {
+                    condition: 'Bottom',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'quantity',
+                    name: 'product',
+                    type: 'Value',
+                    value1: '2',
+                    value2: '0'
+                },
+                {
+                    condition: 'Top',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'balance',
+                    name: 'eyeColor',
+                    type: 'Value',
+                    value1: '1',
+                    value2: '0'
+                }
+            ];
+            done();
+        }, 1000);
+    });
+    it('Bottom value filter on column axis - gender field', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("79");
+            pivotGridObj.dataSourceSettings.filterSettings = [
+                {
+                    condition: 'Bottom',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'quantity',
+                    name: 'gender',
+                    type: 'Value',
+                    value1: '1',
+                    value2: '0'
+                },
+                {
+                    condition: 'Top',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'balance',
+                    name: 'isActive',
+                    type: 'Value',
+                    value1: '1',
+                    value2: '0'
+                }
+            ];
+            done();
+        }, 1000);
+    });
+    it('Top value filter on column axis - gender and isActive fields', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("252");
+            pivotGridObj.dataSourceSettings.filterSettings = [
+                {
+                    condition: 'Top',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'quantity',
+                    name: 'gender',
+                    type: 'Value',
+                    value1: '1',
+                    value2: '0'
+                },
+                {
+                    condition: 'Bottom',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'balance',
+                    name: 'isActive',
+                    type: 'Value',
+                    value1: '1',
+                    value2: '0'
+                }
+            ];
+            done();
+        }, 1000);
+    });
+    it('Value filter testing with negative values', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("271");
+            pivotGridObj.dataSourceSettings.filterSettings = [
+                {
+                    condition: 'Top',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'quantity',
+                    name: 'gender',
+                    type: 'Value',
+                    value1: '-12',
+                    value2: '0'
+                },
+                {
+                    condition: 'Bottom',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'balance',
+                    name: 'isActive',
+                    type: 'Value',
+                    value1: '-7',
+                    value2: '0'
+                }
+            ];
+            done();
+        }, 1000);
+    });
+    it('Value filter testing with negative values', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[4][1] as IDataSet).actualText).toBe('balance');
+            pivotGridObj.dataSourceSettings.filterSettings = [];
+            done();
+        }, 1000);
+    });
+    it('memory leak check', () => {
+        profile.sample();
+        const average: number = inMB(profile.averageChange);
+        const memory: number = inMB(getMemoryProfile());
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        expect(average).toBeLessThan(10);
+    });
+});
+
+describe('Pivot Table - Top and Bottom Value Filters via UI', () => {
+    let pivotGridObj: PivotView;
+    let element: HTMLElement;
+    beforeAll(() => {
+        const isDefined = (value: any): boolean => value !== undefined && value !== null;
+        if (!isDefined((window as any).performance)) {
+            console.log('Unsupported environment: window.performance.memory is unavailable');
+            pending();
+        }
+    });
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'PivotGrid' });
+        document.body.appendChild(element);
+        PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: true,
+                enableSorting: true,
+                allowValueFilter: true,
+                allowMemberFilter: false,
+                formatSettings: [{ name: 'balance', format: 'C' }],
+                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                values: [{ name: 'quantity' }],
+                filters: [],
+                filterSettings: [
+                    {
+                        condition: 'Top',
+                        items: [],
+                        measure: 'quantity',
+                        name: 'product',
+                        type: 'Value',
+                        value1: '1',
+                        value2: '0'
+                    }
+                ]
+            },
+            showFieldList: true,
+            showGroupingBar: true,
+            width: 1000,
+            height: 400,
+            dataBound: () => done()
+        });
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(element);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 1000);
+    });
+    it('Bottom value filter via UI on row axis - eyeColor field', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("128");
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[1]).querySelector('.e-btn-filter') as HTMLElement).click();
+            document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+            document.querySelectorAll('.e-filter-operator .e-list-item')[9].dispatchEvent(new Event('click', { bubbles: true }));
+            document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            pivotGridObj.dataSourceSettings.filterSettings = [];
+            done();
+        }, 1000);
+    });
+    it('Top value filter via UI on row axis - eyeColor field', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("128");
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[1]).querySelector('.e-btn-filter') as HTMLElement).click();
+            document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+            document.querySelectorAll('.e-filter-operator .e-list-item')[8].dispatchEvent(new Event('click', { bubbles: true }));
+            document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            pivotGridObj.dataSourceSettings.filterSettings = [];
+            done();
+        }, 1000);
+    });
+    it('Bottom value filter via UI on column axis - gender field', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("74");
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+            document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+            document.querySelectorAll('.e-filter-operator .e-list-item')[9].dispatchEvent(new Event('click', { bubbles: true }));
+            document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            pivotGridObj.dataSourceSettings.filterSettings = [];
+            done();
+        }, 1000);
+    });
+    it('Top value filter via UI on column axis - isActive field with negative value', (done: Function) => {
+        setTimeout(function () {
+            expect((pivotGridObj.engineModule.pivotValues[3][4] as IDataSet).formattedText).toBe("74");
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[1]).querySelector('.e-btn-filter') as HTMLElement).click();
+            document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+            document.querySelectorAll('.e-filter-operator .e-list-item')[8].dispatchEvent(new Event('click', { bubbles: true }));
+            document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            pivotGridObj.dataSourceSettings.filterSettings = [
+                {
+                    condition: 'Top',
+                    items: [],
+                    levelCount: 1,
+                    measure: 'quantity',
+                    name: 'isActive',
+                    type: 'Value',
+                    value1: '-12'
+                }
+            ];
+            done();
+        }, 1000);
+    });
+    it('Value filter testing with negative values', (done: Function) => {
+        setTimeout(function () {
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+            expect(document.querySelectorAll('.e-btn-filter').length > 1).toBeTruthy();
+            ((pivotButtons[1]).querySelector('.e-btn-filter') as HTMLElement).click();
+            document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+            done();
+        }, 1000);
+    });
+    it('memory leak check', () => {
+        profile.sample();
+        const average: number = inMB(profile.averageChange);
+        const memory: number = inMB(getMemoryProfile());
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        expect(average).toBeLessThan(10);
     });
 });

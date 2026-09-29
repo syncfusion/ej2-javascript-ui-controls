@@ -322,6 +322,7 @@ export class PageSetupDialog {
         }) as HTMLSelectElement;
         this.paperSizeDiv.appendChild(paperSize);
         this.paperSize = new DropDownList({ change: this.changeByPaperSize, width: '170px', enableRtl: isRtl });
+        this.paperSize.isAngular = this.documentHelper.owner.isModalDialog;
         this.paperSize.appendTo(paperSize);
         this.paperSize.htmlAttributes = { 'aria-labelledby': 'PaperSize', 'aria-describedby': 'PaperSize' };
         element.appendChild(this.paperSizeDiv);
@@ -518,6 +519,7 @@ export class PageSetupDialog {
      * @returns {void}
      */
     public applyPageSetupProperties = (): void => {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         const sectionFormat: WSectionFormat = new WSectionFormat();
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
@@ -533,15 +535,39 @@ export class PageSetupDialog {
         sectionFormat.headerDistance = this.headerBox.value;
         sectionFormat.footerDistance = this.footerBox.value;
         if (this.widthBox.value < (this.leftMarginBox.value + this.rightMarginBox.value)) {
-            DialogUtility.alert(localValue.getConstant('Left and right margins.'));
+            DialogUtility.alert({
+                title: localValue.getConstant('Information'),
+                content: localValue.getConstant('Left and right margins.'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
             return;
         }
         if (this.widthBox.value < (this.leftMarginBox.value + this.rightMarginBox.value + 36)) {
-            DialogUtility.alert(localValue.getConstant('Column width cannot be less than 36 pt.'));
+            DialogUtility.alert({
+                title: localValue.getConstant('Information'),
+                content: localValue.getConstant('Column width cannot be less than 36 pt.'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
             return;
         }
         if (Math.abs((this.topMarginBox.value + this.bottomMarginBox.value)) > this.heightBox.value) {
-            DialogUtility.alert(localValue.getConstant('The top/bottom margins are too large for the page height in some sections.'));
+            DialogUtility.alert({
+                title: localValue.getConstant('Information'),
+                content: localValue.getConstant('The top/bottom margins are too large for the page height in some sections.'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
             return;
         }
         sectionFormat.numberOfColumns = currentSectionFormat.numberOfColumns;

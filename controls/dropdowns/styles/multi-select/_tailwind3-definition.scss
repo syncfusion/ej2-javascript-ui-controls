@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/tailwind3' as *;
-@forward 'ej2-base/styles/definition/tailwind3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: $skin-name !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -239,6 +238,8 @@ $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $content-text-color !default;
 $ddl-close-down-icon-left: 35px !default;
 $dd-chip-border: 1px solid $border-light !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 $ddl-bigger-small-filled-chip-height: 28px !default;
 $ddl-bigger-filled-chip-height: 24px !default;

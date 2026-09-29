@@ -240,6 +240,12 @@ export class _PdfDictionary {
      * @private
      */
     _isSignature: boolean = false;
+    /**
+     * Indicates whether this dictionary has been visited to prevent circular dependencies.
+     *
+     * @private
+     */
+    _isVisited: boolean = false;
     get size(): number {
         return Object.keys(this._map).length;
     }

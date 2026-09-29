@@ -4403,3 +4403,52 @@ describe('Improve coverage', () => {
       }
     });
   });
+describe('Indent action should preserve predecessor', () => {
+    let ganttObj: Gantt;
+
+    const editingData: Object[] = [
+        { TaskID: 1, TaskName: 'Planning and permits', StartDate: new Date('04/02/2025'), EndDate: new Date('04/10/2025'), Duration: 7, Progress: 100 },
+        { TaskID: 2, TaskName: 'Site evaluation', StartDate: new Date('04/02/2025'), EndDate: new Date('04/04/2025'), Duration: 2, Progress: 100, ParentId: 1 },
+        { TaskID: 3, TaskName: 'Obtain permits', StartDate: new Date('04/07/2025'), EndDate: new Date('04/09/2025'), Duration: 3, Progress: 100, ParentId: 1, Predecessor: '2' },
+        { TaskID: 4, TaskName: 'Finalize planning', StartDate: new Date('04/10/2025'), EndDate: new Date('04/11/2025'), Duration: 2, Progress: 100, ParentId: 1, Predecessor: '3' }
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'ParentId'
+            },
+            editSettings: {
+                allowEditing: true
+            },
+            allowSelection: true,
+            toolbar: ['Indent'],
+            height: '450px'
+        }, done);
+    });
+
+    it('Task 3 predecessor should remain 2 after indenting Task 4', () => {
+        // Select Task 4
+        ganttObj.selectRow(3);
+        // Perform indent
+        ganttObj.indent();
+
+        const task3: IGanttData = ganttObj.flatData[2]
+        expect(task3.ganttProperties.predecessorsName).toBe('2FS');
+        expect(task3.taskData['Predecessor']).toBe('2FS');
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

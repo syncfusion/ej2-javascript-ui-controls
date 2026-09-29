@@ -5,7 +5,7 @@ import { IndexesModel } from '@syncfusion/ej2-charts';
 /**
  * `SelectedDataIndex` directive represent the selected data in react Chart. 
  * It must be contained in a Chart component(`Chart3DComponent`). 
- * ```tsx
+ * ```
  * <Chart3DComponent> 
  * <Chart3DSelectedDataIndexesDirective>
  * <Chart3DSelectedDataIndexDirective></Chart3DSelectedDataIndexDirective>

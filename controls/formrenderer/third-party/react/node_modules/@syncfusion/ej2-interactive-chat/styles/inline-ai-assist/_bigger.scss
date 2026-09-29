@@ -1,0 +1,59 @@
+@use 'variables' as *;
+@include export-module('inlineaiassist-bigger') {
+  .e-bigger.e-inlineaiassist,
+  .e-bigger .e-inlineaiassist {
+    .e-footer {
+      .e-inline-stop {
+        height: $inline-ai-assist-response-stopper-bigger-height;
+        width: $inline-ai-assist-response-stopper-bigger-width;
+        min-height: $inline-ai-assist-response-stopper-bigger-height;
+        padding: $inline-ai-assist-stop-padding-bigger;
+        box-sizing: border-box;
+        line-height: $inline-ai-assist-response-stopper-bigger-line-height;
+        font-size: $inline-ai-assist-response-stopper-bigger-font-size;
+      }
+      &:not(.e-footer-template) {
+        .e-inline-send {
+          font-size: $inline-ai-assist-bigger-send-size;
+        }
+        &.e-toolbar-bottom .e-textarea-icons-wrapper {
+          .e-footer-icons-wrapper {
+            padding: $inline-ai-assist-bigger-bottom-icons-wrapper-padding;
+          }
+        }
+      }
+      .e-footer-icons-wrapper {
+        padding: $inline-ai-assist-bigger-footer-icons-wrapper-padding;
+        padding-left: 0;
+        .e-toolbar {
+          min-height: $inline-ai-assist-bigger-footer-tbar-min-height;
+          .e-tbar-btn {
+            min-height: $inline-ai-assist-bigger-footer-tbar-min-height;
+            min-width: $inline-ai-assist-bigger-footer-tbar-min-height;
+            max-width: $inline-ai-assist-bigger-footer-tbar-min-height;
+          }
+          .e-tbar-btn:has(.e-inline-stop) {
+            max-width: $inline-ai-assist-bigger-footer-tbar-min-height;
+            .e-btn-icon {
+              min-width: $inline-ai-assist-bigger-footer-tbar-min-height;
+            }
+          }
+          .e-toolbar-item {
+            min-height: unset;
+            min-width: unset;
+            max-height: $inline-ai-assist-bigger-footer-tbar-min-height;
+          }
+          .e-toolbar-right .e-toolbar-item:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+      .e-assist-textarea {
+        min-height: $inline-ai-assist-bigger-assist-textarea-min-height;
+        line-height: $inline-ai-assist-bigger-assist-textarea-line-height;
+        padding: $inline-ai-assist-bigger-assist-textarea-padding;
+        font-size: $inline-ai-assist-bigger-assist-textarea-size;
+      }
+    }
+  }
+}

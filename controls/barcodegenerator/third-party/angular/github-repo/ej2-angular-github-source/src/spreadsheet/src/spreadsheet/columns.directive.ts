@@ -23,9 +23,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ColumnDirective extends ComplexBase<ColumnDirective> {
@@ -37,44 +37,44 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
      * specifies custom width of the column.
      * @default false
      */
-    public customWidth: any;
+    public declare customWidth: any;
     /** 
      * Specifies format of the column.
      * @default {}
      */
-    public format: any;
+    public declare format: any;
     /** 
      * To hide/show the column in spreadsheet.
      * @default false
      */
-    public hidden: any;
+    public declare hidden: any;
     /** 
      * Specifies index of the column. Based on the index, column properties are applied.
      * @default 0
      * @asptype int
      */
-    public index: any;
+    public declare index: any;
     /** 
      * To lock/unlock the column in the protected sheet.
      * @default true
      */
-    public isLocked: any;
+    public declare isLocked: any;
     /** 
      * Represents whether a column in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
      * @default false
      */
-    public isReadOnly: any;
+    public declare isReadOnly: any;
     /** 
      * Specifies the validation of the column.
      * @default ''
      */
-    public validation: any;
+    public declare validation: any;
     /** 
      * Specifies width of the column.
      * @default 64
      * @asptype int
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -90,6 +90,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
  */
 @Directive({
     selector: 'e-sheet>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColumnDirective)
     },

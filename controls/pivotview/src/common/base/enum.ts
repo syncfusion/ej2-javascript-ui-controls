@@ -1043,6 +1043,7 @@ export declare type LabelPosition =
  * PopulationVar :- Allows to display the pivot table values with population variance.
  * SampleVar :- Allows to display the pivot table values with sample variance.
  * RunningTotals :- Allows to display the pivot table values with running totals.
+ * PercentageOfRunningTotals :- Allows to display the pivot table values with cumulative percentage of running totals. This option is applicable only to the client-side engine.
  * DifferenceFrom :- Allows to display the pivot table values with difference from the value of the base item in the base field.
  * PercentageOfDifferenceFrom :- Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
  * PercentageOfGrandTotal :- Allows to display the pivot table values with percentage of grand total of all values.
@@ -1088,6 +1089,8 @@ export type AggregateTypes =
     'PercentageOfParentTotal' |
     /** Allows to display the pivot table values with running totals. */
     'RunningTotals' |
+    /** Allows to display the pivot table values with cumulative percentage of running totals. This option is applicable only to the client-side engine. */
+    'PercentageOfRunningTotals' |
     /** Allows to display the pivot table values with population standard deviation. */
     'PopulationStDev' |
     /** Allows to display the pivot table values with sample standard deviation. */

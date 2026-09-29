@@ -906,7 +906,7 @@ export class InsertHtml {
         let lastSelectionNode: Node;
         const immediateBlockNode: Node = this.getImmediateBlockNode(range.startContainer, editNode);
         const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
-        if (this.shouldInsertInAnchor(range)) {
+        if (this.shouldInsertInAnchor(range, editNode)) {
             this.insertInAnchor(range, tempSpan, editNode);
         } else if (this.isMentionChip(nodes)) {
             range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
@@ -951,11 +951,13 @@ export class InsertHtml {
     }
 
     //Determines if content should be inserted within an anchor element based on specified conditions.
-    private static shouldInsertInAnchor(range: Range): boolean {
+    private static shouldInsertInAnchor(range: Range, editNode: Element): boolean {
         const nearestAnchor: Element = closest(range.startContainer.parentElement, 'a');
+        const nearestSpan: Element | null = !isNOU(nearestAnchor) ? closest(nearestAnchor, 'span') : null;
         return range.startContainer.nodeType === 3 &&
             !isNOU(nearestAnchor) &&
-            !isNOU(closest(nearestAnchor, 'span'));
+            !isNOU(nearestSpan) &&
+            editNode.contains(nearestSpan);
     }
 
     // Specifically inserts nodes inside an anchor tag if conditions are met during paste.
@@ -1686,7 +1688,13 @@ export class InsertHtml {
         // Fallback to range end container if no block node found
         if ((isNOU(blockNode) || isNOU(blockNode.parentElement)) && range.endContainer.nodeType !== 3) {
             blockNode = range.endContainer;
-            range.setEnd(blockNode, range.endContainer.textContent.length);
+            if (range.startContainer.nodeType === 1)
+            {
+                range.setEnd(blockNode, range.endContainer.childNodes.length);
+            }
+            else {
+                range.setEnd(blockNode, range.endContainer.textContent.length);
+            }
         }
         // Special handling for body/div block nodes
         if (blockNode && (
@@ -1796,7 +1804,11 @@ export class InsertHtml {
             const isSibling: boolean = orphanLIs[i + 1] && currentLi.nextSibling === orphanLIs[i + 1];
             if (isNOU(ul) || !siblingFlag) {
                 ul = createElement('ul');
-                insertedNode.insertBefore(ul, currentLi);
+                if (isNOU(currentLi.parentNode)) {
+                    insertedNode.insertBefore(ul, currentLi);
+                }else{
+                    currentLi.parentNode.insertBefore(ul, currentLi);
+                }
             }
             ul.appendChild(currentLi);
             siblingFlag = isSibling;

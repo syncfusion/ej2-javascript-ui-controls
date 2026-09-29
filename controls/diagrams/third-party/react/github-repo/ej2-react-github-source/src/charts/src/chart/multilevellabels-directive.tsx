@@ -5,7 +5,7 @@ import { MultiLevelLabelsModel } from '@syncfusion/ej2-charts';
 /**
  * `MultiLevelLabelDirective` directive represent a multilevellabel of the react chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent>
  * <AxesDirective>
  * <AxisDirective>

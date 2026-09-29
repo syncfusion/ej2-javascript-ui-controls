@@ -3,6 +3,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Node, BpmnActivity, BpmnTask, BpmnSubProcess, BpmnShape, BpmnSubEvent, DiagramShape, Lane } from './../objects/node';
 import { DiagramElement } from './../core/elements/diagram-element';
 import { Canvas } from './../core/containers/canvas';
@@ -2705,6 +2706,7 @@ export class BpmnDiagrams {
      */
 
     constructor() {
+        initializeTelemetryFeature('Bpmn', 'Diagram');
         //constructs the BpmnDiagrams module
     }
 

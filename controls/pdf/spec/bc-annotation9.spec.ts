@@ -805,7 +805,7 @@ describe('Annotation coverage - PolyLine / Ink / highlighted branches (fixed)', 
 
         PdfInkAnnotation.prototype._doPostProcess.call(annotation, true);
 
-        expect(annotation._appearanceTemplate._content.dictionary.getArray('Matrix')).toEqual([1, 0, 0, 1, -2, -4]);
+        expect(annotation._appearanceTemplate._content.dictionary.has('Matrix')).toEqual(false);
         expect(annotation._flattenAnnotationTemplate).toHaveBeenCalled();
     });
 

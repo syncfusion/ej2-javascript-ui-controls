@@ -21,6 +21,7 @@ export class Toolbar {
         'CsvExport', 'PdfExport', 'Indent', 'Outdent', 'CriticalPath'];
     public element: HTMLElement;
     private searchElement: HTMLInputElement;
+    private sIcon: HTMLElement | null;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.id = this.parent.element.id;
@@ -92,6 +93,8 @@ export class Toolbar {
                 '<input id="' + this.id + '_searchbar" class="e-input" name="input" type="search"' +
                 // eslint-disable-next-line
                 'placeholder= \"' + searchLocalText + '\"/>' +
+                '<span id="' + this.id + '_clearbutton" class="e-input-group-icon e-icons e-sicon"' +
+                'tabindex="-1"  aria-label= "clear" role="button" style="cursor: default;"></span>' +
                 '<span id="' + this.id + '_searchbutton" class="e-input-group-icon e-search-icon e-icons"' +
                 'tabindex="-1" title="' + searchLocalText + '" aria-label= "search" role="button"></span>' +
                 '</div>',
@@ -121,6 +124,12 @@ export class Toolbar {
         this.toolbar.isStringTemplate = true;
         this.toolbar.isReact = (this.parent as Gantt).isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
+        const viewStr: string = 'viewContainerRef';
+        const registerTemp: string = 'registeredTemplate';
+        if (this.parent['' + viewStr]) {
+            this.toolbar['' + registerTemp] = {};
+            this.toolbar['' + viewStr] = this.parent['' + viewStr];
+        }
         this.toolbar.appendTo(this.element);
         if (this.parent.treeGrid.grid && (this.parent as Gantt).isReact) {
             (this.parent.treeGrid.grid).portals = (this.parent as Gantt).portals;
@@ -212,6 +221,19 @@ export class Toolbar {
         if (e.keyCode === 13 && this.parent.searchSettings.key !== this.searchElement.value) {
             this.parent.searchSettings.key = this.searchElement.value;
             this.parent.dataBind();
+        }
+        if (this.searchElement) {
+            this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
+
+            if (this.searchElement.value.length && this.sIcon) {
+                this.sIcon.classList.add('e-clear-icon');
+                this.sIcon.setAttribute('title', 'Clear');
+                this.sIcon.style.cursor = 'pointer';
+            } else if (this.sIcon) {
+                this.sIcon.classList.remove('e-clear-icon');
+                this.sIcon.removeAttribute('title');
+                this.sIcon.style.cursor = 'default';
+            }
         }
     }
     private focusHandler(e: FocusEvent): void {
@@ -343,6 +365,17 @@ export class Toolbar {
                         if (this.parent.searchSettings.key !== keyVal) {
                             this.parent.searchSettings.key = keyVal;
                             this.parent.dataBind();
+                        }
+                    }
+                    if (searchButtonId === this.parent.element.id + '_clearbutton' && this.parent.filterModule) {
+                        this.parent.searchSettings.key = '';
+                        this.parent.dataBind();
+                        this.searchElement.value = '';
+                        if (this.searchElement) {
+                            this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
+                            this.sIcon.classList.remove('e-clear-icon');
+                            this.sIcon.removeAttribute('title');
+                            this.sIcon.style.cursor = 'default';
                         }
                     }
                     break;

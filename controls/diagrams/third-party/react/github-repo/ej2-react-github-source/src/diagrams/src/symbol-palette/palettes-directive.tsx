@@ -5,7 +5,7 @@ import { PaletteModel } from '@syncfusion/ej2-diagrams';
 /**
  * `Palette` directive represent a axis palette of the react SymbolPalette. 
  * It must be contained in a SymbolPalette component(`SymbolPaletteComponent`). 
- * ```tsx
+ * ```ts
  * <SymbolPaletteComponent> 
  * <PalettesDirective>
  * <PaletteDirective></PaletteDirective>

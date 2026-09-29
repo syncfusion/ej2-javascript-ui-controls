@@ -1,5 +1,6 @@
 import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';
-
+import { DayWorkingTimeModel } from './day-working-time-model';
+import { DayWorkingTime } from '../models/day-working-time';
 /**
  * Represents a calendar exception that overrides default working time or marks non-working periods.
  *
@@ -33,4 +34,14 @@ export class CalendarException extends ChildProperty<CalendarException> {
      */
     @Property(null)
     public label: string;
+
+    /**
+     * Overrides the default working time for the specified date range.
+     *
+     * If defined, this replaces the standard working hours with custom time blocks (e.g., extended shifts or partial workdays).
+     *
+     * @default []
+     */
+    @Collection<DayWorkingTimeModel>([], DayWorkingTime)
+    public exceptionWorkingTime: DayWorkingTimeModel[];
 }

@@ -5,7 +5,7 @@ import { ChartSegmentModel } from '@syncfusion/ej2-charts';
 /**
  * `SegmentDirective` directive represent a segment of the react chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent>
  * <SeriesCollectionDirective>
  * <SeriesDirective>

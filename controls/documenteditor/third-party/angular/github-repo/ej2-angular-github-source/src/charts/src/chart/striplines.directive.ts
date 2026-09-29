@@ -18,9 +18,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-axis>e-striplines>e-stripline',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StripLineDirective extends ComplexBase<StripLineDirective> {
@@ -32,24 +32,24 @@ export class StripLineDirective extends ComplexBase<StripLineDirective> {
      * The `border` property allows customization of the border for the strip line. 
      * It includes options to set the color and width of the border.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * The `color` property specifies the color of the strip line.
      * @default '#808080'
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Specifies the pattern of dashes and gaps used to render the strip line.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public dashArray: any;
+    public declare dashArray: any;
     /** 
      * Specifies the ending value of the strip line.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Defines the position of the strip line text horizontally. 
      * Available options are: 
@@ -58,96 +58,96 @@ export class StripLineDirective extends ComplexBase<StripLineDirective> {
      * * End: Places the strip line text at the end.
      * @default 'Middle'
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Specifies the URL of the background image for the strip line. The image will be displayed as the background.
      * @default ''
      */
-    public imageUrl: any;
+    public declare imageUrl: any;
     /** 
      * Specifies whether the strip line is repeated at regular intervals along the axis.
      * @default false
      * @aspdefaultvalueignore 
      */
-    public isRepeat: any;
+    public declare isRepeat: any;
     /** 
      * Specifies whether the strip line is segmented.
      * @default false
      * @aspdefaultvalueignore 
      */
-    public isSegmented: any;
+    public declare isSegmented: any;
     /** 
      * Specifies the opacity for the strip line.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * Specifies the interval at which the strip line is repeated.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public repeatEvery: any;
+    public declare repeatEvery: any;
     /** 
      * Specifies the maximum value of the interval at which the strip line is repeated.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public repeatUntil: any;
+    public declare repeatUntil: any;
     /** 
      * Defines the degree of rotation applied to the text on the strip line.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public rotation: any;
+    public declare rotation: any;
     /** 
      * The name of the axis where the strip line segment is applied.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public segmentAxisName: any;
+    public declare segmentAxisName: any;
     /** 
      * Specifies where a new segment of the strip line on the axis ends.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public segmentEnd: any;
+    public declare segmentEnd: any;
     /** 
      * Specifies where a new segment of the strip line on the axis begins.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public segmentStart: any;
+    public declare segmentStart: any;
     /** 
      * Specifies the size of the strip line when starting from the origin.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public size: any;
+    public declare size: any;
     /** 
      * The `sizeType` property specifies how the size of the strip line is determined.
      * @default Auto
      */
-    public sizeType: any;
+    public declare sizeType: any;
     /** 
      * Specifies the starting value of the strip line.
      * @default null
      * @aspdefaultvalueignore 
      */
-    public start: any;
+    public declare start: any;
     /** 
      * If set to true, the strip line is rendered from the axis origin.
      * @default false
      */
-    public startFromAxis: any;
+    public declare startFromAxis: any;
     /** 
      * Defines the text to be displayed on the strip line.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * The `textStyle` property enables customization of the text appearance on the strip line.
      */
-    public textStyle: any;
+    public declare textStyle: any;
     /** 
      * Defines the position of the strip line text vertically. 
      * Available options are: 
@@ -156,12 +156,12 @@ export class StripLineDirective extends ComplexBase<StripLineDirective> {
      * * End: Places the strip line text at the end.
      * @default 'Middle'
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * If set to true, the strip line on the axis will render.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Specifies the order of the strip line. 
      * The options are: 
@@ -169,7 +169,7 @@ export class StripLineDirective extends ComplexBase<StripLineDirective> {
      * * Over: Places the strip line over the series elements.
      * @default 'Behind'
      */
-    public zIndex: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -185,6 +185,7 @@ export class StripLineDirective extends ComplexBase<StripLineDirective> {
  */
 @Directive({
     selector: 'e-axis>e-striplines',
+    standalone: true,
     queries: {
         children: new ContentChildren(StripLineDirective)
     },

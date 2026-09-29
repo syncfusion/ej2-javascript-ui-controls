@@ -1,5 +1,19 @@
 # Vue FileManager Component
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/vue/llms.txt](https://ai.syncfusion.com/vue/llms.txt)
+
 The [Vue FileManager](https://www.syncfusion.com/vue-components/vue-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=vue-file-manager-npm) component is a graphical user interface that allows users to manage their file system in an intuitive and efficient manner. With this component, you can easily access, edit, upload, download, and organize files and folders. It also offers a convenient way to browse and select items from the file system.
 
 <p align="center">
@@ -92,7 +106,7 @@ data () {
     return {
        ajaxSettings:
         {
-            url: "https://ej2-aspcore-service.azurewebsites.net/api/FileManager/FileOperations"
+            url: "https://physical-service.syncfusion.com/api/FileManager/FileOperations"
         }
     };
 }

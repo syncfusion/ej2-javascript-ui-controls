@@ -1,7 +1,7 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
 import { Ribbon, RibbonGroupModel, RibbonItemSize, RibbonSplitButtonSettingsModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
-import { createElement, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, getInstance, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 import { HighlightColor, SelectionCharacterFormat } from '../../../document-editor';
 import { FontHelper } from '../../helper/font-helper';
 import { ElementsMap, HighlightColorInfo } from '../../helper/ribbon-interfaces';
@@ -341,7 +341,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             if (highlightColor) {
                 const highlightColorElement: HTMLElement = highlightColor.querySelector('.e-split-btn-icon');
                 if (highlightColorElement) {
-                    highlightColorElement.style.backgroundColor = this.getBackgroundColorFromHighlightColor(characterFormat.highlightColor);
+                    updateCSSText(highlightColorElement, `background-color:${this.getBackgroundColorFromHighlightColor(characterFormat.highlightColor)};`);
                 }
             }
         }
@@ -392,35 +392,41 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
         }
 
         const colorListDropDiv: HTMLElement = createElement('div', {
-            id: this.ribbonId + '_color_list_div',
-            styles: 'visibility: hidden'
+            id: this.ribbonId + '_color_list_div'
         });
+        updateCSSText(colorListDropDiv, 'visibility:hidden;');
 
         // Create the HTML template for highlight color dropdown
         const highlightColorElement: HTMLElement = createElement('ul', {
-            id: this.ribbonId + '_ribbon_highlight_color',
-            styles: 'visibility: visible; display: grid; grid-template-columns: repeat(5,1fr); padding: 2px 2px; box-shadow: none'
+            id: this.ribbonId + '_ribbon_highlight_color'
         });
+        const cssText: string = 'visibility: visible; display: grid; grid-template-columns: repeat(5,1fr); padding: 2px 2px; box-shadow: none';
+        updateCSSText(highlightColorElement, cssText);
         colorListDropDiv.appendChild(highlightColorElement);
 
         const highlightColors: HighlightColorInfo[] = this.getHighlightColorItems();
 
         highlightColors.forEach((color: HighlightColorInfo) => {
             const colorDiv: HTMLDivElement = createElement('li', { className: 'e-de-ctnr-hglt-btn' }) as HTMLDivElement;
-            colorDiv.style.backgroundColor = color.backgroundColor;
+            updateCSSText(colorDiv, `background-color:${color.backgroundColor};`);
             highlightColorElement.appendChild(colorDiv);
             // Create bound handler and store reference
             const handler: EventListener = this.onHighlightColorClick.bind(this, color.backgroundColor);
             colorDiv.addEventListener('click', handler);
             this.highlightColorHandlers.push({ element: colorDiv, handler });
         });
-        const noColorList: HTMLElement = createElement('ul', { styles: 'visibility: visible; padding:2px' });
+        const noColorList: HTMLElement = createElement('ul');
+        const noColorListStyle: string = 'visibility:visible;padding:2px;';
+        updateCSSText(noColorList, noColorListStyle);
         const noColorListItem: HTMLElement = createElement('li', { className: 'e-hglt-no-color' });
         colorListDropDiv.appendChild(noColorList);
         noColorList.appendChild(noColorListItem);
-        const noColorDiv: HTMLElement = createElement('div', { styles: 'width:24px;height:24px;background-color:#ffffff;margin:3px;', id: 'noColorDiv' });
+        const noColorDiv: HTMLElement = createElement('div', {id: 'noColorDiv' });
+        const noColorDivStyle: string = 'width:24px;height:24px;background-color:#ffffff;margin:3px;';
+        updateCSSText(noColorDiv, noColorDivStyle);
         noColorListItem.appendChild(noColorDiv);
-        const noColorLabel: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('No color'), className: 'e-de-ctnr-hglt-no-color' });
+        const noColorLabel: HTMLElement = createElement('div', { className: 'e-de-ctnr-hglt-no-color' });
+        noColorLabel.textContent = this.localObj.getConstant('No color');
         noColorDiv.appendChild(noColorLabel);
         noColorDiv.addEventListener('click', this.onHighlightColorClick.bind(this, 'transparent'));
 
@@ -440,10 +446,10 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
                 this.applyHighlightColor(args.item.backgroundColor);
             },
             beforeOpen: (): void => {
-                colorListDropDiv.style.visibility = 'visible';
+                updateCSSText(colorListDropDiv, 'visibility:visible;');
             },
             beforeClose: (): void => {
-                colorListDropDiv.style.visibility = 'hidden';
+                updateCSSText(colorListDropDiv, 'visibility:hidden;');
             },
             click: () => {
                 this.applyHighlightColor(this.appliedHighlightColor);

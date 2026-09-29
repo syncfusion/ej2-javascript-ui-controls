@@ -141,6 +141,7 @@ export interface HtmlModel extends ShapeModel{
      * <div id='diagram'></div>
      * ```
      * ```typescript
+     * {% raw %}
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
      * shape: { type: 'HTML',
@@ -152,8 +153,8 @@ export interface HtmlModel extends ShapeModel{
      * ...
      * });
      * diagram.appendTo('#diagram');
+     * {% endraw %}
      * ```
-     *
      * @default ''
      */
     content?: string | HTMLElement | Function;

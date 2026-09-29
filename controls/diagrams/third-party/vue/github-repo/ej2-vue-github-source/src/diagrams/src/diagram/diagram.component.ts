@@ -13,7 +13,7 @@ import { PortsDirective, PortDirective, PortsPlugin, PortPlugin } from './ports.
 import { NodesDirective, NodeDirective, NodesPlugin, NodePlugin } from './nodes.directive'
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'addInfo', 'annotationTemplate', 'backgroundColor', 'bridgeDirection', 'commandManager', 'connectorDefaults', 'connectors', 'constraints', 'contextMenuSettings', 'customCursor', 'dataSourceSettings', 'diagramSettings', 'drawingObject', 'enableCollaborativeEditing', 'enableConnectorSplit', 'enablePersistence', 'enableRtl', 'fixedUserHandleTemplate', 'getConnectorDefaults', 'getCustomCursor', 'getCustomProperty', 'getCustomTool', 'getDescription', 'getNodeDefaults', 'height', 'historyManager', 'layers', 'layout', 'locale', 'mode', 'model', 'nodeDefaults', 'nodeTemplate', 'nodes', 'pageSettings', 'rulerSettings', 'scrollSettings', 'segmentThumbShape', 'segmentThumbSize', 'selectedItems', 'serializationSettings', 'setNodeTemplate', 'snapSettings', 'tool', 'tooltip', 'updateSelection', 'userHandleTemplate', 'width', 'animationComplete', 'click', 'collectionChange', 'commandExecute', 'connectionChange', 'contextMenuBeforeItemRender', 'contextMenuClick', 'contextMenuOpen', 'created', 'dataLoaded', 'diagramExporting', 'diagramImporting', 'doubleClick', 'dragEnter', 'dragLeave', 'dragOver', 'drop', 'elementDraw', 'expandStateChange', 'fixedUserHandleClick', 'historyChange', 'historyStateChange', 'keyDown', 'keyUp', 'layoutUpdated', 'load', 'loaded', 'mouseEnter', 'mouseLeave', 'mouseOver', 'mouseWheel', 'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave', 'onFixedUserHandleMouseUp', 'onImageLoad', 'onUserHandleMouseDown', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onUserHandleMouseUp', 'positionChange', 'propertyChange', 'rotateChange', 'scrollChange', 'segmentChange', 'segmentCollectionChange', 'selectionChange', 'sizeChange', 'sourcePointChange', 'targetPointChange', 'textEdit', 'erEntityChanged'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'addInfo', 'annotationTemplate', 'backgroundColor', 'bridgeDirection', 'commandManager', 'connectorDefaults', 'connectors', 'constraints', 'contextMenuSettings', 'customCursor', 'dataSourceSettings', 'diagramSettings', 'drawingObject', 'enableCollaborativeEditing', 'enableConnectorSplit', 'enablePersistence', 'enableRtl', 'enableWebMcp', 'fixedUserHandleTemplate', 'getConnectorDefaults', 'getCustomCursor', 'getCustomProperty', 'getCustomTool', 'getDescription', 'getNodeDefaults', 'height', 'historyManager', 'layers', 'layout', 'locale', 'mode', 'model', 'nodeDefaults', 'nodeTemplate', 'nodes', 'pageSettings', 'rulerSettings', 'scrollSettings', 'segmentThumbShape', 'segmentThumbSize', 'selectedItems', 'serializationSettings', 'setNodeTemplate', 'snapSettings', 'tool', 'tooltip', 'updateSelection', 'userHandleTemplate', 'width', 'animationComplete', 'beforeWebMcpToolExecute', 'click', 'collectionChange', 'commandExecute', 'connectionChange', 'contextMenuBeforeItemRender', 'contextMenuClick', 'contextMenuOpen', 'created', 'dataLoaded', 'diagramExporting', 'diagramImporting', 'doubleClick', 'dragEnter', 'dragLeave', 'dragOver', 'drop', 'elementDraw', 'expandStateChange', 'fixedUserHandleClick', 'historyChange', 'historyStateChange', 'keyDown', 'keyUp', 'layoutUpdated', 'load', 'loaded', 'mouseEnter', 'mouseLeave', 'mouseOver', 'mouseWheel', 'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave', 'onFixedUserHandleMouseUp', 'onImageLoad', 'onUserHandleMouseDown', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onUserHandleMouseUp', 'positionChange', 'propertyChange', 'rotateChange', 'scrollChange', 'segmentChange', 'segmentCollectionChange', 'selectionChange', 'sizeChange', 'sourcePointChange', 'targetPointChange', 'textEdit', 'erEntityChanged'];
 export const modelProps: string[] = [];
 
 export const testProp: any = getProps({props: properties});
@@ -278,6 +278,12 @@ export let DiagramComponent: DefineVueComponent<DiagramModel> =  vueDefineCompon
         getTool(action: string): Object {
             return this.ej2Instances.getTool(action);
         },
+        getWebMcpTools(toolNames?: string[]): Object[] {
+            return this.ej2Instances.getWebMcpTools(toolNames);
+        },
+        getWrapper(nodes: Object, id: string): Object {
+            return this.ej2Instances.getWrapper(nodes, id);
+        },
         group(): void {
             return this.ej2Instances.group();
         },
@@ -322,6 +328,12 @@ export let DiagramComponent: DefineVueComponent<DiagramModel> =  vueDefineCompon
         },
         redo(): void {
             return this.ej2Instances.redo();
+        },
+        refreshTemplate(element?: Object | Object | Object | Object | Object | string | string[], parent?: Object | Object): boolean {
+            return this.ej2Instances.refreshTemplate(element, parent);
+        },
+        registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void {
+            return this.ej2Instances.registerWebMcpTools(prefix, tools, exposedTo);
         },
         remove(obj?: Object | Object): void {
             return this.ej2Instances.remove(obj);
@@ -515,6 +527,8 @@ export type DiagramComponent = typeof ComponentBase & {
     getObject(name: string): Object;
     getParentId(id: string): string;
     getTool(action: string): Object;
+    getWebMcpTools(toolNames?: string[]): Object[];
+    getWrapper(nodes: Object, id: string): Object;
     group(): void;
     hideTooltip(obj: Object | Object): void;
     importFromVisio(file: Object | Object, options?: Object): Object;
@@ -530,6 +544,8 @@ export type DiagramComponent = typeof ComponentBase & {
     print(options: Object): void;
     printImage(image: string, options: Object): void;
     redo(): void;
+    refreshTemplate(element?: Object | Object | Object | Object | Object | string | string[], parent?: Object | Object): boolean;
+    registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void;
     remove(obj?: Object | Object): void;
     removeChildFromGroup(group: Object, child: string | Object | Object): void;
     removeConstraints(constraintsType: number, constraintsValue: number): number;

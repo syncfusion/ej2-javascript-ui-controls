@@ -29,19 +29,20 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-cells>e-cell',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-        childImage: new ContentChild(ImagesDirective), 
-        childChart: new ContentChild(ChartsDirective), 
+        childImage: new ContentChild(ImagesDirective),
+        childChart: new ContentChild(ChartsDirective),
         childRichText: new ContentChild(RichTextsDirective)
     }
 })
 export class CellDirective extends ComplexBase<CellDirective> {
     public directivePropList: any;
 	
-    public childImage: any;
-    public childChart: any;
-    public childRichText: any;
+    public declare childImage: any;
+    public declare childChart: any;
+    public declare childRichText: any;
     public tags: string[] = ['image', 'chart', 'richText'];
     /** 
      * Represents the threaded comment associated with the cell. 
@@ -54,59 +55,59 @@ export class CellDirective extends ComplexBase<CellDirective> {
      * - **replies**: A collection of reply comments, each with its own `author`, `text`, and `createdTime`.
      * @default null
      */
-    public comment: any;
+    public declare comment: any;
     /** 
      * Specifies the chart of the cell.
      * @default []
      */
-    public chart: any;
+    public declare chart: any;
     /** 
      * Specifies the column-wise cell merge count.
      * @default 1
      * @asptype int
      */
-    public colSpan: any;
+    public declare colSpan: any;
     /** 
      * Specifies the number format code to display value in specified number format.
      * @default 'General'
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Defines the formula or expression of the cell.
      * @default ''
      */
-    public formula: any;
+    public declare formula: any;
     /** 
      * Specifies the hyperlink of the cell.
      * @default ''
      */
-    public hyperlink: any;
+    public declare hyperlink: any;
     /** 
      * Specifies the image of the cell.
      * @default []
      */
-    public image: any;
+    public declare image: any;
     /** 
      * Specifies the index of the cell.
      * @default 0
      * @asptype int
      */
-    public index: any;
+    public declare index: any;
     /** 
      * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
      * @default true
      */
-    public isLocked: any;
+    public declare isLocked: any;
     /** 
      * Represents whether a cell in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
      * @default false
      */
-    public isReadOnly: any;
+    public declare isReadOnly: any;
     /** 
      * Specifies the note of the cell.
      * @default ''
      */
-    public notes: any;
+    public declare notes: any;
     /** 
      * Specifies the rich text segments for the cell text, allowing superscript and subscript formatting within the content. 
      * Uses the RichText model to apply formatting to specific text segments. The options are: 
@@ -115,34 +116,34 @@ export class CellDirective extends ComplexBase<CellDirective> {
      * Set `verticalAlign` as `super` for superscript formatting and `sub` for subscript formatting.
      * @default []
      */
-    public richText: any;
+    public declare richText: any;
     /** 
      * Specifies the row-wise cell merge count.
      * @default 1
      * @asptype int
      */
-    public rowSpan: any;
+    public declare rowSpan: any;
     /** 
      * Specifies the cell style options. 
      *  
      * @default {}
      */
-    public style: any;
+    public declare style: any;
     /** 
      * Specifies the validation of the cell.
      * @default ''
      */
-    public validation: any;
+    public declare validation: any;
     /** 
      * Defines the value of the cell which can be text or number.
      * @default ''
      */
-    public value: any;
+    public declare value: any;
     /** 
      * Wraps the cell text to the next line, if the text width exceeds the column width.
      * @default false
      */
-    public wrap: any;
+    public declare wrap: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -158,6 +159,7 @@ export class CellDirective extends ComplexBase<CellDirective> {
  */
 @Directive({
     selector: 'e-row>e-cells',
+    standalone: true,
     queries: {
         children: new ContentChildren(CellDirective)
     },

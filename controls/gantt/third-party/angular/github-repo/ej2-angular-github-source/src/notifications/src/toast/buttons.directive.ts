@@ -20,14 +20,14 @@ let outputs: string[] = ['click'];
 @Directive({
     selector: 'e-buttonmodelprops>e-buttonmodelprop',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ButtonModelPropDirective extends ComplexBase<ButtonModelPropDirective> {
     public directivePropList: any;
-	public click: any;
+	public declare click: any;
 
 
     /** 
@@ -35,7 +35,7 @@ export class ButtonModelPropDirective extends ComplexBase<ButtonModelPropDirecti
      * 
      * @default null
      */
-    public model: any;
+    public declare model: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -51,6 +51,7 @@ export class ButtonModelPropDirective extends ComplexBase<ButtonModelPropDirecti
  */
 @Directive({
     selector: 'ejs-toast>e-buttonmodelprops',
+    standalone: true,
     queries: {
         children: new ContentChildren(ButtonModelPropDirective)
     },

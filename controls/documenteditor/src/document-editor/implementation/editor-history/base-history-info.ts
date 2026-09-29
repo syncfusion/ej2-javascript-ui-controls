@@ -211,7 +211,7 @@ export class BaseHistoryInfo {
     }
     public set insertPosition(value: string) {
         this.insertPositionIn = value;
-        if (this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction && value !== '' && !isNullOrUndefined(value) && value.indexOf('C') === -1) {
+        if (!isNullOrUndefined(this.owner) && this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction && value !== '' && !isNullOrUndefined(value) && value.indexOf('C') === -1) {
             //TODO: Insert position not needed in all the cases. Need to optimize it.
             this.insertIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(value);
 
@@ -491,7 +491,7 @@ export class BaseHistoryInfo {
             }
             this.markerData.push(markerData);
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
-
+            this.owner.editorModule.updateBookmarkCollection(bookmark.name, bookmark);
             // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
             // Need to skip recording changes if the currentHistoryInfo action is Grouping. Because in grouping the history already recorded while updating complex history.
             if (!this.editorHistory.currentHistoryInfo || (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'InsertBookmark' && this.editorHistory.currentHistoryInfo.action !== 'Grouping')) {
@@ -1585,6 +1585,9 @@ export class BaseHistoryInfo {
                     this.modifiedProperties[this.modifiedProperties.length - 1] = format.cloneFormat();
                 }
             } else {
+                if (isNullOrUndefined(previousFormat)) {
+                    return value;
+                }
                 value = previousFormat.getPropertyValue(property);
                 previousFormat.copyFormat(format);
             }
@@ -1701,7 +1704,9 @@ export class BaseHistoryInfo {
                 value = new WParagraphFormat(undefined);
                 (value as WParagraphFormat).copyFormat(previousFormat);
                 previousFormat.listFormat = new WListFormat(previousFormat);
-                previousFormat.listFormat.copyFormat(format.listFormat);
+                if (!isNullOrUndefined(format.listFormat)){
+                    previousFormat.listFormat.copyFormat(format.listFormat);
+                }
                 this.currentPropertyIndex++;
                 return value;
             }

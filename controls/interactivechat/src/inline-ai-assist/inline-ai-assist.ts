@@ -6,8 +6,10 @@ import { CommandSettingsModel, InlineToolbarSettingsModel, InlineAIAssistModel, 
 import { CloseEventArgs, OpenEventArgs, Popup } from '@syncfusion/ej2-popups';
 import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';
 import { EventHandler, addClass, removeClass, formatUnit } from '@syncfusion/ej2-base';
-import { Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
-import { AIAssistBase, ToolbarPosition } from '../ai-assist-base/ai-assist-base';
+import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';
+import { SpeechToText, StartListeningEventArgs, StopListeningEventArgs, TranscriptChangedEventArgs, ErrorEventArgs } from '@syncfusion/ej2-inputs';
+import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';
 import { ToolbarItemModel } from '../interactive-chat-base/interactive-chat-base-model';
 import { TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';
 
@@ -373,7 +375,7 @@ export class CommandSettings extends ChildProperty<CommandSettings> {
     public popupHeight: string
 
     /**
-     * SSpecifies the width of the command menu popup.
+     * Specifies the width of the command menu popup.
      * Specifies a CSS width value such as '320px' or '40%'.
      *
      * @type {string}
@@ -472,6 +474,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
      * Specifies how the AI response is displayed.
      * 'Inline' renders at the caret position; 'Popup' shows above the prompt.
      *
+     * {% codeBlock src='inline-ai-assist/responseMode/index.md' %}{% endcodeBlock %}
+     *
      * @isenumeration true
      * @default ResponseMode.Popup
      * @asptype ResponseMode
@@ -502,6 +506,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     /**
      * Specifies the collection of prompts and their corresponding responses.
      * Specifies an array of PromptModel objects used to render the history.
+     *
+     * {% codeBlock src='inline-ai-assist/prompts/index.md' %}{% endcodeBlock %}
      *
      * @type {PromptResponseModel[]}
      * @default []
@@ -555,6 +561,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
      * Specifies the configuration for available AI commands and suggestions.
      * Specifies options such as enabling/disabling commands and customizing suggestion behavior.
      *
+     * {% codeBlock src='inline-ai-assist/commandSettings/index.md' %}{% endcodeBlock %}
+     *
      * @type {CommandSettingsModel | null}
      * @default null
      */
@@ -564,6 +572,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     /**
      * Specifies the configuration for the toolbar displayed with the generated response.
      * Specifies buttons, actions, and behaviors applied to the response area.
+     *
+     * {% codeBlock src='inline-ai-assist/responseSettings/index.md' %}{% endcodeBlock %}
      *
      * @type {ResponseSettingsModel | null}
      * @default null
@@ -582,8 +592,25 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     public inlineToolbarSettings: InlineToolbarSettingsModel;
 
     /**
+     * Specifies the configuration for the Speech-to-Text (voice input) feature in the inline prompt input.
+     * When `enable` is `true`, a microphone button is rendered in the footer toolbar and the Syncfusion
+     * `SpeechToText` control from `@syncfusion/ej2-inputs` is initialized to capture spoken prompts.
+     *
+     * @type {SpeechToTextSettingsModel}
+     * @default { enable: false }
+     * @remark When `editorTemplate` is set, `editableTextarea` is not created and the default
+     * transcript-to-prompt integration is disabled (transcript changes have nowhere to write).
+     * The microphone button still renders; consumers may handle `transcriptChanged` themselves
+     * against their custom template.
+     */
+    @Complex<SpeechToTextSettingsModel>({ enable: false }, SpeechToTextSettings)
+    public speechToTextSettings: SpeechToTextSettingsModel;
+
+    /**
      * Specifies a custom template (string or function) for rendering AI-generated response content.
      * Specifies that a function receives a ResponseTemplateContext and returns markup or text.
+     *
+     * {% codeBlock src='inline-ai-assist/responseTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -597,6 +624,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     /**
      * Specifies a custom template (string or function) for rendering the prompt input area.
      * Specifies a string template or a function that returns the editor UI markup.
+     *
+     * {% codeBlock src='inline-ai-assist/editorTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -660,6 +689,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     private contentWrapper: HTMLElement;
     private l10n: L10n;
     private sendToolbarItem: ItemModel = null;
+    private speechToTextObj: SpeechToText;
+    private speechToTextToolbarItem: ItemModel = null;
     private isResponseRequested: boolean = false;
     private responseContainerCreated: boolean = false;
     private targetEl: HTMLElement;
@@ -783,6 +814,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         this.mentionPopupObj.dataSource = dataSource;
         this.mentionPopupObj.popupWidth = width;
         this.mentionPopupObj.popupHeight = height;
+        this.mentionPopupObj.fields = this.getMentionFields(dataSource);
         this.mentionPopupObj.dataBind();
         this.mentionPopupObj.showPopup();
     }
@@ -836,6 +868,15 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         this.responseOptionsData = mentionDataSource;
     }
 
+    private getMentionFields(dataSource: any[]): FieldSettingsModel {
+        const hasGroupBy: boolean = dataSource && dataSource.length > 0 && dataSource.some((item: any) => item.groupBy);
+        const fields: FieldSettingsModel = { text: 'label', iconCss: 'iconCss', disabled: 'disabled' };
+        if (hasGroupBy) {
+            fields.groupBy = 'groupBy';
+        }
+        return fields;
+    }
+
     private renderMentionPopup(): void {
         const mentionEl: HTMLElement = this.createElement('div', { attrs: { class: 'e-mention-container' } });
         this.element.appendChild(mentionEl);
@@ -847,11 +888,12 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         if (this.commandSettings.commands.length > 0) {
             mentionDataSource = this.commandOptionsData;
         }
+        const mentionFields: FieldSettingsModel = this.getMentionFields(mentionDataSource);
         this.mentionPopupObj = new Mention({
             mentionChar: '',
             target: this.editableTextarea,
             dataSource: mentionDataSource,
-            fields: { text: 'label', iconCss: 'iconCss' },
+            fields: mentionFields,
             popupWidth: this.commandSettings.commands.length > 0 ? this.commandSettings.popupWidth : '200px',
             popupHeight: this.commandSettings.commands.length > 0 ? this.commandSettings.popupHeight : '400px',
             select: (args: SelectEventArgs) => {
@@ -934,6 +976,9 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     }
 
     private onPopupClose(): void {
+        if (!isNOU(this.speechToTextObj)) {
+            (this.speechToTextObj as any).stopListening();
+        }
         this.clearResponses();
         this.isResponseRequested = false;
         this.toggleStopRespondingButton(false);
@@ -945,6 +990,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
             (this.mentionPopupObj as any).hidePopup();
         }
     }
+
 
     private renderInlineFooter(): void {
         const textareaAndIconsWrapper: HTMLElement = this.createElement('div', { attrs: { class: 'e-textarea-icons-wrapper' } });
@@ -1014,6 +1060,17 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
                 tabIndex: customItem.tabIndex
             };
             toolbarItems.push(mappedItem);
+        }
+
+        if (this.speechToTextSettings && this.speechToTextSettings.enable &&
+            !this.isDuplicatedItem('e-icons e-inline-assist-speech-to-text', toolbarItems)) {
+            this.speechToTextToolbarItem = {
+                id: this.element.id + '_speechtotext',
+                template: '<button class="e-inline-assist-speech-to-text e-tbar-btn"></button>',
+                prefixIcon: 'e-icons e-inline-assist-speech-to-text',
+                align: 'Right'
+            };
+            toolbarItems.push(this.speechToTextToolbarItem);
         }
 
         if (!this.isDuplicatedItem('e-icons e-inline-send', toolbarItems)) {
@@ -1087,6 +1144,69 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         this.footerToolbarEle.appendTo(toolbarContainer);
         this.footerToolbarEle.element.setAttribute('aria-label', 'assist-footer-toolbar');
         container.appendChild(toolbarContainer);
+        this.renderSpeechToText();
+    }
+
+    private renderSpeechToText(): void {
+        if (this.speechToTextObj) {
+            this.speechToTextObj.destroy();
+            this.speechToTextObj = null;
+        }
+        if (this.speechToTextSettings && this.speechToTextSettings.enable) {
+            this.speechToTextObj = new SpeechToText({
+                allowInterimResults: this.speechToTextSettings.allowInterimResults,
+                transcript: this.speechToTextSettings.transcript,
+                lang: this.speechToTextSettings.lang,
+                listeningState: this.speechToTextSettings.listeningState,
+                disabled: this.speechToTextSettings.disabled,
+                buttonSettings: this.speechToTextSettings.buttonSettings,
+                showTooltip: this.speechToTextSettings.showTooltip,
+                tooltipSettings: this.speechToTextSettings.tooltipSettings,
+                cssClass: this.speechToTextSettings.cssClass,
+                onStart: (args: StartListeningEventArgs) => {
+                    if (this.speechToTextSettings.onStart) {
+                        this.speechToTextSettings.onStart.call(this, args);
+                    }
+                },
+                onStop: (args: StopListeningEventArgs) => {
+                    if (this.speechToTextSettings.onStop) {
+                        this.speechToTextSettings.onStop.call(this, args);
+                    }
+                },
+                transcriptChanged: (args: TranscriptChangedEventArgs) => {
+                    if (!this.editableTextarea) { return; }
+                    const prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    const value: string = this.prompt.length > 0 ? this.prompt + ' ' : '';
+                    if (args.isInterimResult) {
+                        this.editableTextarea.innerHTML = value + SanitizeHtmlHelper.sanitize(args.transcript);
+                    } else {
+                        this.prompt = value + SanitizeHtmlHelper.sanitize(args.transcript);
+                        this.editableTextarea.innerHTML = this.prompt;
+                        this.speechToTextObj.transcript = '';
+                        this.editableTextarea.focus();
+                        this.setFocusAtEnd(this.editableTextarea);
+                        this.refreshTextareaUI();
+                        this.scheduleUndoPush();
+                        this.redoStack = [];
+                    }
+                    this.speechToTextSettings.transcript = args.transcript;
+                    if (this.speechToTextSettings.transcriptChanged) {
+                        this.speechToTextSettings.transcriptChanged.call(this, args);
+                    }
+                    this.isProtectedOnChange = prevOnChange;
+                },
+                onError: (args: ErrorEventArgs) => {
+                    if (this.speechToTextSettings.onError) {
+                        this.speechToTextSettings.onError.call(this, args);
+                    }
+                }
+            });
+            const speechToTextButton: HTMLElement = this.footerToolbarEle.element.querySelector('.e-inline-assist-speech-to-text') as HTMLElement;
+            if (speechToTextButton) {
+                this.speechToTextObj.appendTo(speechToTextButton);
+            }
+        }
     }
 
     private isDuplicatedItem(iconCss: string, toolbarItems: ItemModel[]): boolean {
@@ -1095,6 +1215,9 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
                 switch (iconCss) {
                 case 'e-icons e-inline-send':
                     this.sendToolbarItem = item;
+                    break;
+                case 'e-icons e-inline-assist-speech-to-text':
+                    this.speechToTextToolbarItem = item;
                     break;
                 }
                 return true;
@@ -1211,13 +1334,13 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         this.editableTextarea.setAttribute('contenteditable', 'false');
         this.editableTextarea.classList.add('e-response-indicator-active');
         if (!this.typingIndicatorEl) {
-            this.typingIndicatorEl = this.createElement('span', { className: 'e-response-indicator' });
+            this.typingIndicatorEl = this.createElement('span', { className: 'e-assist-response-indicator' });
         }
         this.typingIndicatorEl.innerHTML =
-            '<span class="e-indicator-text">' + text + '</span>' +
-            '<span class="e-indicator"></span>' +
-            '<span class="e-indicator"></span>' +
-            '<span class="e-indicator"></span>';
+            '<span class="e-assist-indicator-text">' + text + '</span>' +
+            '<span class="e-assist-indicator"></span>' +
+            '<span class="e-assist-indicator"></span>' +
+            '<span class="e-assist-indicator"></span>';
         this.editableTextarea.innerHTML = '';
         this.editableTextarea.appendChild(this.typingIndicatorEl);
     }
@@ -1225,7 +1348,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     private hideTypingIndicator(): void {
         if (!this.editableTextarea) { return; }
         this.editableTextarea.setAttribute('contenteditable', 'true');
-        this.editableTextarea.classList.remove('e-typing-indicator-active');
+        this.editableTextarea.classList.remove('e-response-indicator-active');
         if (this.typingIndicatorEl && this.typingIndicatorEl.parentElement === this.editableTextarea) {
             this.editableTextarea.removeChild(this.typingIndicatorEl);
         }
@@ -1235,6 +1358,9 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
     private onSendIconClick(): void {
         if (this.isResponseRequested || !this.prompt.trim()) {
             return;
+        }
+        if (!isNOU(this.speechToTextObj)) {
+            (this.speechToTextObj as any).stopListening();
         }
         this.isResponseRequested = true;
         this.isStopRequested = false;
@@ -1396,6 +1522,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
             footerIconsWrapper.innerHTML = '';
             this.footerToolbarEle = null;
             this.sendToolbarItem = null;
+            this.speechToTextToolbarItem = null;
             this.renderFooterToolbar(footerIconsWrapper);
             this.refreshTextareaUI();
         }
@@ -1461,7 +1588,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
                 if (!this.typingIndicatorEl) {
                     this.showTypingIndicator(this.l10n.getConstant('editingIndicator'));
                 } else {
-                    const indicatorTextElement: HTMLElement = this.typingIndicatorEl.querySelector('.e-indicator-text');
+                    const indicatorTextElement: HTMLElement = this.typingIndicatorEl.querySelector('.e-assist-indicator-text');
                     indicatorTextElement.innerHTML = this.l10n.getConstant('editingIndicator');
                 }
             }
@@ -1645,6 +1772,7 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
 
     public destroy(): void {
         this.unWireEvents();
+        this.destroyAndNullify(this.speechToTextObj);
         this.destroyAndNullify(this.popupObj);
         this.destroyAndNullify(this.footerToolbarEle);
         this.destroyAndNullify(this.mentionPopupObj);
@@ -1665,6 +1793,8 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
         this.editableTextarea = null;
         this.typingIndicatorEl = null;
         this.sendToolbarItem = null;
+        this.speechToTextObj = null;
+        this.speechToTextToolbarItem = null;
         this.responseOptionsData = [];
         this.commandOptionsData = [];
         this.prompts = [];
@@ -1731,6 +1861,14 @@ export class InlineAIAssist extends AIAssistBase implements INotifyPropertyChang
                     this.updateFooterType(newProp.inlineToolbarSettings.toolbarPosition);
                 }
                 break;
+            case 'speechToTextSettings': {
+                if (this.speechToTextObj) {
+                    this.speechToTextObj.destroy();
+                    this.speechToTextObj = null;
+                }
+                this.updateFooterToolbar();
+                break;
+            }
             case 'responseSettings':
                 if (newProp.responseSettings.items) {
                     this.setResponsePopupData();

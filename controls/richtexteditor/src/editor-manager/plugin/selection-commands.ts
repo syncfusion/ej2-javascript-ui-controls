@@ -89,7 +89,9 @@ export class SelectionCommands {
                 lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
                     lastSelectionNode = lastSelectionNode.lastChild as Element;
                 }
-                domSelection.setSelectionText(docElement, startNode, lastSelectionNode, 0, 0);
+                if (lastSelectionNode.textContent.length === 0) {
+                    domSelection.setSelectionText(docElement, startNode, lastSelectionNode, 0, 0);
+                }
                 range = domSelection.getRange(docElement);
             }
             const save: NodeSelection = domSelection.save(range, docElement);

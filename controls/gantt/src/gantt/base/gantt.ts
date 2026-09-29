@@ -1,17 +1,18 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest } from '@syncfusion/ej2-base';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest, initializeTelemetry } from '@syncfusion/ej2-base';
 import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { RowDragEventArgs, GridColumn, DataSourceChangedEventArgs} from '@syncfusion/ej2-grids';
 import { GanttModel } from './gantt-model';
+import { HierarchyCheckboxMode } from '@syncfusion/ej2-treegrid';
 import { TaskProcessor } from './task-processor';
 import { GanttChart } from './gantt-chart';
 import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { CriticalPath } from '../actions/critical-path';
-import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment } from './interface';
+import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment, WebMcpToolExecuteEventArgs, WebMcpTool } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';
 import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';
@@ -50,14 +51,14 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType } from './enum';
+import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType, DependencyType } from './enum';
 import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';
 import { Selection } from '../actions/selection';
 import { ExcelExport } from '../actions/excel-export';
 import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
-import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
+import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs, CalendarExceptionResult  } from './interface';
 import { ColumnMenu } from '../actions/column-menu';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
 import { PdfExport } from '../actions/pdf-export';
@@ -73,6 +74,7 @@ import {CellSaveArgs} from '@syncfusion/ej2-grids';
 import { cyclicValidator } from '../actions/validator';
 import { CalendarModule } from './calendar-module';
 import { CalendarContext } from './calendar-context';
+import { WebMcpAdapter } from '../integrations/webmcp-adapter';
 /**
  *
  * Represents the Gantt chart component.
@@ -129,6 +131,7 @@ export class Gantt extends Component<HTMLElement>
     private splitterUpdateType: string;
     private skipOffsetUpdate: boolean = false;
     private registeredTemplate: Object;
+    private initialHierarchyMode: string;
     /** @hidden */
     public topBottomHeader: number;
     /** @hidden */
@@ -197,6 +200,8 @@ export class Gantt extends Component<HTMLElement>
     public isOnAdded: boolean = false;
     /** @hidden */
     public secondsPerDay: number;
+    /** @hidden */
+    public defaultSecondsPerDay: number;
     /** @hidden */
     public mondaySeconds: number;
     /** @hidden */
@@ -557,6 +562,13 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableAdaptiveUI: boolean;
+
+    /**
+     * Enables WebMCP tool execution integration for this Gantt instance.
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
     /**
      * Enables Work Breakdown Structure (WBS) functionality in the Gantt Chart.
      * When set to true, the Gantt Chart automatically generates WBS codes based on the task hierarchy.
@@ -576,6 +588,16 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableAutoWbsUpdate: boolean;
+
+    /**
+     * Enables automatic generation of serial numbers for Gantt rows.
+     *
+     * Serial numbers are calculated based on the current row order and updated automatically when the row order changes.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableSerialNumber: boolean;
 
     /**
      * Specifies whether to enable row selection in the Gantt chart. When enabled, selected rows are highlighted.
@@ -706,6 +728,38 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property('day')
     public durationUnit: DurationUnit;
+    /**
+     * Defines how many hours constitute a working day for duration calculation.
+     * This property affects how task durations are calculated and displayed.
+     * For example, if `hoursPerDay` is set to 8, a task requiring 16 working hours will be shown with a duration of 2 days.
+     * If the `hoursPerDay` property is updated after initialization, task durations are recalculated while maintaining the existing start and end dates.
+     *
+     * @default 8
+     */
+    @Property(8)
+    public hoursPerDay: number;
+    /**
+     * Specifies the number of days represented by a single week duration unit.
+     *
+     * This value determines how many days constitute one week in the Gantt chart's
+     * date and duration calculations.
+     * Days value must be between 1 and 7
+     *
+     * @default 5
+     */
+    @Property(5)
+    public daysPerWeek: number;
+    /**
+     * Specifies the number of days represented by a single month duration unit.
+     *
+     * This value determines how many days constitute one month in the Gantt chart's
+     * date and duration calculations.
+     * Days value must be between 1 and 31
+     *
+     * @default 20
+     */
+    @Property(20)
+    public daysPerMonth: number;
     /**
      * Defines an external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed in conjunction with data processing to filter, sort the data.
@@ -1406,6 +1460,35 @@ export class Gantt extends Component<HTMLElement>
     public isEdit: boolean = false;
 
     /**
+     * Defines the dependency types that are allowed during data load and editing operations.
+     *
+     * If not specified, all dependency types (FS, SS, FF, SF) are allowed.
+     *
+     * If an empty collection is specified, all dependency types are restricted
+     * and no dependency relationships can be created or modified.
+     *
+     * @default ['FS', 'SS', 'FF', 'SF']
+     */
+    @Property(['FS', 'SS', 'FF', 'SF'])
+    public allowedDependencyTypes: DependencyType[];
+
+    /**
+     * Defines the mode for hierarchy checkbox selection.
+     *
+     * Available modes are:
+     * * `self`: Only the targeted row is selected; children and parent are not affected.
+     * * `hierarchy`: Selecting a row cascades to all its descendants (children, grandchildren, etc.)
+     *   and adjusts the parent state.
+     * * `filteredHierarchy`: Behaves like `hierarchy`, but applies the cascade only to the records
+     *   that match the current filter/search. Hidden (filtered-out) descendants are excluded from the
+     *   cascade.
+     *
+     * @default 'self'
+     */
+    @Property('self')
+    public hierarchyCheckboxMode: HierarchyCheckboxMode;
+
+    /**
      * Event triggered per taskbar before rendering in the Gantt chart.
      * Used to customize taskbar styles and properties dynamically.
      *
@@ -1859,6 +1942,13 @@ export class Gantt extends Component<HTMLElement>
     public beforePdfExport: EmitType<Object>;
 
     /**
+     * Triggered before a WebMCP tool execution begins.
+     * Allows cancellation/confirmation via WebMCP integration.
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
      * Event triggered after Gantt data has been exported to PDF.
      * Provides access to the generated document.
      * @event pdfExportComplete
@@ -1909,6 +1999,24 @@ export class Gantt extends Component<HTMLElement>
     public getModuleName(): string {
         return 'gantt';
     }
+
+    // Returns the WebMCP tool schemas for the given tool names.
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        if (this.enableWebMcp && !(this as any)._webMcpAdapter) {
+            (this as any)._webMcpAdapter = new WebMcpAdapter(this);
+        }
+        const args: { toolNames?: string[]; tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+
+    // Registers WebMCP tools with document.modelContext for this component instance.
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        if (this.enableWebMcp && !(this as any)._webMcpAdapter) {
+            (this as any)._webMcpAdapter = new WebMcpAdapter(this);
+        }
+        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
+    }
     /**
      * For internal use only - Initialize the event handler
      *
@@ -1918,20 +2026,36 @@ export class Gantt extends Component<HTMLElement>
     protected preRender(): void {
         this.initProperties();
     }
-    private getCurrentDayStartTime(date: Date): number {
+    private getCurrentDayStartTime(date: Date, calendarContext: CalendarContext): number {
         let dayStartTime: number;
         if (this.weekWorkingTime.length > 0) {
             dayStartTime = this['getStartTime'](date);
+        }
+        else if (calendarContext && calendarContext.exceptionsRanges.length > 0 && date) {
+            const overrideValue: CalendarExceptionResult = calendarContext.getExceptionForDate(date).data;
+            if (overrideValue) {
+                dayStartTime = overrideValue.startTime;
+            } else {
+                dayStartTime = this.defaultStartTime;
+            }
         }
         else {
             dayStartTime = this.defaultStartTime;
         }
         return dayStartTime;
     }
-    private getCurrentDayEndTime(date: Date): number {
+    private getCurrentDayEndTime(date: Date, calendarContext: CalendarContext): number {
         let dayEndTime: number;
         if (this.weekWorkingTime.length > 0) {
             dayEndTime = this['getEndTime'](date);
+        }
+        else if (calendarContext && calendarContext.exceptionsRanges.length > 0 && date) {
+            const overrideValue: CalendarExceptionResult = calendarContext.getExceptionForDate(date).data;
+            if (overrideValue) {
+                dayEndTime = overrideValue.endTime;
+            } else {
+                dayEndTime = this.defaultEndTime;
+            }
         }
         else {
             dayEndTime = this.defaultEndTime;
@@ -2127,6 +2251,18 @@ export class Gantt extends Component<HTMLElement>
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
         this.isAdaptive = Browser.isDevice;
+        if (isNullOrUndefined(this.daysPerWeek) || this.daysPerWeek < 1 || this.daysPerWeek > 7) {
+            const failureEventArgs: any = { error: {} };
+            failureEventArgs.error[0] = 'Days values for daysPerWeek must be within the supported range of 1 to 7. Values outside this range, or invalid values such as null or undefined, are rejected and the default daysPerWeek value is retained.';
+            this.trigger('actionFailure', failureEventArgs);
+            this.daysPerWeek = 5;
+        }
+        if (isNullOrUndefined(this.daysPerMonth) || this.daysPerMonth < 1 || this.daysPerMonth > 31) {
+            const failureEventArgs: any = { error: {} };
+            failureEventArgs.error[0] = 'Days values for daysPerMonth must be within the supported range of 1 to 31. Values outside this range, or invalid values such as null or undefined, are rejected and the default daysPerMonth value is retained.';
+            this.trigger('actionFailure', failureEventArgs);
+            this.daysPerMonth = 20;
+        }
         this.flatData = [];
         this.currentViewData = [];
         this.updatedRecords = [];
@@ -2178,14 +2314,20 @@ export class Gantt extends Component<HTMLElement>
             days: 'days',
             hours: 'hours',
             minutes: 'minutes',
+            weeks: 'weeks',
+            months: 'months',
             day: 'day',
             hour: 'hour',
-            minute: 'minute'
+            minute: 'minute',
+            week: 'week',
+            month: 'month'
         };
         this.durationUnitEditText = {
             minute: ['m', 'min', 'minute', 'minutes'],
             hour: ['h', 'hr', 'hour', 'hours'],
-            day: ['d', 'dy', 'day', 'days']
+            day: ['d', 'dy', 'day', 'days'],
+            week: ['w', 'wk', 'week', 'weeks'],
+            month: ['mo', 'mon', 'month', 'months']
         };
         this.perDayWidth = null;
         this.isMileStoneEdited = false;
@@ -2401,6 +2543,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     protected render(): void {
+        initializeTelemetry('Gantt');
         if (this.isReact) {
             this.treeGrid.isReact = true;
             this.treeGrid.grid.isReact = true;
@@ -2440,6 +2583,10 @@ export class Gantt extends Component<HTMLElement>
         this.showLoadingIndicator();
         if (this.dataMap) {
             this.dataMap.clear();
+        }
+        if (isNullOrUndefined(this.initialHierarchyMode) && this.filterModule) {
+            const mode: string = this.filterSettings.hierarchyMode;
+            this.initialHierarchyMode = mode;
         }
         this.dataOperation.checkDataBinding();
     }
@@ -2714,36 +2861,46 @@ export class Gantt extends Component<HTMLElement>
         let wbsMap: Map<IGanttData, string> = new Map<IGanttData, string>();
         const recordsWithDependencies: IGanttData[] = [];
         let siblingCountMap: Map<IGanttData | null, number> = new Map<IGanttData | null, number>();
-        for (const record of flatDataCollection) {
-            if (this.enableAutoWbsUpdate || this.isLoad) {
-                const result: { wbsMap: Map<IGanttData, string>, siblingCountMap: Map<IGanttData | null, number> } =
-                    this.updateWBSCodes(record, wbsMap, siblingCountMap);
-                wbsMap = result.wbsMap;
-                siblingCountMap = result.siblingCountMap;
+        for (let i: number = 0; i < flatDataCollection.length; i++) {
+            const record: IGanttData = flatDataCollection[i as number];
+            // Assign 1-based serial number in the same pass when enableSerialNumber is true.
+            if (this.enableSerialNumber && record && record.ganttProperties) {
+                record['SerialNumber'] = i + 1;
+                record.ganttProperties.serialNumber = i + 1;
             }
-            else if (!record.ganttProperties.wbsCode) {
-                let wbsCode: string;
-                if (record.parentItem) {
-                    const parentTask: IGanttData = this.getParentTask(record.parentItem);
-                    wbsCode = parentTask.ganttProperties.wbsCode;
-                    wbsCode = this.getMaxRootWBSCode(parentTask.childRecords, parentTask);
+            if (this.enableWBS) {
+                if (this.enableAutoWbsUpdate || this.isLoad) {
+                    const result: { wbsMap: Map<IGanttData, string>, siblingCountMap: Map<IGanttData | null, number> } =
+                        this.updateWBSCodes(record, wbsMap, siblingCountMap);
+                    wbsMap = result.wbsMap;
+                    siblingCountMap = result.siblingCountMap;
+                }
+                else if (!record.ganttProperties.wbsCode) {
+                    let wbsCode: string;
+                    if (record.parentItem) {
+                        const parentTask: IGanttData = this.getParentTask(record.parentItem);
+                        wbsCode = parentTask.ganttProperties.wbsCode;
+                        wbsCode = this.getMaxRootWBSCode(parentTask.childRecords, parentTask);
+                    }
+                    else {
+                        wbsCode = this.getMaxRootWBSCode(this.treeGrid.parentData);
+                    }
+                    record['WBSCode'] = wbsCode;
+                    record.ganttProperties.wbsCode = wbsCode;
+                }
+                if (record[this.taskFields.dependency]) {
+                    recordsWithDependencies.push(record);
                 }
                 else {
-                    wbsCode = this.getMaxRootWBSCode(this.treeGrid.parentData);
+                    record['WBSPredecessor'] = null;
+                    record.ganttProperties.wbsPredecessor = null;
                 }
-                record['WBSCode'] = wbsCode;
-                record.ganttProperties.wbsCode = wbsCode;
-            }
-            if (record[this.taskFields.dependency]) {
-                recordsWithDependencies.push(record);
-            }
-            else {
-                record['WBSPredecessor'] = null;
-                record.ganttProperties.wbsPredecessor = null;
             }
         }
-        for (const record of recordsWithDependencies) {
-            this.updateWBSPredecessor(record);
+        if (this.enableWBS) {
+            for (const record of recordsWithDependencies) {
+                this.updateWBSPredecessor(record);
+            }
         }
     }
 
@@ -3168,7 +3325,7 @@ export class Gantt extends Component<HTMLElement>
                 this.ganttChartModule.manageFocus(this.element, 'add', false);
             }
         }
-        if (e.key === 'Enter' && !this.allowKeyboard && parentsUntil(e.target as Element, 'e-editedbatchcell')) {
+        if (e.key === 'Enter' && !this.allowKeyboard && parentsUntil(e.target as Element, 'e-editedcell')) {
             e.preventDefault();
         }
     }
@@ -3903,6 +4060,33 @@ export class Gantt extends Component<HTMLElement>
             }
         }
     }
+    private handleHoursPerDayChange(): void {
+        if (this.isLoad) {
+            return;  // Skip during initial load
+        }
+        // Update the cache with new hoursPerDay value
+        this.secondsPerDay = this.dataOperation.getSecondsPerDay();
+
+        // Recalculate all task durations, preserving start/end dates
+        for (const ganttData of this.flatData) {
+            if (ganttData.ganttProperties.startDate && ganttData.ganttProperties.endDate) {
+                this.dataOperation.calculateDuration(ganttData);
+            }
+        }
+
+        // Update parent task dates/durations based on children
+        this.dataOperation.updateGanttData();
+
+        // Revalidate dependencies
+        if (this.taskFields.dependency && this.predecessorModule) {
+            this.predecessorModule.updatedRecordsDateByPredecessor();
+        }
+
+        // Refresh UI
+        this.treeGrid.refreshColumns();
+        this.chartRowsModule.initiateTemplates();
+        this.chartRowsModule.refreshGanttRows();
+    }
 
     /**
      * Called internally, if any of the property value changed.
@@ -3986,6 +4170,26 @@ export class Gantt extends Component<HTMLElement>
                     this.ganttChartModule.reRenderConnectorLines();
                 }
                 break;
+            case 'daysPerWeek':
+                if (isNullOrUndefined(this.daysPerWeek) || this.daysPerWeek < 1 || this.daysPerWeek > 7) {
+                    const failureEventArgs: any = { error: {} };
+                    failureEventArgs.error[0] = 'Days values for daysPerWeek must be within the supported range of 1 to 7. Values outside this range, or invalid values such as null or undefined, are rejected and the previous daysPerWeek value is retained.';
+                    this.trigger('actionFailure', failureEventArgs);
+                } else {
+                    this.isLoad = true;
+                    this.dataOperation.checkDataBinding(true);
+                }
+                break;
+            case 'daysPerMonth':
+                if (isNullOrUndefined(this.daysPerMonth) || this.daysPerMonth < 1 || this.daysPerMonth > 31) {
+                    const failureEventArgs: any = { error: {} };
+                    failureEventArgs.error[0] = 'Days values for daysPerMonth must be within the supported range of 1 to 31. Values outside this range, or invalid values such as null or undefined, are rejected and the previous daysPerMonth value is retained.';
+                    this.trigger('actionFailure', failureEventArgs);
+                } else {
+                    this.isLoad = true;
+                    this.dataOperation.checkDataBinding(true);
+                }
+                break;
             case 'timezone':
             case 'durationUnit':
                 this.isLoad = true;
@@ -4012,6 +4216,14 @@ export class Gantt extends Component<HTMLElement>
                 }
                 this.treeGrid.filterSettings = getActualProperties(this.filterSettings) as TreeGridFilterSettingModel;
                 this.treeGrid.dataBind();
+                break;
+            case 'dateFormat':
+                for (const col of this.treeGrid.columns as ColumnModel[]){
+                    if (col.type === 'date' || col.type === 'datetime') {
+                        col.format = this.dateFormat;
+                    }
+                }
+                this.treeGrid.refreshColumns();
                 break;
             case 'gridLines':
                 this.treeGrid.gridLines = this.gridLines;
@@ -4076,6 +4288,9 @@ export class Gantt extends Component<HTMLElement>
             case 'enableHover':
                 this.skipOffsetUpdate = true;
                 this.handleTaskSchedulingChanges(prop, newProp, refreshState);
+                break;
+            case 'hoursPerDay':
+                this.handleHoursPerDayChange();
                 break;
             case 'addDialogFields':
             case 'editDialogFields':
@@ -4184,6 +4399,7 @@ export class Gantt extends Component<HTMLElement>
             case 'allowParentDependency':
             case 'enableMultiTaskbar':
             case 'autoUpdatePredecessorOffset':
+            case 'enableSerialNumber':
                 if (prop === 'locale') {
                     this.isLocaleChanged = true;
                 }
@@ -4209,6 +4425,16 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.frozenColumns = this.frozenColumns;
                 refreshState.isRefresh = true;
                 break;
+            case 'allowedDependencyTypes': {
+                // Refresh Gantt when the `` property type is updated dynamically
+                // Sort arrays to normalize the order and prevent unnecessary refreshes, when the same dependency types are updated in a different order.
+                const newTypes: string[] = [...(newProp.allowedDependencyTypes || [])].sort();
+                const oldTypes: string[] = [...(oldProp.allowedDependencyTypes || [])].sort();
+                const isSame: boolean = newTypes.length === oldTypes.length &&
+                newTypes.every((type: string, index: number) => type === oldTypes[index as number]);
+                refreshState.isRefresh = !isSame;
+                break;
+            }
             }
         }
         if (refreshState.isRefresh) {
@@ -4285,6 +4511,12 @@ export class Gantt extends Component<HTMLElement>
         for (let i: number = 0; i < modules.length; i++) {
             if (this[modules[i as number]]) {
                 this[modules[i as number]] = null;
+            }
+        }
+        if (this.predecessorModule) {
+            // Clear allowedDependencyTypes cache
+            if (this.predecessorModule['allowedDependencyTypesCache']) {
+                this.predecessorModule['allowedDependencyTypesCache'].clear();
             }
         }
         if (this.keyboardModule) {
@@ -4710,6 +4942,10 @@ export class Gantt extends Component<HTMLElement>
             endDate: 'End Date',
             constraintDate: 'Constraint Date',
             constraintType: 'Constraint Type',
+            calendarId: 'Calendar',
+            calendar: 'Calendar',
+            calendarName: 'Calendar Name',
+            parentCalendar: 'Parent Calendar',
             advancedTab: 'Advanced',
             duration: 'Duration',
             progress: 'Progress',
@@ -4835,7 +5071,11 @@ export class Gantt extends Component<HTMLElement>
             FF: 'FF',
             FS: 'FS',
             SF: 'SF',
-            SS: 'SS'
+            SS: 'SS',
+            week: 'week',
+            weeks: 'weeks',
+            month: 'month',
+            months: 'months'
         };
         return ganttLocale;
     }
@@ -5113,7 +5353,7 @@ export class Gantt extends Component<HTMLElement>
             }
         }
         if (calendarContext) {
-            const override: boolean = calendarContext.getExceptionForDate(args.date);
+            const override: boolean = calendarContext.getExceptionForDate(args.date).hasException;
             if (override || (ganttProp.isMilestone && args.isDisabled &&
                 ganttProp.startDate && ganttProp.startDate.getTime() === args.date.getTime())) {
                 args.isDisabled = false;

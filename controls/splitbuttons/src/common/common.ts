@@ -56,6 +56,63 @@ export function upDownKeyHandler(ul: HTMLElement, keyCode: number): void {
     }
 }
 
+
+/** @hidden
+ * Handles Home and End key navigation to focus the first or last valid item in the popup list.
+ *
+ * @param {HTMLElement} ul - Specifies the UL element.
+ * @param {number} keyCode - Specifies the keycode (36 for Home, 35 for End).
+ * @returns {void}
+ */
+export function homeEndKeyHandler(ul: HTMLElement, keyCode: number): void {
+    if (!ul || !ul.children || !ul.children.length) {
+        return;
+    }
+    const selectedLi: Element = ul.querySelector('.e-selected');
+    if (selectedLi) { selectedLi.classList.remove('e-selected'); }
+    let liIdx: number = keyCode === 36 ? 0 : ul.childElementCount - 1;
+    const li: Element = ul.children[liIdx as number];
+    liIdx = getValidHomeEndLI(ul, li, liIdx, keyCode);
+    if (liIdx !== -1) {
+        const focusedLi: Element = ul.querySelector('.e-focused');
+        if (focusedLi) { focusedLi.classList.remove('e-focused'); }
+        addClass([ul.children[liIdx as number]], 'e-focused');
+        (ul.children[liIdx as number] as HTMLElement).focus();
+    }
+}
+
+/**
+ * Get valid LI element for Home/End navigation by skipping separator and disabled items.
+ *
+ * @param {HTMLElement} ul - Specifies the UL element.
+ * @param {Element} li - Specifies the LI element.
+ * @param {number} index - Specifies the index.
+ * @param {number} keyCode - Specifies the keycode.
+ * @param {number} count - Specifies the count.
+ * @returns {number} - Index
+ */
+function getValidHomeEndLI(ul: HTMLElement, li: Element, index: number, keyCode: number, count: number = 0): number {
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        if (keyCode === 36) {
+            index++;
+        } else {
+            index--;
+        }
+    }
+    if (index < 0 || index > ul.childElementCount - 1) {
+        return -1;
+    }
+    li = ul.children[index as number];
+    if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
+        count++;
+        if (count === ul.childElementCount) {
+            return -1;
+        }
+        index = getValidHomeEndLI(ul, li, index, keyCode, count);
+    }
+    return index;
+}
+
 /**
  * Get Valid LI element
  *
@@ -201,6 +258,7 @@ export interface BeforeOpenCloseMenuEventArgs extends BaseEventArgs {
     items: ItemModel[];
     event: Event;
     cancel?: boolean;
+    preventScroll?: boolean;
 }
 
 /**

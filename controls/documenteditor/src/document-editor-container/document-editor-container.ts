@@ -152,7 +152,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property(false)
     public enableLockAndEdit: boolean;
-
     /**
      * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
      *
@@ -415,6 +414,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPane: boolean = true;
+    /**
+     * Enables the isAngular Property.
+     *
+     * @private
+     */
+    public isModalDialog: boolean = false;
     /**
      * Defines the settings for DocumentEditor customization.
      *
@@ -713,6 +718,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     protected render(): void {
+        this.setIsModalDialogValue();
         if (this.toolbarHandler) {
             this.toolbarHandler.initialize();
         }
@@ -735,6 +741,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
         this.renderComplete();
+        
+    }
+    private setIsModalDialogValue(): void {
+        if (this.isAngular && !isNullOrUndefined(this.element.closest('.cdk-overlay-pane'))) {
+            this.isModalDialog = true;
+        }
     }
     /**
      * @return {void}
@@ -928,6 +940,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.allowHyphensInBookmarkNames)) {
             this.documentEditor.documentEditorSettings.allowHyphensInBookmarkNames = this.documentEditorSettings.allowHyphensInBookmarkNames;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.highlightCommentsByAuthor)) {
+            this.documentEditor.documentEditorSettings.highlightCommentsByAuthor = this.documentEditorSettings.highlightCommentsByAuthor;
+        }
     }
     /**
      * @private
@@ -1063,6 +1078,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             enableLockAndEdit: this.enableLockAndEdit,
             enableAutoFocus: this.enableAutoFocus
         });
+        // Pass isAngular property from container to document editor
+        this.documentEditorInternal.isAngular = this.isModalDialog;
+        this.documentEditorInternal.enableCsp = this.enableCsp;
         this.wireEvents();
         this.customizeDocumentEditorSettings();
         this.documentEditor.enableAllModules();
@@ -1347,6 +1365,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     private onRequestNavigate(args: RequestNavigateEventArgs): void {
+        const isAngularModal: boolean = this.isModalDialog;
         if (args.linkType !== 'Bookmark') {
             const navLink = args.navigationLink;
             let link: string = SanitizeHtmlHelper.sanitize(navLink);
@@ -1364,11 +1383,32 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 DialogUtility.alert({
                     title: this.localObj.getConstant("Information"),
                     content: this.localObj.getConstant("The address of this site is not valid. Check the address and try again."),
+                    open: (e: any) => {
+                        if (isAngularModal) {
+                            this.moveAlertToCdkOverlay(e);
+                        }
+                    },
                     okButton: { text: this.localObj.getConstant("OK") },
                     closeOnEscape: true,
                 });
             }
             args.isHandled = true;
+        }
+    }
+    
+    /**
+     * Moves the dialog container element to the Angular CDK overlay pane.
+     * This ensures that the dialog is rendered within the modal overlay layer
+     * and appears correctly when displayed inside an Angular modal dialog.
+     * @private
+     * @param e - Event arguments containing the dialog element.
+     * @returns void
+     */
+    public moveAlertToCdkOverlay(e: any ): void {
+        const cdkPane = document.querySelector('.cdk-overlay-pane') as HTMLElement;
+        const dlgContainer = e.element.parentElement as HTMLElement;
+        if (dlgContainer && cdkPane) {
+            cdkPane.appendChild(dlgContainer);
         }
     }
     /**
@@ -1506,6 +1546,28 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public getDefaultParagraphFormat(): ParagraphFormatProperties {
         return this.paragraphFormat;
+    }
+    
+    /**
+     * Moves the component popup element into the Angular CDK overlay container.
+     * This is required when the dropdown is rendered inside an Angular modal dialog
+     * @private
+     * @param e - Provides event arguments containing the popup element.
+     * @returns void
+     */
+    public movePopupToCdkOverlay(dropDownButtonEl: HTMLElement, popupEl: HTMLElement): void {
+        if (!popupEl || !dropDownButtonEl) {
+            return;
+        }
+        const cdkPane = dropDownButtonEl.closest('.cdk-overlay-pane') as HTMLElement;
+        const popoverEl = dropDownButtonEl.closest('[popover]') as HTMLElement;
+        if (!cdkPane || !popoverEl) {
+            return;
+        }
+        if (popupEl.parentElement === cdkPane) {
+            return;
+        }
+        cdkPane.appendChild(popupEl);
     }
 
     /**

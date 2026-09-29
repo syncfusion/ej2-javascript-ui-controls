@@ -9,3 +9,4 @@ export * from './normal-cipher';
 export * from './secureHash-algorithm1';
 export * from './secureHash-algorithm256';
 export * from './secureHash-algorithm512';
+export * from './advanced-encryption-gcm-cipher';

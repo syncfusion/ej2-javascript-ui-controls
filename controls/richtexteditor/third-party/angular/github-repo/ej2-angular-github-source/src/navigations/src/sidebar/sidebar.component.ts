@@ -20,20 +20,20 @@ export const twoWays: string[] = ['isOpen'];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class SidebarComponent extends Sidebar implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	change: any;
-	close: any;
-	created: any;
-	destroyed: any;
-	open: any;
-	public isOpenChange: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare change: any;
+	declare close: any;
+	declare created: any;
+	declare destroyed: any;
+	declare open: any;
+	public declare isOpenChange: any;
 
 
 
@@ -65,7 +65,7 @@ export class SidebarComponent extends Sidebar implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

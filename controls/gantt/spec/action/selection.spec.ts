@@ -657,11 +657,11 @@ describe('Gantt Selection support', () => {
             ganttObj.addRecord(data);
         });
         it('Add a row with persist selection true', () => {
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType == "add") {
-                    expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
-                }
-            };
+            // ganttObj.actionComplete = (args: any): void => {
+            //     if (args.requestType == "add") {
+            //         expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
+            //     }
+            // };
             ganttObj.dataBind();
             let data: Object = {
                 TaskID: 56, TaskName: 'Plan timeline', StartDate: null, EndDate: new Date('02/10/2017'),

@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/tailwind' as *;
-@use 'ej2-buttons/styles/button/tailwind-definition' as *;
-@forward 'ej2-base/styles/definition/tailwind';
-@forward 'ej2-buttons/styles/button/tailwind-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/tailwind-definition' as *;
 
 //layout variables
 $btn-grp-margin: -1px !default;

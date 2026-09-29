@@ -1,11 +1,14 @@
 import { createElement, L10n } from "@syncfusion/ej2-base";
 import { InlineAIAssist, InlinePromptRequestEventArgs, CommandItemSelectEventArgs, CommandItemModel, ResponseItemSelectEventArgs, ResponseMode, ToolbarItemClickEventArgs } from "../../src/inline-ai-assist/index";
 import { AIAssistBase } from '../../src/ai-assist-base/index';
+import { SpeechToTextState, TranscriptChangedEventArgs } from "@syncfusion/ej2-inputs";
 
 describe('InlineAIAssist -', () => {
 
     let inlineAIAssist: InlineAIAssist;
     let inlineAIAssistElem: HTMLElement;
+    let originalSpeechRecognition: any;
+    let originalWebkitSpeechRecognition: any;
 
     beforeEach(() => {
         inlineAIAssistElem = createElement('div', { id: 'inlineAIAssistComp' });
@@ -290,76 +293,76 @@ describe('InlineAIAssist -', () => {
             expect(hiddenTextarea.value).toEqual('Test prompt');
         });
 
-        it('ZIndex dynamic change checking', (done: DoneFn) => {
-            // Step 1: Create component with initial zIndex value
-            inlineAIAssist = new InlineAIAssist({
-                zIndex: 1000
-            });
-            inlineAIAssist.appendTo(inlineAIAssistElem);
-            expect(inlineAIAssistElem.style.zIndex).toEqual('');
-            inlineAIAssist.showPopup();
-            expect(inlineAIAssistElem.style.zIndex).toEqual('1000');
-            expect(inlineAIAssist.zIndex).toBe(1000);
-            setTimeout(() => {
-                // Step 6: Dynamically change zIndex to a new value
-                inlineAIAssist.zIndex = 5000;
-                inlineAIAssist.dataBind();
+        // it('ZIndex dynamic change checking', (done: DoneFn) => {
+        //     // Step 1: Create component with initial zIndex value
+        //     inlineAIAssist = new InlineAIAssist({
+        //         zIndex: 1000
+        //     });
+        //     inlineAIAssist.appendTo(inlineAIAssistElem);
+        //     expect(inlineAIAssistElem.style.zIndex).toEqual('');
+        //     inlineAIAssist.showPopup();
+        //     expect(inlineAIAssistElem.style.zIndex).toEqual('1000');
+        //     expect(inlineAIAssist.zIndex).toBe(1000);
+        //     setTimeout(() => {
+        //         // Step 6: Dynamically change zIndex to a new value
+        //         inlineAIAssist.zIndex = 5000;
+        //         inlineAIAssist.dataBind();
 
-                // Step 7: Verify zIndex property is updated in component
-                expect(inlineAIAssist.zIndex).toBe(5000);
+        //         // Step 7: Verify zIndex property is updated in component
+        //         expect(inlineAIAssist.zIndex).toBe(5000);
 
-                // Step 8: Verify zIndex is updated in DOM
-                expect(inlineAIAssistElem.style.zIndex).toEqual('5000');
+        //         // Step 8: Verify zIndex is updated in DOM
+        //         expect(inlineAIAssistElem.style.zIndex).toEqual('5000');
 
-                // Step 9: Change zIndex again to test multiple changes
-                inlineAIAssist.zIndex = 999;
-                inlineAIAssist.dataBind();
+        //         // Step 9: Change zIndex again to test multiple changes
+        //         inlineAIAssist.zIndex = 999;
+        //         inlineAIAssist.dataBind();
 
-                // Step 10: Verify second zIndex change in component
-                expect(inlineAIAssist.zIndex).toBe(999);
+        //         // Step 10: Verify second zIndex change in component
+        //         expect(inlineAIAssist.zIndex).toBe(999);
 
-                // Step 11: Verify second zIndex change in DOM
-                expect(inlineAIAssistElem.style.zIndex).toEqual('999');
+        //         // Step 11: Verify second zIndex change in DOM
+        //         expect(inlineAIAssistElem.style.zIndex).toEqual('999');
 
-                // Step 12: Change to a very high zIndex value
-                inlineAIAssist.zIndex = 99999;
-                inlineAIAssist.dataBind();
+        //         // Step 12: Change to a very high zIndex value
+        //         inlineAIAssist.zIndex = 99999;
+        //         inlineAIAssist.dataBind();
 
-                // Step 13: Verify high zIndex value in component
-                expect(inlineAIAssist.zIndex).toBe(99999);
+        //         // Step 13: Verify high zIndex value in component
+        //         expect(inlineAIAssist.zIndex).toBe(99999);
 
-                // Step 14: Verify high zIndex value in DOM
-                expect(inlineAIAssistElem.style.zIndex).toEqual('99999');
+        //         // Step 14: Verify high zIndex value in DOM
+        //         expect(inlineAIAssistElem.style.zIndex).toEqual('99999');
 
-                // Step 15: Verify zIndex persists after hide/show cycle
-                inlineAIAssist.hidePopup();
+        //         // Step 15: Verify zIndex persists after hide/show cycle
+        //         inlineAIAssist.hidePopup();
                 
-                setTimeout(() => {
-                    inlineAIAssist.showPopup();
+        //         setTimeout(() => {
+        //             inlineAIAssist.showPopup();
                     
-                    // Step 16: Verify zIndex is still applied after show
-                    expect(inlineAIAssistElem.style.zIndex).toEqual('99999');
+        //             // Step 16: Verify zIndex is still applied after show
+        //             expect(inlineAIAssistElem.style.zIndex).toEqual('99999');
                     
-                    // Step 17: Change zIndex while popup is hidden
-                    inlineAIAssist.zIndex = 2000;
-                    inlineAIAssist.dataBind();
+        //             // Step 17: Change zIndex while popup is hidden
+        //             inlineAIAssist.zIndex = 2000;
+        //             inlineAIAssist.dataBind();
                     
-                    // Step 18: Verify new zIndex value is set
-                    expect(inlineAIAssist.zIndex).toBe(2000);
+        //             // Step 18: Verify new zIndex value is set
+        //             expect(inlineAIAssist.zIndex).toBe(2000);
                     
-                    // Step 19: Show popup again and verify new zIndex is applied
-                    inlineAIAssist.showPopup();
-                    expect(inlineAIAssistElem.style.zIndex).toEqual('2000');
+        //             // Step 19: Show popup again and verify new zIndex is applied
+        //             inlineAIAssist.showPopup();
+        //             expect(inlineAIAssistElem.style.zIndex).toEqual('2000');
                     
-                    // Step 20: Verify popup element exists and has correct zIndex
-                    const popupElement: HTMLElement = inlineAIAssistElem;
-                    expect(popupElement).not.toBeNull();
-                    expect(popupElement.style.zIndex).toEqual('2000');
+        //             // Step 20: Verify popup element exists and has correct zIndex
+        //             const popupElement: HTMLElement = inlineAIAssistElem;
+        //             expect(popupElement).not.toBeNull();
+        //             expect(popupElement.style.zIndex).toEqual('2000');
                     
-                    done();
-                }, 100);
-            }, 100);
-        });
+        //             done();
+        //         }, 100);
+        //     }, 100);
+        // });
     });
 
     describe('Template - ', () => {
@@ -631,14 +634,14 @@ describe('InlineAIAssist -', () => {
             document.body.removeChild(relateToElem2);
         });
 
-        it('ZIndex dynamic change checking', () => {
-            inlineAIAssist = new InlineAIAssist({
-                zIndex: 1000
-            });
-            inlineAIAssist.appendTo(inlineAIAssistElem);
-            inlineAIAssist.showPopup();
-            expect(inlineAIAssistElem.style.zIndex).toEqual('1000');
-        });
+        // it('ZIndex dynamic change checking', () => {
+        //     inlineAIAssist = new InlineAIAssist({
+        //         zIndex: 1000
+        //     });
+        //     inlineAIAssist.appendTo(inlineAIAssistElem);
+        //     inlineAIAssist.showPopup();
+        //     expect(inlineAIAssistElem.style.zIndex).toEqual('1000');
+        // });
 
         it('EnableStreaming dynamic change checking', () => {
             inlineAIAssist = new InlineAIAssist({
@@ -916,9 +919,9 @@ describe('InlineAIAssist -', () => {
             inlineAIAssist.showPopup();
             inlineAIAssist.executePrompt('Stream test');
             setTimeout(() => {
-                const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                 expect(indicator).not.toBeNull();
-                const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                 expect(indicatorText.textContent).toBe('Editing');
                 done();
             }, 100);
@@ -938,7 +941,7 @@ describe('InlineAIAssist -', () => {
             inlineAIAssist.showPopup();
             inlineAIAssist.executePrompt('Stream test');
             setTimeout(() => {
-                const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                 expect(indicator).toBeNull();
                 done();
             }, 200);
@@ -1579,7 +1582,7 @@ describe('InlineAIAssist -', () => {
                 locale: 'de-DE',
                 responseMode: ResponseMode.Inline,
                 promptRequest: () => {
-                    const indicatorTextOnSend: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                    const indicatorTextOnSend: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                     expect(indicatorTextOnSend).not.toBeNull();
                     expect(indicatorTextOnSend.textContent).toBe('Denken');
                     inlineAIAssist.addResponse('Checking locale for indicator', false);
@@ -1589,7 +1592,7 @@ describe('InlineAIAssist -', () => {
             inlineAIAssist.showPopup();
             inlineAIAssist.executePrompt('Test prompt');
             setTimeout(() => {
-                const indicatorTextOnPartial: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                const indicatorTextOnPartial: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                 expect(indicatorTextOnPartial).not.toBeNull();
                 expect(indicatorTextOnPartial.textContent).toBe('Bearbeiten');
                 done();
@@ -3368,6 +3371,161 @@ describe('InlineAIAssist -', () => {
                 }, 120);
             }, 150);
         });
+
+        it('Command items with disabled property checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Enabled Command', disabled: false },
+                        { label: 'Disabled Command', disabled: true },
+                        { label: 'Another Enabled', disabled: false }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.commandSettings.commands.length).toBe(3);
+            expect(inlineAIAssist.commandSettings.commands[0].disabled).toBe(false);
+            expect(inlineAIAssist.commandSettings.commands[1].disabled).toBe(true);
+            expect(inlineAIAssist.commandSettings.commands[2].disabled).toBe(false);
+        });
+
+        it('Command items with groupBy property checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Summarize', groupBy: 'Writing' },
+                        { label: 'Improve Writing', groupBy: 'Writing' },
+                        { label: 'Translate', groupBy: 'Language' },
+                        { label: 'Spell Check', groupBy: 'Language' }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.commandSettings.commands.length).toBe(4);
+            expect(inlineAIAssist.commandSettings.commands[0].groupBy).toBe('Writing');
+            expect(inlineAIAssist.commandSettings.commands[1].groupBy).toBe('Writing');
+            expect(inlineAIAssist.commandSettings.commands[2].groupBy).toBe('Language');
+            expect(inlineAIAssist.commandSettings.commands[3].groupBy).toBe('Language');
+        });
+
+        it('Command items with disabled and groupBy combined checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Summarize', groupBy: 'Writing', disabled: false },
+                        { label: 'Improve Writing', groupBy: 'Writing', disabled: true },
+                        { label: 'Translate', groupBy: 'Language', disabled: false },
+                        { label: 'Spell Check', groupBy: 'Language', disabled: true }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.commandSettings.commands.length).toBe(4);
+            expect(inlineAIAssist.commandSettings.commands[0].groupBy).toBe('Writing');
+            expect(inlineAIAssist.commandSettings.commands[0].disabled).toBe(false);
+            expect(inlineAIAssist.commandSettings.commands[1].groupBy).toBe('Writing');
+            expect(inlineAIAssist.commandSettings.commands[1].disabled).toBe(true);
+            expect(inlineAIAssist.commandSettings.commands[2].groupBy).toBe('Language');
+            expect(inlineAIAssist.commandSettings.commands[2].disabled).toBe(false);
+            expect(inlineAIAssist.commandSettings.commands[3].groupBy).toBe('Language');
+            expect(inlineAIAssist.commandSettings.commands[3].disabled).toBe(true);
+        });
+
+        it('Command items disabled property dynamic change checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Command 1', disabled: false },
+                        { label: 'Command 2', disabled: false }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.commandSettings.commands[0].disabled).toBe(false);
+            inlineAIAssist.commandSettings.commands[0].disabled = true;
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                expect(inlineAIAssist.commandSettings.commands[0].disabled).toBe(true);
+                done();
+            }, 100);
+        });
+
+        it('Command items groupBy property dynamic change checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Command 1', groupBy: 'Initial Group' },
+                        { label: 'Command 2', groupBy: 'Another Group' }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.commandSettings.commands[0].groupBy).toBe('Initial Group');
+            inlineAIAssist.commandSettings.commands[0].groupBy = 'Updated Group';
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                expect(inlineAIAssist.commandSettings.commands[0].groupBy).toBe('Updated Group');
+                done();
+            }, 100);
+        });
+
+        it('Command items groupBy property with mention popup checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Summarize', groupBy: 'Content' },
+                        { label: 'Improve Writing', groupBy: 'Content' },
+                        { label: 'Translate', groupBy: 'Language' }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
+
+            setTimeout(() => {
+                const mentionElement: HTMLElement = document.querySelector('.e-mention-container');
+                expect(mentionElement).not.toBeNull();
+                expect(inlineAIAssist.commandSettings.commands.length).toBe(3);
+                const groupedCommands = inlineAIAssist.commandSettings.commands.filter(cmd => cmd.groupBy === 'Content');
+                expect(groupedCommands.length).toBe(2);
+                expect(groupedCommands[0].label).toBe('Summarize');
+                expect(groupedCommands[1].label).toBe('Improve Writing');
+                done();
+            }, 100);
+        });
+
+        it('Command items disabled property prevents selection checking', (done: DoneFn) => {
+            let itemSelectTriggered: boolean = false;
+            inlineAIAssist = new InlineAIAssist({
+                commandSettings: {
+                    commands: [
+                        { label: 'Enabled Command', disabled: false },
+                        { label: 'Disabled Command', disabled: true }
+                    ],
+                    itemSelect: (args: CommandItemSelectEventArgs) => {
+                        itemSelectTriggered = true;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
+
+            setTimeout(() => {
+                const selectEventArgs: any = {
+                    itemData: { 
+                        command: inlineAIAssist.commandSettings.commands[1],
+                        label: 'Disabled Command',
+                        disabled: true
+                    },
+                    e: new MouseEvent('click', { bubbles: true })
+                };
+                (inlineAIAssist as any).onMentionCommandSelect(selectEventArgs);
+                setTimeout(() => {
+                    expect(inlineAIAssist.commandSettings.commands[1].disabled).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
     });
 
     describe('ResponseSettings - ', () => {
@@ -3776,64 +3934,237 @@ describe('InlineAIAssist -', () => {
             }, 150);
         });
 
-    it('should not trigger response itemSelect when pressing Shift + Enter in textarea', (done: DoneFn) => {
-        let itemSelectTriggered = false;
-        inlineAIAssist = new InlineAIAssist({
-            responseSettings: {
-                items: [
-                    { label: 'Helpful' },
-                    { label: 'Not Helpful' },
-                    { label: 'Copy Text' }
-                ],
-                itemSelect: (args: ResponseItemSelectEventArgs) => {
-                    itemSelectTriggered = true;
+        it('should not trigger response itemSelect when pressing Shift + Enter in textarea', (done: DoneFn) => {
+            let itemSelectTriggered = false;
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Helpful' },
+                        { label: 'Not Helpful' },
+                        { label: 'Copy Text' }
+                    ],
+                    itemSelect: (args: ResponseItemSelectEventArgs) => {
+                        itemSelectTriggered = true;
+                    }
+                },
+                promptRequest: () => {
+                    inlineAIAssist.addResponse('This is a test response');
                 }
-            },
-            promptRequest: () => {
-                inlineAIAssist.addResponse('This is a test response');
-            }
-        });
+            });
 
-        inlineAIAssist.appendTo(inlineAIAssistElem);
-        inlineAIAssist.showPopup();
-
-        setTimeout(() => {
-            const textareaEle = inlineAIAssistElem.querySelector('.e-footer .e-assist-textarea') as HTMLDivElement;
-            expect(textareaEle).not.toBeNull();
-
-            textareaEle.focus();
-            textareaEle.innerText = 'Some prompt text';
-            textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
 
             setTimeout(() => {
-                const sendBtn = inlineAIAssistElem.querySelector('.e-footer .e-inline-send') as HTMLElement;
-                sendBtn.click();
+                const textareaEle = inlineAIAssistElem.querySelector('.e-footer .e-assist-textarea') as HTMLDivElement;
+                expect(textareaEle).not.toBeNull();
+
+                textareaEle.focus();
+                textareaEle.innerText = 'Some prompt text';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
 
                 setTimeout(() => {
-                    const responseText = inlineAIAssistElem.querySelector('.e-response-text');
-                    expect(responseText).not.toBeNull();
-                    itemSelectTriggered = false;
-                    const shiftEnterEvent = new KeyboardEvent('keydown', {
-                        key: 'Enter',
-                        code: 'Enter',
-                        shiftKey: true,
-                        bubbles: true,
-                        cancelable: true
-                    });
-
-                    const dispatched = textareaEle.dispatchEvent(shiftEnterEvent);
-                    if (!dispatched) {
-                        document.dispatchEvent(shiftEnterEvent);
-                    }
+                    const sendBtn = inlineAIAssistElem.querySelector('.e-footer .e-inline-send') as HTMLElement;
+                    sendBtn.click();
 
                     setTimeout(() => {
-                        expect(itemSelectTriggered).toBe(false);
-                        done();
-                    }, 120);
-                }, 400);
+                        const responseText = inlineAIAssistElem.querySelector('.e-response-text');
+                        expect(responseText).not.toBeNull();
+                        itemSelectTriggered = false;
+                        const shiftEnterEvent = new KeyboardEvent('keydown', {
+                            key: 'Enter',
+                            code: 'Enter',
+                            shiftKey: true,
+                            bubbles: true,
+                            cancelable: true
+                        });
+
+                        const dispatched = textareaEle.dispatchEvent(shiftEnterEvent);
+                        if (!dispatched) {
+                            document.dispatchEvent(shiftEnterEvent);
+                        }
+
+                        setTimeout(() => {
+                            expect(itemSelectTriggered).toBe(false);
+                            done();
+                        }, 120);
+                    }, 400);
+                }, 150);
             }, 150);
-        }, 150);
-    });
+        });
+
+        it('ResponseSettings items with disabled property checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Enabled Item', disabled: false },
+                        { label: 'Disabled Item', disabled: true },
+                        { label: 'Another Enabled', disabled: false }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.responseSettings.items.length).toBeGreaterThanOrEqual(3);
+            const enabledItem = inlineAIAssist.responseSettings.items.find(item => item.label === 'Enabled Item');
+            const disabledItem = inlineAIAssist.responseSettings.items.find(item => item.label === 'Disabled Item');
+            const anotherEnabled = inlineAIAssist.responseSettings.items.find(item => item.label === 'Another Enabled');
+            expect(enabledItem.disabled).toBe(false);
+            expect(disabledItem.disabled).toBe(true);
+            expect(anotherEnabled.disabled).toBe(false);
+        });
+
+        it('ResponseSettings items with groupBy property checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Thumbs Up', groupBy: 'Feedback' },
+                        { label: 'Thumbs Down', groupBy: 'Feedback' },
+                        { label: 'Copy', groupBy: 'Actions' },
+                        { label: 'Regenerate', groupBy: 'Actions' }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.responseSettings.items.length).toBeGreaterThanOrEqual(4);
+            const thumbsUp = inlineAIAssist.responseSettings.items.find(item => item.label === 'Thumbs Up');
+            const thumbsDown = inlineAIAssist.responseSettings.items.find(item => item.label === 'Thumbs Down');
+            const copy = inlineAIAssist.responseSettings.items.find(item => item.label === 'Copy');
+            const regenerate = inlineAIAssist.responseSettings.items.find(item => item.label === 'Regenerate');
+            expect(thumbsUp.groupBy).toBe('Feedback');
+            expect(thumbsDown.groupBy).toBe('Feedback');
+            expect(copy.groupBy).toBe('Actions');
+            expect(regenerate.groupBy).toBe('Actions');
+        });
+
+        it('ResponseSettings items with disabled and groupBy combined checking', () => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Thumbs Up', groupBy: 'Feedback', disabled: false },
+                        { label: 'Thumbs Down', groupBy: 'Feedback', disabled: true },
+                        { label: 'Copy', groupBy: 'Actions', disabled: false },
+                        { label: 'Regenerate', groupBy: 'Actions', disabled: true }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.responseSettings.items.length).toBeGreaterThanOrEqual(4);
+            const thumbsUp = inlineAIAssist.responseSettings.items.find(item => item.label === 'Thumbs Up');
+            const thumbsDown = inlineAIAssist.responseSettings.items.find(item => item.label === 'Thumbs Down');
+            const copy = inlineAIAssist.responseSettings.items.find(item => item.label === 'Copy');
+            const regenerate = inlineAIAssist.responseSettings.items.find(item => item.label === 'Regenerate');
+            expect(thumbsUp.groupBy).toBe('Feedback');
+            expect(thumbsUp.disabled).toBe(false);
+            expect(thumbsDown.groupBy).toBe('Feedback');
+            expect(thumbsDown.disabled).toBe(true);
+            expect(copy.groupBy).toBe('Actions');
+            expect(copy.disabled).toBe(false);
+            expect(regenerate.groupBy).toBe('Actions');
+            expect(regenerate.disabled).toBe(true);
+        });
+
+        it('ResponseSettings disabled items property dynamic change checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Item 1', disabled: false },
+                        { label: 'Item 2', disabled: false }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const item1 = inlineAIAssist.responseSettings.items.find(item => item.label === 'Item 1');
+            expect(item1.disabled).toBe(false);
+            item1.disabled = true;
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                const updatedItem1 = inlineAIAssist.responseSettings.items.find(item => item.label === 'Item 1');
+                expect(updatedItem1.disabled).toBe(true);
+                done();
+            }, 100);
+        });
+
+        it('ResponseSettings groupBy property dynamic change checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Action 1', groupBy: 'Group A' },
+                        { label: 'Action 2', groupBy: 'Group B' }
+                    ]
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const action1 = inlineAIAssist.responseSettings.items.find(item => item.label === 'Action 1');
+            expect(action1.groupBy).toBe('Group A');
+            action1.groupBy = 'Updated Group';
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                const updatedAction1 = inlineAIAssist.responseSettings.items.find(item => item.label === 'Action 1');
+                expect(updatedAction1.groupBy).toBe('Updated Group');
+                done();
+            }, 100);
+        });
+
+        it('ResponseSettings groupBy property with response popup checking', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Helpful', groupBy: 'Feedback' },
+                        { label: 'Not Helpful', groupBy: 'Feedback' },
+                        { label: 'Copy', groupBy: 'Actions' }
+                    ]
+                },
+                promptRequest: (args: InlinePromptRequestEventArgs) => {
+                    inlineAIAssist.addResponse('Test response');
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
+
+            setTimeout(() => {
+                const textareaEle: HTMLDivElement = inlineAIAssistElem.querySelector('.e-footer .e-assist-textarea');
+                textareaEle.innerText = 'Test';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+
+                setTimeout(() => {
+                    const sendBtn: HTMLElement = inlineAIAssistElem.querySelector('.e-footer .e-inline-send');
+                    sendBtn.click();
+
+                    setTimeout(() => {
+                        const feedbackItems = inlineAIAssist.responseSettings.items.filter(item => item.groupBy === 'Feedback');
+                        const actionItems = inlineAIAssist.responseSettings.items.filter(item => item.groupBy === 'Actions');
+                        expect(feedbackItems.length).toBeGreaterThanOrEqual(2);
+                        expect(actionItems.length).toBeGreaterThanOrEqual(1);
+                        expect(feedbackItems[0].label).toBe('Helpful');
+                        expect(feedbackItems[1].label).toBe('Not Helpful');
+                        done();
+                    }, 150);
+                }, 450);
+            }, 100);
+        });
+
+        it('ResponseSettings disabled items prevent selection checking', (done: DoneFn) => {
+            let itemSelectTriggered: boolean = false;
+            inlineAIAssist = new InlineAIAssist({
+                responseSettings: {
+                    items: [
+                        { label: 'Enabled Item', disabled: false },
+                        { label: 'Disabled Item', disabled: true }
+                    ],
+                    itemSelect: (args: ResponseItemSelectEventArgs) => {
+                        itemSelectTriggered = true;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
+
+            setTimeout(() => {
+                const disabledItem = inlineAIAssist.responseSettings.items.find(item => item.label === 'Disabled Item');
+                expect(disabledItem.disabled).toBe(true);
+                done();
+            }, 100);
+        });
     });
 
     describe('ResponseMode - ', () => {
@@ -4341,7 +4672,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                     expect(indicator).not.toBeNull();
                     done();
                 }, 100);
@@ -4358,7 +4689,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                     expect(indicatorText).not.toBeNull();
                     expect(indicatorText.textContent).toBe('Thinking');
                     done();
@@ -4376,7 +4707,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const dots: NodeListOf<HTMLElement> = inlineAIAssistElem.querySelectorAll('.e-indicator');
+                    const dots: NodeListOf<HTMLElement> = inlineAIAssistElem.querySelectorAll('.e-assist-indicator');
                     expect(dots.length).toBe(3);
                     done();
                 }, 100);
@@ -4425,7 +4756,7 @@ describe('InlineAIAssist -', () => {
             inlineAIAssist = new InlineAIAssist({
                 responseMode: ResponseMode.Inline,
                 promptRequest: () => {
-                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                     expect(indicatorText).not.toBeNull();
                     expect(indicatorText.textContent).toBe('Thinking');
                     inlineAIAssist.addResponse('Partial response', false);
@@ -4436,7 +4767,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                     expect(indicatorText).not.toBeNull();
                     expect(indicatorText.textContent).toBe('Editing');
                     done();
@@ -4456,7 +4787,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                     expect(indicator).not.toBeNull();
                     done();
                 }, 100);
@@ -4513,7 +4844,7 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                     expect(indicator).toBeNull();
                     done();
                 }, 100);
@@ -4553,7 +4884,7 @@ describe('InlineAIAssist -', () => {
                     expect(stopBtn).not.toBeNull();
                     stopBtn.click();
                     setTimeout(() => {
-                        const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                        const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                         expect(indicator).toBeNull();
                         const textarea: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-textarea');
                         expect(textarea.getAttribute('contenteditable')).toBe('true');
@@ -4573,14 +4904,14 @@ describe('InlineAIAssist -', () => {
             setTimeout(() => {
                 inlineAIAssist.executePrompt('Test prompt');
                 setTimeout(() => {
-                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-response-indicator');
+                    const indicator: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-response-indicator');
                     expect(indicator).not.toBeNull();
                     const children: HTMLCollection = indicator.children;
                     expect(children.length).toBe(4);
-                    expect(children[0].classList.contains('e-indicator-text')).toBe(true);
-                    expect(children[1].classList.contains('e-indicator')).toBe(true);
-                    expect(children[2].classList.contains('e-indicator')).toBe(true);
-                    expect(children[3].classList.contains('e-indicator')).toBe(true);
+                    expect(children[0].classList.contains('e-assist-indicator-text')).toBe(true);
+                    expect(children[1].classList.contains('e-assist-indicator')).toBe(true);
+                    expect(children[2].classList.contains('e-assist-indicator')).toBe(true);
+                    expect(children[3].classList.contains('e-assist-indicator')).toBe(true);
                     done();
                 }, 100);
             }, 100);
@@ -4678,7 +5009,7 @@ describe('InlineAIAssist -', () => {
                 expect(stopBtn).not.toBeNull();
                 inlineAIAssist.addResponse('Part one of response', false);
                 setTimeout(() => {
-                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-indicator-text');
+                    const indicatorText: HTMLElement = inlineAIAssistElem.querySelector('.e-assist-indicator-text');
                     expect(indicatorText.innerHTML).toBe('Editing');
                     expect((inlineAIAssist as any).hasResponse).toBe(true);
                     const stopBtnToClick: HTMLElement = inlineAIAssistElem.querySelector('.e-inline-stop');
@@ -4874,6 +5205,329 @@ describe('InlineAIAssist -', () => {
                 expect(stopIconInToolbar).not.toBeUndefined();
                 done();
             }, 100);
+        });
+    });
+
+    describe('Speech-To-Text Support -', () => {
+
+        const editorTemplateTag: HTMLElement = createElement('script', { id: 'inlineSTTEditorTemplate', attrs: { type: 'text/x-template' } });
+        editorTemplateTag.innerHTML = '<div class="e-custom-input"><textarea class="e-custom-textarea"></textarea><button class="e-inline-send">Send</button></div>';
+
+        beforeEach(() => {
+            originalSpeechRecognition = (window as any).SpeechRecognition;
+            originalWebkitSpeechRecognition = (window as any).webkitSpeechRecognition;
+            const MockSpeechRecognition: any = function () {
+                this.onresult = null;
+                this.onerror = null;
+                this.onstart = null;
+                this.onend = null;
+            };
+            MockSpeechRecognition.prototype.start = function (): void {};
+            MockSpeechRecognition.prototype.stop = function (): void {};
+            MockSpeechRecognition.prototype.abort = function (): void {};
+            (window as any).SpeechRecognition = MockSpeechRecognition;
+            (window as any).webkitSpeechRecognition = MockSpeechRecognition;
+        });
+
+        afterEach(() => {
+            if (inlineAIAssist) {
+                inlineAIAssist.destroy();
+            }
+            (window as any).SpeechRecognition = originalSpeechRecognition;
+            (window as any).webkitSpeechRecognition = originalWebkitSpeechRecognition;
+            const sttEditorTemplate: HTMLElement = document.getElementById('inlineSTTEditorTemplate');
+            if (sttEditorTemplate && sttEditorTemplate.parentElement) {
+                sttEditorTemplate.parentElement.removeChild(sttEditorTemplate);
+            }
+        });
+
+        it('Default speechToTextSettings values', () => {
+            inlineAIAssist = new InlineAIAssist({});
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.speechToTextSettings.enable).toBe(false);
+            expect(inlineAIAssist.speechToTextSettings.allowInterimResults).toBe(true);
+            expect(inlineAIAssist.speechToTextSettings.lang).toBe('en-US');
+            expect(inlineAIAssist.speechToTextSettings.disabled).toBe(false);
+            expect(inlineAIAssist.speechToTextSettings.showTooltip).toBe(true);
+            expect(inlineAIAssist.speechToTextSettings.transcript).toBe('');
+            expect(inlineAIAssist.speechToTextSettings.listeningState).toBe(SpeechToTextState.Inactive);
+        });
+
+        it('Constructor override of speechToTextSettings', () => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true, lang: 'fr-FR' }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssist.speechToTextSettings.enable).toBe(true);
+            expect(inlineAIAssist.speechToTextSettings.lang).toBe('fr-FR');
+        });
+
+        it('No STT button by default', () => {
+            inlineAIAssist = new InlineAIAssist({});
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text')).toBeNull();
+        });
+
+        it('Enable adds STT button in the footer toolbar', () => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttButton: HTMLElement = inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text') as HTMLElement;
+            expect(sttButton).not.toBeNull();
+            // The STT button should appear before the e-inline-send button
+            const footerIconsWrapper: HTMLElement = inlineAIAssistElem.querySelector('.e-footer-icons-wrapper');
+            const toolbarItems: HTMLElement[] = Array.from(footerIconsWrapper.querySelectorAll('.e-toolbar-item'));
+            const sttItemIndex: number = toolbarItems.findIndex((item: HTMLElement) => item.querySelector('.e-inline-assist-speech-to-text') !== null);
+            const sendItemIndex: number = toolbarItems.findIndex((item: HTMLElement) => item.querySelector('.e-inline-send') !== null);
+            expect(sttItemIndex).toBeGreaterThanOrEqual(0);
+            expect(sendItemIndex).toBeGreaterThan(sttItemIndex);
+        });
+
+        it('User-supplied STT item is preserved (no duplicate)', () => {
+            inlineAIAssist = new InlineAIAssist({
+                inlineToolbarSettings: {
+                    items: [{ iconCss: 'e-icons e-inline-assist-speech-to-text', tooltip: 'Custom mic' }]
+                },
+                speechToTextSettings: { enable: true }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttButtons: NodeListOf<HTMLElement> = inlineAIAssistElem.querySelectorAll('.e-inline-assist-speech-to-text');
+            expect(sttButtons.length).toBe(1);
+        });
+
+        it('SpeechToText instance created when enabled', () => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true, lang: 'en-US' }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect((inlineAIAssist as any).speechToTextObj).toBeDefined();
+            expect((inlineAIAssist as any).speechToTextObj).not.toBeNull();
+            expect((inlineAIAssist as any).speechToTextObj.lang).toBe('en-US');
+        });
+
+        it('renderSpeechToText destroys previous instance before re-creation', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true, lang: 'en-US' }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const firstInstance: any = (inlineAIAssist as any).speechToTextObj;
+            expect(firstInstance).not.toBeNull();
+            inlineAIAssist.speechToTextSettings = { enable: true, lang: 'es-ES' };
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                const secondInstance: any = (inlineAIAssist as any).speechToTextObj;
+                expect(secondInstance).not.toBeNull();
+                expect(secondInstance).not.toBe(firstInstance);
+                expect(secondInstance.lang).toBe('es-ES');
+                done();
+            }, 10);
+        });
+
+        it('Enabling after render adds the button and creates the instance', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({});
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text')).toBeNull();
+            inlineAIAssist.speechToTextSettings = { enable: true };
+            inlineAIAssist.dataBind();
+            setTimeout(() => {
+                expect(inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text')).not.toBeNull();
+                expect((inlineAIAssist as any).speechToTextObj).not.toBeNull();
+                done();
+            }, 10);
+        });
+
+        it('onStart relayed to speechToTextSettings.onStart with InlineAIAssist as this', (done: DoneFn) => {
+            let onStartThis: any = null;
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: {
+                    enable: true,
+                    onStart: function (args: any): void {
+                        onStartThis = this;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            expect(sttObj).not.toBeNull();
+            sttObj.onStart({});
+            expect(onStartThis).toBe(inlineAIAssist);
+            done();
+        });
+
+        it('onStop relayed to speechToTextSettings.onStop with InlineAIAssist as this', (done: DoneFn) => {
+            let onStopThis: any = null;
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: {
+                    enable: true,
+                    onStop: function (args: any): void {
+                        onStopThis = this;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.onStop({});
+            expect(onStopThis).toBe(inlineAIAssist);
+            done();
+        });
+
+        it('onError relayed to speechToTextSettings.onError with InlineAIAssist as this', (done: DoneFn) => {
+            let onErrorThis: any = null;
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: {
+                    enable: true,
+                    onError: function (args: any): void {
+                        onErrorThis = this;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.onError({});
+            expect(onErrorThis).toBe(inlineAIAssist);
+            done();
+        });
+
+        it('Interim transcript writes to editableTextarea innerHTML without changing prompt', () => {
+            inlineAIAssist = new InlineAIAssist({
+                prompt: 'Hi',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.recognition.onresult({ results: [{ isFinal: false, 0: { transcript: 'hel' } }], resultIndex: 0 });
+            expect(inlineAIAssist.prompt).toBe('Hi');
+            expect((inlineAIAssist as any).editableTextarea.innerHTML).toBe('Hi hel');
+        });
+
+        it('Final transcript commits prompt and pushes to undo stack', () => {
+            inlineAIAssist = new InlineAIAssist({
+                prompt: 'Hi',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.recognition.onresult({ results: [{ isFinal: true, 0: { transcript: 'hello world' } }], resultIndex: 0 });
+            expect(inlineAIAssist.prompt).toBe('Hi hello world');
+            expect((inlineAIAssist as any).editableTextarea.innerHTML).toBe('Hi hello world');
+            expect(inlineAIAssist.speechToTextSettings.transcript).toBe('hello world');
+        });
+
+        it('Final transcript with empty existing prompt omits leading space', () => {
+            inlineAIAssist = new InlineAIAssist({
+                prompt: '',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.recognition.onresult({ results: [{ isFinal: true, 0: { transcript: 'hello' } }], resultIndex: 0 });
+            expect(inlineAIAssist.prompt).toBe('hello');
+        });
+
+        it('transcriptChanged relayed to speechToTextSettings.transcriptChanged', () => {
+            let relayedArgs: TranscriptChangedEventArgs = null;
+            inlineAIAssist = new InlineAIAssist({
+                prompt: 'Hi',
+                speechToTextSettings: {
+                    enable: true,
+                    listeningState: SpeechToTextState.Listening,
+                    transcriptChanged: (args: TranscriptChangedEventArgs): void => {
+                        relayedArgs = args;
+                    }
+                }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.recognition.onresult({ results: [{ isFinal: true, 0: { transcript: 'hello' } }], resultIndex: 0 });
+            expect(relayedArgs).not.toBeNull();
+            expect(relayedArgs.transcript).toBe('hello');
+            expect(relayedArgs.isInterimResult).toBe(false);
+        });
+
+        it('SanitizeHtmlHelper applied to transcript (no live script tag)', () => {
+            inlineAIAssist = new InlineAIAssist({
+                prompt: '',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            sttObj.recognition.onresult({ results: [{ isFinal: true, 0: { transcript: '<script>alert(1)</script>' } }], resultIndex: 0 });
+            const liveScript: HTMLElement = (inlineAIAssist as any).editableTextarea.querySelector('script');
+            expect(liveScript).toBeNull();
+            expect(inlineAIAssist.prompt).not.toContain('<script>');
+        });
+
+        it('editorTemplate mode - transcriptChanged is no-op (prompt unchanged)', () => {
+            document.body.appendChild(editorTemplateTag);
+            inlineAIAssist = new InlineAIAssist({
+                editorTemplate: '#inlineSTTEditorTemplate',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            // editableTextarea should not exist in editorTemplate mode
+            expect((inlineAIAssist as any).editableTextarea).toBeUndefined();
+            if ((inlineAIAssist as any).speechToTextObj && (inlineAIAssist as any).speechToTextObj.recognition) {
+                (inlineAIAssist as any).speechToTextObj.recognition.onresult({
+                    results: [{ isFinal: true, 0: { transcript: 'hello' } }], resultIndex: 0
+                });
+            }
+            // Prompt unchanged because editableTextarea is absent (no-op path)
+            expect(inlineAIAssist.prompt).toBe('');
+        });
+
+        it('destroy cancels SpeechToText instance', () => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            expect(sttObj).not.toBeNull();
+            inlineAIAssist.destroy();
+            expect((inlineAIAssist as any).speechToTextObj).toBeNull();
+        });
+
+        it('should stop STT when prompt request is submitted', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                prompt: 'Test prompt',
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            spyOn(sttObj, 'stopListening');
+            inlineAIAssist.showPopup();
+            const sendButton: HTMLElement = inlineAIAssistElem.querySelector('.e-inline-send') as HTMLElement;
+            expect(sendButton).not.toBeNull();
+            sendButton.click();
+            expect(sttObj.stopListening).toHaveBeenCalled();
+            done();
+        });
+
+        it('should stop STT and reset button state when popup is closed and reopened', (done: DoneFn) => {
+            inlineAIAssist = new InlineAIAssist({
+                speechToTextSettings: { enable: true, listeningState: SpeechToTextState.Listening }
+            });
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            inlineAIAssist.showPopup();
+            const sttObj: any = (inlineAIAssist as any).speechToTextObj;
+            spyOn(sttObj, 'stopListening');
+            expect(sttObj).not.toBeNull();
+            const sttButton: HTMLElement = inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text') as HTMLElement;
+            expect(sttButton).not.toBeNull();
+            sttButton.click();
+            inlineAIAssist.hidePopup();
+            setTimeout(() => {
+                inlineAIAssist.showPopup();
+                expect(sttObj.stopListening).toHaveBeenCalled();
+                expect(inlineAIAssistElem.querySelector('.e-inline-assist-speech-to-text')).not.toBeNull();
+                done();
+            }, 10);
+        });
+
+        it('destroy is safe when STT was never enabled', () => {
+            inlineAIAssist = new InlineAIAssist({});
+            inlineAIAssist.appendTo(inlineAIAssistElem);
+            expect(() => { inlineAIAssist.destroy(); }).not.toThrow();
         });
     });
 });

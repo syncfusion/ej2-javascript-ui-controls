@@ -1,6 +1,6 @@
-@use 'ej2-base/styles/definition/fluent2' as *;
-@forward 'ej2-base/styles/definition/fluent2';
-$inline-ai-assist-bg: $content-bg-color !default;
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
+$inline-ai-assist-bg: $content-bg-color-alt1 !default;
 $inline-ai-assist-popup-border-radius: 8px !default;
 $inline-ai-assist-content-padding: 12px 12px 16px 12px !default;
 $inline-ai-assist-content-border-radius: 8px 8px 0 0 !default;
@@ -25,12 +25,13 @@ $inline-ai-assist-send-font-size: 14px !default;
 $inline-ai-assist-popup-border: 1px solid $border-light !default;
 $inline-ai-assist-response-text-color: $content-text-color !default;
 $inline-ai-assist-textarea-placeholder-color: $placeholder-text-color !default;
+$inline-ai-assist-textarea-color: $content-text-color !default;
 $inline-ai-assist-footer-focused-border-color: $border-alt !default;
 $inline-ai-assist-send-color: $icon-color !default;
 $inline-ai-assist-send-disabled-color: $secondary-text-color-disabled !default;
-$inline-ai-assist-content-bg: $content-bg-color !default;
+$inline-ai-assist-content-bg: $content-bg-color-alt1 !default;
 $inline-ai-assist-popup-box-shadow: $shadow-2xl !default;
-$inline-ai-assist-footer-bg: $content-bg-color !default;
+$inline-ai-assist-footer-bg: $content-bg-color-alt1 !default;
 $inline-ai-assist-content-border-bottom: 1px solid $border-light !default;
 $inline-ai-assist-response-stopper-bg-color: $primary-light !default;
 $inline-ai-assist-response-stopper-item-color: $primary !default;

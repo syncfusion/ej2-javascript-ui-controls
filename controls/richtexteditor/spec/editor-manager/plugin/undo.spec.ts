@@ -1,8 +1,10 @@
 /**
  * Undo Redo spec
  */
-import { selectAll, removeClass } from '@syncfusion/ej2-base';
-import { RichTextEditor, NodeSelection, ToolbarStatusEventArgs } from './../../../src/index';
+import { selectAll, removeClass, createElement } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../src/rich-text-editor/base/rich-text-editor';
+import { ToolbarStatusEventArgs } from './../../../src/rich-text-editor/index';
+import { NodeSelection } from './../../../src/selection/selection';
 import { IToolbarStatus } from './../../../src/common/interface';
 import { renderRTE, destroy, setCursorPoint } from "./../../rich-text-editor/render.spec";
 
@@ -450,6 +452,75 @@ describe('Undo and Redo module', () => {
             destroy(rteObj);
         });
     });
+    describe('849657 - Cancelling undo and redo actions using actionBegin events cancel argument is not working in RichTextEditor', () => {
+        let isCancelled: boolean = false;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj= renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', 'Bold']
+                },
+                value: 'RichTextEditor',
+                actionBegin: function (e: any) {
+                    if ((e.requestType as string).toLowerCase() === 'undo' || (e.requestType as string).toLowerCase()=== 'redo') {
+                        e.cancel = true;
+                        isCancelled = true;
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Undo and Redo actions are cancelled', () => {
+            // Bold action
+            const range = new Range();
+            range.setStart(rteObj.contentModule.getEditPanel().querySelector('p'), 0);
+            range.setEnd(rteObj.contentModule.getEditPanel().querySelector('p'), 1);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+            const boldKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'b',
+                which: 66,
+                keyCode: 66,
+                code: 'KeyB',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(boldKeyAction);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+            // Undo action
+            const undoKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'z',
+                keyCode: 90,
+                which: 90,
+                code: 'KeyZ',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(undoKeyAction);
+            expect(isCancelled).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+            isCancelled = false;
+            // Redo action
+            const redoKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'y',
+                keyCode: 89,
+                which: 89,
+                code: 'KeyY',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(redoKeyAction);
+            expect(isCancelled).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+        });
+    });
     describe('978841 - Undo toolbar item is not disabled in the source code view.', () => {
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: true, which: 72 };
         let rteObj: RichTextEditor;
@@ -477,4 +548,47 @@ describe('Undo and Redo module', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 1009396: RichTextEditor Regains Focus After Typing When User Quickly Clicks Another Form Field', () => {
+        let rteObj: RichTextEditor;
+        let inputElement: HTMLInputElement;
+        let containerDiv: HTMLElement;
+        beforeAll(() => {
+            containerDiv = createElement('div', { id: 'rteContainer' });
+            document.body.appendChild(containerDiv);
+            let rteEle: HTMLElement = createElement('div', { id: 'defaultRTE' });
+            containerDiv.appendChild(rteEle);
+            inputElement = createElement('input', {
+                id: 'testInput',
+                attrs: { type: 'text', placeholder: 'Type here' }
+            }) as HTMLInputElement;
+            containerDiv.appendChild(inputElement);
+            rteObj = new RichTextEditor({
+                value: '<p><br></p>'
+            });
+            rteObj.appendTo('#defaultRTE');
+        });
+        it('should maintain focus in input element after typing in both RTE and input', (done: DoneFn) => {
+            rteObj.focusIn();
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.innerHTML = '<p>Test content in RTE</p>';
+            rteObj.dataBind();
+            setTimeout(() => {
+                inputElement.focus();
+                expect(document.activeElement).toBe(inputElement);
+                inputElement.value = 'Test input text';
+                let inputEvent = new Event('input', { bubbles: true });
+                inputElement.dispatchEvent(inputEvent);
+                setTimeout(() => {
+                    expect(document.activeElement).toBe(inputElement);
+                    expect(inputElement.value).toBe('Test input text');
+                    done();
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            rteObj.destroy();
+            document.body.removeChild(containerDiv);
+        });
+    });
+    
 });

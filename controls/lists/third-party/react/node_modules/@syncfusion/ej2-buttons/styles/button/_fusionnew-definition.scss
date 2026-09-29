@@ -1,5 +1,4 @@
-@use 'ej2-base/styles/definition/fusionnew' as *;
-@forward 'ej2-base/styles/definition/fusionnew';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //layout variables
 $btn-font-size: $text-sm !default;

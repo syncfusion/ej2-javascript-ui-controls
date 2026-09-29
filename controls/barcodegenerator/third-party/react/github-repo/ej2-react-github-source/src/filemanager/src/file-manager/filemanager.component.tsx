@@ -9,7 +9,7 @@ export interface FileManagerTypecast {
 }
 /**
  Represents the Essential JS 2 react FileManager Component.
- * ```tsx
+ * ```ts
  * <FileManagerComponent showThumbnail={false}></FileManagerComponent>
  * ```
  */

@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@mixin wrap-styles {
+@use 'variables' as *;
+@mixin wrap-style {
   background-color: $pivotgrid-focus-color;
   color: $pivotgrid-button-acitve-font-color;
 
@@ -94,7 +94,7 @@
       margin-left: $pivotgrid-margin-10;
     }
 
-    .e-valuescontent {
+    .e-grid:not(.e-rtl) .e-rowcell.e-valuescontent {
       opacity: $pivotview-grid-content-opacity;
       padding-right: $pivotgrid-padding-8;
       text-align: right;
@@ -383,8 +383,17 @@
 
     .e-grid {
 
-      th.e-focused:not(.e-menu-item):not(.e-editedbatchcell) {
-        box-shadow: none !important;
+      &.e-hidelines,
+      &.e-horizontallines,
+      &.e-verticallines {
+        table th.e-stackedheadercell {
+          border-bottom-width: $pivotgrid-border-size !important;
+          border-right: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color !important;
+        }
+      }
+
+      th.e-leftfreeze {
+        border-left-width: 0 !important;
       }
 
       @if ($skin-name == 'bootstrap5.3')
@@ -427,7 +436,39 @@
       &:has(.e-pivot-grouping-bar) .e-headercontent .e-columnheader .e-group-row .e-headercelldiv {
         display: none;
       }
-      
+
+      .e-grid.sf-grid {
+        .e-gridcontent {
+        
+          .e-content,
+          .e-content-virtualtable {
+            &.e-virtual-content-min-height {
+              min-height: 1px !important;
+            }
+          }
+        
+          .e-movablescrolldiv {
+            &.e-scrollbar-display-none {
+              display: none !important;
+            }
+          
+            &.e-scrollbar-display-block {
+              display: block !important;
+            }
+          }
+        
+          .e-content-virtualtable {
+            &.e-overflowx-auto {
+              overflow-x: auto;
+            }
+          
+            &.e-overflowx-visible {
+              overflow-x: visible;
+            }
+          }
+        }
+      }
+
       .e-headercell.no-borders.e-leftfreeze,
       .e-headercell.no-left-border.e-leftfreeze,
       .e-headercell.no-right-border.e-leftfreeze {
@@ -463,6 +504,18 @@
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
+      }
+    }
+
+    .e-grid {
+      .e-headercelldiv {
+        width: 100% !important;
+        padding-left: $pivotgrid-padding-8 !important;
+        padding-right: $pivotgrid-padding-8 !important;
+      }
+
+      th.e-headercell:not(.e-stackedheadercell) {
+        padding: $pivotgrid-padding-0 !important;
       }
     }
 
@@ -762,7 +815,7 @@
         }
 
         &.e-btn-focused {
-          @include wrap-styles;
+          @include wrap-style;
 
           .e-sort,
           .e-dropdown-icon,
@@ -785,7 +838,7 @@
 
         &:focus,
         &:active {
-          @include wrap-styles;
+          @include wrap-style;
 
           .e-sort,
           .e-dropdown-icon,
@@ -902,7 +955,7 @@
         flex: none;
         width: $pivotgrid-width-100p;
 
-        &.e-tabular-group-rows {
+        &.e-tabular-group-rows.e-tabular-group-rows-with-fields {
           padding-top: $pivotgrid-padding-3 !important;
         }
 
@@ -950,7 +1003,7 @@
             }
 
             &.e-btn-focused {
-              @include wrap-styles;
+              @include wrap-style;
 
               .e-sort,
               .e-dropdown-icon,
@@ -964,7 +1017,7 @@
     
             &:focus,
             &:active {
-              @include wrap-styles;
+              @include wrap-style;
     
               .e-sort,
               .e-dropdown-icon,
@@ -1723,6 +1776,15 @@
 
   .e-drillthrough-dialog {
     visibility: hidden;
+  }
+
+  .e-drillthrough-dialog,
+  .e-member-editor-dialog {
+    /* stylelint-disable */
+    &.e-visibility {
+      visibility: visible !important;
+    }
+    /* stylelint-enable */
   }
 
   .e-pivottooltip {

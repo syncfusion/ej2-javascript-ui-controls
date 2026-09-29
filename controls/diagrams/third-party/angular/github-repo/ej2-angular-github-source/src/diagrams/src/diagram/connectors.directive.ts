@@ -17,17 +17,18 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-connectors>e-connector',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-        childFixedUserHandles: new ContentChild(ConnectorFixedUserHandlesDirective), 
+        childFixedUserHandles: new ContentChild(ConnectorFixedUserHandlesDirective),
         childAnnotations: new ContentChild(ConnectorAnnotationsDirective)
     }
 })
 export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
     public directivePropList: any;
 	
-    public childFixedUserHandles: any;
-    public childAnnotations: any;
+    public declare childFixedUserHandles: any;
+    public declare childAnnotations: any;
     public tags: string[] = ['fixedUserHandles', 'annotations'];
     /** 
      * Defines the type of the connector 
@@ -37,43 +38,43 @@ export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
      * @default 'Straight'
      * @asptype Syncfusion.EJ2.Diagrams.Segments
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Allows the user to save custom information/data about a node/connector
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public addInfo: any;
+    public declare addInfo: any;
     /** 
      * Specifies a value indicating whether to overlap the connector over with the source and target node. 
      * If the LineRouting is enabled in the diagram, then allowNodeOverlap property will not work.
      * @default false
      */
-    public allowNodeOverlap: any;
+    public declare allowNodeOverlap: any;
     /** 
      * 
      */
-    public annotations: any;
+    public declare annotations: any;
     /** 
      * Sets the bezier settings of editing the segments.
      * @default null
      */
-    public bezierSettings: any;
+    public declare bezierSettings: any;
     /** 
      * Defines the bridgeSpace of connector
      * @default 10
      */
-    public bridgeSpace: any;
+    public declare bridgeSpace: any;
     /** 
      * Sets the connector padding value
      * @default 0
      */
-    public connectionPadding: any;
+    public declare connectionPadding: any;
     /** 
      * Sets the distance between source node and connector
      * @default 13
      */
-    public connectorSpacing: any;
+    public declare connectorSpacing: any;
     /** 
      * Defines the constraints of connector 
      * * None - Interaction of the connectors cannot be done. 
@@ -94,35 +95,35 @@ export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
      * @default 'Default'
      * @aspnumberenum 
      */
-    public constraints: any;
+    public declare constraints: any;
     /** 
      * Sets the corner radius of the connector
      * @default 0
      */
-    public cornerRadius: any;
+    public declare cornerRadius: any;
     /** 
      * Defines the size of a drop symbol
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public dragSize: any;
+    public declare dragSize: any;
     /** 
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
      * @default false
      */
-    public excludeFromLayout: any;
+    public declare excludeFromLayout: any;
     /** 
      * Specifies the collection of the fixed user handle
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public fixedUserHandles: any;
+    public declare fixedUserHandles: any;
     /** 
      * Flip the element in Horizontal/Vertical directions
      * @aspdefaultvalueignore 
      * @default None
      */
-    public flip: any;
+    public declare flip: any;
     /** 
      * Allows you to flip only the node or along with port and label.
      * 
@@ -131,39 +132,39 @@ export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
      * @aspdefaultvalueignore 
      * @default All
      */
-    public flipMode: any;
+    public declare flipMode: any;
     /** 
      * Sets the connector padding value
      * @default 10
      */
-    public hitPadding: any;
+    public declare hitPadding: any;
     /** 
      * Represents the unique id of nodes/connectors
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the space to be left between the node and its immediate parent
      * @default {}
      */
-    public margin: any;
+    public declare margin: any;
     /** 
      * Sets the maximum segment thumb for the connector
      * @default null
      */
-    public maxSegmentThumb: any;
+    public declare maxSegmentThumb: any;
     /** 
      * Defines the behavior of connection ports
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public ports: any;
+    public declare ports: any;
     /** 
      * Defines the size of the symbol preview
      * @aspdefaultvalueignore 
      * @default undefined
      */
-    public previewSize: any;
+    public declare previewSize: any;
     /** 
      * Defines the shape for the connector segmentThumb 
      * Rhombus - Sets the segmentThumb shape as Rhombus 
@@ -181,108 +182,108 @@ export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
      * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
      * @default 'Circle'
      */
-    public segmentThumbShape: any;
+    public declare segmentThumbShape: any;
     /** 
      * Specifies the size of the segment thumb for individual connector. When not set, it defaults to matching the underlying path data
      * @default 10
      */
-    public segmentThumbSize: any;
+    public declare segmentThumbSize: any;
     /** 
      * Defines the segments
      * @default []
      * @asptype object
      */
-    public segments: any;
+    public declare segments: any;
     /** 
      * Defines the shape of the connector
      * @default 'Bpmn'
      * @asptype object
      */
-    public shape: any;
+    public declare shape: any;
     /** 
      * Defines the source decorator of the connector
      * @default new Decorator()
      */
-    public sourceDecorator: any;
+    public declare sourceDecorator: any;
     /** 
      * Sets the source node/connector object of the connector
      * @default null
      */
-    public sourceID: any;
+    public declare sourceID: any;
     /** 
      * Sets the source padding of the connector
      * @default 0
      */
-    public sourcePadding: any;
+    public declare sourcePadding: any;
     /** 
      * Sets the beginning point of the connector
      * @default new Point(0,0)
      */
-    public sourcePoint: any;
+    public declare sourcePoint: any;
     /** 
      * Sets the unique id of the source port of the connector
      * @default ''
      */
-    public sourcePortID: any;
+    public declare sourcePortID: any;
     /** 
      * Defines the appearance of the connection path
      * @default ''
      */
-    public style: any;
+    public declare style: any;
     /** 
      * Defines the symbol info of a connector
      * @aspdefaultvalueignore 
      * @default undefined
      * @ignoreapilink 
      */
-    public symbolInfo: any;
+    public declare symbolInfo: any;
     /** 
      * Defines the target decorator of the connector
      * @default new Decorator()
      */
-    public targetDecorator: any;
+    public declare targetDecorator: any;
     /** 
      * Sets the target node/connector object of the connector
      * @default null
      */
-    public targetID: any;
+    public declare targetID: any;
     /** 
      * Sets the target padding of the connector
      * @default 0
      */
-    public targetPadding: any;
+    public declare targetPadding: any;
     /** 
      * Sets the end point of the connector
      * @default new Point(0,0)
      */
-    public targetPoint: any;
+    public declare targetPoint: any;
     /** 
      * Sets the unique id of the target port of the connector
      * @default ''
      */
-    public targetPortID: any;
+    public declare targetPortID: any;
     /** 
      * defines the tooltip for the connector
      * @default new DiagramToolTip();
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * Sets the visibility of the node/connector
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * Defines the UI of the connector
      * @default null
      * @deprecated 
      */
-    public wrapper: any;
+    public declare wrapper: any;
     /** 
      * Defines the visual order of the node/connector in DOM
      * @aspdefaultvalue 5e-324
      * @default Number.MIN_VALUE
      */
-    public zIndex: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -298,6 +299,7 @@ export class ConnectorDirective extends ComplexBase<ConnectorDirective> {
  */
 @Directive({
     selector: 'ej-diagram>e-connectors',
+    standalone: true,
     queries: {
         children: new ContentChildren(ConnectorDirective)
     },

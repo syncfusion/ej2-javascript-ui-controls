@@ -729,19 +729,18 @@ describe('DeflateStream branch and _read behavior tests', () => {
     it('Constructor check', () => {
         // Arrange
         const data: any = null;
-        const ds = new _DeflateStream(data, null, null);
+        const ds = new _DeflateStream(data, null);
         // Act
         const result = ds._data;
         // Assert
         expect(result.length).toBe(0);
-        expect(ds._leaveOpen).toBeUndefined();
         expect(0).toBe(ds._readBytes().count);
     });
 
     it('_readBytes - else branch copies bytes and advances offset', () => {
         // Arrange
         const data = [1, 2, 3, 4, 5];
-        const ds = new _DeflateStream(data, 0, true);
+        const ds = new _DeflateStream(data, 0);
         // Act
         const res = (ds as any)._readBytes();
 
@@ -753,7 +752,7 @@ describe('DeflateStream branch and _read behavior tests', () => {
 
     it('_read - returns zero when inflater reports finished immediately', () => {
         // Arrange
-        const ds = new _DeflateStream([], 0, true);
+        const ds = new _DeflateStream([], 0);
         // stub inflater to simulate finished state
         (ds as any)._inflater = {
             _finished: false,
@@ -781,7 +780,7 @@ describe('DeflateStream branch and _read behavior tests', () => {
 
     it('_read - returns zero when inflater reports finished immediately', () => {
         // Arrange
-        const ds = new _DeflateStream([], 0, true);
+        const ds = new _DeflateStream([], 0);
         // stub inflater to simulate finished state
         (ds as any)._inflater = {
             _finished: true,
@@ -797,7 +796,7 @@ describe('DeflateStream branch and _read behavior tests', () => {
 
     it('_read - sets inflater input when bytes available and completes after inflate', () => {
         // Arrange
-        const ds = new _DeflateStream([9, 9, 9], 0, true);
+        const ds = new _DeflateStream([9, 9, 9], 0);
         let inflateCalls = 0;
         const inflaterFake: any = {
             _finished: false,
@@ -829,7 +828,7 @@ describe('DeflateStream branch and _read behavior tests', () => {
         expect(inflaterFake.lastInput).toBeDefined();
     });
     it('_readBytes - return quick when the offset is not null', () => {
-        const ds = new _DeflateStream([9, 9, 9], 0, true);
+        const ds = new _DeflateStream([9, 9, 9], 0);
         ds._offset = 5;
         ds._data = [];
         const result = ds._readBytes();

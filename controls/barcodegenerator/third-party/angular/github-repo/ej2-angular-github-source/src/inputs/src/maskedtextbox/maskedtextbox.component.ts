@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,46 +30,23 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        prependTemplate: new ContentChild('prependTemplate'),
+        appendTemplate: new ContentChild('appendTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class MaskedTextBoxComponent extends MaskedTextBox implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	blur: any;
-	change: any;
-	created: any;
-	destroyed: any;
-	focus: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare blur: any;
+	declare change: any;
+	declare created: any;
+	declare destroyed: any;
+	declare focus: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Specifies the HTML template string for custom elements to prepend to the MaskedTextBox input. 
-     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('prependTemplate')
-    @Template()
-    public prependTemplate: any;
-    /** 
-     * Specifies the HTML template string for custom elements to append to the MaskedTextBox input. 
-     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('appendTemplate')
-    @Template()
-    public appendTemplate: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -112,7 +90,9 @@ export class MaskedTextBoxComponent extends MaskedTextBox implements IComponentB
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MaskedTextBoxComponent.prototype, 'prependTemplate');
+Template()(MaskedTextBoxComponent.prototype, 'appendTemplate');
 

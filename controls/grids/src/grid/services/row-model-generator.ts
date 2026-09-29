@@ -105,7 +105,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
                 if (this.parent.enableColumnVirtualization) {
                     continue;
                 } else {
-                    rows[parseInt(i.toString(), 10)].cells.unshift(this.generateCell({} as Column, null, CellType.HeaderIndent));
+                    rows[parseInt(i.toString(), 10)].cells.unshift(this.generateCell({} as Column, null, CellType.PinnedIndent));
                 }
             }
         }
@@ -117,10 +117,10 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         const cols: Cell<Column>[] = [];
 
         if (this.parent.detailTemplate || this.parent.childGrid) {
-            cols.push(this.generateCell({} as Column, null, CellType.HeaderIndent));
+            cols.push(this.generateCell({} as Column, null, CellType.PinnedIndent));
         }
         if (this.parent.isRowDragable()) {
-            cols.push(this.generateCell({} as Column, null, CellType.HeaderIndent));
+            cols.push(this.generateCell({} as Column, null, CellType.PinnedIndent));
         }
         return cols;
     }
@@ -176,7 +176,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
             this.parent.getSelectedRowIndexes().indexOf(index) > -1;
         this.refreshForeignKeyRow(options);
         let cells: Cell<Column>[] = this.ensureColumns();
-        if (this.parent.pinnedTopRecords.length && index < this.parent.pinnedTopRecords.length) {
+        if (this.parent.pinnedDataCount && this.parent.pinnedTopRecords.length && index < this.parent.pinnedDataCount) {
             cells = this.ensurePinnedColumns();
         }
         const row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
@@ -223,7 +223,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         oIndex?: number, foreignKeyData?: Object): Cell<Column> {
         const opt: ICell<Column> = {
             'visible': column.visible,
-            'isDataCell': !isNullOrUndefined(column.field || column.template),
+            'isDataCell': !isNullOrUndefined(column.field || column.template  || column.type === 'rownumber' ),
             'isTemplate': !isNullOrUndefined(column.template),
             'rowID': rowId,
             'column': column,

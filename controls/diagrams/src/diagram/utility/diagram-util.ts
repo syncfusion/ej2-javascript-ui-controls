@@ -2140,9 +2140,19 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             for (let i: number = 0; i < diagram.views.length; i++) {
                 htmlElement = getDiagramElement(actualObject.wrapper.children[0].id + '_html_element', diagram.views[parseInt(i.toString(), 10)]);
                 if (htmlElement) {
-                    htmlElement.removeChild(htmlElement.children[0]);
-                    (actualObject.wrapper.children[0] as DiagramHtmlElement).content = (newValues.shape as HtmlModel).content;
-                    htmlElement.appendChild(getContent(actualObject.wrapper.children[0] as DiagramHtmlElement, true));
+                    // Remove existing child if present (handles already-rendered templates)
+                    if (htmlElement.children.length > 0) {
+                        htmlElement.removeChild(htmlElement.children[0]);
+                    }
+                    // Update content regardless of prior state (handles uninitialized templates)
+                    const htmlWrapper = actualObject.wrapper.children[0] as DiagramHtmlElement;
+                    htmlWrapper.content = (newValues.shape as HtmlModel).content;
+                    // When updating with a direct function (not template ID), disable isTemplate flag
+                    // so getContent will use the function directly instead of looking for getNodeTemplate()
+                    if (typeof htmlWrapper.content === 'function') {
+                        htmlWrapper.isTemplate = false;
+                    }
+                    htmlElement.appendChild(getContent(htmlWrapper, true));
                 }
             }
         } else if (actualObject.shape.type === 'Flow' && (

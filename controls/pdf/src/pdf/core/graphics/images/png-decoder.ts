@@ -464,7 +464,7 @@ export class _PngDecoder extends _ImageDecoder {
      */
     _getDeflatedData(data: Uint8Array): Uint8Array {
         const idatData: Uint8Array = data.subarray(2, data.length - 4);
-        const deflateStream: _DeflateStream = new _DeflateStream(Array.from(idatData), 0, true);
+        const deflateStream: _DeflateStream = new _DeflateStream(Array.from(idatData), 0);
         const chunkSize: number = 4096;
         const outputChunks: Uint8Array[] = [];
         let totalLength: number = 0;

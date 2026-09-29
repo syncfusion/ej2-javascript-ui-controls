@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap5' as *;
-@forward 'ej2-base/styles/definition/bootstrap5';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
 $ddl-input-border: 1px $border-light !default;
@@ -75,10 +74,10 @@ $ddl-full-width: 100%;
     box-shadow: none;
     margin-top: 3px;
     @at-root {
-      #{if(&, '&', '*')} .e-input-group {
+      & .e-input-group {
         width: auto;
 
-        #{if(&, '&', '*')} input {
+        & input {
           line-height: 15px;
         }
       }
@@ -93,7 +92,7 @@ $ddl-full-width: 100%;
     display: flex;
     width: auto;
     @at-root {
-      #{if(&, '&', '*')} .e-back-icon {
+      & .e-back-icon {
         border: 0;
       }
     }

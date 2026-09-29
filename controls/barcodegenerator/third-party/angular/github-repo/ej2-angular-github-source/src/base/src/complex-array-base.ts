@@ -209,6 +209,28 @@ export class ArrayBase<T> {
                 return child;
             }
         );
+
+        // Check if any child in list is no longer in children (stale reference detection)
+        // For column properties where *ngIf can cause stale references
+        let hasStaleChildren: boolean = false;
+        const isRelevantProperty: boolean = this.propertyName && (this.propertyName === 'columns' ||
+                                                       this.propertyName === 'aggregates');
+        if (this.list.length > 0 && isRelevantProperty) {
+            for (let s: number = 0; s < this.list.length; s++) {
+                let childExists: boolean = false;
+                for (let t: number = 0; t < this.children.length; t++) {
+                    if (this.list[parseInt(s.toString(), 10)] === this.children.toArray()[parseInt(t.toString(), 10)]) {
+                        childExists = true;
+                        break;
+                    }
+                }
+                if (!childExists) {
+                    hasStaleChildren = true;
+                    break;
+                }
+            }
+        }
+
         /* istanbul ignore next */
         if (this.list.length === this.children.length) {
             for (let i: number = 0; i < this.list.length; i++) {
@@ -229,7 +251,7 @@ export class ArrayBase<T> {
             }
         }
 
-        this.hasNewChildren = (this.list.length !== this.children.length || isSourceChanged) ? true : null;
+        this.hasNewChildren = (this.list.length !== this.children.length || isSourceChanged || hasStaleChildren) ? true : null;
         if (this.hasNewChildren) {
             this.list = this.children.map((child: T & ComplexBase<T>) => {
                 child.dirIndex = index++;

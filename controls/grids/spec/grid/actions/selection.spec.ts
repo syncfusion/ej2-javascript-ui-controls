@@ -5875,6 +5875,37 @@ describe('BUG 842498 - In a checkbox with a specified field, if you click the in
     });
 });
 
+describe('BUG 1039296 - Header SelectAll checkbox becomes disabled after opening the Edit Dialog for a selected row', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Cancel'],
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                ],
+            }, done);
+    });
+
+    it('Check selectAll checkbox', (done: Function) => {
+        gridObj.selectRow(0);
+        gridObj.startEdit();
+        gridObj.endEdit();
+        expect((<HTMLElement>gridObj.getHeaderContent().querySelector('.e-checkselectall').parentElement).classList.contains('e-checkbox-disabled')).toBeFalsy();
+        done();
+    });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('Code Coverage - autofill with scroll', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -7886,7 +7917,7 @@ describe('EJ2-985690: Partial Selection module', () => {
 
         it('Sort the column', (done: Function) => {
             (gridObj as any).getHeaderContent().querySelectorAll('.e-headercell')[0].click();
-            expect(gridObj.getSelectedRecords().length).toBe(0);
+            expect(gridObj.getSelectedRecords().length).toBe(1);
             done();
         });
 
@@ -9203,5 +9234,50 @@ describe('cellFocus Event - With Frozen Columns', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = cellFocusArgs = null;
+    });
+});
+describe('EJ2-1043490-Grid does not persist when selection type is set to Single when refreshed', () => {
+    let gridObj: Grid;
+    let selectionModule: Selection;
+    let selectedOrderID: number;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSorting: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' }
+                ],
+                allowSelection: true,
+                selectionSettings: {
+                    type: 'Single',
+                    persistSelection: true
+                }
+            }, done);
+    });
+
+    it('should select a row with persistSelection enabled', () => {
+        selectionModule = gridObj.selectionModule;
+ 
+        gridObj.selectRow(2);
+ 
+    });
+ 
+    it('should retain the same selected record after sorting', () => {
+ 
+        (gridObj.element.querySelectorAll('.e-headercell')[1] as HTMLElement).click();
+ 
+        expect(gridObj.getSelectedRecords().length).toBe(1);
+ 
+    })
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = selectionModule = null;
     });
 });

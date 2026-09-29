@@ -427,7 +427,14 @@ export class NormalEdit {
         }
     }
 
-    private requestSuccess(args: Object): void {
+    /**
+     * The function used to handle a successful edit request and reset the edit state.
+     *
+     * @param {Object} args - Specifies the action result arguments.
+     * @returns {void}
+     * @hidden
+     */
+    public requestSuccess(args: Object): void {
         if (this.parent.editModule.formObj && !this.parent.editModule.formObj.isDestroyed) {
             this.destroyElements();
             this.stopEditStatus();
@@ -742,7 +749,7 @@ export class NormalEdit {
             gObj.clearSelection();
         }
         this.renderer.addNew(addArgs);
-        if (this.parent.isEdit && !this.parent.isPersistSelection) {
+        if (this.parent.isEdit && !this.parent.isPersistSelection && this.parent.editSettings.mode !== 'Dialog') {
             const checkedAllTarget: HTMLElement = this.parent.getHeaderContent().querySelector('.e-checkselectall');
             if (checkedAllTarget) {
                 checkedAllTarget.parentElement.classList.add('e-checkbox-disabled');

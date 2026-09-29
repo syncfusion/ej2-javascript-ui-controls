@@ -5,8 +5,8 @@ import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
 import { Template } from '@syncfusion/ej2-angular-base';
 
 
-export const inputs: string[] = ['aiAssistantSettings','autoSaveOnIdle','backgroundColor','bulletFormatList','codeBlockSettings','cssClass','editorMode','emojiPickerSettings','enableAutoUrl','enableClipboardCleanup','enableHtmlEncode','enableHtmlSanitizer','enableMarkdownAutoFormat','enablePersistence','enableResize','enableRtl','enableTabKey','enableXhtml','enabled','enterKey','exportPdf','exportWord','fileManagerSettings','floatingToolbarOffset','fontColor','fontFamily','fontSize','format','formatPainterSettings','formatter','height','htmlAttributes','iframeSettings','importWord','inlineMode','insertAudioSettings','insertImageSettings','insertVideoSettings','keyConfig','lineHeight','locale','maxLength','numberFormatList','pasteCleanupSettings','placeholder','quickToolbarSettings','readonly','saveInterval','shiftEnterKey','showCharCount','showTooltip','slashMenuSettings','tableSettings','toolbarSettings','undoRedoSteps','undoRedoTimer','value','valueTemplate','width'];
-export const outputs: string[] = ['actionBegin','actionComplete','afterImageDelete','afterMediaDelete','afterPasteCleanup','aiAssistantPromptRequest','aiAssistantStopRespondingClick','aiAssistantToolbarClick','beforeClipboardWrite','beforeDialogClose','beforeDialogOpen','beforeFileUpload','beforeImageDrop','beforeImageUpload','beforeMediaDrop','beforePasteCleanup','beforePopupClose','beforePopupOpen','beforeQuickToolbarOpen','beforeSanitizeHtml','blur','change','created','destroyed','dialogClose','dialogOpen','documentExporting','fileRemoving','fileSelected','fileUploadFailed','fileUploadSuccess','fileUploading','focus','imageRemoving','imageSelected','imageUploadFailed','imageUploadSuccess','imageUploading','quickToolbarClose','quickToolbarOpen','resizeStart','resizeStop','resizing','selectionChanged','slashMenuItemSelect','toolbarClick','toolbarStatusUpdate','updatedToolbarStatus','wordImporting','valueChange'];
+export const inputs: string[] = ['aiAssistantSettings','autoSaveOnIdle','backgroundColor','bulletFormatList','codeBlockSettings','cssClass','editorMode','emojiPickerSettings','enableAutoUrl','enableClipboardCleanup','enableHtmlEncode','enableHtmlSanitizer','enableMarkdownAutoFormat','enablePersistence','enableResize','enableRtl','enableTabKey','enableWebMcp','enableXhtml','enabled','enterKey','exportPdf','exportWord','fileManagerSettings','floatingToolbarOffset','fontColor','fontFamily','fontSize','format','formatPainterSettings','formatter','height','htmlAttributes','iframeSettings','importWord','inlineMode','insertAudioSettings','insertImageSettings','insertVideoSettings','keyConfig','lineHeight','locale','maxLength','numberFormatList','pasteCleanupSettings','placeholder','quickToolbarSettings','readonly','saveInterval','shiftEnterKey','showCharCount','showTooltip','slashMenuSettings','tableSettings','toolbarSettings','undoRedoSteps','undoRedoTimer','value','valueTemplate','width'];
+export const outputs: string[] = ['actionBegin','actionComplete','afterImageDelete','afterMediaDelete','afterPasteCleanup','aiAssistantPromptRequest','aiAssistantStopRespondingClick','aiAssistantToolbarClick','beforeClipboardWrite','beforeDialogClose','beforeDialogOpen','beforeFileUpload','beforeImageDrop','beforeImageUpload','beforeMediaDrop','beforePasteCleanup','beforePopupClose','beforePopupOpen','beforeQuickToolbarOpen','beforeSanitizeHtml','beforeWebMcpToolExecute','blur','change','created','destroyed','dialogClose','dialogOpen','documentExporting','fileRemoving','fileSelected','fileUploadFailed','fileUploadSuccess','fileUploading','focus','imageRemoving','imageSelected','imageUploadFailed','imageUploadSuccess','imageUploading','quickToolbarClose','quickToolbarOpen','resizeStart','resizeStop','resizing','selectionChanged','slashMenuItemSelect','toolbarClick','toolbarStatusUpdate','updatedToolbarStatus','wordImporting','valueChange'];
 export const twoWays: string[] = ['value'];
 
 /**
@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,82 +30,68 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        valueTemplate: new ContentChild('valueTemplate'),
+        aiAssistantSettings_bannerTemplate: new ContentChild('aiAssistantSettingsBannerTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class RichTextEditorComponent extends RichTextEditor implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	afterImageDelete: any;
-	afterMediaDelete: any;
-	afterPasteCleanup: any;
-	aiAssistantPromptRequest: any;
-	aiAssistantStopRespondingClick: any;
-	aiAssistantToolbarClick: any;
-	beforeClipboardWrite: any;
-	beforeDialogClose: any;
-	beforeDialogOpen: any;
-	beforeFileUpload: any;
-	beforeImageDrop: any;
-	beforeImageUpload: any;
-	beforeMediaDrop: any;
-	beforePasteCleanup: any;
-	beforePopupClose: any;
-	beforePopupOpen: any;
-	beforeQuickToolbarOpen: any;
-	beforeSanitizeHtml: any;
-	blur: any;
-	change: any;
-	created: any;
-	destroyed: any;
-	dialogClose: any;
-	dialogOpen: any;
-	documentExporting: any;
-	fileRemoving: any;
-	fileSelected: any;
-	fileUploadFailed: any;
-	fileUploadSuccess: any;
-	fileUploading: any;
-	focus: any;
-	imageRemoving: any;
-	imageSelected: any;
-	imageUploadFailed: any;
-	imageUploadSuccess: any;
-	imageUploading: any;
-	quickToolbarClose: any;
-	quickToolbarOpen: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	selectionChanged: any;
-	slashMenuItemSelect: any;
-	toolbarClick: any;
-	toolbarStatusUpdate: any;
-	updatedToolbarStatus: any;
-	wordImporting: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare afterImageDelete: any;
+	declare afterMediaDelete: any;
+	declare afterPasteCleanup: any;
+	declare aiAssistantPromptRequest: any;
+	declare aiAssistantStopRespondingClick: any;
+	declare aiAssistantToolbarClick: any;
+	declare beforeClipboardWrite: any;
+	declare beforeDialogClose: any;
+	declare beforeDialogOpen: any;
+	declare beforeFileUpload: any;
+	declare beforeImageDrop: any;
+	declare beforeImageUpload: any;
+	declare beforeMediaDrop: any;
+	declare beforePasteCleanup: any;
+	declare beforePopupClose: any;
+	declare beforePopupOpen: any;
+	declare beforeQuickToolbarOpen: any;
+	declare beforeSanitizeHtml: any;
+	declare beforeWebMcpToolExecute: any;
+	declare blur: any;
+	declare change: any;
+	declare created: any;
+	declare destroyed: any;
+	declare dialogClose: any;
+	declare dialogOpen: any;
+	declare documentExporting: any;
+	declare fileRemoving: any;
+	declare fileSelected: any;
+	declare fileUploadFailed: any;
+	declare fileUploadSuccess: any;
+	declare fileUploading: any;
+	declare focus: any;
+	declare imageRemoving: any;
+	declare imageSelected: any;
+	declare imageUploadFailed: any;
+	declare imageUploadSuccess: any;
+	declare imageUploading: any;
+	declare quickToolbarClose: any;
+	declare quickToolbarOpen: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare selectionChanged: any;
+	declare slashMenuItemSelect: any;
+	declare toolbarClick: any;
+	declare toolbarStatusUpdate: any;
+	declare updatedToolbarStatus: any;
+	declare wordImporting: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Accepts a template design and assigns it as the content of the Rich Text Editor. 
-     * The built-in template engine provides options to compile a template string into an executable function. 
-     * For example, it supports expression evaluation similar to ES6 template string literals.
-     * 
-     * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('valueTemplate')
-    @Template()
-    public valueTemplate: any;
-    @ContentChild('aiAssistantSettingsBannerTemplate')
-    @Template()
-    public aiAssistantSettings_bannerTemplate: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -274,7 +261,9 @@ export class RichTextEditorComponent extends RichTextEditor implements IComponen
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(RichTextEditorComponent.prototype, 'valueTemplate');
+Template()(RichTextEditorComponent.prototype, 'aiAssistantSettings_bannerTemplate');
 

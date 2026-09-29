@@ -20,9 +20,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-panes>e-pane',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class PaneDirective extends ComplexBase<PaneDirective> {
@@ -37,7 +38,7 @@ export class PaneDirective extends ComplexBase<PaneDirective> {
      *     
      * @default false
      */
-    public collapsed: any;
+    public declare collapsed: any;
     /** 
      * Specifies whether a pane is collapsible or not collapsible.
      * 
@@ -45,7 +46,7 @@ export class PaneDirective extends ComplexBase<PaneDirective> {
      *     
      * @default false
      */
-    public collapsible: any;
+    public declare collapsible: any;
     /** 
      * Specifies the CSS class names that defines specific user-defined 
      * styles and themes to be appended on corresponding pane of the Splitter. 
@@ -53,36 +54,28 @@ export class PaneDirective extends ComplexBase<PaneDirective> {
      * One or more custom CSS classes can be specified to the Splitter panes.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Specifies the maximum size of a pane. The pane cannot be resized if it is more than the specified maximum limit.
      * @default null
      */
-    public max: any;
+    public declare max: any;
     /** 
      * Specifies the minimum size of a pane. The pane cannot be resized if it is less than the specified minimum size.
      * @default null
      */
-    public min: any;
+    public declare min: any;
     /** 
      * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes. 
      * You can disable this for any specific panes using this property.
      * @default true
      */
-    public resizable: any;
+    public declare resizable: any;
     /** 
      * Configures the properties for each pane.
      * @default ''
      */
-    public size: any;
-    /** 
-     * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
-     * @default ''
-     * @blazortype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare size: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -91,6 +84,7 @@ export class PaneDirective extends ComplexBase<PaneDirective> {
         this.directivePropList = input;
     }
 }
+Template()(PaneDirective.prototype, 'content');
 
 /**
  * Pane Array Directive
@@ -98,6 +92,7 @@ export class PaneDirective extends ComplexBase<PaneDirective> {
  */
 @Directive({
     selector: 'ejs-splitter>e-panes',
+    standalone: true,
     queries: {
         children: new ContentChildren(PaneDirective)
     },

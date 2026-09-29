@@ -1,6 +1,6 @@
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
-import { detach, addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, closest, createElement, EventHandler, L10n, getComponent } from '@syncfusion/ej2-base';
+import { detach, addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, closest, createElement, EventHandler, L10n, getComponent, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -28,6 +28,7 @@ export class EmojiPicker {
 
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('EmojiPicker', 'RichTextEditor');
         this.parent = parent;
         this.locator = serviceLocator;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');

@@ -14,7 +14,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ejs-pivotview` represents the VueJS Pivot Table Component.
- * ```vue
+ * ```
  * <ejs-pivotview></ejs-pivotview>
  * ```
  */

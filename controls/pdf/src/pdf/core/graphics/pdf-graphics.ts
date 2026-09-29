@@ -18,6 +18,7 @@ import { PdfImage } from './images/pdf-image';
 import { PdfLayer } from '../layers/layer';
 import { Rectangle, Point, Size, PdfColor} from '../pdf-type';
 import { PdfTextElement } from '../pdf-type';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * Represents a graphics from a PDF page.
  * ```typescript
@@ -1271,6 +1272,7 @@ export class PdfGraphics {
      */
     public drawImage(image: PdfImage, bounds: Rectangle) : void
     public drawImage(arg1: PdfImage, arg2: Point | Rectangle) : void {
+        initializeTelemetryFeature('ImageToPDF', 'PDFLibrary');
         this._beginMarkContent();
         if (arg2 && this._isRectangle(arg2)) {
             arg1._save();

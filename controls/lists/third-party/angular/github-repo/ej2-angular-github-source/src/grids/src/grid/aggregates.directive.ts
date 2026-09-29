@@ -27,7 +27,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-grid>e-aggregates>e-aggregate',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childColumns: new ContentChild(AggregateColumnsDirective)
     }
@@ -35,13 +36,13 @@ let outputs: string[] = [];
 export class AggregateDirective extends ComplexBase<AggregateDirective> {
     public directivePropList: any;
 	
-    public childColumns: any;
+    public declare childColumns: any;
     public tags: string[] = ['columns'];
     /** 
      * Configures the aggregate columns.
      * @default []
      */
-    public columns: any;
+    public declare columns: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -57,6 +58,7 @@ export class AggregateDirective extends ComplexBase<AggregateDirective> {
  */
 @Directive({
     selector: 'ejs-grid>e-aggregates',
+    standalone: true,
     queries: {
         children: new ContentChildren(AggregateDirective)
     },

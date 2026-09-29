@@ -147,6 +147,12 @@ export const contextMenuClick: string = 'contextMenuClick';
 /** @hidden */
 export const contextMenuOpen: string = 'contextMenuOpen';
 /** @hidden */
+export const contextMenuClose: string = 'contextMenuClosed';
+/** @hidden */
+export const aggregateMenuOpen: string = 'aggregateMenuOpen';
+/** @hidden */
+export const aggregateMenuClosed: string = 'aggregateMenuClosed';
+/** @hidden */
 export const fieldListRefreshed: string = 'fieldListRefreshed';
 /** @hidden */
 export const conditionalFormatting: string = 'conditionalFormatting';
@@ -164,8 +170,6 @@ export const memberEditorOpen: string = 'memberEditorOpen';
 export const fieldRemove: string = 'fieldRemove';
 /** @hidden */
 export const numberFormatting: string = 'numberFormatting';
-/** @hidden */
-export const aggregateMenuOpen: string = 'aggregateMenuOpen';
 /** @hidden */
 export const fieldDragStart: string = 'fieldDragStart';
 /** @hidden */
@@ -245,6 +249,10 @@ export const openConditionalFormatting: string = 'Open conditional formatting di
 /** @hidden */
 export const openNumberFormatting: string = 'Open number formatting dialog';
 /** @hidden */
+export const openChartTypeDialog: string = 'Open chart type settings dialog';
+/** @hidden */
+export const chartTypeSettingsClosed: string = 'Chart type settings dialog closed';
+/** @hidden */
 export const MdxQuery: string = 'MdxQuery';
 /** @hidden */
 export const showFieldList: string = 'Open field list';
@@ -303,6 +311,8 @@ export const removeField: string = 'Remove field';
 /** @hidden */
 export const openCalculatedField: string = 'Open calculated field dialog';
 /** @hidden */
+export const openDrillThrough: string = 'Open drill through dialog';
+/** @hidden */
 export const editRecord: string = 'Edit record';
 /** @hidden */
 export const saveEditedRecords: string = 'Save edited records';
@@ -313,6 +323,10 @@ export const removeRecord: string = 'Remove record';
 /** @hidden */
 export const aggregateField: string = 'Aggregate field';
 /** @hidden */
+export const groupField: string = 'Group field';
+/** @hidden */
+export const ungroupField: string = 'Ungroup field';
+/** @hidden */
 export const contextMenuCalculatedField: string = 'CalculatedField Context menu';
 /** @hidden */
 export const windowResize: string = 'Window resize';
@@ -320,7 +334,22 @@ export const windowResize: string = 'Window resize';
 export const rowPageNavigation: string = 'Navigate row page';
 /** @hidden */
 export const columnPageNavigation: string = 'Navigate column page';
-
+/** @hidden */
+export const changeRowPageSize: string = 'Change row page size';
+/** @hidden */
+export const changeColumnPageSize: string = 'Change column page size';
+/** @hidden */
+export const subTotalsPosition: string = 'Change sub-totals position';
+/** @hidden */
+export const grandTotalsPosition: string = 'Change grand totals position';
+/** @hidden */
+export const enableDeferLayoutUpdate: string = 'Enable defer layout update';
+/** @hidden */
+export const disableDeferLayoutUpdate: string = 'Disable defer layout update';
+/** @hidden */
+export const aggregateContextMenuOpen: string = 'Aggregate menu open';
+/** @hidden */
+export const openValueSettingsDialog: string = 'Open value settings dialog';
 /**
  * Specifies action names of actionComplete events
  */
@@ -396,6 +425,10 @@ export const fieldRemoved: string = 'Field removed';
 /** @hidden */
 export const fieldAggregated: string = 'Field aggregated';
 /** @hidden */
+export const fieldGrouped: string = 'Field grouped';
+/** @hidden */
+export const fieldUngrouped: string = 'Field ungrouped';
+/** @hidden */
 export const recordEdited: string = 'Record edited';
 /** @hidden */
 export const reportChanged: string = 'Report changed';
@@ -414,6 +447,26 @@ export const rowPageNavigated: string = 'Row page navigated';
 /** @hidden */
 export const columnPageNavigated: string = 'Column page navigated';
 /** @hidden */
+export const rowPageSizeChanged: string = 'Row page size changed';
+/** @hidden */
+export const columnPageSizeChanged: string = 'Column page size changed';
+/** @hidden */
+export const subTotalsPositionChanged: string = 'Sub-totals position changed';
+/** @hidden */
+export const grandTotalsPositionChanged: string = 'Grand totals position changed';
+/** @hidden */
+export const legendShown: string = 'Legend shown';
+/** @hidden */
+export const legendHidden: string = 'Legend hidden';
+/** @hidden */
+export const multipleAxisEnabled: string = 'Multiple axis enabled';
+/** @hidden */
+export const multipleAxisDisabled: string = 'Multiple axis disabled';
+/** @hidden */
 export const actionDropped: string = 'Action dropped';
 /** @hidden */
 export const invalidFormula: string = 'Invalid formula';
+/** @hidden */
+export const fieldListRefresh: string = 'Field list refreshed';
+/** @hidden */
+export const valueSettingsDialogClosed: string = 'Value settings dialog closed';

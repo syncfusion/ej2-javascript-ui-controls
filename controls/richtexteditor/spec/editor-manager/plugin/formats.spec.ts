@@ -870,4 +870,164 @@ describe('Formats plugin', () => {
             done();
         });
     });
+    describe('Bug 964391: Format tag inserted outside the <p> tag after clearing content ', () => {
+        let customBtn: HTMLElement;
+        let rteObj: RichTextEditor;
+        const onCreate = () => {
+            customBtn = document.getElementById('custom_tbar') as HTMLElement;
+            customBtn.onclick = (e: Event) => {
+                rteObj.value = '';
+            };
+        }
+        beforeAll(() => {
+            rteObj = renderRTE(
+                {
+                    toolbarSettings: {
+                        items: [{
+                            tooltipText: 'Change Text',
+                            template:
+                                '<button class="e-tbar-btn e-btn e-rte-elements" tabindex="-1" id="custom_tbar"  style="width:100%"> Change Text </button>'
+                        }, 'Bold']
+                    },
+                    created: onCreate,
+                    value: `<div style="display:block;">
+                            <p style="margin-right:10px">
+                                The custom command "insert special character" is configured 
+                                as the last item of the toolbar. Click on the command and choose the special character 
+                                you want to include from the popup.
+                            </p>
+                        </div>`,
+                }
+            );
+        });
+        it(' Format tag should be inserted within the p tag', () => {
+            rteObj.focusIn();
+            (document.getElementById('custom_tbar') as HTMLElement).click();
+            rteObj.dataBind();
+            (document.querySelector('[title="Bold (Ctrl+B)"]') as HTMLElement).click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML === `<p><strong>​</strong></p>`).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            document.body.innerHTML = "";
+        });
+    });
+    describe('919469 - Bold format getting removed for the whole paragraph instead of selected text', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'StrikeThrough']
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it('Reverting bold after applying strikethrough', (done) => {
+            rteObj.focusIn();
+            rteObj.value = `<p><strong>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interfacethat allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`;
+            rteObj.dataBind();
+            let contentElem = rteEle.querySelector('.e-content');
+            let range = new Range();
+            range.setStart(contentElem.firstChild.firstChild.firstChild, 4);
+            range.setEnd(contentElem.firstChild.firstChild.firstChild, 8);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_StrikeThrough');
+            item.click();
+            setTimeout(() => {
+                let item1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
+                item1.click();
+                setTimeout(() => {
+                    expect(contentElem.innerHTML === `<p><strong>The </strong><span style="text-decoration: line-through;">Rich</span><strong> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interfacethat allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`).toBe(true);
+                    done();
+                }, 50);
+            }, 50);
+        });
+        it('Reverting strikethrough after applying bold', (done) => {
+            rteObj.focusIn();
+            rteObj.value=`<p><strong>The <span style="text-decoration: line-through;">Rich</span> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`;
+            rteObj.dataBind();
+            let contentElem = rteEle.querySelector('.e-content');
+            let range = new Range();
+            range.setStart(contentElem.firstChild.firstChild.childNodes[1].childNodes[0], 2);
+            range.setEnd(contentElem.firstChild.firstChild.childNodes[2], 3);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+            let item1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
+            item1.click();
+            setTimeout(() => {
+                expect(contentElem.innerHTML === '<p><strong>The <span style="text-decoration: line-through;">Ri</span></strong><span style="text-decoration: line-through;">ch</span> Te<strong>xt Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>').toBe(true);
+                expect(window.getSelection().toString() === 'ch Te').toBe(true);
+                done();
+            }, 50);
+        })
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+     describe('919899 - Console error when clicking the "Image" toolbar icon in the Rich Text Editor .', ()=> {
+        let editor: RichTextEditor;
+        beforeEach(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                value: `<table class="e-rte-custom-table" style="width: 100%;"><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`
+            });
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should not throw any console error when clicking the image toolbar icon.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 1);
+            const imageToolbarIcon: HTMLElement = editor.element.querySelector('.e-image');
+            imageToolbarIcon.click();
+            setTimeout(() => {
+                expect(errorSpy).not.toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+
+        it('Should not throw any console error when applying heading format. After Table.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 1);
+            const dropDownButton: HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            dropDownButton.click();
+            setTimeout(() => {
+                const heading1: HTMLElement = document.querySelector('.e-rte-dropdown-popup .e-item.e-h1');
+                heading1.click();
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(editor.inputElement.querySelector('h1')).not.toBe(null);
+                    done();
+                }, 100);
+            }, 100);
+        });
+
+        it('Should not throw any console error when applying heading format. Before Table.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 0);
+            const dropDownButton: HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            dropDownButton.click();
+            setTimeout(() => {
+                const heading1: HTMLElement = document.querySelector('.e-rte-dropdown-popup .e-item.e-h1');
+                heading1.click();
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(editor.inputElement.querySelector('h1')).not.toBe(null);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
 });

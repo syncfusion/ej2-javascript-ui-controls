@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-header-font-weight: 600 !default;
@@ -89,24 +87,24 @@ $ddl-bgr-dropbase-list-icon-item-padding: 12px !default;
 
 @include export-module('dropdownbase-highcontrast-light') {
   .e-dropdownbase {
-    #{if(&, '&', '*')} .e-list-item {
-      #{if(&, '&', '*')} .e-list-icon {
+    & .e-list-item {
+      & .e-list-icon {
         padding-inline-end: 10px;
       }
-      #{if(&, '&', '*')}:not(.e-active) {
-        #{if(&, '&', '*')}.e-hover {
+      &:not(.e-active) {
+        &.e-hover {
           border: 2px solid $hover-border;
         }
-        #{if(&, '&', '*')}:not(.e-hover) {
-          #{if(&, '&', '*')}:not(.e-item-focus) {
+        &:not(.e-hover) {
+          &:not(.e-item-focus) {
             border: 2px solid $bg-base-0;
           }
         }
       }
-      #{if(&, '&', '*')}.e-active {
+      &.e-active {
         border: 2px solid $selection-border;
       }
-      #{if(&, '&', '*')}.e-item-focus {
+      &.e-item-focus {
         border: 2px solid $hover-bg;
       }
     }

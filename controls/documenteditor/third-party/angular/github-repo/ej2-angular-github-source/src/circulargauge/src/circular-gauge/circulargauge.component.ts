@@ -20,36 +20,35 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childAxes: new ContentChild(AxesDirective)
+        childAxes: new ContentChild(AxesDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class CircularGaugeComponent extends CircularGauge implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	animationComplete: any;
-	annotationRender: any;
-	axisLabelRender: any;
-	beforePrint: any;
-	dragEnd: any;
-	dragMove: any;
-	dragStart: any;
-	gaugeMouseDown: any;
-	gaugeMouseLeave: any;
-	gaugeMouseMove: any;
-	gaugeMouseUp: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	radiusCalculate: any;
-	resized: any;
-	public tooltipRender: any;
-    public childAxes: QueryList<AxesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare animationComplete: any;
+	declare annotationRender: any;
+	declare axisLabelRender: any;
+	declare beforePrint: any;
+	declare dragEnd: any;
+	declare dragMove: any;
+	declare dragStart: any;
+	declare gaugeMouseDown: any;
+	declare gaugeMouseLeave: any;
+	declare gaugeMouseMove: any;
+	declare gaugeMouseUp: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare radiusCalculate: any;
+	declare resized: any;
+	public declare tooltipRender: any;
+    public declare childAxes: QueryList<AxesDirective>;
     public tags: string[] = ['axes'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -121,7 +120,9 @@ export class CircularGaugeComponent extends CircularGauge implements IComponentB
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(CircularGaugeComponent.prototype, 'tooltip_template');
+
 

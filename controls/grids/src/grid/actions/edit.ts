@@ -1,8 +1,8 @@
 import { KeyboardEventArgs, L10n, closest, addClass, select, updateCSSText } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IGrid, IAction, NotifyArgs, IEdit } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, IEdit, ISelectedCell } from '../base/interface';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
 import { ServiceLocator } from '../services/service-locator';
@@ -27,6 +27,7 @@ import { addRemoveEventListener, padZero, getParentIns } from '../base/util';
 import { CellEdit } from './cell-edit';
 import { Matrix } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
+import { FormulaCellEditor } from './formula-edit';
 
 /**
  * The `Edit` module is used to handle editing actions.
@@ -46,7 +47,7 @@ export class Edit implements IAction {
         'dropdownedit': DropDownEditCell, 'numericedit': NumericEditCell,
         'datepickeredit': DatePickerEditCell, 'datetimepickeredit': DatePickerEditCell,
         'booleanedit': BooleanEditCell, 'defaultedit': DefaultEditCell,
-        'templateedit': TemplateEditCell
+        'templateedit': TemplateEditCell, 'formulaedit': FormulaCellEditor
     };
     private editType: Object = { 'Inline': InlineEdit, 'Normal': InlineEdit, 'Batch': BatchEdit, 'Dialog': DialogEdit, 'Cell': CellEdit };
     //Module declarations
@@ -82,6 +83,7 @@ export class Edit implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Edit', 'DataGrid');
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.l10n = this.serviceLocator.getService<L10n>('localization');
@@ -99,12 +101,18 @@ export class Edit implements IAction {
                 cols[parseInt(i.toString(), 10)].edit = extend(new Edit.editCellType[`${templteCell}`](this.parent),
                                                                cols[parseInt(i.toString(), 10)].edit || {});
             } else {
-                cols[parseInt(i.toString(), 10)].edit = extend(
-                    new Edit.editCellType[cols[parseInt(i.toString(), 10)].editType
-                        && Edit.editCellType[cols[parseInt(i.toString(), 10)].editType] ?
-                        cols[parseInt(i.toString(), 10)].editType : 'defaultedit'](this.parent, this.serviceLocator),
-                    cols[parseInt(i.toString(), 10)].edit || {}
-                );
+                if (cols[parseInt(i.toString(), 10)].allowFormula && this.parent.formulaModule) {
+                    cols[parseInt(i.toString(), 10)].edit = extend(
+                        new Edit.editCellType['formulaedit'](this.parent, this.serviceLocator),
+                        cols[parseInt(i.toString(), 10)].edit || {});
+                } else {
+                    cols[parseInt(i.toString(), 10)].edit = extend(
+                        new Edit.editCellType[cols[parseInt(i.toString(), 10)].editType
+                            && Edit.editCellType[cols[parseInt(i.toString(), 10)].editType] ?
+                            cols[parseInt(i.toString(), 10)].editType : 'defaultedit'](this.parent, this.serviceLocator),
+                        cols[parseInt(i.toString(), 10)].edit || {}
+                    );
+                }
             }
         }
         this.parent.log('primary_column_missing');
@@ -171,12 +179,13 @@ export class Edit implements IAction {
         const isTreeGrid: string = 'isTreeGrid';
         if (!gObj.editSettings.allowEditing || (gObj.isEdit && (!gObj.editSettings.showAddNewRow ||
             (gObj.editSettings.showAddNewRow && !isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow)))))
-            || gObj.editSettings.mode === 'Batch' || gObj.editSettings.mode === 'Cell') {
+            || gObj.editSettings.mode === 'Batch' || (gObj.editSettings.mode === 'Cell' && gObj.selectionSettings.mode === 'Row')) {
             return;
         }
         this.parent.element.classList.add('e-editing');
-        if (!gObj.getSelectedRows().length || isNullOrUndefined(this.parent.getRowByIndex(
-            parseInt(this.parent.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1))) {
+        if ((!gObj.getSelectedRows().length || isNullOrUndefined(this.parent.getRowByIndex(
+            parseInt(this.parent.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1))) &&
+            !gObj.getSelectedRowCellIndexes().length) {
             if (!tr) {
                 this.showDialog('EditOperationAlert', this.alertDObj);
                 return;
@@ -185,6 +194,12 @@ export class Edit implements IAction {
             if (this.parent[`${isTreeGrid}`] && this.parent.allowPaging && gObj.selectionModule.selectedRowIndexes.length) {
                 const selectedIndex: any = gObj.selectionModule.selectedRowIndexes[0];
                 tr = gObj.getRowByIndex(selectedIndex) as HTMLTableRowElement;
+            }
+            else if (gObj.getSelectedRowCellIndexes().length) {
+                const selectedCells: ISelectedCell[] = gObj.getSelectedRowCellIndexes();
+                const rowIndex: number = selectedCells[0].rowIndex;
+                const cellIndex: number = selectedCells[0].cellIndexes[0];
+                tr = gObj.getCellFromIndex(rowIndex, cellIndex) as HTMLTableRowElement;
             }
             else {
                 tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
@@ -206,7 +221,7 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.startEdit(tr);
-        if (this.parent.isEdit && !this.parent.isPersistSelection) {
+        if (this.parent.isEdit && !this.parent.isPersistSelection && this.parent.editSettings.mode !== 'Dialog') {
             const checkedAllTarget: HTMLElement = this.parent.getHeaderContent().querySelector('.e-checkselectall');
             if (checkedAllTarget) {
                 checkedAllTarget.parentElement.classList.add('e-checkbox-disabled');
@@ -465,7 +480,7 @@ export class Edit implements IAction {
         let val: number | string | Date | boolean = value;
         switch (col.type) {
         case 'number':
-            val = !isNaN(parseFloat(value as string)) ? parseFloat(value as string) : null;
+            val = col.allowFormula ? value : !isNaN(parseFloat(value as string)) ? parseFloat(value as string) : null;
             break;
         case 'boolean':
             if (col.editType !== 'booleanedit') {
@@ -1014,7 +1029,7 @@ export class Edit implements IAction {
             break;
         case 'escape':
             if (this.parent.isEdit && !this.editCellDialogClose) {
-                if (this.parent.editSettings.mode === 'Batch') {
+                if (isCellEditMode) {
                     this.editModule.escapeCellEdit();
                 } else {
                     this.curretRowFocus(e);
@@ -1032,7 +1047,9 @@ export class Edit implements IAction {
     }
 
     private curretRowFocus(e: KeyboardEventArgs): void {
-        if (this.parent.isEdit && this.parent.editSettings.mode !== 'Batch') {
+        const isCellEditMode: boolean = this.parent.editSettings.mode === 'Batch' || (this.parent.editSettings.mode === 'Cell' &&
+            isNullOrUndefined(parentsUntil(e.target as Element, literals.addedRow)));
+        if (this.parent.isEdit && !isCellEditMode) {
             this.parent.isWidgetsDestroyed = false;
             const editedRow: Element = parentsUntil(e.target as Element, 'e-editedrow') || parentsUntil(e.target as Element, 'e-addedrow');
             if (editedRow) {

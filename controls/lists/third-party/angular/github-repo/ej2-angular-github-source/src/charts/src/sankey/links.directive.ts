@@ -16,9 +16,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-sankey-links>e-sankey-link',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class SankeyLinkDirective extends ComplexBase<SankeyLinkDirective> {
@@ -32,19 +32,19 @@ export class SankeyLinkDirective extends ComplexBase<SankeyLinkDirective> {
      * This should match the `id` of an existing Sankey node.
      * @default null
      */
-    public sourceId: any;
+    public declare sourceId: any;
     /** 
      * Specifies the unique identifier of the target node for this link. 
      * This should match the `id` of an existing Sankey node.
      * @default null
      */
-    public targetId: any;
+    public declare targetId: any;
     /** 
      * Defines the weight or value of the link. 
      * This determines the thickness of the link in the Sankey diagram.
      * @default null
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -60,6 +60,7 @@ export class SankeyLinkDirective extends ComplexBase<SankeyLinkDirective> {
  */
 @Directive({
     selector: 'ejs-sankey>e-sankey-links',
+    standalone: true,
     queries: {
         children: new ContentChildren(SankeyLinkDirective)
     },

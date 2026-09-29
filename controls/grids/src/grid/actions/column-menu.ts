@@ -163,6 +163,8 @@ export class ColumnMenu implements IAction {
         const gClient: ClientRect = this.parent.element.getBoundingClientRect();
         this.element.style.cssText = 'display:none;visibility:visible';
         this.headerCell = this.getHeaderCell(e);
+        const headerTable: ClientRect = headerEle.querySelector('thead').getBoundingClientRect();
+        const isPinnedFreezeRows: boolean = this.parent.frozenRows > 0 || this.parent.pinnedDataCount > 0;
         if (this.parent.enableRtl) {
             pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'left', 'bottom', true) :
                 calculatePosition(this.headerCell, 'left', 'bottom');
@@ -171,12 +173,14 @@ export class ColumnMenu implements IAction {
                 calculatePosition(this.headerCell, 'right', 'bottom');
             pos.left -= elePos.width;
             if (headerEle.classList.contains('e-sticky')) {
-                pos.top = this.parent.element.offsetTop + headerElemCliRect.top + headerElemCliRect.height;
+                pos.top = this.parent.element.offsetTop + headerElemCliRect.top +
+                    (isPinnedFreezeRows ? headerTable.height : headerElemCliRect.height);
                 if (headerElemCliRect.top + headerElemCliRect.height > contentRect.top) {
                     pos.top += ((headerElemCliRect.top + headerElemCliRect.height) - contentRect.top);
                 }
             } else if (this.parent.enableStickyHeader) {
-                pos.top = this.parent.element.offsetTop + headerEle.offsetTop + headerElemCliRect.height;
+                pos.top = this.parent.element.offsetTop + headerEle.offsetTop +
+                    (isPinnedFreezeRows ? headerTable.height : headerElemCliRect.height);
             }
             if ((pos.left + elePos.width + 1) >= gClient.right) {
                 pos.left -= 35;

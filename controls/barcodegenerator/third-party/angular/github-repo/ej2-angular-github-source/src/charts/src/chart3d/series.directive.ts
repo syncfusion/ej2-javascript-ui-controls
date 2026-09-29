@@ -16,9 +16,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chart3d-series-collection>e-chart3d-series',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        dataLabel_template: new ContentChild('dataLabelTemplate')
     }
 })
 export class Chart3DSeriesDirective extends ComplexBase<Chart3DSeriesDirective> {
@@ -36,62 +37,62 @@ export class Chart3DSeriesDirective extends ComplexBase<Chart3DSeriesDirective> 
      * - StackingBar100
      * @default 'Column'
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Options to customizing animation for the series.
      */
-    public animation: any;
+    public declare animation: any;
     /** 
      * Defines the shape of the data in a column and bar chart. 
      * Rectangle: Displays the data in a column and bar chart in a rectangle shape. 
      * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
      * @default 'Rectangle'
      */
-    public columnFacet: any;
+    public declare columnFacet: any;
     /** 
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
      * @default 0.1
      */
-    public columnSpacing: any;
+    public declare columnSpacing: any;
     /** 
      * Render the column series points with a particular column width.
      * @default null
      */
-    public columnWidth: any;
+    public declare columnWidth: any;
     /** 
      * The data label for the series.
      */
-    public dataLabel: any;
+    public declare dataLabel: any;
     /** 
      * Specifies the data source for the series. It can be an array of JSON objects or an instance of DataManager.
      * @default ''
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * options to customize the empty points in series.
      */
-    public emptyPointSettings: any;
+    public declare emptyPointSettings: any;
     /** 
      * Enable tooltip for the chart series.
      * @default true
      */
-    public enableTooltip: any;
+    public declare enableTooltip: any;
     /** 
      * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
      * @default null
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * Defines the name that specifies the chart series are mutually exclusive and can be overlaid. 
      * The axis in the same group shares the same baseline and location on the corresponding axis.
      * @default ''
      */
-    public groupName: any;
+    public declare groupName: any;
     /** 
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
      * @default ''
      */
-    public legendImageUrl: any;
+    public declare legendImageUrl: any;
     /** 
      * The shape of the legend. Each series has its own legend shape, which can be one of the following: 
      * * Circle 
@@ -107,77 +108,74 @@ export class Chart3DSeriesDirective extends ComplexBase<Chart3DSeriesDirective> 
      * * Image
      * @default 'SeriesType'
      */
-    public legendShape: any;
+    public declare legendShape: any;
     /** 
      * The name of the series as displayed in the legend.
      * @default ''
      */
-    public name: any;
+    public declare name: any;
     /** 
      * The opacity of the series.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * The DataSource field that contains the point colors.
      * @default ''
      */
-    public pointColorMapping: any;
+    public declare pointColorMapping: any;
     /** 
      * Specifies a query to select data from the DataSource. This property is applicable only when the DataSource is an `ej.DataManager`.
      * @default ''
      */
-    public query: any;
+    public declare query: any;
     /** 
      * The DataSource field that contains the size value of y
      * @default ''
      */
-    public size: any;
+    public declare size: any;
     /** 
      * This property allows grouping series in `stacked column / bar` charts. 
      * Any string value can be provided to the stackingGroup property. 
      * If any two or above series have the same value, those series will be grouped together.
      * @default ''
      */
-    public stackingGroup: any;
+    public declare stackingGroup: any;
     /** 
      * Format of the tooltip content.
      * @default ''
      */
-    public tooltipFormat: any;
+    public declare tooltipFormat: any;
     /** 
      * The data source field that contains the tooltip value.
      * @default ''
      */
-    public tooltipMappingName: any;
+    public declare tooltipMappingName: any;
     /** 
      * Specifies the visibility of series.
      * @default true
      */
-    public visible: any;
+    public declare visible: any;
     /** 
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart.
      * @default null
      */
-    public xAxisName: any;
+    public declare xAxisName: any;
     /** 
      * The DataSource field that contains the x value.
      * @default ''
      */
-    public xName: any;
+    public declare xName: any;
     /** 
      * The name of the vertical axis associated with the series. It requires `axes` of the chart.
      * @default null
      */
-    public yAxisName: any;
+    public declare yAxisName: any;
     /** 
      * The DataSource field that contains the y value.
      * @default ''
      */
-    public yName: any;
-    @ContentChild('dataLabelTemplate')
-    @Template()
-    public dataLabel_template: any;
+    public declare yName: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -186,6 +184,7 @@ export class Chart3DSeriesDirective extends ComplexBase<Chart3DSeriesDirective> 
         this.directivePropList = input;
     }
 }
+Template()(Chart3DSeriesDirective.prototype, 'dataLabel_template');
 
 /**
  * Chart3DSeries Array Directive
@@ -193,6 +192,7 @@ export class Chart3DSeriesDirective extends ComplexBase<Chart3DSeriesDirective> 
  */
 @Directive({
     selector: 'ejs-chart3d>e-chart3d-series-collection',
+    standalone: true,
     queries: {
         children: new ContentChildren(Chart3DSeriesDirective)
     },

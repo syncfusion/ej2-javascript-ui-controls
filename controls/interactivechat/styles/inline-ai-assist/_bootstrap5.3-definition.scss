@@ -1,12 +1,12 @@
-@use 'ej2-base/styles/definition/bootstrap5.3' as *;
-@forward 'ej2-base/styles/definition/bootstrap5.3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $inline-ai-assist-bg: $flyout-bg-color !default;
 $inline-ai-assist-popup-border-radius: 8px !default;
 $inline-ai-assist-content-padding: 8px 8px 12px 8px !default;
 $inline-ai-assist-content-border-radius: 8px 8px 0 0 !default;
 $inline-ai-assist-response-line-height: 22px !default;
 $inline-ai-assist-response-font-size: 14px !default;
-$inline-ai-assist-tbar-btn-padding: 0 8px !default;
+$inline-ai-assist-tbar-btn-padding: 0 4px !default;
 $inline-ai-assist-footer-padding: 5px 0 5px 5px !default;
 $inline-ai-assist-stop-line-height: 14px !default;
 $inline-ai-assist-stop-font-size: 14px !default;
@@ -25,8 +25,9 @@ $inline-ai-assist-send-font-size: 14px !default;
 $inline-ai-assist-popup-border: 1px solid $border !default;
 $inline-ai-assist-response-text-color: $flyout-text-color !default;
 $inline-ai-assist-textarea-placeholder-color: $placeholder-text-color !default;
+$inline-ai-assist-textarea-color: $content-text-color !default;
 $inline-ai-assist-footer-focused-border-color: rgba(97, 97, 97, 1) !default;
-$inline-ai-assist-send-color: $secondary-bg-color !default;
+$inline-ai-assist-send-color: $icon-color !default;
 $inline-ai-assist-send-disabled-color: $secondary-bg-color-disabled !default;
 $inline-ai-assist-content-bg: $flyout-bg-color !default;
 $inline-ai-assist-popup-box-shadow: $shadow-lg !default;

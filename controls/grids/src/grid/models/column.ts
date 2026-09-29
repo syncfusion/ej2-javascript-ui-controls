@@ -226,6 +226,14 @@ export class Column {
     public allowEditing: boolean = true;
 
     /**
+     * Enables formula entry and evaluation for the column.
+     * When enabled, users can enter formulas directly into the column cells.
+     *
+     * @default false
+     */
+    public allowFormula: boolean;
+
+    /**
      * The CSS styles and attributes of the content cells of a particular column can be customized.
      *
      * {% codeBlock src="grid/custom-attribute-api/index.ts" %}{% endcodeBlock %}
@@ -847,7 +855,19 @@ export interface ColumnModel {
     disableHtmlEncode?: boolean;
 
     /**
-     * Defines the data type of the column.
+     * Defines the column type.
+     *
+     * The following values are supported:
+     * * string
+     * * number
+     * * date
+     * * datetime
+     * * boolean
+     * * CheckBox
+     * * RowNumber
+     *
+     * - `CheckBox` renders a checkbox selection column.
+     * - `RowNumber` renders a read-only column with automatically generated row numbers.
      *
      * @default null
      */
@@ -939,6 +959,14 @@ export interface ColumnModel {
      * @default true
      */
     allowFiltering?: boolean;
+
+    /**
+     * Enables formula entry and evaluation for the column.
+     * When enabled, users can enter formulas directly into the column cells.
+     *
+     * @default false
+     */
+    allowFormula?: boolean;
 
     /**
      * If `allowGrouping` set to false, then it disables grouping of a particular column.
@@ -1341,6 +1369,7 @@ export interface ColumnModel {
      * @default {}
      */
     templateOptions?: TemplateProps;
+
 }
 
 export interface ActionEventArgs {

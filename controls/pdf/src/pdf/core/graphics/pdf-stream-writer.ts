@@ -493,14 +493,12 @@ export class _PdfStreamWriter {
         this._writeOperator('Tw');
     }
     /**
-     * Shows text on the next line using either:
-     *  - literal string written directly (when `unicode` is falsy), or
-     *  - escaped literal written via `_writeText` (when `unicode` is true).
+     * Shows text on the next line. If unicode is true, the text is escaped and written
+     * using `_writeText`; otherwise, the text is written directly to the stream.
      *
-     * @returns {void} nothing.
-     * @param {string} text The literal or escaped text.
-     * @param {boolean} [unicode] When true, escapes and wraps the text before show.
-     * @returns {void} nothing.
+     * @param {string} text The text to display.
+     * @param {boolean} [unicode] Indicates whether the text should be escaped before writing.
+     * @returns {void} This method does not return a value.
      */
     _showNextLineText(text: string): void
     _showNextLineText(text: string, unicode: boolean): void

@@ -16,7 +16,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs BulletChart Component
- * ```vue
+ * ```
  * <ejs-bulletchart></ejs-bulletchart>
  * ```
  */

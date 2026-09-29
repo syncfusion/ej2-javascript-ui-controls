@@ -1,0 +1,822 @@
+@use 'variables' as *;
+
+/* stylelint-disable property-no-vendor-prefix */
+@mixin user-select {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@mixin sibling-style {
+  @if $skin-name == 'material' {
+    border-radius: 10px;
+  }
+  @else {
+    border: $treeview-sibling-border-size solid transparent;
+  }
+}
+
+@mixin sibling-before($position) {
+  @if $skin-name == 'material' {
+    @if $position == 'rtl' {
+      right: 6px;
+      top: 3px;
+    }
+    @else {
+      left: 6px;
+      top: 3px;
+    }
+  }
+  @else {
+    @if $position == 'rtl' {
+      right: 0;
+    }
+    @else {
+      left: 0;
+    }
+  }
+}
+
+@mixin big-icon-style($size) {
+  height: $size;
+  width: $size;
+}
+
+@include export-module('treeview-layout') {
+  @keyframes rotation {
+    from {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+
+    to {
+      -webkit-transform: rotate(359deg);
+      transform: rotate(359deg);
+    }
+  }
+
+  .e-treeview {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
+      border: $treeview-border-size solid;
+      border-color: $treeview-border-color;
+      border-radius: $treeview-radius;
+    }
+    @if $skin-name == 'tailwind3' {
+      background: $treeview-bg-color;
+    }
+
+    &.e-virtualization {
+      overflow: auto;
+
+      & .e-virtual-mask {
+        display: block;
+        margin-bottom: $treeview-virtual-mask-margin-bottom;
+      }
+
+      & .e-ul {
+        overflow: unset;
+      }
+    }
+
+    .e-mask-parent {
+      display: none;
+    }
+
+    & > .e-ul {
+      -webkit-overflow-scrolling: touch;
+      overflow: auto;
+    }
+
+    &.e-text-wrap {
+      .e-list-text {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      &.e-ie-wrap {
+        .e-list-text {
+          word-break: break-all;
+        }
+      }
+
+      .e-editing {
+        .e-list-text,
+        .e-list-text .e-input-group {
+          max-width: $treeview-edit-wrap-width;
+        }
+      }
+
+      .e-checkbox-wrapper {
+        & + .e-list-text {
+          max-width: $treeview-check-wrap-width;
+        }
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-check-icon-wrap-width;
+          }
+        }
+
+        & + .e-list-icon + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-check-icon-img-wrap-width;
+          }
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-icon-wrap-width;
+        }
+      }
+
+      .e-list-icon + .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-icon-img-wrap-width;
+        }
+      }
+    }
+
+    @if ($skin-name == 'fluent2') {
+      .e-checkbox-wrapper .e-frame {
+        margin-right: $treeview-margin-none;
+      }
+      .e-list-item:last-child:not(.e-level-1) {
+        padding-bottom: $treeview-padding-none;
+      }
+    }
+
+    .e-ul {
+      margin: $treeview-root-ul-margin;
+      padding: $treeview-root-ul-padding;
+    }
+
+    .e-node-collapsed .e-list-item .e-fullrow,
+    .e-display-none {
+      display: none;
+    }
+
+    .e-list-item {
+      list-style: none;
+      @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+        padding: $treeview-list-item-padding;
+      }
+      @if $skin-name == 'fluent2' {
+        padding: $treeview-list-item-padding;
+      }
+
+      .e-ul {
+        padding: $treeview-child-ul-padding;
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+          margin: $treeview-child-ul-margin;
+        }
+        @if $skin-name == 'fluent2' {
+          margin-top: $treeview-child-ul-margin;
+        }
+      }
+
+      &.e-disable {
+
+        > .e-text-content,
+        > .e-fullrow {
+          -ms-touch-action: none;
+          opacity: .5;
+          pointer-events: none;
+          touch-action: none;
+        }
+      }
+
+      &.e-active {
+        @if $skin-name == 'tailwind' {
+          font-weight: $treeview-active-font-weight;
+        }
+      }
+
+      div.e-icons.interaction {
+        -webkit-transition: -webkit-transform .3s ease-in-out;
+        border-radius: $treeview-interaction-icon-radius;
+        transition: -webkit-transform .3s ease-in-out;
+        transition: transform .3s ease-in-out;
+        transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+      }
+
+      .e-icons.e-icon-collapsible {
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+      }
+
+      .e-icons.e-icons-spinner::before {
+        content: none;
+      }
+      
+      .e-text-content {
+        .e-list-text {
+          &:has(> .e-input-group) {
+            @if $skin-name == 'material' or $skin-name == 'material-dark' {
+              padding-top: 1px;
+              padding-bottom: 1px;
+              .e-input-group {
+                height: 34px;
+
+                .e-input {
+                  line-height: 26px;
+                  min-height: 26px;
+                }
+              }
+            }
+            @if $skin-name == 'tailwind3' {
+              padding-top: $treeview-edit-inline-padding-top;
+              padding-bottom: $treeview-edit-inline-padding-bottom;
+            }
+            @if $skin-name == 'highcontrast' {
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
+            }
+            @if ($skin-name == 'FluentUI') {
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
+            }
+            @if $skin-name == 'bootstrap5.3' {
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
+            }
+            @if $skin-name == 'bootstrap4' {
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
+            }
+            @if $skin-name == 'bootstrap5' {
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
+            }
+          }
+        }
+      }
+    }
+
+    .e-icons {
+      .e-spinner-pane {
+        position: relative;
+      }
+      .e-treeview-spinner {
+        position: absolute;
+      }
+    }
+
+    .e-icons-spinner {
+      position: relative;
+    }
+
+    .e-text-content {
+      @include user-select;
+      cursor: pointer;
+      margin: $treeview-text-wrap-margin;
+      padding: $treeview-text-wrap-padding;
+
+      @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
+        border: 1px solid;
+      }
+
+      @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
+        border: $treeview-border-none;
+      }
+
+      + .e-sibling {
+        @if ($skin-name == 'tailwind') {
+          margin-top: -2px;
+        }
+        @else if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          margin-top: 1px;
+        }
+        @else {
+          margin-top: $treeview-text-sibling-margin-top;
+        }
+      }
+    }
+
+    .e-fullrow {
+      @include user-select;
+      border: $treeview-border-size solid;
+      box-sizing: border-box;
+      cursor: pointer;
+      height: $treeview-item-height;
+      left: 0;
+      overflow: hidden;
+      position: absolute;
+      width: 100%;
+      @if $skin-name == 'fluent2' {
+        border-radius: $treeview-radius;
+        width: calc(100% - 8px);
+        margin-left: $treeview-fullrow-margin-left;
+      }
+
+      @supports (-webkit-overflow-scrolling: touch) {
+        z-index: 0;
+      }
+    }
+
+    .e-checkbox-wrapper {
+      margin: $treeview-check-margin;
+      pointer-events: all;
+      position: relative;
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-check-image-margin;
+      }
+
+      & + .e-list-text {
+        padding: $treeview-check-text-padding;
+      }
+
+      .e-ripple-container {
+        bottom: $ripple-size;
+        height: $ripple-height;
+        left: $ripple-size;
+        right: $ripple-size;
+        top: $ripple-size;
+        width: $ripple-width;
+      }
+    }
+
+    .e-list-text {
+      box-sizing: border-box;
+      display: inline-block;
+      line-height: $treeview-text-line-height;
+      margin: $treeview-text-margin;
+      @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
+        min-height: $treeview-item-min-height;
+      }
+      @else if $skin-name != 'bootstrap4' {
+        min-height: $treeview-text-min-height;
+      }
+      @else if $skin-name == 'bootstrap4' {
+        min-height: $treeview-text-min-height;
+      }
+      @if $skin-name == 'tailwind3' {
+        font-weight: $treeview-font-weight;
+      }
+      padding: $treeview-text-padding;
+      text-decoration: none;
+      vertical-align: middle;
+
+      .e-input-group {
+        height: $treeview-input-height;
+        @if ($skin-name == 'tailwind') {
+          margin-top: 4px;
+          margin-bottom: 4px;
+        }
+        @else {
+          margin-bottom: $treeview-input-group-margin-bottom;
+        }
+        min-width: 150px;
+        vertical-align: bottom;
+        @if ($skin-name == 'fluent2') {
+          border-color: $treeview-input-border-color;
+        }
+        .e-input {
+          @if $skin-name != 'material' and $skin-name != 'material-dark' {
+            height: $treeview-input-group-input-height;
+            padding-top: $treeview-input-padding;
+            padding-bottom: $treeview-input-padding;
+          }
+          @if $skin-name == 'tailwind3' {
+            line-height: $treeview-input-line-height;
+            height: $treeview-nrml-input-height;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            height: $treeview-input-group-height;
+            padding-top: $treeview-input-group-padding;
+            padding-bottom: $treeview-input-group-padding;
+          }
+        }
+      }
+      @if ($skin-name == 'fluent2') {
+        .e-input-group:hover {
+          border-color: $treeview-input-border-color;
+          border-bottom-color: $treeview-input-border-color;
+        }
+      }
+    }
+
+    .e-navigable-text {
+      @if ($skin-name != 'Material3') {
+        padding: $treeview-text-padding;
+      }
+      @else {
+        padding: $treeview-nav-padding;
+      }
+    }
+
+    .e-list-icon,
+    .e-list-img {
+      display: inline-block;
+      height: $treeview-image-height;
+      margin: $treeview-image-margin;
+      vertical-align: middle;
+      width: $treeview-image-size;
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-icon-image-margin;
+      }
+
+      & + .e-list-text {
+        padding: $treeview-image-text-padding;
+      }
+
+      & + .e-navigable-text {
+        padding: $treeview-image-text-padding;
+      }
+    }
+
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      display: inline-block;
+      height: $treeview-nrml-icon-height;
+      margin: $treeview-icon-margin;
+      vertical-align: middle;
+      width: $treeview-icon-size;
+
+      &::before {
+        display: inline-block;
+        padding: $treeview-icon-padding;
+      }
+    }
+
+    .e-load {
+      -webkit-animation: rotation .5s infinite linear;
+      animation: rotation .5s infinite linear;
+    }
+
+    .e-sibling {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+        width: 144px;
+      }
+      @else {
+        @include sibling-style;
+        height: $treeview-nrml-siblings-height;
+        margin-top: $treeview-sibling-margin-top;
+        width: 6px;
+      }
+
+      &::before {
+        @include sibling-before(ltr);
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          height: $treeview-sibling-before-height;
+          top: -1.5px;
+        }
+        @else {
+          height: $treeview-sibling-before-height;
+          width: 144px;
+        }
+      }
+    }
+
+    .e-sibling,
+    .e-sibling::before {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .e-popup {
+      @include user-select;
+      font-weight: $treeview-popup-font-weight;
+      position: absolute;
+      z-index: 99999;
+
+      .e-content {
+        border-radius: $treeview-popup-border-radius;
+        border-style: solid;
+        border-width: $treeview-popup-border-width;
+        font-size: $treeview-popup-font-size;
+        padding: $treeview-popup-padding;
+      }
+
+      .e-icons {
+        border: $treeview-popup-border-width solid transparent;
+        cursor: pointer;
+        display: inline-block;
+        height: $treeview-popup-icon-height;
+        line-height: $treeview-popup-icon-line-height;
+        padding: $treeview-popup-padding;
+        width: 26px;
+      }
+
+      .e-downtail {
+        &::before,
+        &::after {
+          border: $treeview-popup-tail-border-size solid transparent;
+          content: '';
+          height: $treeview-height-none;
+          left: 8px;
+          position: absolute;
+          width: 0;
+        }
+
+        &::after {
+          bottom: -18px;
+        }
+      }
+    }
+
+    &.e-fullrow-wrap {
+
+      .e-text-content {
+        pointer-events: none;
+        position: relative;
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable,
+      .e-input,
+      .e-list-url {
+        pointer-events: auto;
+      }
+    }
+
+    & .e-navigable {
+
+      .e-text-content {
+        align-items: center;
+        display: flex;
+      }
+
+      .e-list-url {
+        width: 100%;
+      }
+
+      .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-navigable-icon-image-margin-reverse;
+        }
+        @else {
+          padding: $treeview-icon-image-margin;
+        }
+
+        .e-list-icon,
+        .e-list-img {
+          margin: $treeview-navigable-icon-image-anchor-margin;
+        }
+
+        .e-list-icon + .e-list-img {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+
+      .e-anchor-wrap {
+        padding: $treeview-check-margin;
+      }
+
+      .e-nav-wrapper {
+        padding: $treeview-nav-padding;
+      }
+
+      .e-checkbox-wrapper + .e-list-text .e-nav-wrapper:not(:has(.e-list-icon)) {
+        padding: $treeview-nav-padding;
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        @if $skin-name == 'bootstrap4' {
+          margin: $treeview-navigable-icon-image-margin;
+        }
+        @else {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+    }
+
+    &.e-drag-item {
+      overflow: visible;
+      z-index: 10000;
+
+      .e-text-content {
+        float: left;
+
+        @if ($skin-name == 'Material3') {
+          .e-list-img {
+            margin: $treeview-drag-icon-img-margin;
+          }
+        }
+
+        .e-list-text {
+          @if ($skin-name == 'FluentUI') {
+            padding: $treeview-icon-padding;
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+            padding: $treeview-padding-none $treeview-drag-icon-padding;
+          }
+          @if $skin-name == 'fluent2' {
+            line-height: $treeview-text-content-line-height;
+            padding: $treeview-text-content-padding;
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI') {
+            @if ($skin-name == 'fluent2') {
+              margin: $treeview-margin-none;
+            }
+            @else {
+              margin: $treeview-drag-icon-margin;
+            }
+          }
+          @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            box-sizing: content-box;
+            padding-left: $treeview-drag-icon-padding;
+          }
+        }
+      }
+
+      .e-icon-collapsible::before,
+      .e-icon-expandable::before {
+        font-size: $treeview-drag-icon-font-size;
+        @if (($skin-name != 'bootstrap5' or $skin-name == 'bootstrap5.3') and $skin-name != 'FluentUI') {
+          padding: $treeview-drag-icon-padding;
+        }
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
+          padding-right: $treeview-drag-icon-padding-right;
+        }
+      }
+
+      .e-drop-count {
+        border: $treeview-drop-count-border-size solid;
+        border-radius: $treeview-drop-count-radius;
+        box-sizing: content-box;
+        font-size: $treeview-drop-count-font-size;
+        @if $skin-name == 'bootstrap4' {
+          line-height: 1.5;
+          min-width: 10px;
+          padding: 0 5px;
+        }
+        @else {
+          line-height: $treeview-drop-count-line-height;
+          min-width: 12px;
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+            padding: $treeview-drop-count-padding;
+          }
+          @else {
+            padding: $treeview-drop-count-padding;
+          }
+        }
+        margin-left: $treeview-drop-count-margin;
+        position: absolute;
+        text-align: center;
+        top: -10px;
+      }
+    }
+
+    &.e-dragging {
+
+      .e-text-content,
+      .e-fullrow {
+        cursor: default;
+      }
+    }
+
+    &.e-rtl {
+
+      & .e-navigable {
+
+        .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
+
+          @if $skin-name == 'bootstrap4' {
+            padding: $treeview-navigable-icon-image-margin;
+          }
+          @else {
+            padding: $treeview-rtl-icon-image-margin;
+          }
+
+          .e-list-icon,
+          .e-list-img {
+            margin: $treeview-navigable-icon-image-anchor-margin-reverse;
+          }
+
+          .e-list-icon + .e-list-img {
+            margin: $treeview-icon-image-margin;
+          }
+        }
+
+        .e-anchor-wrap {
+          padding: $treeview-rtl-check-margin;
+        }
+
+        .e-nav-wrapper {
+          padding: $treeview-nav-padding;
+        }
+
+        .e-list-icon,
+        .e-list-img,
+        .e-list-icon + .e-list-img {
+          @if $skin-name == 'bootstrap4' {
+            margin: $treeview-navigable-icon-image-margin-reverse;
+          }
+          @else {
+            margin: $treeview-icon-image-margin;
+          }
+        }
+      }
+
+      .e-ul {
+        padding: $treeview-rtl-root-ul-padding;
+      }
+
+      .e-list-item {
+
+        .e-ul {
+          padding: $treeview-rtl-child-ul-padding;
+        }
+      }
+
+      .e-text-content {
+        padding: $treeview-rtl-text-wrap-padding;
+      }
+
+      .e-checkbox-wrapper {
+        margin: $treeview-rtl-check-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-rtl-check-image-margin;
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        margin: $treeview-rtl-image-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        margin: $treeview-rtl-icon-margin;
+      }
+
+      .e-sibling::before {
+        @include sibling-before(rtl);
+      }
+
+      &.e-drag-item {
+
+        .e-icons.e-drop-next {
+          transform: rotate(180deg);
+        }
+
+        .e-text-content {
+          float: right;
+        }
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
+            margin: $treeview-rtl-drag-margin;
+          }
+        }
+
+        .e-drop-count {
+          margin-right: $treeview-drop-count-margin;
+        }
+      }
+
+      div.e-icons {
+        transform: rotate(180deg);
+      }
+    }
+
+    &.e-disabled {
+      .e-fullrow,
+      .e-icons,
+      .e-text-content,
+      .e-list-img,
+      .e-list-icon {
+        cursor: auto;
+      }
+
+      .e-list-url {
+        cursor: default;
+        pointer-events: none;
+      }
+    }
+
+    &.e-interaction.e-fullrow-wrap {
+      .e-text-content {
+        pointer-events: auto;
+      }
+    }
+  }
+  /* stylelint-enable property-no-vendor-prefix */
+}

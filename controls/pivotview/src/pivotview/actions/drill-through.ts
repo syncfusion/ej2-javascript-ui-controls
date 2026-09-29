@@ -5,6 +5,7 @@ import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../bas
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { closest, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { PivotUtil } from '../../base/util';
 
 /**
  * `DrillThrough` module.
@@ -93,6 +94,9 @@ export class DrillThrough {
         this.parent.drillThroughElement = element;
         this.parent.drillThroughValue = pivotValue;
         const engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.openDrillThrough)) {
+            return;
+        }
         let valueCaption: string = '';
         let aggType: string = '';
         let rawData: IDataSet[] = [];
@@ -109,6 +113,8 @@ export class DrillThrough {
                 if (engine.fieldList[measureName as string] && (engine as OlapEngine).fieldList[measureName as string].isCalculatedField) {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(
                         this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
+                    this.parent.actionObj.actionName = '';
+                    this.parent.actionObj.actionInfo = undefined;
                     return;
                 }
                 valueCaption = engine.fieldList[measureName || pivotValue.actualText].caption;
@@ -124,6 +130,8 @@ export class DrillThrough {
                         this.parent.localeObj.getConstant('error'), this.parent.olapEngineModule.errorInfo ?
                             this.parent.olapEngineModule.errorInfo as string : (engine as OlapEngine).gridJSON);
                     this.parent.olapEngineModule.errorInfo = undefined;
+                    this.parent.actionObj.actionName = '';
+                    this.parent.actionObj.actionInfo = undefined;
                     return;
                 }
             } else {

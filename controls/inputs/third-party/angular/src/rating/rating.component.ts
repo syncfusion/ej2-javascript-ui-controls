@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,78 +30,27 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        fullTemplate: new ContentChild('fullTemplate'),
+        emptyTemplate: new ContentChild('emptyTemplate'),
+        tooltipTemplate: new ContentChild('tooltipTemplate'),
+        labelTemplate: new ContentChild('labelTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class RatingComponent extends Rating implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	beforeItemRender: any;
-	created: any;
-	onItemHover: any;
-	valueChanged: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare beforeItemRender: any;
+	declare created: any;
+	declare onItemHover: any;
+	declare valueChanged: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Defines the template that defines the appearance of each rated item in a rating component.
-     * 
-     * {% codeBlock src='rating/fullTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('fullTemplate')
-    @Template()
-    public fullTemplate: any;
-    /** 
-     * Defines the template that defines the appearance of each un-rated item in a rating component.
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('emptyTemplate')
-    @Template()
-    public emptyTemplate: any;
-    /** 
-     * Defines the template that used as tooltip content over default tooltip content of the rating. 
-     * The current value of rating passed as context to build the content.
-     * 
-     * {% codeBlock src='rating/tooltipTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltipTemplate: any;
-    /** 
-     * Defines the template that used as label over default label of the rating. The current value of rating passed as context to build the content.
-     * 
-     * {% codeBlock src='rating/labelTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('labelTemplate')
-    @Template()
-    public labelTemplate: any;
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -142,7 +92,11 @@ export class RatingComponent extends Rating implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(RatingComponent.prototype, 'fullTemplate');
+Template()(RatingComponent.prototype, 'emptyTemplate');
+Template()(RatingComponent.prototype, 'tooltipTemplate');
+Template()(RatingComponent.prototype, 'labelTemplate');
 

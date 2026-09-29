@@ -1,15 +1,20 @@
 import { _ConstructionType, _TagClassType, _UniversalType } from './../asn1/enumerator';
-import { CryptographicStandard } from './../../../enumerator';
+import { CryptographicStandard, RevocationType } from './../../../enumerator';
 import { _PdfAbstractSyntaxElement } from '../asn1/abstract-syntax';
 import { _PdfUniqueEncodingElement } from '../asn1/unique-encoding-element';
 import { _PdfBasicEncodingElement } from '../asn1/basic-encoding-element';
 import { _PdfObjectIdentifier } from '../asn1/identifier-mapping';
 import { _PdfX509Certificate } from '../x509/x509-certificate';
+import { _PdfX509CertificateParser } from '../x509/x509-certificate-parser';
 import { _PdfMessageDigestAlgorithms } from './pdf-digest-algorithms';
-import { _ICipherParam } from './pdf-interfaces';
+import { _ICipherParam, _ISigner } from './pdf-interfaces';
 import { _PdfDigitalIdentifiers } from './pdf-object-identifiers';
 import { _PdfSignedCertificate } from '../x509/x509-signed-certificate';
 import { PdfSignature } from './pdf-signature';
+import { _PdfSignerUtilities } from './signature-utilities';
+import { _PdfEncryptionAlgorithms } from './encryption-algorithm';
+import { _PdfX509CertificateStructure } from '../x509/x509-certificate-structure';
+import { _PdfCipherParameter } from '../x509/x509-cipher-handler';
 /**
  * Cryptographic Message Syntax signer helper that builds and parses PKCS#7/CMS
  * structures and provides signing utilities used by PDF signature creation.
@@ -32,7 +37,7 @@ export class _PdfCryptographicMessageSyntaxSigner {
     /**
      * Certificate chain used for signing.
      */
-    private _certificates: _PdfX509Certificate[];
+    _certificates: _PdfX509Certificate[];
     /**
      * Mapping of digest algorithm OIDs to values used in signed attributes.
      */
@@ -56,11 +61,11 @@ export class _PdfCryptographicMessageSyntaxSigner {
     /**
      * RSA-related raw data used during signing.
      */
-    private _rsaData: Uint8Array;
+    _rsaData: Uint8Array;
     /**
      * Raw signed data bytes when provided externally.
      */
-    private _signedData: Uint8Array;
+    _signedData: Uint8Array;
     /**
      * Raw signed RSA data bytes when provided externally.
      */
@@ -69,6 +74,18 @@ export class _PdfCryptographicMessageSyntaxSigner {
      * Cached digest used for signature generation.
      */
     private _digest: Uint8Array;
+    _signedAttributesBytes: Uint8Array;
+    _digestAlgorithmSetOids: any[]; // eslint-disable-line
+    _signatureBytes: Uint8Array;
+    _messageDigestAttribute: Uint8Array;
+    _isTimeStamp: boolean;
+    _signer: _ISigner;
+    _documentBytes: Uint8Array;
+    _signedAttributesDerBytes: Uint8Array;
+    _issuerDistinguishedNameBytes: Uint8Array;
+    _serialNumberBytes: Uint8Array;
+    _digestAlgorithmOidBytes: Uint8Array;
+    _encryptionAlgorithm: string;
     /**
      * Indicates whether a timestamp token is present on the signature.
      *
@@ -94,16 +111,16 @@ export class _PdfCryptographicMessageSyntaxSigner {
         hasRsaData: boolean)
     constructor(privateKey: _ICipherParam | Uint8Array,
                 certChain?: _PdfX509Certificate[] | string,
-                hashAlgorithm?: string,
+                hashAlgorithm?: string | RevocationType,
                 hasRsaData?: boolean) {
-        if (privateKey instanceof Uint8Array && privateKey.length === 0 || typeof certChain === 'undefined' || certChain === null) {
+        if (privateKey instanceof Uint8Array && privateKey.length === 0 || typeof certChain === 'undefined' || certChain === null ) {
             return;
         }
         if (privateKey instanceof Uint8Array && typeof certChain === 'string') {
-            this._initializeCmsSigner(privateKey, certChain);
+            this._initializeCmsSigner(privateKey as Uint8Array, certChain as string);
         } else {
             this._digestAlgorithm = new _PdfMessageDigestAlgorithms();
-            this._digestAlgorithmObjectIdentifier = this._digestAlgorithm._getAllowedDigests(hashAlgorithm);
+            this._digestAlgorithmObjectIdentifier = this._digestAlgorithm._getAllowedDigests(hashAlgorithm as string);
             if (!this._digestAlgorithmObjectIdentifier) {
                 throw new Error(`Unknown hash algorithm: ${hashAlgorithm}`);
             }
@@ -143,29 +160,248 @@ export class _PdfCryptographicMessageSyntaxSigner {
         const stream: _PdfBasicEncodingElement = new _PdfBasicEncodingElement();
         stream._fromBytes(bytes);
         const sequence: _PdfAbstractSyntaxElement[] = stream._getSequence();
-        const oid: _PdfObjectIdentifier = sequence[0]._getObjectIdentifier();
-        const dotDelimitedNotation: string = oid._getDotDelimitedNotation();
-        if (dotDelimitedNotation === '1.2.840.113549.1.7.2') {
-            const inner: _PdfAbstractSyntaxElement = sequence[1]._getInner();
-            const innerSequence: _PdfAbstractSyntaxElement[] = inner._getSequence();
-            const signerInfosSet: _PdfAbstractSyntaxElement[] = innerSequence[4]._getSequence();
-            const signerInformationSeq: _PdfAbstractSyntaxElement[] = signerInfosSet[0]._getSequence();
-            const digestAlgorithmSeq: _PdfAbstractSyntaxElement[] = signerInformationSeq[2]._getSequence();
-            const digestAlgorithmOidBytes: Uint8Array = digestAlgorithmSeq[0]._getValue();
-            const identifier: _PdfObjectIdentifier = new _PdfObjectIdentifier()._fromBytes(digestAlgorithmOidBytes);
-            this._digestAlgorithmObjectIdentifier = identifier.toString();
-            if (subFilter !== 'ETSI.RFC3161') {
-                const { hasTimeStamp, tokenBytes }: any = this._getSignatureTimeStampToken(signerInformationSeq); // eslint-disable-line
-                this._hasTimeStamp = hasTimeStamp;
-                if (hasTimeStamp && tokenBytes) {
-                    this._timeStampTokenBytes = tokenBytes;
+        if (!sequence || sequence.length < 2) {
+            return;
+        }
+        const oidEl: any = sequence[0]._getObjectIdentifier(); // eslint-disable-line
+        const dot: any = oidEl && oidEl._getDotDelimitedNotation && oidEl._getDotDelimitedNotation(); // eslint-disable-line
+        if (dot !== '1.2.840.113549.1.7.2') {
+            return;
+        }
+        let innerSequence: _PdfAbstractSyntaxElement[];
+        try {
+            innerSequence = this._resolveInnerSequence(sequence[1]);
+        } catch {
+            innerSequence = [];
+        }
+        if (!innerSequence || innerSequence.length < 3) {
+            return;
+        }
+        this._digestAlgorithmSetOids = [];
+        if (innerSequence.length > 1) {
+            const digestAlgosSet: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(innerSequence[1]) || [];
+            for (const algo of digestAlgosSet) {
+                const algoSeq: any = (algo as any)._getSequence && (algo as any)._getSequence(); // eslint-disable-line
+                if (!algoSeq || algoSeq.length === 0) {
+                    continue;
                 }
-            } else {
-                const outerTokenBytes: Uint8Array = stream._toBytes();
-                this._isTimestampOnly = true;
-                this._hasTimeStamp = outerTokenBytes.length > 0;
-                this._timeStampTokenBytes = outerTokenBytes;
+                const algoOidBytes: Uint8Array = (algoSeq[0] as any)._getValue && (algoSeq[0] as any)._getValue(); // eslint-disable-line
+                if (algoOidBytes) {
+                    this._digestAlgorithmSetOids.push(new _PdfObjectIdentifier()._fromBytes(algoOidBytes).toString());
+                }
             }
+        }
+        if (innerSequence.length > 2) {
+            const encapContentInfoSeq: _PdfAbstractSyntaxElement[] = (innerSequence[2] as any)._getSequence && (innerSequence[2] as any)._getSequence(); // eslint-disable-line
+            if (encapContentInfoSeq && encapContentInfoSeq.length > 1) {
+                const tagged: any = (encapContentInfoSeq[1] as any)._getInner && (encapContentInfoSeq[1] as any)._getInner(); // eslint-disable-line
+                const octet: any = tagged && (tagged as any)._getValue && (tagged as any)._getValue(); // eslint-disable-line
+                if (octet && octet.length) {
+                    this._rsaData = octet;
+                }
+            }
+        }
+        const signerInfosContainer: _PdfAbstractSyntaxElement = innerSequence[innerSequence.length - 1];
+        const signerInfosSet: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(signerInfosContainer) || [];
+        if (!signerInfosSet || signerInfosSet.length === 0) {
+            return;
+        }
+        const signerInformationSeq: _PdfAbstractSyntaxElement[] = (signerInfosSet[0] as any)._getSequence && // eslint-disable-line
+            (signerInfosSet[0] as any)._getSequence(); // eslint-disable-line
+        if (!signerInformationSeq || signerInformationSeq.length < 5) {
+            return;
+        }
+        const v: any = (signerInformationSeq[0] as any)._getInteger && (signerInformationSeq[0] as any)._getInteger(); // eslint-disable-line
+        if (typeof v === 'number') {
+            this._signerVersion = v;
+        }
+        const issuerAndSerialSeq: _PdfAbstractSyntaxElement[] = (signerInformationSeq[1] as any)._getSequence && (signerInformationSeq[1] as any)._getSequence(); // eslint-disable-line
+        if (issuerAndSerialSeq && issuerAndSerialSeq.length >= 2) {
+            const issuerBytes: Uint8Array = (issuerAndSerialSeq[0] as any)._toBytes && (issuerAndSerialSeq[0] as any)._toBytes(); // eslint-disable-line
+            const serialBytes: Uint8Array = (issuerAndSerialSeq[1] as any)._getValue && (issuerAndSerialSeq[1] as any)._getValue(); // eslint-disable-line
+            if (issuerBytes) {
+                this._issuerDistinguishedNameBytes = issuerBytes;
+            }
+            if (serialBytes) {
+                this._serialNumberBytes = serialBytes;
+            }
+        }
+        const digestAlgorithmSeq: _PdfAbstractSyntaxElement[] = (signerInformationSeq[2] as any)._getSequence && // eslint-disable-line
+            (signerInformationSeq[2] as any)._getSequence(); // eslint-disable-line
+        this._digestAlgorithmOidBytes = digestAlgorithmSeq && digestAlgorithmSeq[0] && (digestAlgorithmSeq[0] as any)._getValue && // eslint-disable-line
+            (digestAlgorithmSeq[0] as any)._getValue(); // eslint-disable-line
+        if (this._digestAlgorithmOidBytes) {
+            this._digestAlgorithmObjectIdentifier = new _PdfObjectIdentifier()._fromBytes(this._digestAlgorithmOidBytes).toString();
+        }
+        let signedAttributesRawBytes: Uint8Array;
+        let messageDigestAttrBytes: Uint8Array;
+        const maybeSignedAttrs: _PdfAbstractSyntaxElement = signerInformationSeq[3];
+        let signedAttrsInner: _PdfAbstractSyntaxElement;
+        let signedAttributes: _PdfAbstractSyntaxElement[] = [];
+        if (maybeSignedAttrs) {
+            let isCtx0: boolean = false;
+            try {
+                isCtx0 = (maybeSignedAttrs as any)._isTagged && (maybeSignedAttrs as any)._isTagged() && (maybeSignedAttrs as any)._getTagNumber && // eslint-disable-line
+                (maybeSignedAttrs as any)._getTagNumber() === 0; // eslint-disable-line
+            } catch {
+                /* Ignore*/
+            }
+            if (isCtx0 && (maybeSignedAttrs as any)._getInner) { // eslint-disable-line
+                try {
+                    signedAttrsInner = (maybeSignedAttrs as any)._getInner(); // eslint-disable-line
+                } catch {
+                    /* Ignore*/
+                }
+            }
+            if (!signedAttrsInner) {
+                signedAttrsInner = maybeSignedAttrs;
+            }
+            signedAttributes = this._getChildrenWithFallback(signedAttrsInner);
+        }
+        if (signedAttributes && signedAttributes.length > 0) {
+            let innerSetDer: Uint8Array;
+            const tryDer: Uint8Array = signedAttrsInner && (signedAttrsInner as any)._toDerBytes && (signedAttrsInner as any)._toDerBytes(); // eslint-disable-line
+            if (tryDer && tryDer.length > 0 && tryDer[0] === 0x31) {
+                innerSetDer = tryDer;
+            }
+            if (!innerSetDer) {
+                const parts: Uint8Array[] = [];
+                for (const attr of signedAttributes) {
+                    let part: Uint8Array;
+                    try {
+                        part = (attr as any)._toDerBytes ? (attr as any)._toDerBytes() : ((attr as any)._toBytes ? // eslint-disable-line
+                            (attr as any)._toBytes() : undefined); // eslint-disable-line
+                    } catch {
+                        part = (attr as any)._toBytes ? (attr as any)._toBytes() : undefined; // eslint-disable-line
+                    }
+                    if (part && part.length) {
+                        parts.push(part);
+                    }
+                }
+                if (parts.length > 0) {
+                    parts.sort((a: any, b: any) => { // eslint-disable-line
+                        const n: number = Math.min(a.length, b.length);
+                        for (let i: number = 0; i < n; i++) {
+                            if (a[<number>i] !== b[<number>i]) {
+                                return a[<number>i] - b[<number>i];
+                            }
+                        }
+                        return a.length - b.length;
+                    });
+                    const innerTotal: number = parts.reduce((s: any, p: any) => s + p.length, 0); // eslint-disable-line
+                    const lenBytes: number[] = this._encodeLength(innerTotal);
+                    const setBytes: Uint8Array = new Uint8Array(1 + lenBytes.length + innerTotal);
+                    setBytes[0] = 0x31;
+                    setBytes.set(lenBytes, 1);
+                    let pos: number = 1 + lenBytes.length;
+                    for (const p of parts) {
+                        setBytes.set(p, pos);
+                        pos += p.length;
+                    }
+                    innerSetDer = setBytes;
+                }
+            }
+            if (innerSetDer && innerSetDer.length) {
+                this._signedAttributesDerBytes = innerSetDer;
+                signedAttributesRawBytes = innerSetDer;
+            } else if (signedAttrsInner && (signedAttrsInner as any)._toBytes) { // eslint-disable-line
+                signedAttributesRawBytes = (signedAttrsInner as any)._toBytes(); // eslint-disable-line
+            }
+            for (const attr of signedAttributes) {
+                const attrSeq: _PdfAbstractSyntaxElement[] = (attr as any)._getSequence && (attr as any)._getSequence(); // eslint-disable-line
+                if (attrSeq && attrSeq.length >= 2) {
+                    const attrOid: _PdfObjectIdentifier = (attrSeq[0] as any)._getObjectIdentifier && // eslint-disable-line
+                    (attrSeq[0] as any)._getObjectIdentifier(); // eslint-disable-line
+                    const attrOidStr: string = attrOid && attrOid._getDotDelimitedNotation && attrOid._getDotDelimitedNotation();
+                    if (attrOidStr === '1.2.840.113549.1.9.4') {
+                        const attrValuesSet: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(attrSeq[1]) || [];
+                        if (attrValuesSet.length > 0) {
+                            messageDigestAttrBytes = (attrValuesSet[0] as any)._getValue && (attrValuesSet[0] as any)._getValue(); // eslint-disable-line
+                        }
+                    }
+                }
+            }
+        }
+        this._certificates = this._extractCertificatesFromSignedData(innerSequence) || [];
+        if (!this._certificates || this._certificates.length === 0) {
+            const parser: _PdfX509CertificateParser = new _PdfX509CertificateParser();
+            try {
+                let cert: _PdfX509Certificate = parser._readCertificateFromStream(bytes, false);
+                while (cert) {
+                    this._certificates.push(cert);
+                    cert = parser._readCertificateFromStream(bytes, false);
+                }
+            } catch {
+                /* Ignore */
+            }
+        }
+        if (this._certificates && this._certificates.length > 0) {
+            if (this._issuerDistinguishedNameBytes && this._serialNumberBytes) {
+                for (const c of this._certificates) {
+                    try {
+                        const tbs: Uint8Array = c._getTobeSignedCertificate();
+                        const issuerEl: _PdfUniqueEncodingElement = this._getIssuer(tbs);
+                        const issuerBytes: Uint8Array = issuerEl && (issuerEl as any)._toBytes && (issuerEl as any)._toBytes(); // eslint-disable-line
+                        const signed: any = (c as any)._structure && (c as any)._structure._getSignedCertificate ? // eslint-disable-line
+                        (c as any)._structure._getSignedCertificate() : undefined; // eslint-disable-line
+                        const serial: Uint8Array = signed ? signed._serialNumber : undefined;
+                        if (issuerBytes && serial && this._bytesEqual(issuerBytes, this._issuerDistinguishedNameBytes) &&
+                            this._bytesEqual(serial, this._serialNumberBytes)) {
+                            this._signatureCertificate = c;
+                            break;
+                        }
+                    } catch {
+                        /* Ignore */
+                    }
+                }
+            }
+            if (!this._signatureCertificate) {
+                this._signatureCertificate = this._certificates[0];
+            }
+        }
+        const hasSignedAttributes: boolean = (this._signedAttributesDerBytes || this._signedAttributesBytes) ? true : false;
+        const sigAlgIndex: number = hasSignedAttributes ? 4 : 3;
+        const sigValueIndex: number = hasSignedAttributes ? 5 : 4;
+        const encryptionAlgorithmSeq: _PdfAbstractSyntaxElement[] = (signerInformationSeq[<number>sigAlgIndex] as any)._getSequence && // eslint-disable-line
+        (signerInformationSeq[<number>sigAlgIndex] as any)._getSequence(); // eslint-disable-line
+        if (encryptionAlgorithmSeq && encryptionAlgorithmSeq.length > 0) {
+            const encOidBytes: Uint8Array = (encryptionAlgorithmSeq[0] as any)._getValue && (encryptionAlgorithmSeq[0] as any)._getValue(); // eslint-disable-line
+            if (encOidBytes) {
+                this._encryptionAlgorithmObjectIdentifier = new _PdfObjectIdentifier()._fromBytes(encOidBytes).toString();
+            }
+        }
+        try {
+            const sigOctet: _PdfAbstractSyntaxElement = signerInformationSeq[<number>sigValueIndex];
+            const signatureBytes: Uint8Array = (sigOctet as any)._getValue && (sigOctet as any)._getValue(); // eslint-disable-line
+            if (signatureBytes) {
+                this._signatureBytes = signatureBytes;
+            }
+        } catch {
+            /* Ignore */
+        }
+        if (subFilter !== 'ETSI.RFC3161') {
+            const res: { hasTimeStamp: boolean; tokenBytes?: Uint8Array } = this._getSignatureTimeStampToken(signerInformationSeq);
+            this._hasTimeStamp = res.hasTimeStamp;
+            if (res.hasTimeStamp && res.tokenBytes) {
+                this._timeStampTokenBytes = res.tokenBytes;
+            }
+        } else {
+            const outerTokenBytes: Uint8Array = stream._toBytes && stream._toBytes();
+            this._isTimestampOnly = true;
+            this._hasTimeStamp = outerTokenBytes && outerTokenBytes.length > 0;
+            this._timeStampTokenBytes = outerTokenBytes;
+        }
+        if (hasSignedAttributes && signedAttributesRawBytes) {
+            this._signedAttributesBytes = signedAttributesRawBytes;
+        }
+        if (messageDigestAttrBytes) {
+            this._messageDigestAttribute = messageDigestAttrBytes;
+        }
+        if (this._digestAlgorithmObjectIdentifier) {
+            this._hashAlgorithm = this._mapDigestOidToName(this._digestAlgorithmObjectIdentifier);
+        }
+        if (this._encryptionAlgorithmObjectIdentifier) {
+            this._encryptionAlgorithm = this._mapEncryptionOidToName(this._encryptionAlgorithmObjectIdentifier);
         }
     }
     /* eslint-disable */
@@ -176,9 +412,7 @@ export class _PdfCryptographicMessageSyntaxSigner {
      * @param {_PdfAbstractSyntaxElement} signerInfoSeq The signer info sequence to inspect.
      * @returns {{ hasTimeStamp: boolean; tokenBytes?: Uint8Array }} Timestamp presence and raw token bytes. // eslint-disable-line
      */
-    _getSignatureTimeStampToken(
-        signerInfoSeq: _PdfAbstractSyntaxElement[]
-    ): { hasTimeStamp: boolean; tokenBytes?: Uint8Array } {
+    _getSignatureTimeStampToken(signerInfoSeq: _PdfAbstractSyntaxElement[]): { hasTimeStamp: boolean; tokenBytes?: Uint8Array } {
         const index: number = 6;
         if (!signerInfoSeq || signerInfoSeq.length <= index) {
             return { hasTimeStamp: false };
@@ -187,7 +421,7 @@ export class _PdfCryptographicMessageSyntaxSigner {
         if (!unsignedAttrs._isTagged() || unsignedAttrs._getTagNumber() !== 1 || !unsignedAttrs._isConstructed()) {
             return { hasTimeStamp: false };
         }
-        const attributes: _PdfAbstractSyntaxElement[] = this._getChildElement(unsignedAttrs);
+        const attributes: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(unsignedAttrs);
         for (const attr of attributes) {
             const attrSeq: _PdfAbstractSyntaxElement[] = attr._getSequence();
             if (!attrSeq || attrSeq.length < 2) {
@@ -197,7 +431,7 @@ export class _PdfCryptographicMessageSyntaxSigner {
             if (oid !== '1.2.840.113549.1.9.16.2.14') {
                 continue;
             }
-            const attrValues: _PdfAbstractSyntaxElement[] = this._getChildElement(attrSeq[1]);
+            const attrValues: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(attrSeq[1]);
             if (!attrValues || attrValues.length === 0) {
                 continue;
             }
@@ -215,18 +449,224 @@ export class _PdfCryptographicMessageSyntaxSigner {
      * @param {_PdfAbstractSyntaxElement} element The container element.
      * @returns {_PdfAbstractSyntaxElement[]} Child elements.
      */
-    _getChildElement(element: _PdfAbstractSyntaxElement): _PdfAbstractSyntaxElement[] {
-        let children: _PdfAbstractSyntaxElement[] = [];
-        if (element._getAbstractSetOf) {
-            children = element._getAbstractSetOf();
+    _getChildrenWithFallback(element: _PdfAbstractSyntaxElement): _PdfAbstractSyntaxElement[] {
+        if (!element) {
+            return [];
         }
-        if ((!children || children.length === 0) && element._getSequence) {
-            children = element._getSequence();
+        try {
+            const set: any = element._getAbstractSetOf(); // eslint-disable-line
+            if (set && set.length > 0) {
+                return set;
+            }
+        } catch {
+            /* Ignore */
         }
-        if (!children || children.length === 0) {
-            children = this._decodeChildrenFromContentOctets(element);
+        try {
+            const seq: any = element._getSequence(); // eslint-disable-line
+            if (seq && seq.length > 0) {
+                return seq;
+            }
+        } catch {
+            /* Ignore */
         }
-        return children;
+        try {
+            const comps: any = element._getComponents(); // eslint-disable-line
+            if (comps && comps.length > 0) {
+                return comps;
+            }
+        } catch {
+            /* Ignore */
+        }
+        try {
+            return this._decodeChildrenFromContentOctets(element);
+        } catch {
+            return [];
+        }
+    }
+    _resolveInnerSequence(el: _PdfAbstractSyntaxElement): _PdfAbstractSyntaxElement[] {
+        if (!el) {
+            return undefined;
+        }
+        try {
+            if ((el as any)._getInner) { // eslint-disable-line
+                const maybeInner: any = (el as any)._getInner(); // eslint-disable-line
+                return maybeInner ? this._getChildrenWithFallback(maybeInner) : this._getChildrenWithFallback(el);
+            }
+            return this._getChildrenWithFallback(el);
+        } catch {
+            return undefined;
+        }
+    }
+    _getDerOrBytes(el: _PdfAbstractSyntaxElement): Uint8Array {
+        try {
+            const der: any = (el as any)._toDerBytes(); // eslint-disable-line
+            if (der && der.length) {
+                return der;
+            }
+        } catch {
+            /* Ignore */
+        }
+        try {
+            const b: any = (el as any)._toBytes(); // eslint-disable-line
+            if (b && b.length) {
+                return b;
+            }
+        } catch {
+            /* Ignore */
+        }
+        try {
+            const v: any = (el as any)._getValue(); // eslint-disable-line
+            if (v && v.length) {
+                return v;
+            }
+        } catch {
+            /* Ignore */
+        }
+        return undefined;
+    }
+    _looksLikeCertificateDer(bytes: Uint8Array): boolean {
+        if (!bytes || bytes.length < 8) {
+            return false;
+        }
+        if (bytes[0] !== 0x30) {
+            return false;
+        }
+        const limit: number = Math.min(bytes.length - 5, 80);
+        for (let i: number = 0; i < limit; i++) {
+            if (bytes[<number>i] === 0xA0 && bytes[i + 1] === 0x03 &&
+                bytes[i + 2] === 0x02 && bytes[i + 3] === 0x01 &&
+                bytes[i + 4] === 0x02) {
+                return true;
+            }
+            if (bytes[<number>i] === 0xA0 && bytes[i + 1] === 0x03 &&
+                bytes[i + 2] === 0x02 && bytes[i + 3] === 0x01 &&
+                bytes[i + 4] === 0x01) {
+                return true;
+            }
+        }
+        try {
+            let pos: number = 1;
+            if (bytes[<number>pos] & 0x80) {
+                pos += (bytes[<number>pos] & 0x7F) + 1;
+            } else {
+                pos += 1;
+            }
+            if (pos < bytes.length && bytes[<number>pos] === 0x30) {
+                pos += 1;
+                if (bytes[<number>pos] & 0x80) {
+                    pos += (bytes[<number>pos] & 0x7F) + 1;
+                } else {
+                    pos += 1;
+                }
+                if (pos < bytes.length && bytes[<number>pos] === 0x02) {
+                    return true;
+                }
+            }
+        } catch {
+            /* Ignore */
+        }
+        return false;
+    }
+    _tryParseCertificateNode(node: _PdfAbstractSyntaxElement, parser: _PdfX509CertificateParser): _PdfX509Certificate {
+        try {
+            const bytes: Uint8Array = this._getDerOrBytes(node);
+            if (!bytes || bytes.length === 0) {
+                return undefined;
+            }
+            const cert: _PdfX509Certificate = parser._readCertificateFromStream(bytes, true);
+            return cert;
+        } catch {
+            return undefined;
+        }
+    }
+    _extractCertificatesFromSignedData(innerSequence: _PdfAbstractSyntaxElement[]): _PdfX509Certificate[] {
+        const out: _PdfX509Certificate[] = [];
+        const parser: _PdfX509CertificateParser = new _PdfX509CertificateParser();
+        if (!innerSequence || innerSequence.length < 4) {
+            return out;
+        }
+        const visited: any = new Set<string>(); // eslint-disable-line
+        const addCertificate: any = (cert: _PdfX509Certificate): void => { // eslint-disable-line
+            if (!cert) {
+                return;
+            }
+            try {
+                const key: string = Array.from(cert._getEncoded()).join(',');
+                if (!visited.has(key)) {
+                    visited.add(key);
+                    out.push(cert);
+                }
+            } catch {
+                out.push(cert);
+            }
+        };
+        const walk: any = (node: _PdfAbstractSyntaxElement): void => { // eslint-disable-line
+            if (!node) {
+                return;
+            }
+            try {
+                const bytes: Uint8Array = this._getDerOrBytes(node);
+                if (bytes && bytes.length > 0) {
+                    try {
+                        const cert: _PdfX509Certificate = parser._readCertificateFromStream(bytes, true);
+                        if (cert) {
+                            addCertificate(cert);
+                        }
+                    } catch {
+                        /* Ignore */
+                    }
+                }
+            } catch {
+                /* Ignore */
+            }
+            try {
+                const children: _PdfAbstractSyntaxElement[] = this._getChildrenWithFallback(node);
+                if (children && children.length > 0) {
+                    for (const child of children) {
+                        walk(child);
+                    }
+                }
+            } catch {
+                /* Ignore */
+            }
+        };
+        for (let i: number = 3; i < innerSequence.length - 1; i++) {
+            walk(innerSequence[<number>i]);
+        }
+        return out;
+    }
+    _mapDigestOidToName(oid: string): string {
+        switch (oid) {
+        case '1.3.14.3.2.26':
+            return 'SHA1';
+        case '2.16.840.1.101.3.4.2.1':
+            return 'SHA256';
+        case '2.16.840.1.101.3.4.2.2':
+            return 'SHA384';
+        case '2.16.840.1.101.3.4.2.3':
+            return 'SHA512';
+        case '1.3.36.3.2.1':
+            return 'RIPEMD160';
+        default:
+            return 'SHA256';
+        }
+    }
+    _mapEncryptionOidToName(oid: string): string {
+        if (oid === '1.2.840.113549.1.1.1' || oid === '1.2.840.113549.1.1.5' || oid === '1.2.840.113549.1.1.11'
+            || oid === '1.2.840.113549.1.1.12' || oid === '1.2.840.113549.1.1.13') {
+            return 'RSA';
+        }
+        if (oid === '1.2.840.10045.4.3.2' || oid === '1.2.840.10045.4.3.3' || oid === '1.2.840.10045.4.3.4') {
+            return 'ECDSA';
+        }
+        return 'RSA';
+    }
+    _initializeSigner(publicKey: any): _ISigner { // eslint-disable-line
+        const signMode: string = `${this._hashAlgorithm}with${this._encryptionAlgorithm}`;
+        const util: _PdfSignerUtilities = new _PdfSignerUtilities();
+        const signer: _ISigner = util._getSigner(signMode);
+        signer._initialize(false, publicKey);
+        return signer;
     }
     /**
      * Determines whether the provided key parameter represents an RSA key.
@@ -884,14 +1324,8 @@ export class _PdfCryptographicMessageSyntaxSigner {
      * @param {CryptographicStandard} [sigtype] Optional cryptographic standard selector.
      * @returns {Promise<Uint8Array>} Encoded PKCS#7/CMS signature bytes.
      */
-    async _signAsync(
-        secondDigest: Uint8Array,
-        signature: PdfSignature,
-        timeStampResponse?: Uint8Array,
-        revocation?: Uint8Array,
-        bytes?: Uint8Array[],
-        sigtype?: CryptographicStandard
-    ): Promise<Uint8Array> {
+    async _signAsync(secondDigest: Uint8Array, signature: PdfSignature, timeStampResponse?: Uint8Array,
+                     revocation?: Uint8Array, bytes?: Uint8Array[], sigtype?: CryptographicStandard): Promise<Uint8Array> {
         if (this._signedData) {
             this._digest = this._signedData;
             if (this._rsaData) {
@@ -1181,5 +1615,557 @@ export class _PdfCryptographicMessageSyntaxSigner {
             cursor += consumed;
         }
         return children;
+    }
+    _getEncryptionAlgorithm(): string {
+        if (this._encryptionAlgorithm === null || typeof this._encryptionAlgorithm === 'undefined') {
+            const algorithm: _PdfEncryptionAlgorithms = new _PdfEncryptionAlgorithms();
+            return algorithm._getAlgorithm(this._encryptionAlgorithmObjectIdentifier);
+        }
+        return null;
+    }
+    _validateCheckSum(): boolean {
+        if (this._isTimeStamp || this._isTimestampOnly) {
+            return true;
+        }
+        const hasSignedAttrs: boolean = !!(this._signedAttributesBytes || this._signedAttributesDerBytes);
+        const pickOriginal: any = (): Uint8Array => {// eslint-disable-line
+            if (this._signedData && this._signedData.length > 0) {
+                return this._signedData;
+            }
+            if (this._rsaData && this._rsaData.length > 0) {
+                return this._rsaData;
+            }
+            if (this._documentBytes && this._documentBytes.length > 0) {
+                return this._documentBytes as Uint8Array;
+            }
+            return undefined;
+        };
+        if (hasSignedAttrs) {
+            const isRsaDataVerified: boolean = true;
+            let hasSameContent: boolean = false;
+            let isEncodedDigest: boolean = false;
+            const originalBytes: Uint8Array = pickOriginal();
+            if (!originalBytes || !originalBytes.length) {
+                return false;
+            }
+            try {
+                const digestHasher: any = this._digestAlgorithm._getMessageDigest(this._getHashAlgorithm());// eslint-disable-line
+                let messageDigestBytes: Uint8Array = digestHasher._hash(originalBytes, 0, originalBytes.length);
+                if (!messageDigestBytes && this._rsaData && this._rsaData.length) {
+                    messageDigestBytes = digestHasher._hash(this._rsaData, 0, this._rsaData.length);
+                }
+                if (this._messageDigestAttribute) {
+                    const digestFromAttr: Uint8Array = this._extractDigestFromAttribute(this._messageDigestAttribute);
+                    if (digestFromAttr && messageDigestBytes) {
+                        hasSameContent = this._bytesEqual(messageDigestBytes, digestFromAttr);
+                    }
+                    if (!hasSameContent && this._digestAlgorithmOidBytes) {
+                        let digestForEncoded: Uint8Array = messageDigestBytes;
+                        if (!digestForEncoded && this._rsaData && this._rsaData.length) {
+                            digestForEncoded = digestHasher._hash(this._rsaData, 0, this._rsaData.length);
+                        }
+                        if (digestForEncoded) {
+                            const oid: any = Array.from(this._digestAlgorithmOidBytes); // eslint-disable-line
+                            const algInner: number = oid.length + 2;
+                            const algLen: any = this._encodeLength(algInner); // eslint-disable-line
+                            const algId: number[] = [0x30];
+                            if (algLen.length === 1 && algLen[0] < 128) {
+                                algId.push(algLen[0]);
+                            } else {
+                                algId.push(0x80 | algLen.length, ...algLen);
+                            }
+                            algId.push(...oid, 0x05, 0x00);
+                            const dLen: number[] = this._encodeLength(digestForEncoded.length);
+                            const dOct: number[] = [0x04];
+                            if (dLen.length === 1 && dLen[0] < 128) {
+                                dOct.push(dLen[0]);
+                            } else {
+                                dOct.push(0x80 | dLen.length, ...dLen);
+                            }
+                            dOct.push(...Array.from(digestForEncoded));
+                            const totalInner: number = algId.length + dOct.length;
+                            const tLen: number[] = this._encodeLength(totalInner);
+                            const out: number[] = [0x30];
+                            if (tLen.length === 1 && tLen[0] < 128) {
+                                out.push(tLen[0]);
+                            } else {
+                                out.push(0x80 | tLen.length, ...tLen);
+                            }
+                            out.push(...algId, ...dOct);
+                            const encodedDigestBytes: Uint8Array = new Uint8Array(out);
+                            isEncodedDigest = this._bytesEqual(encodedDigestBytes, this._messageDigestAttribute);
+                        }
+                    }
+                }
+                if (!hasSameContent && messageDigestBytes && this._messageDigestAttribute) {
+                    hasSameContent = this._bytesEqual(messageDigestBytes, this._messageDigestAttribute);
+                }
+            } catch (e) {
+                throw new Error(e.message);
+            }
+            if (hasSameContent || isEncodedDigest) {
+                const validateAttrResult1: boolean = this._validateAttributes(this._signedAttributesBytes);
+                const validateAttrResult2: boolean = this._validateAttributes(this._signedAttributesDerBytes);
+                if (validateAttrResult1 || validateAttrResult2) {
+                    return isRsaDataVerified;
+                }
+                return isRsaDataVerified;
+            }
+            return false;
+        }
+        if (this._signer && this._signatureBytes) {
+            const originalBytes: Uint8Array = pickOriginal();
+            if (!originalBytes || !originalBytes.length) {
+                return false;
+            }
+            try {
+                const digestHasher: any = this._digestAlgorithm._getMessageDigest(this._getHashAlgorithm());// eslint-disable-line
+                const messageBytes: Uint8Array = digestHasher._hash(originalBytes, 0, originalBytes.length);
+                this._signer._blockUpdate(messageBytes, 0, messageBytes.length);
+                return this._signer._validateSignature(this._signatureBytes);
+            } catch {
+                /* Ignore */
+            }
+            const dataToVerify: Uint8Array = this._signedAttributesDerBytes ||
+                this._signedAttributesBytes || this._rsaData || new Uint8Array(0);
+            this._signer._blockUpdate(dataToVerify, 0, dataToVerify.length);
+            return this._signer._validateSignature(this._signatureBytes);
+        }
+        return false;
+    }
+    _validateAttributes(attr: Uint8Array): boolean {
+        if (!attr || !attr.length || !this._signatureBytes) {
+            return false;
+        }
+        try {
+            const verifier: _ISigner = this._initializeSigner(this._signatureCertificate._getPublicKey());
+            verifier._blockUpdate(attr, 0, attr.length);
+            const res: boolean = verifier._validateSignature(this._signatureBytes);
+            return res;
+        } catch (e) {
+            return false;
+        }
+    }
+    _extractDigestFromAttribute(attr: Uint8Array): Uint8Array {
+        if (!attr || !attr.length) {
+            return undefined;
+        }
+        try {
+            if ([20, 32, 48, 64].indexOf(attr.length) !== -1) {
+                return attr;
+            }
+            if (attr[0] === 0x04) {
+                let idx: number = 1;
+                let len: number = attr[1];
+                idx++;
+                if (len & 0x80) {
+                    const n: number = len & 0x7f;
+                    len = 0;
+                    for (let i: number = 0; i < n; i++) {
+                        len = (len << 8) + attr[idx++];
+                    }
+                }
+                if (idx + len <= attr.length) {
+                    return attr.subarray(idx, idx + len);
+                }
+                return undefined;
+            }
+            if (attr[0] === 0x30) {
+                let idx: number = 1;
+                if (idx >= attr.length) {
+                    return undefined;
+                }
+                let len: number = attr[idx++];
+                if (len & 0x80) {
+                    const n: number = len & 0x7f;
+                    len = 0;
+                    for (let i: number = 0; i < n && idx < attr.length; i++) {
+                        len = (len << 8) + attr[idx++];
+                    }
+                }
+                while (idx < attr.length) {
+                    if (attr[<number>idx] === 0x04) {
+                        let k: number = idx + 1;
+                        if (k >= attr.length) {
+                            return undefined;
+                        }
+                        let l: number = attr[k++];
+                        if (l & 0x80) {
+                            const n: number = l & 0x7f;
+                            l = 0;
+                            for (let j: number = 0; j < n && k < attr.length; j++) {
+                                l = (l << 8) + attr[k++];
+                            }
+                        }
+                        if (k + l <= attr.length) {
+                            return attr.subarray(k, k + l);
+                        }
+                        return undefined;
+                    }
+                    idx++;
+                }
+            }
+        } catch {
+            return undefined;
+        }
+        return undefined;
+    }
+    _bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+        if (!a || !b || a.length !== b.length) {
+            return false;
+        }
+        for (let i: number = 0; i < a.length; i++) {
+            if (a[<number>i] !== b[<number>i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    _verifyRsaPkcs1Signature(hashName: 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512',
+                             data: Uint8Array, signature: Uint8Array, publicKey: _ICipherParam): boolean {
+        try {
+            const util: _PdfSignerUtilities = new _PdfSignerUtilities();
+            const signMode: string = `${hashName}withRSA`;
+            const verifier: _ISigner = util._getSigner(signMode);
+            verifier._initialize(false, publicKey);
+            verifier._blockUpdate(data, 0, data.length);
+            return verifier._validateSignature(signature) === true;
+        } catch {
+            return false;
+        }
+    }
+    /**
+     * Verifies TSA signature on timestamp token.
+     *
+     * @private
+     * @param {Uint8Array} token Raw timestamp token bytes
+     * @returns {boolean} True if TSA signature is valid, false otherwise
+     */
+    _verifyTsaSignature(token: Uint8Array): boolean {
+        try {
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(token);
+            const topChildren: _PdfAbstractSyntaxElement[] = element._getComponents();
+            if (!topChildren || topChildren.length < 2) {
+                return false;
+            }
+            const contentWrapper: _PdfAbstractSyntaxElement = topChildren[1];
+            const contentChildren: _PdfAbstractSyntaxElement[] = contentWrapper._getComponents();
+            const signedDataSeq: _PdfAbstractSyntaxElement = contentChildren[0];
+            const signedChildren: _PdfAbstractSyntaxElement[] = signedDataSeq._getComponents();
+            if (!signedChildren || signedChildren.length < 4) {
+                return false;
+            }
+            const tsaCertBytes: Uint8Array = this._extractTsaCertificate(token);
+            if (!tsaCertBytes) {
+                return false;
+            }
+            const tsaStructure: _PdfX509CertificateStructure = new _PdfX509CertificateStructure();
+            tsaStructure._fromDer(tsaCertBytes);
+            const tsaCert: _PdfX509Certificate = new _PdfX509Certificate(tsaStructure);
+            const publicKey: _PdfCipherParameter = tsaCert._getPublicKey();
+            const encapContentInfo: _PdfAbstractSyntaxElement = signedChildren[2];
+            const encapChildren: _PdfAbstractSyntaxElement[] = encapContentInfo._getComponents();
+            if (!encapChildren || encapChildren.length < 2) {
+                return false;
+            }
+            const eContentWrapper: _PdfAbstractSyntaxElement = encapChildren[1];
+            const eContentChildren: _PdfAbstractSyntaxElement[] = eContentWrapper._getComponents();
+            const tstInfoBytes: Uint8Array = eContentChildren[0]._toBytes();
+            const signerInfos: _PdfAbstractSyntaxElement = signedChildren[signedChildren.length - 1];
+            const signerInfosChildren: _PdfAbstractSyntaxElement[] = signerInfos._getComponents();
+            if (!signerInfosChildren || signerInfosChildren.length === 0) {
+                return false;
+            }
+            const signerInfo: _PdfAbstractSyntaxElement = signerInfosChildren[0];
+            const signerChildren: _PdfAbstractSyntaxElement[] = signerInfo._getComponents();
+            let signedAttrs: any = null; // eslint-disable-line
+            let signatureAlgorithm: any = null; // eslint-disable-line
+            let signatureValue: any = null; // eslint-disable-line
+            if (signerChildren.length >= 6) {
+                signedAttrs = signerChildren[3];
+                signatureAlgorithm = signerChildren[4];
+                signatureValue = signerChildren[5];
+            } else if (signerChildren.length >= 5) {
+                signatureAlgorithm = signerChildren[3];
+                signatureValue = signerChildren[4];
+            } else {
+                return false;
+            }
+            const digestAlgo: _PdfAbstractSyntaxElement = signerChildren[2];
+            const digestOid: string = digestAlgo._getComponents()[0]
+                ._getObjectIdentifier().toString();
+            const sigOid: string = signatureAlgorithm._getComponents()[0]
+                ._getObjectIdentifier().toString();
+            let finalAlgorithm: string;
+            if (sigOid === '1.2.840.113549.1.1.1') {
+                if (digestOid === '1.3.14.3.2.26') {
+                    finalAlgorithm = 'SHA-1withRSA';
+                } else if (digestOid === '2.16.840.1.101.3.4.2.1') {
+                    finalAlgorithm = 'SHA-256withRSA';
+                } else if (digestOid === '2.16.840.1.101.3.4.2.2') {
+                    finalAlgorithm = 'SHA-384withRSA';
+                } else if (digestOid === '2.16.840.1.101.3.4.2.3') {
+                    finalAlgorithm = 'SHA-512withRSA';
+                } else {
+                    return false;
+                }
+            } else {
+                finalAlgorithm = sigOid;
+            }
+            let signature: Uint8Array = signatureValue._getValue();
+            if (signatureValue._tag === 0x03) {
+                if (signature.length > 0) {
+                    signature = signature.slice(1);
+                }
+            }
+            let modLen: number;
+            if ((publicKey as any).modulus) { // eslint-disable-line
+                modLen = (publicKey as any).modulus.length; // eslint-disable-line
+            } else if ((publicKey as any)._modulus) { // eslint-disable-line
+                modLen = (publicKey as any)._modulus.length; // eslint-disable-line
+            } else {
+                throw new Error('Cannot determine RSA modulus length');
+            }
+            if (signature.length > modLen) {
+                if (signature[0] === 0x00) {
+                    signature = signature.slice(1);
+                } else {
+                    signature = signature.slice(signature.length - modLen);
+                }
+            }
+            if (signature.length < modLen) {
+                const padded: Uint8Array = new Uint8Array(modLen);
+                padded.set(signature, modLen - signature.length);
+                signature = padded;
+            }
+            let dataToVerify: Uint8Array;
+            if (signedAttrs && signedAttrs._construction === _ConstructionType.constructed) {
+                const signedAttrsBytes: Uint8Array = signedAttrs._toBytes();
+                const derSignedAttrs: Uint8Array = new Uint8Array(signedAttrsBytes);
+                derSignedAttrs[0] = 0x31;
+                dataToVerify = derSignedAttrs;
+            } else {
+                dataToVerify = tstInfoBytes;
+            }
+            const su: _PdfSignerUtilities = new _PdfSignerUtilities();
+            const signer: _ISigner = su._getSigner(finalAlgorithm);
+            if (!signer) {
+                return false;
+            }
+            signer._initialize(false, publicKey);
+            signer._blockUpdate(dataToVerify, 0, dataToVerify.length);
+            return signer._validateSignature(signature);
+        } catch {
+            return false;
+        }
+    }
+    /**
+     * Extracts TSA certificate from timestamp token certificates collection.
+     *
+     * @private
+     * @param {Uint8Array} token Raw timestamp token bytes
+     * @returns {Uint8Array} TSA certificate bytes
+     * @throws {Error} If certificate cannot be extracted
+     */
+    _extractTsaCertificate(token: Uint8Array): Uint8Array {
+        try {
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(token);
+            const topChildren: _PdfAbstractSyntaxElement[] = element._getComponents();
+            if (!topChildren || topChildren.length < 2) {
+                throw new Error('Invalid ContentInfo structure');
+            }
+            const contentWrapper: _PdfAbstractSyntaxElement = topChildren[1];
+            const contentChildren: _PdfAbstractSyntaxElement[] = contentWrapper._getComponents();
+            const signedData: _PdfAbstractSyntaxElement = contentChildren[0];
+            const signedChildren: _PdfAbstractSyntaxElement[] = signedData._getComponents();
+            if (!signedChildren || signedChildren.length < 4) {
+                throw new Error('Invalid SignedData structure');
+            }
+            const certificatesWrapper: _PdfAbstractSyntaxElement = signedChildren[3];
+            if (!certificatesWrapper) {
+                throw new Error('No certificates wrapper found');
+            }
+            let certContainer: _PdfAbstractSyntaxElement = certificatesWrapper;
+            if (certificatesWrapper._construction === _ConstructionType.constructed) {
+                const wrapperChildren: _PdfAbstractSyntaxElement[] = certificatesWrapper._getComponents();
+                if (wrapperChildren.length === 1) {
+                    certContainer = wrapperChildren[0];
+                }
+            }
+            const certChildren: _PdfAbstractSyntaxElement[] = certContainer._getComponents();
+            if (!certChildren || certChildren.length === 0) {
+                throw new Error('No certificates found in timestamp token');
+            }
+            const firstCert: _PdfAbstractSyntaxElement = certChildren[0];
+            if (!firstCert) {
+                throw new Error('Failed to extract TSA certificate');
+            }
+            return firstCert._toBytes();
+        } catch (error) {
+            throw new Error(`Failed to extract TSA certificate: ${error.message}`);
+        }
+    }
+    /**
+     * Checks if certificate has id-kp-timeStamping extended key usage.
+     *
+     * @private
+     * @param {_PdfX509Certificate} cert Certificate to check
+     * @returns {boolean} True if certificate has timeStamping EKU
+     */
+    _hasTimestampExtendedKeyUsage(cert: _PdfX509Certificate): boolean {
+        try {
+            const ekuOid: _PdfObjectIdentifier = new _PdfObjectIdentifier()._fromString('2.5.29.37');
+            const ekuExt: _PdfAbstractSyntaxElement = cert._getExtension(ekuOid);
+            if (!ekuExt) {
+                return false;
+            }
+            const rawBytes: Uint8Array = ekuExt._getValue();
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(rawBytes);
+            const seqChildren: _PdfAbstractSyntaxElement[] = element._getComponents();
+            if (!seqChildren || seqChildren.length === 0) {
+                return false;
+            }
+            const timestampOid: string = '1.3.6.1.5.5.7.3.8';
+            for (let i: number = 0; i < seqChildren.length; i++) {
+                const oidElem: _PdfAbstractSyntaxElement = seqChildren[<number>i];
+                if (oidElem && oidElem._getTagNumber() === _UniversalType.objectIdentifier) {
+                    const oid: string = oidElem._getObjectIdentifier().toString();
+                    if (oid === timestampOid) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch {
+            return false;
+        }
+    }
+    /**
+     * Checks if certificate serial number appears in CRL revocation list.
+     *
+     * @private
+     * @param {Uint8Array} crlBytes CRL data bytes
+     * @param {string} serialNumber Certificate serial number to check
+     * @returns {boolean} True if serial found in revoked list
+     */
+    _checkCertificateSerialInCrl(crlBytes: Uint8Array, serialNumber: string): boolean {
+        try {
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(crlBytes);
+            const crlSeq: _PdfAbstractSyntaxElement = element._getComponents()[0];
+            const crlChildren: _PdfAbstractSyntaxElement[] = crlSeq._getComponents() || [];
+            if (!crlSeq || crlChildren.length < 2) {
+                return false;
+            }
+            const tbsCertList: _PdfAbstractSyntaxElement = crlChildren[0];
+            const tbsChildren: _PdfAbstractSyntaxElement[] = tbsCertList._getComponents() || [];
+            if (!tbsCertList) {
+                return false;
+            }
+            for (let i: number = 0; i < tbsChildren.length; i++) {
+                const child: _PdfAbstractSyntaxElement = tbsChildren[<number>i];
+                if (child && child._getTagNumber() === _UniversalType.sequence) {
+                    const revokedEntries: _PdfAbstractSyntaxElement[] = child._getComponents();
+                    for (let j: number = 0; j < revokedEntries.length; j++) {
+                        const entry: _PdfAbstractSyntaxElement = revokedEntries[<number>j];
+                        const entryChildren: _PdfAbstractSyntaxElement[] = entry._getComponents() || [];
+                        if (entry && entryChildren.length >= 1) {
+                            const serialElem: _PdfAbstractSyntaxElement = entryChildren[0];
+                            if (serialElem) {
+                                const crlSerial: string = serialElem._getInteger().toString();
+                                if (crlSerial === serialNumber) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        } catch {
+            return false;
+        }
+    }
+    _parseX509FromUniqueElement(der: Uint8Array): any { // eslint-disable-line
+        const structure: _PdfX509CertificateStructure = new _PdfX509CertificateStructure()._fromDer(der);
+        return new _PdfX509Certificate(structure);
+    }
+    _extractTsaCertificates(token: Uint8Array): any[] { // eslint-disable-line
+        const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+        element._fromBytes(token);
+        const findCertificates = (node: any): any => { // eslint-disable-line
+            if (!node) {
+                return null;
+            }
+            if (node._tagClass === _TagClassType.context &&
+                node._getTagNumber() === 0) {
+                try {
+                    const comps: _PdfAbstractSyntaxElement[] = node._getComponents();
+                    if (comps && comps.length > 0) {
+                        return comps[0];
+                    }
+                } catch {
+                    return null;
+                }
+            }
+            if (node._construction !== _ConstructionType.constructed) {
+                return null;
+            }
+            let children: any[]; // eslint-disable-line
+            try {
+                children = node._getComponents();
+            } catch {
+                return null;
+            }
+            if (!children) {
+                return null;
+            }
+            for (const child of children) {
+                const found: any = findCertificates(child); // eslint-disable-line
+                if (found) {
+                    return found;
+                }
+            }
+            return null;
+        };
+        const certSet: any = findCertificates(element); // eslint-disable-line
+        if (!certSet) {
+            return [];
+        }
+        const certElements: any = certSet._getComponents(); // eslint-disable-line
+        const certs: any[] = []; // eslint-disable-line
+        for (const certElem of certElements) {
+            let actualCert: any = certElem; // eslint-disable-line
+            while (actualCert._tagClass === _TagClassType.context) {
+                const inner: any = actualCert._getComponents(); // eslint-disable-line
+                if (!inner || inner.length === 0) {
+                    break;
+                }
+                actualCert = inner[0];
+            }
+            if (actualCert._getTagNumber() !== _UniversalType.sequence) {
+                continue;
+            }
+            const raw: Uint8Array = actualCert._toBytes();
+            const temp: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            temp._fromBytes(raw);
+            const seq: _PdfAbstractSyntaxElement[] = temp._getSequence();
+            if (seq && seq.length > 0 && seq[0]._tagClass === _TagClassType.context) {
+                const inner: _PdfAbstractSyntaxElement[] = seq[0]._getComponents();
+                if (inner && inner.length > 0) {
+                    seq[0] = inner[0];
+                }
+            }
+            if (!seq || seq.length !== 3) {
+                continue;
+            }
+            const structure: _PdfX509CertificateStructure = new _PdfX509CertificateStructure();
+            (structure as any)._applySequence(seq); // eslint-disable-line
+            certs.push(new _PdfX509Certificate(structure));
+        }
+        return certs;
     }
 }

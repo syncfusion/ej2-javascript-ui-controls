@@ -18,7 +18,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents the Vue Circular Gauge component. This tag is used to customize the properties of the circular gauge to visualize the data in circular scale.
- * ```vue
+ * ```
  * <ejs-circulargauge></ejs-circulargauge>
  * ```
  */

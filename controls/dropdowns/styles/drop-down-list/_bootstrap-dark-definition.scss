@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-input-font-size: 14px !default;
@@ -64,10 +62,10 @@ $ddl-bigger-small-list-font-size: 14px !default;
     box-shadow: 0 6px 12px $ddl-list-box-shadow-color;
     margin-top: 3px;
     @at-root {
-      #{if(&, '&', '*')} .e-input-group {
+      & .e-input-group {
         width: auto;
 
-        #{if(&, '&', '*')} input {
+        & input {
           line-height: 15px;
         }
       }
@@ -82,7 +80,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
     display: flex;
     width: auto;
     @at-root {
-      #{if(&, '&', '*')} .e-back-icon {
+      & .e-back-icon {
         border: 0;
       }
     }

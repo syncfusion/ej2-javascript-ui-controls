@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+
 @mixin ripple-container {
   bottom: $cbox-ripple-small-size;
   height: $cbox-ripple-small-height;
@@ -177,6 +178,12 @@
 
         & .e-label {
           cursor: default;
+        }
+      }
+
+      &.e-checkbox-disabled.e-disabled {
+        @if $skin-name != 'bootstrap5.3' {
+          opacity: 1;
         }
       }
 

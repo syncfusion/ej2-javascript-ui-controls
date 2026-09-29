@@ -21,6 +21,7 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,50 +30,40 @@ export const twoWays: string[] = [];
         }
     ],
     queries: {
-        childFiles: new ContentChild(FilesDirective)
+        childFiles: new ContentChild(FilesDirective),
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class UploaderComponent extends Uploader implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionComplete: any;
-	beforeRemove: any;
-	beforeUpload: any;
-	canceling: any;
-	change: any;
-	chunkFailure: any;
-	chunkSuccess: any;
-	chunkUploading: any;
-	clearing: any;
-	created: any;
-	failure: any;
-	fileListRendering: any;
-	pausing: any;
-	progress: any;
-	removing: any;
-	rendering: any;
-	resuming: any;
-	selected: any;
-	success: any;
-	public uploading: any;
-    public childFiles: any;
+    public declare tagObjects: any;
+	declare actionComplete: any;
+	declare beforeRemove: any;
+	declare beforeUpload: any;
+	declare canceling: any;
+	declare change: any;
+	declare chunkFailure: any;
+	declare chunkSuccess: any;
+	declare chunkUploading: any;
+	declare clearing: any;
+	declare created: any;
+	declare failure: any;
+	declare fileListRendering: any;
+	declare pausing: any;
+	declare progress: any;
+	declare removing: any;
+	declare rendering: any;
+	declare resuming: any;
+	declare selected: any;
+	declare success: any;
+	public declare uploading: any;
+    public declare childFiles: any;
     public tags: string[] = ['files'];
-    /** 
-     * Specifies the HTML string that used to customize the content of each file in the list.
-     * 
-     * > For more information, refer to the [template](../../uploader/template/) section from the documentation.
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -114,7 +105,8 @@ export class UploaderComponent extends Uploader implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(UploaderComponent.prototype, 'template');
 

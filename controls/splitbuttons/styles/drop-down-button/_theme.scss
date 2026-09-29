@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('drop-down-button-theme') {
   .e-dropdown-popup {
@@ -67,7 +68,7 @@
         &:focus-visible {
           @if $theme-name == 'fluent2' {
             background-color: $flyout-bg-color-focus;
-            box-shadow: $btn-keyboard-focus-box-shadow;
+            box-shadow: btn.$btn-keyboard-focus-box-shadow;
             color: $flyout-text-color-focus;
 
             & .e-menu-icon {

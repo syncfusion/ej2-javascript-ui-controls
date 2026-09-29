@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('dropdownlist-bootstrap5-icons') {
   .e-ddl .e-search-icon::before {
     content: '\e754';

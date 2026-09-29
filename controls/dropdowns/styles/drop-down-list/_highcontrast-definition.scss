@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-input-font-size: 14px !default;
 $ddl-input-border: $border-size $border-type !default;
 $ddl-input-font-family: inherit !default;
@@ -62,44 +61,44 @@ $ddl-bigger-small-list-font-size: 14px !default;
   }
 
   .e-ddl#{&} {
-    #{if(&, '&', '*')}.e-popup {
+    &.e-popup {
       border: 0;
       box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
       margin-top: 1px;
-      #{if(&, '&', '*')} .e-content.e-nodata {
+      & .e-content.e-nodata {
         background-color: $bg-base-0;
       }
-      #{if(&, '&', '*')} .e-dropdownbase {
-        #{if(&, '&', '*')} .e-list-item:not(.e-active) {
-          #{if(&, '&', '*')} .e-highlight {
+      & .e-dropdownbase {
+        & .e-list-item:not(.e-active) {
+          & .e-highlight {
             color: $header-font;
           }
         }
       }
-      #{if(&, '&', '*')} .e-input-group {
+      & .e-input-group {
         display: flex;
         width: auto;
         @at-root {
-          #{if(&, '&', '*')} input {
+          & input {
             line-height: 15px;
           }
         }
-        #{if(&, '&', '*')} .e-clear-icon {
+        & .e-clear-icon {
           border-radius: 20px;
           height: 20px;
           margin: 5px;
           min-width: 20px;
         }
-        #{if(&, '&', '*')} .e-clear-icon {
-          #{if(&, '&', '*')}::before {
+        & .e-clear-icon {
+          &::before {
             font-size: 10px;
           }
         }
       }
-      #{if(&, '&', '*')} .e-filter-parent {
+      & .e-filter-parent {
         border-left-width: 0;
         border-right-width: 0;
-        #{if(&, '&', '*')} .e-input-group.e-control-wrapper:hover:active {
+        & .e-input-group.e-control-wrapper:hover:active {
           border-color: $border-fg;
         }
       }

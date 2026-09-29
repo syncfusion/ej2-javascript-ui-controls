@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chart3d-selecteddataindexes>e-chart3d-selecteddataindex',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class Chart3DSelectedDataIndexDirective extends ComplexBase<Chart3DSelectedDataIndexDirective> {
@@ -29,13 +29,13 @@ export class Chart3DSelectedDataIndexDirective extends ComplexBase<Chart3DSelect
      * @default 0
      * @asptype int
      */
-    public point: any;
+    public declare point: any;
     /** 
      * Specifies the index of the series.
      * @default 0
      * @asptype int
      */
-    public series: any;
+    public declare series: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -51,6 +51,7 @@ export class Chart3DSelectedDataIndexDirective extends ComplexBase<Chart3DSelect
  */
 @Directive({
     selector: 'ejs-chart3d>e-chart3d-selecteddataindexes',
+    standalone: true,
     queries: {
         children: new ContentChildren(Chart3DSelectedDataIndexDirective)
     },

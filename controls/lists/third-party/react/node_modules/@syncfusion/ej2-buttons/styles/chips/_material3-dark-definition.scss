@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material3-dark' as *;
-@forward 'ej2-base/styles/definition/material3-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $chip-list-padding: 0 !default;
 $chip-height: 24px !default;
 $chip-border-radius: $radius-12 !default;

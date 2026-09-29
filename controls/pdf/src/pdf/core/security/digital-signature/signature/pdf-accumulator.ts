@@ -49,10 +49,13 @@ export class _PdfNativeAccumulatorSink {
      * @returns {Uint8Array | null} The latest events byte value, or the stored result if no events exist.
      */
     _getResult(): Uint8Array | null {
+        if (this._result && this._result.length > 0) {
+            return this._result;
+        }
         if (this._events.length > 0) {
             return this._events[this._events.length - 1].bytes;
         }
-        return this._result;
+        return null;
     }
 }
 

@@ -85,11 +85,13 @@ export class BooleanFilterUI implements IFilterMUI {
         const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         const fields: string = isForeignColumn ? args.column.foreignKeyValue : args.column.field;
         this.dialogObj = args.dialogObj;
+        const query: Query = this.parent.getDataModule().generateQuery(true, true);
+        query.select(fields);
         this.dropInstance = new DropDownList(extend(
             {
                 dataSource: dataSource instanceof DataManager ?
                     dataSource : new DataManager(dataSource),
-                query: new Query().select(fields),
+                query: query,
                 fields: { text: fields, value: fields },
                 placeholder: args.localizeText.getConstant('SelectValue'),
                 cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
@@ -125,6 +127,8 @@ export class BooleanFilterUI implements IFilterMUI {
         const isForeignColumn: boolean = args.column.isForeignColumn();
         const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         const fields: string = isForeignColumn ? args.column.foreignKeyValue : args.column.field;
+        const query: Query = this.parent.getDataModule().generateQuery(true, true);
+        query.select(fields);
         this.multiSelectCheckBoxInstance =  new MultiSelect(extend(
             {
                 dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
@@ -133,7 +137,7 @@ export class BooleanFilterUI implements IFilterMUI {
                 showDropDownIcon: true,
                 popupHeight: '300px',
                 showSelectAll: true,
-                query: new Query().select(fields),
+                query: query,
                 cssClass: this.parent.cssClass ? 'e-multiselect-flmenu' + ' ' + this.parent.cssClass : 'e-multiselect-flmenu',
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl

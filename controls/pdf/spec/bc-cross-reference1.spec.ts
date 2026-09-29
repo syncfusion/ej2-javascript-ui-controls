@@ -147,7 +147,45 @@ describe('_PdfCrossReference - highlighted uncovered branches', () => {
             expect((xref as unknown as { _nextReferenceNumber: number })._nextReferenceNumber).toBe(3);
             expect((xref as unknown as { _root: _PdfDictionary })._root).toBeDefined();
         });
+        it('958477 - should cover _isVisited flag add, skip, recursion, and reset scenarios', () => {
+            const xref: _PdfCrossReference = createCrossReference();
+            const trailer = new _PdfDictionary();
+            spyOn(trailer, 'getRaw').and.returnValue(undefined);
+            spyOn(trailer, 'get').and.returnValue(undefined);
+            spyOn(trailer, 'has').and.returnValue(false);
+            (xref as any)._trailer = trailer;
+            (xref as any)._save();
+            const collection = (xref as any)._objectCollection;
+            const dict1 = new _PdfDictionary();
+            const dict2 = new _PdfDictionary();
+            (dict1 as any)._isVisited = false;
+            (dict2 as any)._isVisited = false;
+            // Create circular reference to test recursion
+            spyOn(dict1, 'forEach').and.callFake((cb: any) => {
+                cb('child', dict2);
+            });
+            spyOn(dict2, 'forEach').and.callFake((cb: any) => {
+                cb('parent', dict1);
+            });
+            // First run → should process both
+            (collection as any)._parseDictionary(dict1);
+            expect(dict1.forEach).toHaveBeenCalledTimes(1);
+            expect(dict2.forEach).toHaveBeenCalledTimes(1);
 
+            // Second run → should skip due to _isVisited flag
+            (collection as any)._parseDictionary(dict1);
+            expect(dict1.forEach).toHaveBeenCalledTimes(1);
+            expect(dict2.forEach).toHaveBeenCalledTimes(1);
+
+            // Reset flags manually (simulate "clear" equivalent)
+            (dict1 as any)._isVisited = false;
+            (dict2 as any)._isVisited = false;
+
+            // Run again → should process again
+            (collection as any)._parseDictionary(dict1);
+            expect(dict1.forEach).toHaveBeenCalledTimes(2);
+            expect(dict2.forEach).toHaveBeenCalledTimes(2);
+        });
         it('should set next reference number from entries length when entries length is greater than Size', () => {
             // Arrange
             const xref: _PdfCrossReference = createCrossReference();

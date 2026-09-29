@@ -1,0 +1,61 @@
+@use 'variables' as *;
+@include export-module('numerictextbox-bigger') {
+
+  .e-bigger.e-content-placeholder.e-numeric.e-placeholder-numeric,
+  .e-bigger .e-content-placeholder.e-numeric.e-placeholder-numeric {
+    background-size: 300px 40px;
+    min-height: $numeric-bigger-min-height;
+  }
+  
+  .e-bigger {
+    & .e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+    &.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon {
+      font-size: $numeric-input-bigger-icon-size;
+    }
+  }
+
+  .e-small.e-bigger .e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-small.e-bigger.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-small .e-bigger.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-bigger .e-small.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon {
+    @if ($numeric-skin-name == 'FluentUI') {
+      font-size: $numeric-input-bigger-small-icon-size;
+    }
+  }
+
+  div.e-bigger.e-numeric.e-input-group,
+  .e-bigger div.e-numeric.e-input-group,
+  span.e-bigger.e-numeric.e-input-group,
+  .e-bigger span.e-numeric.e-input-group {
+    &.e-prepend-wrapper,
+    &.e-append-wrapper {
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+        top: $numeric-bigger-prepend-label-bottom-top;
+      }
+
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+        top: $numeric-bigger-prepend-label-top-top;
+      }
+
+      &.e-outline {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $numeric-bigger-prepend-outline-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $numeric-bigger-prepend-outline-label-top-top;
+        }
+      }
+
+      &.e-filled {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $numeric-bigger-prepend-filled-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $numeric-bigger-prepend-filled-label-top-top;
+        }
+      }
+    }
+  }
+}

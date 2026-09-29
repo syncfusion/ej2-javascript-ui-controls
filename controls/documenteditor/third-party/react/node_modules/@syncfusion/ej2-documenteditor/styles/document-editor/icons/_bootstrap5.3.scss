@@ -49,28 +49,24 @@
     }
 
     .e-de-cmt-mark-icon::before {
-      color: $icon-color;
       content: '\e733';
       font-family: 'e-icons';
       font-size: 13px;
     }
 
     .e-de-multi-cmt-mark::before {
-      color: $icon-color;
       content: '\e8bc';
       font-family: 'e-icons';
       font-size: 14px;
     }
 
     .e-de-cmt-resolve-icon::before {
-      color: $icon-color;
       content: '\e8f2';
       font-family: 'e-icons';
       font-size: 13px;
     }
 
     .e-de-multi-cmt-resolve::before {
-      color: $icon-color;
       content: '\e8f3';
       font-family: 'e-icons';
       font-size: 14px;
@@ -82,7 +78,6 @@
     }
 
     .e-de-cmt-rply-icon::before {
-      color: $icon-color;
       content: '\e85e';
       font-family: 'e-icons';
     }

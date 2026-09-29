@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $listbox-font-family: $font-family !default;
 $listbox-text-color: rgba($grey-light-font, 1) !default;
 $listbox-text-disabled: $grey-light-font !default;

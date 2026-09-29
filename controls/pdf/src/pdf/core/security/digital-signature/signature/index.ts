@@ -12,3 +12,5 @@ export * from './signature-dictionary';
 export * from './signature-privatekey';
 export * from './signature-properties';
 export * from './signature-utilities';
+export * from './encryption-algorithm';
+export * from './ron-cipher';

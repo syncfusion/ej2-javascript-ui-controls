@@ -59,7 +59,7 @@ export class AddUserDialog {
         this.userList = new ListView({
             cssClass: 'e-de-user-listview'
         });
-
+        this.userList.isAngular = this.documentHelper.owner.isModalDialog;
         this.userList.appendTo(listviewDiv);
 
     }
@@ -139,11 +139,19 @@ export class AddUserDialog {
      * @returns {void}
      */
     public addButtonClick = (): void => {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         if (this.validateUserName(this.textBoxInput.value)) {
             this.bindListData(this.textBoxInput.value);
             this.textBoxInput.value = '';
         } else {
-            DialogUtility.alert('Invalid user name');
+            DialogUtility.alert({
+                content: 'Invalid user name',
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                }
+            });
         }
     };
     /**

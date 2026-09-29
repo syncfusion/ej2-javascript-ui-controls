@@ -9,7 +9,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ribbon-tab',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
         childGroups: new ContentChild(RibbonGroupsDirective)
     }
@@ -17,34 +18,34 @@ let outputs: string[] = [];
 export class RibbonTabDirective extends ComplexBase<RibbonTabDirective> {
     public directivePropList: any;
 	
-    public childGroups: any;
+    public declare childGroups: any;
     public tags: string[] = ['groups'];
     /** 
      * Defines one or more CSS classes to customize the appearance of tab.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines the list of ribbon groups.
      * @default []
      * @asptype List<RibbonGroup>
      */
-    public groups: any;
+    public declare groups: any;
     /** 
      * Defines the content of tab header.
      * @default ''
      */
-    public header: any;
+    public declare header: any;
     /** 
      * Defines a unique identifier for the tab.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the keytip content.
      * @default ''
      */
-    public keyTip: any;
+    public declare keyTip: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -60,6 +61,7 @@ export class RibbonTabDirective extends ComplexBase<RibbonTabDirective> {
  */
 @Directive({
     selector: 'e-ribbon-tabs',
+    standalone: true,
     queries: {
         children: new ContentChildren(RibbonTabDirective)
     },

@@ -1,6 +1,7 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/material-dark' as *;
-@forward 'ej2-base/styles/definition/material-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-navigations/styles/treeview/material-dark-definition' as *;
+
 $field-list-skin: 'material-dark' !default;
 $field-list-active-color: $accent !default;
 $field-list-default-font-color: $grey-dark-font !default;
@@ -124,6 +125,9 @@ $field-list-border: $field-list-default-border-color !default;
 $field-list-cal-button-text-color: $field-list-default-font-color !default;
 $field-list-calc-expand-icon-padding: 6px !default;
 $field-list-search-padding-size: 6px $field-list-title-padding-size !default;
+$field-list-add-filter-selection-margin: 18px !default;
+$field-list-add-filter-selection-bigger-height: $treeview-big-item-height !default;
+$field-list-add-filter-selection-height: $treeview-item-height !default;
 $field-list-member-prompt-padding-size: 25px 12px !default;
 $field-list-static-field-table-height: 210px !default;
 $field-list-static-field-table-outer-div-height: 180px !default;

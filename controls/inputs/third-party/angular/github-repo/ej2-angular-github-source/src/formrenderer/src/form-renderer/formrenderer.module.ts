@@ -1,0 +1,18 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormRendererComponent } from './formrenderer.component';
+
+const FORMRENDERER_DIRECTIVES = [
+    FormRendererComponent
+];
+
+/**
+ * NgModule definition for the FormRenderer component.
+ * Re-exports standalone FormRenderer component and directives so existing apps can keep using:
+ * `imports: [FormRendererModule]`
+ */
+@NgModule({
+    imports: [CommonModule, ...FORMRENDERER_DIRECTIVES],
+    exports: [...FORMRENDERER_DIRECTIVES]
+})
+export class FormRendererModule { }

@@ -574,14 +574,16 @@ export class HelperMethods {
         }
     }
 
-    public static convertPointToPixel(point: number): number {
-        point = HelperMethods.round(point, 5);
-        const pixel: number = HelperMethods.round((point * 96 / 72), 5);
+    public static convertPointToPixel(point?: number): number {
+        const value: number = point !== undefined ? point : 0;
+        const roundedPoint: number = HelperMethods.round(value, 5);
+        const pixel: number = HelperMethods.round((roundedPoint * 96 / 72), 5);
         return pixel;
     }
 
-    public static convertPixelToPoint(pixel: number): number {
-        const point: number = HelperMethods.round((pixel * 72 / 96), 5);
+    public static convertPixelToPoint(pixel?: number): number {
+        const value: number = pixel !== undefined ? pixel : 0;
+        const point: number = HelperMethods.round((value * 72 / 96), 5);
         return point;
     }
 
@@ -1396,18 +1398,18 @@ export class HelperMethods {
     }
     public static formatNumber(format: string, value: string): string {
         const intl: Internationalization = new Internationalization();
+        if (format === '') {
+            format = '0';
+        }
+        const numberFormat: NumberFormatOptions = { format: format };
         if (format !== '0.00') {
             let dotData: string[] = value.split('.');
             value = dotData[0];
         }
         const numberValue: number = intl.parseNumber(value);
-        if (value.toString() === 'NaN') {
-            return '';
+        if (numberValue.toString() === 'NaN') {
+            return intl.formatNumber(0, numberFormat);
         }
-        if (format === '') {
-            format = '0';
-        }
-        const numberFormat: NumberFormatOptions = { format: format };
         return intl.formatNumber(numberValue, numberFormat);
     }
 

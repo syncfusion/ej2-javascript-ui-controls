@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { DocumentEditor, ListLevelPattern, ParagraphWidget, WAbstractList, WList, WListLevel } from '../../document-editor/index';
 import { ElementsMap, ListStyle } from './ribbon-interfaces';
 
@@ -35,24 +35,24 @@ export class BulletListHelper {
      */
     public static createBulletListTag(ulTag: HTMLElement, iconCss: string, isNone: boolean, localObj: L10n): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block;',
             className: 'e-de-floating-menuitem e-de-floating-bullet-menuitem-md e-de-list-items e-de-list-item-size'
         });
+        updateCSSText(liTag, 'display:block;');
 
         const liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-bullet-list-header-presetmenu'
         });
 
-        const spanDiv: HTMLElement = createElement('div', {
-            styles: isNone ? 'font-size:8px;text-align: center;top: 8px;line-height:normal' : ''
-        });
-
+        const spanDiv: HTMLElement = createElement('div');
+        if (isNone) {
+            updateCSSText(spanDiv, 'font-size:8px;text-align:center;top:8px;line-height:normal;');
+        }
         const span: HTMLSpanElement = createElement('span', {
             className: !isNone ? iconCss : ''
         });
 
         if (isNone) {
-            liInnerDiv.style.display = 'inline-table';
+            updateCSSText(liInnerDiv, 'display:inline-table;');
             span.textContent = localObj.getConstant('None');
         }
 
@@ -74,16 +74,26 @@ export class BulletListHelper {
      */
     public static createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block',
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items e-de-list-item-size'
         });
+        updateCSSText(liTag, 'display:block;');
         ulTag.appendChild(liTag);
-        let innerHTML: string = '<div>' + text1 + '<span class="e-de-list-line"></span></div><div>' + text2 + '<span class="e-de-list-line">';
-        innerHTML += '</span></div><div>' + text3 + '<span class="e-de-list-line"> </span></div >';
         const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu',
-            innerHTML: innerHTML
+            className: 'e-de-list-header-presetmenu'
         });
+        const values: string[] = [text1, text2, text3];
+        for (let i: number = 0; i < values.length; i++) {
+            const div: HTMLElement = createElement('div');
+            div.textContent = values[parseInt(i.toString(), 10)];
+            const span: HTMLElement = createElement('span', {
+                className: 'e-de-list-line'
+            });
+            if (i === 2) {
+                span.textContent = ' ';
+            }
+            div.appendChild(span);
+            liInnerDiv.appendChild(div);
+        }
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
@@ -96,16 +106,21 @@ export class BulletListHelper {
      */
     public static createNumberNoneListTag(ulTag: HTMLElement, localObj: L10n): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block;',
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items e-de-list-item-size'
         });
+        updateCSSText(liTag, 'display:block;');
         ulTag.appendChild(liTag);
-        const innerHTML: string = '<div><span class="e-de-bullets">' + localObj.getConstant('None') + '</span></div>';
         const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu',
-            styles: 'position:relative;left:11px;top:13px',
-            innerHTML: innerHTML
+            className: 'e-de-list-header-presetmenu'
         });
+        updateCSSText(liInnerDiv, 'position:relative;left:11px;top:13px;');
+        const innerDiv: HTMLElement = createElement('div');
+        const span: HTMLElement = createElement('span', {
+            className: 'e-de-bullets'
+        });
+        span.textContent = localObj.getConstant('None');
+        innerDiv.appendChild(span);
+        liInnerDiv.appendChild(innerDiv);
         liTag.appendChild(liInnerDiv);
         return liTag;
     }

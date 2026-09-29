@@ -22,7 +22,7 @@ export interface ScheduleTypecast {
 }
 /**
  * `ScheduleComponent` represents the react Schedule.
- * ```tsx
+ * ```ts
  * <ScheduleComponent/>
  * ```
  */

@@ -33,8 +33,10 @@ import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { Resize } from '../../../src/grid/actions/resize';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
 import { StringFilterUI } from '../../../src/grid/renderer/string-filter-ui';
+import { AdvancedFilter } from '../../../src/grid/actions/advanced-filter';
+import { CellRenderer } from '../../../src/grid/renderer/cell-renderer';
 
-Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter, RowDD);
+Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter, RowDD, AdvancedFilter);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -6115,5 +6117,403 @@ describe('EJ2-1010889: Coverage for setProperties method', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('EJ2-1045352-GroupSettings should consider column configuration at initial rendering', () => {
+    let gridObj: Grid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowGrouping: true,
+                groupSettings: {
+                    columns: ['CustomerID', 'ShipCountry']
+                },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', allowGrouping: false },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', allowGrouping: false },
+                    { field: 'Freight', headerText: 'Freight' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should remove allowGrouping disabled columns from initial groupSettings', () => {
+        expect(gridObj.groupSettings.columns.length).toBe(0);
+    });
+
+    it('should not render group caption rows for allowGrouping disabled columns', () => {
+        expect(gridObj.element.querySelectorAll('.e-groupcaptionrow').length).toBe(0);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Advanced Filter Methods Coverage', () => {
+    let gridObj: Grid;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });
+    const withNullModule = (fn: () => void) => { const orig = gridObj.advancedFilterModule; gridObj.advancedFilterModule = null; fn(); gridObj.advancedFilterModule = orig; };
+    beforeAll((done: Function) => {
+        document.body.appendChild(elem);
+        gridObj = new Grid({
+            dataSource: [
+                { OrderID: 10248, CustomerID: 'VINET', EmployeeID: 5, ShipCountry: 'France' },
+                { OrderID: 10249, CustomerID: 'TOMSP', EmployeeID: 6, ShipCountry: 'Germany' }
+            ],
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID', type: 'number' },
+                { field: 'CustomerID', headerText: 'Customer ID' },
+                { field: 'EmployeeID', headerText: 'Employee ID', type: 'number' }
+            ],
+            toolbar: ['AdvancedFilter'],
+            dataBound: () => done()
+        });
+        gridObj.appendTo('#Grid');
+    });
+    it('Dialog methods', () => {
+        if (gridObj.advancedFilterModule && gridObj.advancedFilterModule.openDialog && gridObj.advancedFilterModule.closeDialog) {
+            spyOn(gridObj.advancedFilterModule, 'openDialog').and.callThrough();
+            spyOn(gridObj.advancedFilterModule, 'closeDialog').and.callThrough();
+            gridObj.openAdvancedFilterDialog();
+            gridObj.closeAdvancedFilterDialog();
+            expect(gridObj.advancedFilterModule.openDialog).toHaveBeenCalled();
+            expect(gridObj.advancedFilterModule.closeDialog).toHaveBeenCalled();
+        }
+        withNullModule(() => {
+            expect(() => { gridObj.openAdvancedFilterDialog(); gridObj.closeAdvancedFilterDialog(); }).not.toThrow();
+        });
+    });
+    it('Apply filter with rule and without rule', () => {
+        const rule = { condition: 'and', rules: [{ field: 'CustomerID', operator: 'equal', value: 'VINET' }] };
+        if (gridObj.advancedFilterModule && gridObj.advancedFilterModule.applyFilter) {
+            spyOn(gridObj.advancedFilterModule, 'applyFilter').and.callThrough();
+            gridObj.applyAdvancedFilter(rule);
+            expect(gridObj.advancedFilterModule.applyFilter).toHaveBeenCalledWith(rule);
+            gridObj.applyAdvancedFilter();
+            expect(gridObj.advancedFilterModule.applyFilter).toHaveBeenCalled();
+        }
+        withNullModule(() => {
+            expect(() => gridObj.applyAdvancedFilter()).not.toThrow();
+        });
+    });
+    it('Clear filter', () => {
+        if (gridObj.advancedFilterModule && gridObj.advancedFilterModule.clearFilter) {
+            spyOn(gridObj.advancedFilterModule, 'clearFilter').and.callThrough();
+            gridObj.clearAdvancedFilter();
+            expect(gridObj.advancedFilterModule.clearFilter).toHaveBeenCalled();
+        }
+        withNullModule(() => {
+            expect(() => gridObj.clearAdvancedFilter()).not.toThrow();
+        });
+    });
+    it('Get/Set filter', () => {
+        const rule = { condition: 'and', rules: [{ field: 'OrderID', operator: 'equal', value: 10248 }] };
+        if (gridObj.advancedFilterModule && gridObj.advancedFilterModule.getRule && gridObj.advancedFilterModule.setRule) {
+            spyOn(gridObj.advancedFilterModule, 'getRule').and.returnValue(rule);
+            expect(gridObj.getAdvancedFilter()).toEqual(rule);
+            gridObj.advancedFilterModule.getRule = jasmine.createSpy('getRule').and.returnValue(null);
+            expect(gridObj.getAdvancedFilter()).toBeNull();
+            spyOn(gridObj.advancedFilterModule, 'setRule').and.callThrough();
+            gridObj.setAdvancedFilter(rule);
+            expect(gridObj.advancedFilterModule.setRule).toHaveBeenCalledWith(rule);
+        }
+        withNullModule(() => {
+            expect(gridObj.getAdvancedFilter()).toBeNull();
+            expect(() => gridObj.setAdvancedFilter(rule)).not.toThrow();
+        });
+    });
+    it('Filter applied status', () => {
+        if (gridObj.advancedFilterModule && gridObj.advancedFilterModule.getRule) {
+            spyOn(gridObj.advancedFilterModule, 'getRule').and.returnValue({ condition: 'and', rules: [] });
+            expect(gridObj.isAdvancedFilterApplied()).toBe(true);
+            gridObj.advancedFilterModule.getRule = jasmine.createSpy('getRule').and.returnValue(null);
+            expect(gridObj.isAdvancedFilterApplied()).toBe(false);
+        }
+        withNullModule(() => {
+            expect(gridObj.isAdvancedFilterApplied()).toBe(false);
+        });
+    });
+    it('Refresh filter', () => {
+        if (gridObj.advancedFilterModule && typeof gridObj.advancedFilterModule.refresh === 'function') {
+            spyOn(gridObj.advancedFilterModule, 'refresh').and.callThrough();
+            (gridObj as any).refreshAdvancedFilter();
+            expect(gridObj.advancedFilterModule.refresh).toHaveBeenCalled();
+            delete (gridObj.advancedFilterModule as any).refresh;
+            expect(() => (gridObj as any).refreshAdvancedFilter()).not.toThrow();
+            (gridObj.advancedFilterModule as any).refresh = jasmine.createSpy('refresh');
+        }
+        withNullModule(() => {
+            expect(() => (gridObj as any).refreshAdvancedFilter()).not.toThrow();
+        });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-1047492: Angular template refresh coverage in setCellValue', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: [{ OrderID: 10248, Freight: 32.38 }, { OrderID: 10249, Freight: 11.61 }
+            ],
+            columns: [
+                { field: 'OrderID', isPrimaryKey: true },
+                { field: 'Freight', template: '<span>${Freight}</span>' }
+            ]
+        }, done);
+    });
+
+    it('should call refreshColumnTemplates when Angular template column is updated', () => {
+        gridObj.isAngular = true;
+        const refreshSpy = spyOn(gridObj as any, 'refreshColumnTemplates');
+        gridObj.setCellValue(10249, 'Freight', 100);
+        expect(refreshSpy).toHaveBeenCalled();
+    });
+
+    it('refreshColumnTemplates should call refreshTD for template cells', () => {
+        gridObj.isAngular = true;
+        (gridObj as any).registeredTemplate = { template: [{}] };
+        const rowObj = (gridObj as any).getRowsObject()[0];
+        if (rowObj.cells.length) {
+            rowObj.cells[0].isTemplate = true;
+        }
+        const refreshSpy = spyOn(CellRenderer.prototype, 'refreshTD');
+        (gridObj as any).refreshColumnTemplates();
+        expect(refreshSpy).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('saveBulkChanges method testing => ', () => {
+    let gridObj: Grid;
+    let noPkGrid: Grid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: false,
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' },
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'Verified', type: 'boolean' },
+                    { field: 'ShipCountry', type: 'string' }
+                ]
+            }, done);
+    });
+
+    it('empty changedData should make no changes', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 3) as Object[];
+        const before: string = (records[0] as any).CustomerID;
+        const saveSpy = spyOn(gridObj.getDataModule(), 'saveChanges').and.callThrough();
+        gridObj.saveBulkChanges({}, records);
+        gridObj.refresh();
+        expect((records[0] as any).CustomerID).toBe(before);
+        expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('primary key field in changedData is excluded from updates', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 2) as Object[];
+        const before0: number = (records[0] as any).OrderID;
+        const before1: number = (records[1] as any).OrderID;
+        gridObj.saveBulkChanges({ OrderID: 99999 }, records);
+        gridObj.refresh();
+        expect((records[0] as any).OrderID).toBe(before0);
+        expect((records[1] as any).OrderID).toBe(before1);
+    });
+
+    it('invalid fields in changedData are skipped but valid fields are applied', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 2) as Object[];
+        gridObj.saveBulkChanges({ NonExistentField: 'X', CustomerID: 'ValidValue' }, records);
+        gridObj.refresh();
+        expect((records[0] as any).CustomerID).toBe('ValidValue');
+        expect((records[1] as any).CustomerID).toBe('ValidValue');
+        expect((records[0] as any).NonExistentField).toBeUndefined();
+    });
+
+    it('multiple valid fields with rowData update all provided fields', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 2) as Object[];
+        gridObj.saveBulkChanges({ CustomerID: 'Multi', ShipCountry: 'MultiCountry' }, records);
+        gridObj.refresh();
+        expect((records[0] as any).CustomerID).toBe('Multi');
+        expect((records[0] as any).ShipCountry).toBe('MultiCountry');
+        expect((records[1] as any).CustomerID).toBe('Multi');
+        expect((records[1] as any).ShipCountry).toBe('MultiCountry');
+        gridObj.clearSelection();
+    });
+
+    it('no records when rowData is empty and selection is cleared makes no changes', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 2) as Object[];
+        const before: number = (records[0] as any).Freight;
+        const saveSpy = spyOn(gridObj.getDataModule(), 'saveChanges').and.callThrough();
+        gridObj.saveBulkChanges({ Freight: 999 }, []);
+        gridObj.refresh();
+        expect((records[0] as any).Freight).toBe(before);
+        expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call saveChanges through the data module with the changed records', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 2) as Object[];
+        const saveSpy = spyOn(gridObj.getDataModule(), 'saveChanges').and.callThrough();
+        gridObj.saveBulkChanges({ Freight: 100 }, records);
+        gridObj.refresh();
+        expect(saveSpy).toHaveBeenCalled();
+        const args: any[] = saveSpy.calls.mostRecent().args;
+        expect(args[0].changedRecords.length).toBe(2);
+        expect(args[0].changedRecords[0].Freight).toBe(100);
+        expect(args[1]).toBe('OrderID');
+        expect(args[2].changedRecords.length).toBe(2);
+    });
+
+    it('callBack is invoked after the changes are saved', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        spyOn(gridObj.getDataModule(), 'isRemote').and.returnValue(true);
+        spyOn(gridObj.getDataModule(), 'saveChanges').and.returnValue(Promise.resolve({ saved: true }));
+        const callBack: jasmine.Spy = jasmine.createSpy('callBack');
+        gridObj.saveBulkChanges({ Freight: 200 }, records, callBack);
+        setTimeout(() => {
+            expect(callBack).toHaveBeenCalled();
+            expect(callBack.calls.mostRecent().args[0]).toEqual({ saved: true });
+            done();
+        }, 100);
+    });
+
+    it('callBack is invoked when saving the changes is rejected', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        spyOn(gridObj.getDataModule(), 'isRemote').and.returnValue(true);
+        spyOn(gridObj.getDataModule(), 'saveChanges').and.returnValue(Promise.reject({ error: true }));
+        const callBack: jasmine.Spy = jasmine.createSpy('callBack');
+        gridObj.saveBulkChanges({ Freight: 300 }, records, callBack);
+        setTimeout(() => {
+            expect(callBack).toHaveBeenCalled();
+            const args: any = callBack.calls.mostRecent().args[0];
+            expect((args as any).error.error).toBe(true);
+            done();
+        }, 100);
+    });
+
+    it('callBack is invoked with the changes object for local data sources', () => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        const callBack: jasmine.Spy = jasmine.createSpy('callBack');
+        gridObj.saveBulkChanges({ Freight: 250 }, records, callBack);
+        expect(callBack).toHaveBeenCalled();
+        const result: any = callBack.calls.mostRecent().args[0];
+        expect(result.changedRecords.length).toBe(1);
+        expect(result.changedRecords[0].Freight).toBe(250);
+    });
+
+    it('resolving saveChanges without a callBack does not throw', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        spyOn(gridObj.getDataModule(), 'isRemote').and.returnValue(true);
+        spyOn(gridObj.getDataModule(), 'saveChanges').and.returnValue(Promise.resolve({}));
+        expect(() => gridObj.saveBulkChanges({ Freight: 400 }, records)).not.toThrow();
+        setTimeout(() => {
+            done();
+        }, 100);
+    });
+
+    it('rejecting saveChanges without a callBack does not throw', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        spyOn(gridObj.getDataModule(), 'isRemote').and.returnValue(true);
+        spyOn(gridObj.getDataModule(), 'saveChanges').and.returnValue(Promise.reject({ error: true }));
+        expect(() => gridObj.saveBulkChanges({ Freight: 500 }, records)).not.toThrow();
+        setTimeout(() => {
+            done();
+        }, 100);
+    });
+
+    it('saveBulkChangesAsync resolves with the changes object for local data sources', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        gridObj.saveBulkChangesAsync({ Freight: 777 }, records).then((args: Object) => {
+            expect(args).toBeTruthy();
+            expect((args as any).changedRecords.length).toBe(1);
+            expect((args as any).changedRecords[0].Freight).toBe(777);
+            expect((records[0] as any).Freight).toBe(777);
+            done();
+        });
+    });
+
+    it('saveBulkChangesAsync rejects when the remote save fails', (done: Function) => {
+        const records: Object[] = gridObj.currentViewData.slice(0, 1) as Object[];
+        spyOn(gridObj.getDataModule(), 'isRemote').and.returnValue(true);
+        spyOn(gridObj.getDataModule(), 'saveChanges').and.returnValue(Promise.reject({ error: true }));
+        gridObj.saveBulkChangesAsync({ Freight: 888 }, records).then(() => {
+            done();
+        }, (args: Object) => {
+            expect((args as any).error.error).toBe(true);
+            done();
+        });
+    });
+
+    it('saveBulkChangesAsync resolves immediately when there is nothing to update', (done: Function) => {
+        gridObj.clearSelection();
+        const saveSpy = spyOn(gridObj.getDataModule(), 'saveChanges').and.callThrough();
+        gridObj.saveBulkChangesAsync({ Freight: 999 }, []).then((args: Object) => {
+            expect(args).toBeUndefined();
+            expect(saveSpy).not.toHaveBeenCalled();
+            done();
+        });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+
+    describe('without primary key => ', () => {
+        beforeAll((done: Function) => {
+            noPkGrid = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    columns: [
+                        { field: 'OrderID', type: 'number' },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'Freight', type: 'number' }
+                    ]
+                }, done);
+        });
+
+        it('should return early and make no changes when the grid has no primary key', () => {
+            const records: Object[] = noPkGrid.currentViewData.slice(0, 2) as Object[];
+            const before0: string = (records[0] as any).CustomerID;
+            const before1: string = (records[1] as any).CustomerID;
+            const saveSpy = spyOn(noPkGrid.getDataModule(), 'saveChanges').and.callThrough();
+            expect(() => noPkGrid.saveBulkChanges({ CustomerID: 'NoPkValue' }, records)).not.toThrow();
+            expect((records[0] as any).CustomerID).toBe(before0);
+            expect((records[1] as any).CustomerID).toBe(before1);
+            expect(saveSpy).not.toHaveBeenCalled();
+        });
+
+        it('saveBulkChangesAsync resolves immediately when the grid has no primary key', (done: Function) => {
+            const records: Object[] = noPkGrid.currentViewData.slice(0, 2) as Object[];
+            const saveSpy = spyOn(noPkGrid.getDataModule(), 'saveChanges').and.callThrough();
+            noPkGrid.saveBulkChangesAsync({ CustomerID: 'NoPkValue' }, records).then((args: Object) => {
+                expect(args).toBeUndefined();
+                expect(saveSpy).not.toHaveBeenCalled();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(noPkGrid);
+            noPkGrid = null;
+        });
     });
 });

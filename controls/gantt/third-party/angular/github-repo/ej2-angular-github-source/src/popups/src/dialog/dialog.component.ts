@@ -20,72 +20,35 @@ export const twoWays: string[] = ['visible'];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childButtons: new ContentChild(ButtonsDirective)
+        childButtons: new ContentChild(ButtonsDirective),
+        footerTemplate: new ContentChild('footerTemplate'),
+        header: new ContentChild('header'),
+        content: new ContentChild('content')
     }
 })
 @ComponentMixins([ComponentBase])
 export class DialogComponent extends Dialog implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeOpen: any;
-	beforeSanitizeHtml: any;
-	close: any;
-	created: any;
-	destroyed: any;
-	drag: any;
-	dragStart: any;
-	dragStop: any;
-	open: any;
-	overlayClick: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	public visibleChange: any;
-    public childButtons: QueryList<ButtonsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeOpen: any;
+	declare beforeSanitizeHtml: any;
+	declare close: any;
+	declare created: any;
+	declare destroyed: any;
+	declare drag: any;
+	declare dragStart: any;
+	declare dragStop: any;
+	declare open: any;
+	declare overlayClick: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	public declare visibleChange: any;
+    public declare childButtons: QueryList<ButtonsDirective>;
     public tags: string[] = ['buttons'];
-    /** 
-     * Specifies the template value that can be displayed with dialog's footer area. 
-     * This is optional property and can be used only when the footer is occupied with information or custom components. 
-     * By default, the footer is configured with action [buttons](#buttons). 
-     * If footer template is configured to dialog, the action buttons property will be disabled.
-     * 
-     * > More information on the footer template configuration can be found on this [documentation](../../dialog/template/#footer) section.
-     *     
-     * @default ''
-     * @blazortype string
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Specifies the value that can be displayed in the dialog's title area that can be configured with plain text or HTML elements. 
-     * This is optional property and the dialog can be displayed without header, if the header property is null.
-     * @default ''
-     * @blazortype string
-     * @asptype string
-     */
-    @ContentChild('header')
-    @Template()
-    public header: any;
-    /** 
-     * Specifies the value that can be displayed in dialog's content area. 
-     * It can be information, list, or other HTML elements. 
-     * The content of dialog can be loaded with dynamic data such as database, AJAX content, and more.
-     * 
-     * {% codeBlock src="dialog/content-api/index.ts" %}{% endcodeBlock %}
-     *
-     *{% codeBlock src="dialog/content-api/index.html" %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @blazortype string
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -115,7 +78,10 @@ export class DialogComponent extends Dialog implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(DialogComponent.prototype, 'footerTemplate');
+Template()(DialogComponent.prototype, 'header');
+Template()(DialogComponent.prototype, 'content');
 

@@ -1,7 +1,7 @@
 import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper, append } from '@syncfusion/ej2-base';
 import { formatUnit, addClass, Browser } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { isScheduledTask, getTaskData } from '../base/utils';
+import { isScheduledTask, getTaskData, isRemoteData } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as cls from '../base/css-constants';
 import { DateProcessor } from '../base/date-processor';
@@ -47,7 +47,7 @@ export class ChartRows extends DateProcessor {
     private tagRegex: RegExp = /<\/?(\w+)([^>]*?)(\/?)>/g;
     private attributeRegex: RegExp = /([\w-]+)\s*=\s*"([^"]*)"/g;
     private taskBaselineTemplateNode: NodeList = null;
-    private skipReactRefresh: boolean = false;
+    private isMultiTaskbarEnabled: boolean = false;
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
         this.parent = ganttObj;
@@ -762,7 +762,7 @@ export class ChartRows extends DateProcessor {
         segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
         for (let i: number = 0; i < 2; i++) {
             if (this.parent.weekWorkingTime.length > 0) {
-                const dayEndTime: number = this.parent['getCurrentDayEndTime'](segmentEndDate);
+                const dayEndTime: number = this.parent['getCurrentDayEndTime'](segmentEndDate, calendarContext);
                 this.setTime(dayEndTime, segmentEndDate);
             }
             const segment: ITaskSegment = {
@@ -803,7 +803,7 @@ export class ChartRows extends DateProcessor {
             } else {
                 startDate = new Date(splitDate.getTime());
                 startDate.setDate(startDate.getDate() + 1 + increment);
-                const dayStartTime: number = this.parent['getCurrentDayStartTime'](startDate);
+                const dayStartTime: number = this.parent['getCurrentDayStartTime'](startDate, calendarContext);
                 this.setTime(dayStartTime, startDate);
                 startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
                 if (!this.parent.taskFields.duration && increment <= 0) {
@@ -1894,7 +1894,7 @@ export class ChartRows extends DateProcessor {
                 if (collapsedResourceRecord[j as number].hasChildRecords) {
                     this.parent.isGanttChartRendered = true;
                     if (this.parent.enableMultiTaskbar) {
-                        this.skipReactRefresh = true;
+                        this.isMultiTaskbarEnabled = true;
                     }
                     this.parent.chartRowsModule.refreshRecords([collapsedResourceRecord[j as number]]);
                 }
@@ -2535,7 +2535,9 @@ export class ChartRows extends DateProcessor {
                 }
                 for (let j: number = i + 1; j < childRecords.length; j++) {
                     childRecords[j as number].ganttProperties.eOverlapped = undefined;
-                    if (childRecords[i as number].ganttProperties.startDate.getTime() <
+                    if (childRecords[i as number].ganttProperties.startDate && childRecords[i as number].ganttProperties.endDate &&
+                    childRecords[j as number].ganttProperties.startDate && childRecords[j as number].ganttProperties.endDate &&
+                    childRecords[i as number].ganttProperties.startDate.getTime() <
                     childRecords[j as number].ganttProperties.endDate.getTime() &&
                         childRecords[i as number].ganttProperties.endDate.getTime() >
                         childRecords[j as number].ganttProperties.startDate.getTime()) {
@@ -2580,7 +2582,9 @@ export class ChartRows extends DateProcessor {
                     const taskbarContainer: HTMLCollectionOf<HTMLElement> = (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container') as HTMLCollectionOf<HTMLElement>;
                     for (let k: number = 0; k < taskbarContainer.length; k++) {
                         const rowuniqueid: string = this.parent.viewType === 'ResourceView' ? childRecords[j as number]['rowUniqueID'] : childRecords[j as number].ganttProperties.rowUniqueID;
-                        if (childRecords[i as number].ganttProperties.startDate.getTime() <
+                        if (childRecords[i as number].ganttProperties.startDate && childRecords[i as number].ganttProperties.endDate &&
+                        childRecords[j as number].ganttProperties.startDate && childRecords[j as number].ganttProperties.endDate &&
+                        childRecords[i as number].ganttProperties.startDate.getTime() <
                         childRecords[j as number].ganttProperties.endDate.getTime() &&
                             childRecords[i as number].ganttProperties.endDate.getTime() >
                             childRecords[j as number].ganttProperties.startDate.getTime()) {
@@ -2769,6 +2773,9 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     public refreshRecords(items: IGanttData[], isValidateRange?: boolean, isUndoRedo?: boolean): void {
+        if (isRemoteData(this.parent.dataSource) && this.parent.focusModule['tabElement']['isTab']) {
+            this.parent.editModule['remoteCrud'] = true;
+        }
         if (this.parent.isGanttChartRendered) {
             this.parent.renderTemplates();
             if (this.parent.enableMultiTaskbar) {
@@ -2778,7 +2785,7 @@ export class ChartRows extends DateProcessor {
                 items = sortedRecords;
             }
             if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll &&
-                !this.skipReactRefresh &&
+                !this.isMultiTaskbarEnabled &&
                 this.parent.treeGrid.grid.element.querySelectorAll('.e-templatecell').length > 0 && this.parent.isReact) {
                 this.isGridRowRefreshed = true;
                 this.parent.treeGrid.grid['portals'] = [];
@@ -2798,8 +2805,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
-            // reset the value
-            this.skipReactRefresh = false;
+            this.isMultiTaskbarEnabled = false;
         }
     }
 

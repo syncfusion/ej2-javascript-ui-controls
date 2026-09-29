@@ -20,26 +20,25 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childRanges: new ContentChild(BulletRangeCollectionDirective)
+        childRanges: new ContentChild(BulletRangeCollectionDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class BulletChartComponent extends BulletChart implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforePrint: any;
-	bulletChartMouseClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childRanges: QueryList<BulletRangeCollectionDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforePrint: any;
+	declare bulletChartMouseClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childRanges: QueryList<BulletRangeCollectionDirective>;
     public tags: string[] = ['ranges'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -81,7 +80,9 @@ export class BulletChartComponent extends BulletChart implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(BulletChartComponent.prototype, 'tooltip_template');
+
 

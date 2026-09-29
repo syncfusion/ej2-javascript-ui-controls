@@ -20,76 +20,53 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childToolbarItems: new ContentChild(ToolbarItemsDirective)
+        childToolbarItems: new ContentChild(ToolbarItemsDirective),
+        largeIconsTemplate: new ContentChild('largeIconsTemplate'),
+        navigationPaneTemplate: new ContentChild('navigationPaneTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class FileManagerComponent extends FileManager implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeDelete: any;
-	beforeDownload: any;
-	beforeFolderCreate: any;
-	beforeImageLoad: any;
-	beforeMove: any;
-	beforePopupClose: any;
-	beforePopupOpen: any;
-	beforeRename: any;
-	beforeSend: any;
-	created: any;
-	delete: any;
-	destroyed: any;
-	failure: any;
-	fileDragStart: any;
-	fileDragStop: any;
-	fileDragging: any;
-	fileDropped: any;
-	fileLoad: any;
-	fileOpen: any;
-	fileSelect: any;
-	fileSelection: any;
-	folderCreate: any;
-	menuClick: any;
-	menuClose: any;
-	menuOpen: any;
-	move: any;
-	popupClose: any;
-	popupOpen: any;
-	rename: any;
-	search: any;
-	success: any;
-	toolbarClick: any;
-	toolbarCreate: any;
-	public uploadListCreate: any;
-    public childToolbarItems: QueryList<ToolbarItemsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeDelete: any;
+	declare beforeDownload: any;
+	declare beforeFolderCreate: any;
+	declare beforeImageLoad: any;
+	declare beforeMove: any;
+	declare beforePopupClose: any;
+	declare beforePopupOpen: any;
+	declare beforeRename: any;
+	declare beforeSend: any;
+	declare created: any;
+	declare delete: any;
+	declare destroyed: any;
+	declare failure: any;
+	declare fileDragStart: any;
+	declare fileDragStop: any;
+	declare fileDragging: any;
+	declare fileDropped: any;
+	declare fileLoad: any;
+	declare fileOpen: any;
+	declare fileSelect: any;
+	declare fileSelection: any;
+	declare folderCreate: any;
+	declare menuClick: any;
+	declare menuClose: any;
+	declare menuOpen: any;
+	declare move: any;
+	declare popupClose: any;
+	declare popupOpen: any;
+	declare rename: any;
+	declare search: any;
+	declare success: any;
+	declare toolbarClick: any;
+	declare toolbarCreate: any;
+	public declare uploadListCreate: any;
+    public declare childToolbarItems: QueryList<ToolbarItemsDirective>;
     public tags: string[] = ['toolbarItems'];
-    /** 
-     * Specifies a template to render customized content for all the files or folders in the large icons view. If the `largeIconsTemplate` property 
-     * is set, the template content overrides the displayed files or folders text in the File Manager large icons view. The property accepts template string 
-     * or HTML element ID holding the content.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('largeIconsTemplate')
-    @Template()
-    public largeIconsTemplate: any;
-    /** 
-     * Specifies a template to render customized content for all the nodes. If the `navigationPaneTemplate` property 
-     * is set, the template content overrides the displayed node text in the File Manager navigation pane. 
-     * The property accepts a template string or HTML element ID holding the content.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('navigationPaneTemplate')
-    @Template()
-    public navigationPaneTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -161,7 +138,10 @@ export class FileManagerComponent extends FileManager implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(FileManagerComponent.prototype, 'largeIconsTemplate');
+Template()(FileManagerComponent.prototype, 'navigationPaneTemplate');
+
 

@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-breadcrumb>e-breadcrumb-items>e-breadcrumb-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class BreadcrumbItemDirective extends ComplexBase<BreadcrumbItemDirective> {
@@ -34,27 +34,27 @@ export class BreadcrumbItemDirective extends ComplexBase<BreadcrumbItemDirective
      * Enable or disable the breadcrumb item, when set to true, the breadcrumb item will be disabled.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines a class/multiple classes separated by a space for the item that is used to include an icon.
      * @default null
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Specifies the id of the Breadcrumb item.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the text content of the Breadcrumb item.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Specifies the Url of the Breadcrumb item that will be activated when clicked.
      * @default ''
      */
-    public url: any;
+    public declare url: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -70,6 +70,7 @@ export class BreadcrumbItemDirective extends ComplexBase<BreadcrumbItemDirective
  */
 @Directive({
     selector: 'ejs-breadcrumb>e-breadcrumb-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(BreadcrumbItemDirective)
     },

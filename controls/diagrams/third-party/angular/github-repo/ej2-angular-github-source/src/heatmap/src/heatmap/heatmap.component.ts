@@ -21,24 +21,24 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        
     }
 })
 @ComponentMixins([ComponentBase])
 export class HeatMapComponent extends HeatMap implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	cellClick: any;
-	cellDoubleClick: any;
-	cellRender: any;
-	cellSelected: any;
-	created: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	resized: any;
-	public tooltipRender: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare cellClick: any;
+	declare cellDoubleClick: any;
+	declare cellRender: any;
+	declare cellSelected: any;
+	declare created: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare resized: any;
+	public declare tooltipRender: any;
 
     public tags: string[] = [''];
 
@@ -88,7 +88,8 @@ export class HeatMapComponent extends HeatMap implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

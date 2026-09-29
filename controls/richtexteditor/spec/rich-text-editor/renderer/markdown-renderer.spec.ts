@@ -62,4 +62,23 @@ describe('Markdown renderer module', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en',
+                editorMode: 'Markdown'
+            });
+        });
+        it('should have aria-multiline attribute for markdown editor', () => {
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('aria-multiline')).toBe(null);
+            expect(contentDiv.getAttribute('role')).toBe(null);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
 });

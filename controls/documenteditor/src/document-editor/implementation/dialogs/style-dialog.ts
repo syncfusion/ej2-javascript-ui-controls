@@ -170,6 +170,7 @@ export class StyleDialog {
             popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style type') + ':', floatLabelType: 'Always'
         });
+        this.styleType.isAngular = this.documentHelper.owner.isModalDialog;
         this.styleType.appendTo(this.styleTypeValue);
         this.styleTypeWholeDiv.appendChild(this.styleTypeDivElement);
 
@@ -190,6 +191,7 @@ export class StyleDialog {
             dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style based on') + ':', floatLabelType: 'Always'
         });
+        this.styleBasedOn.isAngular = this.documentHelper.owner.isModalDialog;
         this.styleBasedOn.appendTo(this.styleBasedOnValue);
         this.styleBasedOnWholeDiv.appendChild(this.styleBasedOnDivElement);
 
@@ -214,6 +216,7 @@ export class StyleDialog {
             dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style for following paragraph') + ':', floatLabelType: 'Always'
         });
+        this.styleParagraph.isAngular = this.documentHelper.owner.isModalDialog;
         this.styleParagraph.appendTo(this.styleParagraphValue);
         this.styleParagraphWholeDiv.appendChild(this.styleParagraphDivElement);
         this.formatting = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Formatting') });
@@ -250,10 +253,13 @@ export class StyleDialog {
         this.target.appendChild(this.container);
     }
     private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n, isRtl?: boolean): void {
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         this.formatBtn = createElement('button', {
             id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format'),
             attrs: { type: 'button' }
         });
+        const formatDiv: any = this;
         this.formatBtn.style.height = '31px';
         parentDiv.appendChild(this.formatBtn);
         let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '...', id: 'style_font' },
@@ -278,6 +284,13 @@ export class StyleDialog {
                     if (args.item.id === 'style_numbering') {
                         args.element.classList.remove('e-disabled');
                     }
+                }
+            },
+            beforeOpen: function(this: DropDownButton, e: any): void{
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
+                    formatDiv.documentHelper.owner.movePopupToCdkOverlay(dropDownButtonEl, popupEl);
                 }
             },
         });
@@ -306,14 +319,20 @@ export class StyleDialog {
         }
     }
     private createFontOptions(parentDiv: HTMLElement, isRtl?: boolean): void {
+        let fontDiv = this;
+        const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         this.fontFamilyElement = createElement('input', {
             id: this.target.id + '_fontName',
         });
         let fontStyle: { [key: string]: Object; }[];
-        let isStringTemplate: boolean = true;        
-        let itemTemplate: string | Function = initializeCSPTemplate(
-            function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
-        );
+        let isStringTemplate: boolean = false;    
+        let itemTemplate: string | Function = '';
+        if (!this.documentHelper.owner.enableCsp) {
+            itemTemplate = initializeCSPTemplate(
+                function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+            );
+            isStringTemplate = true;
+        }
         parentDiv.appendChild(this.fontFamilyElement);
         this.fontFamily = new ComboBox({
             dataSource: fontStyle, query: new Query().select(['FontName']), fields: { text: 'FontName', value: 'value' },
@@ -321,6 +340,7 @@ export class StyleDialog {
             cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged,
             showClearButton: false, itemTemplate: itemTemplate
         });
+        this.fontFamily.isAngular = this.documentHelper.owner.isModalDialog;
         this.fontFamily.appendTo(this.fontFamilyElement);
         this.fontFamily.isStringTemplate = isStringTemplate;
         let fontFamilyValue: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
@@ -338,6 +358,7 @@ export class StyleDialog {
             dataSource: sizeDataSource, width: '73px', cssClass: 'e-style-font-fmaily-right',
             enableRtl: isRtl, change: this.fontSizeUpdate
         });
+        this.fontSize.isAngular = this.documentHelper.owner.isModalDialog;
         this.fontSize.showClearButton = false;
         this.fontSize.appendTo(this.fontSizeElement);
         this.fontGroupButton = createElement('div', { className: 'e-de-style-font-group-button' });
@@ -359,7 +380,15 @@ export class StyleDialog {
         this.fontColorElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         this.colorPickerDiv.appendChild(this.fontColorElement);
         const {columns , createPopupOnClick  , disabled , enablePersistence , enableRtl , inline , mode , modeSwitcher , noColor , presetColors , showButtons} = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
-        this.fontColor = new ColorPicker({ enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors });
+        this.fontColor = new ColorPicker({ enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors,
+            beforeOpen: function (this: ColorPicker, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const colorPickerEl: HTMLElement = this.element as HTMLElement;
+                    fontDiv.documentHelper.owner.movePopupToCdkOverlay(colorPickerEl, popupEl);
+                }
+            },
+         });
         this.documentHelper.fontColor = this.fontColor;
         this.fontColor.appendTo(this.fontColorElement);
     }

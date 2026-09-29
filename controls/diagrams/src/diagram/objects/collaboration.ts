@@ -1,3 +1,4 @@
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
 import { HistoryEntry, ExtendedHistoryEntry } from '../diagram/history';
@@ -1099,6 +1100,7 @@ export class DiagramCollaboration {
      * @private
      */
     constructor() {
+        initializeTelemetryFeature('DiagramCollaboration', 'Diagram');
         //constructs the collaborative module
     }
 

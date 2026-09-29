@@ -5,8 +5,8 @@ import { Template } from '@syncfusion/ej2-angular-base';
 import { ColumnsDirective } from './columns.directive';
 import { AggregatesDirective } from './aggregates.directive';
 
-export const inputs: string[] = ['adaptiveUIMode','aggregates','allowExcelExport','allowFiltering','allowGrouping','allowKeyboard','allowMultiSorting','allowPaging','allowPdfExport','allowReordering','allowResizing','allowRowDragAndDrop','allowSelection','allowSorting','allowTextWrap','autoFit','childGrid','clipMode','columnChooserSettings','columnMenuItems','columnQueryMode','columns','contextMenuItems','cssClass','currencyCode','currentAction','currentViewData','dataSource','detailTemplate','detailTemplateHeight','domVirtualizationSettings','editSettings','ej2StatePersistenceVersion','emptyRecordTemplate','enableAdaptiveUI','enableAltRow','enableAutoFill','enableColumnSpan','enableColumnVirtualization','enableDomVirtualization','enableHeaderFocus','enableHover','enableHtmlSanitizer','enableImmutableMode','enableInfiniteScrolling','enablePersistence','enableRowSpan','enableRtl','enableStickyHeader','enableVirtualMaskRow','enableVirtualization','exportGrids','filterSettings','footerRowHeight','frozenColumns','frozenRows','gridLines','groupSettings','height','hierarchyPrintMode','infiniteScrollSettings','isRowPinned','isRowSelectable','loadingIndicator','locale','pageSettings','pagerTemplate','parentDetails','printMode','query','queryString','resizeSettings','rowDropSettings','rowHeight','rowRenderingMode','rowTemplate','searchSettings','selectedRowIndex','selectionSettings','setRowHeight','showColumnChooser','showColumnMenu','showHider','sortSettings','textWrapSettings','toolbar','toolbarTemplate','width'];
-export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','batchAdd','batchCancel','batchDelete','beforeAutoFill','beforeBatchAdd','beforeBatchDelete','beforeBatchSave','beforeCopy','beforeCustomFilterOpen','beforeDataBound','beforeDetailTemplateDetach','beforeExcelExport','beforeOpenAdaptiveDialog','beforeOpenColumnChooser','beforePaste','beforePdfExport','beforePrint','beginEdit','cellDeselected','cellDeselecting','cellEdit','cellFocus','cellSave','cellSaved','cellSelected','cellSelecting','checkBoxChange','columnDataStateChange','columnDeselected','columnDeselecting','columnDrag','columnDragStart','columnDrop','columnMenuClick','columnMenuClose','columnMenuOpen','columnSelected','columnSelecting','commandClick','contextMenuClick','contextMenuClose','contextMenuOpen','created','dataBound','dataSourceChanged','dataStateChange','destroyed','detailCollapse','detailCollapsed','detailDataBound','detailExpand','detailExpanded','excelAggregateQueryCellInfo','excelExportComplete','excelHeaderQueryCellInfo','excelQueryCellInfo','exportDetailDataBound','exportDetailTemplate','exportGroupCaption','headerCellInfo','keyPressed','lazyLoadGroupCollapse','lazyLoadGroupExpand','load','pdfAggregateQueryCellInfo','pdfExportComplete','pdfHeaderQueryCellInfo','pdfQueryCellInfo','printComplete','queryCellInfo','recordClick','recordDoubleClick','resizeStart','resizeStop','resizing','rowDataBound','rowDeselected','rowDeselecting','rowDrag','rowDragStart','rowDragStartHelper','rowDrop','rowSelected','rowSelecting','toolbarClick','dataSourceChange'];
+export const inputs: string[] = ['adaptiveUIMode','advancedFilterSettings','aggregates','allowAdvancedFiltering','allowExcelExport','allowFiltering','allowGrouping','allowKeyboard','allowMultiSorting','allowPaging','allowPdfExport','allowReordering','allowResizing','allowRowDragAndDrop','allowSelection','allowSorting','allowTextWrap','autoFit','childGrid','clipMode','columnChooserSettings','columnMenuItems','columnQueryMode','columns','contextMenuItems','cssClass','currencyCode','currentAction','currentViewData','dataSource','detailTemplate','detailTemplateHeight','domVirtualizationSettings','editSettings','ej2StatePersistenceVersion','emptyRecordMode','emptyRecordTemplate','enableAdaptiveUI','enableAltRow','enableAutoFill','enableColumnSpan','enableColumnVirtualization','enableDomVirtualization','enableHeaderFocus','enableHover','enableHtmlSanitizer','enableImmutableMode','enableInfiniteScrolling','enablePersistence','enableRowSpan','enableRtl','enableStickyHeader','enableVirtualMaskRow','enableVirtualization','enableWebMcp','exportGrids','filterSettings','footerRowHeight','formulaSettings','frozenColumns','frozenRows','gridLines','groupSettings','headerRowHeight','height','hierarchyPrintMode','infiniteScrollSettings','isRowPinned','isRowSelectable','loadingIndicator','locale','pageSettings','pagerTemplate','parentDetails','printMode','query','queryString','resizeSettings','rowDropSettings','rowHeight','rowRenderingMode','rowTemplate','searchSettings','selectedRowIndex','selectionSettings','setRowHeight','showColumnChooser','showColumnMenu','showHider','sortSettings','textWrapSettings','toolbar','toolbarTemplate','width'];
+export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','advancedFilterBegin','advancedFilterClose','advancedFilterComplete','advancedFilterOpen','batchAdd','batchCancel','batchDelete','beforeAutoFill','beforeBatchAdd','beforeBatchDelete','beforeBatchSave','beforeCopy','beforeCustomFilterOpen','beforeDataBound','beforeDetailTemplateDetach','beforeExcelExport','beforeOpenAdaptiveDialog','beforeOpenColumnChooser','beforePaste','beforePdfExport','beforePrint','beforeWebMcpToolExecute','beginEdit','cellDeselected','cellDeselecting','cellEdit','cellFocus','cellSave','cellSaved','cellSelected','cellSelecting','checkBoxChange','columnDataStateChange','columnDeselected','columnDeselecting','columnDrag','columnDragStart','columnDrop','columnMenuClick','columnMenuClose','columnMenuOpen','columnSelected','columnSelecting','commandClick','contextMenuClick','contextMenuClose','contextMenuOpen','created','dataBound','dataSourceChanged','dataStateChange','destroyed','detailCollapse','detailCollapsed','detailDataBound','detailExpand','detailExpanded','excelAggregateQueryCellInfo','excelExportComplete','excelHeaderQueryCellInfo','excelQueryCellInfo','exportDetailDataBound','exportDetailTemplate','exportGroupCaption','headerCellInfo','keyPressed','lazyLoadGroupCollapse','lazyLoadGroupExpand','load','pdfAggregateQueryCellInfo','pdfExportComplete','pdfHeaderQueryCellInfo','pdfQueryCellInfo','printComplete','queryCellInfo','recordClick','recordDoubleClick','resizeStart','resizeStop','resizing','rowDataBound','rowDeselected','rowDeselecting','rowDrag','rowDragStart','rowDragStartHelper','rowDrop','rowSelected','rowSelecting','toolbarClick','dataSourceChange'];
 export const twoWays: string[] = ['dataSource'];
 
 /**
@@ -21,174 +21,123 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childColumns: new ContentChild(ColumnsDirective), 
-        childAggregates: new ContentChild(AggregatesDirective)
+        childColumns: new ContentChild(ColumnsDirective),
+        childAggregates: new ContentChild(AggregatesDirective),
+        rowTemplate: new ContentChild('rowTemplate'),
+        emptyRecordTemplate: new ContentChild('emptyRecordTemplate'),
+        detailTemplate: new ContentChild('detailTemplate'),
+        toolbarTemplate: new ContentChild('toolbarTemplate'),
+        pagerTemplate: new ContentChild('pagerTemplate'),
+        editSettings_template: new ContentChild('editSettingsTemplate'),
+        groupSettings_captionTemplate: new ContentChild('groupSettingsCaptionTemplate'),
+        columnChooserSettings_headerTemplate: new ContentChild('columnChooserSettingsHeaderTemplate'),
+        columnChooserSettings_template: new ContentChild('columnChooserSettingsTemplate'),
+        columnChooserSettings_footerTemplate: new ContentChild('columnChooserSettingsFooterTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class GridComponent extends Grid implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	batchAdd: any;
-	batchCancel: any;
-	batchDelete: any;
-	beforeAutoFill: any;
-	beforeBatchAdd: any;
-	beforeBatchDelete: any;
-	beforeBatchSave: any;
-	beforeCopy: any;
-	beforeCustomFilterOpen: any;
-	beforeDataBound: any;
-	beforeDetailTemplateDetach: any;
-	beforeExcelExport: any;
-	beforeOpenAdaptiveDialog: any;
-	beforeOpenColumnChooser: any;
-	beforePaste: any;
-	beforePdfExport: any;
-	beforePrint: any;
-	beginEdit: any;
-	cellDeselected: any;
-	cellDeselecting: any;
-	cellEdit: any;
-	cellFocus: any;
-	cellSave: any;
-	cellSaved: any;
-	cellSelected: any;
-	cellSelecting: any;
-	checkBoxChange: any;
-	columnDataStateChange: any;
-	columnDeselected: any;
-	columnDeselecting: any;
-	columnDrag: any;
-	columnDragStart: any;
-	columnDrop: any;
-	columnMenuClick: any;
-	columnMenuClose: any;
-	columnMenuOpen: any;
-	columnSelected: any;
-	columnSelecting: any;
-	commandClick: any;
-	contextMenuClick: any;
-	contextMenuClose: any;
-	contextMenuOpen: any;
-	created: any;
-	dataBound: any;
-	dataSourceChanged: any;
-	dataStateChange: any;
-	destroyed: any;
-	detailCollapse: any;
-	detailCollapsed: any;
-	detailDataBound: any;
-	detailExpand: any;
-	detailExpanded: any;
-	excelAggregateQueryCellInfo: any;
-	excelExportComplete: any;
-	excelHeaderQueryCellInfo: any;
-	excelQueryCellInfo: any;
-	exportDetailDataBound: any;
-	exportDetailTemplate: any;
-	exportGroupCaption: any;
-	headerCellInfo: any;
-	keyPressed: any;
-	lazyLoadGroupCollapse: any;
-	lazyLoadGroupExpand: any;
-	load: any;
-	pdfAggregateQueryCellInfo: any;
-	pdfExportComplete: any;
-	pdfHeaderQueryCellInfo: any;
-	pdfQueryCellInfo: any;
-	printComplete: any;
-	queryCellInfo: any;
-	recordClick: any;
-	recordDoubleClick: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	rowDataBound: any;
-	rowDeselected: any;
-	rowDeselecting: any;
-	rowDrag: any;
-	rowDragStart: any;
-	rowDragStartHelper: any;
-	rowDrop: any;
-	rowSelected: any;
-	rowSelecting: any;
-	toolbarClick: any;
-	public dataSourceChange: any;
-    public childColumns: QueryList<ColumnsDirective>;
-    public childAggregates: QueryList<AggregatesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare advancedFilterBegin: any;
+	declare advancedFilterClose: any;
+	declare advancedFilterComplete: any;
+	declare advancedFilterOpen: any;
+	declare batchAdd: any;
+	declare batchCancel: any;
+	declare batchDelete: any;
+	declare beforeAutoFill: any;
+	declare beforeBatchAdd: any;
+	declare beforeBatchDelete: any;
+	declare beforeBatchSave: any;
+	declare beforeCopy: any;
+	declare beforeCustomFilterOpen: any;
+	declare beforeDataBound: any;
+	declare beforeDetailTemplateDetach: any;
+	declare beforeExcelExport: any;
+	declare beforeOpenAdaptiveDialog: any;
+	declare beforeOpenColumnChooser: any;
+	declare beforePaste: any;
+	declare beforePdfExport: any;
+	declare beforePrint: any;
+	declare beforeWebMcpToolExecute: any;
+	declare beginEdit: any;
+	declare cellDeselected: any;
+	declare cellDeselecting: any;
+	declare cellEdit: any;
+	declare cellFocus: any;
+	declare cellSave: any;
+	declare cellSaved: any;
+	declare cellSelected: any;
+	declare cellSelecting: any;
+	declare checkBoxChange: any;
+	declare columnDataStateChange: any;
+	declare columnDeselected: any;
+	declare columnDeselecting: any;
+	declare columnDrag: any;
+	declare columnDragStart: any;
+	declare columnDrop: any;
+	declare columnMenuClick: any;
+	declare columnMenuClose: any;
+	declare columnMenuOpen: any;
+	declare columnSelected: any;
+	declare columnSelecting: any;
+	declare commandClick: any;
+	declare contextMenuClick: any;
+	declare contextMenuClose: any;
+	declare contextMenuOpen: any;
+	declare created: any;
+	declare dataBound: any;
+	declare dataSourceChanged: any;
+	declare dataStateChange: any;
+	declare destroyed: any;
+	declare detailCollapse: any;
+	declare detailCollapsed: any;
+	declare detailDataBound: any;
+	declare detailExpand: any;
+	declare detailExpanded: any;
+	declare excelAggregateQueryCellInfo: any;
+	declare excelExportComplete: any;
+	declare excelHeaderQueryCellInfo: any;
+	declare excelQueryCellInfo: any;
+	declare exportDetailDataBound: any;
+	declare exportDetailTemplate: any;
+	declare exportGroupCaption: any;
+	declare headerCellInfo: any;
+	declare keyPressed: any;
+	declare lazyLoadGroupCollapse: any;
+	declare lazyLoadGroupExpand: any;
+	declare load: any;
+	declare pdfAggregateQueryCellInfo: any;
+	declare pdfExportComplete: any;
+	declare pdfHeaderQueryCellInfo: any;
+	declare pdfQueryCellInfo: any;
+	declare printComplete: any;
+	declare queryCellInfo: any;
+	declare recordClick: any;
+	declare recordDoubleClick: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare rowDataBound: any;
+	declare rowDeselected: any;
+	declare rowDeselecting: any;
+	declare rowDrag: any;
+	declare rowDragStart: any;
+	declare rowDragStartHelper: any;
+	declare rowDrop: any;
+	declare rowSelected: any;
+	declare rowSelecting: any;
+	declare toolbarClick: any;
+	public declare dataSourceChange: any;
+    public declare childColumns: QueryList<ColumnsDirective>;
+    public declare childAggregates: QueryList<AggregatesDirective>;
     public tags: string[] = ['columns', 'aggregates'];
-    /** 
-     * The row template that renders customized rows from the given template. 
-     * By default, Grid renders a table row for every data source item. 
-     * > * It accepts either [template string](../../common/template/) or HTML element ID. 
-     * > * The row template must be a table row.
-     * 
-     * > Check the [`Row Template`](../../grid/row/) customization.
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('rowTemplate')
-    @Template()
-    public rowTemplate: any;
-    /** 
-     * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid. 
-     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('emptyRecordTemplate')
-    @Template()
-    public emptyRecordTemplate: any;
-    /** 
-     * The detail template allows you to show or hide additional information about a particular row.
-     * 
-     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
-     *
-     *{% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('detailTemplate')
-    @Template()
-    public detailTemplate: any;
-    /** 
-     * It used to render toolbar template
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('toolbarTemplate')
-    @Template()
-    public toolbarTemplate: any;
-    /** 
-     * It used to render pager template
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('pagerTemplate')
-    @Template()
-    public pagerTemplate: any;
-    @ContentChild('editSettingsTemplate')
-    @Template()
-    public editSettings_template: any;
-    @ContentChild('groupSettingsCaptionTemplate')
-    @Template()
-    public groupSettings_captionTemplate: any;
-    @ContentChild('columnChooserSettingsHeaderTemplate')
-    @Template()
-    public columnChooserSettings_headerTemplate: any;
-    @ContentChild('columnChooserSettingsTemplate')
-    @Template()
-    public columnChooserSettings_template: any;
-    @ContentChild('columnChooserSettingsFooterTemplate')
-    @Template()
-    public columnChooserSettings_footerTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -344,6 +293,24 @@ export class GridComponent extends Grid implements IComponentBase {
                     this.injectedModules.push(mod)
                 }
             } catch { }
+        try {
+                let mod = this.injector.get('GridsFormula');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
+        try {
+                let mod = this.injector.get('GridsAdvancedFilter');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
+        try {
+                let mod = this.injector.get('GridsWebMcpAdapter');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
 
         this.registerEvents(outputs);
         this.addTwoWay.call(this, twoWays);
@@ -371,7 +338,18 @@ export class GridComponent extends Grid implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(GridComponent.prototype, 'rowTemplate');
+Template()(GridComponent.prototype, 'emptyRecordTemplate');
+Template()(GridComponent.prototype, 'detailTemplate');
+Template()(GridComponent.prototype, 'toolbarTemplate');
+Template()(GridComponent.prototype, 'pagerTemplate');
+Template()(GridComponent.prototype, 'editSettings_template');
+Template()(GridComponent.prototype, 'groupSettings_captionTemplate');
+Template()(GridComponent.prototype, 'columnChooserSettings_headerTemplate');
+Template()(GridComponent.prototype, 'columnChooserSettings_template');
+Template()(GridComponent.prototype, 'columnChooserSettings_footerTemplate');
+
 

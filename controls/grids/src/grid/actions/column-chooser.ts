@@ -83,6 +83,7 @@ export class ColumnChooser implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
+
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.infiniteRenderMode = this.parent.enableColumnVirtualization ? true : false;

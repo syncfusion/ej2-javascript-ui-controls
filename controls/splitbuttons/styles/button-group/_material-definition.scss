@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@use 'ej2-buttons/styles/button/material-definition' as *;
-@forward 'ej2-base/styles/definition/material';
-@forward 'ej2-buttons/styles/button/material-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $btn-grp-margin: -1px !default;
 $btn-grp-margin-left: 0 !default;
 $btn-grp-wrapper-border: 2px !default;

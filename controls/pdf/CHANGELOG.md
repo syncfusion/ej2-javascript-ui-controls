@@ -2,13 +2,80 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
+## 35.1.37 (2026-09-29)
 
 ### PDF
 
 #### Bug Fixes
 
-- Resolved a script error during annotation export and import with special characters.
+- Resolved an issue where dashed border styles were not preserved for polygon and poly line annotations.
+- Resolved an issue with incorrect form field retrieval in a specific PDF document.
+- Resolved an issue where free text call out annotations were not preserved correctly.
+
+## 34.2.6 (2026-09-01)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where the destination location of a document link annotation was retrieved incorrectly.
+- Resolved an issue where a script error occurred when accessing bookmarks in a specific PDF document.
+
+#### Features
+
+- Added border effect support for circle, ellipse, and free text annotations, ensuring accurate rendering, style preservation, and improved PDF compatibility.
+
+## 34.2.5 (2026-08-25)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved API documentation validation errors caused by improperly formatted code blocks
+
+## 34.2.4 (2026-08-18)
+
+### PDF
+
+#### Bug Fixes
+
+- Updated component name casing in telemetry to ensure consistent event tracking and reporting.
+
+## 34.2.3 (2026-08-11)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where form fields were not being retrieved correctly in a specific PDF document.
+- Resolved an issue where ink annotations were not preserved correctly on rotated pages.
+
+## 34.1.33 (2026-07-28)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where the content of free text annotations was not visible when a fill color was applied.
+- Resolved an issue with preserving existing ink annotations when applying flattening.
+
+## 34.1.32 (2026-07-21)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where PDF corruption occurred during annotation export and import in XFDF format.
+- Resolved an issue where layers were not being removed from the page graphics.
+
+## 34.1.31 (2026-07-14)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed type error caused by accessing page size during watermark insertion in a specific PDF document.
+- Resolved an issue where incorrect bounds collection values were retrieved from redaction annotations.
 
 ## 34.1.30 (2026-07-09)
 
@@ -19,6 +86,7 @@
 - Resolved an issue where the combo box field font and color were returned as undefined.
 - Resolved an issue where free text annotations become invisible when appearance is enabled.
 - Resolved an issue where textbox field text was not preserved during rotation.
+- Resolved a script error during annotation export and import with special characters.
 
 ## 33.2.15 (2026-06-23)
 

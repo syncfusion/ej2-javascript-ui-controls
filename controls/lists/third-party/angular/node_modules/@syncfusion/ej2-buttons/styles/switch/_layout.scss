@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+
 @include export-module('switch-layout') {
   .e-switch-wrapper,
   .e-css.e-switch-wrapper {
@@ -128,6 +129,12 @@
         pointer-events: none;
         @if $skin-name == 'bootstrap5.3' {
           opacity: .5;
+        }
+      }
+
+      &.e-switch-disabled.e-disabled {
+        @if $skin-name != 'bootstrap5.3' {
+          opacity: 1;
         }
       }
 
@@ -278,10 +285,10 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-small .e-switch-wrapper,
-  #{if(&, '&', '*')}.e-small.e-switch-wrapper,
-  #{if(&, '&', '*')}.e-small .e-css.e-switch-wrapper,
-  #{if(&, '&', '*')}.e-small.e-css.e-switch-wrapper {
+  *.e-small .e-switch-wrapper,
+  *.e-small.e-switch-wrapper,
+  *.e-small .e-css.e-switch-wrapper,
+  *.e-small.e-css.e-switch-wrapper {
     height: $switch-small-wrapper-height;
     width: $switch-small-wrapper-width;
     @if $skin-name == 'fluent2' {

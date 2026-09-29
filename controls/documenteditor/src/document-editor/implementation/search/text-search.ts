@@ -205,6 +205,9 @@ export class TextSearch {
     }
     /* eslint-disable-next-line max-len */
     public updateMatchedTextLocation(matches: RegExpExecArray[], results: TextSearchResults, textInfo: Dictionary<TextElementBox, number>, indexInInline: number, inlines: ElementBox, isFirstMatch: boolean, selectionEnd: TextPosition, startPosition?: number): void {
+        if (isNullOrUndefined(results)) {
+            return;
+        }
         for (let i: number = 0; i < matches.length; i++) {
             const match: RegExpExecArray = matches[parseInt(i.toString(), 10)];
             let isMatched: boolean;

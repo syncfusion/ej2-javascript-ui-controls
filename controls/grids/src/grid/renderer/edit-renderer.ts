@@ -135,7 +135,10 @@ export class EditRender {
             !isNullOrUndefined(parentsUntil(elem, literals.editedRow)))) {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
-            const isFocus: boolean = (this.parent.enableVirtualization || this.parent.isRowDomVirtualization() || this.parent.enableColumnVirtualization) && this.parent.editSettings.mode === 'Normal' ? false : true;
+            const isCellEditMode: boolean = (this.parent.editSettings.mode === 'Cell' &&
+                !isNullOrUndefined(parentsUntil(elem, literals.addedRow)));
+            const isFocus: boolean = (this.parent.enableVirtualization || this.parent.isRowDomVirtualization() ||
+                this.parent.enableColumnVirtualization) && (this.parent.editSettings.mode === 'Normal' || isCellEditMode) ? false : true;
             const focusElement: HTMLElement = elem.classList.contains('e-dropdownlist') ? elem.parentElement : elem;
             if ((isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
                 && parentsUntil(elem, literals.addedRow))) && (!this.parent.editSettings.showAddNewRow ||

@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('inlineaiassist-layout') {
   .e-inlineaiassist {
     display: flex;
@@ -121,6 +121,7 @@
             max-width: $inline-ai-assist-footer-tbar-min-height;
             .e-btn-icon {
               min-width: $inline-ai-assist-footer-tbar-min-height;
+              max-height: $inline-ai-assist-footer-tbar-min-height;
             }
           }
           .e-toolbar-right .e-toolbar-item:last-child {
@@ -162,26 +163,26 @@
         align-items: center;
       }
 
-      .e-response-indicator {
+      .e-assist-response-indicator {
         display: flex;
         align-items: baseline;
         gap: $inline-ai-assist-indicator-wrapper-gap;
-        .e-indicator {
+        .e-assist-indicator {
           border-radius: $inline-ai-assist-indicator-border-radius;
           height: .3rem;
           width: .3rem;
         }
-        .e-indicator:nth-child(1) {
+        .e-assist-indicator:nth-child(1) {
           animation-delay: .3333s;
         }
-        .e-indicator:nth-child(2) {
+        .e-assist-indicator:nth-child(2) {
           animation-delay: .6666s;
         }
-        .e-indicator:nth-child(3) {
+        .e-assist-indicator:nth-child(3) {
           animation-delay: .9999s;
         }
 
-        .e-indicator-text {
+        .e-assist-indicator-text {
           font-size: $inline-ai-assist-textarea-font-size;
         }
       }

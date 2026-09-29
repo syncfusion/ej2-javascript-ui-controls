@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('aiassistview-bigger') {
   .e-bigger.e-aiassistview,
   .e-bigger .e-aiassistview {
@@ -106,6 +106,9 @@
         .e-toolbar {
           height: $assist-footer-tbar-min-height-bigger;
           min-height: $assist-footer-tbar-min-height-bigger;
+          background: $assist-view-bg-color;
+          border: none;
+          box-shadow: none;
           .e-tbar-btn {
             min-height: $assist-footer-tbar-min-height-bigger;
             min-width: $assist-footer-tbar-min-height-bigger;
@@ -121,10 +124,25 @@
             min-height: unset;
             min-width: unset;
             max-height: $assist-footer-tbar-min-height-bigger;
+            .e-assistview-speech-to-text.e-tbar-btn.e-speech-to-text{
+              border: none;
+              box-shadow: none;
+              width: auto;
+              height: auto;
+            }
+            .e-assistview-speech-to-text.e-btn.e-speech-to-text {
+              min-height: $assist-footer-tbar-min-height-bigger;
+              min-width: $assist-footer-tbar-min-height-bigger;
+            }
           }
           .e-toolbar-right .e-toolbar-item:last-child {
             margin-right: 0;
           }
+        }
+        .e-toolbar-items {
+          background: $assist-view-bg-color;
+          border: none;
+          box-shadow: none;
         }
         .e-assist-attachment-icon {
           font-size: $assist-attachment-icon-font-size-bigger;
@@ -215,6 +233,87 @@
           font-size: $bigger-file-failure-circle-close-icon-font-size;
           margin-right: $bigger-file-failure-circle-close-icon-margin;
         }
+      }
+    }
+    .e-response-navigation-container {
+      .e-assist-next,
+      .e-assist-previous {
+        width: $assist-footer-tbar-min-height-bigger;
+        height: $assist-footer-tbar-min-height-bigger;
+        padding: 0;
+        line-height: 0;
+      }
+    }
+    //thinking styles
+    .e-aiassist-thinking-toggle {
+      font-size: 14px;
+      line-height: 20px;
+      .e-toggle-icon {
+        line-height: 20px;
+        font-size: 14px;
+      }
+    }
+
+    .e-aiassist-thinking-toggle .e-active-spinner,
+    .e-aiassist-thinking-timeline .e-thinking-timeline-item-container .indicator.e-stage-spinner {
+      svg {
+        padding: 2px;
+        width: 20px !important; /* stylelint-disable-line declaration-no-important */
+        height: 20px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-thinking-title {
+      font-size: 16px;
+    }
+
+    .e-thinking-description {
+      font-size: 14px;
+    }
+
+    .e-inline-context-item {
+      .e-context-icon {
+        font-size: $aiassist-thinking-context-icon-font-size-bigger;
+        line-height: $aiassist-thinking-context-icon-line-height-bigger;
+      }
+
+      .e-context-badge {
+        font-size: $aiassist-thinking-context-badge-font-size-bigger;
+        line-height: $aiassist-thinking-context-badge-line-height-bigger;
+      }
+    }
+
+    .e-single-stage-container {
+      font-size: 14px;
+      .e-stage-icon {
+        font-size: $aiassist-thinking-stage-icon-font-size-bigger;
+        line-height: $aiassist-thinking-stage-icon-line-height-bigger;
+      }
+
+      &.e-timeline-expanded {
+        margin-top: 8px;
+      }
+    }
+
+    .e-aiassist-thinking-timeline {
+      .e-thinking-timeline-item-container {
+        .indicator {
+          min-width: $thinking-timeline-progress-indicator-min-width-bigger;
+          min-height: $thinking-timeline-progress-indicator-min-height-bigger;
+          font-size: $thinking-timeline-progress-indicator-font-size-bigger;
+        }
+        .e-progress-line::after {
+          top: $thinking-timeline-progress-indicator-min-height-bigger;
+          height: $aiassist-thinking-progress-line-height-bigger;
+        }
+      }
+    }
+    .e-mention-chip,
+    .e-mention-chip:hover {
+      max-height: $assist-textarea-line-height-bigger;
+      line-height: $assist-textarea-line-height-bigger;
+      .e-icons {
+        font-size: 14px;
       }
     }
   }

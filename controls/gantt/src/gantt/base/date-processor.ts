@@ -70,8 +70,14 @@ export class DateProcessor {
             return null;
         }
         const currentDay: Date = new Date(date.getTime());
-        let dayStartTime: number = this.parent['getCurrentDayStartTime'](currentDay);
-        let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentDay);
+        if (ganttProp && !ganttProp.calendarContext) {
+            ganttProp.calendarContext = this.parent.defaultCalendarContext;
+        }
+        const calendarContext: CalendarContext = ganttProp
+            ? ganttProp.calendarContext
+            : this.parent.defaultCalendarContext;
+        let dayStartTime: number = this.parent['getCurrentDayStartTime'](currentDay, calendarContext);
+        let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentDay, calendarContext);
         let cloneStartDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneStartDate);
         validateAsMilestone = isNullOrUndefined(validateAsMilestone) ? !isNullOrUndefined(ganttProp) ?
             ganttProp.isMilestone : false : validateAsMilestone;
@@ -81,7 +87,7 @@ export class DateProcessor {
             this.setTime(dayStartTime, cloneStartDate);
         } else if ((hour === dayEndTime && (!ganttProp || !validateAsMilestone)) || hour > dayEndTime) {
             cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-            dayStartTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
+            dayStartTime = this.parent['getCurrentDayStartTime'](cloneStartDate, calendarContext);
             this.setTime(dayStartTime, cloneStartDate);
         } else if (hour > dayStartTime && hour < dayEndTime) {
             let workingRange: IWorkingTimeRange[] = this.parent.workingTimeRanges;
@@ -105,29 +111,23 @@ export class DateProcessor {
             this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             do {
                 tStartDate = new Date(cloneStartDate.getTime());
-                if (ganttProp && !ganttProp.calendarContext) {
-                    ganttProp.calendarContext = this.parent.defaultCalendarContext;
-                }
-                const calendarContext: CalendarContext = ganttProp
-                    ? ganttProp.calendarContext
-                    : this.parent.defaultCalendarContext;
                 const holidayLength: number = calendarContext.defaultHolidays.length;
                 // check holidays and weekends
                 if (this.isValidateNonWorkDays(ganttProp)) {
-                    dayStartTime = this.parent['getCurrentDayStartTime'](tStartDate);
+                    dayStartTime = this.parent['getCurrentDayStartTime'](tStartDate, calendarContext);
                     if (ganttProp) {
                         if (!isBaseline) {
-                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : tStartDate);
+                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : tStartDate, calendarContext);
                         }
                         else {
-                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.baselineEndDate ? ganttProp.baselineEndDate : tStartDate);
+                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.baselineEndDate ? ganttProp.baselineEndDate : tStartDate, calendarContext);
                         }
                     }
                     let startTime: number = (!validateAsMilestone || isLoad) ? dayStartTime : dayEndTime;
                     if (!this.parent.includeWeekend && !isBaseline) {
                         const tempDate: Date = new Date(cloneStartDate.getTime());
                         cloneStartDate = this.getNextWorkingDay(cloneStartDate, calendarContext);
-                        startTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
+                        startTime = this.parent['getCurrentDayStartTime'](cloneStartDate, calendarContext);
                         if (tempDate.getTime() !== cloneStartDate.getTime() && !validateAsMilestone) {
                             this.setTime(startTime, cloneStartDate);
                         }
@@ -140,7 +140,7 @@ export class DateProcessor {
                             holidayTo.setHours(23, 59, 59, 59);
                             if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
                                 cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-                                startTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
+                                startTime = this.parent['getCurrentDayStartTime'](cloneStartDate, calendarContext);
                                 this.setTime(startTime, cloneStartDate);
                             }
                         }
@@ -167,6 +167,7 @@ export class DateProcessor {
         const ganttProp: any = ganttData['ganttProperties'] ? ganttData['ganttProperties'] : ganttData;
         let constraintDate: Date = new Date(ganttProp.constraintDate);
         const isLoad: boolean = this.parent.isLoad;
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         if (isNullOrUndefined(validPredecessor)) {
             validPredecessor = true;
         }
@@ -176,7 +177,7 @@ export class DateProcessor {
         if (this.parent.editModule && this.parent.editModule.dialogModule && this.parent.editModule.dialogModule['dialogConstraintDate']) {
             constraintDate = new Date(this.parent.editModule.dialogModule['dialogConstraintDate']);
         } else {
-            constraintDate = this.parent['assignTimeToDate'](constraintDate, this.parent['getCurrentDayStartTime'](constraintDate));
+            constraintDate = this.parent['assignTimeToDate'](constraintDate, this.parent['getCurrentDayStartTime'](constraintDate, calendarContext));
         }
         switch (ganttProp.constraintType) {
         case ConstraintType.AsSoonAsPossible:
@@ -190,7 +191,7 @@ export class DateProcessor {
                     parentRecord = record.parentItem;
                 }
                 if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
-                    return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+                    return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date, calendarContext));
                 }
                 return this.updateSoonAsPossibleParent(parentRecord);
             }
@@ -236,7 +237,7 @@ export class DateProcessor {
             if (isLoad) {
                 return this.parent.dateValidationModule.checkStartDate(new Date(constraintDate));
             } else {
-                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date, calendarContext));
             }
         }
         case ConstraintType.MustFinishOn: {
@@ -248,7 +249,7 @@ export class DateProcessor {
         }
         case ConstraintType.StartNoEarlierThan: {
             if (constraintDate.getTime() < date.getTime() || !isLoad) {
-                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date, calendarContext));
             }
             return this.parent.dateValidationModule.checkStartDate(new Date(constraintDate));
         }
@@ -272,7 +273,7 @@ export class DateProcessor {
                 if (this.parent.editModule && this.parent.editModule.dialogModule && isViolation && this.parent.editModule.dialogModule['dialogConstraintDate']) {
                     return constraintDate;
                 }
-                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date, calendarContext));
             }
             if (isLoad && isViolation) {
                 return this.parent.dateValidationModule.checkStartDate(new Date(constraintDate));
@@ -298,7 +299,7 @@ export class DateProcessor {
                 if (isViolation) {
                     return this.getAdjustedStartDate(constraintDate, ganttProp);
                 }
-                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayEndTime'](date));
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayEndTime'](date, calendarContext));
             }
             if (isViolation) {
                 return this.getAdjustedStartDate(constraintDate, ganttProp);
@@ -341,7 +342,18 @@ export class DateProcessor {
         const calendarContext: CalendarContext = ganttProp
             ? ganttProp.calendarContext
             : this.parent.defaultCalendarContext;
-        if (this.parent.weekWorkingTime.length > 0) {
+        const currentDay: Date = new Date(date.getTime());
+        const exception: {
+            hasException: boolean;
+            data: any;
+        } = calendarContext.getExceptionForDate(currentDay);
+        if (exception.hasException) {
+            // Use exception start/end times if defined
+            if (exception.data.startTime != null && exception.data.endTime != null) {
+                dayStartTime = exception.data.startTime;
+                dayEndTime = exception.data.endTime;
+            }
+        } else if (this.parent.weekWorkingTime.length > 0) {
             let currentDay: Date = new Date(date.getTime());
             if (
                 (
@@ -377,7 +389,7 @@ export class DateProcessor {
             else {
                 cloneEndDate.setDate(cloneEndDate.getDate() - 1);
             }
-            dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate);
+            dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate, calendarContext);
             this.setTime(dayEndTime, cloneEndDate);
         } else if (hour > dayStartTime && hour < dayEndTime) {
             for (let index: number = 0; index < this.parent.workingTimeRanges.length; index++) {
@@ -400,7 +412,7 @@ export class DateProcessor {
                     if (!this.parent.includeWeekend) {
                         const tempDate: Date = new Date(cloneEndDate.getTime());
                         cloneEndDate = this.getPreviousWorkingDay(cloneEndDate, calendarContext);
-                        dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate);
+                        dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate, calendarContext);
                         if (tempDate.getTime() !== cloneEndDate.getTime()) {
                             this.setTime(dayEndTime, cloneEndDate);
                         }
@@ -415,7 +427,7 @@ export class DateProcessor {
                         if (cloneEndDate.getTime() >= holidayFrom.getTime() && cloneEndDate.getTime() < holidayTo.getTime() ||
                             tempHoliday.getTime() >= holidayFrom.getTime() && tempHoliday.getTime() < holidayTo.getTime()) {
                             cloneEndDate.setDate(cloneEndDate.getDate() - 1);
-                            dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate);
+                            dayEndTime = this.parent['getCurrentDayEndTime'](cloneEndDate, calendarContext);
                             if (!(cloneEndDate.getTime() === holidayFrom.getTime() && dayEndTime === 86400 &&
                                 this.getSecondsInDecimal(cloneEndDate) === 0)) {
                                 this.setTime(dayEndTime, cloneEndDate);
@@ -427,7 +439,7 @@ export class DateProcessor {
             return new Date(cloneEndDate.getTime());
         } else {
             if (!isNullOrUndefined(cloneEndDate) && this.parent.defaultEndTime !== 86400) {
-                dayEndTime = this.parent['getCurrentDayEndTime'](date);
+                dayEndTime = this.parent['getCurrentDayEndTime'](date, calendarContext);
                 this.setTime(dayEndTime, cloneEndDate);
             }
             return new Date(cloneEndDate.getTime());
@@ -445,8 +457,9 @@ export class DateProcessor {
         if (isNullOrUndefined(date)) {
             return null;
         } else {
-            let dayStartTime: number = this.parent['getCurrentDayStartTime'](date);
-            const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProp ? ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : date : date);
+            const calendarContext: CalendarContext = ganttProp.calendarContext;
+            let dayStartTime: number = this.parent['getCurrentDayStartTime'](date, calendarContext);
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProp ? ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : date : date, calendarContext);
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour < dayStartTime) {
                 this.setTime(dayStartTime, cloneDate);
@@ -484,14 +497,15 @@ export class DateProcessor {
         if (isNullOrUndefined(date)) {
             return null;
         } else {
-            let dayEndTime: number = this.parent['getCurrentDayEndTime'](date);
-            const dayStartTime: number = this.parent['getCurrentDayStartTime'](ganttProp ? ganttProp.startDate ? ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate : date : date);
+            const calendarContext: CalendarContext = ganttProp.calendarContext;
+            let dayEndTime: number = this.parent['getCurrentDayEndTime'](date, calendarContext);
+            const dayStartTime: number = this.parent['getCurrentDayStartTime'](ganttProp ? ganttProp.startDate ? ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate : date : date, calendarContext);
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour > dayEndTime) {
                 this.setTime(dayEndTime, cloneDate);
             } else if (hour < dayStartTime && !isNullOrUndefined(ganttProp) && !ganttProp.isMilestone) {
                 cloneDate.setDate(cloneDate.getDate() - 1);
-                dayEndTime = this.parent['getCurrentDayEndTime'](cloneDate);
+                dayEndTime = this.parent['getCurrentDayEndTime'](cloneDate, calendarContext);
                 this.setTime(dayEndTime, cloneDate);
             } else if (hour > dayStartTime && hour < dayEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
@@ -568,12 +582,13 @@ export class DateProcessor {
         let dayStartTime: number;
         let dayEndTime: number;
         const { startdateField, enddateField, durationField } = this.getFieldMappings(isBaseline);
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         if (!isNullOrUndefined(ganttProp[startdateField])) {
             if (!isNullOrUndefined(ganttProp[enddateField]) && isNullOrUndefined(ganttProp[durationField])) {
                 if (this.compareDates(ganttProp[startdateField], ganttProp[enddateField]) === 1) {
                     this.parent.setRecordValue(startdateField, new Date(ganttProp[enddateField].getTime()), ganttProp, true);
-                    dayStartTime = this.parent['getCurrentDayStartTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoStartDate : ganttProp[startdateField]);
-                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoEndDate : ganttProp[enddateField]);
+                    dayStartTime = this.parent['getCurrentDayStartTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoStartDate : ganttProp[startdateField], calendarContext);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoEndDate : ganttProp[enddateField], calendarContext);
                     this.setTime(dayStartTime, ganttProp[startdateField]);
                 }
                 this.calculateDuration(ganttData, isBaseline);
@@ -587,7 +602,7 @@ export class DateProcessor {
         } else {
             tempEndDate = ganttData[this.parent.taskFields[enddateField]];
             if (!isNullOrUndefined(tempEndDate)) {
-                dayEndTime = this.parent['getCurrentDayEndTime'](tempEndDate);
+                dayEndTime = this.parent['getCurrentDayEndTime'](tempEndDate, calendarContext);
                 this.setTime(dayEndTime, tempEndDate);
             }
             this.parent.setRecordValue(enddateField, tempEndDate, ganttProp, true);
@@ -643,6 +658,13 @@ export class DateProcessor {
                 const isAutoSchedule: boolean = isBaseline ? false : ganttProperties.isAutoSchedule;
                 const isMilestone: boolean = isBaseline ? false : ganttProperties.isMilestone;
                 tDuration = this.getDuration(startDate, endDate, durationUnit, isAutoSchedule, isMilestone, undefined, calendarContext);
+                // Add child calendar credit: working days contributed by child task calendar
+                // exceptions only, when the parent's own calendar treats them as non-working days.
+                if (!isBaseline && isAutoSchedule && !isMilestone && ganttData.hasChildRecords &&
+                    (isNullOrUndefined(ganttProperties.segments) || ganttProperties.segments.length === 0)) {
+                    const childDuration: number | null = this.getChildCalendarCredit(ganttData, startDate, endDate, durationUnit);
+                    tDuration = !isNullOrUndefined(childDuration) ? tDuration + childDuration : tDuration;
+                }
             }
         }
         const duration: string = isBaseline ? 'baselineDuration' : 'duration';
@@ -673,12 +695,148 @@ export class DateProcessor {
             }
         }
     }
+
+    /**
+     * Collects distinct calendar contexts from the child records of a parent task, traversing nested parent records recursively.
+     *
+     * @param {IGanttData} ganttData - The parent record whose children are scanned.
+     * @param {CalendarContext[]} contexts - Accumulator for the distinct contexts (pass an empty array).
+     * @returns {CalendarContext[]} - The distinct child calendar contexts.
+     */
+    private collectChildCalendarContexts(ganttData: IGanttData, contexts: CalendarContext[]): CalendarContext[] {
+        const childRecords: IGanttData[] = ganttData.childRecords;
+        if (isNullOrUndefined(childRecords)) {
+            return contexts;
+        }
+        for (let i: number = 0; i < childRecords.length; i++) {
+            const child: IGanttData = childRecords[i as number];
+            const childContext: CalendarContext = child.ganttProperties ? child.ganttProperties.calendarContext : null;
+            if (!isNullOrUndefined(childContext) && contexts.indexOf(childContext) === -1) {
+                contexts.push(childContext);
+            }
+            if (child.hasChildRecords && !isNullOrUndefined(child.childRecords) && child.childRecords.length > 0) {
+                this.collectChildCalendarContexts(child, contexts);
+            }
+        }
+        return contexts;
+    }
+
+    /**
+     * Calculate parent duration credit for working days contributed only through child task calendar exceptions when the parent calendar treats them as non-working days.
+     *
+     * @param {IGanttData} ganttData - The parent record.
+     * @param {Date} startDate - The parent start date.
+     * @param {Date} endDate - The parent end date.
+     * @param {string} durationUnit - The duration unit of the parent task.
+     * @returns {number} - The credit in the parent duration unit; 0 when no credit applies.
+     */
+    private getChildCalendarCredit(ganttData: IGanttData, startDate: Date, endDate: Date, durationUnit: string): number {
+        if (isNullOrUndefined(startDate) || isNullOrUndefined(endDate)) {
+            return null;
+        }
+        const parentContext: CalendarContext = ganttData.ganttProperties.calendarContext;
+        if (isNullOrUndefined(parentContext)) {
+            return 0;
+        }
+        const contexts: CalendarContext[] = this.collectChildCalendarContexts(ganttData, []);
+        let hasDistinctContext: boolean = false;
+        for (let i: number = 0; i < contexts.length; i++) {
+            if (contexts[i as number] !== parentContext) {
+                hasDistinctContext = true;
+                break;
+            }
+        }
+        if (!hasDistinctContext) {
+            return 0;
+        }
+        const considerWeekend: boolean = this.parent.includeWeekend;
+        const current: Date = new Date(startDate.getTime());
+        current.setHours(0, 0, 0, 0);
+        const endDay: Date = new Date(endDate.getTime());
+        endDay.setHours(0, 0, 0, 0);
+        const endSeconds: number = this.getSecondsInDecimal(endDate);
+        let credit: number = 0;
+        while (current.getTime() <= endDay.getTime()) {
+            const isDayIncluded: boolean = current.getTime() < endDay.getTime() || endSeconds > 0;
+            if (isDayIncluded) {
+                const isParentNonWorkingDay: boolean = this.isOnHolidayOrWeekEnd(current, considerWeekend, parentContext);
+                if (isParentNonWorkingDay) {
+                    for (let i: number = 0; i < contexts.length; i++) {
+                        if (contexts[i as number] !== parentContext &&
+                            !this.isOnHolidayOrWeekEnd(current, considerWeekend, contexts[i as number])) {
+                            credit++;
+                            break;
+                        }
+                    }
+                }
+            }
+            current.setDate(current.getDate() + 1);
+        }
+        if (credit === 0) {
+            return 0;
+        }
+        return this.calculateDurationValue(durationUnit, credit, this.parent.secondsPerDay);
+    }
+
+    private calculateNonWorkingTime(
+        sDate: Date,
+        eDate: Date,
+        calendarContext: CalendarContext,
+        isAutoSchedule: boolean,
+        isBaseline: boolean,
+        ignoreAutoSchedule: boolean
+    ): number {
+        let totalNonWorkSeconds: number = 0;
+        let current: Date = new Date(sDate);
+        while (current < eDate) {
+            const dayStart: Date = new Date(current);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd: Date = new Date(dayStart);
+            dayEnd.setDate(dayEnd.getDate() + 1);
+            const isEndDateOnDay: boolean = eDate.getFullYear() === dayStart.getFullYear() &&
+                eDate.getMonth() === dayStart.getMonth() && eDate.getDate() === dayStart.getDate();
+            const startMark: number = this.getSecondsInDecimal(current);
+            const endMark: number = isEndDateOnDay ? this.getSecondsInDecimal(eDate) : 86400;
+            const daySeconds: number = Math.max(0, endMark - startMark);
+            const considerWeekend: boolean = this.parent.includeWeekend;
+            const isNonWorkingDay: boolean = this.isOnHolidayOrWeekEnd(dayStart, considerWeekend, calendarContext);
+            if (isNonWorkingDay && isAutoSchedule && !isBaseline && !ignoreAutoSchedule) {
+                totalNonWorkSeconds += daySeconds;
+            } else {
+                // Get working ranges (normal or exception)
+                const exception: {
+                    hasException: boolean;
+                    data: any;
+                } = calendarContext.getExceptionForDate(dayStart);
+                let workingRanges: IWorkingTimeRange[];
+                if (exception.hasException) {
+                    workingRanges = exception.data.nonWorkingRange;
+                } else if (this.parent.weekWorkingTime.length > 0) {
+                    workingRanges = this.parent['getNonWorkingRange'](dayStart);
+                } else {
+                    workingRanges = this.parent.nonWorkingTimeRanges;
+                }
+                // Calculate working seconds inside the measured window
+                let workingSeconds: number = 0;
+                for (const range of workingRanges) {
+                    const overlapStart: number = Math.max(startMark, range.from);
+                    const overlapEnd: number = Math.min(endMark, range.to);
+                    if (overlapEnd > overlapStart && range.isWorking) {
+                        workingSeconds += (overlapEnd - overlapStart);
+                    }
+                }
+                totalNonWorkSeconds += (daySeconds - workingSeconds);
+            }
+            current = dayEnd;
+        }
+        return totalNonWorkSeconds;
+    }
+
     /**
      *
      * @param {Date} sDate Method to get total nonworking time between two date values
      * @param {Date} eDate .
      * @param {boolean} isAutoSchedule .
-     * @param {boolean} isCheckTimeZone .
      * @param {CalendarContext} calendarContext .
      * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @param {boolean} ignoreAutoSchedule - Indicates whether to consider the autoschedule or not.
@@ -688,30 +846,10 @@ export class DateProcessor {
         sDate: Date,
         eDate: Date,
         isAutoSchedule: boolean,
-        isCheckTimeZone: boolean,
         calendarContext: CalendarContext,
         isBaseline?: boolean, ignoreAutoSchedule?: boolean
     ): number {
-        const parent: Gantt = this.parent;
-        isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
-        const shouldCheckWeekend: boolean =
-            !isBaseline &&
-            !parent.includeWeekend &&
-            parent.autoCalculateDateScheduling &&
-            !(parent.isLoad && parent.treeGrid.loadChildOnDemand && parent.taskFields.hasChildMapping) &&
-            isAutoSchedule;
-        const weekendCount: number = shouldCheckWeekend && !ignoreAutoSchedule ? this.getWeekendCount(sDate, eDate, calendarContext) : 0;
-        const totalSeconds: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
-        const shouldCheckHolidays: boolean = (isAutoSchedule && parent.autoCalculateDateScheduling &&
-            !(parent.isLoad && parent.treeGrid.loadChildOnDemand && parent.taskFields.hasChildMapping)) && !isBaseline;
-        const holidaysCount: number = shouldCheckHolidays && !ignoreAutoSchedule ? this.getHolidaysCount(sDate, eDate, calendarContext) : 0;
-        const totalWorkDays: number = (totalSeconds - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400;
-        const nonWorkingSecondsOnDate: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule, isBaseline,
-                                                                                calendarContext, ignoreAutoSchedule);
-        const nonWorkingTime: number = parent.weekWorkingTime.length > 0 ?
-            this.nonWorkingSeconds(sDate, eDate, isAutoSchedule, totalWorkDays, calendarContext, false, ignoreAutoSchedule) :
-            (totalWorkDays * (86400 - parent.secondsPerDay));
-        return nonWorkingTime + (weekendCount * 86400) + (holidaysCount * 86400) + nonWorkingSecondsOnDate;
+        return this.calculateNonWorkingTime(sDate, eDate, calendarContext, isAutoSchedule, isBaseline, ignoreAutoSchedule);
     }
 
     private nonWorkingSeconds(
@@ -728,8 +866,8 @@ export class DateProcessor {
         let timeDiff: number = 0;
         let count: number = 0;
         if (fromDuration) {
-            const dayStartTime: number = this.parent['getCurrentDayStartTime'](newStartDate);
-            const dayEndTime: number = this.parent['getCurrentDayEndTime'](newStartDate);
+            const dayStartTime: number = this.parent['getCurrentDayStartTime'](newStartDate, calendarContext);
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](newStartDate, calendarContext);
             if (!(newStartDate.getHours() < dayEndTime / 3600 && newStartDate.getHours() >= dayStartTime / 3600)) {
                 newStartDate.setDate(newStartDate.getDate() + 1);
             }
@@ -799,12 +937,13 @@ export class DateProcessor {
      * @param {boolean} isMilestone .
      * @param {boolean} isCheckTimeZone .
      * @param {CalendarContext} calendarContext .
+     * @param {boolean} calculateSeconds .
      * @returns {number} .
      * @private
      */
     public getDuration(
         startDate: Date, endDate: Date, durationUnit: string, isAutoSchedule: boolean,
-        isMilestone: boolean, isCheckTimeZone: boolean = true, calendarContext: CalendarContext): number {
+        isMilestone: boolean, isCheckTimeZone: boolean = true, calendarContext: CalendarContext, calculateSeconds?: boolean): number {
         if (!startDate || !endDate) {
             return null;
         }
@@ -822,8 +961,8 @@ export class DateProcessor {
                 const currentEndDate: Date = new Date(tempStartDate);
                 currentStartDate.setHours(0, 0, 0, 0);
                 currentEndDate.setHours(0, 0, 0, 0);
-                currentStartDate.setSeconds(this.parent['getCurrentDayStartTime'](tempStartDate));
-                currentEndDate.setSeconds(this.parent['getCurrentDayEndTime'](tempStartDate));
+                currentStartDate.setSeconds(this.parent['getCurrentDayStartTime'](tempStartDate, calendarContext));
+                currentEndDate.setSeconds(this.parent['getCurrentDayEndTime'](tempStartDate, calendarContext));
                 if (currentDateString === this.parent.getFormatedDate(startDate)) {
                     currentStartDate.setTime(startDate.getTime());
                 }
@@ -832,7 +971,7 @@ export class DateProcessor {
                 }
                 const timeDiffSeconds: number = this.getTimeDifference(currentStartDate, currentEndDate, isCheckTimeZone) / 1000;
                 const nonWorkSeconds: number = this.getNonworkingTime(
-                    currentStartDate, currentEndDate, isAutoSchedule, isCheckTimeZone, calendarContext
+                    currentStartDate, currentEndDate, isAutoSchedule, calendarContext
                 );
                 totalDurationInDays += Math.max(0, timeDiffSeconds - nonWorkSeconds) / dayWorkingSeconds;
                 tempStartDate.setDate(tempStartDate.getDate() + 1);
@@ -841,9 +980,21 @@ export class DateProcessor {
                 durationValue = this.calculateDurationValue(durationUnit, totalDurationInDays, totSeconds);
             }
         } else {
-            totSeconds = this.parent.secondsPerDay;
+            if (calculateSeconds) {
+                const exception: {
+                    hasException: boolean;
+                    data: any;
+                } = calendarContext.getExceptionForDate(startDate);
+                if (exception.hasException) {
+                    totSeconds = exception.data.secondsPerDay;
+                } else {
+                    totSeconds = this.parent.defaultSecondsPerDay;
+                }
+            } else {
+                totSeconds = this.parent.secondsPerDay;
+            }
             const timeDiff: number = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
-            const nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone, calendarContext);
+            const nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, calendarContext);
             const durationHours: number = timeDiff - nonWorkHours;
             if (!(isSameDay && isMilestone)) {
                 durationValue = this.calculateDurationValue(durationUnit, durationHours / totSeconds, totSeconds);
@@ -857,6 +1008,10 @@ export class DateProcessor {
             return duration;
         } else if (durationUnit === 'minute') {
             return duration * (totSeconds / 60);
+        } else if (durationUnit === 'week') {
+            return duration / this.parent.daysPerWeek;
+        } else if (durationUnit === 'month') {
+            return duration / this.parent.daysPerMonth;
         } else {
             return duration * (totSeconds / 3600);
         }
@@ -881,6 +1036,10 @@ export class DateProcessor {
             value = totSeconds * duration;
         } else if (durationUnit.toLocaleLowerCase() === 'hour') {
             value = duration * 3600;
+        } else if (durationUnit.toLocaleLowerCase() === 'week') {
+            value = duration * this.parent.daysPerWeek * totSeconds;
+        } else if (durationUnit.toLocaleLowerCase() === 'month') {
+            value = duration * this.parent.daysPerMonth * totSeconds;
         } else {
             value = duration * 60;
         }
@@ -946,7 +1105,7 @@ export class DateProcessor {
         let remainingSeconds: number = totalSeconds;
         while (remainingSeconds > 0) {
             endDate.setSeconds(endDate.getSeconds() + remainingSeconds);
-            const nonWork: number = this.getNonworkingTime(current, endDate, ganttProp.isAutoSchedule, true,
+            const nonWork: number = this.getNonworkingTime(current, endDate, ganttProp.isAutoSchedule,
                                                            calendarContext, isBaseline, ignoreAutoSchedule);
             const workHours: number = remainingSeconds - nonWork;
             remainingSeconds -= workHours;
@@ -989,7 +1148,7 @@ export class DateProcessor {
         let workHours: number = 0;
         while (secondDuration > 0) {
             startDate.setSeconds(startDate.getSeconds() - secondDuration);
-            nonWork = this.getNonworkingTime(startDate, tempEnd, ganttProp.isAutoSchedule, true, ganttProp.calendarContext, isBaseline);
+            nonWork = this.getNonworkingTime(startDate, tempEnd, ganttProp.isAutoSchedule, ganttProp.calendarContext, isBaseline);
             workHours = secondDuration - nonWork;
             secondDuration = secondDuration - workHours;
             if (secondDuration > 0) {
@@ -1000,7 +1159,7 @@ export class DateProcessor {
         /* To render the milestone in proper date while loading */
         if (fromValidation && ganttProp.isMilestone) {
             startDate.setDate(startDate.getDate() - 1);
-            const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : startDate);
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : startDate, ganttProp.calendarContext);
             this.parent.dateValidationModule.setTime(dayEndTime, startDate);
             startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp, true);
         }
@@ -1021,8 +1180,8 @@ export class DateProcessor {
         else {
             secondDuration = 0;
             let durationValue: number = duration;
-            const dayStartTime: number = this.parent['getCurrentDayStartTime'](sDate);
-            const dayEndTime: number = this.parent['getCurrentDayEndTime'](sDate);
+            const dayStartTime: number = this.parent['getCurrentDayStartTime'](sDate, calendarContext);
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](sDate, calendarContext);
             if (!(sDate.getHours() < dayEndTime / 3600 && sDate.getHours() > dayStartTime / 3600) && this.fromSegments) {
                 if (fromEndDate) {
                     sDate.setDate(sDate.getDate() + 1);
@@ -1122,10 +1281,11 @@ export class DateProcessor {
         const startDate: Date = isBaseline ? ganttProp.baselineStartDate : (isAuto ? ganttProp.autoStartDate : ganttProp.startDate);
         const endDate: Date = isBaseline ? ganttProp.baselineEndDate : (isAuto ? ganttProp.autoEndDate : ganttProp.endDate);
         const duration: number = !ganttProp.isAutoSchedule && ganttProp.autoDuration ? ganttProp.autoDuration : ganttProp.duration;
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         if (isNullOrUndefined(startDate)) {
             if (!isNullOrUndefined(endDate)) {
                 sDate = new Date(endDate.getTime());
-                const dayStartTime: number = this.parent['getCurrentDayStartTime'](sDate);
+                const dayStartTime: number = this.parent['getCurrentDayStartTime'](sDate, calendarContext);
                 this.setTime(dayStartTime, sDate);
             } else if (!isNullOrUndefined(duration)) {
                 const ganttTask: IGanttData = this.parent.getTaskByUniqueID(ganttProp.uniqueID);
@@ -1159,13 +1319,14 @@ export class DateProcessor {
         const startDate: Date = isBaseline ? ganttProp.baselineStartDate : (isAuto ? ganttProp.autoStartDate : ganttProp.startDate);
         const endDate: Date = isBaseline ? ganttProp.baselineEndDate : (isAuto ? ganttProp.autoEndDate : ganttProp.endDate);
         const duration: number = isAuto ? ganttProp.autoDuration : ganttProp.duration;
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         if (isNullOrUndefined(endDate)) {
             if (!isNullOrUndefined(startDate)) {
                 if (ganttProp.isMilestone) {
                     eDate = this.checkStartDate(startDate);
                 } else {
                     eDate = new Date(startDate.getTime());
-                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](endDate ? endDate : eDate);
+                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](endDate ? endDate : eDate, calendarContext);
                     this.setTime(dayEndTime, eDate);
                 }
             } else if (!isNullOrUndefined(duration)) {
@@ -1181,7 +1342,7 @@ export class DateProcessor {
     }
     private getWorkingTime(day: string, currentRange: DayWorkingTimeModel, startDate: Date, totalSeconds: number,
                            count: number, nonWorkingHours: number[], workingTimeRanges: IWorkingTimeRange[],
-                           nonWorkingTimeRanges: IWorkingTimeRange[]): number {
+                           nonWorkingTimeRanges: IWorkingTimeRange[], startTimeObj?: object, endTimeObj?: object): number {
         if (!isNullOrUndefined(currentRange.from) && !isNullOrUndefined(currentRange.to)) {
             startDate.setHours(0, 0, 0, 0);
             const tempDate: Date = new Date(startDate.getTime());
@@ -1203,13 +1364,21 @@ export class DateProcessor {
             }
             totalSeconds += timeDiff / 1000;
             if (count === 0) {
-                this.parent.defaultStartTime = sdSeconds;
+                if (startTimeObj) {
+                    startTimeObj['startTime'] = sdSeconds;
+                } else {
+                    this.parent.defaultStartTime = sdSeconds;
+                }
                 if (this.parent.weekWorkingTime.length > 0) {
                     this.assignStartTime(day, sdSeconds);
                 }
             }
             if (count === this[day.toLowerCase() + 'TimeRangeLength'] - 1 || day === '') {
-                this.parent.defaultEndTime = edSeconds;
+                if (endTimeObj) {
+                    endTimeObj['endTime'] = edSeconds;
+                } else {
+                    this.parent.defaultEndTime = edSeconds;
+                }
                 if (this.parent.weekWorkingTime.length > 0) {
                     this.assignEndTime(day, edSeconds);
                 }
@@ -1390,6 +1559,11 @@ export class DateProcessor {
             });
         }
         totalSeconds = seconds;
+        this.parent.defaultSecondsPerDay = totalSeconds;
+        if (this.parent.hoursPerDay !== undefined && this.parent.hoursPerDay > 0 &&
+            this.parent.hoursPerDay !== 8 && totalSeconds !== 0) {
+            return this.parent.hoursPerDay * 3600;
+        }
         return totalSeconds;
     }
     /**
@@ -1414,6 +1588,10 @@ export class DateProcessor {
                     durationUnit = 'hour';
                 } else if (getValue('day', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
                     durationUnit = 'day';
+                } else if (getValue('week', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
+                    durationUnit = 'week';
+                } else if (getValue('month', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
+                    durationUnit = 'month';
                 }
             }
         } else {
@@ -1434,7 +1612,7 @@ export class DateProcessor {
      */
     protected getNextWorkingDay(date: Date, calendarContext: CalendarContext): Date {
         if (calendarContext) {
-            const override: boolean = calendarContext.getExceptionForDate(date);
+            const override: boolean = calendarContext.getExceptionForDate(date).hasException;
             if (override) {
                 return date;
             }
@@ -1464,34 +1642,13 @@ export class DateProcessor {
         eDate.setHours(0, 0, 0, 0);
         while (sDate.getTime() < eDate.getTime()) {
             if (this.parent.nonWorkingDayIndex.indexOf(sDate.getDay()) !== -1) {
-                if (!calendarContext.getExceptionForDate(sDate)) {
+                if (!calendarContext.getExceptionForDate(sDate).hasException) {
                     weekendCount += 1;
                 }
             }
             sDate.setDate(sDate.getDate() + 1);
         }
         return weekendCount;
-    }
-    /**
-     *
-     * @param {Date} startDate .
-     * @param {Date} endDate .
-     * @param {boolean} isCheckTimeZone .
-     * @returns {number} .
-     */
-    protected getNumberOfSeconds(startDate: Date, endDate: Date, isCheckTimeZone: boolean): number {
-        const sDate: Date = new Date(startDate.getTime()); const eDate: Date = new Date(endDate.getTime());
-        let timeDiff: number = 0;
-        sDate.setDate(sDate.getDate() + 1);
-        sDate.setHours(0, 0, 0, 0);
-        eDate.setHours(0, 0, 0, 0);
-        if (sDate.getTime() < eDate.getTime()) {
-            timeDiff = (this.getTimeDifference(sDate, eDate, isCheckTimeZone)) / 1000;
-        }
-        if (timeDiff % 86400 !== 0) {
-            timeDiff = timeDiff - (timeDiff % 86400) + 86400;
-        }
-        return timeDiff;
     }
     /**
      *
@@ -1519,7 +1676,7 @@ export class DateProcessor {
             for (let i: number = startIndex; i < endIndex; i++) {
                 const holidayValue: number = holidays[i as number];
                 const currentHoliday: Date = this.getDateFromFormat(new Date(holidayValue));
-                if (!calendarContext.getExceptionForDate(currentHoliday)) {
+                if (!calendarContext.getExceptionForDate(currentHoliday).hasException) {
                     if ((!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) ||
                         this.parent.includeWeekend) {
                         holidaysCount += 1;
@@ -1580,7 +1737,7 @@ export class DateProcessor {
             !(parent.isLoad && parent.treeGrid.loadChildOnDemand && parent.taskFields.hasChildMapping)) {
             checkWeekEnd = true;
         }
-        if (calendarContext.getExceptionForDate(date)) {
+        if (calendarContext.getExceptionForDate(date).hasException) {
             return false;
         }
         if (!checkWeekEnd && this.parent.nonWorkingDayIndex.indexOf(date.getDay()) !== -1) {
@@ -1597,7 +1754,11 @@ export class DateProcessor {
             const mid: number = Math.floor((low + high) / 2);
             const holidayValue: number = holidays[mid as number];
             if (holidayValue === dateTime) {
-                return true;
+                if (!parent.autoCalculateDateScheduling) {
+                    return false;
+                } else {
+                    return true;
+                }
             }
             if (holidayValue < dateTime) {
                 low = mid + 1;
@@ -1608,124 +1769,6 @@ export class DateProcessor {
         return false;
     }
     /**
-     * To calculate non working times in given date
-     *
-     * @param {Date} startDate .
-     * @param {Date} endDate .
-     * @param {boolean} isAutoSchedule .
-     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
-     * @param {CalendarContext} calendarContext .
-     * @param {boolean} ignoreAutoSchedule - Indicates whether the calculation is specific to baseline dates.
-     * @returns {number} .
-     */
-    protected getNonWorkingSecondsOnDate(
-        startDate: Date,
-        endDate: Date,
-        isAutoSchedule: boolean,
-        isBaseline: boolean,
-        calendarContext: CalendarContext, ignoreAutoSchedule?: boolean
-    ): number {
-        const sHour: number = this.getSecondsInDecimal(startDate);
-        const eHour: number = this.getSecondsInDecimal(endDate);
-        let startRangeIndex: number = -1;
-        let endRangeIndex: number = -1;
-        let totNonWrkSecs: number = 0;
-        const startOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
-            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) && !isBaseline ? this.isOnHolidayOrWeekEnd(startDate, null, calendarContext) : false;
-        const endOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
-            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) && !isBaseline ? this.isOnHolidayOrWeekEnd(endDate, null, calendarContext) : false;
-        let startnonWorkingTimeRange: IWorkingTimeRange[];
-        let endnonWorkingTimeRange: IWorkingTimeRange[];
-        if (this.parent.weekWorkingTime.length > 0) {
-            startnonWorkingTimeRange = this.parent['getNonWorkingRange'](startDate);
-            for (let i: number = 0; i < startnonWorkingTimeRange.length; i++) {
-                const val: IWorkingTimeRange = startnonWorkingTimeRange[i as number];
-                if (sHour >= val.from && sHour <= val.to) {
-                    startRangeIndex = i;
-                }
-            }
-            endnonWorkingTimeRange = this.parent['getNonWorkingRange'](endDate);
-            for (let i: number = 0; i < endnonWorkingTimeRange.length; i++) {
-                const val: IWorkingTimeRange = endnonWorkingTimeRange[i as number];
-                if (eHour >= val.from && eHour <= val.to) {
-                    endRangeIndex = i;
-                }
-            }
-        }
-        else {
-            startnonWorkingTimeRange = this.parent.nonWorkingTimeRanges;
-            endnonWorkingTimeRange = this.parent.nonWorkingTimeRanges;
-            for (let i: number = 0; i < startnonWorkingTimeRange.length; i++) {
-                const val: IWorkingTimeRange = startnonWorkingTimeRange[i as number];
-                if (sHour >= val.from && sHour <= val.to) {
-                    startRangeIndex = i;
-                }
-                if (eHour >= val.from && eHour <= val.to) {
-                    endRangeIndex = i;
-                }
-            }
-        }
-        if (startDate.getDate() !== endDate.getDate() || startDate.getMonth() !== endDate.getMonth() ||
-            startDate.getFullYear() !== endDate.getFullYear()) {
-            if (!startOnHoliday || ignoreAutoSchedule) {
-                for (let i: number = startRangeIndex; i < startnonWorkingTimeRange.length; i++) {
-                    if (!isNullOrUndefined(startnonWorkingTimeRange[i as number]) && !startnonWorkingTimeRange[i as number].isWorking) {
-                        if (i === startRangeIndex) {
-                            totNonWrkSecs += (startnonWorkingTimeRange[i as number].to - sHour);
-                        } else {
-                            totNonWrkSecs += (startnonWorkingTimeRange[i as number].interval);
-                        }
-                    }
-                }
-            } else {
-                totNonWrkSecs += (86400 - sHour);
-            }
-            if (!endOnHoliday || ignoreAutoSchedule) {
-                for (let i: number = 0; i <= endRangeIndex; i++) {
-                    if (!endnonWorkingTimeRange[i as number].isWorking) {
-                        if (i === endRangeIndex) {
-                            totNonWrkSecs += (eHour - endnonWorkingTimeRange[i as number].from);
-                        } else {
-                            totNonWrkSecs += endnonWorkingTimeRange[i as number].interval;
-                        }
-                    }
-                }
-            } else {
-                totNonWrkSecs += eHour;
-            }
-        } else {
-            if (startRangeIndex !== endRangeIndex) {
-                if (!endOnHoliday || ignoreAutoSchedule) {
-                    for (let i: number = startRangeIndex; i <= endRangeIndex; i++) {
-                        if (!isNullOrUndefined(startnonWorkingTimeRange[i as number]) && !startnonWorkingTimeRange[i as number].isWorking) {
-                            if (i === startRangeIndex) {
-                                totNonWrkSecs += (startnonWorkingTimeRange[i as number].to - sHour);
-                            } else if (i === endRangeIndex) {
-                                totNonWrkSecs += (eHour - startnonWorkingTimeRange[i as number].from);
-                            } else {
-                                totNonWrkSecs += startnonWorkingTimeRange[i as number].interval;
-                            }
-                        }
-                    }
-                } else {
-                    totNonWrkSecs += (eHour - sHour);
-                }
-            } else {
-                if (!endOnHoliday || ignoreAutoSchedule) {
-                    const range: IWorkingTimeRange = startnonWorkingTimeRange[startRangeIndex as number];
-                    if (!range.isWorking) {
-                        totNonWrkSecs = eHour - sHour;
-                    }
-                } else {
-                    totNonWrkSecs += (eHour - sHour);
-                }
-            }
-        }
-        return totNonWrkSecs;
-    }
-    /**
      *
      * @param {Date} date .
      * @param {CalendarContext} calendarContext .
@@ -1733,14 +1776,14 @@ export class DateProcessor {
      */
     protected getPreviousWorkingDay(date: Date, calendarContext: CalendarContext): Date {
         if (calendarContext) {
-            const override: boolean = calendarContext.getExceptionForDate(date);
+            const override: boolean = calendarContext.getExceptionForDate(date).hasException;
             if (override) {
                 return date;
             }
         }
         const dayIndex: number = date.getDay();
         const previousIndex: number = (dayIndex === 0) ? 6 : dayIndex - 1;
-        const dayEndTime: number = this.parent['getCurrentDayEndTime'](date);
+        const dayEndTime: number = this.parent['getCurrentDayEndTime'](date, calendarContext);
         if (this.parent.nonWorkingDayIndex.indexOf(dayIndex) !== -1 || (this.parent.nonWorkingDayIndex.indexOf(previousIndex) !== -1
             && dayEndTime !== 86400 && this.getSecondsInDecimal(date) === 0)) {
             date.setDate(date.getDate() - 1);
@@ -1963,6 +2006,10 @@ export class DateProcessor {
                 } else if (durationUnit === 'minute') {
                     value += plural ? this.parent.localeObj.getConstant('minutes') :
                         this.parent.localeObj.getConstant('minute');
+                } else if (durationUnit === 'week') {
+                    value += plural ? this.parent.localeObj.getConstant('weeks') : this.parent.localeObj.getConstant('week');
+                } else if (durationUnit === 'month') {
+                    value += plural ? this.parent.localeObj.getConstant('months') : this.parent.localeObj.getConstant('month');
                 }
             }
         }
@@ -2166,10 +2213,8 @@ export class DateProcessor {
             new Date(this.parent.projectEndDate) : this.parent.projectEndDate;
         const timelineStartDate: Date = toDate(this.parent.timelineSettings.viewStartDate);
         const timelineEndDate: Date = toDate(this.parent.timelineSettings.viewEndDate);
-        this.parent.cloneTimelineStartDate = sDate ? new Date(this.parent.cloneProjectStartDate)
-            : timelineStartDate ? timelineStartDate : new Date(this.parent.cloneProjectStartDate);
-        this.parent.cloneTimelineEndDate = eDate ? new Date(this.parent.cloneProjectEndDate)
-            : timelineEndDate ? timelineEndDate : new Date(this.parent.cloneProjectEndDate);
+        this.parent.cloneTimelineStartDate = timelineStartDate ? timelineStartDate : new Date(this.parent.cloneProjectStartDate);
+        this.parent.cloneTimelineEndDate = timelineEndDate ? timelineEndDate : new Date(this.parent.cloneProjectEndDate);
         if (!timelineEndDate) {
             this.parent.timelineModule.adjustEndDateToFillChart(false);
         }

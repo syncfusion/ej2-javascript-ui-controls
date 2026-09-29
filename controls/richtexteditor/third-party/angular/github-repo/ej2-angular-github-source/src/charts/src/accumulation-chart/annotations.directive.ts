@@ -16,9 +16,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-accumulation-annotations>e-accumulation-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnnotationDirective> {
@@ -33,12 +34,12 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
      * * Point - Renders the annotation based on x and y data values.
      * @default 'Pixel'
      */
-    public coordinateUnits: any;
+    public declare coordinateUnits: any;
     /** 
      * A description for the annotation that provides additional information about its content for screen readers.
      * @default null
      */
-    public description: any;
+    public declare description: any;
     /** 
      * Specifies the alignment of the annotation. 
      * The options are: 
@@ -48,7 +49,7 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
      * @default 'Center'
      * @deprecated 
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Specifies the regions of the annotation. 
      * The options are: 
@@ -56,7 +57,7 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
      * * Series - Renders the annotation based on series coordinates.
      * @default 'Chart'
      */
-    public region: any;
+    public declare region: any;
     /** 
      * Specifies the position of the annotation. 
      * The options are 
@@ -66,26 +67,19 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
      * @default 'Middle'
      * @deprecated 
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * If `coordinateUnit` is set to `Pixel`, x specifies the pixel value. 
      * If `coordinateUnit` is set to `Point`, x specifies the data value.
      * @default '0'
      */
-    public x: any;
+    public declare x: any;
     /** 
      * If `coordinateUnit` is set to `Pixel`, y specifies the pixel value. 
      * If `coordinateUnit` is set to `Point`, y specifies the data value.
      * @default '0'
      */
-    public y: any;
-    /** 
-     * The content of the annotation, which can also accept the ID of a custom element.
-     * @default null
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare y: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -94,6 +88,7 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
         this.directivePropList = input;
     }
 }
+Template()(AccumulationAnnotationDirective.prototype, 'content');
 
 /**
  * AccumulationAnnotation Array Directive
@@ -101,6 +96,7 @@ export class AccumulationAnnotationDirective extends ComplexBase<AccumulationAnn
  */
 @Directive({
     selector: 'ej-accumulationchart>e-accumulation-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(AccumulationAnnotationDirective)
     },

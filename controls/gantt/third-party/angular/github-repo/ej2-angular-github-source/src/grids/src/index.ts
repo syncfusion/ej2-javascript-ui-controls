@@ -4,7 +4,7 @@ export {AggregateColumnDirective,AggregateColumnsDirective} from './grid/aggrega
 export {AggregateDirective,AggregatesDirective} from './grid/aggregates.directive';
 export { GridComponent} from './grid/grid.component';
 export { GridModule } from './grid/grid.module';
-export { GridAllModule, FilterService, PageService, SelectionService, SortService, GroupService, ReorderService, RowDDService, DetailRowService, ToolbarService, AggregateService, SearchService, VirtualScrollService, EditService, ResizeService, ExcelExportService, PdfExportService, CommandColumnService, ContextMenuService, FreezeService, ColumnMenuService, ColumnChooserService, ForeignKeyService, InfiniteScrollService, LazyLoadGroupService, DomVirtualizationService } from './grid/grid-all.module';
+export { GridAllModule, FilterService, PageService, SelectionService, SortService, GroupService, ReorderService, RowDDService, DetailRowService, ToolbarService, AggregateService, SearchService, VirtualScrollService, EditService, ResizeService, ExcelExportService, PdfExportService, CommandColumnService, ContextMenuService, FreezeService, ColumnMenuService, ColumnChooserService, ForeignKeyService, InfiniteScrollService, LazyLoadGroupService, DomVirtualizationService, FormulaService, AdvancedFilterService, WebMcpAdapterService } from './grid/grid-all.module';
 export { PagerComponent} from './pager/pager.component';
 export { PagerModule } from './pager/pager.module';
 export { PagerAllModule } from './pager/pager-all.module';

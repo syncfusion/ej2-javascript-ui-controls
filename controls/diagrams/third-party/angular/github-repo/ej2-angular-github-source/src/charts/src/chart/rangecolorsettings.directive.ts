@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-rangecolorsettings>e-rangecolorsetting',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class RangeColorSettingDirective extends ComplexBase<RangeColorSettingDirective> {
@@ -27,19 +27,19 @@ export class RangeColorSettingDirective extends ComplexBase<RangeColorSettingDir
     /** 
      * Specifies the fill colors for points that lie within the given range. If multiple colors are specified, a gradient will be applied.
      */
-    public colors: any;
+    public declare colors: any;
     /** 
      * Specifies the end value of the color mapping range.
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Specifies the name or label for the range mapping item.
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Specifies the start value of the color mapping range.
      */
-    public start: any;
+    public declare start: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -55,6 +55,7 @@ export class RangeColorSettingDirective extends ComplexBase<RangeColorSettingDir
  */
 @Directive({
     selector: 'ejs-chart>e-rangecolorsettings',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeColorSettingDirective)
     },

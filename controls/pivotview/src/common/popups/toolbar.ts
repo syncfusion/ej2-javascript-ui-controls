@@ -12,7 +12,6 @@ import { ToolbarItems, ChartSeriesType, MultipleAxisMode } from '../base/enum';
 import { Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs as StateChange } from '@syncfusion/ej2-buttons';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
-import { ChartSettings } from '../../pivotview/model/chartsettings';
 import { GridSettings } from '../../pivotview/model/gridsettings';
 import { AccumulationChart, Chart } from '@syncfusion/ej2-charts';
 import { PivotUtil } from '../../base/util';
@@ -38,6 +37,7 @@ export class Toolbar {
     private renameText: string;
     private showLableState: boolean;
     private chartLableState: boolean;
+    private isChartTypeDialogApplied: boolean = false;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -58,8 +58,13 @@ export class Toolbar {
     private createToolbar(): void {
         this.parent.isModified = false;
         this.renderDialog();
-        if (select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element) !== null) {
-            remove(select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element));
+        if (this.toolbar && !this.toolbar.isDestroyed) {
+            this.destroyToolbarComponents();
+            this.toolbar.destroy();
+            this.toolbar = null;
+        }
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
         const element: HTMLElement = createElement( 'div', {
             id: this.parent.element.id + 'pivot-toolbar',
@@ -106,15 +111,13 @@ export class Toolbar {
         } else {
             this.toolbar.appendTo(element);
         }
-        this.toolbar.width = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
-        const gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
-            (this.parent.getWidthAsNumber() - 2);
+        const toolbarWidth: number = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
+        this.toolbar.width = toolbarWidth;
+        const gridPanelWidth: string | number = toolbarWidth - 2;
         this.toolbar.element.style.minWidth = (this.parent.isAdaptive ? gridPanelWidth + 'px' : gridPanelWidth < 400 ?
             (this.parent.minWidth || '398px') : gridPanelWidth + 'px') as string;
         if (this.parent.chart) {
-            this.parent.chart.setProperties(
-                { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },
-                true);
+            this.parent.chart.setProperties({ width: toolbarWidth.toString() }, true);
         }
         if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -392,7 +395,7 @@ export class Toolbar {
                 : (args.item.id === this.parent.element.id + 'formatting') ? events.openConditionalFormatting : (args.item.id === this.parent.element.id + 'numberFormatting') ? events.openNumberFormatting
                     : (args.item.id === this.parent.element.id + 'mdxQuery') ? events.MdxQuery : (args.item.id === this.parent.element.id + 'fieldlist') ? events.showFieldList : '';
         this.parent.actionObj.actionName = actionName;
-        if (this.parent.actionBeginMethod()) {
+        if (actionName !== '' && actionName !== events.showFieldList && this.parent.actionBeginMethod()) {
             return;
         }
         try {
@@ -1348,6 +1351,8 @@ export class Toolbar {
     private menuItemClick(args: ClickEventArgs): void {
         let exportArgs: BeforeExportEventArgs = {};
         let type: string;
+        const itemType: string = (!isNullOrUndefined(args.item) && !isNullOrUndefined(args.item.id)) ?
+            args.item.id.split(this.parent.element.id + '_')[1] : '';
         const actionName: string = (args.item.id === this.parent.element.id + 'grid') ? events.tableView : (args.item.id === this.parent.element.id + '_' + 'Column') ? events.chartView : (args.item.id === this.parent.element.id + '_' + 'Bar') ? events.chartView : (args.item.id === this.parent.element.id + '_' + 'Line') ? events.chartView
             : (args.item.id === this.parent.element.id + '_' + 'Area') ? events.chartView : (args.item.id === this.parent.element.id + '_' + 'Scatter') ? events.chartView : (args.item.id === this.parent.element.id + '_' + 'Polar') ? events.chartView : (args.item.id === this.parent.element.id + '_' + 'ChartMoreOption') ? events.chartView
                 : (args.item.id === this.parent.element.id + '_' + 'multipleAxes') ? events.multipleAxis : (args.item.id === this.parent.element.id + '_' + 'showLegend') ? events.showLegend : (args.item.id === this.parent.element.id + 'pdf') ? events.pdfExport : (args.item.id === this.parent.element.id + 'png') ? events.pngExport
@@ -1357,14 +1362,21 @@ export class Toolbar {
                                 : (args.item.id === this.parent.element.id + 'grandtotalcolumn') ? events.grandTotalsColumn : (args.item.id === this.parent.element.id + 'grandtotal') ? events.showGrandTotals
                                     : (args.item.id === this.parent.element.id + 'numberFormattingMenu') ? events.numberFormattingMenu : (args.item.id === this.parent.element.id + 'conditionalFormattingMenu') ? events.conditionalFormattingMenu : '';
         this.parent.actionObj.actionName = actionName;
-        if (this.parent.actionBeginMethod()) {
+        const shouldCallActionBegin: boolean = actionName !== '' &&
+            itemType !== 'multipleAxes' && itemType !== 'showLegend' && itemType !== 'ChartMoreOption' &&
+            actionName !== events.hideSubTotals && actionName !== events.subTotalsRow &&
+            actionName !== events.subTotalsColumn && actionName !== events.showSubTotals &&
+            actionName !== events.hideGrandTotals && actionName !== events.grandTotalsRow &&
+            actionName !== events.grandTotalsColumn && actionName !== events.showGrandTotals &&
+            actionName !== events.grandTotalsPosition && actionName !== events.subTotalsPosition && actionName !== events.chartView;
+        if (shouldCallActionBegin && this.parent.actionBeginMethod()) {
             return;
         }
-        if (this.getAllChartItems().indexOf(args.item.id.split(this.parent.element.id + '_')[1]) > -1 ||
-            (args.item.id.split(this.parent.element.id + '_')[1] === 'ChartMoreOption') ||
-            (args.item.id.split(this.parent.element.id + '_')[1] === 'multipleAxes') ||
-            (args.item.id.split(this.parent.element.id + '_')[1] === 'showLegend')) {
-            type = args.item.id.split(this.parent.element.id + '_')[1];
+        if (this.getAllChartItems().indexOf(itemType) > -1 ||
+            itemType === 'ChartMoreOption' ||
+            itemType === 'multipleAxes' ||
+            itemType === 'showLegend') {
+            type = itemType;
         }
         try {
             switch (args.item.id) {
@@ -1372,7 +1384,8 @@ export class Toolbar {
                 const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
                 let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
                 chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
-                if (this.parent.grid && chartInstance) {
+                if (this.parent.grid && chartInstance && (this.parent.displayOption.view !== 'Table' &&
+                    !(this.parent.displayOption.view === 'Both' && this.parent.displayOption.primary === 'Table'))) {
                     if (this.parent.grid.element && this.parent.grid.element.style) {
                         this.parent.grid.element.style.display = '';
                     }
@@ -1461,74 +1474,165 @@ export class Toolbar {
                 this.parent.chartExport('SVG', { fileName: 'result' }, undefined, null, undefined);
                 break;
             case (this.parent.element.id + 'notsubtotal'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideSubTotals, {
+                    toolbarInfo: {
+                        showSubTotals: false
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showSubTotals: false, showColumnSubTotals: false, showRowSubTotals: false } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotalrow'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsRow, {
+                    toolbarInfo: {
+                        showRowSubTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: false, showRowSubTotals: true } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotalcolumn'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsColumn, {
+                    toolbarInfo: {
+                        showColumnSubTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: false } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotal'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showSubTotals, {
+                    toolbarInfo: {
+                        showSubTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: true } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'notgrandtotal'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideGrandTotals, {
+                    toolbarInfo: {
+                        showGrandTotals: false
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showGrandTotals: false, showColumnGrandTotals: false, showRowGrandTotals: false } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotalrow'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsRow, {
+                    toolbarInfo: {
+                        showRowGrandTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: false, showRowGrandTotals: true } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotalcolumn'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsColumn, {
+                    toolbarInfo: {
+                        showColumnGrandTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: false } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotal'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showGrandTotals, {
+                    toolbarInfo: {
+                        showGrandTotals: true
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: true } },
                     true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'top-position'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
+                    toolbarInfo: {
+                        grandTotalsPosition: 'Top'
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { grandTotalsPosition: 'Top' } }, true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'bottom-position'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
+                    toolbarInfo: {
+                        grandTotalsPosition: 'Bottom'
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { grandTotalsPosition: 'Bottom' } }, true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'sub-top-position'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+                    toolbarInfo: {
+                        subTotalsPosition: 'Top'
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { subTotalsPosition: 'Top' } }, true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'sub-bottom-position'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+                    toolbarInfo: {
+                        subTotalsPosition: 'Bottom'
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { subTotalsPosition: 'Bottom' } }, true);
                 this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'sub-none-position'):
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+                    toolbarInfo: {
+                        subTotalsPosition: 'Auto'
+                    }
+                })) {
+                    return;
+                }
                 this.parent.setProperties(
                     { dataSourceSettings: { subTotalsPosition: 'Auto' } }, true);
                 this.parent.refreshData();
@@ -1546,16 +1650,42 @@ export class Toolbar {
             case (this.parent.element.id + '_' + type):
                 if (args.item && args.item.text) {
                     if (type === 'ChartMoreOption') {
+                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.openChartTypeDialog, {})) {
+                            return;
+                        }
                         this.createChartTypeDialog();
+                        this.parent.actionObj.actionName = '';
                     } else if (type === 'multipleAxes') {
+                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.multipleAxis)) {
+                            return;
+                        }
                         if (this.parent.chartSettings.enableScrollOnMultiAxis) {
                             this.isMultiAxisChange = true;
                         }
                         this.parent.chartSettings.enableMultipleAxis = !this.parent.chartSettings.enableMultipleAxis;
                         this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
+                        PivotUtil.invokeActionMethod(
+                            this.parent, events.actionComplete,
+                            this.parent.chartSettings.enableMultipleAxis ? events.multipleAxisEnabled : events.multipleAxisDisabled,
+                            {
+                                toolbarInfo: {
+                                    enableMultipleAxis: this.parent.chartSettings.enableMultipleAxis
+                                }
+                            }
+                        );
                     } else if (this.getAllChartItems().indexOf(type) > -1) {
+                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.chartView, {
+                            toolbarInfo: {
+                                chartType: type as ChartSeriesType
+                            }
+                        })) {
+                            return;
+                        }
                         this.updateChartType(type as ChartSeriesType, false);
                     } else if (type === 'showLegend') {
+                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showLegend)) {
+                            return;
+                        }
                         this.parent.chart.legendSettings.visible = !this.showLableState;
                         if (this.parent.chartSettings.legendSettings) {
                             this.parent.chartSettings.legendSettings.visible = !this.showLableState;
@@ -1563,6 +1693,14 @@ export class Toolbar {
                             this.parent.setProperties({ chartSettings: { legendSettings: { visible: !this.showLableState } } }, true);
                         }
                         this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
+                        PivotUtil.invokeActionMethod(
+                            this.parent, events.actionComplete, !this.showLableState ? events.legendShown : events.legendHidden,
+                            {
+                                toolbarInfo: {
+                                    legendVisible: !this.showLableState
+                                }
+                            }
+                        );
                     }
                 }
                 break;
@@ -1592,6 +1730,7 @@ export class Toolbar {
         return menuItems;
     }
     private createChartTypeDialog(): void {
+        this.isChartTypeDialogApplied = false;
         const chartDialog: HTMLElement = this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + '_ChartTypeDialog',
             className: cls.PIVOTCHART_TYPE_DIALOG
@@ -1632,6 +1771,17 @@ export class Toolbar {
         chartTypesDialog.appendTo(chartDialog);
     }
 
+    private setChartTypeActionComplete(): void {
+        PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.chartTypeSettingsClosed, {
+            toolbarInfo: {
+                chartType: this.parent.chartSettings.chartSeries.type,
+                enableMultipleAxis: this.parent.chartSettings.enableMultipleAxis,
+                multipleAxisMode: this.parent.chartSettings.multipleAxisMode,
+                legendVisible: this.getLableState()
+            }
+        });
+    }
+
     private chartTypeDialogUpdate(): void {
         const chartType: ChartSeriesType = (getInstance(select('#' + this.parent.element.id + '_ChartTypeOption'), DropDownList) as DropDownList).value as ChartSeriesType;
         const checked: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).checked;
@@ -1652,6 +1802,8 @@ export class Toolbar {
         this.updateChartType(chartType, false);
         this.parent.chartSettings.enableMultipleAxis = checked;
         this.parent.chartSettings.multipleAxisMode = (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).value as MultipleAxisMode;
+        this.isChartTypeDialogApplied = true;
+        this.setChartTypeActionComplete();
         const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', document) ?
             getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', document), Dialog) as Dialog : null;
         chartTypesDialog.close();
@@ -1664,6 +1816,14 @@ export class Toolbar {
             if (chartInstance) {
                 if (this.parent && this.parent.grid && this.parent.grid.element && this.parent.grid.element.style) {
                     this.parent.grid.element.style.display = 'none';
+                }
+                if (this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+                    if (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement) {
+                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
+                    }
+                    if (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement) {
+                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = '';
+                    }
                 }
                 if (chartInstance.element && chartInstance.element.style) {
                     chartInstance.element.style.display = '';
@@ -1679,14 +1839,7 @@ export class Toolbar {
                     height: formatUnit(this.parent.pivotChartModule.getChartHeight())
                 }, true);
                 this.parent.chartSettings.chartSeries.type = type;
-                const actionInfo: PivotActionInfo = {
-                    toolbarInfo: {
-                        displayOption: this.parent.displayOption as DisplayOption,
-                        chartSettings: this.parent.chartSettings as ChartSettings
-                    }
-                };
-                this.parent.actionObj.actionInfo = actionInfo;
-                if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
+                if (!isMultiAxis) {
                     chartInstance.refresh();
                 }
             }
@@ -1695,6 +1848,7 @@ export class Toolbar {
     private getDialogContent(): HTMLElement {
         const mainWrapper: HTMLElement = createElement('div', { className: 'e-chart-type-div-content' });
         const optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-container' });
+        const checkboxWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-checkbox-container' });
         const axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-container' });
         const optionTextDiv: HTMLElement = createElement('div', {
             className: 'e-chart-type-option-text'
@@ -1736,12 +1890,13 @@ export class Toolbar {
             id: this.parent.element.id + '_DialogMultipleAxis',
             attrs: { 'type': 'checkbox' }
         }) as HTMLInputElement;
-        mainWrapper.appendChild(checkboxWrap);
+        checkboxWrapperDiv.appendChild(checkboxWrap);
         const labelCheckboxWrap: HTMLInputElement = createElement('input', {
             id: this.parent.element.id + '_DialogShowLabel',
             attrs: { 'type': 'checkbox' }
         }) as HTMLInputElement;
-        mainWrapper.appendChild(labelCheckboxWrap);
+        checkboxWrapperDiv.appendChild(labelCheckboxWrap);
+        mainWrapper.appendChild(checkboxWrapperDiv);
         axisModeWrapperDiv.appendChild(axisModeTextDiv);
         axisModeWrapperDiv.appendChild(dropModeOptionDiv);
         mainWrapper.appendChild(axisModeWrapperDiv);
@@ -1944,6 +2099,10 @@ export class Toolbar {
      * @returns {void}
      */
     private removeDialog(): void {
+        if (!this.isChartTypeDialogApplied) {
+            this.setChartTypeActionComplete();
+        }
+        this.isChartTypeDialogApplied = false;
         const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element) ?
             getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element), Dialog) as Dialog : null;
         if (chartTypesDialog && !chartTypesDialog.isDestroyed) {

@@ -124,7 +124,8 @@ or a file named `.git`.
 Given a path, walk up the file system tree until a git repo working
 directory is found.  Since this calls `stat` a bunch of times, it's
 probably best to only call it if you're reasonably sure you're likely to be
-in a git project somewhere.
+in a git project somewhere. Pass in `opts.root` to stop checking at that
+directory.
 
 Resolves to `null` if not in a git project.
 

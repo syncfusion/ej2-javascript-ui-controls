@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/fabric-dark' as *;
-@forward 'ej2-base/styles/definition/fabric-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $user-icon-gap: 12px !default;
 $chat-scrollbar-width: 6px !default;
 $chat-send-icon-size: 14px !default;
@@ -316,7 +316,6 @@ $preview-file-name-padding-right: 12px !default;
 $image-video-preview-margin: auto !default;
 $preview-file-border-radius: 6px !default;
 $preview-file-border: 1px !default;
-$file-document-font-size: 80px !default;
 $chat-mention-padding: 8px 12px !default;
 $mention-user-name-size: 14px !default;
 $mention-user-name-line-height: 22px !default;
@@ -412,8 +411,6 @@ $bigger-mention-user-icon-width: 44px !default;
 $chat-video-wrapper-bigger-height: 44px !default;
 $file-item-margin: 2px !default;
 $chat-file-details-padding-right: 12px !default;
-$chat-file-format-icon-padding: 3px !default;
-$chat-file-document-icon-font-size: 24px !default;
 $chat-attached-file-details-padding: 3px 0 2px 2px !default;
 $chat-attached-file-text-font-weight: 400 !default;
 $chat-attached-file-text-font-size: 10px !default;

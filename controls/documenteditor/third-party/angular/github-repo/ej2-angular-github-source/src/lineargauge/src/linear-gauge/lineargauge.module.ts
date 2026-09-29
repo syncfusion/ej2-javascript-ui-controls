@@ -6,32 +6,25 @@ import { AxisDirective, AxesDirective } from './axes.directive';
 import { AnnotationDirective, AnnotationsDirective } from './annotations.directive';
 import { LinearGaugeComponent } from './lineargauge.component';
 
+const LINEARGAUGE_DIRECTIVES = [
+    LinearGaugeComponent,
+        RangeDirective,
+        RangesDirective,
+        PointerDirective,
+        PointersDirective,
+        AxisDirective,
+        AxesDirective,
+        AnnotationDirective,
+        AnnotationsDirective
+];
+
 /**
  * NgModule definition for the LinearGauge component.
+ * Re-exports standalone LinearGauge component and directives so existing apps can keep using:
+ * `imports: [LinearGaugeModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        LinearGaugeComponent,
-        RangeDirective,
-        RangesDirective,
-        PointerDirective,
-        PointersDirective,
-        AxisDirective,
-        AxesDirective,
-        AnnotationDirective,
-        AnnotationsDirective
-    ],
-    exports: [
-        LinearGaugeComponent,
-        RangeDirective,
-        RangesDirective,
-        PointerDirective,
-        PointersDirective,
-        AxisDirective,
-        AxesDirective,
-        AnnotationDirective,
-        AnnotationsDirective
-    ]
+    imports: [CommonModule, ...LINEARGAUGE_DIRECTIVES],
+    exports: [...LINEARGAUGE_DIRECTIVES]
 })
 export class LinearGaugeModule { }

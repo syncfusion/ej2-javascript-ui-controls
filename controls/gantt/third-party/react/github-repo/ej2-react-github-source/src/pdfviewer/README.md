@@ -19,6 +19,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/react/llms.txt](https://ai.syncfusion.com/react/llms.txt)
+
 ## Setup
 
 ### Create a React Application
@@ -129,22 +143,22 @@ PDF Viewer component is also offered in the following list of frameworks.
 
 ## Key features
 
-* [View PDF Document](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/getting-started/) - Open and display both the normal and the protected PDF files with AES and RC4 encryption.
-* [Annotations](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/annotation/text-markup-annotation/) - Annotate with text markup, shapes, stamps, ink, and sticky notes.
-* [Form Fields](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/form-designer/create-fillable-pdf-forms/create-programmatically/) - Form filling and form designing can be done.
-* [Signature](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/angular/handwritten-signature/) - Hand-written and digital signatures are allowed.
-* [Toolbar](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/toolbar/) - Built-in-toolbar and custom toolbars to perform user interaction of PDF Viewer functionalities.
-* [Navigation](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/navigation/) - Easy navigation with the help of bookmarks, thumbnails, hyperlinks, and table of contents.
-* [Magnification](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/magnification/) - Fit to page, fit to width, and automatic (fits to the visible area).
-* [Search](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/text-search/) - Search a text easily across the PDF document.	
-* [Core Interactions](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/interaction-mode/) - Allows scrolling, zooming, panning, selection, and page navigation.
-* [Print](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/print/) - Print the entire document or a specific page directly from the browser.
-* [Globalization](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/globalization/) - Provides inherent support to localize the UI.
+* [View PDF Document](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/getting-started) - Open and display both the normal and the protected PDF files with AES and RC4 encryption.
+* [Annotations](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/annotation/overview) - Annotate with text markup, shapes, stamps, ink, and sticky notes.
+* [Form Fields](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/forms/overview) - Form filling and form designing can be done.
+* [Signature](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/angular/annotation/signature-annotation) - Hand-written and digital signatures are allowed.
+* [Toolbar](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/toolbar-customization/overview) - Built-in-toolbar and custom toolbars to perform user interaction of PDF Viewer functionalities.
+* [Navigation](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/interactive-pdf-navigation/overview) - Easy navigation with the help of bookmarks, thumbnails, hyperlinks, and table of contents.
+* [Magnification](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/magnification/magnification) - Fit to page, fit to width, and automatic (fits to the visible area).
+* [Search](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/text-search/overview) - Search a text easily across the PDF document.	
+* [Core Interactions](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/interaction-mode) - Allows scrolling, zooming, panning, selection, and page navigation.
+* [Print](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/print/overview) - Print the entire document or a specific page directly from the browser.
+* [Globalization](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/react/localization/default-language) - Provides inherent support to localize the UI.
 
 ## Resources
 
-* [AI Coding Assistant](https://ej2.syncfusion.com/react/documentation/ai-coding-assistants/overview)
-* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [AI Coding Assistant](https://ej2.syncfusion.com/react/documentation/ai-tools/ai-powered-development)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/?theme=tailwind3)
 * [What's New](https://www.syncfusion.com/products/whatsnew/pdf-viewer-sdk?utm_medium=listing&utm_source=github)
 * [Road Map](https://www.syncfusion.com/products/roadmap/pdf-viewer-sdk)
 * [E-Books](https://www.syncfusion.com/succinctly-free-ebooks?searchkey=react&type=all)

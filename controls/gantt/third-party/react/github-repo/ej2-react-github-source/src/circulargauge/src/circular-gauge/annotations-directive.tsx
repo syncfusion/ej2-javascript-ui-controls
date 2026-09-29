@@ -6,7 +6,7 @@ export interface AnnotationDirTypecast {
 }
 /**
  * Represents the directive to render and customize the annotations in an axis of circular gauge.
- * ```tsx
+ * ```
  * <CircularGaugeComponent>
  * <AxesDirective>
  * <AxisDirective>

@@ -12,7 +12,7 @@ export interface TreeGridColumnDirTypecast {
 /**
  * `ColumnDirective` represent a column of the react TreeGrid. 
  * It must be contained in a TreeGrid component(`TreeGridComponent`). 
- * ```tsx
+ * ```
  * <TreeGridComponent dataSource={data} allowPaging={true} allowSorting={true}> 
  * <ColumnsDirective>
  * <ColumnDirective field='ID' width='100'></ColumnDirective>

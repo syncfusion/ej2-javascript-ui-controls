@@ -6,7 +6,7 @@ export interface LevelSettingsDirTypecast {
 }
 /**
  * Represents the directive to configure and render level leaf items in the treemap. 
- * ```tsx
+ * ```
  * <TreeMapComponent>
  * <LevelsDirective>
  * <LevelDirective></LevelDirective>

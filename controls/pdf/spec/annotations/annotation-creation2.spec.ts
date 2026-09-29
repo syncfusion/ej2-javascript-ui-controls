@@ -996,7 +996,7 @@ describe('PdfDocument Creation Annotation Test', () => {
         expect(l18.border.vRadius).toEqual(20);
         expect(l18.bounds).toEqual({ x: 140, y: 140, width: 200, height: 250 });
         expect(l18.color).toEqual({ r: 0, g: 0, b: 0 });
-        expect(l18.calloutLines).toEqual([{ x: 100, y: 450 }, { x: 100, y: 200 }, { x: 100, y: 150 }]);
+        expect(l18.calloutLines).toEqual([{ x: 140, y: 490 }, { x: 140, y: 240 }, { x: 140, y: 190 }]);
         expect(l18.lineEndingStyle).toEqual(PdfLineEndingStyle.closedArrow);
         expect(l18.textAlignment).toEqual(PdfTextAlignment.justify);
         expect(l18.textMarkUpColor).toEqual({ r: 200, g: 200, b: 200 });

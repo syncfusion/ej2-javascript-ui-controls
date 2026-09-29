@@ -1,5 +1,6 @@
-@use 'ej2-base/styles/definition/tailwind-dark' as *;
-@forward 'ej2-base/styles/definition/tailwind-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-navigations/styles/treeview/tailwind-dark-definition' as *;
+
 $field-list-skin: 'tailwind' !default;
 $field-list-border-type: solid !default;
 $field-list-border-size: 1px !default;
@@ -75,6 +76,9 @@ $field-list-back-margin: 5px !default;
 $field-list-sort-wrapper-padding-size: 10px !default;
 $field-list-calc-expand-icon-padding: 8px !default;
 $field-list-search-padding-size: 10px $field-list-title-padding-size !default;
+$field-list-add-filter-selection-margin: 16px !default;
+$field-list-add-filter-selection-bigger-height: $treeview-big-item-height !default;
+$field-list-add-filter-selection-height: $treeview-item-height !default;
 $field-list-member-prompt-padding-size: 25px 12px !default;
 $field-list-static-field-table-height: 210px !default;
 $field-list-static-field-table-outer-div-height: 180px !default;

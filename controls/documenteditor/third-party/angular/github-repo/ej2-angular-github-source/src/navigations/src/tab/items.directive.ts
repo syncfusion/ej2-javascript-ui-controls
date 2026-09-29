@@ -20,9 +20,12 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-tabitems>e-tabitem',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content'),
+        header_text: new ContentChild('headerText'),
+        headerTemplate: new ContentChild('headerTemplate')
     }
 })
 export class TabItemDirective extends ComplexBase<TabItemDirective> {
@@ -34,59 +37,34 @@ export class TabItemDirective extends ComplexBase<TabItemDirective> {
      * Sets the CSS classes to the Tab item to customize its styles.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Sets true to disable user interactions of the Tab item.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * The object used for configuring the Tab item header properties.
      * @default {}
      */
-    public header: any;
+    public declare header: any;
     /** 
      * Sets unique ID to Tab item.
      * @default null
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the tab order of the Tabs items. When positive values assigned, it allows to switch focus to the next/previous tabs items with Tab/ShiftTab keys. 
      * By default, user can able to switch between items only via arrow keys. 
      * If the value is set to 0 for all tabs items, then tab switches based on element order.
      * @default -1
      */
-    public tabIndex: any;
+    public declare tabIndex: any;
     /** 
      * Sets false to hide the Tab item.
      * @default true
      */
-    public visible: any;
-    /** 
-     * Specifies the content of Tab item, that is displayed when concern item header is selected.
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
-    @ContentChild('headerText')
-    @Template()
-    public header_text: any;
-    /** 
-     * Specifies the header text of Tab item.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
+    public declare visible: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -95,6 +73,9 @@ export class TabItemDirective extends ComplexBase<TabItemDirective> {
         this.directivePropList = input;
     }
 }
+Template()(TabItemDirective.prototype, 'content');
+Template()(TabItemDirective.prototype, 'header_text');
+Template()(TabItemDirective.prototype, 'headerTemplate');
 
 /**
  * TabItem Array Directive
@@ -102,6 +83,7 @@ export class TabItemDirective extends ComplexBase<TabItemDirective> {
  */
 @Directive({
     selector: 'ejs-tab>e-tabitems',
+    standalone: true,
     queries: {
         children: new ContentChildren(TabItemDirective)
     },

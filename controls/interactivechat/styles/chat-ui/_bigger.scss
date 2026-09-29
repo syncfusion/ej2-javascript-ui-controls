@@ -1,4 +1,12 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@mixin chat-wrapper-icon-alignment($width, $height){
+  position: absolute;
+  width: $width;
+  height: $height;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 @include export-module('chatui-bigger') {
   .e-bigger.e-chat-ui,
   .e-bigger .e-chat-ui {
@@ -114,7 +122,7 @@
       border-color: $user-status-icon-border-color;
     }
 
-    .e-message-item .e-chat-message-toolbar {
+    .e-message-wrapper .e-chat-message-toolbar {
       height: $chat-message-toolbar-bigger-height !important; /* stylelint-disable-line declaration-no-important */
       min-height: 40px;
       .e-toolbar-items .e-toolbar-item {
@@ -153,9 +161,9 @@
           height: $pinned-img-thumb-bigger-height;
           width: $pinned-img-thumb-bigger-width;
         }
-        .e-chat-file-icon {
-          font-size: $pin-file-icon-size-bigger;
-          line-height: $pin-file-icon-height-bigger;
+        .e-chat-file-icon-svg svg {
+          width: $pin-file-icon-size-bigger;
+          height: $pin-file-icon-size-bigger;
         }
       }
     }
@@ -168,9 +176,9 @@
         .e-reply-file-name {
           font-size: $bigger-reply-file-name-size;
         }
-        .e-chat-file-icon {
-          font-size: $reply-file-icon-size-bigger;
-          line-height: $reply-file-icon-height-bigger;
+        .e-chat-file-icon-svg svg {
+          width: $reply-file-icon-size-bigger;
+          height: $reply-file-icon-size-bigger;
         }
       }
     }

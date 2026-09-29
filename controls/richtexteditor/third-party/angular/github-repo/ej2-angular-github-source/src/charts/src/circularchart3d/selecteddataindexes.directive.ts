@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-circularchart3d-selecteddataindexes>e-circularchart3d-selecteddataindex',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class CircularChart3DSelectedDataIndexDirective extends ComplexBase<CircularChart3DSelectedDataIndexDirective> {
@@ -29,13 +29,13 @@ export class CircularChart3DSelectedDataIndexDirective extends ComplexBase<Circu
      * @default 0
      * @asptype int
      */
-    public point: any;
+    public declare point: any;
     /** 
      * Specifies the index of the series.
      * @default 0
      * @asptype int
      */
-    public series: any;
+    public declare series: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -51,6 +51,7 @@ export class CircularChart3DSelectedDataIndexDirective extends ComplexBase<Circu
  */
 @Directive({
     selector: 'ejs-circularchart3d>e-circularchart3d-selecteddataindexes',
+    standalone: true,
     queries: {
         children: new ContentChildren(CircularChart3DSelectedDataIndexDirective)
     },

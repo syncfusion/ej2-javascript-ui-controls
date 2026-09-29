@@ -24,7 +24,7 @@ import * as events from '../base/constant';
 import { MemberEditorOpenEventArgs, HeadersSortEventArgs } from '../base/interface';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { Button } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, ChangeEventArgs as CheckBoxChangeEventArgs } from '@syncfusion/ej2-buttons';
 
 /**
  * `FilterDialog` module to create filter dialog.
@@ -51,6 +51,12 @@ export class FilterDialog {
     public isSearchEnabled: boolean;
     /** @hidden */
     public filterObject: IFilter;
+    /** @hidden */
+    public appendControlsWrapper: HTMLElement;
+    /** @hidden */
+    public isAppendMode: boolean;
+    /** @hidden */
+    public appendCheckbox: CheckBox;
     private timeOutObj: ReturnType<typeof setTimeout>;
 
     /**
@@ -61,6 +67,7 @@ export class FilterDialog {
      */
     constructor(parent?: PivotCommon) {
         this.parent = parent;
+        this.isAppendMode = false;
     }
 
     /**
@@ -84,6 +91,7 @@ export class FilterDialog {
         const headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +
             '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
         this.filterObject = this.getFilterObject(fieldName);
+        this.isAppendMode = false;
         this.isSearchEnabled = false;
         this.allowExcelLikeFilter = this.isExcelFilter(fieldName);
         this.parent.element.appendChild(editorDialog);
@@ -122,7 +130,7 @@ export class FilterDialog {
                 }],
             closeOnEscape: this.parent.renderMode === 'Popup' ? false : true,
             target: target,
-            cssClass: this.parent.cssClass,
+            cssClass: `${this.parent.cssClass} ${this.parent.isDataOverflow ? cls.FILTER_DIALOG_OVERFLOW : ''}`.trim(),
             close: this.removeFilterDialog.bind(this)
         });
         this.dialogPopUp.isStringTemplate = true;
@@ -237,6 +245,7 @@ export class FilterDialog {
                     }
                     this.updateCheckedState();
                 }
+                this.updateAppendWrapperVisibility(e.value);
             }
         });
         this.editorSearch.isStringTemplate = true;
@@ -269,6 +278,43 @@ export class FilterDialog {
         }
         this.allMemberSelect.appendTo(selectAllContainer);
         treeOuterDiv.appendChild(treeViewContainer);
+        if (this.filterObject && (this.filterObject.type === 'Include' || this.filterObject.type === 'Exclude')) {
+            this.appendControlsWrapper = createElement('div', {
+                className: 'e-append-filter-wrapper',
+                id: this.parent.parentID + '_AppendWrapper'
+            });
+            addClass([this.appendControlsWrapper], cls.ICON_DISABLE);
+            const appendCheckboxContainer: HTMLElement = createElement('div', {
+                className: 'e-append-checkbox-container'
+            });
+            const appendCheckboxInput: HTMLInputElement = createElement('input', {
+                id: this.parent.parentID + '_append_checkbox',
+                className: 'e-append-checkbox-input',
+                attrs: { 'type': 'checkbox' }
+            }) as HTMLInputElement;
+            appendCheckboxContainer.appendChild(appendCheckboxInput);
+            this.appendCheckbox = new CheckBox({
+                label: this.parent.localeObj.getConstant('addCurrentSelection'),
+                checked: false,
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.control.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: 'e-append-checkbox',
+                change: (args: CheckBoxChangeEventArgs) => {
+                    this.isAppendMode = args.checked as boolean;
+                }
+            });
+            this.appendCheckbox.isStringTemplate = true;
+            this.appendCheckbox.appendTo(appendCheckboxInput);
+            this.appendControlsWrapper.appendChild(appendCheckboxContainer);
+        } else if (this.appendControlsWrapper && !this.appendControlsWrapper.classList.contains(cls.ICON_DISABLE)) {
+            addClass([this.appendControlsWrapper], cls.ICON_DISABLE);
+        }
+        editorTreeWrapper.appendChild(selectAllWrapper);
+        if (this.appendControlsWrapper) {
+            editorTreeWrapper.appendChild(this.appendControlsWrapper);
+        }
+        editorTreeWrapper.appendChild(promptDiv);
         editorTreeWrapper.appendChild(treeOuterDiv);
         this.memberTreeView = new TreeView({
             fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
@@ -421,7 +467,19 @@ export class FilterDialog {
                 addClass([promptDiv], cls.ICON_DISABLE);
             }
             popupInstance.updateCheckedState();
+            popupInstance.updateAppendWrapperVisibility(e.value);
         }, 500);
+    }
+    private updateAppendWrapperVisibility(searchValue: string): void {
+        if (this.appendControlsWrapper) {
+            const liList: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
+            const hasSearchResults: boolean = liList.length > 0;
+            if (searchValue && searchValue.trim() !== '' && hasSearchResults) {
+                removeClass([this.appendControlsWrapper], cls.ICON_DISABLE);
+            } else {
+                addClass([this.appendControlsWrapper], cls.ICON_DISABLE);
+            }
+        }
     }
     private nodeCheck(isAllMember: boolean, args: NodeClickEventArgs | NodeKeyPressEventArgs): void {
         const checkedNode: HTMLElement[] = [args.node];
@@ -693,15 +751,19 @@ export class FilterDialog {
             date: ['Equals', 'DoesNotEquals', 'Before', 'BeforeOrEqualTo', 'After', 'AfterOrEqualTo',
                 'Between', 'NotBetween'],
             value: ['Equals', 'DoesNotEquals', 'GreaterThan', 'GreaterThanOrEqualTo', 'LessThan',
-                'LessThanOrEqualTo', 'Between', 'NotBetween']
+                'LessThanOrEqualTo', 'Between', 'NotBetween', 'Top', 'Bottom']
         };
         const betweenOperators: Operators[] = ['Between', 'NotBetween'];
+        const topBottomOperators: string[] = ['Top', 'Bottom'];
         const operatorCollection: string[] = (type === 'label' ? options.label : type === 'date' ? options.date : options.value);
         for (const operator of operatorCollection) {
             selectedOption = ((filterObject && operator === filterObject.condition) ?
                 operatorCollection.indexOf(filterObject.condition) >= 0 ?
                     filterObject.condition : operatorCollection[0] : selectedOption);
-            dataSource.push({ value: operator, text: this.parent.localeObj.getConstant(operator) });
+            if (!(type === 'value' && this.parent.dataSourceSettings.mode === 'Server' &&
+                (operator === 'Top' || operator === 'Bottom'))) {
+                dataSource.push({ value: operator, text: this.parent.localeObj.getConstant(operator) });
+            }
         }
         let len: number = measures.length;
         while (len--) {
@@ -809,7 +871,7 @@ export class FilterDialog {
         filterWrapperDiv2.appendChild(betweenTextContentdiv);
         filterWrapperDiv2.appendChild(inputDiv2);
         this.createElements(
-            filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions,
+            filterObject, betweenOperators, topBottomOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions,
             dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
         mainDiv.appendChild(textContentdiv);
         mainDiv.appendChild(filterWrapperDiv1);
@@ -817,10 +879,10 @@ export class FilterDialog {
         return mainDiv;
     }
     private createElements(
-        filterObj: IFilter, operators: Operators[], optionDiv1: HTMLElement, optionDiv2: HTMLElement, inputDiv1: HTMLInputElement,
-        inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[], oDataSource: { [key: string]: Object }[],
-        valueIndex: number, option: string, type: string, levelDropOption: HTMLElement, lDataSource: { [key: string]: Object }[],
-        levelIndex: number): void {
+        filterObj: IFilter, operators: Operators[], topBottomOps: string[], optionDiv1: HTMLElement,
+        optionDiv2: HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[],
+        oDataSource: { [key: string]: Object }[], valueIndex: number, option: string, type: string, levelDropOption: HTMLElement,
+        lDataSource: { [key: string]: Object }[], levelIndex: number): void {
         const popupInstance: FilterDialog = this as FilterDialog;
         if (this.parent.dataType === 'olap') {
             const levelWrapper: DropDownList = new DropDownList({
@@ -910,10 +972,35 @@ export class FilterDialog {
                     popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
                     const disabledClasses: string[] = [cls.BETWEEN_TEXT_DIV_CLASS, cls.FILTER_INPUT_DIV_2_CLASS];
                     for (const className of disabledClasses) {
-                        if (operators.indexOf(args.value as Operators) >= 0) {
+                        const shouldShow: boolean = (operators.indexOf(args.value as Operators) >= 0) &&
+                            (topBottomOps.indexOf(args.value as string) === -1);
+                        if (shouldShow) {
                             removeClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
                         } else {
                             addClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
+                        }
+                    }
+                    if (type === 'value') {
+                        if (topBottomOps.indexOf(args.value as string) >= 0) {
+                            const firstInputObj: NumericTextBox = getInstance(
+                                <HTMLElement>inputDiv1 as HTMLInputElement,
+                                NumericTextBox
+                            ) as NumericTextBox;
+                            if (firstInputObj) {
+                                if (!filterObj || filterObj.condition !== args.value) {
+                                    if (isNullOrUndefined(firstInputObj.value)) {
+                                        firstInputObj.value = 10;
+                                        setStyleAndAttributes(element, { 'data-value1': '10', 'data-value2': '10' });
+                                    }
+                                }
+                                popupInstance.validateTopBottomOKButton(inputDiv1, args.value as string, topBottomOps);
+                            }
+                        } else {
+                            const filterDialog: Element = popupInstance.dialogPopUp.element;
+                            const okButton: Element = filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS);
+                            if (okButton) {
+                                okButton.removeAttribute('disabled');
+                            }
                         }
                     }
                     setStyleAndAttributes(element, { 'data-operator': args.value as Operators });
@@ -967,19 +1054,36 @@ export class FilterDialog {
             inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         } else if (type === 'value') {
+            const isTopBottomFilter: boolean = topBottomOps.indexOf(option as string) >= 0;
+            const defaultValue: number = isTopBottomFilter && (!filterObj || filterObj.condition !== option) ? 10 :
+                (filterObj && option === filterObj.condition ? parseInt(filterObj.value1 as string, 10) : undefined);
             const inputObj1: NumericTextBox = new NumericTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
                 showClearButton: true,
                 format: '###.##',
-                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1 as string, 10) : undefined),
+                step: isTopBottomFilter ? 1 : undefined,
+                value: defaultValue,
                 change: (e: NumericChangeEventArgs) => {
                     const element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    const filterDialog: Element = popupInstance.dialogPopUp.element;
+                    const currentOperator: string = element.getAttribute('data-operator');
+                    const okButton: Element = filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS);
                     if (!isNullOrUndefined(element)) {
+                        const value1: string = (inputObj1.value !== null && inputObj1.value !== undefined) ? inputObj1.value.toString() : '0';
+                        const actualValue: number = e.value !== null && e.value !== undefined ? e.value : 0;
+                        const value2: string = actualValue.toString();
                         setStyleAndAttributes(element, {
-                            'data-value1': (e.value ? e.value.toString() : '0'),
-                            'data-value2': (inputObj2.value ? inputObj2.value.toString() : '0')
+                            'data-value1': value1,
+                            'data-value2': value2
                         });
+                        if (topBottomOps.indexOf(currentOperator as string) >= 0) {
+                            if (actualValue <= 0) {
+                                okButton.setAttribute('disabled', 'disabled');
+                            } else {
+                                okButton.removeAttribute('disabled');
+                            }
+                        }
                     } else {
                         return;
                     }
@@ -1011,6 +1115,9 @@ export class FilterDialog {
             inputObj1.appendTo(inputDiv1);
             inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
+            setTimeout(() => {
+                popupInstance.validateTopBottomOKButton(inputDiv1, option, topBottomOps);
+            }, 0);
         } else {
             const inputObj1: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
@@ -1096,18 +1203,15 @@ export class FilterDialog {
                     removeClass([firstNode], cls.NODE_STOP_CLASS);
                     addClass([firstNode], cls.NODE_CHECK_CLASS);
                 }
-                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
-                filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+                this.setOKButtonState(true);
             } else if (uncheckedNodes > 0 && checkedNodes === 0) {
                 removeClass([firstNode], [cls.NODE_CHECK_CLASS, cls.NODE_STOP_CLASS]);
                 if (this.getCheckedNodes(fieldName) === checkedNodes) {
-                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
-                    filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                    this.setOKButtonState(false);
                 }
             }
         } else {
-            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
-            filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+            this.setOKButtonState(false);
         }
     }
     private getCheckedNodes(fieldName: string): number {
@@ -1158,6 +1262,31 @@ export class FilterDialog {
             return true;
         } else {
             return false;
+        }
+    }
+
+    private setOKButtonState(enabled: boolean): void {
+        const filterDialog: Element = this.dialogPopUp.element;
+        const okButton: Element = filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS);
+        if (okButton) {
+            if (enabled) {
+                okButton.removeAttribute('disabled');
+            } else {
+                okButton.setAttribute('disabled', 'disabled');
+            }
+        }
+        if (this.dialogPopUp.buttons && this.dialogPopUp.buttons[0]) {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = !enabled;
+        }
+    }
+
+    private validateTopBottomOKButton(inputDiv: HTMLElement, operator: string, topBottomOps: string[]): void {
+        if (topBottomOps.indexOf(operator as string) >= 0) {
+            const inputObj: NumericTextBox = getInstance(inputDiv as HTMLInputElement, NumericTextBox) as NumericTextBox;
+            if (inputObj) {
+                const value: number = inputObj.value !== null && inputObj.value !== undefined ? inputObj.value : 0;
+                this.setOKButtonState(value > 0);
+            }
         }
     }
     private getFilterObject(fieldName: string): IFilter {

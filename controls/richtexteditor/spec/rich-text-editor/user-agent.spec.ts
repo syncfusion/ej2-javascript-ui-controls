@@ -263,4 +263,29 @@ describe('User Agent testing', () => {
             }
         });
     });
+
+    describe('Bug 1048635: Validation of userAgent data details shared by internal customer', () => {
+        let editor: RichTextEditor;
+        const defaultUA = Browser.userAgent;
+        const originalPlatform: string = window.navigator.platform;
+        const originalMaxTouchPoints: number = window.navigator.maxTouchPoints;
+        const originalUserAgentData: any = (window.navigator as any).userAgentData;
+        beforeAll(() => {
+            Browser.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15';
+            // Simulate an iPad-on-macOS environment
+            Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true });
+            Object.defineProperty(window.navigator, 'maxTouchPoints', { value: 5, configurable: true });
+            editor = renderRTE({});
+        });
+        afterAll(() => {
+            destroy(editor);
+            Object.defineProperty(window.navigator, 'platform', { value: originalPlatform, configurable: true });
+            Object.defineProperty(window.navigator, 'maxTouchPoints', { value: originalMaxTouchPoints, configurable: true });
+            Browser.userAgent = defaultUA;
+        });
+        it('IOS - Ipad Device with desktop site checkbox enabled', () => {
+            expect(editor.userAgentData.getBrowser()).toBe('Safari');
+            expect(editor.userAgentData.getPlatform()).toBe('iOS');
+        });
+    });
 });

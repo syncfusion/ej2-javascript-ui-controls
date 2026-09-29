@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * `PivotFieldListComponent` represents the react PivotFieldList.
- * ```tsx
+ * ```
  * <PivotFieldListComponent/>
  * ```
  */

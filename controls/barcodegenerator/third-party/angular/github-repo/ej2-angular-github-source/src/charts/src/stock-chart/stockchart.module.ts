@@ -11,52 +11,35 @@ import { StockEventDirective, StockEventsDirective } from './stockevents.directi
 import { StockChartIndicatorDirective, StockChartIndicatorsDirective } from './indicators.directive';
 import { StockChartComponent } from './stockchart.component';
 
+const STOCKCHART_DIRECTIVES = [
+    StockChartComponent,
+        StockChartTrendlineDirective,
+        StockChartTrendlinesDirective,
+        StockChartSeriesDirective,
+        StockChartSeriesCollectionDirective,
+        StockChartAxisDirective,
+        StockChartAxesDirective,
+        StockChartRowDirective,
+        StockChartRowsDirective,
+        StockChartAnnotationDirective,
+        StockChartAnnotationsDirective,
+        StockChartSelectedDataIndexDirective,
+        StockChartSelectedDataIndexesDirective,
+        StockChartPeriodDirective,
+        StockChartPeriodsDirective,
+        StockEventDirective,
+        StockEventsDirective,
+        StockChartIndicatorDirective,
+        StockChartIndicatorsDirective
+];
+
 /**
  * NgModule definition for the StockChart component.
+ * Re-exports standalone StockChart component and directives so existing apps can keep using:
+ * `imports: [StockChartModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        StockChartComponent,
-        StockChartTrendlineDirective,
-        StockChartTrendlinesDirective,
-        StockChartSeriesDirective,
-        StockChartSeriesCollectionDirective,
-        StockChartAxisDirective,
-        StockChartAxesDirective,
-        StockChartRowDirective,
-        StockChartRowsDirective,
-        StockChartAnnotationDirective,
-        StockChartAnnotationsDirective,
-        StockChartSelectedDataIndexDirective,
-        StockChartSelectedDataIndexesDirective,
-        StockChartPeriodDirective,
-        StockChartPeriodsDirective,
-        StockEventDirective,
-        StockEventsDirective,
-        StockChartIndicatorDirective,
-        StockChartIndicatorsDirective
-    ],
-    exports: [
-        StockChartComponent,
-        StockChartTrendlineDirective,
-        StockChartTrendlinesDirective,
-        StockChartSeriesDirective,
-        StockChartSeriesCollectionDirective,
-        StockChartAxisDirective,
-        StockChartAxesDirective,
-        StockChartRowDirective,
-        StockChartRowsDirective,
-        StockChartAnnotationDirective,
-        StockChartAnnotationsDirective,
-        StockChartSelectedDataIndexDirective,
-        StockChartSelectedDataIndexesDirective,
-        StockChartPeriodDirective,
-        StockChartPeriodsDirective,
-        StockEventDirective,
-        StockEventsDirective,
-        StockChartIndicatorDirective,
-        StockChartIndicatorsDirective
-    ]
+    imports: [CommonModule, ...STOCKCHART_DIRECTIVES],
+    exports: [...STOCKCHART_DIRECTIVES]
 })
 export class StockChartModule { }

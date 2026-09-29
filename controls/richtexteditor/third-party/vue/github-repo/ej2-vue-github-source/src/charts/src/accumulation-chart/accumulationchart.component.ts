@@ -17,7 +17,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs AccumulationChart Component
- * ```vue
+ * ```
  * <ejs-accumulationchart></ejs-accumulationchart>
  * ```
  */

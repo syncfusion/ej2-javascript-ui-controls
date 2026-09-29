@@ -1,6 +1,5 @@
 @use 'sass:color';
 @use '@syncfusion/ej2-base/styles/common/base-variables' as *;
-@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $rte-border-size: 1px !default;
@@ -228,8 +227,8 @@ $rte-big-img-upload-abort-icon-btn-margin-top: -3px;
 $rte-big-img-upload-abort-icon-btn-padding: 18px;
 $rte-dialog-upload-status-progress: #208090 !default;
 $rte-content-pre-background: inherit;
-$rte-code-background: rgba(35, 41, 55, 1) !default;
-$rte-code-color: rgba(248, 113, 113, 1) !default;
+$rte-code-background: rgba(157, 157, 157, .15) !default;
+$rte-code-color: rgba(237, 72, 76) !default;
 $rte-code-block-label-font-weight: 500 !default;
 $rte-code-block-label-font-family: Helvetica Neue !default;
 $rte-code-block-label-line-height: 18px !default;

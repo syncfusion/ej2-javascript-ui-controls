@@ -1,4 +1,5 @@
 import { Gantt } from '../base/gantt';
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { TreeGrid, VirtualScroll as TreeGridVirtualScroll } from '@syncfusion/ej2-treegrid';
 
 /**
@@ -9,6 +10,7 @@ import { TreeGrid, VirtualScroll as TreeGridVirtualScroll } from '@syncfusion/ej
 export class VirtualScroll {
     private parent: Gantt;
     constructor(parent?: Gantt) {
+        initializeTelemetryFeature('VirtualScroll', 'Gantt');
         this.parent = parent;
         this.bindTreeGridProperties();
     }

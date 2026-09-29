@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fluent-dark' as *;
-@forward 'ej2-base/styles/definition/fluent-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: $skin-name !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -248,6 +247,8 @@ $ddl-list-header-font-color: $primary-outline !default;
 $ddl-closer-hooker-font-small: 8px !default;
 $ddl-small-clear-icon-height: 12px !default;
 $ddl-small-clear-icon-width: 12px !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 $ddl-bigger-small-filled-chip-height: 28px !default;
 $ddl-bigger-filled-chip-height: 24px !default;

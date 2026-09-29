@@ -4,7 +4,7 @@ import { RangeModel } from '@syncfusion/ej2-circulargauge';
 
 /**
  * Represents the directive to render and customize the ranges in an axis of circular gauge.
- * ```tsx
+ * ```
  * <CircularGaugeComponent>
  * <AxesDirective>
  * <AxisDirective>

@@ -33,7 +33,7 @@ export const LevelsPlugin = {
 
 /**
  * Represents the directive to configure and render level leaf items in the treemap.
- * ```vue
+ * ```
  * <ejs-treemap>
  * <e-levels>
  * <e-level></e-level>

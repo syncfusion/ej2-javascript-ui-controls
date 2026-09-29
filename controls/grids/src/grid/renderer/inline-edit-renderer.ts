@@ -39,6 +39,9 @@ export class InlineEditRender {
         if (this.parent.getContentTable().querySelector('.e-emptyrow') && !this.parent.editSettings.showAddNewRow) {
             const emptyRow: Element = this.parent.getContentTable().querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
+            if (this.parent.renderModule && this.parent.renderModule.removeEmptyOverlay) {
+                this.parent.renderModule.removeEmptyOverlay();
+            }
             if (this.parent.frozenRows && this.parent.element.querySelector('.e-frozenrow-empty')) {
                 this.parent.element.querySelector('.e-frozenrow-empty').classList.remove('e-frozenrow-empty');
             }
@@ -111,6 +114,12 @@ export class InlineEditRender {
             const span: string = isEdit && tdElement[parseInt(m.toString(), 10)] ?
                 tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
+            if (isEdit && col.type === 'rownumber' && tdElement[parseInt(m.toString(), 10)]) {
+                tr.appendChild(tdElement[parseInt(m.toString(), 10)]);
+                i = span ? i + parseInt(span, 10) : i + 1;
+                m++;
+                continue;
+            }
             inputValue = (elements[col.uid]).value;
             inputValue = !isNullOrUndefined(inputValue) ? inputValue : '';
             const td: HTMLElement = this.parent.createElement(

@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+      "target": "es5",
+      "module": "amd",
+      "declaration": true,
+      "removeComments": true,
+      "noLib": false,
+      "experimentalDecorators": true,
+      "sourceMap": true,
+      "pretty": true,
+      "strict": false,
+      "allowUnreachableCode": false,
+      "allowUnusedLabels": false,
+      "noImplicitAny": false,
+      "noImplicitReturns": false,
+      "noImplicitUseStrict": false,
+      "noFallthroughCasesInSwitch": true,
+      "allowJs": false,
+      "forceConsistentCasingInFileNames": true,
+      "ignoreDeprecations": "5.0",
+      "moduleResolution": "node",
+      "lib": ["DOM", "ES6"],
+      "types": ["jasmine","jasmine-ajax","requirejs","chai"]
+    },
+    "exclude": [
+      "node_modules",
+      "dist",
+      "public",
+      "coverage",
+      "test-report"        
+    ],
+    "compileOnSave": false
+}

@@ -1637,6 +1637,13 @@ export type LineFormatType = 'None' | 'Patterned' | 'Gradient' | 'Solid';
 export type LineDashing = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot' | 'DotGEL' |
 'DashGEL' | 'LongDashGEL' | 'DashDotGEL' | 'LongDashDotGEL' | 'LongDashDotDotGEL';
 /**
+ * Specifies the type of Fill Format Type
+ *
+ * @private
+ */
+export type FillType = 'FillSolid' | 'FillPatterned' | 'FillGradient' | 'FillTextured' | 'FillBackground' | 'FillPicture' |
+'None' | 'FillMixed';
+/**
  * Specifies the type of Auto Shape Type
  *
  * @private

@@ -1,7 +1,7 @@
 import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
-import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { DatePicker, DateTimePicker, DatePickerModel, DateTimePickerModel, MaskedDateTime } from '@syncfusion/ej2-calendars';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -37,11 +37,24 @@ export class DateFilterUI implements IFilterMUI {
         }
     }
 
+    public injectMaskedDateTime(type: string): void {
+        if (type === 'date' || type === 'dateonly') {
+            DatePicker.Inject(MaskedDateTime);
+        }
+        else if (type === 'datetime') {
+            DateTimePicker.Inject(MaskedDateTime);
+        }
+    }
+
     public create(args: IFilterCreate): void {
         const format: string = getCustomDateFormat(args.column.format, args.column.type);
         this.dialogObj = args.dialogObj;
         this.inputElem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'dateui-' + args.column.uid });
         args.target.appendChild(this.inputElem);
+        if (args.column.filter && args.column.filter.params &&
+            (args.column.filter.params as DatePickerModel | DateTimePickerModel).enableMask) {
+            this.injectMaskedDateTime(args.column.type);
+        }
         if (args.column.type === 'date' || args.column.type === 'dateonly') {
             this.datePickerObj = new DatePicker(extend(
                 {

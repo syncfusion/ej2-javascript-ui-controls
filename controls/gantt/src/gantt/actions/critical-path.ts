@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IPredecessor, ITaskData } from '../base/interface';
 import { TaskFieldsModel } from '../models/task-fields-model';
-import { addClass } from '@syncfusion/ej2-base';
+import { addClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { CalendarContext } from '../base/calendar-context';
 
@@ -19,6 +19,7 @@ export class CriticalPath {
     public criticalTasks: IGanttData[] = [];
     public maxEndDate: Date;
     constructor(parent: Gantt) {
+        initializeTelemetryFeature('CriticalPath', 'Gantt');
         this.parent = parent;
     }
     public getCriticalTasks(): IGanttData[] {

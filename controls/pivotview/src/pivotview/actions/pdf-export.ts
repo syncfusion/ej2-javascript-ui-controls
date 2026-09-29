@@ -8,7 +8,7 @@ import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
 import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs, ExportCompleteEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
 import { IAxisSet, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { OlapEngine } from '../../base/olap/engine';
 import { PivotExportUtil } from '../../base/export-util';
 import { PdfExportProperties, PdfHeaderFooterContent, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
@@ -38,6 +38,7 @@ export class PDFExport {
      * @hidden
      */
     constructor(parent?: PivotView) {
+        initializeTelemetryFeature('PDFExport', 'PivotTable');
         this.parent = parent;
         this.pdfExportHelper = new PDFExportHelper();
     }
@@ -308,29 +309,41 @@ export class PDFExport {
                             let isValueCell: boolean = false;
                             const stringFormat: PdfStringFormat = new PdfStringFormat();
                             stringFormat.lineAlignment = PdfVerticalAlignment.Middle;
-                            if (pivotValues[rCnt as number][cCnt as number] && pivotValues[rCnt as number][cCnt as number].rowSpan !== 0) {
-                                const pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
-                                let cellValue: string | number = pivotCell.formattedText;
-                                cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
-                                cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
-                                    this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
-                                    cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
-                                let parentCell: PdfGridCell;
-                                if (pivotCell.colSpan > 1) {
-                                    parentCell = pdfGridRow.cells.getCell(localCnt);
+                            if (pivotValues[rCnt as number][cCnt as number]) {
+                                let pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
+                                const isHeaderCollapsed: boolean = pivotCell.hasChild === true && pivotCell.isDrilled === false;
+                                const isSubTotalCell: boolean = pivotCell.type === 'sum' || pivotCell.type === 'grand sum';
+                                const isRepeatRowHeaderLabels: boolean = this.parent.gridSettings.repeatRowHeaderLabels === true ||
+                                    this.parent.gridSettings.repeatItemLabels === true;
+                                const isRepeatLabelEnabled: boolean =
+                                    isRepeatRowHeaderLabels && !isHeaderCollapsed && !isSubTotalCell;
+                                if (pivotCell.rowSpan === 0 && isRepeatLabelEnabled) {
+                                    pivotCell = Object.assign({}, pivotCell, { rowSpan: 1 });
                                 }
-                                if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
+                                let cellValue: string | number = pivotCell.formattedText;
+                                let parentCell: PdfGridCell;
+                                if (pivotCell.rowSpan !== 0) {
+                                    cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
+                                    cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
+                                        this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
+                                        cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
+                                    if (pivotCell.colSpan > 1) {
+                                        parentCell = pdfGridRow.cells.getCell(localCnt);
+                                    }
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
                                             (pageSize - localCnt < pivotCell.colSpan ? pageSize - localCnt : pivotCell.colSpan) : 1;
                                         if ((isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) ||
                                             (!isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1 && this.parent.isTabular)) {
-                                            pdfGridRow.cells.getCell(localCnt).rowSpan = pivotCell.rowSpan ? pivotCell.rowSpan : 1;
+                                            pdfGridRow.cells.getCell(localCnt).rowSpan =
+                                                isRepeatLabelEnabled ? 1 : (pivotCell.rowSpan ? pivotCell.rowSpan : 1);
+                                        } else if (isRepeatLabelEnabled && pivotCell.rowSpan === 1) {
+                                            pdfGridRow.cells.getCell(localCnt).rowSpan = 1;
                                         }
                                         pdfGridRow.cells.getCell(localCnt).value = cellValue ? cellValue.toString() : '';
-                                    }
-                                    if (cellValue !== '') {
-                                        isEmptyRow = false;
+                                        if (cellValue !== '') {
+                                            isEmptyRow = false;
+                                        }
                                     }
                                 }
                                 maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
@@ -563,16 +576,19 @@ export class PDFExport {
     }
 
     private applyStyle(pdfGridRow: PdfGridRow, pivotCell: IAxisSet, localCnt: number): PdfGridRow {
-        let color: { r: number, g: number, b: number } =
-            this.parent.conditionalFormattingModule.hexToRgb(pivotCell.style.backgroundColor);
-        let brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(color.r, color.g, color.b));
-        pdfGridRow.cells.getCell(localCnt).style.backgroundBrush = brush;
+        const backgroundColor: { r: number, g: number, b: number } = PivotUtil.hexToRgb(pivotCell.style.backgroundColor);
+        if (backgroundColor) {
+            pdfGridRow.cells.getCell(localCnt).style.backgroundBrush =
+                new PdfSolidBrush(new PdfColor(backgroundColor.r, backgroundColor.g, backgroundColor.b));
+        }
         const size: number = Number(pivotCell.style.fontSize.split('px')[0]);
         const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, size, PdfFontStyle.Regular);
         pdfGridRow.cells.getCell(localCnt).style.font = font;
-        color = this.parent.conditionalFormattingModule.hexToRgb(pivotCell.style.color);
-        brush = new PdfSolidBrush(new PdfColor(color.r, color.g, color.b));
-        pdfGridRow.cells.getCell(localCnt).style.textBrush = brush;
+        const textColor: { r: number, g: number, b: number } = PivotUtil.hexToRgb(pivotCell.style.color);
+        if (textColor) {
+            const brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(textColor.r, textColor.g, textColor.b));
+            pdfGridRow.cells.getCell(localCnt).style.textBrush = brush;
+        }
         return pdfGridRow;
     }
 

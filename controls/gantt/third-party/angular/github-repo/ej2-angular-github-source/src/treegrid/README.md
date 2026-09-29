@@ -18,6 +18,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 ## Setup
 
 ### Create an Angular Application
@@ -121,8 +135,8 @@ TreeGrid component is also offered in the following list of frameworks.
 * [Aggregation](https://ej2.syncfusion.com/angular/documentation/treegrid/aggregates/aggregates/): Provides the option to easily visualize aggregates for column values. Also allows for the display of aggregates for each group of child rows within different parent rows.
 * [Context menu](https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_campaign=angular-treegrid-npm#/bootstrap5/treegrid/contextmenu-default): The context menu provides a list of actions to be performed in the TreeGrid. It appears when a cell, header, or the pager is right-clicked. Also allows for the addition of custom items with unique functionality to the context menu.
 * [Export](https://ej2.syncfusion.com/angular/demos/?utm_source=npm&utm_campaign=angular-treegrid-npm#/bootstrap5/treegrid/exporting-default): Provides the option to export the tree grid data to Excel, PDF, and CSV formats.
-* [RTL support](https://ej2.syncfusion.com/angular/documentation/treegrid/global-local/#right-to-left-rtl): Provides the right-to-left mode which aligns content in the TreeGrid component from right to left. This improves user experience and accessibility for those who work with RTL languages like Hebrew and Arabic.
-* [Localization](https://ej2.syncfusion.com/angular/documentation/treegrid/global-local/#localization): Provides inherent support to localize the UI.
+* [RTL support](https://ej2.syncfusion.com/angular/documentation/treegrid/global-local#right-to-left-rtl): Provides the right-to-left mode which aligns content in the TreeGrid component from right to left. This improves user experience and accessibility for those who work with RTL languages like Hebrew and Arabic.
+* [Localization](https://ej2.syncfusion.com/angular/documentation/treegrid/global-local#localization): Provides inherent support to localize the UI.
 
 ## Resources
 

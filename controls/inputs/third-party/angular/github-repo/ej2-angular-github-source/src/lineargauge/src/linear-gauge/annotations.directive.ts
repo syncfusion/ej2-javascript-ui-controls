@@ -14,9 +14,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-annotations>e-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
@@ -29,50 +30,42 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * @aspdefaultvalueignore 
      * @default null
      */
-    public axisIndex: any;
+    public declare axisIndex: any;
     /** 
      * Sets and gets the value of axis which places the annotation near the specified axis value.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public axisValue: any;
+    public declare axisValue: any;
     /** 
      * Sets and gets the options to customize the font of the annotation in linear gauge.
      */
-    public font: any;
+    public declare font: any;
     /** 
      * Sets and gets the horizontal alignment of annotation.
      * @default None
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Sets and gets the vertical alignment of annotation.
      * @default None
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * Sets and gets the x position for the annotation in linear gauge.
      * @default 0
      */
-    public x: any;
+    public declare x: any;
     /** 
      * Sets and gets the y position for the annotation in linear gauge.
      * @default 0
      */
-    public y: any;
+    public declare y: any;
     /** 
      * Sets and gets the z-index of the annotation.
      * @default '-1'
      */
-    public zIndex: any;
-    /** 
-     * Sets and gets the content for the annotation.
-     * @default ''
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -81,6 +74,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
         this.directivePropList = input;
     }
 }
+Template()(AnnotationDirective.prototype, 'content');
 
 /**
  * Annotation Array Directive
@@ -88,6 +82,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
  */
 @Directive({
     selector: 'ej-linear-gauge>e-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(AnnotationDirective)
     },

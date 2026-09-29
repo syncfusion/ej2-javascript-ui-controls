@@ -1,7 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/bootstrap4' as *;
-@forward 'ej2-base/styles/definition/bootstrap4';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'bootstrap4' !default;
@@ -213,6 +211,8 @@ $ddl-chip-close-hooker-small-left: 4px !default;
 $ddl-chip-close-hooker-small-bigger-left: 4px !default;
 $ddl-chip-close-hooker-small-top: 7px !default;
 $ddl-delimviewheight-small: 22px !default;
+$ddl-list-padding-right: 24px !default;
+$ddl-list-rtl-padding-left: 24px !default;
 
 // Touch Small size
 $ddl-select-all-height-bigger-small: 34px !default;

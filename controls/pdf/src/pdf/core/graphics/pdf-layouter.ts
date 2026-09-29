@@ -23,7 +23,7 @@ import { Rectangle } from './../pdf-type';
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export class PdfLayoutFormat {
     /**
@@ -85,7 +85,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     public constructor(format?: PdfLayoutFormat) {
         if (format) {
@@ -121,7 +121,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get layout(): PdfLayoutType {
         return this._layout;
@@ -150,7 +150,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set layout(value: PdfLayoutType) {
         this._layout = value;
@@ -180,7 +180,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get break(): PdfLayoutBreakType {
         return this._break;
@@ -208,7 +208,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set break(value: PdfLayoutBreakType) {
         this._break = value;
@@ -236,7 +236,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get paginateBounds(): Rectangle {
         return this._paginateBounds;
@@ -264,7 +264,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set paginateBounds(value: Rectangle) {
         this._paginateBounds = value;
@@ -293,7 +293,7 @@ export class PdfLayoutFormat {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get usePaginateBounds(): boolean {
         return this._boundSet;
@@ -564,7 +564,7 @@ export class PdfLayoutResult {
     /**
      * Gets the remaining text that was not rendered during the layout process.
      *
-     * @returns {string} The unrendered text content remaining after layout.
+     * @returns {string} The remaining text that was not rendered during layout.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);

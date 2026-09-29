@@ -1,7 +1,7 @@
 import { PdfGanttTheme } from './../export/pdf-base/pdf-style/gantt-theme';
 import { IGanttStyle, PdfExportProperties, IGanttData } from './../base/interface';
 import { PdfTreeGridLayoutFormat, PdfTreeGridLayoutResult } from './../export/pdf-base/index';
-import { isNullOrUndefined, getValue, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, extend, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ExportHelper } from '../export/export-helper';
 import {
@@ -30,6 +30,7 @@ export class PdfExport {
      * @hidden
      */
     constructor(parent?: Gantt) {
+        initializeTelemetryFeature('PdfExport', 'Gantt');
         this.parent = parent;
         this.helper = new ExportHelper(this.parent);
         this.pdfDocument = undefined;

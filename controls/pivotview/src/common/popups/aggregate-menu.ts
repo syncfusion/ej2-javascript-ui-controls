@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance, select } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, select, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MouseEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -58,11 +58,6 @@ export class AggregateMenu {
         this.buttonElement = (args.target as HTMLElement).parentElement;
         const isStringField: number = this.parent.engineModule.fieldList[fieldName as string].type !== 'number' ? 1 : 0;
         let summaryTypes: AggregateTypes[] = [...this.getMenuItem(isStringField)];
-        this.parent.actionObj.actionName = events.aggregateField;
-        this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
-        if (this.parent.actionBeginMethod()) {
-            return;
-        }
         const eventArgs: AggregateMenuOpenEventArgs = {
             cancel: false, fieldName: fieldName, aggregateTypes: summaryTypes, displayMenuCount: 7
         };
@@ -127,7 +122,9 @@ export class AggregateMenu {
             cssClass: this.parent.cssClass,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: () => {
-                (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
+                if ((select('#' + this.buttonElement.id, this.parentElement) as HTMLElement)) {
+                    (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
+                }
             },
             select: this.selectOptionInContextMenu.bind(this)
         };
@@ -150,6 +147,9 @@ export class AggregateMenu {
         const menuItems: AggregateTypes[] = [];
         for (let i: number = 0; i < this.parent.aggregateTypes.length; i++) {
             const key: AggregateTypes = this.parent.aggregateTypes[i as number] as AggregateTypes;
+            if (this.parent.dataSourceSettings.mode === 'Server' && key === 'PercentageOfRunningTotals') {
+                continue;
+            }
             if (isStringField) {
                 if ((this.stringAggregateTypes.indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
                     menuItems.push(key);
@@ -163,6 +163,10 @@ export class AggregateMenu {
         return menuItems;
     }
     private beforeMenuOpen(isString: number, args: BeforeOpenCloseMenuEventArgs): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.aggregateContextMenuOpen)) {
+            args.cancel = true;
+            return;
+        }
         args.element.style.zIndex = (this.menuInfo[isString as number].element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
@@ -175,6 +179,9 @@ export class AggregateMenu {
      * @returns {void}
      * @hidden */
     public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement, type?: string): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.openValueSettingsDialog)) {
+            return;
+        }
         this.parentElement = parentElement;
         const valueDialogElement: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_ValueDialog',
@@ -204,6 +211,7 @@ export class AggregateMenu {
                 },
                 {
                     click: () => {
+                        PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.valueSettingsDialogClosed, {});
                         valueDialog.hide();
                     },
                     isFlat: false,
@@ -230,12 +238,15 @@ export class AggregateMenu {
         const summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
         const checkDuplicates: AggregateTypes[] = [];
         for (let i: number = 0; i < summaryItems.length; i++) {
-            if (this.parent.getAllSummaryType().indexOf(summaryItems[i as number]) > -1 &&
-                checkDuplicates.indexOf(summaryItems[i as number]) < 0) {
+            const summaryType: AggregateTypes = summaryItems[i as number] as AggregateTypes;
+            if (this.parent.dataSourceSettings.mode === 'Server' && summaryType === 'PercentageOfRunningTotals') {
+                continue;
+            }
+            if (this.parent.getAllSummaryType().indexOf(summaryType) > -1 && checkDuplicates.indexOf(summaryType) < 0) {
                 summaryDataSource.push({
-                    value: summaryItems[i as number],
-                    text: this.parent.localeObj.getConstant(summaryItems[i as number]) });
-                checkDuplicates.push(summaryItems[i as number]);
+                    value: summaryType,
+                    text: this.parent.localeObj.getConstant(summaryType) });
+                checkDuplicates.push(summaryType);
             }
         }
         const baseItemTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
@@ -278,7 +289,7 @@ export class AggregateMenu {
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
         const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
         const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
-        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + ' ';
+        texttitle.innerHTML = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
         const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
         textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid') ?
             buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field')) :
@@ -397,22 +408,25 @@ export class AggregateMenu {
             const buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
             const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo((buttonElement ?
                 buttonElement.getAttribute('data-uid') : ''), this.parent);
-            this.parent.actionObj.actionName = events.aggregateField;
             this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
-            if (this.parent.actionBeginMethod()) {
-                return;
-            }
             const type: string = menu.item.id.split('_').pop();
             try {
                 if (type === 'MoreOption' || type === 'PercentageOfDifferenceFrom'
                     || type === 'PercentageOfParentTotal' || type === 'DifferenceFrom') {
                     this.createValueSettingsDialog(buttonElement, this.parentElement, type);
                 } else {
+                    this.parent.actionObj.actionName = events.aggregateField;
+                    if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.aggregateField)) {
+                        return;
+                    }
                     const field: string = buttonElement.getAttribute('data-uid');
                     const valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
                     const contentElement: HTMLElement = buttonElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS) as HTMLElement;
+                    const fieldCaption: string = (!isNullOrUndefined(this.parent) && !isNullOrUndefined(this.parent.engineModule) &&
+                        !isNullOrUndefined(this.parent.engineModule.fieldList[field as string])) ?
+                        this.parent.engineModule.fieldList[field as string].caption : '';
                     let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
-                        this.parent.engineModule.fieldList[field as string].caption;
+                        fieldCaption;
                     captionName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(captionName) : captionName;
                     if (this.parent.dataSourceSettings.showAggregationOnValueField) {
                         contentElement.innerText = captionName;
@@ -431,6 +445,8 @@ export class AggregateMenu {
                             this.parent.lastAggregationInfo = dataSourceItem;
                         }
                     }
+                    this.setAggregateActionInfo(type as SummaryTypes, field, fieldCaption);
+                    this.parent.actionObj.actionName = events.fieldAggregated;
                     this.updateDataSource();
                 }
             } catch (execption) {
@@ -495,6 +511,19 @@ export class AggregateMenu {
         valueDialog.close();
         // this.parent.axisFieldModule.render();
         this.parent.lastAggregationInfo = selectedField;
+        const isDifferenceFromAggregateType: boolean = (selectedField.type === 'PercentageOfDifferenceFrom' ||
+            selectedField.type === 'PercentageOfParentTotal' || selectedField.type === 'DifferenceFrom');
+        this.parent.actionObj.actionName = events.fieldAggregated;
+        this.setAggregateActionInfo(
+            selectedField.type, selectedField.name, selectedField.caption,
+            isDifferenceFromAggregateType ? selectedField.baseField : undefined,
+            isDifferenceFromAggregateType ? selectedField.baseItem : undefined
+        );
+        if (this.parent && this.parent.allowDeferLayoutUpdate) {
+            if (PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.fieldAggregated)) {
+                return;
+            }
+        }
         this.updateDataSource(true);
     }
     private removeDialog(): void {
@@ -624,5 +653,30 @@ export class AggregateMenu {
                 remove(element);
             }
         }
+    }
+
+    /**
+     * Sets the aggregate action info for the action object
+     *
+     * @private
+     * @param {SummaryTypes} aggregateType - The aggregate type
+     * @param {string} fieldName - The field name
+     * @param {string} fieldCaption - The field caption
+     * @param {string} baseField - The base field (optional)
+     * @param {string} baseItem - The base item (optional)
+     * @returns {void}
+     */
+    private setAggregateActionInfo(
+        aggregateType: SummaryTypes, fieldName: string, fieldCaption: string, baseField?: string, baseItem?: string
+    ): void {
+        this.parent.actionObj.actionInfo = {
+            aggregateInfo: {
+                aggregateType: aggregateType,
+                fieldName: fieldName,
+                fieldCaption: fieldCaption,
+                baseField: baseField || undefined,
+                baseItem: baseItem || undefined
+            }
+        };
     }
 }

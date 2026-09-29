@@ -1,6 +1,6 @@
-import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { TaskFieldsModel, EditSettingsModel, ResourceFieldsModel } from '../models/models';
+import { TaskFieldsModel, EditSettingsModel, ResourceFieldsModel, ProjectCalendarModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor, IValidateMode } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowDropEventArgs } from '../base/interface';
 import { ColumnModel, Column as GanttColumn } from '../models/column';
@@ -20,6 +20,8 @@ import { ITreeData, TreeGrid, Edit as TreeGridEdit } from '@syncfusion/ej2-treeg
 import { CriticalPath, UndoRedo } from '..';
 import { ITaskSegment, TaskType } from '../base/common';
 import { timelineHeaderCellLabel } from '../base/css-constants';
+import { CalendarContext } from '../base/calendar-context';
+import { TaskbarEditDraw } from './taskbar-edit-draw';
 
 /**
  * The Edit Module is used to handle editing actions.
@@ -71,8 +73,11 @@ export class Edit {
     public taskbarEditModule: TaskbarEdit;
     public dialogModule: DialogEdit;
     public isDialogEditing: boolean = false;
+    private remoteCrud: boolean = false;
     private editedRecord: IGanttData;
+    public taskbarEditDrawModule: TaskbarEditDraw;
     constructor(parent?: Gantt) {
+        initializeTelemetryFeature('Edit', 'Gantt');
         this.parent = parent;
         this.parent.predecessorModule.validatedChildItems = [];
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Auto') {
@@ -87,6 +92,9 @@ export class Edit {
         }
         if (this.parent.editSettings.allowTaskbarEditing) {
             this.taskbarEditModule = new TaskbarEdit(this.parent);
+        }
+        if (this.parent.editSettings.allowTaskbarDraw) {
+            this.taskbarEditDrawModule = new TaskbarEditDraw(this.parent);
         }
         if (this.parent.editSettings.allowDeleting) {
             const confirmDialog: HTMLElement = createElement('div', {
@@ -403,7 +411,7 @@ export class Edit {
      */
     public updateRecordByID(data: Object): void {
         if (this.parent.enableImmutableMode && this.parent.editSettings.allowEditing &&
-            this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+            this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
             this.parent.treeGrid.endEdit();
         }
         if (!this.parent.readOnly) {
@@ -710,7 +718,9 @@ export class Edit {
                     const ganttProps : ITaskData = ganttData.ganttProperties;
                     ganttObj.setRecordValue('baselineStartDate', ganttObj.dataOperation.checkBaselineStartDate(
                         ganttProps.baselineStartDate, ganttProps), ganttProps, true);
-                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProps.baselineEndDate);
+                    const calendarContext: CalendarContext = ganttProps && ganttProps.calendarContext ?
+                        ganttProps.calendarContext : this.parent.defaultCalendarContext;
+                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProps.baselineEndDate, calendarContext);
                     if (ganttProps.baselineEndDate && ganttProps.baselineEndDate.getHours() === 0 &&
                     dayEndTime !== 86400) {
                         ganttObj.dataOperation.setTime(dayEndTime, ganttProps.baselineEndDate);
@@ -727,7 +737,7 @@ export class Edit {
                         ganttProps.isMilestone)) {
                         ganttProps.baselineEndDate = ganttProps.baselineStartDate;
                     }
-                    ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttProps.baselineEndDate), ganttProps, true);
+                    ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttProps.baselineEndDate, ganttProps), ganttProps, true);
                     ganttObj.setRecordValue(
                         'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
                             ganttProps),
@@ -792,6 +802,16 @@ export class Edit {
                 this.parent.setRecordValue(key, data[key as string], ganttData);
                 this.updateTaskScheduleModes(ganttData);
             }
+            else if (tasks.calendarId === key) {
+                const value: string = data[key as string];
+                ganttObj.setRecordValue('calendarId', value, ganttData.ganttProperties, true);
+                ganttObj.setRecordValue('taskData.' + key, value, ganttData);
+                ganttObj.setRecordValue(key, value, ganttData);
+                const calendarModel: ProjectCalendarModel = this.parent.calendarModule.getCalendarById(value);
+                const context: CalendarContext = new CalendarContext(this.parent, calendarModel);
+                ganttData.ganttProperties.calendarContext = context;
+                this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+            }
         }
         if (isScheduleValueUpdated) {
             this.validateScheduleValues(scheduleFieldNames, ganttData, data);
@@ -828,7 +848,9 @@ export class Edit {
                 }
                 else if (isAutoSchedule && resources.length) {
                     if (column === 'resource' || column === 'work') {
-                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                        if (!isNullOrUndefined(ganttProp.work)) {
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
+                        }
                     }
                     else if (column === 'duration' || column === 'endDate') {
                         this.parent.dataOperation.updateWorkWithDuration(currentData);
@@ -1875,6 +1897,11 @@ export class Edit {
             }
             const originalData: IGanttData = this.parent.getTaskByUniqueID(uniqueId);
             this.copyTaskData(originalData.taskData, prevTask.taskData);
+            // Incase if `prevTask.taskData` is undefined, in that case need to update taskdata dependency to previous value-T1048844
+            if (isNullOrUndefined(prevTask.taskData) && originalData.taskData &&
+            !isNullOrUndefined(prevTask[this.parent.taskFields.dependency])) {
+                originalData.taskData[this.parent.taskFields.dependency] = prevTask[this.parent.taskFields.dependency];
+            }
             delete prevTask.taskData;
             this.copyTaskData(originalData.ganttProperties, prevTask.ganttProperties);
             delete prevTask.ganttProperties;
@@ -1919,6 +1946,28 @@ export class Edit {
     // eslint-disable-next-line
     private updateScheduleDatesOnEditing(args: ITaskbarEditedEventArgs): void {
         //..
+    }
+
+    /**
+     * Validate all predecessors in a record against `allowedDependencyTypes`
+     * @param {IGanttData} record - The record containing predecessors
+     * @returns {boolean} - Return `true` if `allowedDependencyTypes` matches record predecessor type value, `false` if not match the type
+     * @private
+     */
+    private validatePredecessorTypeAllowed(record: IGanttData): boolean {
+        if (!record || !record.ganttProperties || !record.ganttProperties.predecessor ||
+            record.ganttProperties.predecessor.length === 0) {
+            return true;
+        }
+        if (!isNullOrUndefined(record.ganttProperties && record.ganttProperties.predecessor)) {
+            const predecessors: IPredecessor[] = record.ganttProperties.predecessor;
+            for (const pred of predecessors) {
+                if (this.parent.predecessorModule.isAllowedDependencyType(pred.type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -1972,6 +2021,13 @@ export class Edit {
         /* eslint-disable-next-line */
         const unModifiedData: any = extend({}, eventArgs.data.ganttProperties, undefined, true);
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
+            // RESTRICTION CHECK: Validate predecessor dependency types before executing the save action
+            if (eventArg.data && eventArg.data[this.parent.taskFields.dependency] &&
+                !this.validatePredecessorTypeAllowed(eventArg.data as IGanttData)) {
+                eventArg.cancel = true;
+                const err: string = `The dependency type ${eventArg.data[this.parent.taskFields.dependency]} is not allowed. Allowed dependency types: ${this.parent.allowedDependencyTypes}.`;
+                this.parent.trigger('actionFailure', { error: err });
+            }
             this.parent.treeGridModule.setCancelArgs = eventArg.cancel;
             const ganttProps: ITaskData = eventArg.data['ganttProperties'];
             const taskFields: TaskFieldsModel = this.parent.taskFields;
@@ -2165,7 +2221,8 @@ export class Edit {
                             crud = data.update(this.parent.taskFields.id, records, keyVal, query) as Promise<Object>;
                         }
                     }
-                    if (!isNullOrUndefined(crud)) {
+                    // for tab key navigation
+                    if (!isNullOrUndefined(crud) && !this.remoteCrud) {
                         crud.then((e: ReturnType) => this.dmSuccess(e, args))
                             .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     }
@@ -2180,7 +2237,6 @@ export class Edit {
                 }
             }
         });
-        this.parent.ganttChartModule.reRenderConnectorLines();
     }
 
     private processCustomDateColumns(
@@ -2263,6 +2319,11 @@ export class Edit {
     private dmSuccess(e: any, args: ITaskbarEditedEventArgs): void {
         this.updateEditedFields(e);
         this.saveSuccess(args);
+        this.remoteCrud = false;
+        if (this.parent.focusModule['tabElement']['isTab']) {
+            this.parent.treeGrid.editCell(this.parent.ganttChartModule.focusedRowIndex, this.parent.focusModule['tabElement']['column']);
+            this.parent.focusModule['tabElement'] = Object.assign({}, this.parent.focusModule['tabElement'], { isTab: false });
+        }
     }
 
     private updateEditedRecordFields(rec: ITaskData, editedRecord: IGanttData): void {
@@ -2416,7 +2477,8 @@ export class Edit {
                                                  true, criticalModule.predecessorCollectionTaskIds);
         }
         if (!this.isTreeGridRefresh) {
-            if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+            if (!this.parent.focusModule['tabElement']['isTab'] && this.parent.editSettings.allowEditing &&
+                this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
                 if (!this.parent.treeGrid.grid.element.querySelector('form').ej2_instances[0].validate()) {
                     setValue('isEdit', false, this.parent.treeGrid.grid);
                     this.parent.editModule.cellEditModule.isCellEdit = false;
@@ -2428,9 +2490,6 @@ export class Edit {
                 this.parent.contentHeight = this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
                 this.parent.ganttChartModule.chartBodyContent.style.height = this.parent.contentHeight + 'px';
                 this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
-                if (this.parent.taskFields.dependency) {
-                    this.parent.ganttChartModule.reRenderConnectorLines();
-                }
             }
             if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['currentAction'] &&
             this.parent.undoRedoModule['currentAction']['connectedRecords'])) && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
@@ -2438,6 +2497,9 @@ export class Edit {
                 this.parent.connectorLineIds = [];
                 this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
                 this.updateScheduleDatesOnEditing(args);
+            }
+            if (this.parent.ganttChartModule) {
+                this.parent.ganttChartModule.reRenderConnectorLines();
             }
         }
         if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
@@ -3367,6 +3429,9 @@ export class Edit {
                 if (record.length === 0) {
                     this.isBreakLoop = true;
                     break;
+                }
+                if (!isNullOrUndefined(dataCollection) && dataCollection.length > 0) {
+                    this.removeData(dataCollection, record);
                 }
             } else if (dataCollection[i as number][this.parent.taskFields.child]) {
                 const childRecords: ITaskData[] = dataCollection[i as number][this.parent.taskFields.child];
@@ -4532,10 +4597,34 @@ export class Edit {
                 }
                 this.parent.undoRedoModule['createUndoCollection']();
             }
+            const originalTaskData: Object = extend({}, {}, args.newTaskData, true);
+            // Update task dates based on the configured timezone before actionBegin is triggered
+            if (this.parent.timezone) {
+                this.processStandardDateFields(args.newTaskData, args.newTaskData, this.parent, 'remove');
+            }
+            this.processCustomDateColumns(args.newTaskData, args.newTaskData, this.parent, 'remove');
+            const timezoneAdjustedTaskData: Object = extend({}, {}, args.newTaskData, true);
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 this.parent.previousRecords = {};
                 const tasks: TaskFieldsModel = this.parent.taskFields;
                 let ganttData: IGanttData;
+                if (this.parent.timezone) {
+                    // Restore original task date values if they were not modified in actionBegin
+                    // If the customer updates a date in actionBegin, preserve the modified value
+                    const dateFields: string[] = [tasks.startDate, tasks.endDate,
+                        tasks.baselineStartDate, tasks.baselineEndDate
+                    ];
+                    for (const field of dateFields) {
+                        // eslint-disable-next-line
+                        if (!isNullOrUndefined(args.newTaskData && args.newTaskData[field]) &&
+                            args.newTaskData[field] instanceof Date && // eslint-disable-line
+                            !isNullOrUndefined(timezoneAdjustedTaskData[field]) && // eslint-disable-line
+                            timezoneAdjustedTaskData[field] instanceof Date && // eslint-disable-line
+                            args.newTaskData[field].getTime() === timezoneAdjustedTaskData[field].getTime()) { // eslint-disable-line
+                            args.newTaskData[field] = originalTaskData[field]; // eslint-disable-line
+                        }
+                    }
+                }
                 if (this.parent.viewType === 'ResourceView') {
                     if (args.data['childRecords'].length > 0) {
                         ganttData = this.parent.flatData[this.parent.getTaskIds().indexOf('R' + args.data[tasks.id])];
@@ -4595,18 +4684,12 @@ export class Edit {
                                     args.data['ganttProperties']['taskId'] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.newTaskData[tempTaskID as string] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.data['ganttProperties']['rowUniqueID'] = e.addedRecords[0][this.parent.taskFields.id].toString();
-                                    if (this.parent.ids.some((id: string) => id ===
-                                    e.addedRecords[0][this.parent.taskFields.id].toString())) {
-                                        const err: string = `The provided ID value ${e.addedRecords[0][this.parent.taskFields.id]} already exists. Please provide a unique ID value.`;
-                                        this.parent.trigger('actionFailure', { error: err });
-                                    }
-                                    else {
+                                    const taskId: string = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    if (!this.triggerDuplicateIdError(taskId)) {
                                         if (previousIDIndex !== -1) {
-                                            this.parent.ids.splice(previousIDIndex, 1,
-                                                                   e.addedRecords[0][this.parent.taskFields.id].toString());
-                                        }
-                                        else {
-                                            this.parent.ids.push(e.addedRecords[0][this.parent.taskFields.id].toString());
+                                            this.parent.ids.splice(previousIDIndex, 1, taskId);
+                                        } else {
+                                            this.parent.ids.push(taskId);
                                         }
                                     }
                                 }
@@ -4753,6 +4836,15 @@ export class Edit {
         }
     }
 
+    private triggerDuplicateIdError(taskId: string): boolean {
+        const isDuplicateID: boolean = this.parent.ids.some((id: string) => id === taskId);
+        if (isDuplicateID) {
+            const err: string = `The provided ID value ${taskId} already exists. Please provide a unique ID value.`;
+            this.parent.trigger('actionFailure', { error: err });
+        }
+        return isDuplicateID;
+    }
+
     public createNewRecord(): IGanttData {
         const tempRecord: IGanttData = {};
         const ganttColumns: GanttColumnModel[] = this.parent.ganttColumns;
@@ -4768,19 +4860,11 @@ export class Edit {
                 } else {
                     tempRecord[fieldName as string] = new Date(tempRecord[taskSettingsFields.endDate]);
                 }
-                if (this.parent.timezone) {
-                    tempRecord[fieldName as string] = this.parent.dateValidationModule.remove(
-                        tempRecord[fieldName as string], this.parent.timezone);
-                }
             } else if (ganttColumns[i as number].field === taskSettingsFields.endDate) {
                 if (isNullOrUndefined(tempRecord[taskSettingsFields.startDate])) {
                     tempRecord[fieldName as string] = this.parent.editModule.dialogModule.getMinimumStartDate();
                 } else {
                     tempRecord[fieldName as string] = new Date(tempRecord[taskSettingsFields.startDate]);
-                }
-                if (this.parent.timezone) {
-                    tempRecord[fieldName as string] = this.parent.dateValidationModule.remove(
-                        tempRecord[fieldName as string], this.parent.timezone);
                 }
             } else if (ganttColumns[i as number].field === taskSettingsFields.duration) {
                 tempRecord[fieldName as string] = 1;
@@ -4939,6 +5023,13 @@ export class Edit {
                     extend([], [], args.data as IGanttData[], true) as IGanttData[] : [args.data as IGanttData];
             }
             this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
+            // Update task dates based on the configured timezone after the timeline dates are updated during add action
+            if (this.parent.timezone && this.parent.timelineModule['performedTimeSpanAction']) {
+                this.processStandardDateFields(args.newTaskData, args.newTaskData, this.parent, 'remove');
+            }
+            if (args.action === 'beforeAdd' && this.parent.timelineModule['performedTimeSpanAction']) {
+                this.parent.timelineModule['performedTimeSpanAction'] = false;
+            }
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
@@ -5270,9 +5361,11 @@ export class Edit {
                             if (droppedRec.ganttProperties.predecessor && (!validPredecessor || !this.parent.allowParentDependency)) {
                                 this.parent.editModule.removePredecessorOnDelete(droppedRec);
                                 droppedRec.ganttProperties.predecessor.splice(count, 1);
-                                droppedRec.ganttProperties.predecessorsName = null;
-                                droppedRec[this.parent.taskFields.dependency] = null;
-                                droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                                if (droppedRec.ganttProperties.predecessor.length === 0) {
+                                    droppedRec.ganttProperties.predecessorsName = null;
+                                    droppedRec[this.parent.taskFields.dependency] = null;
+                                    droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                                }
                             }
                         }
                     }
@@ -5391,6 +5484,12 @@ export class Edit {
             } else if (this.dropPosition === 'bottomSegment') {
                 args.requestType = 'outdented';
             }
+        }
+        // Updates hierarchy checkbox selection state in Gantt after row drag-and-drop and indent/outdent actions.
+        if (this.parent.hierarchyCheckboxMode === 'hierarchy' &&
+            this.parent.selectionModule && this.parent.allowSelection) {
+            args.draggedRecords = args.data as IGanttData[];
+            this.parent.treeGrid.selectionModule['rowDropCompleteSelection'](args);
         }
         args.modifiedRecords = this.parent.editedRecords;
         if (this.parent.timezone) {
@@ -5525,7 +5624,9 @@ export class Edit {
         if (this.dropPosition === 'middleSegment') {
             if (this.droppedRecord.ganttProperties.isAutoSchedule &&
                 !isNullOrUndefined(this.droppedRecord.ganttProperties.predecessorsName) &&
-                this.droppedRecord.ganttProperties.predecessorsName !== '') {
+                this.droppedRecord.ganttProperties.predecessorsName !== '' &&
+                !isNullOrUndefined(this.droppedRecord.childRecords) &&
+                this.droppedRecord.childRecords.length < 1) {
                 const startDate: Date = this.droppedRecord.ganttProperties.startDate;
                 this.parent.setRecordValue('startDate', startDate, this.draggedRecord.ganttProperties, true);
                 this.parent.dateValidationModule.calculateEndDate(this.draggedRecord);
@@ -5745,8 +5846,13 @@ export class Edit {
                 droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
             }
             if (!isNullOrUndefined(droppedRec.ganttProperties.segments) && droppedRec.ganttProperties.segments.length > 0) {
-                droppedRec.ganttProperties.segments = null;
-                droppedRec.taskData[obj.taskFields.segments] = null;
+                if (isRemoteData(this.parent.dataSource)) {
+                    droppedRec.ganttProperties.segments = [];
+                    droppedRec.taskData[obj.taskFields.segments] = [];
+                } else {
+                    droppedRec.ganttProperties.segments = null;
+                    droppedRec.taskData[obj.taskFields.segments] = null;
+                }
             }
             if (!draggedRec.hasChildRecords) {
                 draggedRec.level = droppedRec.level + 1;

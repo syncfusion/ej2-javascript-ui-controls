@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap5.3' as *;
-@forward 'ej2-base/styles/definition/bootstrap5.3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ribbon-border: none !default;
 $ribbon-border-radius: unset !default;
 $ribbon-disabled-opacity: .35 !default;
@@ -275,7 +275,7 @@ $ribbon-bigger-gallery-header-padding: 12px 0 8px !default;
 $ribbon-bigger-overflow-header-line-height: 22px !default;
 $ribbon-bigger-overflow-header-height: 28px !default;
 $ribbon-bigger-combobox-height: 38px !default;
-$ribbon-bigger-medium-item-height: 32px !default;
+$ribbon-bigger-medium-item-height: 40px !default;
 $ribbon-bigger-overflow-header-font-size: 14px !default;
 $ribbon-bigger-overflow-header-padding: 5px 0 5px 16px !default;
 $ribbon-bigger-rtl-overflow-header-padding: 5px 16px 5px 0 !default;

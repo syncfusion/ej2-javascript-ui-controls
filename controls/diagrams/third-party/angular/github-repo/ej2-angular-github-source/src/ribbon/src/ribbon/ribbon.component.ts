@@ -21,39 +21,29 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childTabs: new ContentChild(RibbonTabsDirective), 
-        childContextualTabs: new ContentChild(RibbonContextualTabsDirective)
+        childTabs: new ContentChild(RibbonTabsDirective),
+        childContextualTabs: new ContentChild(RibbonContextualTabsDirective),
+        helpPaneTemplate: new ContentChild('helpPaneTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class RibbonComponent extends Ribbon implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	created: any;
-	launcherIconClick: any;
-	overflowPopupClose: any;
-	overflowPopupOpen: any;
-	ribbonCollapsing: any;
-	ribbonExpanding: any;
-	ribbonLayoutSwitched: any;
-	tabSelected: any;
-	public tabSelecting: any;
-    public childTabs: QueryList<RibbonTabsDirective>;
-    public childContextualTabs: QueryList<RibbonContextualTabsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare created: any;
+	declare launcherIconClick: any;
+	declare overflowPopupClose: any;
+	declare overflowPopupOpen: any;
+	declare ribbonCollapsing: any;
+	declare ribbonExpanding: any;
+	declare ribbonLayoutSwitched: any;
+	declare tabSelected: any;
+	public declare tabSelecting: any;
+    public declare childTabs: QueryList<RibbonTabsDirective>;
+    public declare childContextualTabs: QueryList<RibbonContextualTabsDirective>;
     public tags: string[] = ['tabs', 'contextualTabs'];
-    /** 
-     * Specifies the template content for the help pane of ribbon. 
-     * The help pane appears on the right side of the ribbon header row.
-     * @default ''
-     * @angulartype string | object | HTMLElement
-     * @reacttype string | function | JSX.Element | HTMLElement
-     * @vuetype string | function | HTMLElement
-     * @asptype string
-     */
-    @ContentChild('helpPaneTemplate')
-    @Template()
-    public helpPaneTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -158,7 +148,8 @@ export class RibbonComponent extends Ribbon implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(RibbonComponent.prototype, 'helpPaneTemplate');
 

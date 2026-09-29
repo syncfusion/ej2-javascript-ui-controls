@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/tailwind3' as *;
-@forward 'ej2-base/styles/definition/tailwind3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ribbon-border: none !default;
 $ribbon-border-radius: $radius-unset !default;
 $ribbon-disabled-opacity: .35 !default;

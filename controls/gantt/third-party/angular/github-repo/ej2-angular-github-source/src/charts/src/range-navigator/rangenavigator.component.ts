@@ -20,29 +20,28 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(RangenavigatorSeriesCollectionDirective)
+        childSeries: new ContentChild(RangenavigatorSeriesCollectionDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class RangeNavigatorComponent extends RangeNavigator implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforePrint: any;
-	beforeResize: any;
-	changed: any;
-	labelRender: any;
-	load: any;
-	loaded: any;
-	resized: any;
-	selectorRender: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<RangenavigatorSeriesCollectionDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforePrint: any;
+	declare beforeResize: any;
+	declare changed: any;
+	declare labelRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare resized: any;
+	declare selectorRender: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<RangenavigatorSeriesCollectionDirective>;
     public tags: string[] = ['series'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -120,7 +119,9 @@ export class RangeNavigatorComponent extends RangeNavigator implements IComponen
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(RangeNavigatorComponent.prototype, 'tooltip_template');
+
 

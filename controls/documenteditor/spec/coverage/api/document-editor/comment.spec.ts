@@ -147,3 +147,62 @@ describe('Comment initial validation', () => {
         expect(editor.documentHelper.comments.length).toBe(1); 
     });
 });
+
+/**
+ * Converts an RGB or RGBA color string to a hexadecimal color value.
+ *
+ * @param {string} color - RGB or RGBA color string.
+ * @returns {string} Hexadecimal color code.
+ */
+function rgbOrRgbaToHex(color: string): string {
+    const match: RegExpMatchArray = color.match(/^rgba?\(([^)]*)\)$/i);
+
+    if (!match) {
+        throw new Error('Invalid RGB/RGBA color format');
+    }
+
+    const values: string[] = match[1].split(',');
+
+    const r: number = parseInt(values[0].trim(), 10);
+    const g: number = parseInt(values[1].trim(), 10);
+    const b: number = parseInt(values[2].trim(), 10);
+
+    const toHex: (value: number) => string = (value: number): string =>
+        ('0' + value.toString(16)).slice(-2).toUpperCase();
+
+    return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+describe('Highlight Comments By Author', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        const ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableComment: true });
+        editor.enableAllModules();
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.documentEditorSettings.highlightCommentsByAuthor = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Should apply the author color to comment start markers', () => {
+        editor.openBlank();
+        editor.currentUser = 'User_1';
+        editor.editor.insertText('hello');
+        editor.selection.selectAll();
+        editor.editor.insertComment('check');
+        const markerColor: string = rgbOrRgbaToHex((editor.documentHelper.comments[0] as any).commentStartIn.commentMarkSpan.style.color);
+        expect(editor.documentHelper.getAuthorColor('User_1').toLowerCase()).toBe(markerColor.toLowerCase());
+    });
+});

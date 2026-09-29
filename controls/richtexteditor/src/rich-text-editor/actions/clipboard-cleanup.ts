@@ -1,7 +1,7 @@
 import { ClipBoardCleanupAction } from '../../editor-manager/plugin/clipboard-cleanup-action';
 import { IRichTextEditor } from '../base';
 import * as events from '../base/constant';
-import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ClipboardWriteEventArgs } from '../../common/interface';
 import { NotifyArgs } from '../../common/interface';
 import { sanitizeHelper } from '../base/util';
@@ -15,6 +15,7 @@ export class ClipBoardCleanup {
     private isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('ClipBoardCleanup', 'RichTextEditor');
         this.parent = parent;
         this.addEventListener();
         this.isDestroyed = false;

@@ -8,7 +8,7 @@ export interface LinearGaugeTypecast {
 }
 /**
  * Represents the React Linear Gauge Component. This tag is used to customize the properties of the linear gauge to visualize the data in linear scale.
- * ```tsx
+ * ```
  * <LinearGaugeComponent></LinearGaugeComponent>
  * ```
  */

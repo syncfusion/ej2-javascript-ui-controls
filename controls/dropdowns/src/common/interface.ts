@@ -95,7 +95,7 @@ export interface IDropdownlist extends Component<HTMLElement> {
     handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void;
     resetList(
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
-        fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void
+        fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent, skipExecuteLocal?: boolean): void
     findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number): HTMLElement;
     scrollStop(e?: Event): void;
     targetElement(): string;

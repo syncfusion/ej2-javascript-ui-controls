@@ -276,7 +276,7 @@ export class ImageResizer {
         this.currentPage = page;
         let x: number = 0;
         //let y: number = 0;
-        if (!isNullOrUndefined(resizeDiv)) {
+        if (!isNullOrUndefined(resizeDiv) && !isNullOrUndefined(page)) {
             if (this.owner.viewer instanceof WebLayoutViewer) {
 
                 this.imageResizerDivElement.style.width = page.boundingRectangle.width - page.boundingRectangle.x - left - this.documentHelper.scrollbarWidth + 'px';
@@ -790,6 +790,9 @@ export class ImageResizer {
                     this.owner.documentHelper.layout.layoutGroupShape(this.currentImageElementBox);
                 }
                 let owner: ParagraphWidget = this.currentImageElementBox.line.paragraph as ParagraphWidget;
+                if (!isNullOrUndefined(owner) && owner.isInHeaderFooter) {
+                    this.owner.editorModule.updateHeaderFooterWidget();
+                }
                 this.positionImageResizer(this.currentImageElementBox);
             }
             this.isImageResizing = true;

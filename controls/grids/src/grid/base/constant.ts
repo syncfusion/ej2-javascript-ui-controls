@@ -19,6 +19,10 @@ export const actionComplete: string = 'actionComplete';
 /** @hidden */
 export const actionFailure: string = 'actionFailure';
 /** @hidden */
+export const advancedFilterBegin: string = 'advancedFilterBegin';
+/** @hidden */
+export const advancedFilterComplete: string = 'advancedFilterComplete';
+/** @hidden */
 export const dataBound: string = 'dataBound';
 /** @hidden */
 export const rowSelecting: string = 'rowSelecting';

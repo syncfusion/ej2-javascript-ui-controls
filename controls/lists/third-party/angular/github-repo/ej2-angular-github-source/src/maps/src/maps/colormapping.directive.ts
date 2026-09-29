@@ -23,9 +23,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-bubbleSettings>e-colorMappings>e-colorMapping',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
@@ -37,44 +37,44 @@ export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
      * Gets or sets the color for the color-mapping in maps.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Gets or sets the value from where the range for the color-mapping starts.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public from: any;
+    public declare from: any;
     /** 
      * Gets or sets the label for the color-mapping to display in the legend item text.
      * @default null
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Gets or sets the maximum opacity for the color-mapping in maps.
      * @default null
      */
-    public maxOpacity: any;
+    public declare maxOpacity: any;
     /** 
      * Gets or sets the minimum opacity for the color-mapping in maps.
      * @default null
      */
-    public minOpacity: any;
+    public declare minOpacity: any;
     /** 
      * Enables or disables the visibility of legend for the corresponding color-mapped shapes in maps.
      * @default true
      */
-    public showLegend: any;
+    public declare showLegend: any;
     /** 
      * Gets or sets the value to where the range for the color-mapping ends.
      * @aspdefaultvalueignore 
      * @default null
      */
-    public to: any;
+    public declare to: any;
     /** 
      * Gets or sets the value from the data source to map the corresponding colors to the shapes.
      * @default null
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -90,6 +90,7 @@ export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
  */
 @Directive({
     selector: 'e-bubbleSettings>e-colorMappings',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColorMappingDirective)
     },

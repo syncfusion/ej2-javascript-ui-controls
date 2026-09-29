@@ -2088,7 +2088,15 @@
   .e-bigger .e-float-input.e-control-wrapper textarea[disabled] ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper textarea label.e-float-text.e-label-top {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      transform: translate3d(0, 6px, 0) scale(.86);
+      @if $input-skin-name == 'fluent2'{
+        transform: translate3d(-8px, 6px, 0) scale(.86);
+      }
+      @else if $input-skin-name == 'tailwind3'{
+        transform: translate3d(-10px, 6px, 0) scale(.86);
+      }
+      @else{
+        transform: translate3d(0, 6px, 0) scale(.86);
+      }
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
@@ -2142,7 +2150,15 @@
   .e-small.e-bigger .e-float-input.e-control-wrapper textarea[disabled] ~ label.e-label-top.e-float-text,
   .e-small.e-bigger .e-float-input.e-control-wrapper textarea label.e-float-text.e-label-top {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      transform: translate3d(0, 6px, 0) scale(.86);
+      @if $input-skin-name == 'fluent2'{
+        transform: translate3d(-8px, 6px, 0) scale(.86);
+      }
+      @else if $input-skin-name == 'tailwind3'{
+        transform: translate3d(-10px, 6px, 0) scale(.86);
+      }
+      @else{
+        transform: translate3d(0, 6px, 0) scale(.86);
+      }
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;

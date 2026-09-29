@@ -94,6 +94,17 @@ describe('MaskedTextBox Component', () => {
             expect(input.parentElement.classList.contains('e-disabled')).toEqual(true);
             expect(input.hasAttribute('disabled') && input.hasAttribute('aria-disabled')).toEqual(true);
         });
+        it('Verify float label container is rendered with floatLabelType Auto', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                cssClass: 'e-outline',
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.parentElement.querySelector('.e-float-text-content')).toBeTruthy();
+        });
         afterAll(() => {
             maskBox.getPersistData();
         });

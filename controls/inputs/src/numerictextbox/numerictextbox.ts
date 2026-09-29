@@ -80,6 +80,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private prependedElement: HTMLElement;
     private appendedElement: HTMLElement;
     private iconTemplateFunction: Function;
+    private resizeHandler: () => void;
 
     /*NumericTextBox Options */
 
@@ -818,6 +819,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 EventHandler.add(this.formEle, 'reset', this.resetFormHandler, this);
             }
         }
+        this.resizeHandler = this.windowResize.bind(this);
+        window.addEventListener('resize', this.resizeHandler);
     }
 
     private wireSpinBtnEvents(): void {
@@ -841,6 +844,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         EventHandler.remove(this.element, 'paste', this.pasteHandler);
         if (this.formEle) {
             EventHandler.remove(this.formEle, 'reset', this.resetFormHandler);
+        }
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+            this.resizeHandler = null;
         }
     }
 
@@ -1379,6 +1386,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.action(DECREMENT, event);
         }
         this.cancelEvent(event);
+    }
+
+    private windowResize(): void {
+        this.updateFloatLabelOverflowWidth();
     }
 
     private focusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {

@@ -34,7 +34,7 @@ export const HeaderRowsPlugin = {
 /**
  * `e-header-rows` directive represent a header rows of the VueJS Schedule. 
  * It must be contained in a Schedule component(`ejs-schedule`). 
- * ```vue
+ * ```js
  * <ejs-schedule>
  *   <e-header-rows>
  *    <e-header-row option='Week'></e-header-row>

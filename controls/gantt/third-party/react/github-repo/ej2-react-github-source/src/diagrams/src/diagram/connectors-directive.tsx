@@ -5,7 +5,7 @@ import { ConnectorModel } from '@syncfusion/ej2-diagrams';
 /**
  * `ConnectorsDirective` directive represent a connectors of the react diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <ConnectorsDirective>
  * <ConnectorDirective></ConnectorDirective>

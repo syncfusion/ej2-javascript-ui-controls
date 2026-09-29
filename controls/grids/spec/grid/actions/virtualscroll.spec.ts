@@ -3097,3 +3097,49 @@ describe('EJ2-1020711: ColumnChooser with Virtualization and AdaptiveUI - Script
         gridObj = null;
     });
 });
+
+describe('EJ2-1040073: Scroll position jumps after deleting the first row when Virtual Scrolling is enabled', () => {
+    let gObj: Grid;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 25),
+                height: 315,
+                enableVirtualization: true,
+                editSettings: {
+                    allowDeleting: true
+                },
+                toolbar: ['Delete'],
+                columns: [
+                    { type: 'checkbox', width: 40 },
+                    { field: 'OrderID', headerText: 'OrderID', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'CustomerID', width: 120 },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 130 }
+                ],
+                actionComplete: actionComplete
+            },
+            done
+        );
+    });
+
+    it('should maintain scrollBar Top after deleting first row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {
+                const updatedContent: HTMLElement =
+                    gObj.getContent().firstElementChild as HTMLElement;
+                expect(updatedContent.scrollTop).toBe(0);
+                done();
+            }
+        };
+        gObj.actionComplete = actionComplete;
+        gObj.selectRow(0, true);
+        gObj.deleteRecord();
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = actionComplete = null;
+    });
+});

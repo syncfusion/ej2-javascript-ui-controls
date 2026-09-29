@@ -596,22 +596,6 @@ export class ConditionalFormatting {
     }
 
     /**
-     * To convert hex to RGB.
-     *
-     * @param {string} hex - hex value.
-     * @returns { { r: number, g: number, b: number } | null } - Hex value.
-     * @hidden
-     */
-    public hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-        const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-
-    /**
      * To convert color to hex.
      *
      * @param {string} colour - It contains the color value.

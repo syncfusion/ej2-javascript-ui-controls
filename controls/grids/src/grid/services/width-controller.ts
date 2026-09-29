@@ -76,10 +76,20 @@ export class ColumnWidthService {
                 difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }
             let tmWidth: number = 0;
+            let minColsCount: number = 0;
             for (const cols of collection) {
-
-                tmWidth += !isNullOrUndefined(cols.minWidth) ?
-                    ((typeof cols.minWidth === 'string' ? parseInt(cols.minWidth, 10) : cols.minWidth)) : 0;
+                if (!isNullOrUndefined(cols.minWidth)) {
+                    minColsCount++;
+                    tmWidth += typeof cols.minWidth === 'string'
+                        ? parseInt(cols.minWidth, 10)
+                        : cols.minWidth;
+                }
+            }
+            let extraWidthPerColumn: number = 0;
+            if (tWidth !== 0 && difference > tmWidth && tmWidth > 0 && minColsCount > 0) {
+                const scrollbarWidth: number = getScrollBarWidth();
+                const totalExtraWidth: number = difference - tmWidth - scrollbarWidth;
+                extraWidthPerColumn = Math.floor(totalExtraWidth / minColsCount) - 1;
             }
             for (let i: number = 0; i < collection.length; i++) {
                 if (tWidth === 0 && this.parent.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
@@ -87,10 +97,18 @@ export class ColumnWidthService {
                 }
                 const index: number = this.parent.getColumnIndexByField(
                     collection[parseInt(i.toString(), 10)].field) + this.parent.getIndentCount();
+                const minWidthColumn: Column = collection[parseInt(i.toString(), 10)];
                 if (tWidth !== 0 && difference < tmWidth) {
-                    this.setWidth(collection[parseInt(i.toString(), 10)].minWidth, index);
+                    this.setWidth(minWidthColumn.minWidth, index);
                 } else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', index, true);
+                    if (minColsCount > 0 && !isNullOrUndefined(minWidthColumn.minWidth)) {
+                        const minWidthValue: number = typeof minWidthColumn.minWidth === 'string' ?
+                            parseInt(minWidthColumn.minWidth, 10) : minWidthColumn.minWidth;
+                        const columnWidth: number = minWidthValue + extraWidthPerColumn;
+                        this.setWidth(columnWidth, index);
+                    } else {
+                        this.setWidth('', index, true);
+                    }
                 }
             }
         }

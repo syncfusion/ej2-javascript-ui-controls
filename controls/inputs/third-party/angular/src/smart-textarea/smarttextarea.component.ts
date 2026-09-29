@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,23 +30,22 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class SmartTextAreaComponent extends SmartTextArea implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	afterSuggestionInsert: any;
-	beforeSuggestionInsert: any;
-	blur: any;
-	change: any;
-	created: any;
-	destroyed: any;
-	focus: any;
-	input: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare afterSuggestionInsert: any;
+	declare beforeSuggestionInsert: any;
+	declare blur: any;
+	declare change: any;
+	declare created: any;
+	declare destroyed: any;
+	declare focus: any;
+	declare input: any;
+	public declare valueChange: any;
 
 
 
@@ -91,7 +91,7 @@ export class SmartTextAreaComponent extends SmartTextArea implements IComponentB
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

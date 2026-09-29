@@ -983,14 +983,12 @@ export class _PdfBasicEncodingElement extends _PdfAbstractSyntaxElement {
         const parentTag: number = this._getTagNumber();
         for (const substring of substrings) {
             if (parentTag === _UniversalType.octetString) {
-                if (substring._tagClass !== _TagClassType.universal ||
+                if (
+                    substring._tagClass !== _TagClassType.universal ||
                     substring._getTagNumber() !== _UniversalType.octetString) {
-                    throw new Error('Invalid constructed OCTET STRING: children must be OCTET STRING (tag 4).');
-                }
-            } else {
-                if (substring._tagClass !== this._tagClass ||
-                    substring._getTagNumber() !== parentTag) {
-                    throw new Error(`Invalid constructed ${dataType}: children must be of the same type as the parent.`);
+                    throw new Error(
+                        'Invalid constructed OCTET STRING: children must be OCTET STRING (tag 4).'
+                    );
                 }
             }
             substring._recursionCount = this._recursionCount + 1;

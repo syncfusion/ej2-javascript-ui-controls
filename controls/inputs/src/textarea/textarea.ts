@@ -35,6 +35,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
     private prependedElement: HTMLElement;
     private appendedElement: HTMLElement;
     private iconTemplateFn: Function;
+    private resizeHandler: () => void;
 
     /**
      * Specifies the boolean value whether the TextArea allows user to change the text.
@@ -719,6 +720,8 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
         this.bindClearEvent();
+        this.resizeHandler = this.windowResize.bind(this);
+        window.addEventListener('resize', this.resizeHandler);
     }
 
     protected unWireEvents(): void {
@@ -729,6 +732,10 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         EventHandler.remove(this.element, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+            this.resizeHandler = null;
         }
     }
 
@@ -769,6 +776,10 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             setValue('ej2_instances', null, this.element);
         }
         super.destroy();
+    }
+
+    private windowResize(): void {
+        this.updateFloatLabelOverflowWidth();
     }
 
     private focusHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {

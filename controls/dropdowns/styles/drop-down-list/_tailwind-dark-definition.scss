@@ -1,6 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/tailwind-dark' as *;
-@forward 'ej2-base/styles/definition/tailwind-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
 $ddl-input-border: 1px $border-light !default;

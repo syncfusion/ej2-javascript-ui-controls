@@ -521,6 +521,9 @@ export class WUniqueFormat {
         if (this.isNotEqual('cellWidth', source, modifiedProperty, modifiedValue, 4)) {
             return false;
         }
+        if (this.isNotEqual('verticallyMergedCellsKeepWithNext', source, modifiedProperty, modifiedValue, 4)) {
+            return false;
+        }
         return true;
     }
     /**

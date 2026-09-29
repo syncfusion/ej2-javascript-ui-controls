@@ -1,0 +1,15 @@
+@use '../variables' as *;
+@include export-module('inlineaiassist-bootstrap-dark-icons') {
+  .e-inline-send::before {
+    content: '\e816';
+  }
+  .e-inline-accept::before {
+    content: '\e97d';
+  }
+  .e-inline-discard::before {
+    content: '\e7fc';
+  }
+  .e-inline-stop::before {
+    content: '\e16e';
+  }
+}

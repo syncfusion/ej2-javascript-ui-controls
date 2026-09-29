@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/material-dark' as *;
-@forward 'ej2-base/styles/definition/material-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-input-font-size: 14px !default;

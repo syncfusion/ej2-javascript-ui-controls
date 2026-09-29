@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/fluent2' as *;
-@forward 'ej2-base/styles/definition/fluent2';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $cbox-bigger-check-fontsize: 12px !default;
 $cbox-bigger-font-size: 16px !default;
 $cbox-bigger-height: 20px !default;

@@ -1,9 +1,10 @@
 import { Gantt } from '../base/gantt';
-import { KeyboardEventArgs, isNullOrUndefined, getValue, removeClass } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, isNullOrUndefined, getValue, removeClass, EventHandler } from '@syncfusion/ej2-base';
 import { IKeyPressedEventArgs, IGanttData } from '../base/interface';
 import { ColumnModel } from '../models/column';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { ISelectedCell, IIndex } from '@syncfusion/ej2-grids';
+import { isRemoteData } from '../base/utils';
 import { ContextMenu } from '@syncfusion/ej2-navigations/src/context-menu';
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line
@@ -18,6 +19,7 @@ export class FocusModule {
     private activeElement: HTMLElement;
     private previousActiveElement: HTMLElement;
     private isFromKeyboardAction: boolean = false;
+    private tabElement: object = {column: '', isTab: false };
     constructor(parent: Gantt) {
         this.parent = parent;
         this.activeElement = null;
@@ -174,6 +176,13 @@ export class FocusModule {
             }
             break;
         case 'escape':
+            // Check if taskbar draw operation is in progress
+            if (!isNullOrUndefined(ganttObj.editModule) && !isNullOrUndefined(ganttObj.editModule.taskbarEditDrawModule) &&
+                ganttObj.editModule.taskbarEditDrawModule['getIsDrawing'] && ganttObj.editModule.taskbarEditDrawModule['getIsDrawing']()) {
+                // Let the taskbar draw module handle the ESC key
+                // The module has its own keydown handler
+                return;
+            }
             if (!isNullOrUndefined(ganttObj.editModule) && !isNullOrUndefined(ganttObj.editModule.cellEditModule)) {
                 ganttObj.editModule.cellEditModule.isCellEdit = false;
                 if (!isNullOrUndefined(ganttObj.toolbarModule)) {
@@ -269,6 +278,12 @@ export class FocusModule {
             let target: Element = e.target as Element;
             if (this.parent.element.querySelectorAll('.e-focused').length > 0) {
                 target = this.parent.element.querySelectorAll('.e-focused')[0];
+            }
+            if (isRemoteData(this.parent.dataSource) && this.parent.element.querySelectorAll('.e-editedcell').length > 0) {
+                const editedCell: Element = this.parent.element.querySelectorAll('.e-editedcell')[0];
+                const column: Element | string = this.parent.ganttChartModule['getNextElement'](editedCell, e.action === 'tab' ? true : false, false);
+                const columnName: string = this.parent.ganttColumns[parseInt((column as Element).getAttribute('aria-colindex'), 10) - 1].field;
+                this.tabElement = {column: columnName, isTab: true };
             }
             const nextElement: Element | string  = this.parent.ganttChartModule['getNextElement'](target, e.action === 'tab' ? true : false, false);
             if (!ganttObj.element.classList.contains('e-scroll-disabled')) {

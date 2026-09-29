@@ -21,29 +21,30 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childAnnotations: new ContentChild(ProgressBarAnnotationsDirective), 
+        childAnnotations: new ContentChild(ProgressBarAnnotationsDirective),
         childRangeColors: new ContentChild(RangeColorsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class ProgressBarComponent extends ProgressBar implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	animationComplete: any;
-	load: any;
-	loaded: any;
-	mouseClick: any;
-	mouseDown: any;
-	mouseLeave: any;
-	mouseMove: any;
-	mouseUp: any;
-	progressCompleted: any;
-	textRender: any;
-	tooltipRender: any;
-	public valueChanged: any;
-    public childAnnotations: QueryList<ProgressBarAnnotationsDirective>;
-    public childRangeColors: QueryList<RangeColorsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare animationComplete: any;
+	declare load: any;
+	declare loaded: any;
+	declare mouseClick: any;
+	declare mouseDown: any;
+	declare mouseLeave: any;
+	declare mouseMove: any;
+	declare mouseUp: any;
+	declare progressCompleted: any;
+	declare textRender: any;
+	declare tooltipRender: any;
+	public declare valueChanged: any;
+    public declare childAnnotations: QueryList<ProgressBarAnnotationsDirective>;
+    public declare childRangeColors: QueryList<RangeColorsDirective>;
     public tags: string[] = ['annotations', 'rangeColors'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -89,7 +90,8 @@ export class ProgressBarComponent extends ProgressBar implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

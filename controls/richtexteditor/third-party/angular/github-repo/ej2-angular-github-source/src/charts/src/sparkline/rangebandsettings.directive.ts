@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-rangeBandSettings>e-rangeBandSetting',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class RangeBandSettingDirective extends ComplexBase<RangeBandSettingDirective> {
@@ -22,22 +22,22 @@ export class RangeBandSettingDirective extends ComplexBase<RangeBandSettingDirec
     /** 
      * To configure sparkline rangeband color.
      */
-    public color: any;
+    public declare color: any;
     /** 
      * To configure sparkline end range.
      * @aspdefaultvalueignore 
      */
-    public endRange: any;
+    public declare endRange: any;
     /** 
      * To configure sparkline rangeband opacity.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * To configure sparkline start range.
      * @aspdefaultvalueignore 
      */
-    public startRange: any;
+    public declare startRange: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -53,6 +53,7 @@ export class RangeBandSettingDirective extends ComplexBase<RangeBandSettingDirec
  */
 @Directive({
     selector: 'ejs-sparkline>e-rangeBandSettings',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeBandSettingDirective)
     },

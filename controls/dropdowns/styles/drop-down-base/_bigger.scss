@@ -1,11 +1,11 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('dropdownbase-bigger') {
   
   .e-bigger .e-dropdownbase,
   .e-dropdownbase.e-bigger {
     min-height: $bgr-drop-base-height;
     @at-root {
-      #{if(&, '&', '*')} .e-list-item {
+      & .e-list-item {
         line-height: $ddl-line-height;
         text-indent: $ddl-bigger-text-indent;
         @if $skin-name == 'tailwind3' {
@@ -13,15 +13,15 @@
         }
       }
 
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         line-height: $ddl-line-height;
         @if $skin-name != 'tailwind' {
           text-indent: $ddl-bigger-text-indent;
         }
       }
 
-      #{if(&, '&', '*')} .e-list-item .e-list-icon {
+      & .e-list-item .e-list-icon {
         font-size: $ddl-bgr-list-item-icon-font-size;
       }
     }
@@ -58,15 +58,15 @@
   .e-bigger.e-rtl,
   .e-bigger .e-rtl,
   .e-rtl .e-bigger {
-    #{if(&, '&', '*')} .e-dropdownbase {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+    & .e-dropdownbase {
+      & .e-list-group-item,
+      & .e-fixed-head {
         @if $skin-name == 'tailwind' {
           padding-right: $ddl-list-header-bigger-padding-left;
         }
       }
 
-      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+      &.e-dd-group .e-list-item {
         @if $skin-name == 'tailwind' {
           padding-right: $ddl-group-list-bigger-padding-left;
         }
@@ -79,20 +79,20 @@
   .e-rtl .e-small.e-bigger,
   .e-small .e-rtl.e-bigger,
   .e-bigger .e-rtl.e-small {
-    #{if(&, '&', '*')} .e-dropdownbase {
-      #{if(&, '&', '*')} .e-list-item {
+    & .e-dropdownbase {
+      & .e-list-item {
         padding-left: $ddl-list-rtl-padding-left;
         padding-right: $ddl-list-rtl-padding-right;
       }
 
-      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+      &.e-dd-group .e-list-item {
         @if $skin-name == 'tailwind' {
           padding-right: $ddl-group-list-bigger-small-padding-left;
         }
       }
 
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         @if $skin-name == 'tailwind' {
           padding-right: $ddl-list-header-bigger-small-padding-left;
         }
@@ -102,8 +102,8 @@
 
   .e-bigger .e-dropdownbase {
     @at-root {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         font-size: $ddl-bigger-list-header-font-size;
         padding-left: $ddl-list-header-bigger-padding-left;
       }
@@ -113,8 +113,8 @@
   .e-bigger.e-small .e-dropdownbase,
   .e-dropdownbase.e-bigger.e-small  {
     @at-root {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         font-size: $ddl-bigger-small-list-header-font-size;
       }
     }
@@ -123,21 +123,21 @@
   .e-bigger.e-small .e-dropdownbase,
   .e-dropdownbase.e-small.e-bigger {
     @at-root {
-      #{if(&, '&', '*')} .e-list-item {
+      & .e-list-item {
         color: $ddl-bigger-small-list-font-color;
         line-height: $ddl-bigger-small-line-height;
         min-height: $ddl-bigger-small-line-height;
         text-indent: $ddl-bigger-small-list-text-indent;
       }
 
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         line-height: $ddl-bigger-small-line-height;
         min-height: $ddl-bigger-small-line-height;
         padding-left: $ddl-list-header-bigger-small-padding-left;
       }
 
-      #{if(&, '&', '*')} .e-list-item .e-list-icon {
+      & .e-list-item .e-list-icon {
         font-size: $ddl-bigger-small-icon-font-size;
       }
     }

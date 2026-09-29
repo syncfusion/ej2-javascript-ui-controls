@@ -1,6 +1,6 @@
 /* eslint-disable  */
 import { RevisionType, RevisionActionType } from '../../base/types';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox, HeaderFooterWidget, ShapeElementBox, CommentCharacterElementBox, LineWidget, BlockContainer, ListTextElementBox, ContentControl, EditRangeEndElementBox, EditRangeStartElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
@@ -339,6 +339,7 @@ export class Revision {
      * @returns {void}
      */
     public accept(): void {
+        initializeTelemetryFeature('TrackChanges', 'DOCXEditor');
         const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Accept', source: this };
         this.owner.trigger(revisionActionEvent, eventArgs);
         if (eventArgs.cancel) {
@@ -363,6 +364,7 @@ export class Revision {
      * Method which rejects the selected revision, revision marks will be removed leaving the original content.
      */
     public reject(): void {
+        initializeTelemetryFeature('TrackChanges', 'DOCXEditor');
         const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Reject', source: this };
         this.owner.trigger(revisionActionEvent, eventArgs);
         if (eventArgs.cancel) {
@@ -510,7 +512,7 @@ export class Revision {
             this.removeItem(item);
             this.isContentRemoved = true;
             let skipRelayout: boolean = !isNullOrUndefined(currentPara) && !isNullOrUndefined(currentPara.bodyWidget) && currentPara.bodyWidget instanceof HeaderFooterWidget && (isNullOrUndefined(currentPara.bodyWidget.page) || (!isNullOrUndefined(currentPara.bodyWidget.page) && currentPara.bodyWidget.page.index === -1))
-            if (!skipRelayout) {
+            if (!skipRelayout && !this.owner.selectionModule.start.paragraph.isInsideTable) {
                 this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
             }
             if (isNullOrUndefined(currentPara.childWidgets)) {
@@ -1274,6 +1276,7 @@ export class RevisionCollection {
      * @returns {void}
      */
     public acceptAll(): void {
+        initializeTelemetryFeature('TrackChanges', 'DOCXEditor');
         if (!this.owner.isReadOnly && !this.owner.documentHelper.isTrackedOnlyMode) {
             this.handleRevisionCollection(true);
         }
@@ -1284,6 +1287,7 @@ export class RevisionCollection {
      * @returns {void}
      */
     public rejectAll(): void {
+        initializeTelemetryFeature('TrackChanges', 'DOCXEditor');
         if (!this.owner.isReadOnly && !this.owner.documentHelper.isTrackedOnlyMode) {
             this.handleRevisionCollection(false);
         }

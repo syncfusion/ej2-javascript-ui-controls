@@ -1,6 +1,6 @@
 import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
-import { remove, matches } from '@syncfusion/ej2-base';
+import { remove, matches, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings } from '../base/grid';
 import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance, CustomOperators } from '../base/interface';
@@ -106,6 +106,7 @@ export class Filter implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Filter', 'DataGrid');
         this.parent = parent;
         this.filterSettings = filterSettings;
         this.serviceLocator = serviceLocator;
@@ -866,8 +867,10 @@ export class Filter implements IAction {
                                  filterDate: string | number | boolean | Date | (string | number | boolean | Date)[]): boolean {
         if (isNullOrUndefined(colDate) && isNullOrUndefined(filterDate)) {
             return true;
-        }  else if (colDate instanceof Date && filterDate instanceof Date) {
+        } else if (colDate instanceof Date && filterDate instanceof Date) {
             return colDate.getTime() === filterDate.getTime();
+        } else if (typeof (colDate) === 'string' && typeof (filterDate) === 'string') {
+            return colDate === filterDate;
         }
         return false;
     }

@@ -7,8 +7,8 @@ import { ResourcesDirective } from './resources.directive';
 import { HeaderRowsDirective } from './headerrows.directive';
 import { ToolbarItemsDirective } from './toolbaritems.directive';
 
-export const inputs: string[] = ['agendaDaysCount','allowClipboard','allowDragAndDrop','allowInline','allowKeyboardInteraction','allowMultiCellSelection','allowMultiDrag','allowMultiRowSelection','allowOverlap','allowResizing','allowSwiping','calendarMode','cellHeaderTemplate','cellTemplate','cssClass','currentView','dateFormat','dateHeaderTemplate','dateRangeTemplate','dayHeaderTemplate','editorFooterTemplate','editorHeaderTemplate','editorTemplate','enableAdaptiveUI','enableAllDayScroll','enableHtmlSanitizer','enablePersistence','enableRecurrenceValidation','enableRtl','endHour','eventDragArea','eventSettings','firstDayOfWeek','firstMonthOfYear','group','headerIndentTemplate','headerRows','height','hideEmptyAgendaDays','locale','maxDate','minDate','monthHeaderTemplate','monthsCount','overscanCount','prerenderDialogs','quickInfoOnSelectionEnd','quickInfoTemplates','readonly','resourceHeaderTemplate','resources','rowAutoHeight','selectedDate','selectedResource','showHeaderBar','showQuickInfo','showTimeIndicator','showWeekNumber','showWeekend','startHour','timeFormat','timeScale','timezone','timezoneDataSource','toolbarItems','views','weekRule','width','workDays','workHours'];
-export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','beforePaste','beforePrint','cellClick','cellDoubleClick','created','dataBinding','dataBound','destroyed','drag','dragStart','dragStop','eventClick','eventDoubleClick','eventRendered','excelExport','hover','moreEventsClick','navigating','popupClose','popupOpen','renderCell','resizeStart','resizeStop','resizing','select','tooltipOpen','virtualScrollStart','virtualScrollStop','currentViewChange','selectedDateChange'];
+export const inputs: string[] = ['agendaDaysCount','allowClipboard','allowDragAndDrop','allowInline','allowKeyboardInteraction','allowMultiCellSelection','allowMultiDrag','allowMultiRowSelection','allowOverlap','allowResizing','allowSwiping','calendarMode','cellHeaderTemplate','cellTemplate','cssClass','currentTimeIndicatorSettings','currentView','dateFormat','dateHeaderTemplate','dateRangeTemplate','dayHeaderTemplate','editorFooterTemplate','editorHeaderTemplate','editorTemplate','enableAdaptiveUI','enableAllDayScroll','enableHtmlSanitizer','enablePersistence','enableRecurrenceValidation','enableRtl','enableWebMcp','endHour','eventDragArea','eventSettings','firstDayOfWeek','firstMonthOfYear','group','headerIndentTemplate','headerRows','height','hideEmptyAgendaDays','locale','maxDate','minDate','monthHeaderTemplate','monthsCount','overscanCount','prerenderDialogs','quickInfoOnSelectionEnd','quickInfoTemplates','readonly','resourceHeaderTemplate','resources','rowAutoHeight','selectedDate','selectedResource','showHeaderBar','showQuickInfo','showTimeIndicator','showWeekNumber','showWeekend','startHour','timeFormat','timeScale','timezone','timezoneDataSource','toolbarItems','views','weekRule','width','workDays','workHours'];
+export const outputs: string[] = ['actionBegin','actionComplete','actionFailure','beforePaste','beforePrint','beforeWebMcpToolExecute','cellClick','cellDoubleClick','created','dataBinding','dataBound','destroyed','drag','dragStart','dragStop','eventClick','eventDoubleClick','eventRendered','excelExport','hover','moreEventsClick','navigating','popupClose','popupOpen','renderCell','resizeStart','resizeStop','resizing','select','tooltipOpen','virtualScrollStart','virtualScrollStop','currentViewChange','selectedDateChange'];
 export const twoWays: string[] = ['currentView', 'selectedDate'];
 
 /**
@@ -23,245 +23,76 @@ export const twoWays: string[] = ['currentView', 'selectedDate'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childViews: new ContentChild(ViewsDirective), 
-        childResources: new ContentChild(ResourcesDirective), 
-        childHeaderRows: new ContentChild(HeaderRowsDirective), 
-        childToolbarItems: new ContentChild(ToolbarItemsDirective)
+        childViews: new ContentChild(ViewsDirective),
+        childResources: new ContentChild(ResourcesDirective),
+        childHeaderRows: new ContentChild(HeaderRowsDirective),
+        childToolbarItems: new ContentChild(ToolbarItemsDirective),
+        dateHeaderTemplate: new ContentChild('dateHeaderTemplate'),
+        dateRangeTemplate: new ContentChild('dateRangeTemplate'),
+        dayHeaderTemplate: new ContentChild('dayHeaderTemplate'),
+        cellTemplate: new ContentChild('cellTemplate'),
+        cellHeaderTemplate: new ContentChild('cellHeaderTemplate'),
+        eventSettings_tooltipTemplate: new ContentChild('eventSettingsTooltipTemplate'),
+        eventSettings_template: new ContentChild('eventSettingsTemplate'),
+        editorTemplate: new ContentChild('editorTemplate'),
+        editorHeaderTemplate: new ContentChild('editorHeaderTemplate'),
+        editorFooterTemplate: new ContentChild('editorFooterTemplate'),
+        monthHeaderTemplate: new ContentChild('monthHeaderTemplate'),
+        timeScale_minorSlotTemplate: new ContentChild('timeScaleMinorSlotTemplate'),
+        timeScale_majorSlotTemplate: new ContentChild('timeScaleMajorSlotTemplate'),
+        resourceHeaderTemplate: new ContentChild('resourceHeaderTemplate'),
+        headerIndentTemplate: new ContentChild('headerIndentTemplate'),
+        quickInfoTemplates_header: new ContentChild('quickInfoTemplatesHeader'),
+        quickInfoTemplates_content: new ContentChild('quickInfoTemplatesContent'),
+        quickInfoTemplates_footer: new ContentChild('quickInfoTemplatesFooter'),
+        group_headerTooltipTemplate: new ContentChild('groupHeaderTooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ScheduleComponent extends Schedule implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforePaste: any;
-	beforePrint: any;
-	cellClick: any;
-	cellDoubleClick: any;
-	created: any;
-	dataBinding: any;
-	dataBound: any;
-	destroyed: any;
-	drag: any;
-	dragStart: any;
-	dragStop: any;
-	eventClick: any;
-	eventDoubleClick: any;
-	eventRendered: any;
-	excelExport: any;
-	hover: any;
-	moreEventsClick: any;
-	navigating: any;
-	popupClose: any;
-	popupOpen: any;
-	renderCell: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	select: any;
-	tooltipOpen: any;
-	virtualScrollStart: any;
-	virtualScrollStop: any;
-	currentViewChange: any;
-	public selectedDateChange: any;
-    public childViews: QueryList<ViewsDirective>;
-    public childResources: QueryList<ResourcesDirective>;
-    public childHeaderRows: QueryList<HeaderRowsDirective>;
-    public childToolbarItems: QueryList<ToolbarItemsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforePaste: any;
+	declare beforePrint: any;
+	declare beforeWebMcpToolExecute: any;
+	declare cellClick: any;
+	declare cellDoubleClick: any;
+	declare created: any;
+	declare dataBinding: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare drag: any;
+	declare dragStart: any;
+	declare dragStop: any;
+	declare eventClick: any;
+	declare eventDoubleClick: any;
+	declare eventRendered: any;
+	declare excelExport: any;
+	declare hover: any;
+	declare moreEventsClick: any;
+	declare navigating: any;
+	declare popupClose: any;
+	declare popupOpen: any;
+	declare renderCell: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare select: any;
+	declare tooltipOpen: any;
+	declare virtualScrollStart: any;
+	declare virtualScrollStop: any;
+	declare currentViewChange: any;
+	public declare selectedDateChange: any;
+    public declare childViews: QueryList<ViewsDirective>;
+    public declare childResources: QueryList<ResourcesDirective>;
+    public declare childHeaderRows: QueryList<HeaderRowsDirective>;
+    public declare childToolbarItems: QueryList<ToolbarItemsDirective>;
     public tags: string[] = ['views', 'resources', 'headerRows', 'toolbarItems'];
-    /** 
-     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto 
-     * the date header cells. The field that can be accessed via this template is `date`.
-     * 
-     * {% codeBlock src='schedule/dateHeaderTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('dateHeaderTemplate')
-    @Template()
-    public dateHeaderTemplate: any;
-    /** 
-     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('dateRangeTemplate')
-    @Template()
-    public dateRangeTemplate: any;
-    /** 
-     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto 
-     * the day header cells. This template is only applicable for year view header cells.
-     * 
-     * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('dayHeaderTemplate')
-    @Template()
-    public dayHeaderTemplate: any;
-    /** 
-     * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either 
-     *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells. 
-     *  The fields accessible via template are as follows. 
-     * * `date`: Returns the date of the cell. 
-     * * `groupIndex`: Returns the group index of the cell. 
-     * * `type`: Returns the type of the work cell.
-     * 
-     * Refer to the below code snippet.
-     *
-     *{% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('cellTemplate')
-    @Template()
-    public cellTemplate: any;
-    /** 
-     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto 
-     * the month date cells. This template is only applicable for month view day cells.
-     * 
-     * {% codeBlock src='schedule/cellHeaderTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('cellHeaderTemplate')
-    @Template()
-    public cellHeaderTemplate: any;
-    @ContentChild('eventSettingsTooltipTemplate')
-    @Template()
-    public eventSettings_tooltipTemplate: any;
-    @ContentChild('eventSettingsTemplate')
-    @Template()
-    public eventSettings_template: any;
-    /** 
-     * The template option to render the customized editor window. The form elements defined within this template should be accompanied 
-     *  with `e-field` class, so as to fetch and process it from internally.
-     * 
-     * {% codeBlock src='schedule/editorTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('editorTemplate')
-    @Template()
-    public editorTemplate: any;
-    /** 
-     * The template option to render the customized header of the editor window.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('editorHeaderTemplate')
-    @Template()
-    public editorHeaderTemplate: any;
-    /** 
-     * The template option to render the customized footer of the editor window.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('editorFooterTemplate')
-    @Template()
-    public editorFooterTemplate: any;
-    /** 
-     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto 
-     * the month header cells. This template is only applicable for year view header cells.
-     * 
-     * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('monthHeaderTemplate')
-    @Template()
-    public monthHeaderTemplate: any;
-    @ContentChild('timeScaleMinorSlotTemplate')
-    @Template()
-    public timeScale_minorSlotTemplate: any;
-    @ContentChild('timeScaleMajorSlotTemplate')
-    @Template()
-    public timeScale_majorSlotTemplate: any;
-    /** 
-     * Template option to customize the resource header bar. Here, the template accepts either 
-     *  the string or HTMLElement as template design and then the parsed design is displayed onto the resource header cells. 
-     * The following can be accessible via template. 
-     * * `resource` - All the resource fields. 
-     * * `resourceData` - Object collection of current resource.
-     * 
-     * Refer to the below code snippet.
-     *
-     *{% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('resourceHeaderTemplate')
-    @Template()
-    public resourceHeaderTemplate: any;
-    /** 
-     * Template option to customize the header indent bar. Here, the template accepts either 
-     *  the string or HTMLElement as template design and then the parsed design is displayed onto the header indent cell.
-     * 
-     * Refer to the below code snippet.
-     *
-     *{% codeBlock src='schedule/headerIndentTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerIndentTemplate')
-    @Template()
-    public headerIndentTemplate: any;
-    @ContentChild('quickInfoTemplatesHeader')
-    @Template()
-    public quickInfoTemplates_header: any;
-    @ContentChild('quickInfoTemplatesContent')
-    @Template()
-    public quickInfoTemplates_content: any;
-    @ContentChild('quickInfoTemplatesFooter')
-    @Template()
-    public quickInfoTemplates_footer: any;
-    @ContentChild('groupHeaderTooltipTemplate')
-    @Template()
-    public group_headerTooltipTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -399,7 +230,27 @@ export class ScheduleComponent extends Schedule implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ScheduleComponent.prototype, 'dateHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'dateRangeTemplate');
+Template()(ScheduleComponent.prototype, 'dayHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'cellTemplate');
+Template()(ScheduleComponent.prototype, 'cellHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'eventSettings_tooltipTemplate');
+Template()(ScheduleComponent.prototype, 'eventSettings_template');
+Template()(ScheduleComponent.prototype, 'editorTemplate');
+Template()(ScheduleComponent.prototype, 'editorHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'editorFooterTemplate');
+Template()(ScheduleComponent.prototype, 'monthHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'timeScale_minorSlotTemplate');
+Template()(ScheduleComponent.prototype, 'timeScale_majorSlotTemplate');
+Template()(ScheduleComponent.prototype, 'resourceHeaderTemplate');
+Template()(ScheduleComponent.prototype, 'headerIndentTemplate');
+Template()(ScheduleComponent.prototype, 'quickInfoTemplates_header');
+Template()(ScheduleComponent.prototype, 'quickInfoTemplates_content');
+Template()(ScheduleComponent.prototype, 'quickInfoTemplates_footer');
+Template()(ScheduleComponent.prototype, 'group_headerTooltipTemplate');
+
 

@@ -1,4 +1,4 @@
-import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import {  IRichTextEditor } from '../base/interface';
 import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../common/interface';
 import * as events from '../base/constant';
@@ -12,6 +12,7 @@ export class FormatPainter implements IFormatPainter {
     public previousAction: string;
     private isDestroyed: boolean;
     public constructor(parent?: IRichTextEditor) {
+        initializeTelemetryFeature('FormatPainter', 'RichTextEditor');
         this.parent = parent;
         this.addEventListener();
         this.isDestroyed = false;

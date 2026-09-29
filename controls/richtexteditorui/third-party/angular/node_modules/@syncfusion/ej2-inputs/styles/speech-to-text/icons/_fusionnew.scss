@@ -1,0 +1,9 @@
+@use '../variables' as *;
+@include export-module('speechtotext-fusionnew-icons') {
+  .e-listen-icon::before {
+    content: '\e91c';
+  }
+  .e-listen-stop::before {
+    content: '\e919';
+  }
+}

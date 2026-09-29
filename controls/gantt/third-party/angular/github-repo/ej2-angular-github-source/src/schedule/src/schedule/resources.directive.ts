@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-resources>e-resource',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ResourceDirective extends ComplexBase<ResourceDirective> {
@@ -35,17 +35,17 @@ export class ResourceDirective extends ComplexBase<ResourceDirective> {
      *  selected resources.
      * @default false
      */
-    public allowMultiple: any;
+    public declare allowMultiple: any;
     /** 
      * It maps the `color` field from the dataSource, which is used to specify colors for the resources.
      * @default 'Color'
      */
-    public colorField: any;
+    public declare colorField: any;
     /** 
      * It maps the `cssClass` field from the dataSource, which is used to specify different styles to each resource appointments.
      * @default 'CssClass'
      */
-    public cssClassField: any;
+    public declare cssClassField: any;
     /** 
      * Assigns the resource dataSource 
      * The data can be passed either as an array of JavaScript objects, 
@@ -55,65 +55,65 @@ export class ResourceDirective extends ComplexBase<ResourceDirective> {
      *  [adaptors](http://ej2.syncfusion.com/documentation/data/adaptors.html) to customize the data processing.
      * @default []
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * It maps the `endHour` field from the dataSource, which is used to specify different work end hour for each resources.
      * @default 'EndHour'
      */
-    public endHourField: any;
+    public declare endHourField: any;
     /** 
      * It maps the `expanded` field from the dataSource, which is used to specify whether each resource levels 
      * in timeline view needs to be maintained in an expanded or collapsed state by default.
      * @default 'Expanded'
      */
-    public expandedField: any;
+    public declare expandedField: any;
     /** 
      * A value that binds to the resource field of event object.
      * @default null
      */
-    public field: any;
+    public declare field: any;
     /** 
      * It maps the `groupID` field from the dataSource, which is used to specify under which parent resource, 
      *  the child should be grouped.
      * @default 'GroupID'
      */
-    public groupIDField: any;
+    public declare groupIDField: any;
     /** 
      * It maps the `id` field from the dataSource and is used to uniquely identify the resources.
      * @default 'Id'
      */
-    public idField: any;
+    public declare idField: any;
     /** 
      * It represents a unique resource name for differentiating various resource objects while grouping.
      * @default null
      */
-    public name: any;
+    public declare name: any;
     /** 
      * Defines the external [`query`](https://ej2.syncfusion.com/documentation/api/data/query.html) 
      * that will be executed along with the data processing.
      * @default null
      */
-    public query: any;
+    public declare query: any;
     /** 
      * It maps the `startHour` field from the dataSource, which is used to specify different work start hour for each resources.
      * @default 'StartHour'
      */
-    public startHourField: any;
+    public declare startHourField: any;
     /** 
      * It maps the `text` field from the dataSource, which is used to specify the resource names.
      * @default 'Text'
      */
-    public textField: any;
+    public declare textField: any;
     /** 
      * It holds the title of the resource field to be displayed on the schedule event editor window.
      * @default null
      */
-    public title: any;
+    public declare title: any;
     /** 
      * It maps the working days field from the dataSource, which is used to specify different working days for each resources.
      * @default 'WorkDays'
      */
-    public workDaysField: any;
+    public declare workDaysField: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -129,6 +129,7 @@ export class ResourceDirective extends ComplexBase<ResourceDirective> {
  */
 @Directive({
     selector: 'ejs-schedule>e-resources',
+    standalone: true,
     queries: {
         children: new ContentChildren(ResourceDirective)
     },

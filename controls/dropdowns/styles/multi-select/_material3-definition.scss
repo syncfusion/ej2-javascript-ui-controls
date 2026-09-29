@@ -1,7 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/material3' as *;
-@forward 'ej2-base/styles/definition/material3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'Material3' !default;
@@ -234,6 +232,8 @@ $outline-multiselect-disabled-chip-bg-color: transparent !default;
 $filled-multiselect-chip-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
 $filled-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
 $ddl-chip-bigger-content-padding: 0 !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 $ddl-bigger-filled-wrapper-chip-padding: 0 12px !default;
 $ddl-rtl-bigger-small-wrapper-chips-padding: 0 0 0 4px !default;

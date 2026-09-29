@@ -1,3 +1,4 @@
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { TreeGrid, Sort as TreeGrdSort } from '@syncfusion/ej2-treegrid';
 import { Gantt } from '../base/gantt';
 import { SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
@@ -8,6 +9,7 @@ import { SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
 export class Sort {
     public parent: Gantt;
     constructor(gantt: Gantt) {
+        initializeTelemetryFeature('Sort', 'Gantt');
         this.parent = gantt;
         TreeGrid.Inject(TreeGrdSort);
         this.parent.treeGrid.allowSorting = this.parent.allowSorting;

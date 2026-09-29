@@ -5,7 +5,7 @@ import { ShapeAnnotationModel } from '@syncfusion/ej2-diagrams';
 /**
  * `Node` directive represent a annotation of the react Diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <NodesDirective>
  * <NodeDirective>

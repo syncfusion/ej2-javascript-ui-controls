@@ -1,25 +1,25 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('dropdownlist-bigger') {
 
   .e-bigger .e-input-group.e-ddl {
-    #{if(&, '&', '*')} .e-input-filter,
-    #{if(&, '&', '*')} .e-input-filter:focus {
+    & .e-input-filter,
+    & .e-input-filter:focus {
       margin-left: $ddl-bgr-input-filter-margin-left;
     }
   }
 
   .e-bigger .e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-bigger-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-bigger-list-font-size;
       }
     }
 
-    #{if(&, '&', '*')} .e-input-group {
+    & .e-input-group {
       @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'Material3') {
         padding: $ddl-input-popup-padding;
       }
@@ -30,17 +30,17 @@
   }
 
   .e-bigger.e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-bigger-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-bigger-list-font-size;
       }
     }
 
-    #{if(&, '&', '*')} .e-input-group {
+    & .e-input-group {
       @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
         padding: $ddl-input-popup-padding;
       }
@@ -49,11 +49,11 @@
 
   .e-bigger.e-small .e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-bigger-small-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-bigger-small-list-font-size;
       }
@@ -62,11 +62,11 @@
 
   .e-bigger.e-small.e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
+    & .e-list-item {
       font-size: $ddl-bigger-small-list-font-size;
     }
 
-    #{if(&, '&', '*')} .e-list-group-item {
+    & .e-list-group-item {
       @if $skin-name != 'tailwind' {
         font-size: $ddl-bigger-small-list-font-size;
       }
@@ -136,25 +136,25 @@
   
     .e-bigger #{&}.e-popup.e-ddl {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: 15px;
           line-height: 40px;
           padding-left: 0;
           text-indent: 24px;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: 4px;
         }
   
-        #{if(&, '&', '*')} .e-input-group {
+        & .e-input-group {
           padding: $ddl-input-popup-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: 38px;
         }
       }
@@ -168,25 +168,25 @@
 
     .e-bigger.e-small .e-ddl#{&}.e-popup {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: 14px;
           line-height: 34px;
           padding-left: 0;
           text-indent: 16px;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: 4px;
         }
   
-        #{if(&, '&', '*')} .e-input-group {
+        & .e-input-group {
           padding: $ddl-input-popup-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: 30px;
         }
       }
@@ -218,31 +218,31 @@
   
     .e-bigger #{&}.e-popup.e-ddl {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item {
+        & .e-list-item {
           font-size: 16px;
           line-height: 32px;
           padding-left: 0;
           text-indent: 24px;
         }
   
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: 14px;
           line-height: 32px;
           padding-left: 0;
           text-indent: 24px;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: 4px;
         }
   
-        #{if(&, '&', '*')} .e-input-group {
+        & .e-input-group {
           padding: $ddl-input-popup-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           font-size: 16px;
           height: 36px;
         }
@@ -261,21 +261,21 @@
   
     .e-bigger.e-small .e-ddl#{&}.e-popup {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: $text-sm;
           line-height: $ddl-bgr-small-popup-line-height;
           padding-left: $ddl-zero-margin-padding;
           text-indent: $ddl-bgr-small-popup-text-indent;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: $ddl-bgr-group-list-item-padding-left;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: $ddl-input-group-height;
         }
       }
@@ -291,27 +291,27 @@
   
     .e-bigger #{&}.e-popup.e-ddl {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item {
+        & .e-list-item {
           font-size: $text-base;
           line-height: $ddl-bigger-popup-ddl-line-height;
           padding-left: $ddl-zero-margin-padding;
           text-indent: $ddl-bgr-small-popup-text-indent;
         }
   
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: $text-sm;
           line-height: $ddl-bigger-popup-ddl-line-height;
           padding-left: $ddl-zero-margin-padding;
           text-indent: $ddl-bgr-small-popup-text-indent;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: $ddl-zero-margin-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           font-size: $text-base;
           height: $ddl-bigger-popup-ddl-boot-height;
         }
@@ -329,25 +329,25 @@
     }
     .e-bigger .e-ddl#{&}.e-popup {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: 15px;
           line-height: 45px;
           padding-left: 0;
           text-indent: 16px;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: 4px;
         }
   
-        #{if(&, '&', '*')} .e-input-group {
+        & .e-input-group {
           padding: $ddl-input-popup-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: 38px;
         }
       }
@@ -355,25 +355,25 @@
     .e-bigger.e-small .e-ddl#{&}.e-popup,
     .e-ddl#{&}.e-popup .e-bigger.e-small {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: 14px;
           line-height: 40px;
           padding-left: 0;
           text-indent: 16px;
         }
   
-        #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        & .e-dd-group .e-list-item {
           padding-left: 4px;
         }
   
-        #{if(&, '&', '*')} .e-input-group {
+        & .e-input-group {
           padding: $ddl-input-zero-padding;
         }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: 34px;
         }
       }
@@ -386,15 +386,15 @@
   
     .e-bigger #{&}.e-popup.e-ddl {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item {
+        & .e-list-item {
           font-size: $text-base;
           line-height: 32px;
           padding-left: 0;
           text-indent: 16px;
         }
   
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: $text-sm;
           line-height: 32px;
           padding-left: 0;
@@ -412,21 +412,21 @@
   
     .e-bigger.e-small .e-ddl#{&}.e-popup {
       @at-root {
-        #{if(&, '&', '*')} .e-list-item,
-        #{if(&, '&', '*')} .e-list-group-item,
-        #{if(&, '&', '*')} .e-fixed-head {
+        & .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
           font-size: $text-sm;
           line-height: 34px;
           padding-left: 0;
           text-indent: 16px;
         }
   
-        // #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        // & .e-dd-group .e-list-item {
         //   padding-left: 4px;
         // }
   
-        #{if(&, '&', '*')} .e-input-group input,
-        #{if(&, '&', '*')} .e-input-group input.e-input {
+        & .e-input-group input,
+        & .e-input-group input.e-input {
           height: 30px;
         }
       }
@@ -441,59 +441,59 @@
       height: 36px;
     }
     .e-ddl#{&} {
-      #{if(&, '&', '*')}.e-popup {
-        .e-bigger #{if(&, '&', '*')} {
-          #{if(&, '&', '*')}.e-ddl-device.e-ddl-device-filter {
+      &.e-popup {
+        .e-bigger & {
+          &.e-ddl-device.e-ddl-device-filter {
             margin-top: 0;
           }
-          #{if(&, '&', '*')} .e-list-item,
-          #{if(&, '&', '*')} .e-list-group-item,
-          #{if(&, '&', '*')} .e-fixed-head {
+          & .e-list-item,
+          & .e-list-group-item,
+          & .e-fixed-head {
             font-size: 15px;
             line-height: 45px;
             padding-left: 0;
             text-indent: 16px;
           }
   
-          #{if(&, '&', '*')} .e-dd-group {
-            #{if(&, '&', '*')} .e-list-item {
+          & .e-dd-group {
+            & .e-list-item {
               padding-left: 4px;
             }
           }
   
-          #{if(&, '&', '*')} .e-input-group {
+          & .e-input-group {
             padding: $ddl-input-popup-padding;
           }
   
-          #{if(&, '&', '*')} .e-input-group {
-            #{if(&, '&', '*')} input {
+          & .e-input-group {
+            & input {
               height: 46px;
             }
           }
         }
   
-        .e-bigger.e-small #{if(&, '&', '*')} {
-          #{if(&, '&', '*')} .e-list-item,
-          #{if(&, '&', '*')} .e-list-group-item,
-          #{if(&, '&', '*')} .e-fixed-head {
+        .e-bigger.e-small & {
+          & .e-list-item,
+          & .e-list-group-item,
+          & .e-fixed-head {
             font-size: 14px;
             line-height: 40px;
             padding-left: 0;
             text-indent: 16px;
           }
   
-          #{if(&, '&', '*')} .e-dd-group {
-            #{if(&, '&', '*')} .e-list-item {
+          & .e-dd-group {
+            & .e-list-item {
               padding-left: 4px;
             }
           }
   
-          #{if(&, '&', '*')} .e-input-group {
+          & .e-input-group {
             padding: $ddl-input-zero-padding;
           }
   
-          #{if(&, '&', '*')} .e-input-group {
-            #{if(&, '&', '*')} input {
+          & .e-input-group {
+            & input {
               height: 34px;
             }
           }

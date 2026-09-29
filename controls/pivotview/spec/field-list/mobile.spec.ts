@@ -1034,7 +1034,7 @@ describe('Field List rendering on mobile device', () => {
             }, 100);
         });
         it('Aggregation check -1', (done: Function) => {
-            expect(fieldListObj.dataSourceSettings.values[0].type).toBe('PercentageOfParentRowTotal');
+            expect(fieldListObj.dataSourceSettings.values[0].type).toBe('PercentageOfParentColumnTotal');
             done();
         });
     });

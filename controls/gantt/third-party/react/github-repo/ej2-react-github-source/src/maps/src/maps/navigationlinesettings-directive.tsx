@@ -6,7 +6,7 @@ export interface NavigationLineSettingsDirTypecast {
 }
 /**
  * Represents the directive to define the navigation lines in the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <LayersDirective>
  * <LayerDirective>

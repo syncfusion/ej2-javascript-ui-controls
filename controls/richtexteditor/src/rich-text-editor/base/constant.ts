@@ -147,6 +147,14 @@ export const enableFullScreen: string = 'enableFullScreen';
  */
 export const disableFullScreen: string = 'disableFullScreen';
 /**
+ * @private
+ */
+export const getWebMcpTools: string = 'getWebMcpTools';
+/**
+ * @private
+ */
+export const registerWebMcpTools: string = 'registerWebMcpTools';
+/**
  * @hidden
  * @deprecated
  */

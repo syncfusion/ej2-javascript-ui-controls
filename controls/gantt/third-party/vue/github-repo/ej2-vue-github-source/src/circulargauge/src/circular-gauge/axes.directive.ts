@@ -33,7 +33,7 @@ export const AxesPlugin = {
 
 /**
  * Represents the directive to render the axes in the Circular Gauge.
- * ```vue
+ * ```
  * <ejs-circulargauge>
  * <e-axes><e-axis></e-axis></e-axes>
  * </ejs-circulargauge>

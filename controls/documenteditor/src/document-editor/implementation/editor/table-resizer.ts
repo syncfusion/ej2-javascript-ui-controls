@@ -64,7 +64,6 @@ export class TableResizer {
     public isInCellResizerArea(touchPoint: Point): boolean {
         this.documentHelper.resizerBoundaryWidth = 3 / this.documentHelper.zoomFactor;
         const position: number = this.getCellReSizerPosition(touchPoint);
-        this.documentHelper.resizerBoundaryWidth = 0;
         if (position === -1) {
             this.isResizerEnabled = false;
             return false;
@@ -230,7 +229,7 @@ export class TableResizer {
                 this.resizeTableCellColumn(dragValue);
             } else {
                 dragValue = touchPoint.y - this.startingPoint.y;
-                this.resizeTableRow(dragValue);
+                this.resizeTableRow(dragValue, touchPoint);
             }
         }
         else {
@@ -239,8 +238,14 @@ export class TableResizer {
             }
         }
     }
-    public resizeTableRow(dragValue: number): void {
+    public resizeTableRow(dragValue: number, touchPoint?: Point): void {
         let table: TableWidget = this.currentResizingTable;
+        if (touchPoint) {
+            const tableInPoint: TableWidget = this.getTableWidget(touchPoint);
+            if (tableInPoint instanceof TableWidget && table !== tableInPoint && table.index === tableInPoint.index) {
+                table = tableInPoint;
+            }
+        }
         if (isNullOrUndefined(table) || dragValue === 0 || this.resizerPosition === -1) {
             return;
         }
@@ -267,6 +272,9 @@ export class TableResizer {
             } else {
                 this.startingPoint.y += dragValue;
             }
+        }
+        if (table === this.currentResizingTable) {
+            this.owner.editorModule.layoutItemBlock(table, false);
         }
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
@@ -349,6 +357,20 @@ export class TableResizer {
                     if (!isNullOrUndefined(widget)) {
                         break;
                     }
+                }
+            }
+        }
+        if (this.documentHelper.isRowOrCellResizing) {
+            if (isNullOrUndefined(widget) && !isNullOrUndefined(currentPage.nextPage)) {
+                for (let i: number = 0; i < currentPage.nextPage.bodyWidgets.length; i++) {
+                    widget = currentPage.nextPage.bodyWidgets[parseInt(i.toString(), 10)].getTableCellWidget(cursorPoint);
+                    if (!isNullOrUndefined(widget)) { return widget; }
+                }
+            }
+            if (isNullOrUndefined(widget) && !isNullOrUndefined(currentPage.previousPage)) {
+                for (let i: number = 0; i < currentPage.previousPage.bodyWidgets.length; i++) {
+                    widget = currentPage.previousPage.bodyWidgets[parseInt(i.toString(), 10)].getTableCellWidget(cursorPoint);
+                    if (!isNullOrUndefined(widget)) { return widget; }
                 }
             }
         }
@@ -445,8 +467,16 @@ export class TableResizer {
                         -HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2) : dragValue;
                 }
                 else {
-                    if (cell.cellFormat.preferredWidth - dragValue <= minWidth) {
-                        dragValue = HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2);
+                    if (!isNullOrUndefined(cellwidget)) {
+                        const minWidthOfCell: number = HelperMethods.round(cellwidget.getMinimumPreferredWidth(), 2);
+                        if (cell.cellFormat.preferredWidth - dragValue <= minWidth
+                            && cellwidget.cellFormat.preferredWidth - dragValue <= minWidthOfCell) {
+                            dragValue = HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2);
+                        }
+                    } else {
+                        if (cell.cellFormat.preferredWidth - dragValue <= minWidth) {
+                            dragValue = HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2);
+                        }
                     }
                 }
                 if (rowFormat.beforeWidth > 0) {

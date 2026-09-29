@@ -1,5 +1,5 @@
 import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, EmitType, Browser, initializeTelemetry, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';
@@ -30,13 +30,13 @@ import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel, OpenAsyncSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo, CommentPane, CommentView } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';
-import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
+import { CommentCharacterElementBox, CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
@@ -92,7 +92,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets the revision settings.
      */
-    @Property({ customData: '', showCustomDataWithAuthor: false })
+    @Property({ customData: '', showCustomDataWithAuthor: false, revisionColors: ['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e'] })
     public revisionSettings: RevisionSettingsModel;
     /**
      * Specified the auto resize settings.
@@ -279,6 +279,16 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property('Tick')
     public defaultCheckBoxOption: CheckboxSymbolOptions;
+    /**
+     * Gets or sets a value indicating whether comments from each author are highlighted using a color derived from the author's avatar.
+     * These highlight colors are used only for visual identification within the editor and are not preserved when the document is exported.
+     *
+     * @default false
+     * @aspType bool
+     */
+    @Property(false)
+    public highlightCommentsByAuthor: boolean;
+
 }
 
 /**
@@ -314,6 +324,17 @@ export class RevisionSettings extends ChildProperty<RevisionSettings> {
      */
     @Property(false)
     public showCustomDataWithAuthor: boolean;
+    /**
+     * Gets or sets the array of colors used to render tracked revisions (insertions and deletions) in the document editor.
+     *
+     * Each author who makes a revision is assigned a color from this array in a round-robin fashion.
+     * The first author receives the color at index 0, the second author receives the color at index 1, and so on.
+     * When the number of authors exceeds the array length, the assignment wraps around to the beginning of the array.
+     *
+     * @default ['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e']
+     */
+    @Property<string[]>(['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e'])
+    public revisionColors: string[];
 }
 
 
@@ -648,7 +669,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public regularModule: Regular;
+    /**
+     * @private
+     */
+    public isModalDialog: boolean = false;
     private createdTriggered: boolean = false;
+    /**
+     * @private
+     */
+    public enableCsp: boolean = false;
     /**
      * Gets or sets the Collaborative editing module.
      */
@@ -1432,6 +1461,84 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Regenerates comment highlight colors when highlightCommentsByAuthor setting is toggled.
+     *
+     * @returns {void}
+     * @private
+     */
+    public regenerateCommentHighlights(): void {
+        const helper: DocumentHelper = this.documentHelper;
+        const commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = helper.render.commentMarkDictionary;
+        const highlightEnabled: boolean = this.documentEditorSettings.highlightCommentsByAuthor;
+
+        // Iterate through all comment marks and call renderCommentMark for re-render color logic
+        for (const markElement of commentMarkDictionary.keys) {
+            const overlappingComments: CommentCharacterElementBox[] = commentMarkDictionary.get(markElement);
+
+            if (!overlappingComments || overlappingComments.length === 0) {
+                continue;
+            }
+
+            // Handle event listeners and trigger re-render color update for all overlapping comments
+            for (let i: number = 0; i < overlappingComments.length; i++) {
+                const comment: CommentCharacterElementBox = overlappingComments[parseInt(i.toString(), 10)];
+                if (comment && comment.commentMarkSpan) {
+                    if (!highlightEnabled) {
+                        // Unwire events when highlighting is disabled
+                        if (comment.onCommentMarkMouseEnter) {
+                            comment.commentMarkSpan.removeEventListener('mouseenter', comment.onCommentMarkMouseEnter);
+                        }
+                        if (comment.onCommentMarkMouseLeave) {
+                            comment.commentMarkSpan.removeEventListener('mouseleave', comment.onCommentMarkMouseLeave);
+                        }
+                        // Clear color and textShadow when highlight disabled
+                        (comment.commentMarkSpan as HTMLElement).style.color = '';
+                        (comment.commentMarkSpan as HTMLElement).style.textShadow = '';
+
+                    } else {
+                        // Wire events when highlighting is enabled
+                        if (comment.onCommentMarkMouseEnter) {
+                            comment.commentMarkSpan.addEventListener('mouseenter', comment.onCommentMarkMouseEnter);
+                        }
+                        if (comment.onCommentMarkMouseLeave) {
+                            comment.commentMarkSpan.addEventListener('mouseleave', comment.onCommentMarkMouseLeave);
+                        }
+                    }
+                }
+            }
+        }
+        if (!isNullOrUndefined(this.commentReviewPane) || !isNullOrUndefined(this.commentReviewPane.commentPane)) {
+            const commentPane: CommentPane = this.commentReviewPane.commentPane;
+            // Iterate through all comment nodes in the pane to update pane borders
+            const commentKeys: CommentElementBox[] = commentPane.comments.keys;
+            for (const comment of commentKeys) {
+                const commentView: CommentView = commentPane.comments.get(comment);
+                if (!commentView || !commentView.parentElement) {
+                    continue;
+                }
+
+                const isSelected: boolean = commentView.parentElement.classList.contains('e-de-cmt-selection');
+
+                if (highlightEnabled) {
+                    // Highlight enabled: show colors for selected/hovered states
+                    if (isSelected) {
+                        // Selected state: use comment's author color
+                        const authorColor: string = helper.getAuthorColor(comment.author);
+                        (commentView.parentElement as HTMLElement).style.borderLeftColor = authorColor;
+                    } else {
+                        // Unselected state: clear border (will be set on hover)
+                        (commentView.parentElement as HTMLElement).style.borderLeftColor = '';
+                    }
+                } else {
+                    // Highlight disabled: clear all border colors
+                    (commentView.parentElement as HTMLElement).style.borderLeftColor = '';
+                }
+            }
+        }
+        this.viewer.updateScrollBars();
+    }
+
+    /**
      * Gets the selection object of the document editor.
      *
      * @default undefined
@@ -1664,6 +1771,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.initHelper();
     }
     protected preRender(): void {
+        this.setIsModalDialogValue();
         if (this.documentEditorSettings && this.documentEditorSettings.enableOptimizedTextMeasuring) {
             DocumentEditor.Inject(Optimized);
         } else {
@@ -1735,6 +1843,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.parser = new SfdtReader(this.documentHelper);
     }
     protected render(): void {
+        initializeTelemetry('DOCXEditor');
+        this.setIsModalDialogValue();
         if (!isNullOrUndefined(this.element)) {
             const container: HTMLElement = this.element;
             container.style.minHeight = '200px';
@@ -1756,6 +1866,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.renderRulers();
         this.renderNavigationPane();
         this.createdTriggered = true;
+    }
+    private setIsModalDialogValue(): void {
+        if (this.isAngular && !isNullOrUndefined(this.element.closest('.cdk-overlay-pane'))) {
+            this.isModalDialog = true;
+        }
     }
     /**
      * @private
@@ -1820,6 +1935,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.getSettingData('enableTrackChanges', model.enableTrackChanges);
                 if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
                     this.enableTrackChanges = true;
+                } else if (!oldProp.enableTrackChanges && model.enableTrackChanges) {
+                    initializeTelemetryFeature('TrackChanges', 'DOCXEditor');
                 }
                 break;
             case 'autoResizeOnVisibilityChange':
@@ -1934,6 +2051,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.documentHelper.showComments(model.enableComment);
                     }
                     this.viewer.updateScrollBars();
+                    if (!oldProp.enableComment && model.enableComment) {
+                        initializeTelemetryFeature('Comment', 'DOCXEditor');
+                    }
                     break;
                 case 'showRevisions':
                     if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
@@ -2012,12 +2132,25 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (!isNullOrUndefined(model.documentEditorSettings.enableSpellCheckOnScroll)) {
                         this.documentEditorSettings.enableSpellCheckOnScroll = model.documentEditorSettings.enableSpellCheckOnScroll;
                     }
+                    if (!isNullOrUndefined(model.documentEditorSettings.highlightCommentsByAuthor)) {
+                        this.documentEditorSettings.highlightCommentsByAuthor = model.documentEditorSettings.highlightCommentsByAuthor;
+                        this.regenerateCommentHighlights();
+                    }
                     if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings)) {
                         if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.customData)) {
                             this.documentEditorSettings.revisionSettings.customData = model.documentEditorSettings.revisionSettings.customData;
                         }
                         if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor)) {
                             this.documentEditorSettings.revisionSettings.showCustomDataWithAuthor = model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor;
+                        }
+                        this.documentEditorSettings.revisionSettings.revisionColors = model.documentEditorSettings.revisionSettings.revisionColors;
+                        //Clear the cached author colors so the new palette is applied, then relayout to repaint the canvas.
+                        if (this.documentHelper) {
+                            this.documentHelper.authors.clear();
+                            this.documentHelper.updateAuthorIdentity();
+                            if (this.documentHelper.viewer) {
+                                this.documentHelper.viewer.updateScrollBars();
+                            }
                         }
                     }
                     if (!isNullOrUndefined(model.documentEditorSettings.openAsyncSettings)) {
@@ -2676,6 +2809,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     * @returns {void}
     */
     public showPicContentControlDialog(): void {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         let contentControlImage: ElementBox = this.getImageContentControl();
         let showPicCCButton: boolean = true;
         let pictureElement: boolean = true;
@@ -2760,6 +2894,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         * @returns {void}
     */
     public setPictureContentControlPositions(pictureElement: HTMLElement): void {
+        let contentControl: ElementBox = this.getImageContentControl();
+        if (isNullOrUndefined(contentControl)) {
+            return;
+        }
         let left: number = this.selection.isForward ? this.selection.start.location.x : this.selection.end.location.x;
         let top: number = this.selection.getTop(this.documentHelper.selection.start.currentWidget);
         pictureElement.style.left = ((left * this.documentHelper.zoomFactor) + this.documentHelper.pages[0].boundingRectangle.x).toString() + 'px';
@@ -2790,6 +2928,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public showContentPropertiesDialog(): void {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         if (this.contentControlPropertiesDialogModule && !this.isReadOnlyMode && this.viewer) {
             this.contentControlPropertiesDialogModule.show();
         } else {
@@ -2965,9 +3104,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             modules.push({
                 member: 'Editor', args: [this.documentHelper]
             });
-            modules.push({
-                member: 'XmlPane', args: [this.documentHelper]
-            }); 
+            if (this.enableXMLPane) {
+                modules.push({
+                    member: 'XmlPane', args: [this.documentHelper]
+                });
+            }
             if (this.enableImageResizer) {
                 modules.push({
                     member: 'ImageResizer', args: [this, this.documentHelper]
@@ -3985,6 +4126,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private failureHandler(args: any): void {
+        const isAngularModal: boolean = this.isModalDialog;
         hideSpinner(this.element);
         const locale: L10n = new L10n('documenteditor', this.defaultLocale);
         const status: string = args.name === 'onError' ? locale.getConstant('Error in establishing connection with web server') :
@@ -3994,6 +4136,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (args.name === 'onError') {
                 DialogUtility.alert({
                     content: locale.getConstant('Error in establishing connection with web server'),
+                    open: (e: any) => {
+                        if (isAngularModal) {
+                            this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                        }
+                    },
                     closeOnEscape: true, showCloseIcon: true,
                     position: { X: 'center', Y: 'center' }
                 }).enableRtl = this.enableRtl;
@@ -4034,7 +4181,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
-            = this.enableFormField = this.enableColumnsDialog = true;
+            = this.enableFormField = this.enableColumnsDialog = this.enableXMLPane = true;
         /* eslint-disable-next-line max-len */
         DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, DatePickerDialog, PicContentControlDialog, ContentControlPropertiesDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog, XmlPane);
     }
@@ -4250,6 +4397,59 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         return [];
+    }
+    /**
+     * Moves the component popup element into the Angular CDK overlay container.
+     *
+     * @param {HTMLElement} dropDownButtonEl - Dropdown button element.
+     * @param {HTMLElement} popupEl - Popup element to be moved.
+     * @private
+     * @returns {void}
+     */
+    public movePopupToCdkOverlay(dropDownButtonEl: HTMLElement, popupEl: HTMLElement): void {
+        if (!popupEl || !dropDownButtonEl) {
+            return;
+        }
+        const cdkPane: HTMLElement = dropDownButtonEl.closest('.cdk-overlay-pane') as HTMLElement;
+        const popoverEl: HTMLElement = dropDownButtonEl.closest('[popover]') as HTMLElement;
+        if (!cdkPane || !popoverEl) {
+            return;
+        }
+        if (popupEl.parentElement === cdkPane) {
+            return;
+        }
+        cdkPane.appendChild(popupEl);
+    }
+    /**
+     * Moves the dialog container element to the Angular CDK overlay pane.
+     *
+     * @param {any} e - Event arguments containing the dialog element.
+     * @private
+     * @returns {void}
+     */
+    public moveAlertToCdkOverlay(e: any ): void {
+        const cdkPane: HTMLElement = document.querySelector('.cdk-overlay-pane') as HTMLElement;
+        const dlgContainer: HTMLElement = e.element.parentElement as HTMLElement;
+        if (dlgContainer && cdkPane) {
+            cdkPane.appendChild(dlgContainer);
+        }
+    }
+    /**
+     * Gets the appropriate container for rendering popups.
+     *
+     * @param {boolean} isAngular - Specifies whether the component is rendered in an Angular modal dialog.
+     * @private
+     * @returns {HTMLElement} Popup target element.
+     */
+    public getAppendTo(isAngular: boolean): HTMLElement {
+        if (isAngular) {
+            const cdkPane: HTMLElement | null = this.element && this.element.closest ? this.element.closest('.cdk-overlay-pane') as HTMLElement : null;
+            const popoverEl: HTMLElement | null = this.element && this.element.closest ? this.element.closest('[popover]') as HTMLElement : null;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
     /**
      * Exports the content control values.
@@ -4829,6 +5029,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public showSpellCheckDialog(): void {
+        initializeTelemetryFeature('SpellCheck', 'DOCXEditor');
         if (this.spellCheckDialogModule && this.spellCheckerModule) {
             const element: ContextElementInfo = this.spellCheckerModule.retriveText();
             if (!isNullOrUndefined(element)) {

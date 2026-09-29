@@ -497,7 +497,7 @@ describe('Tab action', function () {
     it('Tab action after editing cell', () => {
         let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
         triggerMouseEvent(endDate, 'dblclick');
-        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
         ganttObj.keyboardModule.keyAction(args);
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe("2/4/2019");
 
@@ -644,12 +644,12 @@ describe('Tab Key allow editing false', () => {
     it('Tab action after allow editing false', () => {
         let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
         triggerMouseEvent(startDate, 'dblclick');
-        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
         ganttObj.keyboardModule.keyAction(args);
         let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
         // expect(duration.classList.contains('e-focused')).toBe(true);
         let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
-        expect(progress.classList.contains('e-editedbatchcell')).toBe(true);
+        expect(progress.classList.contains('e-editedcell')).toBe(true);
     });
     it('Editing and tab navigation', () => {
         ganttObj.dataBind();
@@ -1652,9 +1652,9 @@ describe('shift Tab action', function () {
     it('shift Tab action after editing cell', () => {
         let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
         triggerMouseEvent(endDate, 'dblclick');
-        let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+        let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedcell') } as any;
         ganttObj.keyboardModule.keyAction(args);
-        expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('aria-colindex')).toBe("3");
+        expect(ganttObj.element.getElementsByClassName('e-editedcell')[0].getAttribute('aria-colindex')).toBe("3");
 
     });
     afterAll(function () {

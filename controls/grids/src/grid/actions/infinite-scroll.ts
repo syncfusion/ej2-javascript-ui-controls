@@ -1,4 +1,4 @@
-import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove, extend, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Query, Predicate } from '@syncfusion/ej2-data';
 import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs, AddEventArgs } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -78,6 +78,7 @@ export class InfiniteScroll implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('InfiniteScroll', 'DataGrid');
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.isNormaledit = this.parent.editSettings.mode === 'Normal';

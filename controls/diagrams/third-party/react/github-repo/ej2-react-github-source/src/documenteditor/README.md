@@ -23,6 +23,20 @@ Trusted by the world's leading companies
   </a>
 </p>
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/docx-editor-sdk/llms.txt](https://ai.syncfusion.com/docx-editor-sdk/llms.txt)
+
 ## Setup
 
 ### Create a React Application
@@ -30,10 +44,8 @@ Trusted by the world's leading companies
 You can use **create-react-app** to setup your React applications. To install **create-react-app** use the following commands.
 
 ```bash
-npm install -g create-react-app
-create-react-app quickstart
-cd quickstart
-npm install
+npm create vite@latest documenteditor-app -- --template react-ts
+cd documenteditor-app
 ```
 
 ### Adding Syncfusion DOCX Editor package
@@ -46,18 +58,17 @@ npm install @syncfusion/ej2-react-documenteditor --save
 
 ### Adding CSS references for DOCX Editor
 
-Add CSS references needed for Document editor in the **src/App.css** file.
+Install the styles package from npm using the following command:
+
+```bash
+npm install @syncfusion/ej2-tailwind3-theme
+```
+
+The Tailwind 3 theme package includes an `index.css` file that automatically imports all required DOCX Editor styles. Add the required DOCX Editor theme style reference to **src/App.css** file.
 
 ```html
-@import '../node_modules/@syncfusion/ej2-base/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-buttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-inputs/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-popups/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-lists/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-navigations/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css';
-@import '../node_modules/@syncfusion/ej2-dropdowns/styles/material.css';
-@import "../node_modules/@syncfusion/ej2-react-documenteditor/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor/index.css";
+@import "../node_modules/@syncfusion/ej2-tailwind3-theme/styles/document-editor-container/index.css";
 ```
 
 ## Add DOCX Editor component
@@ -126,6 +137,47 @@ Product support is available through the following mediums.
 * [GitHub issues](https://github.com/syncfusion/ej2-react-ui-components/issues/new)
 * [Request feature or report bug](https://www.syncfusion.com/feedback/react?utm_source=npm&utm_medium=listing&utm_campaign=react-word-processor-npm)
 * Live chat
+
+## Other Popular React Components
+
+Explore other popular Syncfusion<sup>®</sup> React components curated from UI components, standalone SDKs, and document solution suites.
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-data-grid">React DataGrid</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-charts">React Charts</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-file-manager">React File Manager</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/gantt-sdk/react-gantt-chart">React Gantt Chart</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/diagram-sdk/react-diagram">React Diagram</a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <a href="https://www.syncfusion.com/scheduler-sdk/react-scheduler">React Scheduler</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/spreadsheet-editor-sdk/react-spreadsheet-editor">React Spreadsheet Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/pdf-viewer-sdk/react-pdf-viewer">React PDF Viewer</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/rich-text-editor-sdk/react-rich-text-editor">React Rich Text Editor</a>
+        </td>
+        <td align="center">
+            <a href="https://www.syncfusion.com/react-components/react-maps-library">React Maps</a>
+        </td>
+    </tr>
+</table>
 
 ## Changelog
 

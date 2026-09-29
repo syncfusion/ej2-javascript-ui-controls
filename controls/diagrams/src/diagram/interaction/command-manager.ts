@@ -251,7 +251,7 @@ export class CommandHandler {
         if (isTooltipVisible) {
             setTimeout(
                 () => {
-                    (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                    this.openTooltip(targetEle);
                 },
                 1);
         }
@@ -364,7 +364,21 @@ export class CommandHandler {
      * @private
      */
     public closeTooltip(): void {
-        this.diagram.tooltipObject.close();
+        //1053358 : Organization Chart: Significant Delay When Clearing Large Hierarchies
+        if (this.diagram.tooltipObject && this.diagram.isTooltipOpen) {
+            this.diagram.tooltipObject.close();
+        }
+        this.diagram.isTooltipOpen = false;
+    }
+    /**
+     * openTooltip method\
+     *
+     * @returns {  void }    openTooltip method .\
+     * @private
+     */
+    public openTooltip(target: HTMLElement): void {
+        (this.diagram.tooltipObject as Tooltip).open(target);
+        this.diagram.isTooltipOpen = true;
     }
 
     /**
@@ -2166,11 +2180,12 @@ export class CommandHandler {
      * @param {(NodeModel | ConnectorModel | AnnotationModel)[]} obj - provide the objects value.
      * @param {boolean} multipleSelection - provide the objects value.
      * @param {(NodeModel | ConnectorModel| AnnotationModel)[]} oldValue - provide the objects value.
+     * @param {boolean} isMouseDown - provide the boolean value.
      * @private
      */
     public async selectObjects(
         obj: (NodeModel | ConnectorModel | AnnotationModel)[], multipleSelection?: boolean,
-        oldValue?: (NodeModel | ConnectorModel | AnnotationModel)[]): Promise<void> {
+        oldValue?: (NodeModel | ConnectorModel | AnnotationModel)[], isMouseDown?: boolean): Promise<void> {
 
         if (obj.length > 1) {
             obj = obj.filter((n: NodeModel) => !(n instanceof Node) || (n instanceof Node && !(n.isErField || n.isErHeader)));
@@ -2224,6 +2239,22 @@ export class CommandHandler {
             }
         }
         if (!arg.cancel) {
+            //1051270 : While replacing the selection, deselect the objects that are selected currently but are not part of the new selection.
+            if (!multipleSelection && !isMouseDown && hasSelection(this.diagram) && obj.length > 0 &&
+                !this.diagram.ignoreMouseUpSelection) {
+                const currentSelection: (NodeModel | ConnectorModel | AnnotationModel)[] = this.getSelectedObject();
+                let hasStaleSelection: boolean = false;
+                for (let i: number = 0; i < currentSelection.length; i++) {
+                    if (obj.indexOf(currentSelection[parseInt(i.toString(), 10)]) === -1) {
+                        hasStaleSelection = true;
+                        break;
+                    }
+                }
+                if (hasStaleSelection) {
+                    this.clearSelection();
+                    this.diagram.ignoreMouseUpSelection = false;
+                }
+            }
             for (let i: number = 0; i < obj.length; i++) {
                 const newObj: NodeModel | ConnectorModel = obj[parseInt(i.toString(), 10)] as (NodeModel | ConnectorModel);
                 if (newObj) {
@@ -7977,15 +8008,28 @@ Remove terinal segment in initial
      * @private
      */
     public snapPoint(startPoint: PointModel, endPoint: PointModel, tx: number, ty: number): PointModel {
-        const obj: SelectorModel = this.diagram.selectedItems;
-        let point: PointModel;
+        const selectedObject: SelectorModel = this.diagram.selectedItems;
+        let helperObject: NodeModel;
+        if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject
+            && this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            helperObject = this.diagram.selectedObject && this.diagram.selectedObject.helperObject;
+        }
+        const snapObject: SelectorModel = helperObject ? {
+            nodes: selectedObject.nodes,
+            connectors: selectedObject.connectors,
+            wrapper: helperObject.wrapper,
+            bounds: helperObject.wrapper.bounds
+        } as SelectorModel : selectedObject;
         const towardsLeft: boolean = endPoint.x < startPoint.x;
         const towardsTop: boolean = endPoint.y < startPoint.y;
-        point = { x: tx, y: ty };
+        const point: PointModel = { x: tx, y: ty };
         let snappedPoint: PointModel = point;
-        if (this.snappingModule && (((obj.nodes.length > 0) && (obj.nodes[0].constraints & NodeConstraints.Drag)) || ((obj.connectors.length > 0) && (obj.connectors[0].constraints & ConnectorConstraints.Drag)))) {
+        //1049719: Drag Helper Does Not Follow Updated Snap Interval with Line Routing Enabled
+        if (this.snappingModule && (((selectedObject.nodes.length > 0) &&
+            (selectedObject.nodes[0].constraints & NodeConstraints.Drag)) || ((selectedObject.connectors.length > 0) &&
+                (selectedObject.connectors[0].constraints & ConnectorConstraints.Drag)))) {
             snappedPoint = this.diagram.snappingModule.snapPoint(
-                this.diagram, obj, towardsLeft, towardsTop, point, startPoint, endPoint);
+                this.diagram, snapObject, towardsLeft, towardsTop, point, startPoint, endPoint);
         }
         return snappedPoint;
     }

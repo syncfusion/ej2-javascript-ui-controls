@@ -89,11 +89,7 @@ export class PdfBitmap extends PdfImage {
     public constructor(encodedString: Uint8Array)
     public constructor(encodedString: string | Uint8Array) {
         super();
-        if (encodedString !== null && typeof encodedString !== 'undefined' && typeof encodedString === 'string') {
-            this._initializeAsync(encodedString);
-        } else {
-            this._initializeAsync(encodedString as Uint8Array);
-        }
+        this._initializeAsync(encodedString as any); // eslint-disable-line
     }
     /**
      * Initializes the bitmap by decoding the input Base64 string or byte array,

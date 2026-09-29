@@ -1,5 +1,19 @@
 # Angular Query Builder Component (Angular Filter Component)
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 The [Angular Query Builder](https://www.syncfusion.com/angular-ui-components/angular-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=angular-query-builder-npm) component is a rich and responsive UI for filtering large amounts of data by creating or editing conditions that can be combined with data visualization controls like DataGrid and Charts to view the filtered data. It outputs structured JSON that can be easily parsed to create SQL queries. It allows you to create conditions and group them using AND/OR logic.
 
 <p align="center">

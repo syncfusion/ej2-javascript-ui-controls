@@ -1,0 +1,25 @@
+@use '../variables' as *;
+@include export-module('timepicker-bootstrap4-icons') {
+
+  /*! component icons */
+
+  .e-time-wrapper,
+  *.e-control-wrapper.e-time-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      content: '\e7c7';
+    }
+  }
+
+  .e-timepicker-mob-popup-wrap .e-timepicker.e-popup-expand,
+  .e-datetimepicker.e-popup-expand {
+
+    & .e-model-header {
+
+      & .e-popup-close::before {
+        content: '\e745';
+        font-family: 'e-icons';
+      }
+    }
+  }
+}

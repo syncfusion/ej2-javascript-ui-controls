@@ -1,6 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
+import { PivotUtil } from '../../base/util';
 import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined, initializeCSPTemplate, getInstance } from '@syncfusion/ej2-base';
 import { Pager as GridPager } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -97,7 +98,11 @@ export class Pager {
                 this.parent.element.insertBefore(pagerElement, select('#' + this.parent.element.id + ' .' + cls.GRID_GROUPING_BAR_CLASS, this.parent.element));
             } else {
                 if (this.parent.pagerSettings.position === 'Top') {
-                    this.parent.element.insertBefore(pagerElement, select('#' + this.parent.element.id + '_grid', this.parent.element));
+                    if (this.parent.displayOption.view === 'Chart' || (this.parent.displayOption.view === 'Both' && this.parent.displayOption.primary === 'Chart')) {
+                        this.parent.element.insertBefore(pagerElement, select('#' + this.parent.element.id + '_chart', this.parent.element));
+                    } else {
+                        this.parent.element.insertBefore(pagerElement, select('#' + this.parent.element.id + '_grid', this.parent.element));
+                    }
                 } else {
                     this.parent.element.append(pagerElement);
                 }
@@ -218,72 +223,139 @@ export class Pager {
             pageContainer.classList.remove('wide-width');
         }
     }
+    private onPagerIconKeyDown(e: KeyboardEvent): void {
+        if ((e.key === 'Enter' || e.key === ' ') && !(e.target as HTMLElement).classList.contains(cls.ICON_DISABLE)) {
+            e.preventDefault();
+            (e.target as HTMLElement).click();
+        }
+    }
     private wireEvent(): void {
         const elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.FIRST_PAGER_ICON + ', .' + cls.PREV_PAGER_ICON + ', .' + cls.NEXT_PAGER_ICON + ', .' + cls.LAST_PAGER_ICON));
         for (let i: number = 0; i < elements.length; i++) {
             EventHandler.add(elements[i as number], 'click', this.updatePageSettings, this);
+            EventHandler.add(elements[i as number], 'keydown', this.onPagerIconKeyDown, this);
         }
     }
     private unWireEvent(): void {
         const elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.FIRST_PAGER_ICON + ', .' + cls.PREV_PAGER_ICON + ', .' + cls.NEXT_PAGER_ICON + ', .' + cls.LAST_PAGER_ICON));
         for (let i: number = 0; i < elements.length; i++) {
             EventHandler.remove(elements[i as number], 'click', this.updatePageSettings);
+            EventHandler.remove(elements[i as number], 'keydown', this.onPagerIconKeyDown);
         }
     }
 
     private columnPageChange(args: TextBoxChangeEventArgs): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.columnPageNavigation)) {
+            return;
+        }
         this.parent.pageSettings.currentColumnPage = args.value;
+        PivotUtil.invokeActionMethod(
+            this.parent, events.actionComplete, events.columnPageNavigated,
+            { pagingInfo: { currentColumnPage: args.value } }
+        );
     }
 
     private rowPageChange(args: TextBoxChangeEventArgs): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.rowPageNavigation)) {
+            return;
+        }
         this.parent.pageSettings.currentRowPage = args.value;
+        PivotUtil.invokeActionMethod(
+            this.parent, events.actionComplete, events.rowPageNavigated,
+            { pagingInfo: { currentRowPage: args.value } }
+        );
     }
 
     private columnPageSizeChange(args: ChangeEventArgs): void {
-        this.parent.pageSettings.columnPageSize = Number(args.value);
+        const newColumnPageSize: number = Number(args.value);
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.changeColumnPageSize)) {
+            return;
+        }
+        this.parent.pageSettings.columnPageSize = newColumnPageSize;
+        PivotUtil.invokeActionMethod(
+            this.parent, events.actionComplete, events.columnPageSizeChanged,
+            { pagingInfo: { columnPageSize: newColumnPageSize } }
+        );
     }
 
     private rowPageSizeChange(args: ChangeEventArgs): void {
-        this.parent.pageSettings.rowPageSize = Number(args.value);
+        const newRowPageSize: number = Number(args.value);
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.changeRowPageSize)) {
+            return;
+        }
+        this.parent.pageSettings.rowPageSize = newRowPageSize;
+        PivotUtil.invokeActionMethod(
+            this.parent, events.actionComplete, events.rowPageSizeChanged,
+            { pagingInfo: { rowPageSize: newRowPageSize } }
+        );
     }
 
-    private updatePageSettings(args: MouseEventArgs): void {
+    private updatePageSettings(args: MouseEventArgs, pivotInstance?: PivotView): void {
         const targetId: string = (args.target as HTMLElement).id;
+        let actionType: string = '';
+        let currentPage: number = 0;
+        let pageAxis: string = '';
+        const currentPivotInstance: PivotView = !isNullOrUndefined(pivotInstance) ? pivotInstance : this.parent;
         switch (targetId) {
         case this.parent.element.id + '_row_firstIcon':
-            this.parent.pageSettings.currentRowPage = 1;
+            actionType = events.rowPageNavigation;
+            currentPage = 1;
+            pageAxis = 'row';
             break;
         case this.parent.element.id + '_row_prevIcon':
-            this.parent.pageSettings.currentRowPage = this.parent.pageSettings.currentRowPage > 1
+            actionType = events.rowPageNavigation;
+            currentPage = this.parent.pageSettings.currentRowPage > 1
                 ? this.parent.pageSettings.currentRowPage - 1 : this.parent.pageSettings.currentRowPage;
+            pageAxis = 'row';
             break;
         case this.parent.element.id + '_row_nextIcon':
-            this.parent.pageSettings.currentRowPage = this.parent.pageSettings.currentRowPage < this.parent.engineModule.rowPageCount
+            actionType = events.rowPageNavigation;
+            currentPage = this.parent.pageSettings.currentRowPage < this.parent.engineModule.rowPageCount
                 ? this.parent.pageSettings.currentRowPage + 1 : this.parent.pageSettings.currentRowPage;
+            pageAxis = 'row';
             break;
         case this.parent.element.id + '_row_lastIcon':
-            this.parent.pageSettings.currentRowPage = this.parent.engineModule.rowPageCount;
+            actionType = events.rowPageNavigation;
+            currentPage = this.parent.engineModule.rowPageCount;
+            pageAxis = 'row';
             break;
         case this.parent.element.id + '_column_firstIcon':
-            this.parent.pageSettings.currentColumnPage = 1;
+            actionType = events.columnPageNavigation;
+            currentPage = 1;
+            pageAxis = 'column';
             break;
         case this.parent.element.id + '_column_prevIcon':
-            this.parent.pageSettings.currentColumnPage = this.parent.pageSettings.currentColumnPage > 1
+            actionType = events.columnPageNavigation;
+            currentPage = this.parent.pageSettings.currentColumnPage > 1
                 ? this.parent.pageSettings.currentColumnPage - 1 : this.parent.pageSettings.currentColumnPage;
+            pageAxis = 'column';
             break;
         case this.parent.element.id + '_column_nextIcon':
-            this.parent.pageSettings.currentColumnPage = this.parent.pageSettings.currentColumnPage
+            actionType = events.columnPageNavigation;
+            currentPage = this.parent.pageSettings.currentColumnPage
                 < this.parent.engineModule.columnPageCount ? this.parent.pageSettings.currentColumnPage + 1
                 : this.parent.pageSettings.currentColumnPage;
+            pageAxis = 'column';
             break;
         case this.parent.element.id + '_column_lastIcon':
-            this.parent.pageSettings.currentColumnPage = this.parent.engineModule.columnPageCount;
+            actionType = events.columnPageNavigation;
+            currentPage = this.parent.engineModule.columnPageCount;
+            pageAxis = 'column';
             break;
         }
-        if (targetId.indexOf('_row') !== -1) {
-            this.parent.actionObj.actionName = events.rowPageNavigation;
-        } else if (targetId.indexOf('_column') !== -1) {
-            this.parent.actionObj.actionName = events.columnPageNavigation;
+        if (actionType) {
+            if (PivotUtil.invokeActionMethod(currentPivotInstance, events.actionBegin, actionType)) {
+                return;
+            }
+            if (pageAxis === 'row') {
+                this.parent.pageSettings.currentRowPage = currentPage;
+            } else if (pageAxis === 'column') {
+                this.parent.pageSettings.currentColumnPage = currentPage;
+            }
+            PivotUtil.invokeActionMethod(
+                currentPivotInstance, events.actionComplete, pageAxis === 'row' ? events.rowPageNavigated : events.columnPageNavigated,
+                { pagingInfo: pageAxis === 'row' ? { currentRowPage: currentPage } : { currentColumnPage: currentPage } }
+            );
         }
     }
 
@@ -322,7 +394,11 @@ export class Pager {
         const isSinglePagerEnabled: boolean = (!pagerOptions.showRowPager || !pagerOptions.showColumnPager);
         const pagerAxisMainDiv: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_' + axis + '_mainDiv',
-            className: (axis === 'row' ? (cls.PIVOT_ROW_PAGER_DIV + ' ' + (!pagerOptions.showRowPageSize ? cls.PAGE_SIZE_DISABLE : '')) : (cls.PIVOT_COLUMN_PAGER_DIV + ' ' + (!pagerOptions.showColumnPageSize ? cls.PAGE_SIZE_DISABLE : '')))
+            className: (axis === 'row' ? (cls.PIVOT_ROW_PAGER_DIV + ' ' + (!pagerOptions.showRowPageSize ? cls.PAGE_SIZE_DISABLE : '')) : (cls.PIVOT_COLUMN_PAGER_DIV + ' ' + (!pagerOptions.showColumnPageSize ? cls.PAGE_SIZE_DISABLE : ''))),
+            attrs: {
+                role: 'region',
+                'aria-label': (axis === 'row' ? this.parent.localeObj.getConstant('rowPage') + ' Page Navigation' : this.parent.localeObj.getConstant('columnPage') + ' Page Navigation')
+            }
         });
         const pagerIconContainer: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_' + axis + '_pagerSettings',
@@ -352,7 +428,8 @@ export class Pager {
                 class: cls.PIVOT_FIRST_ICON_DEFAULT + (isFirstDisable ? (' ' + cls.DISABLE_FIRST_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_FIRST_ICON_ENABLE),
                 title: this.parent.localeObj.getConstant('goToFirstPage'),
                 'aria-label': this.parent.localeObj.getConstant('goToFirstPage'),
-                tabindex: '0',
+                'aria-disabled': (isFirstDisable ? 'true' : 'false'),
+                tabindex: (isFirstDisable ? '-1' : '0'),
                 role: 'button'
             }
         });
@@ -362,7 +439,8 @@ export class Pager {
                 class: cls.PIVOT_PREV_ICON_DEFAULT + (isFirstDisable ? (' ' + cls.DISABLE_PREV_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_PREV_ICON_ENABLE),
                 title: this.parent.localeObj.getConstant('goToPreviousPage'),
                 'aria-label': this.parent.localeObj.getConstant('goToPreviousPage'),
-                tabindex: '0',
+                'aria-disabled': (isFirstDisable ? 'true' : 'false'),
+                tabindex: (isFirstDisable ? '-1' : '0'),
                 role: 'button'
             }
         });
@@ -398,7 +476,8 @@ export class Pager {
                 class: cls.PIVOT_NEXT_ICON_DEFAULT + (isLastDisable ? (' ' + cls.DISABLE_NEXT_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_NEXT_ICON_ENABLE),
                 title: this.parent.localeObj.getConstant('goToNextPage'),
                 'aria-label': this.parent.localeObj.getConstant('goToNextPage'),
-                tabindex: '0',
+                'aria-disabled': (isLastDisable ? 'true' : 'false'),
+                tabindex: (isLastDisable ? '-1' : '0'),
                 role: 'button'
             }
         });
@@ -408,7 +487,8 @@ export class Pager {
                 class: cls.PIVOT_LAST_ICON_DEFAULT + (isLastDisable ? (' ' + cls.DISABLE_LAST_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_LAST_ICON_ENABLE),
                 title: this.parent.localeObj.getConstant('goToLastPage'),
                 'aria-label': this.parent.localeObj.getConstant('goToLastPage'),
-                tabindex: '0',
+                'aria-disabled': (isLastDisable ? 'true' : 'false'),
+                tabindex: (isLastDisable ? '-1' : '0'),
                 role: 'button'
             }
         });

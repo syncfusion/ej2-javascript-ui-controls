@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * Represents react Overview Component
- * ```tsx
+ * ```ts
  * <OverviewComponent></OverviewComponent>
  * ```
  */

@@ -68,7 +68,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 }
             } else { node.classList.add('e-hide'); }
         } else {
-            if (column.type !== 'checkbox') {
+            if (column.type !== 'checkbox' && column.type !== 'rownumber') {
                 if ((isNullOrUndefined(column.allowFiltering) || column.allowFiltering) && !isNullOrUndefined(column.filterBarTemplate)) {
                     node.classList.add('e-fltrtemp');
                     attributes(innerDIV, {

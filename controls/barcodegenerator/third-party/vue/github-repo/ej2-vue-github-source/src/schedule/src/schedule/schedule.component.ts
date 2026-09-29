@@ -19,7 +19,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ej-schedule` represents the VueJS Schedule Component.
- * ```vue
+ * ```js
  * <ejs-schedule></ejs-schedule>
  * ```
  */

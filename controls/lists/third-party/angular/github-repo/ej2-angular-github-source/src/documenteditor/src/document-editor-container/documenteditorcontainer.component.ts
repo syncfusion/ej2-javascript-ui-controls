@@ -4,8 +4,8 @@ import { DocumentEditorContainer } from '@syncfusion/ej2-documenteditor';
 
 
 
-export const inputs: string[] = ['autoResizeOnVisibilityChange','backstageMenu','currentUser','documentEditorSettings','documentSettings','enableAutoFocus','enableComment','enableCsp','enableLocalPaste','enableLockAndEdit','enablePersistence','enableRtl','enableSpellCheck','enableToolbar','enableTrackChanges','fileMenuItems','headers','height','layoutType','locale','restrictEditing','ribbonLayout','serverActionSettings','serviceUrl','showPropertiesPane','toolbarItems','toolbarMode','userColor','width','zIndex'];
-export const outputs: string[] = ['beforeAcceptRejectChanges','beforeCommentAction','beforePaneSwitch','beforePaste','commentDelete','contentChange','contentControl','created','customContextMenuBeforeOpen','customContextMenuSelect','destroyed','documentChange','fileMenuItemClick','selectionChange','serviceFailure','toolbarClick','trackChange','beforeXmlHttpRequestSend'];
+export const inputs: string[] = ['autoResizeOnVisibilityChange','backstageMenu','currentUser','documentEditorSettings','documentSettings','enableAutoFocus','enableComment','enableCsp','enableLocalPaste','enableLockAndEdit','enablePersistence','enableRtl','enableSpellCheck','enableToolbar','enableTrackChanges','enableWebMcp','fileMenuItems','headers','height','layoutType','locale','restrictEditing','ribbonLayout','serverActionSettings','serviceUrl','showPropertiesPane','toolbarItems','toolbarMode','userColor','width','zIndex'];
+export const outputs: string[] = ['beforeAcceptRejectChanges','beforeCommentAction','beforePaneSwitch','beforePaste','beforeWebMcpToolExecute','commentDelete','contentChange','contentControl','created','customContextMenuBeforeOpen','customContextMenuSelect','destroyed','documentChange','fileMenuItemClick','selectionChange','serviceFailure','toolbarClick','trackChange','beforeXmlHttpRequestSend'];
 export const twoWays: string[] = [];
 
 /**
@@ -20,32 +20,33 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class DocumentEditorContainerComponent extends DocumentEditorContainer implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeAcceptRejectChanges: any;
-	beforeCommentAction: any;
-	beforePaneSwitch: any;
-	beforePaste: any;
-	commentDelete: any;
-	contentChange: any;
-	contentControl: any;
-	created: any;
-	customContextMenuBeforeOpen: any;
-	customContextMenuSelect: any;
-	destroyed: any;
-	documentChange: any;
-	fileMenuItemClick: any;
-	selectionChange: any;
-	serviceFailure: any;
-	toolbarClick: any;
-	trackChange: any;
-	public beforeXmlHttpRequestSend: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeAcceptRejectChanges: any;
+	declare beforeCommentAction: any;
+	declare beforePaneSwitch: any;
+	declare beforePaste: any;
+	declare beforeWebMcpToolExecute: any;
+	declare commentDelete: any;
+	declare contentChange: any;
+	declare contentControl: any;
+	declare created: any;
+	declare customContextMenuBeforeOpen: any;
+	declare customContextMenuSelect: any;
+	declare destroyed: any;
+	declare documentChange: any;
+	declare fileMenuItemClick: any;
+	declare selectionChange: any;
+	declare serviceFailure: any;
+	declare toolbarClick: any;
+	declare trackChange: any;
+	public declare beforeXmlHttpRequestSend: any;
 
 
 
@@ -89,7 +90,8 @@ export class DocumentEditorContainerComponent extends DocumentEditorContainer im
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

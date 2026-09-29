@@ -550,7 +550,7 @@ export class GanttChart {
                 isTaskbarEdited = true;
             }
             if (!isTaskbarEdited || (e as PointerEvent).button === 2) {
-                if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
                     this.parent.treeGrid.endEdit();
                 }
             }
@@ -589,7 +589,7 @@ export class GanttChart {
                 this.parent.editModule.taskbarEditModule.removeFalseLine(true);
             }
         }
-        if (this.parent.element.querySelectorAll('.e-editedbatchcell').length > 0 && e.target &&
+        if (this.parent.element.querySelectorAll('.e-editedcell').length > 0 && e.target &&
             closest(e.target as Element, '.' + cls.ganttChartPane)) {
             this.parent.treeGrid.saveCell();
         }
@@ -715,7 +715,7 @@ export class GanttChart {
             this.isPinching = false;
             this.previousPinchDistance = 0;
         }
-        if (this.parent.element.querySelectorAll('.e-editedbatchcell').length > 0 && e.target &&
+        if (this.parent.element.querySelectorAll('.e-editedcell').length > 0 && e.target &&
             closest(e.target as Element, '.' + cls.ganttChartPane)) {
             this.parent.treeGrid.saveCell();
         }
@@ -960,7 +960,7 @@ export class GanttChart {
         const row: Element = closest(target as Element, 'tr');
         const rowIndex: number = getValue('rowIndex', row);
         const rowData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
-        if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+        if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
             this.parent.treeGrid.endEdit();
         }
         this.parent.notify('chartDblClick', e);
@@ -1052,8 +1052,10 @@ export class GanttChart {
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML = '';
         this.parent.connectorLineIds = [];
         this.parent.updatedConnectorLineCollection = [];
-        this.parent.predecessorModule.createConnectorLinesCollection();
-        this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+        if (this.parent.taskFields.dependency) {
+            this.parent.predecessorModule.createConnectorLinesCollection();
+            this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+        }
         const criticalModule: CriticalPath = this.parent.criticalPathModule;
         if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
             criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true,
@@ -1487,7 +1489,7 @@ export class GanttChart {
         let nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
         if (nextElement && (nextElement === 'noNextRow' || (nextElement as HTMLElement).classList.contains('e-rowdragheader'))) {
             // eslint-disable-next-line
-            (nextElement === 'noNextRow' && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) ? this.parent.treeGrid.saveCell() : '';
+            (nextElement === 'noNextRow' && this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) ? this.parent.treeGrid.saveCell() : '';
             nextElement = null;
         }
         if (nextElement && $target.classList.contains('e-headercell')) {
@@ -1633,7 +1635,7 @@ export class GanttChart {
                                 (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress ||
                                 !this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) &&
                                 this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field !== this.parent.taskFields.id
-                                && $target.classList.contains('e-editedbatchcell')) {
+                                && $target.classList.contains('e-editedcell')) {
                                 let currentColumn: ColumnModel;
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
                                 while (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) {
@@ -1641,7 +1643,7 @@ export class GanttChart {
                                 }
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
                             }
-                            else if (!nextElement || $target.classList.contains('e-editedbatchcell')) {
+                            else if (!nextElement || $target.classList.contains('e-editedcell')) {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             }
                         }
@@ -1656,7 +1658,7 @@ export class GanttChart {
                             (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress ||
                             !this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) &&
                             this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10)  - 1].field !== this.parent.taskFields.id
-                            && $target.classList.contains('e-editedbatchcell')) {
+                            && $target.classList.contains('e-editedcell')) {
                             let currentColumn: ColumnModel;
                             next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
                             while (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) {
@@ -1667,7 +1669,7 @@ export class GanttChart {
                         else if (parseInt(next.parentElement.getAttribute('aria-rowindex'), 10) - 1 !== 0 &&
                         parseInt(next.getAttribute('aria-colindex'), 10) - 1 === 0 &&
                         this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.id &&
-                            $target.classList.contains('e-editedbatchcell')) {
+                            $target.classList.contains('e-editedcell')) {
                             /* eslint-disable-next-line */
                             const rowIndex: number = ($target.parentElement as any).rowIndex;
                             const rowElement: Element = this.getNextRowElement(rowIndex, isTab, true);
@@ -1768,7 +1770,8 @@ export class GanttChart {
         if (!isNullOrUndefined(nextElement) && (nextElement.classList.contains('e-taskbar-main-container')
             || nextElement.classList.contains('e-right-connectorpoint-outer-div'))) {
             const record: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
-            if (!isNullOrUndefined(record.ganttProperties.segments) && record.ganttProperties.segments.length > 0) {
+            if (!isNullOrUndefined(record) && !isNullOrUndefined(record.ganttProperties.segments)
+                && record.ganttProperties.segments.length > 0) {
                 nextElement = this.resolveNextElement(
                     nextElement.classList.contains('e-right-connectorpoint-outer-div'),
                     nextElement.parentElement.nextElementSibling,
@@ -1793,7 +1796,7 @@ export class GanttChart {
                 rowIndex = ($target.parentElement as any).rowIndex;
                 if (isTab) {
                     rowElement = this.parent.getRowByIndex(rowIndex);
-                    if (this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                    if (this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
                         rowElement = this.getNextRowElement(rowIndex, isTab, true);
                         const childElement: Element | string = this.getChildElement(rowElement, isTab);
                         return childElement;

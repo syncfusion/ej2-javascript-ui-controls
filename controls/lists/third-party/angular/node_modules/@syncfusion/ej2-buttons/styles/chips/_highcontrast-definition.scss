@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //General
 $chip-bg-color: $bg-base-100 !default;

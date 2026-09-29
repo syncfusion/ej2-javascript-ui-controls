@@ -5,7 +5,7 @@ import { PathAnnotationModel } from '@syncfusion/ej2-diagrams';
 /**
  * `Annotation` directive represent a annotation of the react Diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <ConnectorsDirective>
  * <ConnectorDirective>

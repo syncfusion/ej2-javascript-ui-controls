@@ -1,6 +1,7 @@
 import { NgModule, ValueProvider } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewDirective, ViewsDirective } from './views.directive';
+import { MentionDirective, MentionsDirective } from './mentions.directive';
 import { AIAssistViewComponent } from './aiassistview.component';
 import { AIAssistViewModule } from './aiassistview.module';
 import {AssistThinking} from '@syncfusion/ej2-interactive-chat'

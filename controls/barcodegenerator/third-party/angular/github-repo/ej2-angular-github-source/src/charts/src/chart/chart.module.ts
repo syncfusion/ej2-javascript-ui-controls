@@ -15,68 +15,43 @@ import { SelectedDataIndexDirective, SelectedDataIndexesDirective } from './sele
 import { IndicatorDirective, IndicatorsDirective } from './indicators.directive';
 import { ChartComponent } from './chart.component';
 
+const CHART_DIRECTIVES = [
+    ChartComponent,
+        TrendlineDirective,
+        TrendlinesDirective,
+        SegmentDirective,
+        SegmentsDirective,
+        SeriesDirective,
+        SeriesCollectionDirective,
+        StripLineDirective,
+        StripLinesDirective,
+        CategoryDirective,
+        CategoriesDirective,
+        MultiLevelLabelDirective,
+        MultiLevelLabelsDirective,
+        AxisDirective,
+        AxesDirective,
+        RowDirective,
+        RowsDirective,
+        ColumnDirective,
+        ColumnsDirective,
+        RangeColorSettingDirective,
+        RangeColorSettingsDirective,
+        AnnotationDirective,
+        AnnotationsDirective,
+        SelectedDataIndexDirective,
+        SelectedDataIndexesDirective,
+        IndicatorDirective,
+        IndicatorsDirective
+];
+
 /**
  * NgModule definition for the Chart component.
+ * Re-exports standalone Chart component and directives so existing apps can keep using:
+ * `imports: [ChartModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        ChartComponent,
-        TrendlineDirective,
-        TrendlinesDirective,
-        SegmentDirective,
-        SegmentsDirective,
-        SeriesDirective,
-        SeriesCollectionDirective,
-        StripLineDirective,
-        StripLinesDirective,
-        CategoryDirective,
-        CategoriesDirective,
-        MultiLevelLabelDirective,
-        MultiLevelLabelsDirective,
-        AxisDirective,
-        AxesDirective,
-        RowDirective,
-        RowsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        RangeColorSettingDirective,
-        RangeColorSettingsDirective,
-        AnnotationDirective,
-        AnnotationsDirective,
-        SelectedDataIndexDirective,
-        SelectedDataIndexesDirective,
-        IndicatorDirective,
-        IndicatorsDirective
-    ],
-    exports: [
-        ChartComponent,
-        TrendlineDirective,
-        TrendlinesDirective,
-        SegmentDirective,
-        SegmentsDirective,
-        SeriesDirective,
-        SeriesCollectionDirective,
-        StripLineDirective,
-        StripLinesDirective,
-        CategoryDirective,
-        CategoriesDirective,
-        MultiLevelLabelDirective,
-        MultiLevelLabelsDirective,
-        AxisDirective,
-        AxesDirective,
-        RowDirective,
-        RowsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        RangeColorSettingDirective,
-        RangeColorSettingsDirective,
-        AnnotationDirective,
-        AnnotationsDirective,
-        SelectedDataIndexDirective,
-        SelectedDataIndexesDirective,
-        IndicatorDirective,
-        IndicatorsDirective
-    ]
+    imports: [CommonModule, ...CHART_DIRECTIVES],
+    exports: [...CHART_DIRECTIVES]
 })
 export class ChartModule { }

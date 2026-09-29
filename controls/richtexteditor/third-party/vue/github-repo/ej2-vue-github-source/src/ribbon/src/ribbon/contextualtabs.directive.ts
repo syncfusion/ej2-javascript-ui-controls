@@ -34,7 +34,7 @@ export const RibbonContextualTabsPlugin = {
 /**
  * `e-ribbon-contextual-tab` directive represent a contextual tab of the VueJS Ribbon. 
  * It must be contained in a Ribbon component(`ejs-ribbon`). 
- * ```vue
+ * ```
  * <ejs-ribbon>
  *   <e-ribbon-contextual-tabs>
  *    <e-ribbon-contextual-tab></e-ribbon-contextual-tab>

@@ -1,4 +1,4 @@
-import { addClass, Browser, closest, createElement, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, select } from '@syncfusion/ej2-base';
+import { addClass, Browser, closest, createElement, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, select, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Button, ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, SuccessEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -89,6 +89,7 @@ export class Image {
     private iOSTouchStartHandler: ((e: TouchEvent) => void) | null = null;
     private iOSTouchStartTarget: HTMLElement | null = null;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Image', 'RichTextEditor');
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');

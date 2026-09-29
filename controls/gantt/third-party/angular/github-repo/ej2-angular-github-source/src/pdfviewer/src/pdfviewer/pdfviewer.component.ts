@@ -4,8 +4,8 @@ import { PdfViewer } from '@syncfusion/ej2-pdfviewer';
 
 
 
-export const inputs: string[] = ['DropdownFieldSettings','ajaxRequestSettings','annotationDrawingOptions','annotationSelectorSettings','annotationSettings','annotations','areaSettings','arrowSettings','checkBoxFieldSettings','circleSettings','commandManager','contextMenuOption','contextMenuSettings','currentPageNumber','customContextMenuItems','customFonts','customStamp','customStampSettings','dateTimeFormat','designerMode','disableContextMenuItems','disableDefaultContextMenu','distanceSettings','documentPath','downloadFileName','drawingObject','enableAccessibilityTags','enableAnnotation','enableAnnotationToolbar','enableAutoComplete','enableBookmark','enableBookmarkStyles','enableCommentPanel','enableDesktopMode','enableDownload','enableFormDesigner','enableFormDesignerToolbar','enableFormFields','enableFormFieldsValidation','enableFreeText','enableHandwrittenSignature','enableHtmlSanitizer','enableHyperlink','enableImportAnnotationMeasurement','enableInkAnnotation','enableInkEraser','enableLocalStorage','enableMagnification','enableMeasureAnnotation','enableMultiLineOverlap','enableMultiPageAnnotation','enableNavigation','enableNavigationToolbar','enablePageOrganizer','enablePersistence','enablePinchZoom','enablePrint','enablePrintRotation','enableRedactionToolbar','enableRtl','enableShapeAnnotation','enableShapeLabel','enableStampAnnotations','enableStickyNotesAnnotation','enableTextMarkupAnnotation','enableTextMarkupResizer','enableTextSearch','enableTextSelection','enableThumbnail','enableToolbar','enableZoomOptimization','exportAnnotationFileName','extractTextOption','formFieldCollections','formFields','freeTextSettings','handWrittenSignatureSettings','height','hideEmptyDigitalSignatureFields','hideSaveSignature','highlightSettings','hyperlinkOpenState','initialDialogSettings','initialFieldSettings','initialRenderPages','inkAnnotationSettings','inkEraserSize','interactionMode','isAnnotationToolbarOpen','isAnnotationToolbarVisible','isBookmarkPanelOpen','isCommandPanelOpen','isDocumentEdited','isExtractText','isFormDesignerToolbarVisible','isFormFieldDocument','isInitialFieldToolbarSelection','isMaintainSelection','isPageOrganizerOpen','isRedactionToolbarVisible','isSignatureEditable','isThumbnailViewOpen','isValidFreeText','lineSettings','listBoxFieldSettings','locale','maxZoom','measurementSettings','minZoom','pageCount','pageOrganizerSettings','passwordFieldSettings','perimeterSettings','polygonSettings','printMode','printScaleFactor','radioButtonFieldSettings','radiusSettings','rectangleSettings','redactionSettings','resourceUrl','restrictZoomRequest','retryCount','retryStatusCodes','retryTimeout','scrollSettings','selectedItems','serverActionSettings','serviceUrl','shapeLabelSettings','showCustomContextMenuBottom','showDigitalSignatureAppearance','showNotificationDialog','signatureDialogSettings','signatureFieldSettings','signatureFitMode','squigglySettings','stampSettings','stickyNotesSettings','strikethroughSettings','textFieldSettings','textSearchColorSettings','tileRenderingSettings','toolbarSettings','underlineSettings','volumeSettings','width','zoomMode','zoomValue'];
-export const outputs: string[] = ['addSignature','ajaxRequestFailed','ajaxRequestInitiate','ajaxRequestSuccess','annotationAdd','annotationDoubleClick','annotationMouseLeave','annotationMouseover','annotationMove','annotationMoving','annotationPropertiesChange','annotationRemove','annotationResize','annotationSelect','annotationUnSelect','beforeAddFreeText','bookmarkClick','buttonFieldClick','commentAdd','commentDelete','commentEdit','commentSelect','commentStatusChanged','created','customContextMenuBeforeOpen','customContextMenuSelect','documentLoad','documentLoadFailed','documentUnload','downloadEnd','downloadStart','exportFailed','exportStart','exportSuccess','extractTextCompleted','formFieldAdd','formFieldClick','formFieldDoubleClick','formFieldFocusOut','formFieldMouseLeave','formFieldMouseover','formFieldMove','formFieldPropertiesChange','formFieldRemove','formFieldResize','formFieldSelect','formFieldUnselect','hyperlinkClick','hyperlinkMouseOver','importFailed','importStart','importSuccess','keyboardCustomCommands','moveSignature','pageChange','pageClick','pageMouseover','pageOrganizerSaveAs','pageRenderComplete','pageRenderInitiate','printEnd','printStart','removeSignature','resizeSignature','resourcesLoaded','signaturePropertiesChange','signatureSelect','signatureUnselect','textSearchComplete','textSearchHighlight','textSearchStart','textSelectionEnd','textSelectionStart','thumbnailClick','toolbarClick','validateFormFields','zoomChange','pageOrganizerZoomChanged'];
+export const inputs: string[] = ['DropdownFieldSettings','ajaxRequestSettings','annotationDrawingOptions','annotationSelectorSettings','annotationSettings','annotations','areaSettings','arrowSettings','checkBoxFieldSettings','circleSettings','commandManager','contextMenuOption','contextMenuSettings','currentPageNumber','customContextMenuItems','customFonts','customStamp','customStampSettings','customTextStamps','dateTimeFormat','designerMode','disableContextMenuItems','disableDefaultContextMenu','distanceSettings','documentLinkSettings','documentPath','downloadFileName','drawingObject','enableAccessibilityTags','enableAnnotation','enableAnnotationToolbar','enableAutoComplete','enableBookmark','enableBookmarkStyles','enableCollaborativeEditing','enableCommentPanel','enableDesktopMode','enableDownload','enableFormDesigner','enableFormDesignerToolbar','enableFormFields','enableFormFieldsValidation','enableFreeText','enableHandwrittenSignature','enableHtmlSanitizer','enableHyperlink','enableImportAnnotationMeasurement','enableInkAnnotation','enableInkEraser','enableLinkAnnotation','enableLocalStorage','enableMagnification','enableMeasureAnnotation','enableMultiLineOverlap','enableMultiPageAnnotation','enableNavigation','enableNavigationToolbar','enablePageOrganizer','enablePersistence','enablePinchZoom','enablePrint','enablePrintRotation','enableRedactionToolbar','enableRtl','enableShapeAnnotation','enableShapeLabel','enableStampAnnotations','enableStickyNotesAnnotation','enableTextMarkupAnnotation','enableTextMarkupResizer','enableTextSearch','enableTextSelection','enableThumbnail','enableToolbar','enableWebMcp','enableZoomOptimization','exportAnnotationFileName','extractTextOption','formFieldCollections','formFields','freeTextSettings','handWrittenSignatureSettings','height','hideEmptyDigitalSignatureFields','hideSaveSignature','highlightSettings','hyperlinkOpenState','initialDialogSettings','initialFieldSettings','initialRenderPages','inkAnnotationSettings','inkEraserSize','interactionMode','isAnnotationToolbarOpen','isAnnotationToolbarVisible','isBookmarkPanelOpen','isCommandPanelOpen','isDocumentEdited','isExtractText','isFormDesignerToolbarVisible','isFormFieldDocument','isInitialFieldToolbarSelection','isMaintainSelection','isPageOrganizerOpen','isRedactionToolbarVisible','isSignatureEditable','isThumbnailViewOpen','isValidFreeText','lineSettings','listBoxFieldSettings','locale','maxZoom','measurementSettings','minZoom','pageCount','pageOrganizerSettings','passwordFieldSettings','perimeterSettings','polygonSettings','printMode','printScaleFactor','radioButtonFieldSettings','radiusSettings','rectangleSettings','redactionSettings','resourceUrl','restrictZoomRequest','retryCount','retryStatusCodes','retryTimeout','scrollSettings','selectedItems','serverActionSettings','serviceUrl','shapeLabelSettings','showCustomContextMenuBottom','showDigitalSignatureAppearance','showNotificationDialog','signatureDialogSettings','signatureFieldSettings','signatureFitMode','squigglySettings','stampSettings','stickyNotesSettings','strikethroughSettings','textFieldSettings','textSearchColorSettings','tileRenderingSettings','toolbarSettings','underlineSettings','volumeSettings','webLinkSettings','width','zoomMode','zoomValue'];
+export const outputs: string[] = ['addSignature','ajaxRequestFailed','ajaxRequestInitiate','ajaxRequestSuccess','annotationAdd','annotationChanged','annotationDoubleClick','annotationMouseLeave','annotationMouseover','annotationMove','annotationMoving','annotationPropertiesChange','annotationRemove','annotationResize','annotationSelect','annotationUnSelect','beforeAddFreeText','beforeWebMcpToolExecute','bookmarkClick','buttonFieldClick','commentAdd','commentDelete','commentEdit','commentSelect','commentStatusChanged','created','customContextMenuBeforeOpen','customContextMenuSelect','documentChanged','documentLoad','documentLoadFailed','documentUnload','downloadEnd','downloadStart','exportFailed','exportStart','exportSuccess','extractTextCompleted','formFieldAdd','formFieldChanged','formFieldClick','formFieldDoubleClick','formFieldFocusOut','formFieldMouseLeave','formFieldMouseover','formFieldMove','formFieldPropertiesChange','formFieldRemove','formFieldResize','formFieldSelect','formFieldUnselect','hyperlinkClick','hyperlinkMouseOver','importFailed','importStart','importSuccess','keyboardCustomCommands','moveSignature','pageChange','pageClick','pageMouseover','pageOrganizerSaveAs','pageOrganizerSaved','pageRenderComplete','pageRenderInitiate','printEnd','printStart','removeSignature','resizeSignature','resourcesLoaded','signaturePropertiesChange','signatureSelect','signatureUnselect','textSearchComplete','textSearchHighlight','textSearchStart','textSelectionEnd','textSelectionStart','thumbnailClick','toolbarClick','validateFormFields','zoomChange','pageOrganizerZoomChanged'];
 export const twoWays: string[] = [];
 
 /**
@@ -20,92 +20,97 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class PdfViewerComponent extends PdfViewer implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	addSignature: any;
-	ajaxRequestFailed: any;
-	ajaxRequestInitiate: any;
-	ajaxRequestSuccess: any;
-	annotationAdd: any;
-	annotationDoubleClick: any;
-	annotationMouseLeave: any;
-	annotationMouseover: any;
-	annotationMove: any;
-	annotationMoving: any;
-	annotationPropertiesChange: any;
-	annotationRemove: any;
-	annotationResize: any;
-	annotationSelect: any;
-	annotationUnSelect: any;
-	beforeAddFreeText: any;
-	bookmarkClick: any;
-	buttonFieldClick: any;
-	commentAdd: any;
-	commentDelete: any;
-	commentEdit: any;
-	commentSelect: any;
-	commentStatusChanged: any;
-	created: any;
-	customContextMenuBeforeOpen: any;
-	customContextMenuSelect: any;
-	documentLoad: any;
-	documentLoadFailed: any;
-	documentUnload: any;
-	downloadEnd: any;
-	downloadStart: any;
-	exportFailed: any;
-	exportStart: any;
-	exportSuccess: any;
-	extractTextCompleted: any;
-	formFieldAdd: any;
-	formFieldClick: any;
-	formFieldDoubleClick: any;
-	formFieldFocusOut: any;
-	formFieldMouseLeave: any;
-	formFieldMouseover: any;
-	formFieldMove: any;
-	formFieldPropertiesChange: any;
-	formFieldRemove: any;
-	formFieldResize: any;
-	formFieldSelect: any;
-	formFieldUnselect: any;
-	hyperlinkClick: any;
-	hyperlinkMouseOver: any;
-	importFailed: any;
-	importStart: any;
-	importSuccess: any;
-	keyboardCustomCommands: any;
-	moveSignature: any;
-	pageChange: any;
-	pageClick: any;
-	pageMouseover: any;
-	pageOrganizerSaveAs: any;
-	pageRenderComplete: any;
-	pageRenderInitiate: any;
-	printEnd: any;
-	printStart: any;
-	removeSignature: any;
-	resizeSignature: any;
-	resourcesLoaded: any;
-	signaturePropertiesChange: any;
-	signatureSelect: any;
-	signatureUnselect: any;
-	textSearchComplete: any;
-	textSearchHighlight: any;
-	textSearchStart: any;
-	textSelectionEnd: any;
-	textSelectionStart: any;
-	thumbnailClick: any;
-	toolbarClick: any;
-	validateFormFields: any;
-	zoomChange: any;
-	public pageOrganizerZoomChanged: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare addSignature: any;
+	declare ajaxRequestFailed: any;
+	declare ajaxRequestInitiate: any;
+	declare ajaxRequestSuccess: any;
+	declare annotationAdd: any;
+	declare annotationChanged: any;
+	declare annotationDoubleClick: any;
+	declare annotationMouseLeave: any;
+	declare annotationMouseover: any;
+	declare annotationMove: any;
+	declare annotationMoving: any;
+	declare annotationPropertiesChange: any;
+	declare annotationRemove: any;
+	declare annotationResize: any;
+	declare annotationSelect: any;
+	declare annotationUnSelect: any;
+	declare beforeAddFreeText: any;
+	declare beforeWebMcpToolExecute: any;
+	declare bookmarkClick: any;
+	declare buttonFieldClick: any;
+	declare commentAdd: any;
+	declare commentDelete: any;
+	declare commentEdit: any;
+	declare commentSelect: any;
+	declare commentStatusChanged: any;
+	declare created: any;
+	declare customContextMenuBeforeOpen: any;
+	declare customContextMenuSelect: any;
+	declare documentChanged: any;
+	declare documentLoad: any;
+	declare documentLoadFailed: any;
+	declare documentUnload: any;
+	declare downloadEnd: any;
+	declare downloadStart: any;
+	declare exportFailed: any;
+	declare exportStart: any;
+	declare exportSuccess: any;
+	declare extractTextCompleted: any;
+	declare formFieldAdd: any;
+	declare formFieldChanged: any;
+	declare formFieldClick: any;
+	declare formFieldDoubleClick: any;
+	declare formFieldFocusOut: any;
+	declare formFieldMouseLeave: any;
+	declare formFieldMouseover: any;
+	declare formFieldMove: any;
+	declare formFieldPropertiesChange: any;
+	declare formFieldRemove: any;
+	declare formFieldResize: any;
+	declare formFieldSelect: any;
+	declare formFieldUnselect: any;
+	declare hyperlinkClick: any;
+	declare hyperlinkMouseOver: any;
+	declare importFailed: any;
+	declare importStart: any;
+	declare importSuccess: any;
+	declare keyboardCustomCommands: any;
+	declare moveSignature: any;
+	declare pageChange: any;
+	declare pageClick: any;
+	declare pageMouseover: any;
+	declare pageOrganizerSaveAs: any;
+	declare pageOrganizerSaved: any;
+	declare pageRenderComplete: any;
+	declare pageRenderInitiate: any;
+	declare printEnd: any;
+	declare printStart: any;
+	declare removeSignature: any;
+	declare resizeSignature: any;
+	declare resourcesLoaded: any;
+	declare signaturePropertiesChange: any;
+	declare signatureSelect: any;
+	declare signatureUnselect: any;
+	declare textSearchComplete: any;
+	declare textSearchHighlight: any;
+	declare textSearchStart: any;
+	declare textSelectionEnd: any;
+	declare textSelectionStart: any;
+	declare thumbnailClick: any;
+	declare toolbarClick: any;
+	declare validateFormFields: any;
+	declare zoomChange: any;
+	public declare pageOrganizerZoomChanged: any;
 
 
 
@@ -215,7 +220,8 @@ export class PdfViewerComponent extends PdfViewer implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

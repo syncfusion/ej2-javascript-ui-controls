@@ -11,13 +11,16 @@ import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType, HierarchyGridPrintMode } from './enum';
+import { Cell } from '../models/cell';
+import { CellRenderer } from '../renderer/cell-renderer';
+import { AggregateType, CellType, HierarchyGridPrintMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { FilterStateObj, IXLFilter } from '../common/filter-interface';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { GroupedData } from '../services/group-model-generator';
+import { CellRendererFactory } from '../services/cell-render-factory';
 import * as literals from '../base/string-literals';
 
 //https://typescript.codeplex.com/discussions/401501
@@ -357,6 +360,22 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
         if (column.type && column.type.toLowerCase() === 'checkbox') {
             column.allowReordering = false;
         }
+        if (column.allowFormula) {
+            column.type = 'number';
+        }
+        if (column.type && column.type === 'rownumber') {
+            if (isNullOrUndefined(column.width)) {
+                column.width = 60;
+            }
+            if(isNullOrUndefined(column.textAlign)) {
+                column.textAlign = 'Right';
+            }
+            column.allowReordering = false;
+            column.allowEditing = false;
+            column.allowResizing = false;
+            column.showInColumnChooser = false;
+            column.isIdentity = true;
+        }
 
         column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
 
@@ -629,14 +648,20 @@ let accurateRowHeight: number;
 /**
  * @param {HTMLElement} element - Defines the element
  * @param {boolean} accurateHeight - Defines the accurate row height
+ * @param {IGrid} parent - Defines the parent grid
  * @returns {number} Returns the roww height
  * @hidden
  */
-export function getRowHeight(element?: HTMLElement, accurateHeight?: boolean): number {
+export function getRowHeight(element?: HTMLElement, accurateHeight?: boolean, parent?: IGrid): number {
     if (accurateHeight && accurateRowHeight !== undefined) {
         return accurateRowHeight;
     }
-    if (rowHeight !== undefined) {
+
+    if (parent && !isNullOrUndefined(parent.rowOffsetHeight)) {
+        return parent.rowOffsetHeight as number;
+    }
+
+    if (!isNullOrUndefined(rowHeight) && isNullOrUndefined(parent)) {
         return rowHeight;
     }
     const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, attrs: { role: 'grid' } });
@@ -647,10 +672,10 @@ export function getRowHeight(element?: HTMLElement, accurateHeight?: boolean): n
     element.removeChild(table);
     accurateRowHeight = rect.height;
     rowHeight = Math.ceil(rect.height);
-    if (accurateHeight) {
-        return accurateRowHeight;
+    if (parent) {
+        parent.rowOffsetHeight = rowHeight;
     }
-    return rowHeight;
+    return accurateHeight ? accurateRowHeight : rowHeight;
 }
 
 /**
@@ -1577,7 +1602,7 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
             }
         }
         else {
-            if (e[`${keyField}`] === data[`${keyField}`]) {
+            if (e && data && e[`${keyField}`] === data[`${keyField}`]) {
                 dataIndex = index;
             }
         }
@@ -1645,18 +1670,32 @@ export function ispercentageWidth(gObj: IGrid): boolean {
 export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTableRowElement[], index?: number,
                               startRowIndex?: number): void {
     let startIndex: number = index ? index : 0;
+    const cellRenderer: CellRenderer = gObj['serviceLocator'].getService<CellRendererFactory>('cellRendererFactory')
+        .getCellRenderer(CellType.Data) as CellRenderer;
     for (let i: number = startRowIndex ? startRowIndex : 0; i < rows.length; i++) {
-        if (rows[parseInt(i.toString(), 10)] && rows[parseInt(i.toString(), 10)].isDataRow) {
-            rows[parseInt(i.toString(), 10)].index = startIndex;
-            rows[parseInt(i.toString(), 10)].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
-            rowElms[parseInt(i.toString(), 10)].setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
-            if (rows[parseInt(i.toString(), 10)].isAltRow) {
-                rowElms[parseInt(i.toString(), 10)].classList.add('e-altrow');
+        const row: Row<Column> = rows[parseInt(i.toString(), 10)];
+        const rowElm: HTMLTableRowElement = rowElms[parseInt(i.toString(), 10)];
+        if (row && row.isDataRow) {
+            row.index = startIndex;
+            row.isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            rowElm.setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
+            if (row.isAltRow) {
+                rowElm.classList.add('e-altrow');
             } else {
-                rowElms[parseInt(i.toString(), 10)].classList.remove('e-altrow');
+                rowElm.classList.remove('e-altrow');
             }
-            for (let j: number = 0; j < rowElms[parseInt(i.toString(), 10)].cells.length; j++) {
-                rowElms[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)].setAttribute('data-index', startIndex.toString());
+            for (let j: number = 0; j < rowElm.cells.length; j++) {
+                rowElm.cells[parseInt(j.toString(), 10)].setAttribute('data-index', startIndex.toString());
+            }
+            const rowNumberCell: Element = rowElm.querySelector('.' + literals.rowNumberCell);
+            if (rowNumberCell) {
+                const rowNumberCellObject: Row<Column> = row;
+                const cell: Cell<Column>[] = rowNumberCellObject.cells.filter(
+                    (rowCell: Cell<Column>) => rowCell.column.type === 'rownumber');
+                if (cell.length && !isNullOrUndefined(cell[0])) {
+                    cellRenderer.refreshTD(rowNumberCell, cell[0], rowNumberCellObject.data,
+                                           { 'data-index': startIndex });
+                }
             }
             startIndex++;
         }
@@ -1675,6 +1714,8 @@ export function resetCachedRowIndex(gObj: IGrid): void {
     const rowObjects: Row<Column>[] = gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache ?
         gObj.getRowsObject() : gObj.vRows;
     const rowElements: Element[] = gObj.getRows();
+    const cellRenderer: CellRenderer = gObj['serviceLocator'].getService<CellRendererFactory>('cellRendererFactory')
+        .getCellRenderer(CellType.Data) as CellRenderer;
     for (let i: number = 0, startIndex: number = 0, k: number = 0; i < rowObjects.length; i++) {
         const rowObject: Row<Column> = rowObjects[parseInt(i.toString(), 10)];
         if (rowObject.isDataRow) {
@@ -1691,6 +1732,15 @@ export function resetCachedRowIndex(gObj: IGrid): void {
                 }
                 for (let j: number = 0; j < (rowElement as HTMLTableRowElement).cells.length; j++) {
                     (rowElement as HTMLTableRowElement).cells[parseInt(j.toString(), 10)].setAttribute('data-index', startIndex.toString());
+                }
+                const rowNumberCell: Element = rowElement.querySelector('.' + literals.rowNumberCell);
+                if (rowNumberCell) {
+                    const cell: Cell<Column>[] = rowObject.cells.filter(
+                        (rowCell: Cell<Column>) => rowCell.column.type === 'rownumber');
+                    if (cell.length && !isNullOrUndefined(cell[0])) {
+                        cellRenderer.refreshTD(rowNumberCell, cell[0], rowObject.data,
+                                               { 'data-index': startIndex });
+                    }
                 }
                 k++;
             }
@@ -1740,7 +1790,8 @@ export function groupReorderRowObject(gObj: IGrid, args: RowDropEventArgs, tr: H
         const record: object = {};
         const currentViewData: Object[] = gObj.getCurrentViewRecords();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1;
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1
+                - gObj.pinnedTopRowModels.length;
             record[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
         }
         const rows: Element[] = gObj.getRows();
@@ -1841,25 +1892,32 @@ export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog, dlgWidth?: number
     if (document.getElementById(gObj.element.id + '_e-popup')) {
         element = document.getElementById(gObj.element.id + '_e-popup');
     }
-    element.style.top = pos.top + 'px';
-    element.style.left = pos.left + 'px';
-    element.style.zIndex = (dlgObj.zIndex).toString();
-    element.style.width = !isNullOrUndefined(dlgWidth) ? dlgWidth + 'px' : dlgObj.element.offsetWidth + 'px';
-    element.appendChild(dlgObj.element);
-    const sbPanel: HTMLElement = gObj.element.closest('.sb-demo-section,.e-grid-dialog-fixed') as HTMLElement;
-    if (sbPanel) {
-        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
-        element.style.top = sbPos.top + 'px';
-        element.style.left = sbPos.left + 'px';
-        sbPanel.insertBefore(element, sbPanel.firstChild);
+    const dlgContainer: HTMLElement = dlgObj['dlgContainer'];
+    if (dlgObj.isModal && dlgContainer && dlgObj.element.classList.contains('e-ccdlg')) {
+        element.appendChild(dlgObj.element);
+        dlgContainer.appendChild(element);
+        document.body.insertBefore(dlgContainer, document.body.firstChild);
     } else {
-        if (isAngularMatContainer(gObj)) {
-            const targetOverlayPane: Element | null = gObj.element.closest('mat-dialog-container') as Element;
-            if (targetOverlayPane) {
-                targetOverlayPane.insertBefore(element, targetOverlayPane.firstChild);
-            }
+        element.style.top = pos.top + 'px';
+        element.style.left = pos.left + 'px';
+        element.style.zIndex = (dlgObj.zIndex).toString();
+        element.style.width = !isNullOrUndefined(dlgWidth) ? dlgWidth + 'px' : dlgObj.element.offsetWidth + 'px';
+        element.appendChild(dlgObj.element);
+        const sbPanel: HTMLElement = gObj.element.closest('.sb-demo-section,.e-grid-dialog-fixed') as HTMLElement;
+        if (sbPanel) {
+            const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
+            element.style.top = sbPos.top + 'px';
+            element.style.left = sbPos.left + 'px';
+            sbPanel.insertBefore(element, sbPanel.firstChild);
         } else {
-            document.body.insertBefore(element, document.body.firstChild);
+            if (isAngularMatContainer(gObj)) {
+                const targetOverlayPane: Element | null = gObj.element.closest('mat-dialog-container') as Element;
+                if (targetOverlayPane) {
+                    targetOverlayPane.insertBefore(element, targetOverlayPane.firstChild);
+                }
+            } else {
+                document.body.insertBefore(element, document.body.firstChild);
+            }
         }
     }
 }
@@ -2679,4 +2737,21 @@ export function parseViewportHeight( height: string | number ): number {
     const viewportMatch: RegExpMatchArray = heightValue.match(/^([\d.]+)(vh)?$/i);
     const viewportBasedHeight: number = (window.innerHeight * parseFloat(viewportMatch[1])) / 100;
     return viewportBasedHeight;
+}
+
+/**
+ * Converts a zero-based column index to a column letter (e.g., 0 -> A, 1 -> B, 2 -> C, 25 -> Z, 26 -> AA).
+ *
+ * @param {number} index - Zero-based column index
+ * @returns {string} The column letter
+ * @hidden
+ */
+export function getColumnLetter(index: number): string {
+    let letter: string = '';
+    let num: number = index;
+    while (num >= 0) {
+        letter = String.fromCharCode(65 + (num % 26)) + letter;
+        num = Math.floor(num / 26) - 1;
+    }
+    return letter;
 }

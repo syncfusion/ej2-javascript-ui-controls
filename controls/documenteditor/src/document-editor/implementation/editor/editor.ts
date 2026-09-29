@@ -16,7 +16,7 @@ import {
     ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64,
     TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, RevisionMatchedInfo, FootNoteWidgetsInfo, SelectedCommentInfo, FieldInfo, ListSearchResultInfo, AbsolutePositionInfo
 } from './editor-helper';
-import { isNullOrUndefined, Browser, classList, L10n, isVisible } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, classList, L10n, isVisible, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import {
     WParagraphFormat, WSectionFormat, WListFormat,
     WTableFormat, WRowFormat, WCellFormat, WStyle,
@@ -123,6 +123,20 @@ export class Editor {
     private checkLastLetterSpaceDot: string = '';
     private pasteFootNoteType: string = '';
     public hasShownRestrictPane: boolean = false;
+    /**
+    * @private
+    */
+    public isAutofitToWindow: boolean = false; 
+    /**
+     * @private
+     * Buffered text input - not yet inserted into document
+     */
+    private inputText: string = "";
+    /**
+     * @private
+     * Timer handle for delayed text insertion
+     */
+    private textInsertTimer: number | undefined = undefined;
     /**
      * @private
      */
@@ -828,10 +842,16 @@ export class Editor {
     }
 
     private alertBox(): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         const localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localObj.setLocale(this.owner.locale);
         DialogUtility.alert({
             title: localObj.getConstant('Information'),
+            open: (e: any) => {
+                if (isAngularModal) {
+                    this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                }
+            },
             content: localObj.getConstant('Multiple Comment')
         });
     }
@@ -1008,6 +1028,10 @@ export class Editor {
         if (this.selection.isParagraphLastLine(this.selection.end.currentWidget)
             && this.selection.end.offset === this.selection.getLineLength(this.selection.end.currentWidget) + 1) {
             this.selection.end.offset -= 1;
+        }
+        if (this.selection.isParagraphLastLine(this.selection.start.currentWidget)
+            && this.selection.start.offset === this.selection.getLineLength(this.selection.start.currentWidget) + 1) {
+            this.selection.start.offset -= 1;
         }
         const paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
         const startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -1535,11 +1559,19 @@ export class Editor {
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private protectionFailureHandler(result: any): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (this.owner) {
             const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
             localeValue.setLocale(this.documentHelper.owner.locale);
             if (result.name === 'onError') {
-                DialogUtility.alert(localeValue.getConstant('Error in establishing connection with web server'));
+                DialogUtility.alert({
+                    content: localeValue.getConstant('Error in establishing connection with web server'),
+                    open: (e: any) => {
+                        if (isAngularModal) {
+                            this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                        }
+                    },
+                });
             } else {
                 this.owner.fireServiceFailure(result);
                 console.error(result.statusText);
@@ -1570,6 +1602,7 @@ export class Editor {
      * @private
      */
     public protectDocument(protectionType: ProtectionType): void {
+        initializeTelemetryFeature('DocumentProtection', 'DOCXEditor');
         this.documentHelper.owner.getSettingData("protection", null, this.documentHelper.hashValue, this.documentHelper.saltValue, protectionType);
         this.protect(protectionType);
         const restrictPane: HTMLElement = this.documentHelper.restrictEditingPane.restrictPane;
@@ -1598,6 +1631,7 @@ export class Editor {
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public stopProtection(password: string): void {
+        initializeTelemetryFeature('DocumentProtection', 'DOCXEditor');
         if (this.documentHelper.isDocumentProtected) {
             if ((!isNullOrUndefined(this.documentHelper.saltValue) && this.documentHelper.saltValue === '')
                 && (!isNullOrUndefined(this.documentHelper.hashValue) && this.documentHelper.hashValue === '')
@@ -1705,6 +1739,7 @@ export class Editor {
      * @private
      */
     public validateHashValue(currentHashValue: string): boolean {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         this.currentHashValue = currentHashValue;
         const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
@@ -1726,7 +1761,13 @@ export class Editor {
             this.unProtectDocument();
             return true;
         } else {
-            DialogUtility.alert({title: localeValue.getConstant('Information'), content: localeValue.getConstant('The password is incorrect')});
+            DialogUtility.alert({title: localeValue.getConstant('Information'), content: localeValue.getConstant('The password is incorrect'),
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
+            });
             return false;
         }
     }
@@ -2413,6 +2454,7 @@ export class Editor {
      * @returns {void}
      */
     public handleBackKey(): void {
+        this.flushBufferedText();
         if (this.checkAndShowRestrictPane()) { return; }
         if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
@@ -2427,6 +2469,7 @@ export class Editor {
      * @returns {void}
      */
     public handleDelete(): void {
+        this.flushBufferedText();
         if (this.checkAndShowRestrictPane()) { return; }
         if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
@@ -2440,6 +2483,7 @@ export class Editor {
      * @returns {void}
      */
     public handleEnterKey(): void {
+        this.flushBufferedText();
         if (this.checkAndShowRestrictPane()) { return; }
         let contentControl : ContentControl = this.documentHelper.owner.selection.currentContentControl;
         if ((!this.owner.isReadOnlyMode && !this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode() ||
@@ -2504,6 +2548,101 @@ export class Editor {
     }
     /**
      * @private
+     * Flushes the buffered text input to the document
+     */
+    private updateTextInput(): void {
+        if (this.inputText.length === 0) {
+            return;
+        }
+
+        // Actually insert the buffered text
+        this.insertText(this.inputText);
+        this.inputText = "";
+    }
+
+    /**
+     * Flushes any buffered text input to the document.
+     * This is a public API that can be called to ensure all pending text is inserted.
+     * @public
+     */
+    public flushBufferedText(): void {
+        if (this.inputText.length > 0) {
+            this.stopTextInsertTimer();
+            this.updateTextInput();
+        }
+    }
+
+    /**
+     * @private
+     * Timer callback for delayed text insertion
+     */
+    private textInsertTimerTick = (): void => {
+        if (this.textInsertTimer !== undefined) {
+            clearTimeout(this.textInsertTimer);
+            this.textInsertTimer = undefined;
+        }
+        this.updateTextInput();
+    };
+
+    /**
+     * @private
+     * Starts or restarts the text insert timer
+     */
+    private startTextInsertTimer(): void {
+        if (this.textInsertTimer !== undefined) {
+            clearTimeout(this.textInsertTimer);
+        }
+        this.textInsertTimer = setTimeout(this.textInsertTimerTick, 100) as any;
+    }
+
+    /**
+     * @private
+     * Stops the text insert timer
+     */
+    private stopTextInsertTimer(): void {
+        if (this.textInsertTimer !== undefined) {
+            clearTimeout(this.textInsertTimer);
+            this.textInsertTimer = undefined;
+        }
+    }
+
+    private getPageIndex(table: TableWidget, isStartPoint: boolean): number {
+        let index: number = 0;
+        if (isStartPoint) {
+            while (table) {
+                if (isNullOrUndefined(table.previousSplitWidget) || index > 2) {
+                    return table.bodyWidget.page.index;
+                } else {
+                    index++;
+                    table = table.previousSplitWidget as TableWidget;
+                }
+            }
+        } else {
+            while (table) {
+                if (isNullOrUndefined(table.nextSplitWidget) || index > 2) {
+                    return table.bodyWidget.page.index;
+                } else {
+                    index++;
+                    table = table.nextSplitWidget as TableWidget;
+                }
+            }
+        } return 0;
+    }
+
+    private isLimitReached(table: TableWidget): boolean {
+        let isLimitReached: boolean = false;
+        if (table) {
+            let start: number = this.getPageIndex(table, true);
+            let end: number = this.getPageIndex(table, false);
+            if (end - start >= 3) {
+                return true;
+            } else if (table.isInsideTable) {
+                isLimitReached = this.isLimitReached((table.containerWidget as TableCellWidget).ownerTable);
+            }
+        } return isLimitReached;
+    }
+    /**
+     * @private
      * @returns {void}
      */
     public handleTextInput(text: string): void {
@@ -2514,7 +2653,30 @@ export class Editor {
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
             this.handledTextInput = true;
-            this.owner.editorModule.insertText(text);
+            let isLimitReached: boolean = false;
+            if (this.selection.start.paragraph.isInsideTable) {
+                isLimitReached = this.isLimitReached((this.selection.start.paragraph.containerWidget as TableCellWidget).ownerTable); 
+            }
+            if (!this.selection.start.paragraph.isInsideTable || !isLimitReached) {
+                this.owner.editorModule.insertText(text);
+                this.inputText = '';
+            } else {
+                // Buffered input logic
+                const newBufferedText: string = this.inputText + text;
+                if (newBufferedText.length >= 5) {
+                    // Flush immediately
+                    this.stopTextInsertTimer();
+                    this.inputText += text;
+                    this.updateTextInput();
+                } else {
+                    // Add to buffer and check width
+                    this.inputText += text;
+                }
+
+                // Start/restart timer as fallback
+                this.startTextInsertTimer();
+            }
+            // ===== END: BUFFERED TEXT INPUT LOGIC =====
             this.handledTextInput = false;
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = Number(setTimeout(() => {
@@ -2596,7 +2758,11 @@ export class Editor {
             }
             if (isNullOrUndefined(ele.nextNode)) {
                 if (ele.paragraph.nextRenderedWidget) {
-                    ele = (ele.paragraph.nextRenderedWidget.firstChild as LineWidget).children[0];
+                    if (!isNullOrUndefined(ele.paragraph.nextRenderedWidget.firstChild) && !isNullOrUndefined((ele.paragraph.nextRenderedWidget.firstChild as LineWidget).children) && (ele.paragraph.nextRenderedWidget.firstChild as LineWidget).children.length > 0) {
+                        ele = ((ele.paragraph.nextRenderedWidget.firstChild as LineWidget).children[0]);
+                    } else {
+                        break;
+                    }
                 } else {
                     break;
                 }
@@ -2607,6 +2773,7 @@ export class Editor {
         return text;
     }
     public insertContentControlPlaceholder(): void {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         let contentControl: ContentControl = this.owner.selection.currentContentControl;
         if (!isNullOrUndefined(contentControl) && contentControl.nextElement instanceof ContentControl && contentControl.nextElement === contentControl.reference) {
             let span: TextElementBox = new TextElementBox();
@@ -2668,6 +2835,7 @@ export class Editor {
      */
     public insertContentControl(info: ContentControlInfo): ContentControlInfo;
     public insertContentControl(typeOrInfo: ContentControlType | ContentControlInfo, value?: string | boolean, items?: string[]): ContentControlInfo {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         if (this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return undefined;
         }
@@ -2777,12 +2945,18 @@ export class Editor {
         return contentControlInfo;
     }
     private openContentDialog(richText: boolean) {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         const locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         locale.setLocale(this.owner.locale);
         DialogUtility.alert({
             title: locale.getConstant('Information'),
             content: richText ? locale.getConstant('Rich text Controls') : locale.getConstant('Plain text Controls'),
             showCloseIcon: true,
+            open: (e: any) => {
+                if (isAngularModal) {
+                    this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                }
+            },
             closeOnEscape: true,
             animationSettings: { effect: 'Zoom' },
             position: { X: 'center', Y: 'center' }
@@ -3715,7 +3889,8 @@ export class Editor {
         }
         if (currentElement.previousElement instanceof TextElementBox) {
             let prevText = currentElement.previousElement.text;
-            if (this.documentHelper.textHelper.isRTLText(prevText)) {
+            if (this.documentHelper.textHelper.isRTLText(prevText) || 
+            (this.documentHelper.textHelper.isWordSplitChar(prevText) && currentElement.previousElement.characterFormat.bidi)) {
                 return;
             }
         }
@@ -4138,7 +4313,8 @@ export class Editor {
                     if (!(!isNullOrUndefined(revisionType) && revisionType === 'Deletion' && !insertPosition.paragraph.isLayouted)) {
                         this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
                     }
-                    if (inline instanceof TextElementBox && inline.line.children.indexOf(inline) !== -1 && inline.text === '') {
+                    if (!isNullOrUndefined(inline) && !isNullOrUndefined(inline.line) && !isNullOrUndefined(inline.line.children)
+                        && inline.line.children.length > 0 && inline instanceof TextElementBox && inline.line.children.indexOf(inline) !== -1 && inline.text === '') {
                         inline.line.children.splice(inline.line.children.indexOf(inline), 1);
                     }
                 }
@@ -6344,6 +6520,7 @@ export class Editor {
      * @private
      */
     public removeContentControl():void {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         let contentControl: ContentControl = this.documentHelper.owner.selection.currentContentControl;
         if(contentControl instanceof ContentControl){
             const contentControlEnd: ContentControl = contentControl.reference;
@@ -7292,7 +7469,9 @@ export class Editor {
         let copiedTextContent: string = this.copiedTextContent;
         if (this.editorHistory && this.editorHistory.canUndo() && this.editorHistory.isUndoGroupingEnded) {
             this.editorHistory.undo();
-            this.editorHistory.redoStack.pop();
+             if (!isNullOrUndefined(this.editorHistory.redoStack) && this.editorHistory.redoStack.length > 0) {
+                this.editorHistory.redoStack.pop();
+            }
         }
         else if (!isNullOrUndefined(this.editorHistory) && !this.editorHistory.isUndoGroupingEnded && this.editorHistory.historyInfoStack.length > 0) {
             this.editorHistory.undoStackIn = isNullOrUndefined(this.editorHistory.undoStackIn) ? [] : this.editorHistory.undoStackIn;
@@ -7572,6 +7751,7 @@ export class Editor {
         } else {
             this.reLayout(selection, selection.isEmpty);
         }
+        this.documentHelper.selection.fireSelectionChanged(true);
         if (layoutWholeDocument) {
             if (this.selection.pasteElement) {
                 this.selection.pasteElement.style.display = 'none';
@@ -7719,7 +7899,7 @@ export class Editor {
             if (this.checkIsNotRedoing()) {
                 this.initHistory('PasteOverwrite');
             }
-            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward).getSplitWidgets()[0] as TableCellWidget;
             let table: TableWidget = startCell.ownerRow.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
             if (this.editorHistory) {
                 //Clones the entire table to preserve in history.
@@ -7728,7 +7908,7 @@ export class Editor {
             let cloneTable: TableWidget = data.clone();
             // let rowWidget: TableRowWidget = cloneTable.childWidgets[0] as TableRowWidget;
             let numberOfRows: number = cloneTable.childWidgets.length;
-            let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
+            let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward).getSplitWidgets()[0] as TableCellWidget;
             // let columnCount: number = numberOfColumns;
             // let newCell: TableCellWidget = undefined;
             let coloumnIndexPaste: number = startCell.columnIndex;
@@ -8082,7 +8262,6 @@ export class Editor {
         this.setPositionForCurrentIndex(end, endPosition);
         this.pasteTextPosition = { startPosition: startPosition, endPosition: end };
         this.documentHelper.owner.isPastingContent = false;
-        this.documentHelper.selection.fireSelectionChanged(true);
         return layoutWholeDocument;
     }
 
@@ -9408,6 +9587,7 @@ export class Editor {
      * @returns {void}
      */
     public insertTable(rows?: number, columns?: number): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         let startPos: TextPosition = this.selection.start;
         if (this.owner.isReadOnlyMode || !this.canEditContentControl || this.selection.isPlainContentControl()) {
             return;
@@ -9418,13 +9598,27 @@ export class Editor {
         localeValue.setLocale(this.documentHelper.owner.locale);
         if (columns < 1 || columns > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
             let columnAlertPopup: string = localeValue.getConstant('Number of columns must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
-            DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
+            DialogUtility.alert({
+                content: columnAlertPopup,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
+            }).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (rows < 1 || rows > this.documentHelper.owner.documentEditorSettings.maximumRows) {
             let rowAlertPopup: string = localeValue.getConstant('Number of rows must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
             localeValue.getConstant('Number of rows must be between 1 and 32767.').replace("32767", this.documentHelper.owner.documentEditorSettings.maximumRows.toString());
-            DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
+            DialogUtility.alert({
+                content: rowAlertPopup,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
+            }).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         let isCombineTable: boolean = false;
@@ -9878,7 +10072,11 @@ export class Editor {
             parentTable.updateProperties(true, tableAdv, fitType);
             this.documentHelper.owner.isShiftingEnabled = true;
             //Layouts the table.
+            if (fitType === 'FitToWindow') {
+                this.isAutofitToWindow = true;
+            }
             this.documentHelper.layout.reLayoutTable(tableAdv);
+            this.isAutofitToWindow = false;
             this.reLayout(this.selection, true);
         }
     }
@@ -10052,6 +10250,10 @@ export class Editor {
                 let tableRow: TableRowWidget = prevBlock.childWidgets[i] as TableRowWidget;
                 this.insertRevision(tableRow.rowFormat, 'Insertion');
             }
+        }
+        if (isNullOrUndefined(row) || isNullOrUndefined(row.nextWidget) || isNullOrUndefined((row.nextWidget as TableRowWidget).childWidgets)
+            || (row.nextWidget as TableRowWidget).childWidgets.length === 0) {
+            return;
         }
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
         prevBlock.isDefaultFormatUpdated = false;
@@ -10410,6 +10612,7 @@ export class Editor {
      * @returns {void}
      */
     public mergeSelectedCellsInTable(): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (!this.canMergeCells()) {
             return;
         }
@@ -10422,6 +10625,11 @@ export class Editor {
                 showCloseIcon: true,
                 okButton: {
                     text: 'Ok', click: this.confirmCellMerge.bind(this)
+                },
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
                 },
                 closeOnEscape: true,
                 position: { X: 'center', Y: 'center' },
@@ -11133,6 +11341,9 @@ export class Editor {
         if (selection.owner.isShiftingEnabled) {
             selection.owner.isShiftingEnabled = false;
             selection.owner.isLayoutEnabled = true;
+            if (isNullOrUndefined(selection.start) || isNullOrUndefined(selection.start.paragraph) || isNullOrUndefined(selection.start.paragraph.bodyWidget)) {
+                return;
+            }
             let bodyWidget: BodyWidget = selection.start.paragraph.bodyWidget;
             let splittedSection: BodyWidget[] = bodyWidget.getSplitWidgets() as BodyWidget[];
             bodyWidget = splittedSection[splittedSection.length - 1];
@@ -11538,7 +11749,7 @@ export class Editor {
             }
             let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
             if (this.owner.enableHeaderAndFooter) {
-                if(contentControlStart.paragraph.isInHeaderFooter){
+                if(!isNullOrUndefined(contentControlStart.paragraph) && contentControlStart.paragraph.isInHeaderFooter){
                     if (this.pushContentControlByOrder(contentControlStart, contentControl)) {
                         break;
                     }
@@ -12430,8 +12641,13 @@ export class Editor {
             }
         }
         let endParagraph: ParagraphWidget = end.paragraph;
-        this.documentHelper.layout.reLayoutParagraph(paragraph, isLayoutWhole ? 0 : startLineWidget, 0);
-
+        this.documentHelper.layout.reLayoutParagraph(paragraph, isLayoutWhole ? 0 : startLineWidget, undefined);
+        if (paragraph.bodyWidget instanceof BodyWidget) {
+            let bodyWidget: BodyWidget = paragraph.bodyWidget;
+            if (bodyWidget.childWidgets[0] === paragraph) {
+                bodyWidget.y = paragraph.y;
+            }
+        }
         if (paragraph.equals(endParagraph)) {
             return undefined;
         }
@@ -12657,7 +12873,7 @@ export class Editor {
             //Change the text case
             if (property === 'CapitalizeEachWord') {
                 let firstLetter: string = (inlineObj as TextElementBox).text.substr(startIndex - 1, 1);
-                makeFirstLetterCapital = firstLetter === ' ';
+                makeFirstLetterCapital = firstLetter === ' ' || !/\w/ .test(firstLetter);
             }
             if (property === 'SentenceCase') {
                 let firstLetter: string = (inlineObj as TextElementBox).text.substr(startIndex - 2, 2);
@@ -12703,7 +12919,7 @@ export class Editor {
             }
             else if (property == 'CapitalizeEachWord') {
                     if(isPreviousTextElementBox){
-                    makeFirstLetterCapital = selection.getIndexInInline(inlineObj) === 0 || this.checkLastLetterSpace === ' ' || textElementBox.previousElement instanceof TabElementBox;
+                    makeFirstLetterCapital = selection.getIndexInInline(inlineObj) === 0 || this.checkLastLetterSpace === ' ' || !/\w/.test(this.checkLastLetterSpace) || textElementBox.previousElement instanceof TabElementBox;
                     }
                     else {
                         if (textElementBox.previousElement instanceof CommentCharacterElementBox ||
@@ -14421,15 +14637,45 @@ export class Editor {
         let lastLine: LineWidget = end.currentWidget;
         let isParaSelected: boolean = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
             && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
-        if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
-            if ((((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character'))
-                && (isNullOrUndefined(paragraph.paragraphFormat.baseStyle) || value.name !== paragraph.paragraphFormat.baseStyle.name)) {
-                let obj: WStyle = (value.type === 'Character') ? value : value.link;
-                this.updateSelectionCharacterFormatting(property, obj, update);
-                return true;
+        if (!isParaSelected) {
+            if (!this.isParaMarkSelected() && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
+                if ((((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character'))
+                    && (isNullOrUndefined(paragraph.paragraphFormat.baseStyle) || value.name !== paragraph.paragraphFormat.baseStyle.name)) {
+                    let obj: WStyle = (value.type === 'Character') ? value : value.link;
+                    this.updateSelectionCharacterFormatting(property, obj, update);
+                    return true;
+                }
             }
         }
         return false;
+    }
+    private isParaMarkSelected(): boolean {
+        if (this.selection.start.paragraph === this.selection.end.paragraph && isNullOrUndefined(this.selection.start.paragraph.nextSplitWidget)) {
+            let start = this.selection.start;
+            let end = this.selection.end;
+            if (!this.selection.isForward) {
+                end = this.selection.start;
+                start = this.selection.end;
+            }
+            let paragarph: ParagraphWidget = end.paragraph;
+            let firstElement: ElementBox = (paragarph.firstChild as LineWidget).children[0];
+            let LastElement: ElementBox = (paragarph.lastChild as LineWidget).children[(paragarph.lastChild as LineWidget).children.length - 1];
+            while (!(firstElement instanceof TextElementBox)) {
+                firstElement = firstElement.nextElement;
+            }
+            while (!(LastElement instanceof TextElementBox)) {
+                LastElement = LastElement.previousElement;
+            }
+            if (LastElement instanceof TextElementBox && LastElement.nextElement) {
+                LastElement = LastElement.nextElement;
+            }
+            if ((firstElement.line.getOffset(firstElement, 0) === start.offset || start.isAtParagraphStart) &&
+                (LastElement.line.getOffset(LastElement, 0) === end.offset || end.isAtParagraphEnd)) {
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
     // Cell
 
@@ -14517,6 +14763,9 @@ export class Editor {
         let isStarted: boolean = false;
         for (let m: number = table.childWidgets.indexOf(startCell.ownerRow); m <= count; m++) {
             let row: TableRowWidget = table.childWidgets[m] as TableRowWidget;
+            if (isNullOrUndefined(row) || isNullOrUndefined(row.childWidgets)) {
+                continue;
+            }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let left: number = selection.getCellLeft(row, row.childWidgets[j] as TableCellWidget);
                 if (Math.round(startValue) <= Math.round(left) && Math.round(left) < Math.round(endValue)) {
@@ -14772,6 +15021,12 @@ export class Editor {
         let startPageIndex: number;
         let endPageIndex: number;
         this.documentHelper.clearContent();
+         if (isNullOrUndefined(startPosition.paragraph) || isNullOrUndefined(startPosition.paragraph.bodyWidget)) {
+            return;
+        }
+        if (isNullOrUndefined(endPosition.paragraph) || isNullOrUndefined(endPosition.paragraph.bodyWidget)) {
+            return;
+        }
         let startSectionIndex: number = startPosition.paragraph.bodyWidget.sectionIndex;
         let endSectionIndex: number = endPosition.paragraph.bodyWidget.sectionIndex;
         let isMultipleSection: boolean = false;
@@ -14954,6 +15209,9 @@ export class Editor {
         let action: Action = this.getTableCellAction(property);
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.documentHelper.selection;
+        if (isNullOrUndefined(selection.start) || isNullOrUndefined(selection.start.paragraph) || isNullOrUndefined(selection.start.paragraph.associatedCell)) {
+            return;
+        }
         let table: TableWidget = selection.start.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
         if (selection.isEmpty && property !== 'preferredWidthType' && property !== 'preferredWidth') {
@@ -15534,7 +15792,7 @@ export class Editor {
             this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction, isDeleteCell);
         } else {
             let shiftPara: BlockWidget = undefined;
-            if (this.owner.viewer instanceof PageLayoutViewer && paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && paragraph === paragraph.bodyWidget.lastChild && !isNullOrUndefined(paragraph.bodyWidget.nextRenderedWidget) && paragraph.bodyWidget.index !== paragraph.bodyWidget.nextRenderedWidget.index && paragraph.bodyWidget.page === (paragraph.bodyWidget.nextRenderedWidget as BodyWidget).page) {
+            if (!isNullOrUndefined(paragraph.bodyWidget) && this.owner.viewer instanceof PageLayoutViewer && paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && paragraph === paragraph.bodyWidget.lastChild && !isNullOrUndefined(paragraph.bodyWidget.nextRenderedWidget) && paragraph.bodyWidget.index !== paragraph.bodyWidget.nextRenderedWidget.index && paragraph.bodyWidget.page === (paragraph.bodyWidget.nextRenderedWidget as BodyWidget).page) {
                 shiftPara = paragraph.nextRenderedWidget as BlockWidget;
             }
             this.deletePara(paragraph, start, end, editAction);
@@ -15633,6 +15891,7 @@ export class Editor {
      * @returns {void}
      */
     public deleteColumn(): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
@@ -15643,6 +15902,11 @@ export class Editor {
                 title: locale.getConstant('UnTrack'),
                 content: locale.getConstant('Merge Track'),
                 showCloseIcon: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 okButton: {
                     text: 'Ok', click: this.onDeleteColumnConfirmed.bind(this)
                 },
@@ -16061,6 +16325,35 @@ export class Editor {
             }
         } else {
             this.removeFieldInBlock(row, true);
+            let prevRenderedRow: TableRowWidget = row.previousRenderedWidget as TableRowWidget;
+            while (!isNullOrUndefined(prevRenderedRow)) {
+                for (let j: number = 0; j < prevRenderedRow.childWidgets.length; j++) {
+                    let cell: TableCellWidget = prevRenderedRow.childWidgets[j] as TableCellWidget;
+                    if (row.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                        cell.cellFormat.rowSpan--;
+                    }
+                }
+                prevRenderedRow = prevRenderedRow.previousRenderedWidget as TableRowWidget;
+            }
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                let nextRenderedRow: TableRowWidget = row.nextRenderedWidget as TableRowWidget;
+                if (!isNullOrUndefined(nextRenderedRow)) {
+                    if (nextRenderedRow.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                        cell.cellFormat.rowSpan--;
+                        const cellWidget: TableCellWidget = this.createColumn(this.selection.getLastParagraph(cell));
+                        cellWidget.cellFormat.copyFormat(cell.cellFormat);
+                        cellWidget.index = cell.index;
+                        cellWidget.rowIndex = cell.rowIndex;
+                        cellWidget.columnIndex = cell.columnIndex;
+                        cellWidget.containerWidget = nextRenderedRow;
+                        cellWidget.margin = cell.margin.clone();
+                        cellWidget.leftBorderWidth = cell.leftBorderWidth;
+                        cellWidget.rightBorderWidth = cell.rightBorderWidth;
+                        nextRenderedRow.childWidgets.splice(cellWidget.columnIndex, 0, cellWidget);
+                    }
+                }
+            }
             table.childWidgets.splice(table.childWidgets.indexOf(row), 1);
             this.updateTable(table);
         }
@@ -17268,6 +17561,7 @@ export class Editor {
     }
 
     private deleteCellsInTable(table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, endCells?: TableCellWidget, trackDeletedContent?: boolean): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         let clonedTable: TableWidget = undefined;
         let action: Action = 'Delete';
         let isDeleteCells: boolean = false;
@@ -17332,6 +17626,11 @@ export class Editor {
                             text: 'Ok', click: (): void => {
                                 isOkButtonClick = true;
                                 this.onConfirmedTableCellsDeletion(table, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action)
+                            }
+                        },
+                        open: (e: any) => {
+                            if (isAngularModal) {
+                                this.documentHelper.owner.moveAlertToCdkOverlay(e);
                             }
                         },
                         closeOnEscape: true, position: { X: 'center', Y: 'center' },
@@ -17656,6 +17955,7 @@ export class Editor {
             this.removeBlock(table);
         } else {
             // Before lay outing need to update table grid.
+            table.calculateGrid();
             table.isGridUpdated = false;
             table.buildTableColumns();
             table.isGridUpdated = true;
@@ -18254,7 +18554,7 @@ export class Editor {
             paragraph.isLayouted = true;
             this.removeEmptyLine(paragraph);
             if (!this.documentHelper.layout.isReplacingAll) {
-                this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+                this.documentHelper.layout.reLayoutParagraph(paragraph, 0, undefined);
             }
             if (this.selection.start.currentWidget.paragraph.isInsideTable && this.owner.enableTrackChanges && this.selection.start.currentWidget.indexInOwner === -1) {
                 const startPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(startAtIndex);
@@ -18915,8 +19215,16 @@ export class Editor {
             if (listLevelPattern === 'Bullet') {
                 listLevel.numberFormat = format;
                 listLevel.characterFormat.fontFamily = fontFamily;
+                if (listLevel.listLevelPattern !== listLevelPattern) {		
+                    listLevel.characterFormat.italic = false;		
+                    listLevel.characterFormat.bold = false;		
+                }
                 listLevel.listLevelPattern = listLevelPattern;
             } else {
+                if (listLevel.listLevelPattern !== listLevelPattern) {		
+                    listLevel.characterFormat.italic = false;		
+                    listLevel.characterFormat.bold = false;		
+                }
                 listLevel.listLevelPattern = listLevelPattern;
                 listLevel.characterFormat.fontFamily = fontFamily;
                 listLevel.characterFormat.fontFamilyAscii = fontFamily;
@@ -19877,7 +20185,9 @@ export class Editor {
                     }
                     this.initInsertInline(editRangeStartElementBox.clone(), undefined, true);
                     let inlineObj: ElementInfo = this.selection.start.paragraph.getInline(this.selection.start.offset, 0);
-                    (inlineObj.element as EditRangeStartElementBox).editRangeEnd.editRangeStart = inlineObj.element as EditRangeStartElementBox;
+                    if (inlineObj.element instanceof EditRangeStartElementBox) {
+                        (inlineObj.element as EditRangeStartElementBox).editRangeEnd.editRangeStart = inlineObj.element as EditRangeStartElementBox;
+                    }
                     if (this.editorHistory.currentHistoryInfo && i === this.removedEditRangeStartElements.length - 1 && this.removedContentControlElements.length === 0 && this.removedBookmarkElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
                         this.editorHistory.updateComplexHistory();
                         isHandledComplexHistory = true;
@@ -19965,6 +20275,22 @@ export class Editor {
         }
         return false;
     }
+    
+    private previousNodeBeforeEditRange(inline: ElementBox): ElementBox {
+        let prevNode: ElementBox = inline.previousNode;
+        while (!isNullOrUndefined(prevNode) && prevNode instanceof EditRangeStartElementBox) {
+            prevNode = prevNode.previousNode;
+        }
+        return prevNode;
+    }
+
+    private nextNodeAfterEditRange(inline: ElementBox): ElementBox {
+        let nextNode: ElementBox = inline.nextNode;
+        while (!isNullOrUndefined(nextNode) && nextNode instanceof EditRangeEndElementBox) {
+            nextNode = nextNode.nextNode;
+        }
+        return nextNode;
+    }
 
     /**
      * Remove single character on left of cursor position
@@ -19999,6 +20325,7 @@ export class Editor {
         let previousOffset: number = offset;
         let updateSelection: boolean = false;
         let previousNode: ElementBox;
+        let currentInline: ElementBox = inline;
         while (inline instanceof CommentCharacterElementBox) {
             let commentMark: CommentCharacterElementBox = inline;
             inline = inline.previousNode;
@@ -20022,7 +20349,7 @@ export class Editor {
                 }
                 updateSelection = true;
                 break;
-            } else if (commentMark.commentType === 1) {
+            } else if (commentMark.commentType === 1 && ((commentMark.previousNode instanceof CommentCharacterElementBox && commentMark.previousNode.commentType === 0) || (commentMark.previousNode instanceof TextElementBox && commentMark.previousNode.length === 1))) {
                 if (!initComplextHistory) {
                     this.initComplexHistory('RemoveComment');
                     initComplextHistory = true;
@@ -20030,7 +20357,22 @@ export class Editor {
                 this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 this.deleteCommentInternal(commentMark.comment);
                 this.isSkipOperationsBuild = false;
+            }
+            updateSelection = true;
+        }
+        if (!isNullOrUndefined(currentInline) && currentInline.length === 1 && currentInline.previousNode instanceof CommentCharacterElementBox && currentInline.previousNode.commentType === 0 && !isNullOrUndefined(currentInline.nextNode) && currentInline.nextNode instanceof CommentCharacterElementBox &&  currentInline.nextNode.commentType === 1) {
+            let commentBox: CommentCharacterElementBox = currentInline.previousNode as CommentCharacterElementBox;
+            while (commentBox instanceof CommentCharacterElementBox) {
+                commentBox = commentBox.previousNode as CommentCharacterElementBox;
+                if (!initComplextHistory) {
+                    this.initComplexHistory('RemoveComment');
+                    initComplextHistory = true;
+                }
+                this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
+                this.deleteCommentInternal(currentInline.previousNode.comment);
+                this.isSkipOperationsBuild = false;
                 updateSelection = true;
+                previousOffset = inline.length;
             }
         }
         if (!isNullOrUndefined(inline) && inline.characterFormat.hidden) {
@@ -20045,6 +20387,9 @@ export class Editor {
                 selection.start.setPositionParagraph(lineWidget, 0);
                 selection.end.setPositionParagraph(lineWidget, 0);
             } else {
+                if (isNullOrUndefined(inline) || isNullOrUndefined(inline.line)) {
+                    return;
+                }
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, previousOffset);
                 selection.start.setPositionParagraph(inline.line, offset);
@@ -20265,6 +20610,18 @@ export class Editor {
                 let begin: BookmarkElementBox = inline.previousNode;
                 let end: BookmarkElementBox = inline.nextNode;
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
+        if (inline && inline.previousNode && inline.nextNode) {
+            let prevNode: ElementBox = this.previousNodeBeforeEditRange(inline);
+            let nextNode: ElementBox = this.nextNodeAfterEditRange(inline);
+            if (inline.length === 1 && nextNode instanceof BookmarkElementBox && prevNode instanceof BookmarkElementBox) {
+                let start: BookmarkElementBox = prevNode;
+                let end: BookmarkElementBox = nextNode;
+                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 this.removeWholeElement(selection);
                 return;
@@ -21653,7 +22010,9 @@ export class Editor {
                         // if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
                         //     this.removeRevisionForBlock(nextParagraph, undefined, false, true);
                         // }
-                        this.addRemovedNodes(nextParagraph, isCombineLastBlock);
+                        if (!(this.editorHistory.currentBaseHistoryInfo.action === 'Paste' && nextParagraph.isEmpty())) {
+                            this.addRemovedNodes(nextParagraph, isCombineLastBlock);
+                        }
                     }
                 }
             }
@@ -22232,6 +22591,9 @@ export class Editor {
     public updateWholeListItems(block: BlockWidget, isFindingListParagraph?: boolean, listID?: number): ParagraphWidget {
         this.documentHelper.renderedLists.clear();
         this.documentHelper.renderedLevelOverrides = [];
+        if (isNullOrUndefined(block) || isNullOrUndefined(block.bodyWidget)) {
+            return null;
+        }
         const sectionIndex: number = block.bodyWidget.index;
         let currentBlock: BlockWidget;
         for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
@@ -22315,6 +22677,9 @@ export class Editor {
         //     //Returns as list updated, inorder to start list numbering from first list paragraph of this row.
         //     return true;
         // }
+        if (isNullOrUndefined(row) || isNullOrUndefined(row.firstChild)) {
+            return false;
+        }
         let cell: TableCellWidget = row.firstChild as TableCellWidget;
         do {
             const isListUpdated: boolean = this.updateListItemsForCell(cell, block, listSearchResultInfo);
@@ -22697,8 +23062,10 @@ export class Editor {
             this.viewer.updateScrollBars();
         }
     }
-
-    private updateBookmarkCollection(name: string, bookmark: BookmarkElementBox): void {
+    /**
+     * @private
+     */
+    public updateBookmarkCollection(name: string, bookmark: BookmarkElementBox): void {
         const dict: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
 
         // If name already exists, remove first to re-insert.
@@ -23395,6 +23762,9 @@ export class Editor {
         this.initHistory('Borders');
         const startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
         const endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+        if (isNullOrUndefined(startPos.paragraph) || isNullOrUndefined(startPos.paragraph.associatedCell)) {
+            return;
+        }
         let table: TableWidget = startPos.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
         if (this.editorHistory) {
@@ -24363,6 +24733,9 @@ export class Editor {
         }
         const startCell: TableCellWidget = start.paragraph.associatedCell;
         const endCell: TableCellWidget = end.paragraph.associatedCell;
+        if (isNullOrUndefined(startCell) || isNullOrUndefined(endCell)) {
+            return;
+        }
         let cells: TableCellWidget[];
         const table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
         let appliedFormat: WCellFormat;
@@ -24392,6 +24765,9 @@ export class Editor {
         const cells: TableCellWidget[] = [];
         for (let i: number = rowStartIndex; i <= rowEndIndex; i++) {
             const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (isNullOrUndefined(row)) {
+                continue;
+            }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 if ((row.childWidgets[j] as TableCellWidget).columnIndex === columnIndex) {
                     cells.push(row.childWidgets[j] as TableCellWidget);
@@ -24760,6 +25136,7 @@ export class Editor {
      * @returns {void}
      */
     public insertTableOfContents(tableOfContentsSettings?: TableOfContentsSettings): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return;
         }
@@ -24849,6 +25226,11 @@ export class Editor {
                 content: localizeValue.getConstant('Add Headings'),
                 showCloseIcon: true,
                 closeOnEscape: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
             }).enableRtl = this.owner.enableRtl;
@@ -25829,6 +26211,7 @@ export class Editor {
      * @returns {void}
      */
     public insertFormField(type: FormFieldType): void {
+        initializeTelemetryFeature('FormFields', 'DOCXEditor');
         if (isNullOrUndefined(this.selection.start) || this.owner.enableHeaderAndFooter || this.selection.isPlainContentControl() || this.owner.isReadOnlyMode) {
             return;
         }
@@ -25942,6 +26325,7 @@ export class Editor {
      * @returns {void}
      */
     public setFormField(field: FieldElementBox, info: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo): void {
+        initializeTelemetryFeature('FormFields', 'DOCXEditor');
         let type: FormFieldType;
         let formField: FormField;
         if (!isNullOrUndefined((info as TextFormFieldInfo).format)) {
@@ -25969,6 +26353,7 @@ export class Editor {
      * @returns {boolean}
      */
     public editFormField(type: FormFieldType, formData: FormField): boolean {
+        initializeTelemetryFeature('FormFields', 'DOCXEditor');
         const begin: FieldElementBox = this.selection.getCurrentFormField();
         if (isNullOrUndefined(begin) || isNullOrUndefined(begin.formFieldData)) {
             return false;
@@ -26144,6 +26529,7 @@ export class Editor {
      * @returns {void}
      */
     public toggleCheckBoxFormField(field: FieldElementBox, reset?: boolean, value?: boolean): void {
+        initializeTelemetryFeature('FormFields', 'DOCXEditor');
         const formFieldData: FormField = field.formFieldData;
         if (formFieldData instanceof CheckBoxFormField && formFieldData.enabled) {
             this.initHistory('UpdateFormField');
@@ -26218,6 +26604,7 @@ export class Editor {
      * @returns {void}
      */
     public updateFormField(field: FieldElementBox, value: string | number, reset?: boolean): void {
+        initializeTelemetryFeature('FormFields', 'DOCXEditor');
         const formFieldData: FormField = field.formFieldData;
         if (formFieldData) {
             this.updateFormFieldInternal(field, formFieldData, value, reset);
@@ -26229,6 +26616,7 @@ export class Editor {
      * @returns {void}
      */
     public updateContentControl(contentControl: ContentControl, value: string, reset?: boolean): void {
+        initializeTelemetryFeature('ContentControl', 'DOCXEditor');
         if (contentControl.contentControlProperties.type === 'RichText' || contentControl.contentControlProperties.type === 'Text' || contentControl.contentControlProperties.type === 'Date' || contentControl.contentControlProperties.type === 'Picture') {
             this.updateContentControlResult(contentControl, value as string, reset);
         } else if (contentControl.contentControlProperties.type === 'CheckBox') {

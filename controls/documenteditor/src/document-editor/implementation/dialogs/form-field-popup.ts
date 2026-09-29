@@ -125,6 +125,7 @@ export class FormFieldPopUp {
         const dateInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
         /* eslint-disable-next-line max-len */
         const datePicker: DateTimePicker = new DateTimePicker({ strictMode: true, change: this.enableDisableDatePickerOkButton });
+        datePicker.isAngular = this.owner.isModalDialog;
         this.dateInput = dateInput;
         this.dateInput.addEventListener('keypress', this.datePickerKeyPressEventHandler);
         this.textBoxButtonDateDiv = createElement('div', { className: 'e-de-cmt-action-button' });

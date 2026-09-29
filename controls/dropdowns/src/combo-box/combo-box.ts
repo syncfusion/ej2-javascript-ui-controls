@@ -707,7 +707,7 @@ export class ComboBox extends DropDownList {
             this.inlineSearch(e);
             return false;
         } else {
-            return super.setValue(e);
+            return super.setValue(e, this.autofill);
         }
     }
     protected checkCustomValue(): void {

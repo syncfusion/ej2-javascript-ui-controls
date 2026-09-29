@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@use 'ej2-buttons/styles/button/highcontrast-light-definition' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
-@forward 'ej2-buttons/styles/button/highcontrast-light-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $progress-btn-color: $content-font !default;
 $progress-btn-bgcolor: rgba($bg-base-0, .3) !default;
 $progress-btn-bgcolor-normal: rgba($bg-base-100, .3) !default;

@@ -34,7 +34,7 @@ export const ViewsPlugin = {
 /**
  * `e-views` directive represent a view of the VueJS Schedule. 
  * It must be contained in a Schedule component(`ejs-schedule`). 
- * ```vue
+ * ```js
  * <ejs-schedule>
  *   <e-views>
  *    <e-view option='day' dateFormat='dd MMM'></e-view>

@@ -5,7 +5,7 @@ import { CellModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `CellDirective` represent a cell of the React Spreadsheet.
  * It must be contained in a `RowDirective`.
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <SheetsDirective>
  *    <SheetDirective>

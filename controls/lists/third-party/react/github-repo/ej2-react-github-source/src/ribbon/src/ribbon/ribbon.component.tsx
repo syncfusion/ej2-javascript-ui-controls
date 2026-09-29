@@ -8,7 +8,7 @@ export interface RibbonTypecast {
 }
 /**
  * Represents the React Ribbon Component
- * ```tsx
+ * ```ts
  * <RibbonComponent></RibbonComponent>
  * ```
  */

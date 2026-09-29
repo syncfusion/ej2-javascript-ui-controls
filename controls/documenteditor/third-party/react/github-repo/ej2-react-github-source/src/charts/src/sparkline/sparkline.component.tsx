@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * Represents react Sparkline Component
- * ```tsx
+ * ```
  * <SparklineComponent></SparklineComponent>
  * ```
  */

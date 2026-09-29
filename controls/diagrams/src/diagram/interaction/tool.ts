@@ -1000,7 +1000,7 @@ export class MoveTool extends ToolBase {
         const isSwimLaneChildMultiDrag: boolean = this.checkSwimLaneChildMultiDrag(args);
         if ((args.source instanceof Node || args.source instanceof Connector) && !isSwimLaneChildMultiDrag) {
             const arrayNodes: (NodeModel | ConnectorModel | AnnotationModel)[] = this.commandHandler.getSelectedObject();
-            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes);
+            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes, true);
             const selectedObject: SelectorModel = { nodes: [], connectors: [] };
             if (args.source instanceof Node) {
                 selectedObject.nodes.push(cloneObject(args.source) as Node);

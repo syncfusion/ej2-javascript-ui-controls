@@ -6,7 +6,7 @@
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data, password);
  * // Access the document properties
- * let documentProperties: PdfDocumentProperites = document.getDocumentInformation(false);
+ * let documentProperties: PdfDocumentProperties = document.getDocumentInformation(false);
  * // Gets the custom metadata
  * let custom: PdfCustomMetadata = documentProperties.customMetadata;
  * // Sets custom value
@@ -37,7 +37,7 @@ export class PdfCustomMetadata {
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the document informations
-     * let documentProperties: PdfDocumentProperites = document.getDocumentInformation(false);
+     * let documentProperties: PdfDocumentProperties = document.getDocumentInformation(false);
      * // Gets the custom metadata from document information
      * let custom: PdfCustomMetadata= documentProperties.customMetadata;
      * // Sets a custom metadata value
@@ -70,7 +70,7 @@ export class PdfCustomMetadata {
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the document informations
-     * let documentProperties: PdfDocumentProperites = document.getDocumentInformation(false);
+     * let documentProperties: PdfDocumentProperties = document.getDocumentInformation(false);
      * // Gets the custom metadata from document information
      * let custom:PdfCustomMetadata = documentProperties.customMetadata;
      * // Gets a custom metadata value
@@ -95,7 +95,7 @@ export class PdfCustomMetadata {
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the document informations
-     * let documentProperties: PdfDocumentProperites = document.getDocumentInformation(false);
+     * let documentProperties: PdfDocumentProperties = document.getDocumentInformation(false);
      * // Gets the custom metadata from document information
      * let custom:PdfCustomMetadata = documentProperties.customMetadata;
      * // Check the key is present in the custom metadata
@@ -119,7 +119,7 @@ export class PdfCustomMetadata {
      * ```typescript
      * // Load an existing PDF document
      * // Access the document informations
-     * let documentProperties: PdfDocumentProperites = document.getDocumentInformation(false);
+     * let documentProperties: PdfDocumentProperties = document.getDocumentInformation(false);
      * // Gets the custom metadata from document information
      * let custom:PdfCustomMetadata = documentProperties.customMetadata;
      * // Removes the key from the custom metadata

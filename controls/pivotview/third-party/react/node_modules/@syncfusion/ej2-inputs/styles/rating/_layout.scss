@@ -1,0 +1,186 @@
+@use 'variables' as *;
+@mixin rating-container-properties($svg-font-size, $svg-line-height, $label-font-size, $label-line-height, $reset-icon-font-size) {
+  .e-rating-item-container {
+    &:has(svg) {
+      line-height: $svg-line-height;
+    }
+    font-size: $svg-font-size;
+  }
+
+  .e-rating-label {
+    font-size: $label-font-size;
+    line-height: $label-line-height;
+  }
+
+  .e-reset {
+    font-size: $reset-icon-font-size;
+  }
+}
+
+@include export-module('rating-layout') {
+  .e-rating-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    min-width: max-content;
+
+    .e-rating {
+      display: none;
+    }
+
+    .e-rating-item-list {
+      display: inline-flex;
+      padding: $rating-item-list-padding;
+      margin: $rating-item-list-margin;
+
+      &:focus-visible:not(:hover) .e-rating-focus {
+        &:not(:has(svg)),
+        .e-rating-item:has(svg) {
+          outline: 1px solid;
+        }
+      }
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &.e-rating-readonly {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .e-rating-item-container {
+      &:has(svg) {
+        line-height: $rating-li-line-height;
+      }
+      cursor: pointer;
+      font-size: $rating-li-font-size;
+      padding: $rating-li-padding;
+      display: block;
+      min-width: calc(1em + (2 * $rating-li-padding)); //calc(font-size + (2 * padding));
+      min-height: calc(1em + (2 * $rating-li-padding)); //calc(font-size + (2 * padding));
+      //For Blazor Tooltip
+      position: relative;
+
+      .e-rating-item {
+        display: block;
+      }
+    }
+
+    &.e-rating-animation.e-touch-select:not(.e-disabled) .e-rating-item-container.e-rating-focus .e-rating-item,
+    &.e-rating-animation:not(.e-disabled, .e-rating-touch) .e-rating-item-container:hover .e-rating-item {
+      transition: transform 150ms cubic-bezier(.4, 0, .2, 1) 0ms;
+      transform: scale(1.4);
+      pointer-events: none;
+    }
+
+    &.e-disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    &.e-rating-hidden {
+      display: none;
+    }
+
+    .e-reset {
+      cursor: pointer;
+      font-size: $rating-reset-font-size;
+      padding: $rating-reset-padding;
+      margin: $rating-reset-margin;
+
+      &.e-disabled {
+        cursor: default;
+      }
+
+      &:focus-visible {
+        outline: 1px solid;
+        border-radius: $rating-focus-border-radius;
+      }
+    }
+
+    .e-rating-label {
+      font-size: $rating-label-font-size;
+      line-height: $rating-label-line-height;
+
+      &.e-label-right,
+      &.e-label-left {
+        min-width: $rating-label-left-width;
+      }
+
+      &.e-label-bottom,
+      &.e-label-top {
+        flex-basis: 100%;
+        width: $rating-label-bottom-width;
+        text-align: center;
+      }
+
+      &.e-label-right {
+        text-align: left;
+        margin: $rating-auto-width $rating-label-right-margin;
+      }
+
+      &.e-label-left {
+        text-align: right;
+        margin: $rating-auto-width $rating-label-left-margin;
+      }
+
+      &.e-label-top {
+        margin: $rating-label-top-margin $rating-item-list-padding;
+      }
+
+      &.e-label-bottom {
+        margin: $rating-label-bottom-margin $rating-item-list-padding;
+      }
+    }
+
+    &.e-rtl {
+      .e-rating-label {
+        &.e-label-right {
+          text-align: right;
+        }
+
+        &.e-label-left {
+          text-align: left;
+        }
+      }
+    }
+    //Blazor Rating Tooltip
+    .e-tooltip-wrap.e-rating-tooltip {
+      display: none;
+      justify-content: center;
+      left: $rating-half-width;
+      top: $rating-tooltip-tip-bottom-height;
+      transform: translate(-50%, -100%);
+
+      &.e-show-tooltip {
+        display: inline-flex;
+      }
+
+      .e-tip-content {
+        width: max-content;
+      }
+
+      .e-arrow-tip.e-tip-bottom {
+        left: $rating-half-width;
+        top: $rating-full-width;
+        transform: translate(-50%, 0);
+      }
+
+      .e-arrow-tip-inner.e-tip-bottom {
+        top: $rating-arrow-tip-bottom-top;
+      }
+    }
+  }
+
+  .e-rating-tooltip .e-tip-content {
+    text-align: center;
+  }
+
+  .e-small.e-rating-container,
+  .e-small .e-rating-container {
+    @include rating-container-properties($rating-small-li-font-size, $rating-small-li-line-height, $rating-small-label-font-size, $rating-small-label-line-height, $rating-small-reset-font-size);
+  }
+}

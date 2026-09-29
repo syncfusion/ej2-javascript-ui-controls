@@ -197,8 +197,15 @@ export class PdfGantt extends PdfTreeGrid {
                     detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
                 }
 
-                const endHours: number = Math.floor((detail.endPoint - detail.startPoint)
+                let endHours: number = 0;
+                if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                    endHours = Math.floor((detail.endPoint - detail.startPoint)
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth));
+                }
+                else {
+                    endHours = Math.floor((detail.endPoint - detail.startPoint)
                     / pointToPixel(this.chartHeader.bottomTierCellWidth));
+                }
                 currentDate = new Date(detail.startDate.getTime());
                 if (!this.parent.timelineSettings.showWeekend) {
                     currentDate = this.calculateHoursWithoutNonworkingDays(currentDate, endHours, count);
@@ -238,27 +245,40 @@ export class PdfGantt extends PdfTreeGrid {
             case 'Week':
             {
                 detail.startDate = new Date(timelineStartDate.getTime());
-                const startDays1: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
+                const startDaysCount: number = Math.floor((detail.startPoint /
+                                                          pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7);
                 if (!this.parent.timelineSettings.showWeekend) {
-                    detail.startDate = this.calculateDaysWithoutNonworkingDays(detail.startDate, startDays1 * count);
+                    detail.startDate = this.calculateDaysWithoutNonworkingDays(detail.startDate, startDaysCount * count);
                 }
                 else {
-                    detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDaysCount * count);
                 }
-                if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
-                    endDays1 = Math.round((detail.endPoint - detail.startPoint)
-                    / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7 - 1);
+
+                // If this page does not start at the very beginning, force its start
+                // to be the next Sunday after the previous page's endDate to avoid
+                // using the bottom-tier start as the page end.
+                if (detail.startPoint !== 0) {
+                    const prevDetail: TimelineDetails = this.headerDetails[this.headerDetails.length - 1];
+                    if (prevDetail && prevDetail.endDate) {
+                        const nextSunday: Date = new Date(prevDetail.endDate.getTime());
+                        nextSunday.setHours(0, 0, 0, 0);
+                        // Advance until we find the first Sunday strictly after previous endDate
+                        while (nextSunday.getTime() <= prevDetail.endDate.getTime() || nextSunday.getDay() !== 0) {
+                            nextSunday.setDate(nextSunday.getDate() + 1);
+                        }
+                        detail.startDate = nextSunday;
+                    }
+                }
+                // Handle exclusive endPoint: subtract 1 point so the calculation maps
+                // to the last included position; use floor to get inclusive last day.
+                const effectiveEndPoint: number = Math.max(detail.endPoint - 1, detail.startPoint);
+                const endDaysCount: number = Math.floor((effectiveEndPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7);
+                detail.endDate = new Date(timelineStartDate.getTime());
+                if (!this.parent.timelineSettings.showWeekend) {
+                    detail.endDate = this.calculateDaysWithoutNonworkingDays(detail.endDate, endDaysCount * count);
                 }
                 else {
-                    endDays1 = Math.round((detail.endPoint - detail.startPoint)
-                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
-                }
-                detail.endDate = new Date(detail.startDate.getTime());
-                if (!this.parent.timelineSettings.showWeekend){
-                    detail.endDate = this.calculateDaysWithoutNonworkingDays(detail.endDate, endDays1 * count);
-                }
-                else {
-                    detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                    detail.endDate.setDate(detail.endDate.getDate() + endDaysCount * count);
                 }
                 break;
             }
@@ -268,7 +288,7 @@ export class PdfGantt extends PdfTreeGrid {
                 const startDays2: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
                 detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
                 const endDays2: number = Math.round((detail.endPoint - detail.startPoint)
-                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
+                                                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
                 detail.endDate = new Date(detail.startDate.getTime());
                 detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
                 break;

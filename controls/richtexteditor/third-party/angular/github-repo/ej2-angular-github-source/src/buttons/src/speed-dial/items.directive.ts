@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-speeddial-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class SpeedDialItemDirective extends ComplexBase<SpeedDialItemDirective> {
@@ -34,29 +34,29 @@ export class SpeedDialItemDirective extends ComplexBase<SpeedDialItemDirective> 
      * Defines whether to enable or disable the SpeedDialItem.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines one or more CSS classes to include an icon or image in speed dial item.
      * @default ''
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Defines a unique value for the SpeedDialItem which can be used to identify the item in event args.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Defines the text content of SpeedDialItem. 
      * Text won't be visible when mode is Radial. 
      * Also, in Linear mode, text won't be displayed when direction is Left or Right.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Defines the title of SpeedDialItem to display tooltip.
      * @default ''
      */
-    public title: any;
+    public declare title: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -72,6 +72,7 @@ export class SpeedDialItemDirective extends ComplexBase<SpeedDialItemDirective> 
  */
 @Directive({
     selector: 'e-speeddial-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(SpeedDialItemDirective)
     },

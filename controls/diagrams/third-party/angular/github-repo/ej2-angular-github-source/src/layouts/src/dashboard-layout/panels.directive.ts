@@ -3,7 +3,7 @@ import { ComplexBase, ArrayBase, setValue } from '@syncfusion/ej2-angular-base';
 import { Template } from '@syncfusion/ej2-angular-base';
 
 
-let input: string[] = ['col', 'content', 'cssClass', 'enabled', 'header', 'id', 'maxSizeX', 'maxSizeY', 'minSizeX', 'minSizeY', 'row', 'sizeX', 'sizeY', 'zIndex'];
+let input: string[] = ['col', 'content', 'cssClass', 'enabled', 'header', 'id', 'maxSizeX', 'maxSizeY', 'minSizeX', 'minSizeY', 'mobilePanelHeight', 'row', 'sizeX', 'sizeY', 'zIndex'];
 let outputs: string[] = [];
 /**
  * 'e-panels' directive represent a panels of angular dashboardlayout 
@@ -20,9 +20,11 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-panels>e-panel',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        header: new ContentChild('header'),
+        content: new ContentChild('content')
     }
 })
 export class PanelDirective extends ComplexBase<PanelDirective> {
@@ -35,81 +37,75 @@ export class PanelDirective extends ComplexBase<PanelDirective> {
      * @default 0
      * @asptype int
      */
-    public col: any;
+    public declare col: any;
     /** 
      * Defines the CSS class name that can be appended with each panel element.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines whether to the panel should be enabled or not.
      * @default true
      */
-    public enabled: any;
+    public declare enabled: any;
     /** 
      * Defines the id of the panel.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the maximum width of the panel in cells count.
      * @default null
      * @asptype int
      */
-    public maxSizeX: any;
+    public declare maxSizeX: any;
     /** 
      * Specifies the maximum height of the panel in cells count.
      * @default null
      * @asptype int
 
      */
-    public maxSizeY: any;
+    public declare maxSizeY: any;
     /** 
      * Specifies the minimum width of the panel in cells count.
      * @default 1
      */
-    public minSizeX: any;
+    public declare minSizeX: any;
     /** 
      * Specifies the minimum height of the panel in cells count.
      * @default 1
      */
-    public minSizeY: any;
+    public declare minSizeY: any;
+    /** 
+     * Specifies the height of the panel in the layout in cells count for mobile view only. 
+     * When set, this height overrides the default sizeY value. 
+     * If null or undefined, falls back to sizeY.
+     * @default null
+     * @asptype double
+     */
+    public declare mobilePanelHeight: any;
     /** 
      * Defines a row value where the panel should be placed.
      * @default 0
      * @asptype int
      */
-    public row: any;
+    public declare row: any;
     /** 
      * Specifies the width of the panel in the layout in cells count.
      * @default 1
      */
-    public sizeX: any;
+    public declare sizeX: any;
     /** 
      * Specifies the height of the panel in the layout in cells count.
      * @default 1
      */
-    public sizeY: any;
+    public declare sizeY: any;
     /** 
      * Specifies the z-index of the panel
      * @default 1000
      * @asptype double
      */
-    public zIndex: any;
-    /** 
-     * Defines the template value that should be displayed as the panel's header.
-     * @asptype string
-     */
-    @ContentChild('header')
-    @Template()
-    public header: any;
-    /** 
-     * Defines the template value that should be displayed as the panel's content.
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare zIndex: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -118,6 +114,8 @@ export class PanelDirective extends ComplexBase<PanelDirective> {
         this.directivePropList = input;
     }
 }
+Template()(PanelDirective.prototype, 'header');
+Template()(PanelDirective.prototype, 'content');
 
 /**
  * Panel Array Directive
@@ -125,6 +123,7 @@ export class PanelDirective extends ComplexBase<PanelDirective> {
  */
 @Directive({
     selector: 'ejs-dashboardlayout>e-panels',
+    standalone: true,
     queries: {
         children: new ContentChildren(PanelDirective)
     },

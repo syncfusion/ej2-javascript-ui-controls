@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast-light' as *;
-@forward 'ej2-base/styles/definition/highcontrast-light';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $cbox-bgcolor: $bg-base-0 !default;
 $cbox-bigger-check-fontsize: 14px !default;
 $cbox-bigger-font-size: 14px !default;

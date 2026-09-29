@@ -33,7 +33,7 @@ export const AnnotationsPlugin = {
 
 /**
  * Represents the directive to render and customize the annotations in the linear gauge.
- * ```vue
+ * ```
  * <ejs-lineargauge>
  * <e-annotations><e-annotation></e-annotation></e-annotations>
  * </ejs-lineargauge>

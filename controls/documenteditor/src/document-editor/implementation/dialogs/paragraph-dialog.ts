@@ -346,12 +346,16 @@ export class ParagraphDialog {
             format: 'n1', value: 0, min: 1, max: 1584, step: 0.5, enablePersistence: false,floatLabelType: 'Always', placeholder: locale.getConstant('At'), change: this.changeLineSpacingValue
         });
         this.special = new DropDownList({ change: this.changeByValue, enableRtl: isRtl, floatLabelType:'Always', placeholder:locale.getConstant('Special')});
+        this.special.isAngular = this.documentHelper.owner.isModalDialog;
         this.special.appendTo(special);
         this.lineSpacing = new DropDownList({ change: this.changeBySpacing.bind(this), enableRtl: isRtl, floatLabelType: 'Always', placeholder: locale.getConstant('Line Spacing'),htmlAttributes:{'aria-labelledby':locale.getConstant('Line Spacing')}});
+        this.lineSpacing.isAngular = this.documentHelper.owner.isModalDialog;
         this.lineSpacing.appendTo(lineSpacing);
         this.alignment = new DropDownList({ change: this.changeByTextAlignment, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('Alignment'),htmlAttributes:{'aria-labelledby':locale.getConstant('Alignment')}});
+        this.alignment.isAngular = this.documentHelper.owner.isModalDialog;
         this.alignment.appendTo(alignment);
         this.outlineLevel= new DropDownList({ change: this.changeByOutlineLevel, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('OutlineLevel'),htmlAttributes:{'aria-labelledby':locale.getConstant('OutlineLevel')}});
+        this.outlineLevel.isAngular = this.documentHelper.owner.isModalDialog;
         this.outlineLevel.appendTo(outlineLevel);
         this.atIn.appendTo(this.lineSpacingAt);
         this.contextSpacing = new CheckBox({

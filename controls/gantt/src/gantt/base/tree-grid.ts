@@ -4,7 +4,7 @@ import { createElement, isNullOrUndefined, getValue, extend, EventHandler, delet
 import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel, IFilterCreate, IFilterWrite, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
 import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
-import { TaskFieldsModel } from '../models/models';
+import { TaskFieldsModel, TaskCalendarModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData, IPredecessor } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
@@ -114,6 +114,7 @@ export class GanttTreeGrid {
             this.parent.treeGrid.idMapping = this.parent.taskFields.id;
         }
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
+        this.parent.treeGrid.hierarchyCheckboxMode = this.parent.hierarchyCheckboxMode;
         this.parent.treeGrid.enableCollapseAll = this.parent.collapseAllParentTasks;
         (this.parent.treeGrid.columnMenuItems as (ColumnMenuItemModel | ColumnMenuItem)[]) = this.parent.columnMenuItems;
         this.parent.treeGrid.enableRtl = this.parent.enableRtl;
@@ -158,6 +159,7 @@ export class GanttTreeGrid {
             this.parent.treeGrid.grid.enableSeamlessScrolling = false;
         }
     }
+
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');
     }
@@ -242,10 +244,15 @@ export class GanttTreeGrid {
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
         const dataArgs: object = args['actionArgs'] || null;
         const isNotSortingWBS: boolean = !dataArgs || dataArgs['requestType'] !== 'sorting' || dataArgs['columnName'] !== 'WBSCode';
+        const isNotSortingSerialNumber: boolean = !dataArgs || dataArgs['requestType'] !== 'sorting' || dataArgs['columnName'] !== 'SerialNumber';
         const isNotFilteringWBS: boolean = dataArgs && (dataArgs['requestType'] === 'filtering' || dataArgs['requestType'] === 'searching');
         const isActiveFilter: boolean = (this.parent.filterSettings.columns && this.parent.filterSettings.columns.length > 0) ||
             (typeof this.parent.searchSettings.key === 'string' && this.parent.searchSettings.key.length > 0);
-        if (this.parent.enableWBS && !this.parent.isVirtualScroll && isNotSortingWBS && !isNotFilteringWBS && !isActiveFilter) {
+        // WBS codes must not regenerate during filter/search (hierarchical codes depend on full tree structure).
+        // Serial numbers always reflect the current visible order, so they regenerate even with active filters.
+        const shouldRunForWBS: boolean = this.parent.enableWBS && isNotSortingWBS && !isNotFilteringWBS && !isActiveFilter;
+        const shouldRunForSerialNumber: boolean = this.parent.enableSerialNumber && isNotSortingSerialNumber;
+        if (!this.parent.isVirtualScroll && (shouldRunForWBS || shouldRunForSerialNumber)) {
             this.parent.generateWBSCodes(this.parent.updatedRecords);
         }
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
@@ -254,6 +261,7 @@ export class GanttTreeGrid {
         setValue('contentModule.objectEqualityChecker', this.objectEqualityChecker, this.parent.treeGrid.grid);
         this.parent['isExpandPerformed'] = false;
         this.parent['isCollapsePerformed'] = false;
+        this.parent.isVirtualScroll = false;
     }
     private dataBound(args: object): void {
         if (this.parent.isReact) {
@@ -420,21 +428,22 @@ export class GanttTreeGrid {
         this.parent['isExpandPerformed'] = true;
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
-        if (args.type === 'save' && args['column'] && args['columnName'] === this.parent.taskFields.dependency && args['value'] &&
+        if (args.type === 'save' && args['columnName'] === this.parent.taskFields.dependency &&
             this.parent.viewType === 'ProjectView') {
-            const rawValue: string = args['value'];
-            const predecessors: string[] = rawValue
-                .split(',')
-                .map((p: string) => p.trim())
-                .filter(Boolean);
+            const rawValue: string = args['data'][this.parent.taskFields.dependency];
+            const predecessors: string[] = rawValue ?
+                rawValue.split(',')
+                    .map((p: string) => p.trim())
+                    .filter(Boolean) : [];
             if (predecessors.length === 0) {
                 return;
             }
             const ids: string[] = this.parent.ids;
+            const idsSet: Set<string> = new Set(ids);
             const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
             const alphaRegex: RegExp = /[A-Za-z]/;
             const validTypes: Set<string> = new Set(['FS', 'FF', 'SF', 'SS']);
-            const toTaskId: string = args['rowData'].ganttProperties.taskId.toString();
+            const toTaskId: string = args['data'].ganttProperties.taskId.toString();
             interface ICyclicDependency {
                 from: string;
                 to: string;
@@ -446,7 +455,7 @@ export class GanttTreeGrid {
             for (const predText of predecessors) {
                 const result: { match: string[], predecessorText: string, offsetValue: string, values: string[] } = this.parent.predecessorModule['processPredecessorElement'](
                     predText,
-                    ids,
+                    idsSet,
                     false,
                     guidRegex,
                     alphaRegex,
@@ -490,7 +499,7 @@ export class GanttTreeGrid {
                 const remainingPredecessors: string[] = predecessors.filter((text: string) => !cyclicTextSet.has(text));
                 // Update the actual task dependency field
                 const cleanedValue: string = remainingPredecessors.join(',');
-                args['rowData'][this.parent.taskFields.dependency] = args['rowData'].ganttProperties.predecessorsName = (cleanedValue === '' ? null : cleanedValue);
+                args['data'][this.parent.taskFields.dependency] = args['data'].ganttProperties.predecessorsName = (cleanedValue === '' ? null : cleanedValue);
                 // Trigger single failure event
                 this.parent.trigger('actionFailure', { error: errMsg });
             }
@@ -647,8 +656,13 @@ export class GanttTreeGrid {
     }
 
     private treeActionComplete(args: object): void {
-        let fieldName: string = null ;
+        let fieldName: string = null;
         let preventEventTrigger: boolean = false;
+        // Skips further handling when a cell edit begins (e.g., via double-click),
+        // so the Gantt does not run edit-agnostic logic or raise its own actionComplete for 'beginEdit'.
+        if (getValue('requestType', args) === 'beginEdit') {
+            return;
+        }
         const updatedArgs: object = extend({}, args);
         if (getValue('requestType', args) === 'reorder') {
             if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isFromUndoRedo'] && this.parent['isUndoRedoItemPresent']('ColumnReorder')) {
@@ -726,17 +740,27 @@ export class GanttTreeGrid {
                 (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = record;
             }
             this.parent.notify('updateModel', {});
+
         } else if (getValue('type', args) === 'save') {
-            fieldName = !isNullOrUndefined(args['column']) ? args['column'].field : null;
-            if (fieldName && args['previousData'] === args['data'][fieldName as string]) {
-                preventEventTrigger = true;
+            // In new args structure, columnName is provided directly instead of column object
+            fieldName = !isNullOrUndefined(args['columnName']) ? args['columnName'] : null;
+            if (fieldName) {
+                // Extract the previous value from the full previousData row object
+                const prevValue: Date | string = args['previousData'][fieldName as keyof IGanttData];
+                const currValue: Date | string = args['data'][fieldName as keyof IGanttData];
+                if (prevValue === currValue) {
+                    preventEventTrigger = true;
+                }
             }
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
                 const data: IGanttData = getValue('data', args);
-                if (!isNullOrUndefined(fieldName) && (fieldName === this.parent.taskFields.startDate ||
-                    fieldName === this.parent.taskFields.endDate) && args['previousData'] instanceof Date &&
-                    isNullOrUndefined(args['data'][fieldName as string])) {
-                    this.isDateColumnCellEdit = true;
+                if (!isNullOrUndefined(fieldName)) {
+                    const prevValue: Date | string = args['previousData'][fieldName as keyof IGanttData];
+                    if ((fieldName === this.parent.taskFields.startDate ||
+                        fieldName === this.parent.taskFields.endDate) && prevValue instanceof Date &&
+                        isNullOrUndefined(args['data'][fieldName as string])) {
+                        this.isDateColumnCellEdit = true;
+                    }
                 }
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
                     /* eslint-disable-next-line */
@@ -746,14 +770,17 @@ export class GanttTreeGrid {
                         this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
                     }
                 }
-                if (isEmptyObject(this.currentEditRow) && args['column'] && args['column'].edit && args['column'].field === this.parent.taskFields.resourceInfo) {
+                // For resourceInfo field detection, compare with field name directly
+                if (isEmptyObject(this.currentEditRow) && fieldName === this.parent.taskFields.resourceInfo) {
                     const field: string = this.parent.taskFields.resourceInfo;
                     this.currentEditRow = { [field]: data['resources'] };
                 }
-                if (args['data'][this.parent.taskFields.dependency] && args['column'].field === this.parent.taskFields.dependency) {
+                if (args['data'][this.parent.taskFields.dependency] && fieldName === this.parent.taskFields.dependency) {
                     const splits: string[] = args['data'][this.parent.taskFields.dependency].split(',');
                     const maxLimits: number = this.maxLimits(this.parent.durationUnit);
-                    args['data'][this.parent.taskFields.dependency] = this.updatePredecessorLimits(splits, args['previousData'], maxLimits);
+                    // Extract previous dependency value from the full previousData row
+                    const prevDependency: string = args['previousData'][this.parent.taskFields.dependency];
+                    args['data'][this.parent.taskFields.dependency] = this.updatePredecessorLimits(splits, prevDependency, maxLimits);
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.parent.editModule.cellEditModule.isCellEdit = false;
@@ -883,6 +910,14 @@ export class GanttTreeGrid {
         if (args['type'] !== 'save') {
             this.parent['hideLoadingIndicator']();
         }
+        if (this.parent.filterModule &&
+            this.parent['initialHierarchyMode'] !== this.parent.filterSettings.hierarchyMode) {
+            this.parent['initialHierarchyMode'] = this.parent.filterSettings.hierarchyMode;
+            if (this.parent.filterModule.filteredResult &&
+                this.parent.filterModule.filteredResult.length > 0 ) {
+                this.parent.setProperties({ dataSource: this.parent.dataSource }, false);
+            }
+        }
     }
 
     private updateKeyConfigSettings(): void {
@@ -955,7 +990,7 @@ export class GanttTreeGrid {
         this.parent.customColumns = [];
         this.parent.ganttColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'baselineDuration', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'baselineDuration', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate', 'calendarId'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -975,18 +1010,18 @@ export class GanttTreeGrid {
                 if (column.field === this.parent.resourceFields.group) {
                     continue;
                 }
-                if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor') {
+                if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor' && column.field !== 'SerialNumber') {
                     this.parent.customColumns.push(column.field);
                 }
                 column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
-                if (column.field === 'WBSCode') {
+                if (column.field === 'WBSCode' || column.field === 'SerialNumber') {
                     column.allowEditing = false;
                 }
                 else {
                     column.allowEditing = !isNullOrUndefined(column.allowEditing) ? column.allowEditing : true;
                 }
-                if (column.field === 'WBSCode' || column.field === 'WBSPredecessor') {
+                if (column.field === 'WBSCode' || column.field === 'WBSPredecessor' || column.field === 'SerialNumber') {
                     column.clipMode = 'EllipsisWithTooltip';
                 }
                 if (column.editType === undefined) {
@@ -1297,6 +1332,28 @@ export class GanttTreeGrid {
                     query: new Query()
                 }
             };
+        } else if (taskSettings.calendarId === column.field) {
+            if (this.parent.isLocaleChanged && previousColumn) {
+                column.headerText = !isNullOrUndefined(previousColumn.headerText) ? previousColumn.headerText : this.parent.localeObj.getConstant('calendarId');
+            } else {
+                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : this.parent.localeObj.getConstant('calendarId');
+            }
+            column.width = column.width ? column.width : 150;
+            column.editType = column.editType ? column.editType : 'dropdownedit';
+            const calendarDataSource: { text: string; value: string }[] = [];
+            if (this.parent.calendarSettings && this.parent.calendarSettings.taskCalendars) {
+                this.parent.calendarSettings.taskCalendars.forEach((cal: TaskCalendarModel) => {
+                    calendarDataSource.push({ text: cal.calendarId, value: cal.calendarId });
+                });
+            }
+            column.edit = {
+                params: {
+                    dataSource: calendarDataSource,
+                    fields: { text: 'text', value: 'value' },
+                    showClearButton: true,
+                    query: new Query()
+                }
+            };
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
@@ -1510,7 +1567,18 @@ export class GanttTreeGrid {
             this.treeGridColumns.push(treeGridColumn);
         }
     }// eslint-disable-next-line
-    private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string { 
+    private validateExcelData(data: IGanttData): IGanttData {
+        if (!isNullOrUndefined(this.parent.treeGrid.excelExportModule)
+            && !isNullOrUndefined(this.parent.treeGrid.excelExportModule['dataResults']['data'])
+            && isNullOrUndefined(data.ganttProperties)) {
+            if (!isNullOrUndefined(data[this.parent.taskFields.id])) {
+                data = this.parent.getRecordByID(data[this.parent.taskFields.id].toString());
+            }
+        }
+        return data;
+    }
+    private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        data = this.validateExcelData(data);
         if (!isNullOrUndefined(data) && !isNullOrUndefined(data.ganttProperties))  {
             const ganttProp: ITaskData = data.ganttProperties;
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
@@ -1522,6 +1590,7 @@ export class GanttTreeGrid {
         return '';
     }// eslint-disable-next-line
     private dependencyValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        data = this.validateExcelData(data);
         if (data && data.ganttProperties && !isNullOrUndefined(data.ganttProperties.predecessorsName)) {
             let value: string = '';
             const predecessorsName: any = data.ganttProperties.predecessorsName;

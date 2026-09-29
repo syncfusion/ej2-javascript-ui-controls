@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('e-inlineaiassist-theme') {
   .e-inlineaiassist {
     background: $inline-ai-assist-bg;
@@ -8,6 +8,10 @@
     }
     .e-response-text {
       color: $inline-ai-assist-response-text-color;
+    }
+
+    .e-assist-textarea {
+      color: $inline-ai-assist-textarea-color;
     }
 
     .e-toolbar-item::after {
@@ -42,6 +46,7 @@
       }
       .e-footer-icons-wrapper {
         .e-toolbar .e-toolbar-item {
+          background: transparent;
           .e-tbar-btn {
             &:focus {
               box-shadow: none;
@@ -85,11 +90,11 @@
       border-bottom: $inline-ai-assist-content-border-bottom;
     }
 
-    .e-indicator {
+    .e-assist-indicator {
       background: $inline-ai-assist-indicator-bg;
       animation: e-inline-indicator-blink 1s infinite;
     }
-    .e-indicator-text {
+    .e-assist-indicator-text {
       color: $inline-ai-assist-textarea-placeholder-color;
     }
 

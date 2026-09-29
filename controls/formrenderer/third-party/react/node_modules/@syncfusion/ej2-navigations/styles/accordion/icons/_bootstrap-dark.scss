@@ -1,0 +1,16 @@
+@use '../variables' as *;
+@include export-module('accordion-bootstrap-dark-icons') {
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e916';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+}

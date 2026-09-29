@@ -122,4 +122,16 @@ export class _PdfSignerUtilities {
             throw new Error(`Signer ${algorithm} not recognised.`);
         }
     }
+    /**
+     * Gets the algorithm name mapped to the given object identifier (OID).
+     *
+     * @private
+     * @param {string} oid The object identifier string.
+     * @returns {*} The algorithm name associated with the OID, or `undefined` if not found.
+     */
+    _getAlgorithmName(oid: string): any { // eslint-disable-line
+        if (this._objectIdentifiers.has(oid)) {
+            return this._objectIdentifiers.get(oid);
+        }
+    }
 }

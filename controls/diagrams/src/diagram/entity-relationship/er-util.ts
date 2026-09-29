@@ -139,7 +139,8 @@ function createErHeaderNode(parentNode: NodeModel, diagram: Diagram, erEntity: E
             height: headerHeight,
             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) &
                 ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-            style: getHeaderStyle(headerStyle, parentStyle)
+            style: getHeaderStyle(headerStyle, parentStyle),
+            offsetX: parentNode.offsetX, offsetY: parentNode.offsetY
         }, true);
 
     (erEntity as ErShape).hasHeader = true;
@@ -231,7 +232,8 @@ function createErFieldNode(
             horizontalAlignment: 'Stretch',
             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) &
                 ~(NodeConstraints.Rotate | NodeConstraints.Resize),
-            style: getFieldStyle(erFieldStyle, parentStyle)
+            style: getFieldStyle(erFieldStyle, parentStyle),
+            offsetX: parentNode.offsetX, offsetY: parentNode.offsetY
         }, true);
 
     fieldNode.parentId = parentNode.id;

@@ -16,7 +16,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs RangeNavigator Component
- * ```vue
+ * ```
  * <ejs-rangenavigator></ejs-rangenavigator>
  * ```
  */

@@ -20,9 +20,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class ColumnDirective extends ComplexBase<ColumnDirective> {
@@ -34,68 +35,60 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
      * Enable or disable column drag
      * @default true
      */
-    public allowDrag: any;
+    public declare allowDrag: any;
     /** 
      * Enable or disable column drop
      * @default true
      */
-    public allowDrop: any;
+    public declare allowDrop: any;
     /** 
      * Enable or disable toggle column
      * @default false
      */
-    public allowToggle: any;
+    public declare allowToggle: any;
     /** 
      * Defines the column header title
      * @default null
      */
-    public headerText: any;
+    public declare headerText: any;
     /** 
      * Defines the collapsed or expandable state
      * @default true
      */
-    public isExpanded: any;
+    public declare isExpanded: any;
     /** 
      * Defines the column keyField. It supports both number and string type. 
      * String type supports the multiple column keys and number type does not support the multiple column keys.
      * @default null
      */
-    public keyField: any;
+    public declare keyField: any;
     /** 
      * Defines the maximum card count in column
      * @default null
      * @asptype int
      */
-    public maxCount: any;
+    public declare maxCount: any;
     /** 
      * Defines the minimum card count in column
      * @default null
      * @asptype int
      */
-    public minCount: any;
+    public declare minCount: any;
     /** 
      * Enable or disable cell add button
      * @default false
      */
-    public showAddButton: any;
+    public declare showAddButton: any;
     /** 
      * Enable or disable card count in column
      * @default true
      */
-    public showItemCount: any;
+    public declare showItemCount: any;
     /** 
      * Defines the column transition
      * @default []
      */
-    public transitionColumns: any;
-    /** 
-     * Defines the column template
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare transitionColumns: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -104,6 +97,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
         this.directivePropList = input;
     }
 }
+Template()(ColumnDirective.prototype, 'template');
 
 /**
  * Column Array Directive
@@ -111,6 +105,7 @@ export class ColumnDirective extends ComplexBase<ColumnDirective> {
  */
 @Directive({
     selector: 'ejs-kanban>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColumnDirective)
     },

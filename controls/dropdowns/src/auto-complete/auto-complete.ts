@@ -48,7 +48,7 @@ export class AutoComplete extends ComboBox {
     @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null, disabled: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
-     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
+     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
      *
@@ -113,7 +113,7 @@ export class AutoComplete extends ComboBox {
     public minLength: number;
     /**
      * Determines on which filter type, the component needs to be considered on search action.
-     * The available [`FilterType`](../../auto-complete/filtering/#change-the-filter-type)
+     * The available [`FilterType`](../../auto-complete/filtering#change-the-filter-type)
      * and its supported data types are
      *
      * <table>

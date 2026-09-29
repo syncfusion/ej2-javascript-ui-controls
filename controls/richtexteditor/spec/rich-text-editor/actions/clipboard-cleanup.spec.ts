@@ -4,6 +4,7 @@
 import { RichTextEditor } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy, setCursorPoint } from "../render.spec";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
+import { createElement, detach , Browser} from '@syncfusion/ej2-base';
 
 describe('clipboard Cleanup Module ', () => {
     describe("clipboard cleanup testing inside single block level element", () => {
@@ -33,8 +34,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(copyEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCopyHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCopyHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(plainText === expectedCopyPlainText).toBe(true);
             expect(htmlText === expectedCopyHtml).toBe(true);
             dataTransfer.setData('text/plain', '');
@@ -44,8 +45,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(cutEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCutHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCutHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(plainText === expectedCutPlainText).toBe(true);
             expect(htmlText === expectedCutHtml).toBe(true);
             expect(editorObj.innerHTML === '<h1><br></h1>').toBe(true);
@@ -55,13 +56,14 @@ describe('clipboard Cleanup Module ', () => {
             setCursorPoint(targetEle, 1);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
-            expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+            expect(editorObj.querySelectorAll('h1').length === 2).toBe(true);
+            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
-            setCursorPoint(targetEle, 1);
+            targetEle = editorObj.querySelector('h1');
+            setCursorPoint(targetEle, targetEle.childNodes.length);
             rteObj.onPaste(pasteEvent);
-            expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+            expect(editorObj.querySelectorAll('h1').length === 3).toBe(true);
+            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
         });
         it("copying and pasting the whole h1 block level element with BR tag", () => {
@@ -191,8 +193,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(copyEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCopyHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCopyHtml = '<p>Welcome to the Syncfusion Rich Text Editor</p>';
             expect(plainText === expectedCutPlainText).toBe(true);
             expect(htmlText === expectedCopyHtml).toBe(true);
             dataTransfer.setData('text/plain', '');
@@ -202,8 +204,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(cutEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCutHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCutHtml = '<p>Welcome to the Syncfusion Rich Text Editor</p>';
             expect(plainText === expectedCopyPlainText).toBe(true);
             expect(htmlText === expectedCutHtml).toBe(true);
             expect(editorObj.innerHTML === '<p><br></p>').toBe(true);
@@ -213,8 +215,8 @@ describe('clipboard Cleanup Module ', () => {
             setCursorPoint(targetEle, 1);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
-            expect(editorObj.querySelectorAll('p').length === 1).toBe(true);
-            expectedPasteHtml = '<p>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</p>';
+            expect(editorObj.querySelectorAll('p').length === 2).toBe(true);
+            expectedPasteHtml = '<p>Welcome to the Syncfusion Rich Text Editor</p><p>Welcome to the Syncfusion Rich Text Editor</p>';
             expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
         });
         it("copying and pasting the p element with BR tag", () => {
@@ -3978,8 +3980,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(copyEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCopyHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCopyHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(plainText === expectedCopyPlainText).toBe(true);
             expect(htmlText === expectedCopyHtml).toBe(true);
             dataTransfer.setData('text/plain', '');
@@ -3989,8 +3991,8 @@ describe('clipboard Cleanup Module ', () => {
             rteObj.clipBoardHandler(cutEvent);
             plainText = dataTransfer.getData('text/plain');
             htmlText = dataTransfer.getData('text/html');
-            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-            expectedCutHtml = 'Welcome to the Syncfusion Rich Text Editor';
+            expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+            expectedCutHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(plainText === expectedCutPlainText).toBe(true);
             expect(htmlText === expectedCutHtml).toBe(true);
             expect(editorObj.innerHTML === '<h1><br></h1>').toBe(true);
@@ -4000,13 +4002,13 @@ describe('clipboard Cleanup Module ', () => {
             setCursorPoint(targetEle, 1);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
-            expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+            expect(editorObj.querySelectorAll('h1').length === 2).toBe(true);
+            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
             setCursorPoint(targetEle, 1);
             rteObj.onPaste(pasteEvent);
-            expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+            expect(editorObj.querySelectorAll('h1').length === 3).toBe(true);
+            expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
             expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
         });
         it("copying and pasting the only the inline elements inside block level element", () => {
@@ -4315,8 +4317,8 @@ describe('clipboard Cleanup Module ', () => {
                 rteObj.clipBoardHandler(copyEvent);
                 plainText = dataTransfer.getData('text/plain');
                 htmlText = dataTransfer.getData('text/html');
-                expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-                expectedCopyHtml = 'Welcome to the Syncfusion Rich Text Editor';
+                expectedCopyPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+                expectedCopyHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(plainText === expectedCopyPlainText).toBe(true);
                 expect(htmlText === expectedCopyHtml).toBe(true);
                 //paste
@@ -4325,13 +4327,14 @@ describe('clipboard Cleanup Module ', () => {
                 setCursorPoint(targetEle, 1);
                 const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
                 rteObj.onPaste(pasteEvent);
-                expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+                expect(editorObj.querySelectorAll('h1').length === 2).toBe(true);
+                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
-                setCursorPoint(targetEle, 1);
+                targetEle = editorObj.querySelector('h1');
+                setCursorPoint(targetEle, targetEle.childNodes.length);
                 rteObj.onPaste(pasteEvent);
-                expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+                expect(editorObj.querySelectorAll('h1').length === 3).toBe(true);
+                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
             });
             //copy
@@ -4348,8 +4351,8 @@ describe('clipboard Cleanup Module ', () => {
                 rteObj.clipBoardHandler(cutEvent);
                 plainText = dataTransfer.getData('text/plain');
                 htmlText = dataTransfer.getData('text/html');
-                expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor';
-                expectedCutHtml = 'Welcome to the Syncfusion Rich Text Editor';
+                expectedCutPlainText = 'Welcome to the Syncfusion Rich Text Editor\n';
+                expectedCutHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(plainText === expectedCutPlainText).toBe(true);
                 expect(htmlText === expectedCutHtml).toBe(true);
                 expect(editorObj.innerHTML === '<h1><br></h1>').toBe(true);
@@ -4359,13 +4362,14 @@ describe('clipboard Cleanup Module ', () => {
                 setCursorPoint(targetEle, 1);
                 const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
                 rteObj.onPaste(pasteEvent);
-                expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+                expect(editorObj.querySelectorAll('h1').length === 2).toBe(true);
+                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
-                setCursorPoint(targetEle, 1);
+                targetEle = editorObj.querySelector('h1');
+                setCursorPoint(targetEle, targetEle.childNodes.length);
                 rteObj.onPaste(pasteEvent);
-                expect(editorObj.querySelectorAll('h1').length === 1).toBe(true);
-                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text EditorWelcome to the Syncfusion Rich Text Editor</h1>';
+                expect(editorObj.querySelectorAll('h1').length === 3).toBe(true);
+                expectedPasteHtml = '<h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1><h1>Welcome to the Syncfusion Rich Text Editor</h1>';
                 expect(editorObj.innerHTML === expectedPasteHtml).toBe(true);
             });
             const dataTransfer = new DataTransfer();
@@ -4426,6 +4430,76 @@ describe('clipboard Cleanup Module ', () => {
                     expect(textQuickTB).toBeNull();
                     done();
                 }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Bug 983038: Script error throws when copying and pasting in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultUserAgent = navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                `<div id="defaultRTE">
+                    </div>
+                ` });
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+        })
+        afterAll(() => {
+            destroy(rteObj);
+            detach(element);
+            Browser.userAgent = defaultUserAgent;
+        });
+        it(' pasting content in firefox when rte is wrapped in span tag ', (done) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '<!--StartFragment--><span><h1>Welcome </h1></span><!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((rteObj.inputElement.querySelector('h1') as HTMLElement)).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+    
+    describe('Bug 983038: Script error throws when copying and pasting in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultUserAgent = navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                `<span><div id="defaultRTE">
+                    </div></span>
+                ` });
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+        })
+        afterAll(() => {
+            destroy(rteObj);
+            detach(element);
+            Browser.userAgent = defaultUserAgent;
+        });
+        it(' pasting inline span content in firefox when rte is wrapped in span tag ', (done) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '<!--StartFragment--><span>Welcome</span><!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((rteObj.inputElement.textContent.length)).not.toBe(0);
+                done();
             }, 100);
         });
     });

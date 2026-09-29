@@ -368,14 +368,14 @@ export class CellOptionsDialog {
             const td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-left' });
 
             const topTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' }, styles: 'width:100%'
+                attrs: { 'type': 'text' }, className: 'e-de-cell-margin-textbox'
             });
             // topTextBox.setAttribute('aria-label','TopMargin');
             td1.appendChild(topTextBox);
             const td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
 
             const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' }, styles: 'width:100%'
+                attrs: { 'type': 'text' }, className: 'e-de-cell-margin-textbox'
             });
             // leftTextBox.setAttribute('aria-label','LeftMargin');
             td2.appendChild(leftTextBox);
@@ -384,14 +384,14 @@ export class CellOptionsDialog {
             const td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-left' });
 
             const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' }, styles: 'width:100%'
+                attrs: { 'type': 'text' }, className: 'e-de-cell-margin-textbox'
             });
             // bottomTextBox.setAttribute('aria-label','BottomMargin');
             td3.appendChild(bottomTextBox);
             const td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
 
             const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' }, styles: 'width:100%'
+                attrs: { 'type': 'text' }, className: 'e-de-cell-margin-textbox'
             });
             // rightTextBox.setAttribute('aria-label','RightMargin');
             td4.appendChild(rightTextBox);

@@ -170,9 +170,6 @@ export class RibbonSplitButton {
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         splitbutton.cssClass = cssClass.join(SPACE);
         splitbutton.dataBind();
-        splitbutton.beforeOpen = (e: BeforeOpenCloseMenuEventArgs) => {
-            if (item.splitButtonSettings.beforeOpen) { item.splitButtonSettings.beforeOpen.call(this, e); }
-        };
         splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }
         };

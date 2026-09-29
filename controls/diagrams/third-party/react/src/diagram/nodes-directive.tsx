@@ -5,7 +5,7 @@ import { NodeModel } from '@syncfusion/ej2-diagrams';
 /**
  * `NodesDirective` directive represent a nodes of the react diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <NodesDirective>
  * <NodeDirective></NodeDirective>

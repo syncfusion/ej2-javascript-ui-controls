@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-images>e-image',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ImageDirective extends ComplexBase<ImageDirective> {
@@ -24,35 +24,35 @@ export class ImageDirective extends ComplexBase<ImageDirective> {
      * @default 300
      * @asptype double
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Specifies image element id.
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the width of the image.
      * @default 0
      * @asptype double
      */
-    public left: any;
+    public declare left: any;
     /** 
      * Specifies the image source.
      * @default ''
      */
-    public src: any;
+    public declare src: any;
     /** 
      * Specifies the height of the image.
      * @default 0
      * @asptype double
      */
-    public top: any;
+    public declare top: any;
     /** 
      * Specifies the width of the image.
      * @default 400
      * @asptype double
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -68,6 +68,7 @@ export class ImageDirective extends ComplexBase<ImageDirective> {
  */
 @Directive({
     selector: 'e-cell>e-images',
+    standalone: true,
     queries: {
         children: new ContentChildren(ImageDirective)
     },

@@ -5,7 +5,7 @@ import { SheetModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `SheetDirective` represent a sheet of the React Spreadsheet.
  * It must be contained in a Spreadsheet component(`SpreadsheetComponent`).
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <SheetsDirective>
  *    <SheetDirective></SheetDirective>

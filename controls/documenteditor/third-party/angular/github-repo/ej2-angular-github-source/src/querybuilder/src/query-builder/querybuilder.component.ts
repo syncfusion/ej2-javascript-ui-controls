@@ -20,34 +20,28 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childColumns: new ContentChild(ColumnsDirective)
+        childColumns: new ContentChild(ColumnsDirective),
+        headerTemplate: new ContentChild('headerTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class QueryBuilderComponent extends QueryBuilder implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	beforeChange: any;
-	change: any;
-	created: any;
-	dataBound: any;
-	destroyed: any;
-	ruleChange: any;
-	drag: any;
-	dragStart: any;
-	public drop: any;
-    public childColumns: QueryList<ColumnsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare beforeChange: any;
+	declare change: any;
+	declare created: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare ruleChange: any;
+	declare drag: any;
+	declare dragStart: any;
+	public declare drop: any;
+    public declare childColumns: QueryList<ColumnsDirective>;
     public tags: string[] = ['columns'];
-    /** 
-     * Specifies the template for the header with any other widgets.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -83,7 +77,9 @@ export class QueryBuilderComponent extends QueryBuilder implements IComponentBas
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(QueryBuilderComponent.prototype, 'headerTemplate');
+
 

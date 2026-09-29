@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('split-button-theme') {
   .e-split-btn-wrapper {
@@ -20,9 +21,9 @@
       }
 
       &:disabled {
-        border-right-color: $btn-disabled-bgcolor;
+        border-right-color: btn.$btn-disabled-bgcolor;
         @if $skin-name == 'tailwind3' {
-          border-right-color: $btn-disabled-border-color;
+          border-right-color: btn.$btn-disabled-border-color;
         }
       }
 
@@ -42,7 +43,7 @@
         border-right-color: $split-btn-hover-border-color;
 
         &:disabled {
-          border-right-color: $btn-disabled-border-color;
+          border-right-color: btn.$btn-disabled-border-color;
         }
       }
     }
@@ -82,7 +83,7 @@
         }
 
         &:disabled {
-          border-left-color: $btn-disabled-border-color;
+          border-left-color: btn.$btn-disabled-border-color;
           border-right-color: $split-btn-disabled-vertical-border-color;
         }
 
@@ -97,7 +98,7 @@
           border-right-color: $split-btn-hover-vertical-border-color;
 
           &:disabled {
-            border-left-color: $btn-disabled-border-color;
+            border-left-color: btn.$btn-disabled-border-color;
           }
         }
       }
@@ -130,7 +131,7 @@
         }
 
         &:disabled {
-          border-bottom-color: $btn-disabled-border-color;
+          border-bottom-color: btn.$btn-disabled-border-color;
           border-right-color: $split-btn-disabled-vertical-border-color;
         }
       }
@@ -146,7 +147,7 @@
           }
 
           &:disabled {
-            border-bottom-color: $btn-disabled-border-color;
+            border-bottom-color: btn.$btn-disabled-border-color;
           }
         }
       }

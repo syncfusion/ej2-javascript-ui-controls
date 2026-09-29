@@ -10,7 +10,7 @@ export abstract class _PdfCipherParameter {
      * @private
      * @type {boolean}
      */
-    _isPrivate: boolean;
+    _isPrivate: boolean = false;
     constructor(isPrivate: boolean) {
         this._isPrivate = isPrivate;
     }

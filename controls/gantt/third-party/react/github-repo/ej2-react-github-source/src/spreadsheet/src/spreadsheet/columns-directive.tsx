@@ -5,7 +5,7 @@ import { ColumnModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `ColumnDirective` represent a column of the React Spreadsheet.
  * It must be contained in a `SheetDirective`.
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <SheetsDirective>
  *    <SheetDirective>

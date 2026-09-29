@@ -241,6 +241,9 @@ export class Paragraph {
         return buttonElement;
     }
     private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
+        const isAngularModal: boolean = this.container.isModalDialog;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const paragraphDiv: any = this;
         const dropdown: DropDownButton = new DropDownButton({
             items: LineSpacingHelper.getLineSpacingItems(this.localObj),
             iconCss: 'e-de-ctnr-linespacing e-icons',
@@ -249,6 +252,13 @@ export class Paragraph {
             cssClass: this.splitButtonClass,
             beforeItemRender: (args: MenuEventArgs) => {
                 LineSpacingHelper.customizeLineSpacingItem(args, this.appliedLineSpacing);
+            },
+            beforeOpen: function(this: DropDownButton, e: any): void{
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
+                    paragraphDiv.container.movePopupToCdkOverlay(dropDownButtonEl, popupEl);
+                }
             }
         });
         dropdown.appendTo(button);
@@ -258,6 +268,8 @@ export class Paragraph {
 
     private createNumberListDropButton(iconcss: string, button: HTMLElement): void {
         this.numberListDropDiv = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const paragraphDiv: any = this;
         this.numberListDropUlTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -280,7 +292,9 @@ export class Paragraph {
             target: this.numberListDropDiv,
             iconCss: iconcss,
             cssClass: this.splitButtonClass,
-            beforeOpen: this.numberSplitButtonBeforeOpen.bind(this),
+            beforeOpen: function (this: SplitButton, e: any): void {
+                paragraphDiv.numberSplitButtonBeforeOpen(e, this);
+            },
             beforeClose: this.numberSplitButtonBeforeClose.bind(this)
         };
         this.numberedListBtn = new SplitButton(menuOptions);
@@ -295,7 +309,8 @@ export class Paragraph {
         this.numberListDropDiv.style.display = 'none';
         this.removeSelectedList();
     }
-    private numberSplitButtonBeforeOpen(): void {
+    private numberSplitButtonBeforeOpen( e: any,  splitButton?: any): void {
+        const isAngularModal: boolean = this.container.isModalDialog;
         this.numberListDropDiv.style.display = 'block';
         let levelPattern: string = 'None';
         if (!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
@@ -314,6 +329,11 @@ export class Paragraph {
             }
         }
         this.updateSelectedNumberedListType(levelPattern);
+        if (isAngularModal) {
+            const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+            const buttonEl: HTMLElement = splitButton.element as HTMLElement;
+            this.container.movePopupToCdkOverlay(buttonEl, popupEl);
+        }
     }
     private updateSelectedBulletListType(listText: string): void {
         // Create a map of bullet elements
@@ -375,6 +395,9 @@ export class Paragraph {
         this.applyBullet(this.appliedBulletStyle);
     }
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
+        const isAngularModal: boolean = this.container.isModalDialog;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const paragraphDiv: any = this;
         const div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
         const ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
@@ -399,15 +422,22 @@ export class Paragraph {
             target: div,
             iconCss: iconcss,
             cssClass: this.splitButtonClass,
-            beforeOpen: (): void => {
+            beforeOpen: function (this: SplitButton, e: any): void {
                 div.style.display = 'block';
-                if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId) ||
-                    this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
-                    this.updateSelectedBulletListType(this.documentEditor.selectionModule.paragraphFormat.listText);
+                if (isNullOrUndefined(paragraphDiv.documentEditor.selectionModule.paragraphFormat.listId) ||
+                    paragraphDiv.documentEditor.selectionModule.paragraphFormat.listId === -1) {
+                    paragraphDiv.updateSelectedBulletListType(paragraphDiv.documentEditor.selectionModule.paragraphFormat.listText);
                 } else {
-                    const startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ?
-                        this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
-                    this.updateSelectedBulletListType(startParagraph.paragraphFormat.listFormat.listLevel.numberFormat);
+                    const startParagraph: ParagraphWidget =
+                        paragraphDiv.documentEditor.selectionModule.isForward
+                            ? paragraphDiv.documentEditor.selectionModule.start.paragraph
+                            : paragraphDiv.documentEditor.selectionModule.end.paragraph;
+                    paragraphDiv.updateSelectedBulletListType(startParagraph.paragraphFormat.listFormat.listLevel.numberFormat);
+                }
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const buttonEl: HTMLElement = this.element as HTMLElement;
+                    paragraphDiv.container.movePopupToCdkOverlay(buttonEl, popupEl);
                 }
             },
             beforeClose: (): void => {
@@ -470,6 +500,7 @@ export class Paragraph {
                 ${this.localObj.getConstant('Manage Styles')}...</span>`;
             }
         );
+        this.style.isAngular = this.container.isModalDialog;
         this.style.appendTo(selectElement);
         this.style.focus = (): void => {
             this.isRetrieving = false;

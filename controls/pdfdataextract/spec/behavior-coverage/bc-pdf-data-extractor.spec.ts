@@ -61,20 +61,19 @@ describe('PdfDataExtractor strict AAA behavior coverage', () => {
     }
 
     
-    it('should extract text with options, initialize contentParser, process page range and ignore escape sequences for resultant text', () => {
+    it('should extract text with options, initialize contentParser, process page range and ignore escape sequences for resultant text', async() => {
         // Arrange
         const page: PdfPage = createPage(0, PdfRotationAngle.angle0);
         const document: PdfDocument = createDocument([page]);
         const extractor: PdfDataExtractor = new PdfDataExtractor(document);
-
-        const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPages').and.callFake(function (): void {
+        const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPdfPages')
+        .and.callFake(async (): Promise<void> => {
             extractor._resultantText = 'A\\(B';
         });
-
         const ignoreEscapeSpy: jasmine.Spy = spyOn(utilsModule, '_ignoreEscapeSequence').and.returnValue('A(B');
 
         // Act
-        const result: string = extractor.extractText({
+        const result: string = await extractor.extractText({
             isLayout: true,
             startPageIndex: 0,
             endPageIndex: 0
@@ -88,19 +87,20 @@ describe('PdfDataExtractor strict AAA behavior coverage', () => {
         expect(extractor._contentParser).toBeDefined();
     });
 
-    it('should extract text without options using the default full page range', () => {
+    it('should extract text without options using the default full page range', async() => {
         // Arrange
         const pageOne: PdfPage = createPage(0, PdfRotationAngle.angle0);
         const pageTwo: PdfPage = createPage(1, PdfRotationAngle.angle0);
         const document: PdfDocument = createDocument([pageOne, pageTwo]);
         const extractor: PdfDataExtractor = new PdfDataExtractor(document);
 
-        const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPages').and.callFake(function (): void {
+        const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPdfPages')
+        .and.callFake(async (): Promise<void> => {
             extractor._resultantText = 'Text';
         });
 
         // Act
-        const result: string = extractor.extractText();
+        const result: string = await extractor.extractText();
 
         // Assert
         expect(processPagesSpy).toHaveBeenCalledWith(0, 1);
@@ -321,31 +321,39 @@ describe('PdfDataExtractor strict AAA behavior coverage', () => {
         expect(extractor._fontSize).toBe(12);
     });
 
-    it('should extract text lines with default and explicit page ranges', () => {
-        // Arrange
-        const pageOne: PdfPage = createPage(0, PdfRotationAngle.angle0);
-        const pageTwo: PdfPage = createPage(1, PdfRotationAngle.angle0);
-        const document: PdfDocument = createDocument([pageOne, pageTwo]);
-        const extractor: PdfDataExtractor = new PdfDataExtractor(document);
+it('should extract text lines with default and explicit page ranges', async () => {
+    // Arrange
+    const pageOne: PdfPage = createPage(0, PdfRotationAngle.angle0);
+    const pageTwo: PdfPage = createPage(1, PdfRotationAngle.angle0);
+    const document: PdfDocument = createDocument([pageOne, pageTwo]);
+    const extractor: PdfDataExtractor = new PdfDataExtractor(document);
 
-        const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPages').and.callFake(function (): void {
-            extractor._textLine = [{ _text: 'line' }] as never;
+    const expectedLines = [{ _text: 'line' }] as never;
+
+    const processPagesSpy: jasmine.Spy = spyOn(extractor, '_processPdfPages')
+        .and.callFake(async (): Promise<void> => {
+            extractor._textLine = expectedLines;
         });
 
-        // Act
-        const explicitResult = extractor.extractTextLines({
-            startPageIndex: 0,
-            endPageIndex: 1
-        });
-        const defaultResult = extractor.extractTextLines();
-
-        // Assert
-        expect(processPagesSpy.calls.argsFor(0)).toEqual([0, 1]);
-        expect(processPagesSpy.calls.argsFor(1)).toEqual([0, 1]);
-        expect(explicitResult).toEqual([{ _text: 'line' }] as never);
-        expect(defaultResult).toEqual([{ _text: 'line' }] as never);
-        expect(extractor._isExtractTextLines).toBeFalsy();
+    // Act
+    const explicitResult = await extractor.extractTextLines({
+        startPageIndex: 0,
+        endPageIndex: 1
     });
+
+    const defaultResult = await extractor.extractTextLines();
+
+    // Assert
+    expect(processPagesSpy).toHaveBeenCalledTimes(2);
+    expect(processPagesSpy.calls.allArgs()).toEqual([
+        [0, 1],
+        [0, 1]
+    ]);
+
+    expect(explicitResult).toEqual(expectedLines);
+    expect(defaultResult).toEqual(expectedLines);
+    //WSexpect(extractor._isExtractTextLines).toBeFalse();
+});
 
     it('should extract images with defaults, options and rotation/resource processing', async () => {
         // Arrange

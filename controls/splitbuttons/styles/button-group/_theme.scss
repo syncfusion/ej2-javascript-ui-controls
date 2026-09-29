@@ -1,4 +1,7 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
+@use '@syncfusion/ej2-buttons/styles/button/mixin' as *;
+@use 'group-button-mixin' as *;
 
 @include export-module('button-group-theme') {
 /* stylelint-disable */
@@ -6,7 +9,7 @@
   .e-css.e-btn-group {
     &:not(.e-outline) {
       @if $skin-name != 'Material3' {
-        box-shadow: $btn-box-shadow;
+        box-shadow: btn.$btn-box-shadow;
       }
     }
 
@@ -23,7 +26,7 @@
     @if $skin-name == 'Material3' {
       .e-btn:focus-visible,
       input:focus-visible+label.e-btn { // only for keybord
-        box-shadow: $btn-keyboard-focus-box-shadow !important;
+        box-shadow: btn.$btn-keyboard-focus-box-shadow !important;
         z-index: 1;
 
         &.e-primary,
@@ -31,19 +34,19 @@
         &.e-info,
         &.e-warning,
         &.e-danger {
-          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow !important;
           z-index: 1;
         }
 
         &.e-outline {
-          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          box-shadow: btn.$btn-keyboard-focus-box-shadow !important;
           z-index: 1;
           &.e-primary,
           &.e-success,
           &.e-info,
           &.e-warning,
           &.e-danger {
-            box-shadow: $btn-keyboard-focus-box-shadow !important;
+            box-shadow: btn.$btn-keyboard-focus-box-shadow !important;
             z-index: 1;
           }
         }
@@ -53,7 +56,7 @@
   @if $skin-name == 'fluent2' {
     .e-btn:focus-visible,
     input:focus-visible+label.e-btn { // only for keybord
-      box-shadow: $btn-keyboard-focus-box-shadow !important;
+      box-shadow: btn.$btn-keyboard-focus-box-shadow !important;
     }
 
     .e-outline.e-btn:active,
@@ -72,7 +75,7 @@
         box-shadow: none;
       }
       @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-        border-color: $btn-focus-bgcolor;
+        border-color: btn.$btn-focus-bgcolor;
       }
       outline-color: $btn-grp-outline-focus-color;
       @if $skin-name == 'fabric' {
@@ -84,22 +87,22 @@
       }
 
       @if $skin-name == 'tailwind3' {
-        background: $btn-bgcolor;
-        color: $btn-color;
-        box-shadow: $btn-focus-box-shadow;
+        background: btn.$btn-bgcolor;
+        color: btn.$btn-color;
+        box-shadow: btn.$btn-focus-box-shadow;
       }
 
       &.e-primary {
         @include primary-focus;
         @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-primary-focus-bgcolor;
+          border-color: btn.$btn-primary-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-primary-color;
         @if $skin-name == 'tailwind3' {
-          background: $btn-primary-bgcolor;
-          color: $btn-primary-color;
-          box-shadow: $btn-focus-box-shadow;
+          background: btn.$btn-primary-bgcolor;
+          color: btn.$btn-primary-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
       }
 
@@ -107,13 +110,13 @@
         @include success-focus;
         @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-success-focus-bgcolor;
+          border-color: btn.$btn-success-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-success-color;
         @if $skin-name == 'tailwind3' {
-          background: $btn-success-bgcolor;
-          color: $btn-success-color;
-          box-shadow: $btn-focus-box-shadow;
+          background: btn.$btn-success-bgcolor;
+          color: btn.$btn-success-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
       }
 
@@ -121,13 +124,13 @@
         @include info-focus;
         @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-info-focus-bgcolor;
+          border-color: btn.$btn-info-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-info-color;
         @if $skin-name == 'tailwind3' {
-          background: $btn-info-bgcolor;
-          color: $btn-info-color;
-          box-shadow: $btn-focus-box-shadow;
+          background: btn.$btn-info-bgcolor;
+          color: btn.$btn-info-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
       }
 
@@ -135,13 +138,13 @@
         @include warning-focus;
         @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-warning-focus-bgcolor;
+          border-color: btn.$btn-warning-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-warning-color;
         @if $skin-name == 'tailwind3' {
-          background: $btn-warning-bgcolor;
-          color: $btn-warning-color;
-          box-shadow: $btn-focus-box-shadow;
+          background: btn.$btn-warning-bgcolor;
+          color: btn.$btn-warning-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
       }
 
@@ -149,13 +152,13 @@
         @include danger-focus;
         @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-danger-focus-bgcolor;
+          border-color: btn.$btn-danger-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-danger-color;
         @if $skin-name == 'tailwind3' {
-          background: $btn-danger-bgcolor;
-          color: $btn-danger-color;
-          box-shadow: $btn-focus-box-shadow;
+          background: btn.$btn-danger-bgcolor;
+          color: btn.$btn-danger-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
       }
 
@@ -171,24 +174,24 @@
         @include outline-focus;
         @include outline-box-shadow-theme;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          border-color: $btn-outline-focus-bgcolor;
+          border-color: btn.$btn-outline-focus-bgcolor;
         }
         @if $skin-name == 'tailwind3' {
           background: $transparent;
-          color: $btn-color;
-          box-shadow: $btn-focus-box-shadow;
+          color: btn.$btn-color;
+          box-shadow: btn.$btn-focus-box-shadow;
         }
 
         &.e-primary {
           @include outline-primary-focus;
           @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-color: $btn-outline-primary-focus-bgcolor;
+            border-color: btn.$btn-outline-primary-focus-bgcolor;
           }
           @if $skin-name == 'tailwind3' {
             background: $transparent;
-            color: $btn-primary-bgcolor;
-            box-shadow: $btn-focus-box-shadow;
+            color: btn.$btn-primary-bgcolor;
+            box-shadow: btn.$btn-focus-box-shadow;
           }
         }
 
@@ -196,12 +199,12 @@
           @include outline-success-focus;
           @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-color: $btn-success-focus-bgcolor;
+            border-color: btn.$btn-success-focus-bgcolor;
           }
           @if $skin-name == 'tailwind3' {
             background: $transparent;
-            color: $btn-success-bgcolor;
-            box-shadow: $btn-focus-box-shadow;
+            color: btn.$btn-success-bgcolor;
+            box-shadow: btn.$btn-focus-box-shadow;
           }
         }
 
@@ -209,12 +212,12 @@
           @include outline-info-focus;
           @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-color: $btn-info-hover-bgcolor;
+            border-color: btn.$btn-info-hover-bgcolor;
           }
           @if $skin-name == 'tailwind3' {
             background: $transparent;
-            color: $btn-info-bgcolor;
-            box-shadow: $btn-focus-box-shadow;
+            color: btn.$btn-info-bgcolor;
+            box-shadow: btn.$btn-focus-box-shadow;
           }
         }
 
@@ -222,12 +225,12 @@
           @include outline-warning-focus;
           @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-color: $btn-warning-hover-bgcolor;
+            border-color: btn.$btn-warning-hover-bgcolor;
           }
           @if $skin-name == 'tailwind3' {
             background: $transparent;
-            color: $btn-warning-bgcolor;
-            box-shadow: $btn-focus-box-shadow;
+            color: btn.$btn-warning-bgcolor;
+            box-shadow: btn.$btn-focus-box-shadow;
           }
         }
 
@@ -235,12 +238,12 @@
           @include outline-danger-focus;
           @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-color: $btn-danger-hover-bgcolor;
+            border-color: btn.$btn-danger-hover-bgcolor;
           }
           @if $skin-name == 'tailwind3' {
             background: $transparent;
-            color: $btn-danger-bgcolor;
-            box-shadow: $btn-focus-box-shadow;
+            color: btn.$btn-danger-bgcolor;
+            box-shadow: btn.$btn-focus-box-shadow;
           }
         }
       }
@@ -314,87 +317,87 @@
     input:disabled+label.e-btn {
       @include disabled;
       @if $skin-name != 'bootstrap4' {
-        border-color: $btn-border-color;
+        border-color: btn.$btn-border-color;
       }
 
       &.e-primary {
         @include primary-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-primary-border-color;
+          border-color: btn.$btn-primary-border-color;
         }
       }
 
       &.e-success {
         @include success-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-success-border-color;
+          border-color: btn.$btn-success-border-color;
         }
       }
 
       &.e-info {
         @include info-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-info-border-color;
+          border-color: btn.$btn-info-border-color;
         }
       }
 
       &.e-warning {
         @include warning-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-warning-border-color;
+          border-color: btn.$btn-warning-border-color;
         }
       }
 
       &.e-danger {
         @include danger-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-danger-border-color;
+          border-color: btn.$btn-danger-border-color;
         }
       }
 
       &.e-link {
         @include link-disabled;
         @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
-          border-color: $btn-link-border-color;
+          border-color: btn.$btn-link-border-color;
         }
       }
 
       &.e-outline {
         @include outline-disabled;
-        border-color: $btn-outline-border-color;
+        border-color: btn.$btn-outline-border-color;
 
         &.e-primary {
           @include outline-primary-disabled;
           @if $skin-name != 'tailwind3' {
-            border-color: $btn-primary-bgcolor;
+            border-color: btn.$btn-primary-bgcolor;
           }
         }
 
         &.e-success {
           @include outline-success-disabled;
           @if $skin-name != 'tailwind3' {
-            border-color: $btn-success-bgcolor;
+            border-color: btn.$btn-success-bgcolor;
           }
         }
 
         &.e-info {
           @include outline-info-disabled;
           @if $skin-name != 'tailwind3' {
-            border-color: $btn-info-bgcolor;
+            border-color: btn.$btn-info-bgcolor;
           }
         }
 
         &.e-warning {
           @include outline-warning-disabled;
           @if $skin-name != 'tailwind3' {
-            border-color: $btn-warning-bgcolor;
+            border-color: btn.$btn-warning-bgcolor;
           }
         }
 
         &.e-danger {
           @include outline-danger-disabled;
           @if $skin-name != 'tailwind3' {
-            border-color: $btn-danger-bgcolor;
+            border-color: btn.$btn-danger-bgcolor;
           }
         }
       }
@@ -415,26 +418,26 @@
       }
 
       .e-btn:hover {
-        border-color: $btn-border-color;
+        border-color: btn.$btn-border-color;
 
         &.e-primary {
-          border-color: $btn-primary-bgcolor;
+          border-color: btn.$btn-primary-bgcolor;
         }
 
         &.e-success {
-          border-color: $btn-success-bgcolor;
+          border-color: btn.$btn-success-bgcolor;
         }
 
         &.e-info {
-          border-color: $btn-info-bgcolor;
+          border-color: btn.$btn-info-bgcolor;
         }
 
         &.e-warning {
-          border-color: $btn-warning-bgcolor;
+          border-color: btn.$btn-warning-bgcolor;
         }
 
         &.e-danger {
-          border-color: $btn-danger-bgcolor;
+          border-color: btn.$btn-danger-bgcolor;
         }
       }
     }

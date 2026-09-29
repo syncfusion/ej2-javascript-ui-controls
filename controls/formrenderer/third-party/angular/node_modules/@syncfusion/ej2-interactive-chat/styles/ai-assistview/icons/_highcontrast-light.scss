@@ -1,0 +1,63 @@
+@use '../variables' as *;
+@include export-module('aiassist-highcontrast-icons') {
+  .e-assist-send::before {
+    content: '\e816';
+  }
+  .e-assistview-icon::before {
+    content: '\e9d5';
+  }
+  .e-assist-user::before {
+    content: '\e9db';
+  }
+  .e-assist-like::before {
+    content: '\e9d7';
+  }
+  .e-assist-dislike::before {
+    content: '\e9d8';
+  }
+  .e-assist-copy::before {
+    content: '\e33d';
+  }
+  .e-assist-edit::before {
+    content: '\e338';
+  }
+  .e-assist-check::before {
+    content: '\e963';
+  }
+  .e-assist-stop::before {
+    content: '\e9ec';
+  }
+  .e-assist-like-filled::before {
+    content: '\e9ea';
+  }
+  .e-assist-dislike-filled::before {
+    content: '\e9eb';
+  }
+  .e-assist-clear-icon::before {
+    content: '\e953';
+  }
+  .e-assist-attachment-icon::before {
+    content: '\e1af';
+  }
+  .e-assist-file-format-icon::before {
+    content: '\e1b1';
+  }
+  .e-assist-circle-close::before {
+    content: '\e973';
+  }
+  .e-assist-scroll-down::before {
+    content: '\e305';
+  }
+  .e-assist-audio::before {
+    content: '\e940';
+  }
+  .e-assist-regenerate::before {
+    content: '\e948';
+  }
+  .e-assist-next::before {
+    content: '\e653';
+  }
+  .e-assist-previous::before {
+    content: '\e654';
+  }
+}

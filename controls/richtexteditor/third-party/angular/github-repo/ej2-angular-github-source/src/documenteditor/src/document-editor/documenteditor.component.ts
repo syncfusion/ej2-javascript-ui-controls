@@ -20,43 +20,43 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class DocumentEditorComponent extends DocumentEditor implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionComplete: any;
-	afterFormFieldFill: any;
-	beforeAcceptRejectChanges: any;
-	beforeCommentAction: any;
-	beforeFileOpen: any;
-	beforeFormFieldFill: any;
-	beforePaneSwitch: any;
-	beforePaste: any;
-	commentBegin: any;
-	commentDelete: any;
-	commentEnd: any;
-	contentChange: any;
-	contentControl: any;
-	created: any;
-	customContextMenuBeforeOpen: any;
-	customContextMenuSelect: any;
-	destroyed: any;
-	documentChange: any;
-	keyDown: any;
-	requestNavigate: any;
-	searchResultsChange: any;
-	selectionChange: any;
-	serviceFailure: any;
-	trackChange: any;
-	unsupportedBorderStyleClick: any;
-	viewChange: any;
-	zoomFactorChange: any;
-	beforeXmlHttpRequestSend: any;
-	public documentLoadFailed: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionComplete: any;
+	declare afterFormFieldFill: any;
+	declare beforeAcceptRejectChanges: any;
+	declare beforeCommentAction: any;
+	declare beforeFileOpen: any;
+	declare beforeFormFieldFill: any;
+	declare beforePaneSwitch: any;
+	declare beforePaste: any;
+	declare commentBegin: any;
+	declare commentDelete: any;
+	declare commentEnd: any;
+	declare contentChange: any;
+	declare contentControl: any;
+	declare created: any;
+	declare customContextMenuBeforeOpen: any;
+	declare customContextMenuSelect: any;
+	declare destroyed: any;
+	declare documentChange: any;
+	declare keyDown: any;
+	declare requestNavigate: any;
+	declare searchResultsChange: any;
+	declare selectionChange: any;
+	declare serviceFailure: any;
+	declare trackChange: any;
+	declare unsupportedBorderStyleClick: any;
+	declare viewChange: any;
+	declare zoomFactorChange: any;
+	declare beforeXmlHttpRequestSend: any;
+	public declare documentLoadFailed: any;
 
 
 
@@ -304,7 +304,8 @@ export class DocumentEditorComponent extends DocumentEditor implements IComponen
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

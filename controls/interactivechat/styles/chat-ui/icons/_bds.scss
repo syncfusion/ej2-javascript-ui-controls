@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('chatui-bds-icons') {
   .e-chat-send::before {
     content: '\e71d';

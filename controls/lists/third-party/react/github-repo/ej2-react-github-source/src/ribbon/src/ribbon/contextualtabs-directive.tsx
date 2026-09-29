@@ -5,7 +5,7 @@ import { RibbonContextualTabSettingsModel } from '@syncfusion/ej2-ribbon';
 /**
  * `RibbonContextualTabDirective` represent a contextual tab of the React Ribbon. 
  * It must be contained in a Ribbon component(`RibbonComponent`). 
- * ```tsx
+ * ```ts
  * <RibbonComponent>
  *   <RibbonContextualTabsDirective>
  *     <RibbonContextualTabDirective></RibbonContextualTabDirective>

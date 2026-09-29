@@ -14,7 +14,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ejs-pivotfieldlist` represents the VueJS PivotFieldList Component.
- * ```vue
+ * ```
  * <ejs-pivotfieldlist></ejs-pivotfieldlist>
  * ```
  */

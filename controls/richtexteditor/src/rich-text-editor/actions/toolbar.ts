@@ -1,4 +1,4 @@
-import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents, getComponent  } from '@syncfusion/ej2-base';
+import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents, getComponent, initializeTelemetryFeature  } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { Toolbar as tool, OverflowMode, ItemModel } from '@syncfusion/ej2-navigations';
@@ -50,6 +50,7 @@ export class Toolbar {
     private tools: { [key: string]: IToolsItems } = {};
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Toolbar', 'RichTextEditor');
         this.parent = parent;
         this.isDestroyed = false;
         this.isToolbar = false;

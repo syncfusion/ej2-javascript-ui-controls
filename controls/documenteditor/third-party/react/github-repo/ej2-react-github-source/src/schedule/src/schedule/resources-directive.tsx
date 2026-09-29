@@ -5,7 +5,7 @@ import { ResourcesModel } from '@syncfusion/ej2-schedule';
 /**
  * `ResourcesDirective` represent a resource of the react Schedule. 
  * It must be contained in a Schedule component(`SchduleComponent`). 
- * ```tsx
+ * ```ts
  * <ScheduleComponent>
  * <ResourcesDirective>
  * <ResourceDirective field='RoomId' name='Rooms'></ResourceDirective>

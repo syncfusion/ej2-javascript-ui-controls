@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-gantt>e-edit-dialog-fields>e-edit-dialog-field',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class EditDialogFieldDirective extends ComplexBase<EditDialogFieldDirective> {
@@ -41,22 +41,22 @@ export class EditDialogFieldDirective extends ComplexBase<EditDialogFieldDirecti
      * * `Custom` - Represents the custom column editor tab.
      * @default null
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the configuration properties for Grid, Rich Text Editor (RTE), or TreeGrid controls within the Gantt edit dialog.
      * @default null
      */
-    public additionalParams: any;
+    public declare additionalParams: any;
     /** 
      * Specifies the edited column fields to be placed inside the tab.
      * @default null
      */
-    public fields: any;
+    public declare fields: any;
     /** 
      * Defines header text of tab item.
      * @default null
      */
-    public headerText: any;
+    public declare headerText: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -72,6 +72,7 @@ export class EditDialogFieldDirective extends ComplexBase<EditDialogFieldDirecti
  */
 @Directive({
     selector: 'ejs-gantt>e-edit-dialog-fields',
+    standalone: true,
     queries: {
         children: new ContentChildren(EditDialogFieldDirective)
     },

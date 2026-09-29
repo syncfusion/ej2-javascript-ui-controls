@@ -2,6 +2,7 @@ import { _PdfBaseStream } from '../../base-stream';
 import { _PdfDecryptStream } from '../../decrypt-stream';
 import { _bytesToString, _stringToBytes } from '../../utils';
 import { _AdvancedEncryptionBaseCipher, _Cipher } from './cipher';
+import { _AdvancedEncryptionGcmCipher } from './advanced-encryption-gcm-cipher';
 /**
  * Helper that binds string and stream cipher implementations for internal use.
  *
@@ -55,6 +56,10 @@ export class _CipherTransform {
      * @returns {string} The encrypted string as PDF bytes.
      */
     encryptString(s: string): string {
+        if (this._stringCipher instanceof _AdvancedEncryptionGcmCipher) {
+            const data: Uint8Array = this._stringCipher._encrypt(_stringToBytes(s, false, true) as Uint8Array);
+            return _bytesToString(data);
+        }
         if (this._stringCipher instanceof _AdvancedEncryptionBaseCipher) {
             const length: number = s.length;
             const pad: number = 16 - (length % 16);

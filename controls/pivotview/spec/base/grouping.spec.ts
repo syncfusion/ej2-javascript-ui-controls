@@ -156,7 +156,7 @@ describe('Group By Date feature', () => {
                 done();
             }, 100);
         });
-        it('Date grouping with empty string - initial', (done: Function) => {
+        it('Date grouping with empty string - initial', () => {
             pivotGridObj.dataSourceSettings = {
                 dataSource: [
                     {
@@ -202,6 +202,8 @@ describe('Group By Date feature', () => {
                     }
                 ]
             }
+        });
+        it('Date grouping with empty string - enable grouping bar', (done: Function) => {
             setTimeout(() => {
                 pivotGridObj.showGroupingBar = true;
                 done();
@@ -209,7 +211,7 @@ describe('Group By Date feature', () => {
         });
         it('Date grouping with empty string - opening filter', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-pv-filtered')[0] as HTMLButtonElement).click();
+                (pivotGridObj.element.querySelector('[data-uid="PeriodStartDate"] .e-pv-filtered') as HTMLButtonElement).click();
                 done();
             }, 500);
         });

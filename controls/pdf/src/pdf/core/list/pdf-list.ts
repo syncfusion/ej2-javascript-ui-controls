@@ -1,5 +1,6 @@
 import { PdfListMarkerAlignment, PdfLayoutType, PdfNumberStyle, PdfTextAlignment, PdfUnorderedListStyle } from '../enumerator';
 import { _PdfStringLayoutResult, _PdfStringLayouter } from '../fonts/string-layouter';
+import { PdfImage } from '../graphics/images/pdf-image';
 import { PdfFont, PdfFontFamily, PdfStandardFont } from '../fonts/pdf-standard-font';
 import { PdfStringFormat } from '../fonts/pdf-string-format';
 import { PdfBrush, PdfGraphics, PdfPen } from '../graphics/pdf-graphics';
@@ -10,7 +11,24 @@ import { PdfListItem, PdfListItemCollection } from './pdf-list-item';
 import { PdfDocument } from '../pdf-document';
 import { _convertNumber } from './../utils';
 import { Point, Size, Rectangle } from './../pdf-type';
-
+import { PdfBitmap } from '../graphics/images/pdf-bitmap';
+/**
+ * Represents the properties of the image marker with optional marker size for the unordered list.
+ */
+export type PdfImageMarker = {
+    /**
+     * The image to be used as marker for the unordered list.
+     */
+    image: PdfBitmap;
+    /**
+     * Optional marker size for the image marker.
+     */
+    size?: Size;
+};
+/**
+ * Base type for all PDF markers. Specialized marker types such as image, text, and template markers.
+ */
+export type PdfUnorderMarker = PdfImageMarker;
 /**
  * Represents base class for lists.
  * ```typescript
@@ -276,7 +294,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get font(): PdfFont {
         return this._font;
@@ -333,7 +351,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get stringFormat(): PdfStringFormat {
         return this._stringFormat;
@@ -365,7 +383,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set stringFormat(value: PdfStringFormat) {
         this._stringFormat = value;
@@ -393,7 +411,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get indent(): number {
         return this._indent;
@@ -421,7 +439,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set indent(value: number) {
         this._indent = value;
@@ -449,7 +467,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get textIndent(): number {
         return this._textIndent;
@@ -477,7 +495,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set textIndent(value: number) {
         this._textIndent = value;
@@ -505,7 +523,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get delimiter(): string {
         return this._delimiter;
@@ -533,14 +551,66 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set delimiter(value: string) {
         this._delimiter = value;
     }
+    /**
+     * Gets the suffix string appended to the list marker.
+     *
+     * @returns {string} The suffix string appended to the list marker.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Assign the array of string items
+     * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+     * // Add the items to list item collection by passing the string array
+     * let items: PdfListItemCollection = new PdfListItemCollection(products);
+     * // Create a new ordered list
+     * let list: PdfOrderedList = new PdfOrderedList(items);
+     * // Set the suffix for the ordered list marker
+     * list.suffix = ')';
+     * // Get the suffix used in the ordered list marker
+     * let suffix: string = list.suffix;
+     * // Draw the ordered list on the page
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
     get suffix(): string {
         return this._suffix;
     }
+    /**
+     * Sets the suffix string appended to the list marker.
+     *
+     * @param {string} value The suffix string to append to the list marker.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Assign the array of string items
+     * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+     * // Add the items to list item collection by passing the string array
+     * let items: PdfListItemCollection = new PdfListItemCollection(products);
+     * // Create a new ordered list
+     * let list: PdfOrderedList = new PdfOrderedList(items);
+     * // Set the suffix for the ordered list marker
+     * list.suffix = ')';
+     * // Draw the ordered list on the page
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
     set suffix(value: string) {
         this._suffix = value;
     }
@@ -566,7 +636,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get enableHierarchy(): boolean {
         return this._enableHierarchy;
@@ -594,7 +664,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set enableHierarchy(value: boolean) {
         this._enableHierarchy = value;
@@ -621,7 +691,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get alignment(): PdfListMarkerAlignment {
         return this._alignment;
@@ -649,7 +719,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set alignment(value: PdfListMarkerAlignment) {
         this._alignment = value;
@@ -677,7 +747,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     get items(): PdfListItemCollection {
         return this._itemCollection;
@@ -701,7 +771,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      */
     set items(value: PdfListItemCollection) {
         this._itemCollection = value;
@@ -732,7 +802,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      *
      * @param {PdfGraphics} graphics The graphics context on which to draw the list.
      * @param {Point} location The (x, y) coordinates where the list will be drawn.
@@ -757,7 +827,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
      * @param {Point} location The (x, Y) coordinates where the list will be drawn.
@@ -787,7 +857,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
      * @param {Point} location The (x, y) coordinates where the list will be drawn.
@@ -813,7 +883,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
      * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
@@ -843,7 +913,7 @@ export abstract class PdfList {
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
-     * ````
+     * ```
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
      * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
@@ -932,7 +1002,7 @@ export abstract class PdfList {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export class PdfOrderedList extends PdfList {
     _style: PdfNumberStyle;
@@ -1246,7 +1316,7 @@ export class PdfOrderedList extends PdfList {
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
- * ````
+ * ```
  */
 export class PdfUnorderedList extends PdfList {
     /** Initialize a style for unordered list.
@@ -1254,6 +1324,99 @@ export class PdfUnorderedList extends PdfList {
      * @private
      */
     _style: PdfUnorderedListStyle;
+    /** The image used as the marker for unordered list items.
+     *
+     * @private
+     * @type {PdfImage}
+     */
+    _imageMarker: PdfImage;
+    /**
+     * Holds the explicit image marker size when provided.
+     *
+     * @private
+     * @type {Size}
+     */
+    _imageMarkerSize: Size = { width: 0, height: 0};
+    /**
+     * Indicates whether image marker size was explicitly provided.
+     *
+     * @private
+     * @type {boolean}
+     */
+    _hasImageMarkerSize: boolean = false;
+    /**
+     * The custom marker used for the unordered list items.
+     *
+     * @private
+     * @type {PdfUnorderMarker}
+     */
+    _marker: PdfUnorderMarker;
+    /**
+     * Sets the custom marker for the unordered list.
+     *
+     * @param {PdfUnorderMarker} marker The custom marker settings for specifying image, text or template as unordered list markers.
+     * @returns {void} This method does not return a value.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Define the items in the unordered list
+     * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+     * // Create an instance of list item collection by passing the string array
+     * let items: PdfListItemCollection = new PdfListItemCollection(products);
+     * // Create an image marker for the unordered list
+     * let image: PdfBitmap = new PdfBitmap(imageData);
+     * // Initialize an instance of unordered list with item collection
+     * let list: PdfUnorderedList = new PdfUnorderedList(items);
+     * // Set the image marker with the specified marker size
+     * list.setMarker({image: image, size: {width: 10, height: 10}});
+     * // Draw the unordered list on the page
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public setMarker(marker: PdfUnorderMarker): void {
+        if (marker === null || typeof marker === 'undefined') {
+            throw new Error('Marker cannot be null or undefined.');
+        }
+        if (marker.image !== null && typeof marker.image !== 'undefined') {
+            this._imageMarker = marker.image;
+            if (marker.size !== null && typeof marker.size !== 'undefined') {
+                this._imageMarkerSize = marker.size;
+                this._hasImageMarkerSize = true;
+            } else {
+                this._imageMarkerSize = { width: 0, height: 0 };
+                this._hasImageMarkerSize = false;
+            }
+        }
+        this._marker = marker;
+    }
+    /** Gets the resolved image marker size.
+     *
+     * @private
+     * @param {PdfFont} markerFont The marker font used as fallback for marker size.
+     * @returns {number[]} The resolved marker size as [width, height].
+     */
+    _calculateMarkerSize(markerFont: PdfFont): number[] {
+        let width: number = markerFont.size;
+        let height: number = markerFont.size;
+        if (this._hasImageMarkerSize) {
+            width = this._imageMarkerSize.width;
+            height = this._imageMarkerSize.height;
+        }
+        if (!Number.isFinite(width) || width <= 0) {
+            width = markerFont.size;
+        }
+        if (!Number.isFinite(height) || height <= 0) {
+            height = markerFont.size;
+        }
+        this._size = [width, height];
+        return this._size;
+    }
     public constructor()
     /** Initialize a new `PdfUnorderedList` instance with item collection.
      *
@@ -1334,7 +1497,9 @@ export class PdfUnorderedList extends PdfList {
             style?: PdfUnorderedListStyle,
             delimiter?: string,
             suffix?: string,
-            alignment?: PdfListMarkerAlignment})
+            alignment?: PdfListMarkerAlignment,
+            marker?: PdfUnorderMarker
+        })
     public constructor(items?: PdfListItemCollection,
                        settings?: {font?: PdfFont,
                            format?: PdfStringFormat,
@@ -1345,7 +1510,9 @@ export class PdfUnorderedList extends PdfList {
                            style?: PdfUnorderedListStyle,
                            delimiter?: string,
                            suffix?: string,
-                           alignment?: PdfListMarkerAlignment}) {
+                           alignment?: PdfListMarkerAlignment,
+                           marker?: PdfUnorderMarker
+                       }) {
         super();
         if (items) {
             this._itemCollection = items;
@@ -1384,6 +1551,9 @@ export class PdfUnorderedList extends PdfList {
             }
             if (settings.suffix) {
                 this._suffix = settings.suffix;
+            }
+            if (settings.marker) {
+                this.setMarker(settings.marker);
             }
         } else {
             this._style = PdfUnorderedListStyle.disk;
@@ -1478,12 +1648,25 @@ export class PdfUnorderedList extends PdfList {
      */
     _draw(graphics: PdfGraphics, x: number, y: number, brush: PdfBrush, pen: PdfPen): void {
         const template: PdfTemplate = new PdfTemplate([0, 0, this._size[0], this._size[1]], graphics._crossReference);
-        const bounds: Rectangle = {x: 0, y: 0, width: 0, height: 0};
-        if (pen) {
-            bounds.x = bounds.x + pen._width;
-            bounds.y = bounds.y + pen._width;
+        if (this._marker && this._marker.image) {
+            let imageWidth: number = this._size[0] - 2;
+            let imageHeight: number = this._size[1] - 2;
+            if (imageWidth < 0) {
+                imageWidth = 0;
+            }
+            if (imageHeight < 0) {
+                imageHeight = 0;
+            }
+            const imageBounds: Rectangle = {x: 1, y: 1, width: imageWidth, height: imageHeight};
+            template.graphics.drawImage(this._marker.image, imageBounds);
+        } else {
+            const bounds: Rectangle = {x: 0, y: 0, width: 0, height: 0};
+            if (pen) {
+                bounds.x = bounds.x + pen._width;
+                bounds.y = bounds.y + pen._width;
+            }
+            template.graphics.drawString(this._getStyledText(), this._unicodeFont, bounds, pen, brush);
         }
-        template.graphics.drawString(this._getStyledText(), this._unicodeFont, bounds, pen, brush);
         graphics.drawTemplate(template, {x: x, y: y, width: template.size.width, height: template.size.height});
     }
 }
@@ -1928,7 +2111,6 @@ export class _PdfListLayouter {
                 case PdfTextAlignment.right:
                     pageResult.markerX = posX + itemSize[0] - result._actualSize.width;
                     break;
-
                 case PdfTextAlignment.center:
                     pageResult.markerX = posX + (itemSize[0] / 2) - (result._actualSize.width / 2);
                     break;
@@ -1941,14 +2123,15 @@ export class _PdfListLayouter {
                 } else {
                     pageResult.markerX += item.textIndent;
                 }
-                if (itemFormat && (itemFormat.alignment === PdfTextAlignment.right || itemFormat.alignment === PdfTextAlignment.center)) {
+                if (itemFormat && (itemFormat.alignment === PdfTextAlignment.right ||
+                itemFormat.alignment === PdfTextAlignment.center)) {
                     pageResult.markerX -= indent;
                 }
             }
         }
         if (canDrawMarker && !pageResult.markerWrote) {
             pageResult.markerWrote = this._drawMarker(curList, item, markerResult, posY, pageResult.markerX);
-            if (curList instanceof PdfOrderedList) {
+            if (curList instanceof PdfOrderedList && markerResult) {
                 pageResult.markerWidth = markerResult._actualSize.width;
             } else {
                 pageResult.markerWidth = curList._size[0];
@@ -1963,7 +2146,8 @@ export class _PdfListLayouter {
             return this._createUnorderedMarkerResult(curList as PdfUnorderedList, item);
         }
     }
-    private _drawMarker(curList: PdfList, item: PdfListItem, markerResult: _PdfStringLayoutResult, posY: number, posX: number): boolean {
+    private _drawMarker(curList: PdfList, item: PdfListItem, markerResult: _PdfStringLayoutResult,
+                        posY: number, posX: number): boolean {
         if (curList instanceof PdfOrderedList) {
             if (curList.font && markerResult) {
                 if (curList.font.size > markerResult._actualSize.height) {
@@ -1996,8 +2180,8 @@ export class _PdfListLayouter {
             curList._unicodeFont = new PdfStandardFont(PdfFontFamily.zapfDingbats, markerFont.size);
             curList._draw(this._graphics, posX - markerResult._actualSize.width, posY, markerBrush, markerPen);
         } else {
-            curList._size = [markerFont.size, markerFont.size];
-            curList._draw(this._graphics, posX - markerFont.size, posY, markerBrush, markerPen);
+            curList._calculateMarkerSize(markerFont);
+            curList._draw(this._graphics, posX - curList._size[0], posY, markerBrush, markerPen);
         }
     }
     private _drawOrderedMarker(curList: PdfOrderedList,
@@ -2045,6 +2229,10 @@ export class _PdfListLayouter {
     }
     private _createUnorderedMarkerResult(list: PdfUnorderedList, item: PdfListItem): _PdfStringLayoutResult {
         const markerFont: PdfFont = this._getMarkerFont(list, item);
+        if (list._marker && list._marker.image) {
+            list._calculateMarkerSize(markerFont);
+            return null;
+        }
         const layouter: _PdfStringLayouter = new _PdfStringLayouter();
         const uFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.zapfDingbats, markerFont.size);
         const result: _PdfStringLayoutResult = layouter._layout(list._getStyledText(), uFont, null, this._size);

@@ -21,58 +21,44 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childColumns: new ContentChild(ColumnsDirective), 
-        childStackedHeaders: new ContentChild(StackedHeadersDirective)
+        childColumns: new ContentChild(ColumnsDirective),
+        childStackedHeaders: new ContentChild(StackedHeadersDirective),
+        tooltipTemplate: new ContentChild('tooltipTemplate'),
+        columns_template: new ContentChild('columnsTemplate'),
+        swimlaneSettings_template: new ContentChild('swimlaneSettingsTemplate'),
+        cardSettings_template: new ContentChild('cardSettingsTemplate'),
+        dialogSettings_template: new ContentChild('dialogSettingsTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class KanbanComponent extends Kanban implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	cardClick: any;
-	cardDoubleClick: any;
-	cardRendered: any;
-	columnDrag: any;
-	columnDragStart: any;
-	columnDrop: any;
-	created: any;
-	dataBinding: any;
-	dataBound: any;
-	dataSourceChanged: any;
-	dataStateChange: any;
-	dialogClose: any;
-	dialogOpen: any;
-	drag: any;
-	dragStart: any;
-	dragStop: any;
-	public queryCellInfo: any;
-    public childColumns: QueryList<ColumnsDirective>;
-    public childStackedHeaders: QueryList<StackedHeadersDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare cardClick: any;
+	declare cardDoubleClick: any;
+	declare cardRendered: any;
+	declare columnDrag: any;
+	declare columnDragStart: any;
+	declare columnDrop: any;
+	declare created: any;
+	declare dataBinding: any;
+	declare dataBound: any;
+	declare dataSourceChanged: any;
+	declare dataStateChange: any;
+	declare dialogClose: any;
+	declare dialogOpen: any;
+	declare drag: any;
+	declare dragStart: any;
+	declare dragStop: any;
+	public declare queryCellInfo: any;
+    public declare childColumns: QueryList<ColumnsDirective>;
+    public declare childStackedHeaders: QueryList<StackedHeadersDirective>;
     public tags: string[] = ['columns', 'stackedHeaders'];
-    /** 
-     * Defines the template content to card’s tooltip. The property works by enabling the ‘enableTooltip’ property.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltipTemplate: any;
-    @ContentChild('columnsTemplate')
-    @Template()
-    public columns_template: any;
-    @ContentChild('swimlaneSettingsTemplate')
-    @Template()
-    public swimlaneSettings_template: any;
-    @ContentChild('cardSettingsTemplate')
-    @Template()
-    public cardSettings_template: any;
-    @ContentChild('dialogSettingsTemplate')
-    @Template()
-    public dialogSettings_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -105,7 +91,13 @@ export class KanbanComponent extends Kanban implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(KanbanComponent.prototype, 'tooltipTemplate');
+Template()(KanbanComponent.prototype, 'columns_template');
+Template()(KanbanComponent.prototype, 'swimlaneSettings_template');
+Template()(KanbanComponent.prototype, 'cardSettings_template');
+Template()(KanbanComponent.prototype, 'dialogSettings_template');
+
 

@@ -1055,8 +1055,7 @@ export class TreeViewRenderer implements IAction {
     private updateSorting(args: Event): void {
         const target: HTMLElement = (args.target as HTMLElement);
         const option: string = target.getAttribute('data-sort');
-        this.parent.actionObj.actionName = events.sortFieldTree;
-        if (this.parent.actionBeginMethod()) {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.sortFieldTree)) {
             return;
         }
         try {
@@ -1086,10 +1085,11 @@ export class TreeViewRenderer implements IAction {
         } catch (execption) {
             this.parent.actionFailureMethod(execption);
         }
-        this.parent.actionObj.actionName = this.parent.getActionCompleteName();
-        if (this.parent.actionObj.actionName) {
-            this.parent.actionCompleteMethod();
-        }
+        PivotUtil.invokeActionMethod(this.parent, events.actionComplete, this.parent.getActionCompleteName(), {
+            sortInfo: {
+                order: this.fieldListSort === 'Ascend' ? 'Ascending' : this.fieldListSort === 'Descend' ? 'Descending' : 'None'
+            }
+        });
     }
     private applySorting(treeData: { [key: string]: Object }[], sortOrder: string): { [key: string]: Object }[] {
         if (treeData.length > 0) {

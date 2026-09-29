@@ -1,0 +1,9 @@
+@use 'variables' as *;
+@include export-module('signature-layout') {
+  .e-signature.e-control {
+    border: $signature-border;
+    @if $skin-name == 'tailwind3' {
+      box-shadow: $shadow-xl;
+    }
+  }
+}

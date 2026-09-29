@@ -29,9 +29,90 @@ export class Dependency {
     private validatedOffsetIds: string[] = [];
     public predecessorsCollection: Map<string, IGanttData> = new Map();
     public successorsCollection: Map<string, IGanttData> = new Map();
+    private allowedDependencyTypesCache: Set<string> = new Set();
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
+        this.updateAllowedDependencyTypesCache();
+    }
+    /**
+     * Updates the allowed dependency types cache based on the current `allowedDependencyTypes` configuration
+     * Uses a Set for efficient dependency type lookups during load, validation, and editing operations
+     *
+     * @returns {void}
+     * @private
+     */
+    private updateAllowedDependencyTypesCache(): void {
+        this.allowedDependencyTypesCache.clear();
+        if (this.parent.allowedDependencyTypes &&
+            this.parent.allowedDependencyTypes.length > 0) {
+            this.parent.allowedDependencyTypes.forEach((type: string) => {
+                this.allowedDependencyTypesCache.add(type);
+            });
+        }
+        else if (this.parent.allowedDependencyTypes &&
+            this.parent.allowedDependencyTypes.length === 0) {
+            const error: string = 'The allowedDependencyTypes property cannot be empty. Please specify one or more of the following dependency types: FS, SS, FF, SF.';
+            this.parent.trigger('actionFailure', { error: error });
+        }
+    }
+    /**
+     * Checks whether dependency type allowed in configured based on the configured `allowedDependencyTypes`
+     * Uses the allowed dependency types cache to determine whether validation should be performed for the given dependency type
+     * @returns {boolean} Returns - `true` if the dependency type (FS, SS, FF, SF) type is allowed; otherwise, returns `false`
+     * @private
+     */
+    private isAllowedDependencyActive(): boolean {
+        return this.allowedDependencyTypesCache.size > 0;
+    }
+    /**
+     * Checks whether the specified dependency type is allowed
+     * Uses the allowed dependency types cache for efficient dependency type validation
+     * @param {string} dependencyType - The dependency type to validate
+     * @returns {boolean} - Return `true` if the dependency type is allowed, `false` if restricted
+     * @private
+     */
+    public isAllowedDependencyType(dependencyType: string): boolean {
+        // If `allowedDependencyTypes` is empty ([]), all dependency types are allowed.
+        if (!this.isAllowedDependencyActive()) {
+            return true;
+        }
+        return this.allowedDependencyTypesCache.has(dependencyType);
+    }
+
+    /**
+     * Gets the Gantt record that corresponds to the given predecessor ID.
+     *
+     * @param {string} predecessorId - The predecessor task ID.
+     * @param {Map<string, IGanttData>} flatDataMap - The flat-data lookup map used during load.
+     * @returns {IGanttData} The predecessor record when found; otherwise `null`.
+     * @private
+     */
+    private getPredecessorRecord(predecessorId: string, flatDataMap?: Map<string, IGanttData>): IGanttData {
+        if (isNullOrUndefined(predecessorId)) {
+            return null;
+        }
+        if (this.parent.viewType === 'ProjectView' && flatDataMap) {
+            return flatDataMap.get(predecessorId);
+        }
+        if (this.parent.connectorLineModule) {
+            return this.parent.connectorLineModule.getRecordByID(predecessorId);
+        }
+        return null;
+    }
+    /**
+     * Checks whether the given predecessor record is fully unscheduled and should be skipped.
+     *
+     * @param {IGanttData} predecessorRecord - The predecessor record to validate.
+     * @returns {boolean} Returns `true` when the predecessor is fully unscheduled and must be ignored.
+     * @private
+     */
+    private shouldSkipUnscheduledPredecessor(predecessorRecord: IGanttData): boolean {
+        if (!this.parent.allowUnscheduledTasks || isNullOrUndefined(predecessorRecord) ||
+            isNullOrUndefined(predecessorRecord.ganttProperties)) {
+            return false;
+        }
+        return isScheduledTask(predecessorRecord.ganttProperties) === null;
     }
     /**
      * Method to populate predecessor collections in records
@@ -49,9 +130,11 @@ export class Dependency {
                 flatDataMap.set(record.ganttProperties.rowUniqueID.toString(), record);
             }
         }
+        const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+        const idsSet: Set<string> = new Set(ids);
         for (const ganttData of predecessorTasks) {
             if ((!ganttData.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
-                this.ensurePredecessorCollectionHelper(ganttData, ganttData.ganttProperties, flatDataMap);
+                this.ensurePredecessorCollectionHelper(ganttData, ganttData.ganttProperties, flatDataMap, idsSet);
             }
         }
     }
@@ -60,14 +143,16 @@ export class Dependency {
      * @param {IGanttData} ganttData .
      * @param {ITaskData} ganttProp .
      * @param {Map<string, IGanttData>} flatDataMap .
+     * @param {Set<string>} idsSet .
      * @returns {void} .
      * @private
      */
     public ensurePredecessorCollectionHelper(ganttData: IGanttData, ganttProp: ITaskData,
-                                             flatDataMap: Map<string, IGanttData> = null): void {
-        const predecessorVal: object[] | string | number = ganttProp.predecessorsName;
+                                             flatDataMap?: Map<string, IGanttData>,
+                                             idsSet?: Set<string>): void {
+        const predecessorVal: object[] | string | number | undefined = ganttProp.predecessorsName;
         if (predecessorVal && (typeof predecessorVal === 'string' || typeof predecessorVal === 'number')) {
-            this.parent.setRecordValue('predecessor', this.calculatePredecessor(predecessorVal, ganttData, flatDataMap), ganttProp, true);
+            this.parent.setRecordValue('predecessor', this.calculatePredecessor(predecessorVal, ganttData, flatDataMap, idsSet), ganttProp, true);
         } else if (predecessorVal && typeof predecessorVal === 'object' && predecessorVal.length) {
             const preValues: IPredecessor[] = [];
             for (let c: number = 0; c < predecessorVal.length; c++) {
@@ -76,6 +161,10 @@ export class Dependency {
                 preValue.from = getValue('from', predecessorItem) ? getValue('from', predecessorItem) : predecessorVal[c as number];
                 preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.rowUniqueID;
                 preValue.type = getValue('type', predecessorItem) ? getValue('type', predecessorItem) : 'FS';
+                // RESTRICTION CHECK: Skip if dependency type is not listed in `allowedDependencyTypes` on initial load time with dependency object type data mapping case
+                if (this.isAllowedDependencyActive() && !this.isAllowedDependencyType(preValue.type)) {
+                    continue;
+                }
                 const offsetUnits: Record<string, unknown> = getValue('offset', predecessorItem);
                 if (isNullOrUndefined(offsetUnits)) {
                     preValue.offset = 0;
@@ -243,11 +332,13 @@ export class Dependency {
      * @param {string | number} predecessorValue .
      * @param {IGanttData} ganttRecord .
      * @param {Map<string, IGanttData>} flatDataMap .
+     * @param {Set<string>} idsSet .
      * @returns {IPredecessor[]} .
      * @private
      */
     public calculatePredecessor(predecessorValue: string | number, ganttRecord?: IGanttData,
-                                flatDataMap: Map<string, IGanttData> = null): IPredecessor[] {
+                                flatDataMap?: Map<string, IGanttData>,
+                                idsSet?: Set<string>): IPredecessor[] {
         const predecessor: string = predecessorValue.toString();
         const collection: IPredecessor[] = [];
         const parentRecords: IGanttData[] = [];
@@ -255,6 +346,7 @@ export class Dependency {
         const isProjectView: boolean = this.parent.viewType === 'ProjectView';
         const allowParentDependency: boolean = this.parent.allowParentDependency;
         const ids: string[] = isResourceView ? this.parent.getTaskIds() : this.parent.ids;
+        const effectiveIdsSet: Set<string> = idsSet || new Set(ids);
         const targetId: string = isResourceView
             ? ganttRecord.ganttProperties.taskId.toString()
             : ganttRecord.ganttProperties.rowUniqueID.toString();
@@ -269,12 +361,20 @@ export class Dependency {
                 offsetValue: string;
                 values: string[];
             } = this.processPredecessorElement(
-                el, ids, isResourceView, guidRegex, alphaRegex, validTypes
+                el, effectiveIdsSet, isResourceView, guidRegex, alphaRegex, validTypes
             );
             if (!result) {
                 continue;
             }
             const { match, predecessorText, offsetValue, values } = result;
+            // RESTRICTION CHECK: Skip if dependency type is not listed in `allowedDependencyTypes` on initial load time with dependency string/number format data mapping case
+            if (this.isAllowedDependencyActive() && !this.isAllowedDependencyType(predecessorText)) {
+                continue;
+            }
+            const predecessorRecord: IGanttData = this.getPredecessorRecord(match[0], flatDataMap);
+            if (this.shouldSkipUnscheduledPredecessor(predecessorRecord)) {
+                continue;
+            }
             const tempOffset: string = values.length > 1 ? offsetValue + values[1] : '0';
             const offsetUnits: {
                 duration: number;
@@ -301,16 +401,16 @@ export class Dependency {
     }
 
     private processPredecessorElement(
-        el: string, ids: string[], isResourceView: boolean,
+        el: string, idsSet: Set<string>, isResourceView: boolean,
         guidRegex: RegExp, alphaRegex: RegExp, validTypes: Set<string>
     ): { match: string[], predecessorText: string, offsetValue: string, values: string[] } | null {
         let values: string[] = [];
         let offsetValue: string = '+';
         let predecessorText: string = 'FS';
-        const { isGuid, processedValues, processedOffset } = this.processElementFormat(el, guidRegex, ids, isResourceView, validTypes);
+        const { isGuid, processedValues, processedOffset } = this.processElementFormat(el, guidRegex, idsSet, isResourceView, validTypes);
         values = processedValues;
         offsetValue = processedOffset;
-        const match: string[] = this.extractAndValidateMatch(values[0], ids, isResourceView);
+        const match: string[] | null = this.extractAndValidateMatch(values[0], idsSet, isResourceView);
         if (!match) {
             return null;
         }
@@ -322,9 +422,9 @@ export class Dependency {
     private processElementFormat(
         el: string,
         guidRegex: RegExp,
-        ids?: string[],
-        isResourceView?: boolean,
-        validTypes?: Set<string>
+        idsSet: Set<string>,
+        isResourceView: boolean,
+        validTypes: Set<string>
     ): {
             isGuid: boolean;
             processedValues: string[];
@@ -369,7 +469,7 @@ export class Dependency {
             }
             const prefix: string = finalBase.slice(0, -2).trim();
             const finalTestId: string = isResourceView ? 'T' + prefix : prefix;
-            if (ids.indexOf(finalTestId) === -1 || suffix === '') {
+            if (!(idsSet && idsSet.has(finalTestId)) || suffix === '') {
                 values = [el];
                 offsetValue = '+';
             } else {
@@ -381,7 +481,7 @@ export class Dependency {
             if (validTypes.has(lastTwo)) {
                 const prefix: string = el.slice(0, -2);
                 const finalTestId: string = isResourceView ? 'T' + prefix : prefix;
-                if (ids.indexOf(finalTestId) === -1) {
+                if (!(idsSet && idsSet.has(finalTestId))) {
                     values = [el];
                 } else {
                     values = [el];
@@ -392,12 +492,12 @@ export class Dependency {
         }
         return { isGuid, processedValues: values, processedOffset: offsetValue };
     }
-    private extractAndValidateMatch(value: string, ids: string[], isResourceView: boolean): string[] | null {
+    private extractAndValidateMatch(value: string, idsSet: Set<string>, isResourceView: boolean): string[] | null {
         const testId: string = isResourceView ? 'T' + value : value;
-        if (ids.indexOf(testId) !== -1) {
+        if (idsSet.has(testId)) {
             return [value];
         }
-        if (ids.indexOf(value) !== -1) {
+        if (idsSet.has(value)) {
             return [value];
         }
         let match: string[] = value.split(' ');
@@ -409,7 +509,7 @@ export class Dependency {
             }
         }
         const finalTestId: string = isResourceView ? 'T' + match[0] : match[0];
-        return ids.indexOf(finalTestId) !== -1 ? match : null;
+        return idsSet.has(finalTestId) ? match : null;
     }
     private determinePredecessorType(
         el: string, match: string[], alphaRegex: RegExp, validTypes: Set<string>
@@ -419,7 +519,13 @@ export class Dependency {
             if (validTypes.has(type)) {
                 return type;
             } else {
-                const error: string = `The provided dependency type, ${type}, is invalid. Please ensure that the Dependency Type is FS or FF or SS or SF`;
+                let error: string;
+                if (this.isAllowedDependencyActive()) {
+                    error = `The dependency type ${type} is not allowed. Allowed dependency types: ${this.parent.allowedDependencyTypes}.`;
+                }
+                else {
+                    error = `The provided dependency type, ${type}, is invalid. Please ensure that the Dependency Type is FS or FF or SS or SF`;
+                }
                 this.parent.trigger('actionFailure', { error });
                 return 'FS';
             }
@@ -485,6 +591,10 @@ export class Dependency {
                 temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
             } else if (currentValue.offsetUnit === 'hour') {
                 temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+            } else if (currentValue.offsetUnit === 'week') {
+                temp += multiple ? this.parent.localeObj.getConstant('weeks') : this.parent.localeObj.getConstant('week');
+            } else if (currentValue.offsetUnit === 'month') {
+                temp += multiple ? this.parent.localeObj.getConstant('months') : this.parent.localeObj.getConstant('month');
             } else {
                 temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
             }
@@ -528,6 +638,10 @@ export class Dependency {
                             temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
                         } else if (currentValue.offsetUnit === 'hour') {
                             temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                        } else if (currentValue.offsetUnit === 'week') {
+                            temp += multiple ? this.parent.localeObj.getConstant('weeks') : this.parent.localeObj.getConstant('week');
+                        } else if (currentValue.offsetUnit === 'month') {
+                            temp += multiple ? this.parent.localeObj.getConstant('months') : this.parent.localeObj.getConstant('month');
                         } else {
                             temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
                         }
@@ -578,6 +692,10 @@ export class Dependency {
                     durationUnit = 'hour';
                 } else if (getValue('day', durationUnitLabels).indexOf(durationUnit) !== -1) {
                     durationUnit = 'day';
+                } else if (getValue('week', durationUnitLabels).indexOf(durationUnit) !== -1) {
+                    durationUnit = 'week';
+                } else if (getValue('month', durationUnitLabels).indexOf(durationUnit) !== -1) {
+                    durationUnit = 'month';
                 } else {
                     if (!isNullOrUndefined(this.parent.durationUnit)) {
                         durationUnit = this.parent.durationUnit.toLocaleLowerCase();
@@ -1918,13 +2036,13 @@ export class Dependency {
             }
 
             if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
-                tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
+                tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate, record.ganttProperties);
+                tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, record.ganttProperties);
                 isNegativeOffset = false;
             } else {
                 const tempDate: Date = new Date(tempStartDate.getTime());
-                tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
-                tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
+                tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate, record.ganttProperties);
+                tempEndDate = this.dateValidateModule.checkEndDate(tempDate, record.ganttProperties);
                 isNegativeOffset = true;
             }
 

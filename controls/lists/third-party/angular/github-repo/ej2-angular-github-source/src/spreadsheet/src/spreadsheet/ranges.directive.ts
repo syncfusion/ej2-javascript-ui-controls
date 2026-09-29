@@ -23,9 +23,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-ranges>e-range',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class RangeDirective extends ComplexBase<RangeDirective> {
@@ -37,43 +38,35 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
      * Specifies the address for updating the dataSource or template.
      * @default 'A1'
      */
-    public address: any;
+    public declare address: any;
     /** 
      * Specifies the data as JSON / Data manager to the sheet.
      * @default null
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * By default, when a sheet is bound to a data source, columns are assigned to data source fields sequentially. 
      * This means that the first data field is assigned to Column A, the second to Column B, and so on. 
      * You can customize these assignments by specifying the field names in the desired column order using the 'fieldsOrder' property.
      * @default null
      */
-    public fieldsOrder: any;
+    public declare fieldsOrder: any;
     /** 
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.
      * @default null
      */
-    public query: any;
+    public declare query: any;
     /** 
      * Show/Hide the field of the datasource as header.
      * @default true
      */
-    public showFieldAsHeader: any;
+    public declare showFieldAsHeader: any;
     /** 
      * Specifies the start cell from which the datasource will be populated.
      * @default 'A1'
      */
-    public startCell: any;
-    /** 
-     * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
-     * @default ''
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare startCell: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -82,6 +75,7 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
         this.directivePropList = input;
     }
 }
+Template()(RangeDirective.prototype, 'template');
 
 /**
  * Range Array Directive
@@ -89,6 +83,7 @@ export class RangeDirective extends ComplexBase<RangeDirective> {
  */
 @Directive({
     selector: 'e-sheet>e-ranges',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeDirective)
     },

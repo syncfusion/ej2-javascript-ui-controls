@@ -1167,11 +1167,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @param {Query} query - Accepts the external Query that execute along with data processing.
      * @param {MouseEvent | KeyboardEventArgs | TouchEvent} event - Specifies the event which is the reason for the invocation of this method.
+     * @param {boolean} skipExecuteLocal - Specifies whether to skip executing the local query on the data source and use unchecked values instead.
      * @returns {void}
      */
     private setListData(
         dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager | boolean[],
-        fields: FieldSettingsModel, query: Query, event?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        fields: FieldSettingsModel, query: Query, event?: MouseEvent | KeyboardEventArgs | TouchEvent, skipExecuteLocal?: boolean): void {
         fields = fields ? fields : this.fields;
         let ulElement: HTMLElement;
         this.isActive = true;
@@ -1251,7 +1252,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 if (!(e as { [key: string]: object }).cancel) {
                                     this.isRequesting = false;
                                     this.isCustomFiltering = false;
-                                    const listItems: { [key: string]: Object }[] = (e as ResultData).result;
+                                    let listItems: { [key: string]: Object }[] = (e as ResultData).result;
+                                    if (this.getModuleName() === 'dropdownlist' && listItems.length === 0 && (this as any).filterInput && (this as any).filterInput.value.trim() === '' && (this as any).actionCompleteData && (this as any).actionCompleteData.list && (this as any).actionCompleteData.list.length) {
+                                        listItems = (this as any).actionCompleteData.list;
+                                    }
                                     if (this.isIncrementalRequest){
                                         ulElement = this.renderItems(listItems, fields);
                                         return;
@@ -1324,8 +1328,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         (this.virtualGroupDataSource as DataOptions | JSON[])
                          && !this.isCustomDataUpdated ? new DataManager(this.virtualGroupDataSource as DataOptions | JSON[]) :
                             new DataManager(eventArgs.data as DataOptions | JSON[]);
-                        listItems = <{ [key: string]: Object }[]>(
-                            this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+                        if (!skipExecuteLocal) {
+                            listItems = <{ [key: string]: Object }[]>(
+                                this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+                        } else {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            listItems = { count: (this as any).uncheckedValues.length, result: (this as any).uncheckedValues } as any;
+                        }
                         if (!this.virtualSelectAll) {
                             const newQuery: Query = this.getQuery(eventArgs.query as Query);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2291,11 +2300,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @param {Query} query - Accepts the external Query that execute along with data processing.
      * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - Specifies the event.
+     * @param {boolean} skipExecuteLocal - Specifies whether to skip executing the local query on the data source and use unchecked values instead.
      * @returns {void}
      */
     protected resetList(
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
-        fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent, skipExecuteLocal?: boolean): void {
         if (this.list) {
             if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
                 || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
@@ -2310,7 +2320,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (this.isCustomReset && this.getModuleName() === 'multiselect') {
                 this.setCustomListData(dataSource, fields, query, e);
             } else {
-                this.setListData(dataSource, fields, query, e);
+                this.setListData(dataSource, fields, query, e, skipExecuteLocal);
             }
         }
     }
@@ -2744,6 +2754,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public destroy(): void {
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
         if (document){
             if (this.fields && this.fields.groupBy) {
                 const elements: HTMLElement[] = this.getScrollableParent();
@@ -2783,6 +2796,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.virtualSelectAllData = null;
         this.incrementalListData = null;
         super.destroy();
+        this.keyboardModule = null;
     }
 }
 export interface ResultData {

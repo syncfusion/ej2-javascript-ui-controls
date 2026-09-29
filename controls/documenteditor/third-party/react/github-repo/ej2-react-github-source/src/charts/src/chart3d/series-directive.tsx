@@ -7,7 +7,7 @@ export interface Chart3DSeriesDirTypecast {
 /**
  * `SeriesDirective` directive represent a series of the react chart. 
  * It must be contained in a Chart component(`Chart3DComponent`). 
- * ```tsx
+ * ```
  * <Chart3DComponent>
  * <Chart3DSeriesCollectionDirective>
  * <Chart3DSeriesDirective></Chart3DSeriesDirective>

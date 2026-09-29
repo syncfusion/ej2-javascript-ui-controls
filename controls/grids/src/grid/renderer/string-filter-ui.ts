@@ -172,6 +172,11 @@ export class StringFilterUI implements IFilterMUI {
             }
             if (isNullOrUndefined(filterValue) || filterValue === '') {
                 filterValue = null;
+                if (autoCompleteObject && autoCompleteObject.dataSource && (autoCompleteObject.dataSource as DataManager).adaptor &&
+                    (<{ getModuleName: Function }>(autoCompleteObject.dataSource as DataManager).adaptor).getModuleName &&
+                    (<{ getModuleName: Function }>(autoCompleteObject.dataSource as DataManager).adaptor).getModuleName() === 'ODataV4Adaptor') {
+                    filterValue = '';
+                }
             }
             filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
         }

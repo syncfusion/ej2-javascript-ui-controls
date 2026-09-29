@@ -19,9 +19,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-aiassistview>e-views>e-view',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ViewDirective extends ComplexBase<ViewDirective> {
@@ -35,19 +35,19 @@ export class ViewDirective extends ComplexBase<ViewDirective> {
      * @default AssistViewType.Assist
      * @asptype AssistViewType
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the icon CSS for the assist view. 
      * Represents the CSS class for the icon of the assist view.
      * @default null
      */
-    public iconCss: any;
+    public declare iconCss: any;
     /** 
      * Specifies the name of the assist view. 
      * Represents the name displayed in the assist view.
      * @default ''
      */
-    public name: any;
+    public declare name: any;
     /** 
      * Specifies the template for the view of the assist view. 
      * Represents the template for rendering the view, which can be a string or a function.
@@ -57,7 +57,7 @@ export class ViewDirective extends ComplexBase<ViewDirective> {
      * @vuetype string | function
      * @asptype string
      */
-    public viewTemplate: any;
+    public declare viewTemplate: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -73,6 +73,7 @@ export class ViewDirective extends ComplexBase<ViewDirective> {
  */
 @Directive({
     selector: 'ejs-aiassistview>e-views',
+    standalone: true,
     queries: {
         children: new ContentChildren(ViewDirective)
     },

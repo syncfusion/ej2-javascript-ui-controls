@@ -26,16 +26,20 @@ I was looking for:
 This last one is crucial! So many libraries use custom classes that create objects with special prototypes, and such objects all break when trying to copy them inproperly. So we gotta be careful!
 
 copy-anything will copy objects and nested properties, but only as long as they're "plain objects". As soon as a sub-prop is not a "plain object" and has a special prototype, it will copy that instance over "as is". ♻️
+## Meet the family (more tiny utils with TS support)
 
-## Meet the family
-
-- [copy-anything 🎭](https://github.com/mesqueeb/copy-anything)
-- [merge-anything 🥡](https://github.com/mesqueeb/merge-anything)
-- [filter-anything ⚔️](https://github.com/mesqueeb/filter-anything)
-- [find-and-replace-anything 🎣](https://github.com/mesqueeb/find-and-replace-anything)
-- [compare-anything 🛰](https://github.com/mesqueeb/compare-anything)
-- [flatten-anything 🏏](https://github.com/mesqueeb/flatten-anything)
 - [is-what 🙉](https://github.com/mesqueeb/is-what)
+- [is-where 🙈](https://github.com/mesqueeb/is-where)
+- [merge-anything 🥡](https://github.com/mesqueeb/merge-anything)
+- [check-anything 👁](https://github.com/mesqueeb/check-anything)
+- [remove-anything ✂️](https://github.com/mesqueeb/remove-anything)
+- [getorset-anything 🐊](https://github.com/mesqueeb/getorset-anything)
+- [map-anything 🗺](https://github.com/mesqueeb/map-anything)
+- [filter-anything ⚔️](https://github.com/mesqueeb/filter-anything)
+- [copy-anything 🎭](https://github.com/mesqueeb/copy-anything)
+- [case-anything 🐫](https://github.com/mesqueeb/case-anything)
+- [flatten-anything 🏏](https://github.com/mesqueeb/flatten-anything)
+- [nestify-anything 🧅](https://github.com/mesqueeb/nestify-anything)
 
 ## Usage
 

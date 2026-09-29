@@ -34,7 +34,7 @@ export class _PdfX509CertificateParser {
      */
     _readDistinguishEncoderCertificate(bytes: Uint8Array, isCertificateParsing: boolean): _PdfX509Certificate {
         const structure: _PdfX509CertificateStructure = new _PdfX509CertificateStructure();
-        const stream:  _PdfBasicEncodingElement = new _PdfBasicEncodingElement();
+        const stream: _PdfBasicEncodingElement = new _PdfBasicEncodingElement();
         stream._fromBytes(bytes);
         const seq: _PdfAbstractSyntaxElement[] = stream._getSequence();
         const tagNumber: number = seq[0]._getTagNumber();
@@ -42,23 +42,21 @@ export class _PdfX509CertificateParser {
             const oid: _PdfObjectIdentifier = seq[0]._getObjectIdentifier();
             const dotDelimitedNotation: string = oid._getDotDelimitedNotation();
             if (dotDelimitedNotation === '1.2.840.113549.1.7.2') {
-                if (seq.length >= 2) {
-                    const inner: _PdfAbstractSyntaxElement = seq[1]._getInner();
-                    const innerSequence: _PdfAbstractSyntaxElement[] = inner._getSequence();
-                    const signedSequence: _PdfAbstractSyntaxElement[] = innerSequence;
-                    for (const element of signedSequence) {
-                        if (element instanceof _PdfBasicEncodingElement && element._tagClass === _TagClassType.context
-                            && element._getTagNumber() === 0) {
-                            const inner: _PdfAbstractSyntaxElement = element._getInner(isCertificateParsing);
-                            let innerSet: _PdfAbstractSyntaxElement[];
-                            if (isCertificateParsing) {
-                                innerSet = inner._getSequence();
-                            } else {
-                                innerSet = inner._getAbstractSetValue();
-                            }
-                            this._sData = innerSet;
-                            break;
+                const inner: _PdfAbstractSyntaxElement = seq[1]._getInner();
+                const innerSequence: _PdfAbstractSyntaxElement[] = inner._getSequence();
+                const signedSequence: _PdfAbstractSyntaxElement[] = innerSequence;
+                for (const element of signedSequence) {
+                    if (element instanceof _PdfBasicEncodingElement && element._tagClass === _TagClassType.context
+                        && element._getTagNumber() === 0) {
+                        const inner: _PdfAbstractSyntaxElement = element._getInner(isCertificateParsing);
+                        let innerSet: _PdfAbstractSyntaxElement[];
+                        if (isCertificateParsing) {
+                            innerSet = inner._getSequence();
+                        } else {
+                            innerSet = inner._getAbstractSetValue();
                         }
+                        this._sData = innerSet;
+                        break;
                     }
                 }
                 return this._getCertificate(isCertificateParsing);

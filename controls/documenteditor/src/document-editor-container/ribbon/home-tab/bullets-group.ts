@@ -1,7 +1,7 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { DocumentEditor } from '../../../document-editor/document-editor';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { RibbonItemModel, RibbonSplitButtonSettingsModel, RibbonItemSize } from '@syncfusion/ej2-ribbon';
 import { ParagraphWidget } from '../../../document-editor/implementation/viewer/page';
@@ -72,16 +72,15 @@ export class BulletsGroup {
 
         // Create the HTML template for bullets dropdown
         const bulletDropDiv: HTMLElement = createElement('div', {
-            id: this.ribbonId + '_bullet_list_div',
-            styles: 'width: 196px;height: auto;visibility: hidden'
+            id: this.ribbonId + '_bullet_list_div'
         });
-
+        const bulletDropDivStyle: string = 'width:196px;height:auto;visibility:hidden;';
+        updateCSSText(bulletDropDiv, bulletDropDivStyle);
         const bulletDropUlTag: HTMLElement = createElement('ul', {
-            styles: 'visibility: visible; outline: 0px;',
             id: this.ribbonId + '_listMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
-
+        updateCSSText(bulletDropUlTag, 'visibility:visible;outline:0px;');
         bulletDropDiv.appendChild(bulletDropUlTag);
 
         // Create bullet list options using a more efficient approach
@@ -94,7 +93,7 @@ export class BulletsGroup {
             items: this.getBulletItems(),
             select: this.handleBulletSelection.bind(this),
             beforeOpen: (): void => {
-                bulletDropDiv.style.visibility = 'visible';
+                updateCSSText(bulletDropDiv, 'visibility:visible;');
                 if (!isNullOrUndefined(this.documentEditor.selectionModule)) {
                     if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId) ||
                         this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
@@ -109,7 +108,7 @@ export class BulletsGroup {
                 }
             },
             beforeClose: (): void => {
-                bulletDropDiv.style.visibility = 'hidden';
+                updateCSSText(bulletDropDiv, 'visibility:hidden;');
                 this.removeSelectedList();
             },
             click: () => {

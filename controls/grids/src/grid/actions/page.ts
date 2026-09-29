@@ -1,6 +1,6 @@
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Pager } from '../../pager/pager';
 import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
@@ -49,6 +49,7 @@ export class Page implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, pageSettings?: PageSettingsModel) {
+        initializeTelemetryFeature('Page', 'DataGrid');
         Pager.Inject(ExternalMessage, PagerDropDown);
         this.parent = parent;
         this.pageSettings = pageSettings;

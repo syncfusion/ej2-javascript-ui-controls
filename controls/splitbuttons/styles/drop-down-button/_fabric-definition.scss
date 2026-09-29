@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/fabric' as *;
-@use 'ej2-buttons/styles/button/fabric-definition' as *;
-@forward 'ej2-base/styles/definition/fabric';
-@forward 'ej2-buttons/styles/button/fabric-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $drop-down-btn-arrow-content: '\e36a' !default;
 $drop-down-btn-vertical-btn-padding: 8px 20px !default;
 $drop-down-btn-vertical-bigger-padding: 10px 24px !default;

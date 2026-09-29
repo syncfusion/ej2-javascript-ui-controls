@@ -2,6 +2,20 @@
 
 # JavaScript PDF Library
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/javascript/llms.txt](https://ai.syncfusion.com/javascript/llms.txt)
+
 The Syncfusion&reg; [JavaScript PDF](https://www.syncfusion.com/document-sdk/javascript-pdf-library) library is a lightweight, high-performance, and feature-rich non-UI solution written natively in JavaScript for generating PDF documents in both Node.js and browser environments. It enables developers to seamlessly integrate robust PDF functionality into their applications for creating, reading, and editing PDF documents without relying on Adobe Acrobat. Designed to work across JavaScript, TypeScript, Angular, React, Vue, ASP.NET Core, and ASP.NET MVC platforms, the library supports programmatic generation of PDF reports with rich content, including formatted text, images, shapes, hyperlinks, and lists, while complying with PDF 1.7 (ISO 32000-1) and the latest PDF 2.0 (ISO 32000-2) standards to ensure high-quality, compatible PDF document processing.
 
 ## Key features

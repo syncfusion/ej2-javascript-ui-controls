@@ -6,7 +6,8 @@ Get stdout window width, with four fallbacks, `tty`, `output.columns`, a custom 
 [![Build Status](https://travis-ci.org/knownasilya/cli-width.svg)](https://travis-ci.org/knownasilya/cli-width)
 [![Coverage Status](https://coveralls.io/repos/knownasilya/cli-width/badge.svg?branch=master&service=github)](https://coveralls.io/github/knownasilya/cli-width?branch=master)
 
-Tested against NodeJS v10+
+Tested against Node v12 to v20.
+Includes TypeScript types.
 
 ## Usage
 
@@ -15,9 +16,7 @@ npm install --save cli-width
 ```
 
 ```js
-"use strict";
-
-const cliWidth = require("cli-width");
+const cliWidth = require('cli-width');
 
 cliWidth(); // maybe 204 :)
 ```
@@ -42,8 +41,8 @@ the default width value is going to be `0`, that can be changed using the config
 Defining both a default width value and a stream output to try to read from:
 
 ```js
-const cliWidth = require("cli-width");
-const ttys = require("ttys");
+const cliWidth = require('cli-width');
+const ttys = require('ttys');
 
 cliWidth({
   defaultWidth: 80,
@@ -54,8 +53,8 @@ cliWidth({
 Defines a different tty module to read width from:
 
 ```js
-const cliWidth = require("cli-width");
-const ttys = require("ttys");
+const cliWidth = require('cli-width');
+const ttys = require('ttys');
 
 cliWidth({
   tty: ttys,

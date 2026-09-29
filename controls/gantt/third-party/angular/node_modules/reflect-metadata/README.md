@@ -1,6 +1,12 @@
 # Metadata Reflection API
 
-* [Detailed proposal][Metadata-Spec]
+NOTE: Now that both [Decorators](https://github.com/tc39/proposal-decorators) and 
+[Decorator Metadata](https://github.com/tc39/proposal-decorator-metadata) have achieved Stage 3 within TC39, the API
+proposed below is no longer being considered for standardization. However, this package will continue to support
+projects that leverage TypeScript's legacy `--experimentalDecorators` option as some projects may not be able to migrate
+to use standard decorators.
+
+* [Detailed proposal][metadata-spec]
 
 ## Installation
 
@@ -8,10 +14,57 @@
 npm install reflect-metadata
 ```
 
+## Usage
+
+### ES Modules in NodeJS/Browser, TypeScript/Babel, Bundlers
+```ts
+// - Modifies global `Reflect` object (or defines one in ES5 runtimes).
+// - Supports ESM and CommonJS.
+// - Contains internal polyfills for `Map`, `Set`, and `WeakMap` for older runtimes.
+import "reflect-metadata";
+
+// - Modifies global `Reflect` object (or defines one in ES5 runtimes).
+// - Supports ESM and CommonJS.
+// - Requires runtime support for `"exports"` in `package.json`.
+// - Does not include internal polyfills.
+import "reflect-metadata/lite";
+```
+
+### CommonJS
+```ts
+// - Modifies global `Reflect` object (or defines one in ES5 runtimes).
+// - Contains internal polyfills for `Map`, `Set`, and `WeakMap` for older runtimes.
+require("reflect-metadata");
+
+// - Modifies global `Reflect` object (or defines one in ES5 runtimes).
+// - Requires runtime support for `"exports"` in `package.json`.
+// - Does not include internal polyfills.
+require("reflect-metadata/lite");
+```
+
+### In the Browser via `<script>`
+**HTML**
+```html
+<!-- Modifies global `Reflect` object (or defines one in ES5 runtimes). -->
+<!-- Contains internal polyfills for `Map`, `Set`, and `WeakMap` for older runtimes. -->
+<script src="path/to/reflect-metadata/Reflect.js"></script>
+
+<!-- Modifies global `Reflect` object (or defines one in ES5 runtimes). -->
+<!-- Does not include internal polyfills. -->
+<script src="path/to/reflect-metadata/ReflectLite.js"></script>
+```
+
+**Script**
+```js
+// - Makes types available in your editor.
+/// <reference path="path/to/reflect-metadata/standalone.d.ts" />
+
+```
+
 ## Background
 
 * Decorators add the ability to augment a class and its members as the class is defined, through a declarative syntax.
-* Traceur attaches annotations to a static property on the class.
+* [Traceur][traceur] attaches annotations to a static property on the class.
 * Languages like C# (.NET), and Java support attributes or annotations that add metadata to types, along with a reflective API for reading metadata.
 
 ## Goals
@@ -175,4 +228,5 @@ function ParamTypes(...types) {
   * This is mitigated if the mutating decorator returns a class expression that extends from the target, or returns a proxy for the decorator. @rbuckton
 * Metadata for a method is attached to the class (or prototype) via the property key. It would not then be available if trying to read metadata on the function of the method (e.g. "tearing-off" the method from the class). @rbuckton
 
-[Metadata-Spec]: https://rbuckton.github.io/reflect-metadata
+[metadata-spec]: https://rbuckton.github.io/reflect-metadata
+[traceur]:       https://github.com/google/traceur-compiler

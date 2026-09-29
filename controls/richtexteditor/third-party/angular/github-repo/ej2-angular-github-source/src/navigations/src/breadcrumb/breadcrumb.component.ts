@@ -20,36 +20,23 @@ export const twoWays: string[] = ['activeItem'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childItems: new ContentChild(BreadcrumbItemsDirective)
+        childItems: new ContentChild(BreadcrumbItemsDirective),
+        separatorTemplate: new ContentChild('separatorTemplate'),
+        itemTemplate: new ContentChild('itemTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class BreadcrumbComponent extends Breadcrumb implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeItemRender: any;
-	created: any;
-	itemClick: any;
-	public activeItemChange: any;
-    public childItems: QueryList<BreadcrumbItemsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeItemRender: any;
+	declare created: any;
+	declare itemClick: any;
+	public declare activeItemChange: any;
+    public declare childItems: QueryList<BreadcrumbItemsDirective>;
     public tags: string[] = ['items'];
-    /** 
-     * Specifies the separator template for Breadcrumb.
-     * @default '/'
-     * @asptype string
-     */
-    @ContentChild('separatorTemplate')
-    @Template()
-    public separatorTemplate: any;
-    /** 
-     * Specifies the template for Breadcrumb item.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -79,7 +66,10 @@ export class BreadcrumbComponent extends Breadcrumb implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(BreadcrumbComponent.prototype, 'separatorTemplate');
+Template()(BreadcrumbComponent.prototype, 'itemTemplate');
+
 

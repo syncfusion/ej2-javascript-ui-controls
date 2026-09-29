@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-files>e-uploadedfiles',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class UploadedFilesDirective extends ComplexBase<UploadedFilesDirective> {
@@ -34,17 +34,17 @@ export class UploadedFilesDirective extends ComplexBase<UploadedFilesDirective> 
      * Specifies the type of the file
      * @default ''
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies the name of the file
      * @default ''
      */
-    public name: any;
+    public declare name: any;
     /** 
      * Specifies the size of the file
      * @default null
      */
-    public size: any;
+    public declare size: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -60,6 +60,7 @@ export class UploadedFilesDirective extends ComplexBase<UploadedFilesDirective> 
  */
 @Directive({
     selector: 'ejs-uploader>e-files',
+    standalone: true,
     queries: {
         children: new ContentChildren(UploadedFilesDirective)
     },

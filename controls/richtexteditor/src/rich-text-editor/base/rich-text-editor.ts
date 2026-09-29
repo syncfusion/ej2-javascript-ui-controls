@@ -2,15 +2,16 @@ import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType,
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
-import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs, initializeTelemetry } from '@syncfusion/ej2-base';
 import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
+import { getWebMcpTools, registerWebMcpTools } from '../base/constant';
 import * as EVENTS from './../../common/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer, AIAssistantPromptRequestArgs, AIAssistantStopRespondingArgs, BeforePopupOpenCloseEventArgs, AIAssitantToolbarClickEventArgs } from './interface';
+import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer, AIAssistantPromptRequestArgs, AIAssistantStopRespondingArgs, BeforePopupOpenCloseEventArgs, AIAssitantToolbarClickEventArgs, WebMcpToolExecuteEventArgs, WebMcpTool } from './interface';
 import { executeGroup, ToolbarStatusEventArgs } from './interface';
 import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
 import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IListCommandArgs, IToolbarItems, MediaDropEventArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs, ExportingEventArgs, IDropDownItemModel, IToolbarStatus } from '../../common/interface';
@@ -1626,6 +1627,55 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public documentExporting: EmitType<ExportingEventArgs>;
 
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Use this event to inspect, modify, or cancel the tool execution before it takes effect.
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify(getWebMcpTools, args);
+        return args.tools || [];
+    }
+
+    /**
+     * Registers WebMCP tools on document.modelContext for this component instance.
+     *
+     * @param {string} [prefix] - Optional: unique prefix for tool names (ensures uniqueness when multiple instances exist)
+     *   - If null or undefined, the component element's `id` will be used
+     *   - If empty string (''), tools registered without prefix
+     * @param {string[] | WebMcpTool[]} [tools] - Optional: specific tools to register
+     *   - `string[]`: allowlist of tool names
+     *   - `WebMcpTool[]`: customized tool definitions
+     *   - Omit to register all available tools
+     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
+     * @returns {void}
+     */
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        this.notify(registerWebMcpTools, { prefix, tools, exposedTo });
+    }
+
     public keyboardModule: KeyboardEvents;
     public localeObj: L10n;
     public valueContainer: HTMLTextAreaElement;
@@ -1754,6 +1804,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             modules.push(
                 { member: 'resize', args: [this] }
             );
+        }
+        if (this.enableWebMcp) {
+            modules.push({ member: 'WebMcpAdapter', args: [this] });
         }
         return modules;
     }
@@ -2276,6 +2329,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     protected render(): void {
+        initializeTelemetry('RichTextEditor');
         this.setProperties({ value: this.replaceEntities(this.value) }, true);
         if (this.value && !this.valueTemplate) {
             this.setProperties({ value: this.serializeValue(this.value) }, true);
@@ -3607,8 +3661,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
                 case 'cssClass':
-                    this.element.classList.remove(oldProp[prop]);
-                    this.setCssClass(newProp[prop]);
+                    this.updateCssClass(oldProp[prop], false);
+                    this.updateCssClass(newProp[prop], true);
                     this.notify(events.bindCssClass, { cssClass: newProp[prop], oldCssClass: oldProp[prop] });
                     break;
                 case 'enabled': this.setEnable(); break;
@@ -3994,12 +4048,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.element.style.width = 'auto';
         }
     }
-    private setCssClass(cssClass: string): void {
+    private updateCssClass(cssClass: string, setCssClass: boolean): void {
         if (!isNOU(cssClass)) {
             const allClassName: string[] = cssClass.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
                 if (allClassName[i as number].trim() !== '') {
-                    this.element.classList.add(allClassName[i as number]);
+                    if (setCssClass) {
+                        // Will set the css class
+                        this.element.classList.add(allClassName[i as number]);
+                    } else {
+                        // Will remove the css class
+                        removeClass([this.element], allClassName[i as number]);
+                    }
                 }
             }
         }
@@ -4163,7 +4223,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings) {
             this.setIframeSettings();
         }
-        this.setCssClass(this.cssClass);
+        this.updateCssClass(this.cssClass, true);
         this.updateEnable();
         this.setPlaceHolder();
         this.updateRTL();
@@ -5090,7 +5150,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
                 (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
-            if (!element) { return false; }
+            if (!element && this.maxLength !== 0) { return false; }
             const array: number[] = [8, 9, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {

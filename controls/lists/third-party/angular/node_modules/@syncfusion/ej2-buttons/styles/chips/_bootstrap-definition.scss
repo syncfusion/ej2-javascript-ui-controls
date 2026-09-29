@@ -1,6 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/definition/bootstrap' as *;
-@forward 'ej2-base/styles/definition/bootstrap';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //General
 $chip-bg-color: $grey-f5 !default;

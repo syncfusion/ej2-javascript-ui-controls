@@ -1,4 +1,5 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/variables' as btn;
 
 @include export-module('progress-button-layout') {
   .e-progress-btn {
@@ -48,7 +49,6 @@
 
     &.e-progress-active {
       overflow: hidden;
-      pointer-events: none;
      
       @if $skin-name == 'bootstrap5.3' {
         .e-progress,

@@ -1,3 +1,4 @@
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Diagram } from '../diagram';
 import { ConnectorModel, OrthogonalSegmentModel } from '../objects/connector-model';
 import { Connector } from '../objects/connector';
@@ -1177,6 +1178,7 @@ export class LineRouting {
      */
 
     constructor() {
+        initializeTelemetryFeature('LineRouting', 'Diagram');
         //constructs the line routing module
     }
 

@@ -5,7 +5,7 @@ import { ColumnModel } from '@syncfusion/ej2-charts';
 /**
  * `Column` directive represent a axis column of the react Chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent> 
  * <ColumnsDirective>
  * <ColumnDirective></ColumnDirective>

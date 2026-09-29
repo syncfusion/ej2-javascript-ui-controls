@@ -996,9 +996,9 @@ export function _getUpdatedBounds(value: number[], page?: PdfPage): number[] {
  *
  * @private
  * @param {string} colorString Color value in string format.
- * @returns {PdfColor | undefined} RGB color value.
+ * @returns {PdfColor} RGB color value.
  */
-export function _convertToColor(colorString: string): PdfColor | undefined {
+export function _convertToColor(colorString: string): PdfColor {
     let color: number[] = _getColorValue(colorString);
     if (!color) {
         const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorString);
@@ -5077,7 +5077,7 @@ export function _isNullOrUndefined (value: any): boolean { // eslint-disable-lin
 /**
  * Defines a property on an object with specific attributes.
  *
- * @piq
+ * @private
  * @param {Object} obj - The target object on which the property will be defined.
  * @param {string} prop - The name of the property to define.
  * @param {any} value - The value to assign to the property.
@@ -5439,7 +5439,7 @@ export function _isLittleEndian(): boolean {
  *
  * @private
  * @param {_PdfUniqueEncodingElement} abstractSyntaxCollection - The ASN1 collection from which attributes are to be extracted.
- * @returns {_PdfUniqueEncodingElement | undefined} The extracted attributes element if valid, otherwise undefined.
+ * @returns {_PdfUniqueEncodingElement} The extracted attributes element if valid, otherwise undefined.
  */
 export function _extractAttributes(abstractSyntaxCollection: _PdfUniqueEncodingElement): _PdfUniqueEncodingElement {
     const sequence: _PdfAbstractSyntaxElement[] = abstractSyntaxCollection._getSequence();
@@ -5951,3 +5951,268 @@ export function _toAlpha(num: number): string {
     }
     return result;
 }
+/**
+ * Creates a der encoded asn1 **primitive** element.
+ *
+ * @param {number} tag - The asn1 tag.
+ * @param {Uint8Array} value - Encoded primitive value bytes.
+ * @returns {_PdfUniqueEncodingElement} The created primitive encoding element.
+ *
+ */
+export function _createPrimitive(tag: number, value: Uint8Array): _PdfUniqueEncodingElement {
+    const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+    element._tagClass = _TagClassType.universal;
+    element._construction = _ConstructionType.primitive;
+    element._setTagNumber(tag);
+    element._setValue(value);
+    return element;
+}
+/**
+ * Creates a der encoded asn1 **constructed** element.
+ *
+ * @param {number} tag - The asn1 constructed tag.
+ * @param {_PdfUniqueEncodingElement[]} elements - The ordered child elements to be nested.
+ * @returns {_PdfUniqueEncodingElement} The created constructed encoding element.
+ *
+ */
+export function _createAsn1Constructed(tag: number, elements: _PdfUniqueEncodingElement[]): _PdfUniqueEncodingElement {
+    const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+    element._tagClass = _TagClassType.universal;
+    element._construction = _ConstructionType.constructed;
+    element._setTagNumber(tag);
+    element._setSequence(elements);
+    return element;
+}
+/**
+ * Encodes a dotted **Object Identifier** string into der bytes.
+ *
+ * @param {string} oidString - The dotted oid string.
+ * @returns {Uint8Array} The der encoded content octets for the oid.
+ *
+ */
+export function _encodeObjectIdentifier(oidString: string): Uint8Array {
+    const parts: number[] = oidString.split('.').map(Number);
+    const bytes: number[] = [];
+    bytes.push(parts[0] * 40 + parts[1]);
+    for (let i: number = 2; i < parts.length; i++) {
+        let value: number = parts[<number>i];
+        if (value < 128) {
+            bytes.push(value);
+        } else {
+            const temp: number[] = [];
+            while (value > 0) {
+                temp.unshift(value & 0x7F);
+                value >>>= 7;
+            }
+            for (let j: number = 0; j < temp.length - 1; j++) {
+                temp[<number>j] |= 0x80;
+            }
+            bytes.push(...temp);
+        }
+    }
+    return new Uint8Array(bytes);
+}
+/**
+ * Trim leading zero bytes from a big-endian integer byte array.
+ *
+ * @param {Uint8Array} bytes The integer represented as a byte array.
+ * @returns {Uint8Array} The input array without leading zero bytes.
+ */
+export function _trimInteger(bytes: Uint8Array): Uint8Array {
+    let i: number = 0;
+    while (i < bytes.length - 1 && bytes[<number>i] === 0x00) {
+        i++;
+    }
+    return bytes.subarray(i);
+}
+/**
+ * Compare two byte arrays for exact equality.
+ *
+ * @param {Uint8Array} a First byte array.
+ * @param {Uint8Array} b Second byte array.
+ * @returns {boolean} True when both arrays have the same length and contents.
+ */
+export function _isByteArrayEqual(a?: Uint8Array, b?: Uint8Array): boolean {
+    if (!a || !b || a.length !== b.length) {
+        return false;
+    }
+    for (let i: number = 0; i < a.length; i++) {
+        if (a[<number>i] !== b[<number>i]) {
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ * Compute a 32-bit non-cryptographic hash of a byte array.
+ *
+ * @param {Uint8Array} bytes The input bytes to hash.
+ * @returns {number} A 32-bit unsigned hash value.
+ */
+export function _hashBytes(bytes: Uint8Array): number {
+    let h: number = 5381;
+    for (let i: number = 0; i < bytes.length; i++) {
+        h = ((h << 5) + h) ^ bytes[<number>i];
+        h |= 0;
+    }
+    return h >>> 0;
+}
+/**
+ * Parses ASN.1 encoded timestamp token structure.
+ *
+ * @private
+ * @param {Uint8Array} token Raw timestamp token bytes
+ * @returns {object} Parsed timestamp structure with TSTInfo fields
+ * @throws {Error} If token is malformed or cannot be parsed
+ */
+export function _parseTimestampToken(token: Uint8Array): {
+    version: number;
+    policy: string;
+    messageImprint: { hashAlgorithm: string; hashedMessage: Uint8Array };
+    serialNumber: Uint8Array;
+    genTime: Date;
+    accuracy?: { seconds?: number; millis?: number; micros?: number };
+    ordering?: boolean;
+    nonce?: Uint8Array;
+    tsa?: string; } {
+    try {
+        const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+        element._fromBytes(token);
+        const topChildren: _PdfAbstractSyntaxElement[] = element._getComponents();
+        if (!topChildren || topChildren.length < 2) {
+            throw new Error('Invalid ContentInfo structure');
+        }
+        const contentWrapper: _PdfAbstractSyntaxElement = topChildren[1];
+        const contentChildren: _PdfAbstractSyntaxElement[] = contentWrapper._getComponents();
+        const signedData: _PdfAbstractSyntaxElement = contentChildren[0];
+        const signedChildren: _PdfAbstractSyntaxElement[] = signedData._getComponents();
+        if (!signedChildren || signedChildren.length < 3) {
+            throw new Error('Invalid SignedData structure');
+        }
+        const versionElem: _PdfAbstractSyntaxElement = signedChildren[0];
+        const encapContentInfo: _PdfAbstractSyntaxElement = signedChildren[2];
+        const encapChildren: _PdfAbstractSyntaxElement[] = encapContentInfo._getComponents();
+        if (!encapChildren || encapChildren.length < 2) {
+            throw new Error('Invalid EncapsulatedContentInfo');
+        }
+        const eContentWrapper: _PdfAbstractSyntaxElement = encapChildren[1];
+        const eContentChildren: _PdfAbstractSyntaxElement[] = eContentWrapper._getComponents();
+        const tstInfo: _PdfAbstractSyntaxElement = eContentChildren[0];
+        if (!tstInfo) {
+            throw new Error('Invalid TSTInfo structure');
+        }
+        let children: _PdfAbstractSyntaxElement[] = tstInfo._getComponents();
+        if (children.length === 1 &&
+            children[0]._getTagNumber() === _UniversalType.sequence) {
+            children = children[0]._getComponents();
+        }
+        let idx: number = 0;
+        const versionElem1: _PdfAbstractSyntaxElement = children[idx++];
+        if (versionElem._getTagNumber() !== _UniversalType.integer) {
+            throw new Error('Invalid TSTInfo: version is not INTEGER');
+        }
+        const tstVersion: number = versionElem1._getInteger();
+        const policy: string = children[idx++]._getObjectIdentifier().toString();
+        const msgImprint: _PdfAbstractSyntaxElement = children[idx++];
+        const msgChildren: _PdfAbstractSyntaxElement[] = msgImprint._getComponents();
+        const algSeq: _PdfAbstractSyntaxElement = msgChildren[0];
+        const algChildren: _PdfAbstractSyntaxElement[] = algSeq._getComponents();
+        const hashAlg: string = algChildren[0]._getObjectIdentifier().toString();
+        const hashedMessage: Uint8Array = msgChildren[1]._getOctetString();
+        const serialNumberElem: _PdfAbstractSyntaxElement = children[idx++];
+        const serialNumber: Uint8Array = serialNumberElem._getValue();
+        const genTimeElem: _PdfAbstractSyntaxElement = children[idx++];
+        const rawBytes: Uint8Array = genTimeElem._getValue();
+        let genTimeStr: string = '';
+        for (let i: number = 0; i < rawBytes.length; i++) {
+            genTimeStr += String.fromCharCode(rawBytes[<number>i]);
+        }
+        let normalized: string = genTimeStr.trim();
+        if (normalized.endsWith('Z')) {
+            normalized = normalized.replace('Z', '+00:00');
+        }
+        normalized = normalized.replace(/([+-])(\d{2})(\d{2})$/, '$1$2:$3');
+        const iso: string = normalized.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3T$4:$5:$6');
+        const genTime: Date = new Date(iso);
+        if (isNaN(genTime.getTime())) {
+            throw new Error('Invalid GeneralizedTime: ' + genTimeStr);
+        }
+        const result: any = {version: tstVersion, policy: policy, //eslint-disable-line
+            messageImprint: {hashAlgorithm: hashAlg, hashedMessage: hashedMessage},
+            serialNumber: serialNumber,
+            genTime: genTime
+        };
+        while (idx < children.length) {
+            const next: _PdfAbstractSyntaxElement = children[<number>idx];
+            const tag: number = next._getTagNumber();
+            if (next._tagClass === _TagClassType.context && tag === 0) {
+                const accWrapper: _PdfAbstractSyntaxElement = next._getComponents()[0];
+                const accChildren: _PdfAbstractSyntaxElement[] = accWrapper._getComponents();
+                result.accuracy = {};
+                accChildren.forEach((c: any) => { //eslint-disable-line
+                    const t: number = c._getTagNumber();
+                    let val: number;
+                    try {
+                        val = c._getInteger();
+                    } catch {
+                        return;
+                    }
+                    if (t === 0) {
+                        result.accuracy.seconds = val;
+                    } else if (t === 1) {
+                        result.accuracy.millis = val;
+                    } else if (t === 2) {
+                        result.accuracy.micros = val;
+                    }
+                });
+                idx++;
+                continue;
+            }
+            if (tag === _UniversalType.abstractSyntaxBoolean) {
+                result.ordering = next._getBooleanValue();
+                idx++;
+                continue;
+            }
+            if (tag === _UniversalType.integer) {
+                result.nonce = next._getValue();
+                idx++;
+                continue;
+            }
+            if (next._tagClass === _TagClassType.context && tag === 0) {
+                const tsaWrapper: _PdfAbstractSyntaxElement = next._getComponents()[0];
+                const val: Uint8Array = tsaWrapper._getValue();
+                let tsaStr: string = '';
+                for (let i: number = 0; i < val.length; i++) {
+                    tsaStr += String.fromCharCode(val[<number>i]);
+                }
+                result.tsa = tsaStr;
+                idx++;
+                continue;
+            }
+            idx++;
+        }
+        return result;
+    } catch (error) {
+        throw new Error(`Failed to parse timestamp token: ${error.message}`);
+    }
+}
+/**
+ * Compares two byte arrays for equality.
+ *
+ * @param {Uint8Array} a The first byte array.
+ * @param {Uint8Array} b The second byte array.
+ * @returns {boolean} true if both byte arrays contain identical data; otherwise, false.
+ * @private
+ */
+export function _bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+    if (!a || !b || a.length !== b.length) {
+        return false;
+    }
+    for (let i: number = 0; i < a.length; i++) {
+        if (a[<number>i] !== b[<number>i]) {
+            return false;
+        }
+    }
+    return true;
+}
+

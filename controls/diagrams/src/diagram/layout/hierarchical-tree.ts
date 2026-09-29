@@ -1,5 +1,6 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { INode, IConnector, Bounds, TreeInfo } from './layout-base';
 import { Layout, ILayout, LevelBounds } from './layout-base';
 import { SubTreeAlignments, Direction, DiagramAction } from '../enum/enum';
@@ -24,6 +25,7 @@ export class HierarchicalTree {
      */
 
     constructor() {
+        initializeTelemetryFeature('OrganizationalChart', 'Diagram');
         //constructs the layout module
     }
 

@@ -4,9 +4,10 @@ import { isUndefined } from '@syncfusion/ej2-base';
 
 import { AIAssistView, AIAssistViewModel } from '@syncfusion/ej2-interactive-chat';
 import { ViewsDirective, ViewDirective, ViewsPlugin, ViewPlugin } from './views.directive'
+import { MentionsDirective, MentionDirective, MentionsPlugin, MentionPlugin } from './mentions.directive'
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeView', 'attachmentSettings', 'bannerTemplate', 'blockTemplate', 'cssClass', 'enableAttachments', 'enablePersistence', 'enableRtl', 'enableScrollToBottom', 'enableStreaming', 'footerTemplate', 'footerToolbarSettings', 'height', 'itemTemplate', 'locale', 'prompt', 'promptIconCss', 'promptItemTemplate', 'promptPlaceholder', 'promptSuggestionItemTemplate', 'promptSuggestions', 'promptSuggestionsHeader', 'promptToolbarSettings', 'prompts', 'responseIconCss', 'responseItemTemplate', 'responseToolbarSettings', 'showClearButton', 'showHeader', 'speechToTextSettings', 'textToSpeechSettings', 'toolbarSettings', 'views', 'width', 'attachmentRemoved', 'attachmentUploadFailure', 'attachmentUploadSuccess', 'beforeAttachmentUpload', 'created', 'editableContextClicked', 'promptChanged', 'promptRequest', 'stopRespondingClick'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'activeView', 'attachmentSettings', 'bannerTemplate', 'blockTemplate', 'cssClass', 'enableAttachments', 'enablePersistence', 'enableRtl', 'enableScrollToBottom', 'enableStreaming', 'footerTemplate', 'footerToolbarSettings', 'height', 'itemTemplate', 'locale', 'mentions', 'prompt', 'promptIconCss', 'promptItemTemplate', 'promptPlaceholder', 'promptSuggestionItemTemplate', 'promptSuggestions', 'promptSuggestionsHeader', 'promptToolbarSettings', 'prompts', 'responseAnimationTemplate', 'responseIconCss', 'responseItemTemplate', 'responseToolbarSettings', 'showClearButton', 'showHeader', 'speechToTextSettings', 'textToSpeechSettings', 'toolbarSettings', 'views', 'width', 'attachmentRemoved', 'attachmentRemoving', 'attachmentUploadFailure', 'attachmentUploadSuccess', 'beforeAttachmentUpload', 'created', 'editableContextClicked', 'mentionSelect', 'promptChanged', 'promptRequest', 'stopRespondingClick'];
 export const modelProps: string[] = ['prompt'];
 
 export const testProp: any = getProps({props: properties});
@@ -35,7 +36,7 @@ export let AIAssistViewComponent: DefineVueComponent<AIAssistViewModel> =  vueDe
             models: modelProps as string[],
             hasChildDirective: true as boolean,
             hasInjectedModules: true as boolean,
-            tagMapper: {"e-views":"e-view"} as { [key: string]: Object },
+            tagMapper: {"e-views":"e-view","e-mentions":"e-mention"} as { [key: string]: Object },
             tagNameMapper: {} as Object,
             isVue3: !isExecute as boolean,
             templateCollection: {} as any,
@@ -178,6 +179,8 @@ export const AIAssistViewPlugin = {
         Vue.component(AIAssistViewPlugin.name, AIAssistViewComponent);
         Vue.component(ViewPlugin.name, ViewDirective);
         Vue.component(ViewsPlugin.name, ViewsDirective);
+        Vue.component(MentionPlugin.name, MentionDirective);
+        Vue.component(MentionsPlugin.name, MentionsDirective);
 
     }
 }

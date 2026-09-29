@@ -16,9 +16,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-progressbar-annotations>e-progressbar-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class ProgressBarAnnotationDirective extends ComplexBase<ProgressBarAnnotationDirective> {
@@ -30,19 +31,12 @@ export class ProgressBarAnnotationDirective extends ComplexBase<ProgressBarAnnot
      * to move annotation
      * @default 0
      */
-    public annotationAngle: any;
+    public declare annotationAngle: any;
     /** 
      * to move annotation
      * @default '0%'
      */
-    public annotationRadius: any;
-    /** 
-     * Content of the annotation, which accepts the id of the custom element.
-     * @default null
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare annotationRadius: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -51,6 +45,7 @@ export class ProgressBarAnnotationDirective extends ComplexBase<ProgressBarAnnot
         this.directivePropList = input;
     }
 }
+Template()(ProgressBarAnnotationDirective.prototype, 'content');
 
 /**
  * ProgressBarAnnotation Array Directive
@@ -58,6 +53,7 @@ export class ProgressBarAnnotationDirective extends ComplexBase<ProgressBarAnnot
  */
 @Directive({
     selector: 'ej-progressbar>e-progressbar-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(ProgressBarAnnotationDirective)
     },

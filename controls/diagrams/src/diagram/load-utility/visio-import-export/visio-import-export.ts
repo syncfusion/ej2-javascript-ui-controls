@@ -1,3 +1,4 @@
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { BpmnShapeModel, ConnectorModel, IExportingEventArgs, IImportingEventArgs, NodeModel } from '../..';
 import { Diagram } from '../../diagram';
 import { DiagramConstraints, DiagramEvent, SnapConstraints } from '../../enum/enum';
@@ -79,6 +80,7 @@ export class ImportAndExportVisio {
      * Initializes the internal VisioPackageReader used for VSDX file processing.
      */
     constructor() {
+        initializeTelemetryFeature('ImportAndExportVisio', 'Diagram');
         this.packageReader = new VisioPackageReader();
     }
 
@@ -1162,6 +1164,7 @@ export async function loadVisioDataIntoDiagram(
     // Configure page settings
     diagram.pageSettings.width = currentPage.pageWidth * DPI;
     diagram.pageSettings.height = currentPage.pageHeight * DPI;
+    diagram.pageSettings.multiplePage = true;
     diagram.pageSettings.background.color = backgroundColor;
     diagram.pageSettings.showPageBreaks = windowSettings.showPageBreaks;
     diagram.pageSettings.orientation = currentPage.printPageOrientation === 2 ? 'Landscape' : 'Portrait';

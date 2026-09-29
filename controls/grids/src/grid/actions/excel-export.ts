@@ -19,11 +19,11 @@ import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
 import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportColumns, prepareColumns,
-    measureColumnDepth} from '../base/util';
+    measureColumnDepth } from '../base/util';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
-import { defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { defaultCurrencyCode, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -70,6 +70,7 @@ export class ExcelExport {
      * @hidden
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
+        initializeTelemetryFeature('ExcelExport', 'DataGrid');
         this.parent = parent;
         this.helper = new ExportHelper(parent);
         this.locator = locator;
@@ -559,9 +560,14 @@ export class ExcelExport {
                     continue;
                 }
                 const column: Column = gCell.column;
-                const field: string = column.field;
-                const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
-                let value: string | number | Date = !isNullOrUndefined(cellValue) ? cellValue : '';
+                let value: string | number | Date  = '';
+                if (!isNullOrUndefined(column) && column.type === 'rownumber') {
+                    value = row.index + 1;
+                } else {
+                    const field: string = column.field;
+                    const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
+                    value = !isNullOrUndefined(cellValue) ? cellValue : '';
+                }
                 if (column.type === 'dateonly' && typeof value === 'string' && value) {
                     const arr: string[] = value.split(/[^0-9.]/);
                     value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));

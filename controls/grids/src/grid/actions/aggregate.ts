@@ -1,4 +1,4 @@
-import { remove, extend, getValue } from '@syncfusion/ej2-base';
+import { remove, extend, getValue, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IAction, IGrid, NotifyArgs, ICellRenderer, IValueFormatter } from '../base/interface';
@@ -26,6 +26,7 @@ export class Aggregate implements IAction {
     private footerRenderer: FooterRenderer;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
+        initializeTelemetryFeature('Aggregate', 'DataGrid');
         this.parent = parent;
         this.locator = locator;
         this.addEventListener();

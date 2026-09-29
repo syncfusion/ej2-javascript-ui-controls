@@ -5,7 +5,7 @@ import { RangeNavigatorSeriesModel } from '@syncfusion/ej2-charts';
 /**
  * `rangenavigatorSeriesDirective` directive represent a series of the react AccumulationChart. 
  * It must be contained in a Rangenavigator component(`Rangenavigator`). 
- * ```tsx
+ * ```
  * <RangenavigatorComponent>
  * <RangenavigatorSeriesCollectionDirective>
  * <RangenavigatorSeriesDirective></RangenavigatorSeriesDirective>

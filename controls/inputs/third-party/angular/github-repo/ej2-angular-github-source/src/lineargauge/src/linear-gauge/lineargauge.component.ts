@@ -21,37 +21,36 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childAxes: new ContentChild(AxesDirective), 
-        childAnnotations: new ContentChild(AnnotationsDirective)
+        childAxes: new ContentChild(AxesDirective),
+        childAnnotations: new ContentChild(AnnotationsDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class LinearGaugeComponent extends LinearGauge implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	animationComplete: any;
-	annotationRender: any;
-	axisLabelRender: any;
-	beforePrint: any;
-	dragEnd: any;
-	dragMove: any;
-	dragStart: any;
-	gaugeMouseDown: any;
-	gaugeMouseLeave: any;
-	gaugeMouseMove: any;
-	gaugeMouseUp: any;
-	load: any;
-	loaded: any;
-	resized: any;
-	tooltipRender: any;
-	public valueChange: any;
-    public childAxes: QueryList<AxesDirective>;
-    public childAnnotations: QueryList<AnnotationsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare animationComplete: any;
+	declare annotationRender: any;
+	declare axisLabelRender: any;
+	declare beforePrint: any;
+	declare dragEnd: any;
+	declare dragMove: any;
+	declare dragStart: any;
+	declare gaugeMouseDown: any;
+	declare gaugeMouseLeave: any;
+	declare gaugeMouseMove: any;
+	declare gaugeMouseUp: any;
+	declare load: any;
+	declare loaded: any;
+	declare resized: any;
+	declare tooltipRender: any;
+	public declare valueChange: any;
+    public declare childAxes: QueryList<AxesDirective>;
+    public declare childAnnotations: QueryList<AnnotationsDirective>;
     public tags: string[] = ['axes', 'annotations'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -120,7 +119,9 @@ export class LinearGaugeComponent extends LinearGauge implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(LinearGaugeComponent.prototype, 'tooltip_template');
+
 

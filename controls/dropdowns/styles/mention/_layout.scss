@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('mention-layout') {
-
-  //default
-  //undefined
-  //enddefault
+  .e-mention-placeholder {
+    display: block;
+  }
 }

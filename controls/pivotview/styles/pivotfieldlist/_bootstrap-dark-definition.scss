@@ -1,5 +1,6 @@
-@use 'ej2-base/styles/definition/bootstrap-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-navigations/styles/treeview/bootstrap-dark-definition' as *;
+
 $field-list-skin: 'bootstrap-dark' !default;
 $field-list-active-color: $brand-primary !default;
 $field-list-toggle-border-color: $grey-8c !default;
@@ -109,6 +110,9 @@ $field-list-sort-select-color: $grey-light-font !default;
 $field-list-border: $content-border-color !default;
 $field-list-calc-expand-icon-padding: 8px !default;
 $field-list-search-padding-size: 10px $field-list-title-padding-size !default;
+$field-list-add-filter-selection-margin: 19px !default;
+$field-list-add-filter-selection-bigger-height: $treeview-big-item-height !default;
+$field-list-add-filter-selection-height: $treeview-item-height !default;
 $field-list-member-prompt-padding-size: 25px 12px !default;
 $field-list-static-field-table-height: 210px !default;
 $field-list-static-field-table-outer-div-height: 180px !default;

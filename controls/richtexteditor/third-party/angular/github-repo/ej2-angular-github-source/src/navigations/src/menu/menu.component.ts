@@ -20,31 +20,25 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childItems: new ContentChild(MenuItemsDirective)
+        childItems: new ContentChild(MenuItemsDirective),
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase])
 export class MenuComponent extends Menu implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeItemRender: any;
-	beforeOpen: any;
-	created: any;
-	onClose: any;
-	onOpen: any;
-	public select: any;
-    public childItems: QueryList<MenuItemsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeItemRender: any;
+	declare beforeOpen: any;
+	declare created: any;
+	declare onClose: any;
+	declare onOpen: any;
+	public declare select: any;
+    public declare childItems: QueryList<MenuItemsDirective>;
     public tags: string[] = ['items'];
-    /** 
-     * Specifies the template for Menu item.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -74,7 +68,9 @@ export class MenuComponent extends Menu implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MenuComponent.prototype, 'template');
+
 

@@ -9,7 +9,7 @@ export interface RichTextEditorTypecast {
 }
 /**
  * `RichTextEditor` represents the react RichTextEditor.
- * ```tsx
+ * ```ts
  * <RichTextEditor/>
  * ```
  */

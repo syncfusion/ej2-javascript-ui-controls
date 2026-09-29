@@ -1,0 +1,8 @@
+@use 'sass:color';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
+$sf-font-family: $font-family;
+$sf-text-color: $content-font-color;
+$sf-tooltip-text-color: $neutral-dark;
+$sf-layout-border-color: $neutral-light;
+$e-validation-text-color: #f44336 !default;

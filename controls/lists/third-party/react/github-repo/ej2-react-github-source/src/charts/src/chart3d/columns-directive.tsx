@@ -5,7 +5,7 @@ import { Chart3DColumnModel } from '@syncfusion/ej2-charts';
 /**
  * `Column3D` directive represent a axis column of the react Chart. 
  * It must be contained in a Chart component(`Chart3DComponent`). 
- * ```tsx
+ * ```
  * <Chart3DComponent> 
  * <Chart3DColumnsDirective>
  * <Chart3DColumnDirective></Chart3DColumnDirective>

@@ -135,6 +135,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private tabIndex: string;
     private isNotSearchList: boolean;
     protected isTyped: boolean;
+    protected isProgrammaticValueUpdate: boolean;
     protected isSelected: boolean;
     protected preventFocus: boolean;
     protected preventAutoFill: boolean;
@@ -416,7 +417,7 @@ export class DropDownList extends DropDownBase implements IInput {
     public showClearButton: boolean;
     /**
      * Triggers on typing a character in the filter bar when the
-     * [`allowFiltering`](./#allowfiltering)
+     * [`allowFiltering`](./index-default#allowfiltering)
      * is enabled.
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      *
@@ -529,6 +530,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.initialRemoteRender = false;
         this.isNotSearchList = false;
         this.isTyped = false;
+        this.isProgrammaticValueUpdate = false;
         this.isSelected = false;
         this.preventFocus = false;
         this.preventAutoFill = false;
@@ -1043,6 +1045,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected windowResize(): void {
+        this.updateFloatLabelOverflowWidth();
         if (this.isPopupOpen) {
             this.popupObj.refreshPosition(this.inputWrapper.container);
         }
@@ -1865,7 +1868,8 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     protected onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
-        if (!(!isNullOrUndefined(this.popupObj) && closest(target, this.checkSelector(this.popupObj.element.id))) &&
+        if (!isNullOrUndefined(target) && !(!isNullOrUndefined(this.popupObj) &&
+            closest(target, this.checkSelector(this.popupObj.element.id))) &&
             !isNullOrUndefined(this.inputWrapper) && !this.inputWrapper.container.contains(e.target as Node)) {
             if (this.inputWrapper.container.classList.contains(dropDownListClasses.inputFocus) || this.isPopupOpen) {
                 this.isDocumentClick = true;
@@ -2047,7 +2051,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected setValue(e?: KeyboardEventArgs): boolean {
+    protected setValue(e?: KeyboardEventArgs, autofill?: boolean): boolean {
         const dataItem: { [key: string]: string } = this.getItemData();
         this.isTouched = !isNullOrUndefined(e);
         if (dataItem.value === null) {
@@ -2077,7 +2081,7 @@ export class DropDownList extends DropDownBase implements IInput {
             (this.previousValue != null && this.isObjectInArray(this.previousValue, [(this as any).allowCustom &&
                 this.isObjectCustomValue ? this.value ? this.value : dataItem : dataItem.value ?
                     this.getDataByValue(dataItem.value) : dataItem])))) {
-            if (this.getModuleName() === 'combobox' && this.autoFill && e && (e.type === 'click' || e.action === 'enter')) {
+            if (this.getModuleName() === 'combobox' && autofill && e && (e.type === 'click' || e.action === 'enter')) {
                 return false;
             }
             this.isSelected = false;
@@ -2879,6 +2883,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.initial = false;
             }
+            if (this.isProgrammaticValueUpdate && !isNullOrUndefined(this.value) && this.getModuleName() === 'combobox') {
+                this.detachChangeEvent(null);
+            }
             else if (this.getModuleName() === 'autocomplete' && this.value) {
                 this.setInputValue();
             }
@@ -2992,10 +2999,12 @@ export class DropDownList extends DropDownBase implements IInput {
         isOffline: boolean = false
     ): void {
         const fieldValue: string[] = this.fields.value.split('.');
-        let checkVal: boolean = list.some((x: { [key: string]: boolean | string | number }) =>
-            isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
-                this.checkFieldValue(x, fieldValue) === value : x[checkField as string] === value);
-
+        let checkVal: boolean = false;
+        if (!isNullOrUndefined(list) && list.length > 0) {
+            checkVal = list.some((x: { [key: string]: boolean | string | number }) =>
+                isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
+                    this.checkFieldValue(x, fieldValue) === value : x[checkField as string] === value);
+        }
         if (this.enableVirtualization && this.virtualGroupDataSource) {
             checkVal = (this.virtualGroupDataSource as any).some((x: { [key: string]: boolean | string | number }) =>
                 isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
@@ -3042,7 +3051,7 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         const dataManager: DataManager = this.dataSource as DataManager;
-        const fullData: Object[] = dataManager.dataSource.json || [];
+        const fullData: any[] = (dataManager as any).dataSource.json || [];
         if (fullData && fullData.length > 0) {
             const foundItem: any = (fullData as any).find((item: any) => {
                 if (this.fields.value && (this.fields.value as any).includes('.')) {
@@ -3537,7 +3546,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 ulElement = null;
             },
             targetExitViewport: () => {
-                if (!Browser.isDevice) {
+                if (!Browser.isDevice || (this.allowFiltering === false && this.isPopupOpen)) {
                     this.hidePopup();
                 }
             }
@@ -4519,6 +4528,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isObjectInArray(newProp.value , [oldProp.value])){
                     return;
                 }
+                if (!this.initial && this.dataSource instanceof DataManager) {
+                    this.isProgrammaticValueUpdate = true;
+                }
                 if (this.enableVirtualization){
                     const isOfflineMode: boolean = this.dataSource instanceof DataManager &&
                     (this.dataSource as any).dataSource.offline === true;
@@ -4730,9 +4742,11 @@ export class DropDownList extends DropDownBase implements IInput {
     private updateFloatLabelOverflowWidth(): void {
         const container: HTMLElement = this.inputWrapper.container;
         const label: HTMLElement | null = container.querySelector('.e-float-text');
-        const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
-            label.style.width = calculateWidth + 'px';
+        if (label && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
+            const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
+            if (calculateWidth) {
+                label.style.width = calculateWidth + 'px';
+            }
         }
     }
     /**

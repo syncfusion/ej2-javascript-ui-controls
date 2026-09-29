@@ -14,9 +14,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-annotations>e-annotation',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        content: new ContentChild('content')
     }
 })
 export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
@@ -27,7 +28,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
     /** 
      * Options to improve accessibility for chart annotation elements.
      */
-    public accessibility: any;
+    public declare accessibility: any;
     /** 
      * Specifies the coordinate units of the annotation. 
      * The options are: 
@@ -35,13 +36,13 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * * Point - Renders the annotation based on x and y axis values.
      * @default 'Pixel'
      */
-    public coordinateUnits: any;
+    public declare coordinateUnits: any;
     /** 
      * A description for the annotation that provides additional information about its content for screen readers.
      * @default null
      * @deprecated 
      */
-    public description: any;
+    public declare description: any;
     /** 
      * Specifies the alignment of the annotation. 
      * The options are: 
@@ -51,7 +52,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * @default 'Center'
      * @deprecated 
      */
-    public horizontalAlignment: any;
+    public declare horizontalAlignment: any;
     /** 
      * Specifies the regions of the annotation. 
      * The options are: 
@@ -59,7 +60,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * * Series - Renders the annotation based on series coordinates.
      * @default 'Chart'
      */
-    public region: any;
+    public declare region: any;
     /** 
      * Specifies the position of the annotation. 
      * The options are 
@@ -69,39 +70,32 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
      * @default 'Middle'
      * @deprecated 
      */
-    public verticalAlignment: any;
+    public declare verticalAlignment: any;
     /** 
      * If `coordinateUnit` is set to `Pixel`, x specifies the pixel value. 
      * If `coordinateUnit` is set to `Point`, x specifies the axis value.
      * @default '0'
      * @asptype object
      */
-    public x: any;
+    public declare x: any;
     /** 
      * The name of the horizontal axis associated with the annotation. 
      * Requires the `axes` of the chart.
      * @default null
      */
-    public xAxisName: any;
+    public declare xAxisName: any;
     /** 
      * If `coordinateUnit` is set to `Pixel`, y specifies the pixel value. 
      * If `coordinateUnit` is set to `Point`, y specifies the axis value.
      * @default '0'
      */
-    public y: any;
+    public declare y: any;
     /** 
      * The name of the vertical axis associated with the annotation. 
      * Requires the `axes` of the chart.
      * @default null
      */
-    public yAxisName: any;
-    /** 
-     * The content of the annotation, which also accepts the ID of the custom element.
-     * @default null
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
+    public declare yAxisName: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -110,6 +104,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
         this.directivePropList = input;
     }
 }
+Template()(AnnotationDirective.prototype, 'content');
 
 /**
  * Annotation Array Directive
@@ -117,6 +112,7 @@ export class AnnotationDirective extends ComplexBase<AnnotationDirective> {
  */
 @Directive({
     selector: 'ejs-chart>e-annotations',
+    standalone: true,
     queries: {
         children: new ContentChildren(AnnotationDirective)
     },

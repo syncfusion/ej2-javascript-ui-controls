@@ -126,6 +126,12 @@ export class PdfTemplate {
      */
     _key: string;
     /**
+     * Indicates whether the template represents a validation signature appearance.
+     *
+     * @private
+     */
+    _isSignatureAppearanceValidation: boolean;
+    /**
      * Initializes a new instance of the `PdfTemplate` class.
      *
      * @private
@@ -392,7 +398,7 @@ export class PdfTemplate {
         const json: any = JSON.parse(this._appearance); // eslint-disable-line    
         if (json) {
             const entryKey = isResourceExport ? 'resources' : 'normal'; // eslint-disable-line
-            const entry = json[entryKey]; // eslint-disable-line    
+            const entry = json[entryKey]; // eslint-disable-line
             if (entry) {
                 if (isResourceExport) {
                     const resourceDictionary: _PdfDictionary = jsonDocument._parseDictionary(entry['dict']);

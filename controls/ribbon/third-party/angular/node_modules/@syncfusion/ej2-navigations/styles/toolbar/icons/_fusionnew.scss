@@ -1,0 +1,15 @@
+@use '../variables' as *;
+@include export-module('toolbar-fusionnew-icons') {
+  #{&}.e-toolbar {
+
+    .e-popup-down-icon::before {
+      content: '\e729';
+      line-height: normal;
+    }
+
+    .e-popup-up-icon::before {
+      content: '\e776';
+      line-height: normal;
+    }
+  }
+}

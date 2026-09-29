@@ -4,5 +4,5 @@ export {AggregateColumnDirective,AggregateColumnsDirective} from './treegrid/agg
 export {AggregateDirective,AggregatesDirective} from './treegrid/aggregates.directive';
 export { TreeGridComponent} from './treegrid/treegrid.component';
 export { TreeGridModule } from './treegrid/treegrid.module';
-export { TreeGridAllModule, FilterService, PageService, SortService, ReorderService, ToolbarService, AggregateService, ResizeService, ColumnMenuService, ExcelExportService, PdfExportService, CommandColumnService, ContextMenuService, EditService, SelectionService, VirtualScrollService, DetailRowService, RowDDService, FreezeService, ColumnChooserService, LoggerService, InfiniteScrollService } from './treegrid/treegrid-all.module';
+export { TreeGridAllModule, FilterService, PageService, SortService, ReorderService, ToolbarService, AggregateService, ResizeService, ColumnMenuService, ExcelExportService, PdfExportService, CommandColumnService, ContextMenuService, EditService, SelectionService, VirtualScrollService, DetailRowService, RowDDService, FreezeService, ColumnChooserService, LoggerService, InfiniteScrollService, DomVirtualizationService } from './treegrid/treegrid-all.module';
 export * from '@syncfusion/ej2-treegrid';

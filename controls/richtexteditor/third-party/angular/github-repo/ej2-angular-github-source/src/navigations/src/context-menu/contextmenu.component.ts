@@ -21,21 +21,21 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class ContextMenuComponent extends ContextMenu implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeItemRender: any;
-	beforeOpen: any;
-	created: any;
-	onClose: any;
-	onOpen: any;
-	public select: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeItemRender: any;
+	declare beforeOpen: any;
+	declare created: any;
+	declare onClose: any;
+	declare onOpen: any;
+	public declare select: any;
 
 
 
@@ -67,7 +67,8 @@ export class ContextMenuComponent extends ContextMenu implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

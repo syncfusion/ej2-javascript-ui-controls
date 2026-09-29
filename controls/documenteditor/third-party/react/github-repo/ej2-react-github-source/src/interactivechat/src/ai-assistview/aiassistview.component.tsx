@@ -11,6 +11,7 @@ export interface AIAssistViewTypecast {
     itemTemplate?: string | Function | any;
     blockTemplate?: string | Function | any;
     bannerTemplate?: string | Function | any;
+    responseAnimationTemplate?: string | Function | any;
 }
 /**
  * Represents the React AIAssistView Component
@@ -25,7 +26,7 @@ export class AIAssistViewComponent extends AIAssistView {
     private getDefaultAttributes: Function;
     public initRenderCalled: boolean = false;
     private checkInjectedModules: boolean = true;
-    public directivekeys: { [key: string]: Object } = {'views': 'view'};
+    public directivekeys: { [key: string]: Object } = {'views': 'view', 'mentions': 'mention'};
     private statelessTemplateProps: string[] = null;
     private templateProps: string[] = null;
     private immediateRender: boolean = false;

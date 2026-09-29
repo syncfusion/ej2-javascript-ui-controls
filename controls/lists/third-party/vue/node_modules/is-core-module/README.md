@@ -20,6 +20,24 @@ assert(isCore('fs'));
 assert(!isCore('butts'));
 ```
 
+## TypeScript
+
+`isCore` accepts any string. `isCore.Module` is the union of every specifier in `core.json`, regardless of node version, so editors can suggest them.
+
+The types import `core.json`, so [`resolveJsonModule`](https://www.typescriptlang.org/tsconfig/#resolveJsonModule), [`esModuleInterop`](https://www.typescriptlang.org/tsconfig/#esModuleInterop), and [`allowSyntheticDefaultImports`](https://www.typescriptlang.org/tsconfig/#allowSyntheticDefaultImports) must be enabled; some `module` and `moduleResolution` settings enable them by default, but `node16` does not enable `resolveJsonModule`.
+Without them, TypeScript reports an error in this package's `index.d.ts`, or, with `skipLibCheck`, `isCore.Module` silently widens to `string | number | symbol`.
+
+```ts
+import isCore = require('is-core-module');
+
+function isBuiltin(specifier: string): boolean {
+	return isCore(specifier); // any string is accepted
+}
+
+const name: isCore.Module = 'node:fs'; // only specifiers listed in `core.json`
+isCore(name, '16.0.0'); // true
+```
+
 ## Tests
 Clone the repo, `npm install`, and run `npm test`
 

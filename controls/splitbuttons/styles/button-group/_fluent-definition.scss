@@ -1,7 +1,5 @@
-@use 'ej2-base/styles/definition/fluent' as *;
-@use 'ej2-buttons/styles/button/fluent-definition' as *;
-@forward 'ej2-base/styles/definition/fluent';
-@forward 'ej2-buttons/styles/button/fluent-definition';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+@use '@syncfusion/ej2-buttons/styles/button/fluent-definition' as *;
 
 //layout variables
 $btn-grp-margin: -1px !default;

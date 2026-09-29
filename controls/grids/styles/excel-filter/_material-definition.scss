@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $grid-xlfl-fieldset-padding: 15px !default;
 $grid-xlfltd-padding: 12px !default;
 $grid-xlfltable-border-spacing: 0 !default;

@@ -89,7 +89,7 @@ export interface _ISigner {
      * @param {_ICipherParam} parameters The key parameters used by the signer.
      * @returns {void} This method does not return a value.
      */
-    _initialize(forSigning: boolean, parameters: _ICipherParam): void;
+    _initialize(forSigning: boolean, parameters: _ICipherParam | _PdfCipherParameter): void;
     /**
      * Feeds a segment of bytes into the ongoing signature digest computation.
      *
@@ -114,6 +114,15 @@ export interface _ISigner {
      * @returns {void} This method does not return a value.
      */
     _reset(): void;
+    /**
+     * Validates a digital signature against the internally computed hash.
+     *
+     * @private
+     * @param {Uint8Array} signature The signature bytes to be validated.
+     * @returns {boolean} Returns `true` if the signature is valid; otherwise, `false`.
+     * @throws {Error} Throws an error if called while in signing mode.
+     */
+    _validateSignature(signature: Uint8Array): boolean
 }
 
 

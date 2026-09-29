@@ -1,0 +1,16 @@
+@use '../variables' as *;
+@include export-module('accordion-bootstrap4-icons') {
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e705';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+}

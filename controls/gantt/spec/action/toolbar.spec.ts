@@ -1665,6 +1665,7 @@ describe('CR:890397-When adding a record via dialog, if the startDate is set to 
                     dependency: 'Predecessor',
                     child: 'subtasks'
                 },
+                hoursPerDay: 24,
                 editSettings: {
                     allowAdding: true
                 },

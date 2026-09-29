@@ -1,7 +1,6 @@
-@use 'ej2-base/styles/definition/bootstrap4' as *;
-@use 'ej2-navigations/styles/toolbar/bootstrap4-definition' as *;
-@forward 'ej2-base/styles/definition/bootstrap4';
-@forward 'ej2-navigations/styles/toolbar/bootstrap4-definition';
+@use 'sass:color';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ai-assist-scrollbar-width: 6px !default;
 $suggesstions-list-border-radius: 4px !default;
 $suggesstions-font-weight: 400 !default;
@@ -80,14 +79,12 @@ $rating-selected-bg-color: $gray-700 !default;
 $send-icon-color: $gray-600 !default;
 $send-icon-disabled-color: $send-icon-color !default;
 $prompt-text-border-color: $white !default;
-$tbar-header-btn-focus-box-shadow: $tbar-focus-btn-box-shadow !default;
+$tbar-header-btn-focus-box-shadow: 0 0 0 3px rgba(130, 138, 145, .5) !default;
 $tbar-header-hover-bg-color: transparent !default;
 
 // Attachment support related styles
 $assist-attachment-icon-font-size: $send-icon-size !default;
 $assist-attachment-icon-font-size-bigger: $send-icon-size-bigger !default;
-$assist-file-document-icon-font-size: 24px !default;
-$assist-file-document-icon-color: rgba(112, 112, 112, 1) !default;
 
 $file-progress-bar-success-color: $primary !default;
 $file-progress-bar-failure-color: $danger !default;
@@ -207,7 +204,6 @@ $rtl-footer-icons-wrapper-padding: unset !default;
 $uploaded-file-item-bottom: 4px !default;
 $uploaded-file-item-border-radius: 4px !default;
 $file-details-padding-right: 12px !default;
-$file-format-icon-padding: 3px !default;
 $assist-clear-icon-border-radius: 6px !default;
 $assist-progress-bar-border-radius: 4px !default;
 $prompt-content-padding-right: 8px !default;
@@ -266,3 +262,54 @@ $assist-stop-padding: 7px !default;
 $assist-stop-padding-bigger: 9px !default;
 $assist-footer-tbar-min-height: 26px !default;
 $assist-footer-tbar-min-height-bigger: 32px !default;
+$assist-footer-stt-btn-border-radius: 4px !default;
+
+// Thinking support related styles
+
+$thinking-single-stage-container-border-color: rgba(108, 117, 125, 1) !default;
+$thinking-content-color: $gray-700 !default;
+$thinking-inline-context-color: rgba(108, 117, 125, 1) !default;
+$thinking-timeline-progressline-color: $gray-300 !default;
+$thinking-timeline-progress-indicator-min-width: 32px !default;
+$thinking-timeline-progress-indicator-min-height: 32px !default;
+$thinking-timeline-progress-indicator-font-size: 14px !default;
+$thinking-timeline-progress-indicator-min-width-bigger: 40px !default;
+$thinking-timeline-progress-indicator-min-height-bigger: 40px !default;
+$thinking-timeline-progress-indicator-font-size-bigger: 16px !default;
+$aiassist-thinking-progress-line-height: 12px !default;
+$aiassist-thinking-progress-line-height-bigger: 10px !default;
+
+$aiassist-thinking-toggle-font-size: 12px !default;
+$aiassist-thinking-toggle-line-height: 24px !default;
+$aiassist-thinking-toggle-icon-font-size: 12px !default;
+$aiassist-thinking-toggle-icon-line-height: 100% !default;
+$aiassist-thinking-context-icon-font-size: 12px !default;
+$aiassist-thinking-context-icon-line-height: 100% !default;
+$aiassist-thinking-context-badge-font-size: 12px !default;
+$aiassist-thinking-context-badge-line-height: 100% !default;
+$aiassist-thinking-stage-icon-font-size: 16px !default;
+$aiassist-thinking-stage-icon-line-height: 100% !default;
+$aiassist-thinking-toggle-font-size-bigger: 14px !default;
+$aiassist-thinking-toggle-line-height-bigger: 22px !default;
+$aiassist-thinking-toggle-icon-font-size-bigger: 18px !default;
+$aiassist-thinking-toggle-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-context-icon-font-size-bigger: 18px !default;
+$aiassist-thinking-context-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-context-badge-font-size-bigger: 18px !default;
+$aiassist-thinking-context-badge-line-height-bigger: 100% !default;
+$aiassist-thinking-stage-icon-font-size-bigger: 18px !default;
+$aiassist-thinking-stage-icon-line-height-bigger: 100% !default;
+$aiassist-thinking-toggle-color: $gray-700 !default;
+
+$aiassist-regenerate-tbar-focus-bg: $gray-600 !default;
+$aiassist-regenerate-tbar-btn-border-radius: 4px !default;
+$aiassist-regenerate-tbar-btn-focus-border-color: $gray-600 !default;
+$aiassist-regenerate-tbar-border-nav-type: solid !default;
+$aiassist-regenerate-tbar-btn-hover-border-size: 1px !default;
+$aiassist-regenerate-tbar-ext-btn-focus-box-shadow: 0 0 0 3px rgba(130, 138, 145, .5) !default;
+$aiassist-regenerate-tbar-btn-icons-focus-color: inherit !default;
+$aiassist-regenerate-tbar-hover-bg: $gray-600 !default;
+$aiassist-regenerate-tbar-hover-border-color: color.adjust($gray-600, $lightness: -10%) !default;
+
+$ai-assist-mention-chip-color: $primary !default;
+$ai-assist-mention-chip-bg-color: rgba(240, 248, 255, 1) !default;

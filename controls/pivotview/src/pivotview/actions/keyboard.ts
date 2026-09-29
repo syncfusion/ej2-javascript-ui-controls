@@ -182,12 +182,16 @@ export class KeyboardInteraction {
                 return;
             }
         } else if (!this.parent.showGroupingBar && !this.parent.showFieldList &&
-            target && closest(target, '.' + cls.PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
+            target && closest(target, '.' + cls.PIVOT_VIEW_CLASS) &&
+            !closest(target, '.' + cls.GRID_PAGER) &&
+            !closest(target, '.e-popup.e-popup-open')) {
             if (this.parent.grid) {
                 const gridElement: HTMLElement = closest(target, '.' + cls.PIVOT_VIEW_CLASS) as HTMLElement;
                 const gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
                 const rows: HTMLElement[] = [].slice.call(gridElement.getElementsByTagName('tr')) as HTMLElement[];
-                if (target.innerHTML === ((rows[rows.length - 1]).lastChild as HTMLElement).innerHTML) {
+                const lastCell: HTMLElement = (rows[rows.length - 1]).lastChild as HTMLElement;
+                const isLastCell: boolean = target === lastCell;
+                if (isLastCell) {
                     gridFocus.currentInfo.skipAction = true;
                 } else {
                     gridFocus.focus();
@@ -206,7 +210,7 @@ export class KeyboardInteraction {
                     addClass([document.activeElement], 'e-focused');
                 }
             });
-        } else if (target.classList.contains('e-numerictextbox')) {
+        } else if (target.classList.contains('e-numerictextbox') && !closest(target, '.' + cls.GRID_PAGER)) {
             const gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
             gridFocus.focus();
             const element: HTMLElement = gridFocus.getFocusedElement();
@@ -274,7 +278,7 @@ export class KeyboardInteraction {
                     addClass([document.activeElement], 'e-focused');
                 }
             });
-        } else if (target.classList.contains('e-numerictextbox')) {
+        } else if (target.classList.contains('e-numerictextbox') && !closest(target, '.' + cls.GRID_PAGER)) {
             const gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
             gridFocus.focus();
             const element: HTMLElement = gridFocus.getFocusedElement();

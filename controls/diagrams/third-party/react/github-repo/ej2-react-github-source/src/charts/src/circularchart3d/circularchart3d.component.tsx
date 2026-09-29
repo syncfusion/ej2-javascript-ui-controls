@@ -8,7 +8,7 @@ export interface CircularChart3DTypecast {
 }
 /**
  * Represents react Circular 3D chart Component
- * ```tsx
+ * ```
  * <CircularChart3DComponent></CircularChart3DComponent>
  * ```
  */

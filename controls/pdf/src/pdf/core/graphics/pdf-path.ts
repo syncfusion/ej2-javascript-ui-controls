@@ -143,9 +143,6 @@ export class PdfPath {
             } else {
                 throw new Error('Invalid constructor arguments.');
             }
-        } else {
-            this._points = [];
-            this._pathTypes = [];
         }
     }
     /**

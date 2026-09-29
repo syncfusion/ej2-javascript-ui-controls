@@ -1,5 +1,5 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
-import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { Browser, closest, removeClass, isNullOrUndefined as isNOU, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs, IQuickToolbar, IRenderer } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs } from '../base/interface';
 import { IDropDownItemModel, IToolbarItemModel, NotifyArgs, IShowPopupArgs, IAudioCommandsArgs, MediaDropEventArgs, ActionBeginEventArgs } from '../../common/interface';
@@ -63,6 +63,7 @@ export class Audio {
     // Array to track timeouts for centralized cleanup
     private timeoutIds: number[] = [];
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('Audio', 'RichTextEditor');
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');

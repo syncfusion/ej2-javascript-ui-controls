@@ -20,7 +20,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents Vuejs 3D Chart Component
- * ```vue
+ * ```
  * <ejs-chart3d></ejs-chart3d>
  * ```
  */

@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * `RecurrenceEditorComponent` represents the react RecurrenceEditor.
- * ```tsx
+ * ```ts
  * <RecurrenceEditorComponent/>
  * ```
  */

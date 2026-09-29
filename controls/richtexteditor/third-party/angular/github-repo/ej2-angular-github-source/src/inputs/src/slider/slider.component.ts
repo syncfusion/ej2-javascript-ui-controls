@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,26 +30,25 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class SliderComponent extends Slider implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	change: any;
-	changed: any;
-	created: any;
-	renderedTicks: any;
-	renderingTicks: any;
-	tooltipChange: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare change: any;
+	declare changed: any;
+	declare created: any;
+	declare renderedTicks: any;
+	declare renderingTicks: any;
+	declare tooltipChange: any;
+	public declare valueChange: any;
 
 
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -90,7 +90,7 @@ export class SliderComponent extends Slider implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * Represents react ProgressBar Component
- * ```tsx
+ * ```
  * <ProgressBarComponent></ProgressBarComponent>
  * ```
  */

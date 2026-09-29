@@ -22,6 +22,7 @@ export const menuClass: CMenuClassList = {
     content:  '.' + literals.gridContent,
     edit: '.e-inline-edit',
     batchEdit: '.e-editedbatchcell',
+    cellEdit: '.e-editedcell',
     editIcon: 'e-edit',
     pager: '.e-gridpager',
     delete: 'e-delete',
@@ -71,6 +72,7 @@ export interface CMenuClassList {
     content: string;
     edit: string;
     batchEdit: string;
+    cellEdit: string;
     editIcon: string;
     pager: string;
     cancel: string;
@@ -328,7 +330,7 @@ export class ContextMenu implements IAction {
             break;
         case 'Edit':
             if (this.parent.editModule) {
-                if (this.parent.editSettings.mode === 'Batch') {
+                if (this.parent.editSettings.mode === 'Batch' || this.parent.editSettings.mode === 'Cell') {
                     if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.ariaColIndex), 10) - 1)) {
                         this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10) - 1,
                                                         // eslint-disable-next-line
@@ -342,7 +344,7 @@ export class ContextMenu implements IAction {
             break;
         case 'Delete':
             if (this.parent.editModule) {
-                if (this.parent.editSettings.mode !== 'Batch') {
+                if (!(this.parent.editSettings.mode === 'Batch' || this.parent.editSettings.mode === 'Cell')) {
                     this.parent.editModule.endEdit();
                 }
                 if (this.parent.getSelectedRecords().length === 1) {
@@ -486,7 +488,8 @@ export class ContextMenu implements IAction {
                         this.disableItems.push(item.text);
                     }
                     if (args.event && (this.ensureTarget(args.event.target as HTMLElement, menuClass.edit) ||
-                        this.ensureTarget(args.event.target as HTMLElement, menuClass.batchEdit))) {
+                        this.ensureTarget(args.event.target as HTMLElement, menuClass.batchEdit) ||
+                        this.ensureTarget(args.event.target as HTMLElement, menuClass.cellEdit))) {
                         if (key !== 'Save' && key !== 'Cancel') {
                             this.hiddenItems.push(item.text);
                         }

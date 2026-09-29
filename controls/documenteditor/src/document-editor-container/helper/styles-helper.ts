@@ -9,6 +9,39 @@ import { StyleInfo } from './ribbon-interfaces';
  * @private
  */
 export class StylesHelper {
+    private static dynamicStyleSheet: CSSStyleSheet;
+    private static styleClassMap: { [key: string]: string } = {};
+    private static styleCounter: number = 0;
+
+    private static ensureStyleSheet(): CSSStyleSheet {
+        if (!StylesHelper.dynamicStyleSheet) {
+            StylesHelper.dynamicStyleSheet = new CSSStyleSheet();
+            (document as any).adoptedStyleSheets = [
+                ...(document as any).adoptedStyleSheets,
+                StylesHelper.dynamicStyleSheet
+            ];
+        }
+        return StylesHelper.dynamicStyleSheet;
+    }
+    private static getDynamicStyleClass(styleString: string): string {
+        if (!styleString) {
+            return '';
+        }
+        /* eslint-disable */
+        const existingClass: string = StylesHelper.styleClassMap[styleString];
+        if (existingClass) {
+            return existingClass;
+        }
+        const className: string = 'e-de-style-gallery-' + StylesHelper.styleCounter++;
+        const styleSheet: CSSStyleSheet = StylesHelper.ensureStyleSheet();
+        styleSheet.insertRule(
+            '.' + className + ' {' + styleString + '}',
+            styleSheet.cssRules.length
+        );
+        /* eslint-disable */
+        StylesHelper.styleClassMap[styleString] = className;
+        return className;
+    }
     /**
      * Get style items for gallery
      *
@@ -70,16 +103,16 @@ export class StylesHelper {
         if (styles.length === 0) {
             styles.push({
                 content: localObj.getConstant('Normal'),
+                cssClass: 'e-de-gallery-normal',
                 htmlAttributes: {
-                    style: 'font-family: Calibri; font-size: 11pt;',
                     title: localObj.getConstant('Normal')
                 }
             });
 
             styles.push({
                 content: localObj.getConstant('Heading 1'),
+                cssClass: 'e-de-gallery-heading1',
                 htmlAttributes: {
-                    style: 'font-family: "Calibri Light"; font-size: 16pt; color: #2F5496; font-weight: bold;',
                     title: localObj.getConstant('Heading 1')
                 }
             });
@@ -132,8 +165,8 @@ export class StylesHelper {
             if (styleInfo) {
                 styles.push({
                     content: styleName,
+                    cssClass: StylesHelper.getDynamicStyleClass(styleInfo.Style),
                     htmlAttributes: {
-                        style: styleInfo.Style,
                         title: styleName
                     }
                 });
@@ -153,8 +186,8 @@ export class StylesHelper {
             if (!addedStylesMap[style.StyleName]) {
                 styles.push({
                     content: style.StyleName,
+                    cssClass: StylesHelper.getDynamicStyleClass(style.Style),
                     htmlAttributes: {
-                        style: style.Style,
                         title: style.StyleName
                     }
                 });
@@ -168,8 +201,8 @@ export class StylesHelper {
             if (!addedStylesMap[style.StyleName]) {
                 styles.push({
                     content: style.StyleName,
+                    cssClass: StylesHelper.getDynamicStyleClass(style.Style),
                     htmlAttributes: {
-                        style: style.Style,
                         title: style.StyleName
                     }
                 });

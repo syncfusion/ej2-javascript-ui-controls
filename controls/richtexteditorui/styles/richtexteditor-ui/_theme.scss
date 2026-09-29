@@ -1,0 +1,570 @@
+@use 'variables' as *;
+@use 'mixin' as *;
+
+@mixin toolbar-button-base-theme {
+  &:hover,
+  &:focus,
+  &:active,
+  &.e-active {
+    border: $rte-ui-hover-split-btn-border;
+  }
+
+  .e-icons {
+    color: $rte-ui-dropdown-color;
+  }
+
+  &:hover,
+  &:focus {
+    @if $theme-name =='tailwind' or $theme-name =='bootstrap4' or $theme-name =='bootstrap5.3' or $theme-name =='tailwind-dark' or $theme-name =='tailwind3' {
+      background: $rte-ui-split-btn-hover-bg;
+    }
+
+    .e-icons {
+      color: $rte-ui-icon-color;
+    }
+  }
+
+  &:hover {
+    .e-icons {
+      @if $theme-name =='bootstrap5.3' {
+        color: $rte-ui-hover-icons-color;
+      }
+    }
+  }
+
+  &:active {
+    .e-icons {
+      color: $rte-ui-active-btn-icons-color;
+    }
+  }
+
+  @if $theme-name =='FluentUI' or $theme-name =='fluentui-dark' {
+    border-color: transparent;
+  }
+}
+
+@mixin toolbar-button-active-theme {
+  .e-icons {
+    @if $theme-name !='bootstrap5.3' {
+      color: $rte-ui-icon-color;
+    }
+
+    @if $theme-name =='bootstrap5.3' {
+      color: $rte-ui-hover-icons-color;
+    }
+  }
+  border: $rte-ui-hover-split-btn-border;
+
+  @if $theme-name !='fluent2-highcontrast' {
+    background: $rte-ui-btn-active-bg;
+  }
+
+  @if $theme-name =='fluent2-highcontrast' {
+    background: $rte-ui-split-btn-hover-bg;
+  }
+}
+
+@mixin toolbar-split-wrapper-theme {
+  border-radius: $rte-ui-split-btn-border-radius;
+
+  .e-rte-ui-dropdown {
+    background: $rte-ui-default-btn-bg;
+    border: $rte-ui-split-btn-border;
+  }
+
+  .e-rte-ui-dropdown {
+    color: $rte-ui-dropdown-color;
+  }
+
+  &:hover {
+    background: $rte-ui-split-btn-hover-bg;
+
+    .e-rte-ui-dropdown {
+      border: $rte-ui-hover-split-btn-border;
+
+      @if $theme-name =='Material3' or $theme-name =='Material3-dark' {
+        border-image: none;
+      }
+    }
+
+    .e-split-btn:hover,
+    .e-dropdown-btn:hover {
+      @if $theme-name !='fluent2-highcontrast' {
+        background: $rte-ui-split-btn-span-hover-bg;
+      }
+
+      @if $theme-name =='fluent2-highcontrast' {
+        background: $rte-ui-split-btn-hover-bg;
+      }
+    }
+
+    .e-split-btn,
+    .e-dropdown-btn {
+      &:not(:hover) {
+        background: transparent;
+      }
+    }
+
+    .e-icons {
+      @if $theme-name !='bootstrap5.3' {
+        color: $rte-ui-icon-color;
+      }
+
+      @if $theme-name =='bootstrap5.3' {
+        color: $rte-ui-hover-icons-color;
+      }
+    }
+  }
+
+  &:active {
+    .e-rte-ui-dropdown {
+      border: $rte-ui-hover-split-btn-border;
+
+      &:active {
+        @if $theme-name =='Material3' or $theme-name =='Material3-dark' {
+          border-image: none;
+        }
+      }
+    }
+
+    .e-icons {
+      color: $rte-ui-active-btn-icons-color;
+    }
+  }
+
+  &:focus {
+    background: $rte-ui-split-btn-span-hover-bg;
+
+    .e-rte-ui-dropdown {
+      border: $rte-ui-hover-split-btn-border;
+
+      &:focus {
+        @if $theme-name =='Material3' or $theme-name=='Material3-dark' {
+          border-image: none;
+        }
+      }
+    }
+
+    .e-split-btn:focus,
+    .e-dropdown-btn:focus {
+      background: $rte-ui-split-btn-span-hover-bg;
+    }
+
+    .e-split-btn,
+    .e-dropdown-btn {
+      &:not(:focus) {
+        background: transparent;
+      }
+    }
+
+    .e-icons {
+      color: $rte-ui-icon-color;
+
+      @if ($theme-name =='fluent2' or $theme-name =='tailwind3') {
+        color: $rte-ui-default-icon-color;
+      }
+    }
+  }
+
+  &:has(.e-dropdown-btn.e-active) {
+
+    .e-split-btn,
+    .e-dropdown-btn {
+      @if $theme-name =='bootstrap-dark' or $theme-name =='tailwind' or $theme-name =='tailwind-dark' {
+        border: $rte-ui-hover-split-btn-border;
+      }
+
+      @if $theme-name !='bootstrap5.3' {
+        color: $rte-ui-icon-color;
+      }
+
+      @if $theme-name =='bootstrap5.3' {
+        color: $rte-ui-hover-icons-color;
+      }
+    }
+  }
+
+  .e-split-btn + .e-dropdown-btn.e-active {
+    background: $rte-ui-drop-btn-active-bg;
+  }
+
+  &:has(.e-dropdown-btn.e-active) .e-split-btn {
+    background: $rte-ui-split-btn-hover-bg;
+  }
+}
+
+@mixin toolbar-dropdown-button-theme {
+  box-shadow: none;
+  color: $rte-ui-dropdown-color;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &.e-active {
+    border: $rte-ui-hover-split-btn-border;
+    color: $rte-ui-dropdown-transition-color;
+  }
+
+  &:focus-visible {
+    box-shadow: $rte-ui-button-focus-box-shadow;
+  }
+}
+
+@include export-module('richtexteditor-ui-themes') {
+  .e-richtexteditor-ui {
+    .e-rte-ui-container {
+      border: $rte-ui-container-border;
+
+      .e-rte-ui-content-container {
+        background: $rte-ui-content-bg;
+        color: $rte-ui-content-color;
+
+        .e-content {
+          blockquote {
+            border-left: $rte-ui-content-blockquote-border-left-color;
+          }
+
+          a {
+            color: $rte-ui-anchor-color;
+          }
+        }
+      }
+
+      .e-rte-ui-toolbar-wrapper {
+        border-bottom: $rte-ui-toolbar-wrapper-container-border-bottom;
+        background: $rte-ui-tbar-default-bg;
+
+        .e-rte-ui-toolbar.e-toolbar {
+          .e-tbar-btn {
+            border: $rte-ui-split-btn-border;
+          }
+
+          .e-toolbar-pop:not(.e-toolbar-extended) {
+            .e-toolbar-item {
+              display: inline-flex;
+              margin: $rte-ui-popup-item-padding;
+            }
+          }
+
+          .e-toolbar-pop.e-popup-open:not(.e-toolbar-extended) {
+            display: inline-flex;
+            flex-wrap: wrap;
+            max-width: 75%;
+            width: max-content;
+            padding: $rte-ui-popup-padding;
+          }
+
+          // Prevents flickering caused by dynamic max-width when popup opens
+          // Removes inherited max-height from toolbar component to ensure all items are visible
+          .e-toolbar-pop:not(.e-toolbar-extended) {
+            max-width: 75%;
+            max-height: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+
+          .e-toolbar-pop:not(.e-toolbar-extended) {
+            .e-toolbar-item {
+              display: inline-flex;
+              margin: $rte-ui-popup-item-padding;
+            }
+          }
+
+          .e-toolbar-pop {
+            border: $rte-ui-toolbar-pop-border;
+          }
+        }
+
+        // @if $skin-name == 'tailwind' {
+        //     .e-richtexteditor-ui .e-rte-ui-toolbar .e-toolbar-extended {
+        //         background: $rte-ui-extended-toolbar-background;
+        //     }
+        // }
+
+        .e-rte-ui-toolbar,
+        .e-rte-ui-container .e-rte-ui-quick-toolbar {
+          .e-toolbar-item:not(.e-overlay) {
+            .e-tbar-btn {
+              @include toolbar-button-base-theme();
+            }
+          }
+
+          .e-toolbar-item.e-active:not(.e-overlay) {
+            .e-tbar-btn {
+              @include toolbar-button-active-theme();
+            }
+          }
+
+          .e-toolbar-item {
+            .e-split-btn-wrapper {
+              @include toolbar-split-wrapper-theme();
+            }
+
+            .e-rte-ui-dropdown {
+              box-shadow: none;
+            }
+          }
+        }
+      }
+
+      .e-rte-ui-toolbar-wrapper.e-toolbar-position-bottom {
+        border-top: $rte-ui-wrapper-tb-bottom-border-top;
+      }
+    }
+
+    // Dropdown styles
+    .e-rte-ui-toolbar .e-toolbar-item {
+      .e-rte-ui-dropdown-btn:not(:hover):not(:focus):not(:active):not(.e-active) {
+        background: $rte-ui-default-btn-bg;
+        border: $rte-ui-split-btn-border;
+      }
+    }
+
+    .e-rte-ui-toolbar .e-toolbar-item {
+      .e-rte-ui-dropdown-btn {
+        box-shadow: none;
+        color: $rte-ui-dropdown-color;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.e-active {
+          border: $rte-ui-hover-split-btn-border;
+          color: $rte-ui-dropdown-transition-color;
+        }
+
+        &:focus-visible {
+          box-shadow: $rte-ui-button-focus-box-shadow;
+        }
+      }
+    }
+  }
+  .e-rte-ui-table-popup.e-popup.e-popup-open {
+    background-color: $rte-ui-content-bg;
+    color: $rte-ui-item-color;
+  }
+  @if $skin-name == 'bootstrap5' {
+    .e-rte-table-popup.e-popup.e-popup-open {
+      background-color: $rte-ui-table-popup-bg;
+    }
+  }
+  .e-rte-table-popup.e-popup.e-popup-open {
+    background-color: $rte-ui-table-popup-bg;
+    color: $rte-ui-table-popup-color;
+  }
+  .e-rte-ui-table-popup .e-span-border {
+    @if $skin-name != 'Material3' {
+      border: $rte-ui-container-border;
+    }
+    display: block;
+    margin-bottom: $rte-ui-table-span-margin-bottom;
+    margin-top: $rte-ui-table-span-margin-top;
+  }
+  .e-rte-ui-table-popup .e-rte-ui-table-popup-header {
+    color: $rte-ui-table-header-color;
+    font-family: $rte-ui-font-family;
+    font-size: $rte-ui-table-header-font-size;
+    text-align: center;
+  }
+  .e-rte-ui-table-popup.e-popup-open .e-rte-ui-table-popup-cell.e-default {
+    background-color: $rte-ui-table-span-bg-color;
+  }
+
+  .e-rte-ui-table-popup.e-popup-open .e-rte-ui-table-popup-cell.e-active {
+    background-color: $rte-ui-table-span-active-bg-color;
+    border: $rte-ui-table-span-active-border;
+  }
+  .e-rte-ui-dropdown-popup {
+    & ul {
+      & .e-item.e-active {
+        background: $rte-ui-dropdown-selection-bgcolor;
+        color: $rte-ui-dropdown-selection-color;
+      }
+    }
+  }
+
+  .e-rte-ui-toolbar .e-toolbar-item:not(.e-overlay),
+  .e-rte-ui-quick-popup .e-rte-ui-quick-toolbar .e-toolbar-item:not(.e-overlay) {
+    .e-rte-ui-dropdown {
+      box-shadow: none;
+    }
+  }
+}
+
+@mixin quick-toolbar-background-color {
+  @if $theme-name == 'bootstrap5' {
+    background: $content-bg-color;
+  }
+  @else if $theme-name == 'bootstrap5-dark' {
+    background: $content-bg-color-alt2;
+  }
+  @else {
+    background: $rte-ui-quick-popup-bg-color;
+  }
+}
+
+@mixin tip-pointer-color {
+  .e-rte-ui-tip-pointer {
+    &.e-rte-tip-top::before {
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+
+      @if $theme-name == 'Material3' {
+        border-bottom: 10px solid rgb(244, 242, 247);
+      }
+      @else if $theme-name == 'Material3-dark' {
+        border-bottom: 10px solid rgb(44, 42, 54);
+      }
+      @else if $theme-name == 'bootstrap5' {
+        border-bottom: 10px solid $content-bg-color;
+      }
+      @else if $theme-name == 'bootstrap5-dark' {
+        border-bottom: 10px solid $content-bg-color-alt2;
+      }
+      @else {
+        border-bottom: 10px solid $rte-ui-quick-toolbar-tip-pointer-border;
+      }
+    }
+
+    &.e-rte-tip-top::after {
+      border-left: 7.5px solid transparent;
+      border-right: 7.5px solid transparent;
+      border-bottom: 9px solid $rte-ui-quick-toolbar-tip-pointer-content;
+    }
+
+    &.e-rte-tip-bottom::before {
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+
+      @if $theme-name == 'Material3' {
+        border-top: 10px solid rgb(244, 242, 247);
+      }
+      @else if $theme-name == 'Material3-dark' {
+        border-top: 10px solid rgb(44, 42, 54);
+      }
+      @else if $theme-name == 'bootstrap5' {
+        border-top: 10px solid $content-bg-color;
+      }
+      @else if $theme-name == 'bootstrap5-dark' {
+        border-top: 10px solid $content-bg-color-alt2;
+      }
+      @else {
+        border-top: 10px solid $rte-ui-quick-toolbar-tip-pointer-border;
+      }
+    }
+
+    &.e-rte-tip-bottom::after {
+      border-left: 7.5px solid transparent;
+      border-right: 7.5px solid transparent;
+      border-top: 9px solid $rte-ui-quick-toolbar-tip-pointer-content;
+    }
+  }
+}
+
+@include export-module('richtexteditor-ui-quick-toolbar-theme') {
+  .e-rte-ui-quick-popup.e-rte-ui-elements {
+    box-shadow: $rte-ui-quick-popup-box-shadow;
+
+    @if $theme-name == 'fabric' or $theme-name == 'material' or $theme-name == 'Material3' or $theme-name == 'FluentUI' or $theme-name == 'bootstrap' or $theme-name == 'bootstrap5' {
+      filter: drop-shadow(0 2px 6px $rte-ui-quick-popup-filter-color);
+    }
+
+    .e-rte-ui-quick-toolbar.e-rte-ui-toolbar.e-toolbar {
+      @include quick-toolbar-background-color;
+
+      @if $skin-name == 'FluentUI' {
+        box-shadow: none;
+      }
+
+      @if $theme-name == 'highcontrast' {
+        border: $rte-ui-quick-popup-toolbar-border;
+      }
+
+      .e-toolbar-items:not(.e-tbar-pos) {
+        @include quick-toolbar-background-color;
+
+        .e-toolbar-item.e-overlay {
+          @include quick-toolbar-background-color;
+        }
+
+        .e-toolbar-item:not(.e-active) {
+          .e-tbar-btn,
+          .e-rte-ui-dropdown-btn {
+            &:not(.e-active):not(:hover):not(:focus):not(:active) {
+              @include quick-toolbar-background-color;
+            }
+          }
+        }
+      }
+    }
+
+    @include tip-pointer-color();
+  }
+
+  // Apply toolbar button and dropdown styling to quick-toolbar popup
+  .e-rte-ui-quick-popup .e-rte-ui-quick-toolbar {
+    .e-toolbar-item:not(.e-overlay):not(.e-active) {
+      .e-tbar-btn {
+        @include toolbar-button-base-theme();
+        @include quick-toolbar-background-color;
+      }
+    }
+
+    .e-toolbar-item.e-active:not(.e-overlay) {
+      .e-tbar-btn {
+        @include toolbar-button-base-theme();
+        @include toolbar-button-active-theme();
+      }
+    }
+
+    .e-toolbar-item {
+      .e-split-btn-wrapper {
+        @include toolbar-split-wrapper-theme();
+        border-radius: $rte-ui-split-btn-border-radius;
+
+        .e-rte-ui-dropdown {
+          @include quick-toolbar-background-color;
+
+          &:hover {
+            background: $rte-ui-quick-tb-btn-hover;
+          }
+
+          &:focus {
+            background: $rte-ui-quick-pop-item-focus-bg;
+          }
+
+          &:active {
+            background: $rte-ui-quick-item-active-bg;
+          }
+        }
+      }
+
+      .e-rte-ui-dropdown-btn {
+        @include toolbar-dropdown-button-theme();
+
+        &:not(:hover):not(:focus):not(:active):not(.e-active) {
+          background: $rte-ui-quick-pop-bg;
+          border: $rte-ui-split-btn-border;
+        }
+      }
+
+      .e-tbar-btn {
+        border: $rte-ui-split-btn-border;
+      }
+    }
+  }
+}
+
+.e-rte-ui-font-colorpicker {
+  .e-custom-palette {
+    .e-tile.e-icons.e-custom-tile.e-selected::before {
+      color: $rte-ui-font-colorpicker-selection-icon-color;
+    }
+  }
+}
+
+.e-rte-ui-background-colorpicker {
+  .e-custom-palette {
+    .e-tile.e-icons.e-custom-tile.e-selected::before {
+      color: $rte-ui-background-colorpicker-selection-icon-color;
+    }
+  }
+}

@@ -20,26 +20,27 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content select='div'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childItems: new ContentChild(TabItemsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class TabComponent extends Tab implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	added: any;
-	adding: any;
-	created: any;
-	destroyed: any;
-	dragged: any;
-	dragging: any;
-	onDragStart: any;
-	removed: any;
-	removing: any;
-	selected: any;
-	public selecting: any;
-    public childItems: QueryList<TabItemsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare added: any;
+	declare adding: any;
+	declare created: any;
+	declare destroyed: any;
+	declare dragged: any;
+	declare dragging: any;
+	declare onDragStart: any;
+	declare removed: any;
+	declare removing: any;
+	declare selected: any;
+	public declare selecting: any;
+    public declare childItems: QueryList<TabItemsDirective>;
     public tags: string[] = ['items'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -70,7 +71,7 @@ export class TabComponent extends Tab implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

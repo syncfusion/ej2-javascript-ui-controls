@@ -431,4 +431,39 @@ describe('Iframe Content renderer module', () => {
             expect(editor.contentModule.getPanel().parentElement.classList.contains('e-rte-iframe-content')).toBe(true);
         });
     });
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<div><p></p></div>',
+                iframeSettings: {
+                    enable: true
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
+        });
+    });
+    describe('Bug 984409: Need to add the aria multiline as true attribute to the RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    enableRtl: false,
+                    locale: 'en',
+                    iframeSettings: { enable: true }
+                });
+            });
+            it('should have aria-multiline attribute for iframe', () => {
+                const contentBody = rteObj.element.querySelector('iframe').contentDocument.body;
+                expect(contentBody.getAttribute('aria-multiline')).toBe(null);
+                expect(contentBody.getAttribute('role')).toBe(null);
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
 });

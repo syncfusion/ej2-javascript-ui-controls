@@ -1,7 +1,6 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/material3-dark' as *;
-@forward 'ej2-base/styles/definition/material3-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $ddt-skin-name: 'Material3' !default;
 $ddt-box-shadow: $shadow-md !default;
 $ddt-close-icon-min-height: 32px !default;

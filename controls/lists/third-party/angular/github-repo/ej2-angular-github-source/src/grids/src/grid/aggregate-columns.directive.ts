@@ -26,9 +26,12 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-grid>e-aggregates>e-aggregate>e-columns>e-column',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        footerTemplate: new ContentChild('footerTemplate'),
+        groupFooterTemplate: new ContentChild('groupFooterTemplate'),
+        groupCaptionTemplate: new ContentChild('groupCaptionTemplate')
     }
 })
 export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirective> {
@@ -52,13 +55,13 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
      * @default null
      * @asptype string
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Defines the column name to display the aggregate value. If `columnName` is not defined, 
      * then `field` name value will be assigned to the `columnName` property.
      * @default null
      */
-    public columnName: any;
+    public declare columnName: any;
     /** 
      * Defines a function to calculate custom aggregate value. The `type` value should be set to `custom`. 
      * To use custom aggregate value in the template, use the key as `${custom}`. 
@@ -66,12 +69,12 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
      * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
      * @default null
      */
-    public customAggregate: any;
+    public declare customAggregate: any;
     /** 
      * Defines the column name to perform aggregation.
      * @default null
      */
-    public field: any;
+    public declare field: any;
     /** 
      * Format is applied to a calculated value before it is displayed. 
      * Gets the format from the user, which can be standard or custom 
@@ -81,49 +84,7 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
      * @blazortype string
      * @default null
      */
-    public format: any;
-    /** 
-     * Defines the footer cell template as a string for the aggregate column. 
-     * The `type` name should be used to access aggregate values inside the template.
-     * 
-     * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Defines the group footer cell template as a string for the aggregate column. 
-     * The `type` name should be used to access aggregate values inside the template. 
-     * Additionally, the following fields can be accessed in the template. 
-     * * **field**: The current grouped field. 
-     * * **key**: The current grouped value.
-     * 
-     * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('groupFooterTemplate')
-    @Template()
-    public groupFooterTemplate: any;
-    /** 
-     * Defines the group caption cell template as a string for the aggregate column. 
-     * The `type` name should be used to access aggregate values inside the template. 
-     * Additionally, the following fields can be accessed in the template. 
-     * * **field**: The current grouped field name. 
-     * * **key**: The current grouped field value.
-     * 
-     * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('groupCaptionTemplate')
-    @Template()
-    public groupCaptionTemplate: any;
+    public declare format: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -132,6 +93,9 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
         this.directivePropList = input;
     }
 }
+Template()(AggregateColumnDirective.prototype, 'footerTemplate');
+Template()(AggregateColumnDirective.prototype, 'groupFooterTemplate');
+Template()(AggregateColumnDirective.prototype, 'groupCaptionTemplate');
 
 /**
  * AggregateColumn Array Directive
@@ -139,6 +103,7 @@ export class AggregateColumnDirective extends ComplexBase<AggregateColumnDirecti
  */
 @Directive({
     selector: 'ejs-grid>e-aggregates>e-aggregate>e-columns',
+    standalone: true,
     queries: {
         children: new ContentChildren(AggregateColumnDirective)
     },

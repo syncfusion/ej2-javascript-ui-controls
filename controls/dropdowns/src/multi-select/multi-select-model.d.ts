@@ -197,8 +197,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
      * Gets or sets the height of the popup list. By default it renders based on its list item.
-     * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      *
      * @default '300px'
      * @aspType string
@@ -207,8 +205,6 @@ export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
      * Gets or sets the width of the popup list and percentage values has calculated based on input width.
-     * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      *
      * @default '100%'
      * @aspType string
@@ -419,6 +415,22 @@ export interface MultiSelectModel extends DropDownBaseModel{
     mode?: visualMode;
 
     /**
+     * Defines the threshold number of selected items above which the summary template is applied (CheckBox mode only).
+     *
+     * @default 0
+     * @type {number}
+     */
+    summaryTagCount?: number;
+
+    /**
+     * Specifies the string template content for displaying selected items in the input field (CheckBox mode only).
+     *
+     * @default '${selectedCount} items selected'
+     * @type {string}
+     */
+    summaryTagTemplate?: string;
+
+    /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
      *
      * @default ','
@@ -426,7 +438,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     delimiterChar?: string;
 
     /**
-     * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering)
+     * Sets [`case sensitive`](../../multi-select/filtering#case-sensitive-filtering)
      * option for filter operation.
      *
      * @default true

@@ -15,6 +15,7 @@ import {
     GroupShapeElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
+import { RevisionSettingsModel } from '../../document-editor-model';
 import {
     BodyWidget, LineWidget, TableWidget, TableRowWidget, TableCellWidget,
     ElementBox, BlockWidget, HeaderFooters, BookmarkElementBox
@@ -230,6 +231,43 @@ export class DocumentHelper {
     private isMouseEntered: boolean = false;
     private isMouseLeaved: boolean = false;
     private scrollMoveTimer: any = 0;
+    // Auto-scroll state for onWindowMouseMoveInternal. rAF is used instead of
+    // setInterval so the scroll advances in sync with the display refresh and
+    // is NOT reset on every mousemove.
+    private autoScrollDirection: number = 0;
+    private autoScrollCursorPoint: Point;
+
+    private clearAutoScroll = (): void => {
+        if (this.scrollMoveTimer) {
+            clearInterval(this.scrollMoveTimer);
+            cancelAnimationFrame(this.scrollMoveTimer);
+            this.scrollMoveTimer = 0;
+        }
+        this.autoScrollDirection = 0;
+    };
+
+    private autoScrollLoop = (): void => {
+        this.scrollMoveTimer = 0;
+        if (!this.isMouseDown || !this.isMouseLeaved || this.autoScrollDirection === 0) {
+            this.autoScrollDirection = 0;
+            return;
+        }
+        // Use a small, fixed pixel step per rAF tick instead of the full paragraph height.
+        // Paragraph-height steps cause large jumps and heavy per-frame work (findFocusedPage +
+        // moveTextPosition), which drops frames and makes the auto-scroll feel laggy and stuttered.
+        // The step is clamped to the current viewport height so the scroll adapts to zoom level
+        // and remains responsive in both directions (down and up) without overshooting.
+        const visibleHeight: number = this.viewerContainer.clientHeight;
+        const step: number = Math.max(6, Math.min(40, visibleHeight / 10));
+        if (this.autoScrollDirection === 1) {
+            this.viewerContainer.scrollTop += step;
+            this.scrollForwardOnSelection(this.autoScrollCursorPoint);
+        } else if (this.autoScrollDirection === -1) {
+            this.viewerContainer.scrollTop -= step;
+            this.scrollBackwardOnSelection(this.autoScrollCursorPoint);
+        }
+        this.scrollMoveTimer = requestAnimationFrame(this.autoScrollLoop);
+    };
     /**
      * @private
      */
@@ -1162,6 +1200,9 @@ export class DocumentHelper {
         this.footnotes.clear();
         this.footnoteCollection = [];
         this.endnoteCollection = [];
+        if (this.render) {
+            this.render.commentMarkDictionary.clear();
+        }
         if (this.lists && this.lists.length > 0) {
             for (let i: number = 0; i < this.lists.length; i++) {
                 let list: WList = this.lists[i] as WList;
@@ -1284,6 +1325,9 @@ export class DocumentHelper {
     public getImageString(image: ImageElementBox): string {
         let base64ImageString: string[] = this.images.get(parseInt(image.imageString));
         let imageStr: string;
+        if (isNullOrUndefined(base64ImageString) || base64ImageString.length === 0) {
+            return '';
+        }
         if (image.isMetaFile && HelperMethods.formatClippedString(base64ImageString[0]).extension !== ".svg") {
             imageStr = base64ImageString[1];
         } else if (HelperMethods.formatClippedString(base64ImageString[0]).extension === ".tif") {
@@ -1427,11 +1471,12 @@ export class DocumentHelper {
             attrs: {
                 'aria-live': 'assertive',
                 'role': 'region',
-                'tabindex': "0",
-                'style': 'position:absolute;left:0px;top:-1px;height:0px;width:0px;overflow:hidden;z-index:-2;opacity:0;',
+                'tabindex': "0"
             },
             id: element.id + 'readableDiv'
         }) as HTMLDivElement;
+        const cssText: string = 'position:absolute;left:0px;top:-1px;height:0px;width:0px;overflow:hidden;z-index:-2;opacity:0;'
+        updateCSSText(this.owner.readableDiv, cssText);
         element.appendChild(this.owner.readableDiv);
         if (Browser.isDevice) {
             this.createEditableDiv(element);
@@ -1477,12 +1522,12 @@ export class DocumentHelper {
             attrs: {
                 'scrolling': 'no',
                 'title': 'Document Editor',
-                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden',
                 'tabindex':"0"
             },
             className: 'e-de-text-target'
         }) as HTMLIFrameElement;
-
+        const cssText: string ='pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
+        updateCSSText(this.iframe, cssText);
         this.viewerContainer.appendChild(this.iframe);
         this.initIframeContent();
     }
@@ -1703,26 +1748,39 @@ export class DocumentHelper {
         if (this.authors.containsKey(author)) {
             return this.authors.get(author);
         }
-        let color: string;
-        if (this.authors.length === 0) {
-            color = '#b5082e';  //dark red
-        } else {
-            color = this.generateRandomColor();
-        }
+        let color: string = this.generateRandomColor();
         this.authors.add(author, color);
         return color;
     }
 
     public generateRandomColor(): string {
-        const userColors: string[] = ['#b5082e',  //dark red
-            '#2e97d3',                          //sky blue
+        const defaultColors: string[] = ['#b5082e',  //dark red
+            '#0e76b1',                          //sky blue
             '#bb00ff',                          //purple
-            '#f37e43',                          //dark orange
-            '#03a60b',                          //green
+            '#c14f16',                          //dark orange
+            '#128317',                          //green
             '#881824',                          //brown
-            '#e09a2b',                          //dark yellow
+            '#a26400',                          //dark yellow
             '#50565e'];                         //dark grey
-        return userColors[(this.authors.length % 8)];
+        let userColors: string[] = defaultColors;
+        const revisionSettings: RevisionSettingsModel = this.owner.documentEditorSettings.revisionSettings;
+        if (!isNullOrUndefined(revisionSettings) && !isNullOrUndefined(revisionSettings.revisionColors)
+            && revisionSettings.revisionColors.length > 0) {
+            const validColors: string[] = revisionSettings.revisionColors.filter(
+                (color: string) => !isNullOrUndefined(color) && color !== '');
+            if (validColors.length > 0) {
+                userColors = validColors;
+            }
+        }
+        return userColors[(this.authors.length % userColors.length)];
+    }
+    public convertColorToRGBA(hexColor: string, opacity: number): string {
+        const hex: string = hexColor.replace('#', '');
+        const r: number = parseInt(hex.substring(0, 2), 16);
+        const g: number = parseInt(hex.substring(2, 4), 16);
+        const b: number = parseInt(hex.substring(4, 6), 16);
+        const clampedOpacity: number = Math.max(0, Math.min(1, opacity));
+        return `rgba(${r}, ${g}, ${b}, ${clampedOpacity})`;
     }
     /**
      * @private
@@ -1768,7 +1826,7 @@ export class DocumentHelper {
                 this.isSelectionActive = false;
                 this.owner.fireSelectionChange();
             }
-            clearInterval(this.scrollMoveTimer);
+            this.clearAutoScroll();
         }
 
     }
@@ -1871,15 +1929,17 @@ export class DocumentHelper {
     };
 
     private initDialog(isRtl?: boolean): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (!this.dialogInternal) {
+            let appendToElement: HTMLElement = this.owner.getAppendTo(isAngularModal);
             this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
             this.dialogTarget1.contentEditable = 'false';
-            document.body.appendChild(this.dialogTarget1);
+            appendToElement.appendChild(this.dialogTarget1);
             if (isRtl) {
                 this.dialogTarget1.classList.add('e-de-rtl');
             }
             this.dialogInternal = new Dialog({
-                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
+                target: appendToElement, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 locale: this.owner.locale,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
@@ -1892,15 +1952,17 @@ export class DocumentHelper {
         }
     }
     private initDialog3(isRtl?: boolean): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (!this.dialogInternal3) {
+            let appendToElement: HTMLElement = this.owner.getAppendTo(isAngularModal);
             this.dialogTarget3 = createElement('div', { className: 'e-de-dlg-target' });
             this.dialogTarget3.contentEditable = 'false';
-            document.body.appendChild(this.dialogTarget3);
+            appendToElement.appendChild(this.dialogTarget3);
             if (isRtl) {
                 this.dialogTarget3.classList.add('e-de-rtl');
             }
             this.dialogInternal3 = new Dialog({
-                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
+                target: appendToElement, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
                 animationSettings: { effect: 'None' }
@@ -1918,15 +1980,17 @@ export class DocumentHelper {
     }
 
     private initDialog2(isRtl?: boolean): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (!this.dialogInternal2) {
+            let appendToElement: HTMLElement = this.owner.getAppendTo(isAngularModal);
             this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
             this.dialogTarget2.contentEditable = 'false';
-            document.body.appendChild(this.dialogTarget2);
+            appendToElement.appendChild(this.dialogTarget2);
             if (isRtl) {
                 this.dialogTarget2.classList.add('e-de-rtl');
             }
             this.dialogInternal2 = new Dialog({
-                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
+                target: appendToElement, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
@@ -2291,17 +2355,7 @@ export class DocumentHelper {
             this.iframe.style.top = this.owner.viewer.containerTop + 'px';
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
-        if (this.owner.hRuler) {
-            this.hRuler = this.owner.element.querySelector('#' + this.owner.element.id + ('_hRulerBottom'));
-            this.hRuler.style.top = this.viewerContainer.scrollTop + 'px';
-            this.markIndicator = this.owner.element.querySelector('#' + this.owner.element.id + ('_markIndicator'));
-            if(this.markIndicator) {
-                this.markIndicator.style.top = this.viewerContainer.scrollTop + 'px';
-            }
-        }
         if (this.owner.vRuler) {
-            this.vRuler = this.owner.element.querySelector('#' + this.owner.element.id + ('_vRulerBottom'));
-            this.vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
             this.markIndicator = this.owner.element.querySelector('#' + this.owner.element.id + ('_markIndicator'));
             if(this.markIndicator) {
                 this.markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
@@ -2626,10 +2680,9 @@ export class DocumentHelper {
     private autoScrollOnSelection(cursorPoint: Point): void {
         //Auto scroll when mouse moved hold on the edge of the viewer container.
         if (this.scrollMoveTimer && (cursorPoint.y <= 0 || cursorPoint.y > 50 || cursorPoint.y < (this.viewerContainer.offsetHeight - 50))) {
-            clearInterval(this.scrollMoveTimer);
-            this.scrollMoveTimer = 0;
+            this.clearAutoScroll();
         } else if (cursorPoint.y < 60) {
-            clearInterval(this.scrollMoveTimer);
+            this.clearAutoScroll();
             //Scroll up
             this.scrollMoveTimer = setInterval(() => {
                 this.viewerContainer.scrollTop -= 20;
@@ -2642,7 +2695,7 @@ export class DocumentHelper {
                 }, 200);
             }, 200);
         } else if (cursorPoint.y > (this.viewerContainer.offsetHeight - 70)) {
-            clearInterval(this.scrollMoveTimer);
+            this.clearAutoScroll();
             //Scroll down
             this.scrollMoveTimer = setInterval(() => {
                 this.viewerContainer.scrollTop += 20;
@@ -2666,10 +2719,7 @@ export class DocumentHelper {
         this.isMouseLeaved = true;
         if (this.isDragStarted) {
             this.selection.hideCaret();
-            if (this.scrollMoveTimer) {
-                clearInterval(this.scrollMoveTimer);
-                this.scrollMoveTimer = 0;
-            }
+            this.clearAutoScroll();
         }
     };
     /**
@@ -2680,14 +2730,13 @@ export class DocumentHelper {
     public onWindowMouseMoveInternal = (event: MouseEvent): void => {
         if (this.isMouseDown && this.isMouseLeaved) {
             this.isCompleted = false;
-            clearInterval(this.scrollMoveTimer);
             let viewerTop: number = this.viewerContainer.getBoundingClientRect().top;
             let viewerLeft: number = this.viewerContainer.getBoundingClientRect().left;
             let hRulerHeight: number = this.owner.documentEditorSettings.showRuler ? this.owner.hRuler.thickness : 0;
             let pageLeft: number = this.pages[this.owner.selectionModule.endPage - 1].boundingRectangle.x;
             let textYPosition: number = this.owner.selectionModule.end.location.y;
             let textHeight: number = this.owner.selectionModule.end.currentWidget ? this.owner.selectionModule.end.currentWidget.height : 0;
-            let cursorPoint: Point = new Point(event.x - (pageLeft + viewerLeft), event.y - viewerTop);
+            let cursorPoint: Point = new Point(event.x, event.y - viewerTop);
             // Clamp visible container boundaries to the viewport.
             // When the container is taller than the viewport, clientHeight exceeds window.innerHeight,
             // so the mouse can never reach viewerTop + clientHeight. We use the actual visible bounds instead.
@@ -2695,21 +2744,28 @@ export class DocumentHelper {
             let visibleContainerTop: number = Math.max(viewerTop, 0);
             // Convert the selection-end content Y position to a viewport Y coordinate.
             let selectionEndViewportY: number = viewerTop + hRulerHeight + textYPosition - this.viewerContainer.scrollTop;
+            // Store the latest cursor so the rAF loop (autoScrollLoop) can use it
+            // without being cancelled on every mousemove.
+            this.autoScrollCursorPoint = cursorPoint;
             if (event.y > visibleContainerBottom) {
-                // Mouse is below the visible container area — auto-scroll down.
-                this.scrollMoveTimer = setInterval((): void => {
-                    this.viewerContainer.scrollTop += this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
-                    this.scrollForwardOnSelection(cursorPoint);
-                }, 100);
+                // Mouse is below the visible container area — auto-scroll down via rAF.
+                this.autoScrollDirection = 1;
+                if (!this.scrollMoveTimer) {
+                    this.scrollMoveTimer = requestAnimationFrame(this.autoScrollLoop);
+                }
             }
             else if (event.y < visibleContainerTop && this.viewerContainer.scrollTop > 0) {
-                // Mouse is above the visible container area — auto-scroll up.
-                this.scrollMoveTimer = setInterval((): void => {
-                    this.viewerContainer.scrollTop -= this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
-                    this.scrollBackwardOnSelection(cursorPoint);
-                }, 100);
+                // Mouse is above the visible container area — auto-scroll up via rAF.
+                this.autoScrollDirection = -1;
+                if (!this.scrollMoveTimer) {
+                    this.scrollMoveTimer = requestAnimationFrame(this.autoScrollLoop);
+                }
             }
-            else if (event.y > selectionEndViewportY + textHeight && !this.isRowOrCellResizing) {
+            else {
+                // Mouse is inside the visible area — stop any active auto-scroll.
+                this.autoScrollDirection = 0;
+            }
+            if (event.y > selectionEndViewportY + textHeight && !this.isRowOrCellResizing) {
                 // Mouse is inside container but below the current selection end — extend selection forward.
                 this.scrollForwardOnSelection(cursorPoint);
             }
@@ -2756,9 +2812,8 @@ export class DocumentHelper {
         }
         this.isMouseEntered = true;
         this.isMouseLeaved = false;
-        if (this.scrollMoveTimer) {
-            clearInterval(this.scrollMoveTimer);
-        }
+        this.clearAutoScroll();
+    
         if(!this.isLeftButtonPressed(event) && this.isDragStarted) {
             if (!this.selection.caret.classList.contains("e-de-cursor-animation")) {
                 this.selection.caret.classList.add("e-de-cursor-animation")
@@ -2917,6 +2972,7 @@ export class DocumentHelper {
             }
             if (this.isRowOrCellResizing) {
                 this.owner.editorModule.tableResize.updateResizingHistory(touchPoint);
+                this.owner.documentHelper.resizerBoundaryWidth = 0;
             }
             if(!isNullOrUndefined(this.owner.editor) && this.selection.checkContentControlLocked()){
                 this.owner.editorModule.insertContentControlPlaceholder();
@@ -3825,6 +3881,9 @@ export class DocumentHelper {
         if (!isNullOrUndefined(element)) {
             let computedStyle = getComputedStyle(element);
             let rectHeight = parseFloat(computedStyle.height.replace('px', ''));
+            let height: number = 0;
+            height = rectHeight > 0 ? rectHeight : 200;
+            this.viewerContainer.style.height = height.toString() + 'px';
             let rectWidth = parseFloat(computedStyle.width.replace('px', ''));
             if (rectWidth === 0 && rectHeight === 0) {
                 this.isAutoResizeCanStart = true;
@@ -3832,8 +3891,6 @@ export class DocumentHelper {
                 this.isAutoResizeCanStart = false;
             }       
             let width: number = 0;
-            let height: number = 0;
-            height = rectHeight > 0 ? rectHeight : 200;
             let restrictPaneRect: number = this.restrictEditingPane && this.restrictEditingPane.isShowRestrictPane ?
                 this.getComputedWidth(this.restrictEditingPane.restrictPane) : undefined;
             let optionsRect: number = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
@@ -3854,7 +3911,6 @@ export class DocumentHelper {
             } else {
                 width = rectWidth > 0 ? rectWidth : 200;
             }
-            this.viewerContainer.style.height = height.toString() + 'px';
             this.viewerContainer.style.width = Math.ceil(width) + 'px';
             this.visibleBoundsIn = new Rect(0, 0, width, height);
             this.containerCanvas.width = width;
@@ -4030,6 +4086,9 @@ export class DocumentHelper {
             if (this.owner.enableHeaderAndFooter) {
                 let page: Page = this.currentPage;
                 let pageBottom: number = page.boundingRectangle.height;
+                if (isNullOrUndefined(page.bodyWidgets) || isNullOrUndefined(page.bodyWidgets[0])) {
+                    return undefined;
+                }
                 let headerHeight: number = Math.max((page.headerWidget.y + page.headerWidget.height),
                     HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin)) * this.zoomFactor;
                 let footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
@@ -4631,6 +4690,10 @@ export class DocumentHelper {
                     }
                     let previousPage: Page = page.previousPage;
                     let pageStartIndex: number = -1;
+                    let restartPageNumber: boolean = false;
+                    if (!isNullOrUndefined(page.previousPage)) {
+                        restartPageNumber = page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering;
+                    }
                     if (previousPage && page.sectionIndex !== previousPage.sectionIndex
                         && previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && previousPage.currentPageNum === 1) {
                         while (previousPage) {
@@ -4642,7 +4705,7 @@ export class DocumentHelper {
                             }
                         }
                     }
-                    if (pageStartIndex >= 0 && page.previousPage.bodyWidgets[0].sectionFormat.pageStartingNumber + (page.previousPage.index - pageStartIndex) !== page.previousPage.currentPageNum) {
+                    if (!restartPageNumber && pageStartIndex >= 0 && page.previousPage.bodyWidgets[0].sectionFormat.pageStartingNumber + (page.previousPage.index - pageStartIndex) !== page.previousPage.currentPageNum) {
                         page.currentPageNum = page.index + 1;
                     } else if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum !== 1)
                         || (this.isRestartNumbering && page.previousPage.currentPageNum !== 1))) {
@@ -5332,11 +5395,13 @@ export class DocumentHelper {
         if (paragraphWidget.isEmpty() && ((textAlignment !== 'Left' && textAlignment !== 'Justify') 
             || (textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi))) {
             startX = paragraphWidget.clientX > hangingIndent ? paragraphWidget.clientX - hangingIndent : paragraphWidget.clientX;
-            return startX;
         } else {
             startX = paragraphWidget.x > hangingIndent ? paragraphWidget.x - hangingIndent : paragraphWidget.x;
-            return startX;
         }
+        if (!isNullOrUndefined(startX)) {
+            startX = parseFloat(startX.toFixed(2));
+        }
+        return startX;
     }
     /**
   * @private
@@ -5958,7 +6023,8 @@ export abstract class LayoutViewer {
                         block.isGridUpdated = true;
                     }
                     let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
-                    if (tableAlignment !== 'Left') {
+                    // For Auto Fit to Window case, the left indent should not be included in the calculation.
+                    if (tableAlignment !== 'Left' && (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.editor) && !this.owner.editor.isAutofitToWindow)) {
                         let tableWidth: number = 0;
                         // If the grid is calculated, we can direclty get the width from the grid.
                         // Otherwise, calculate the width.
@@ -5988,7 +6054,7 @@ export abstract class LayoutViewer {
 
                 width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
                 let x: number = this.clientArea.x + (bidi ? rightIndent : leftIndent);
-                width = width > 0 ? width : 0;
+                width = (width > 0 || (block instanceof ParagraphWidget && block.paragraphFormat.firstLineIndent < 0)) ? width : 0;
                 this.clientActiveArea.x = this.clientArea.x = x;
                 this.clientActiveArea.width = this.clientArea.width = width;
                 if(updateYPosition){
@@ -6019,7 +6085,7 @@ export abstract class LayoutViewer {
             }
             width = this.clientArea.width + leftIndent + HelperMethods.convertPointToPixel(block.rightIndent);
             let x: number = this.clientArea.x - (bidi ? rightIndent : leftIndent);
-            width = width > 0 ? width : 0;
+            width = (width > 0 || (block instanceof ParagraphWidget && block.paragraphFormat.firstLineIndent < 0)) ? width : 0;
             this.clientActiveArea.x = this.clientArea.x = x;
             this.clientActiveArea.width = this.clientArea.width = width;
         }
@@ -6830,7 +6896,10 @@ export abstract class LayoutViewer {
                 }
                 let currentY: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * this.documentHelper.zoomFactor + (page.index + 1) * this.pageGap
                     + ((prevY - prevPageTop) < 0 ? prevY - prevPageTop : (prevY - prevPageTop) * (this.documentHelper.zoomFactor / prevScaleFactor));
-                value = currentY - zoomY - (this.documentHelper.zoomFactor * this.pageGap * pageIndex);
+                value = currentY - zoomY;
+                if(pageIndex === 1 && this.documentHelper.zoomFactor > 1){
+                    value -= (this.documentHelper.zoomFactor * this.pageGap * pageIndex);
+                }
                 zoomY = this.documentHelper.visibleBounds.height / 2;
             }
             this.documentHelper.viewerContainer.scrollTop = value;
@@ -7024,6 +7093,7 @@ export class PageLayoutViewer extends LayoutViewer {
         page.boundingRectangle = new Rect(xPos, yPosition, pageWidth, pageHeight);
     }
     public onPageFitTypeChanged(pageFitType: PageFitType): void {
+        this.updateScrollBars();
         let width: number = this.documentHelper.visibleBounds.width;
         let height: number = this.documentHelper.visibleBounds.height;
         let section: BodyWidget = this.visiblePages[0].bodyWidgets[0] as BodyWidget;

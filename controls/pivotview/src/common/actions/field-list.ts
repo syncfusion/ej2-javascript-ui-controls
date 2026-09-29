@@ -3,7 +3,7 @@ import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import * as cls from '../base/css-constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass, isNullOrUndefined, select, remove } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass, isNullOrUndefined, select, remove, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 
 PivotFieldList.Inject(CalculatedField);
@@ -27,6 +27,7 @@ export class FieldList implements IAction {
      * @param {PivotView} parent - It represent the parent
      */
     constructor(parent: PivotView) {
+        initializeTelemetryFeature('FieldList', 'PivotTable');
         this.parent = parent;
         this.parent.fieldListModule = this;
         this.addEventListener();
@@ -94,8 +95,8 @@ export class FieldList implements IAction {
     }
 
     private updateControl(): void {
-        if (this.parent.allowDeferLayoutUpdate) {
-            this.parent.actionObj.actionName = 'Field list refreshed';
+        if (this.parent.allowDeferLayoutUpdate && !this.parent.actionObj.actionName) {
+            this.parent.actionObj.actionName = events.fieldListRefresh;
         }
         if (this.element) {
             let hasFieldList: boolean;

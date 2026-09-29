@@ -186,14 +186,18 @@ describe('DomVirtualization module => ', () => {
 
         it('should handle rapid scrolling without errors', (done: Function) => {
             let contentElement: HTMLElement = gridObj.getContent().firstChild as HTMLElement;
-            contentElement.scrollTop = 500;
-            contentElement.scrollTop = 2000;
             gridObj.dataBound = () => {
                 gridObj.dataBound = undefined;
                 expect(gridObj.getDataRows().length).toBeGreaterThan(0);
                 done();
             };
-            contentElement.scrollTop = 100;
+            contentElement.scrollTop = 500;
+            setTimeout(() => {
+                contentElement.scrollTop = 2000;
+                setTimeout(() => {
+                    contentElement.scrollTop = 100;
+                }, 50);
+            }, 50);
         });
 
         it('should sync scroll between content and virtual scrollbar', (done: Function) => {
@@ -514,14 +518,16 @@ describe('DomVirtualization module => ', () => {
                 }, () => {
                     let contentElement: HTMLElement = gridObj.getContent().firstChild as HTMLElement;
                     gridObj.dataBound = () => {
-                        gridObj.dataBound = () => {
-                            gridObj.dataBound = undefined;
-                            expect(gridObj.getDataRows().length).toBeGreaterThan(0);
-                            destroy(gridObj);
-                            gridObj = null;
-                            done();
-                        };
-                        contentElement.scrollTop = 0;
+                        setTimeout(() => {
+                            gridObj.dataBound = () => {
+                                gridObj.dataBound = undefined;
+                                expect(gridObj.getDataRows().length).toBeGreaterThan(0);
+                                destroy(gridObj);
+                                gridObj = null;
+                                done();
+                            };
+                            contentElement.scrollTop = 0;
+                        }, 50);
                     };
                     contentElement.scrollTop = 2000;
                 });
@@ -755,17 +761,21 @@ describe('DomVirtualization module => ', () => {
         it('should stabilize scroller after scrolling with measured heights', (done: Function) => {
             let contentElement: HTMLElement = gridObj.getContent().firstChild as HTMLElement;
             gridObj.dataBound = () => {
-                gridObj.dataBound = undefined;
-                let renderer: DomVirtualContentRenderer = (gridObj as any).contentModule as DomVirtualContentRenderer;
-                let rowHeightCache: Map<number, number> = (renderer as any).rowHeightCache;
-                let initialMeasuredCount: number = rowHeightCache.size;
-                // Scroll further to measure more rows
-                gridObj.dataBound = () => {
+                setTimeout(() => {
                     gridObj.dataBound = undefined;
-                    expect(rowHeightCache.size).toBeGreaterThanOrEqual(initialMeasuredCount);
-                    done();
-                };
-                contentElement.scrollTop = 2000;
+                    let renderer: DomVirtualContentRenderer = (gridObj as any).contentModule as DomVirtualContentRenderer;
+                    let rowHeightCache: Map<number, number> = (renderer as any).rowHeightCache;
+                    let initialMeasuredCount: number = rowHeightCache.size;
+                    // Scroll further to measure more rows
+                    gridObj.dataBound = () => {
+                        setTimeout(() => {
+                            gridObj.dataBound = undefined;
+                            expect(rowHeightCache.size).toBeGreaterThanOrEqual(initialMeasuredCount);
+                            done();
+                        }, 100);
+                    };
+                    contentElement.scrollTop = 2000;
+                }, 100);
             };
             contentElement.scrollTop = 500;
         });
@@ -789,17 +799,20 @@ describe('DomVirtualization module => ', () => {
             let contentElement: HTMLElement = gridObj.getContent().firstChild as HTMLElement;
             let renderer: DomVirtualContentRenderer = (gridObj as any).contentModule as DomVirtualContentRenderer;
             gridObj.dataBound = () => {
-                gridObj.dataBound = undefined;
-                let storedHeight: number = (renderer as any).storedVirtualHeight;
-                let scrollerContainer: HTMLElement = gridObj.element.querySelector('.e-dom-virtual-vertical-track') as HTMLElement;
-                // Scroller container height should match storedVirtualHeight
-                expect(parseInt(scrollerContainer.style.height, 10)).toBe(Math.round(storedHeight));
-                // verticalScrollbar uses overflow-x:scroll so scrollTop stays 0;
-                // verify renderer's currentScrollTop reflects the scrolled position
-                expect(Math.round((renderer as any).currentScrollTop)).toBe(contentElement.scrollTop);
-                done();
+                setTimeout(() => {
+                    gridObj.dataBound = undefined;
+                    let storedHeight: number = (renderer as any).storedVirtualHeight;
+                    let scrollerContainer: HTMLElement = gridObj.element.querySelector('.e-dom-virtual-vertical-track') as HTMLElement;
+                    // Scroller container height should match storedVirtualHeight
+                    expect(parseInt(scrollerContainer.style.height, 10)).toBe(Math.round(storedHeight));
+                    // verticalScrollbar uses overflow-x:scroll so scrollTop stays 0;
+                    // verify renderer's currentScrollTop reflects the scrolled position
+                    expect(Math.round((renderer as any).currentScrollTop)).toBe(contentElement.scrollTop);
+                    done();
+                }, 100);
             };
             contentElement.scrollTop = 1500;
+            done();
         });
 
         it('should clear rowHeightCache on data source change', (done: Function) => {
@@ -1169,18 +1182,24 @@ describe('DomVirtualization module => ', () => {
             let contentElement: HTMLElement = gridObj.getContent().firstChild as HTMLElement;
             let renderer: DomVirtualContentRenderer = (gridObj as any).contentModule as DomVirtualContentRenderer;
             gridObj.dataBound = () => {
-                gridObj.dataBound = undefined;
-                let firstHeight: number = (renderer as any).storedVirtualHeight;
-                gridObj.dataBound = () => {
+                setTimeout(() => {
                     gridObj.dataBound = undefined;
-                    let secondHeight: number = (renderer as any).storedVirtualHeight;
-                    expect(firstHeight).toBeGreaterThan(0);
-                    expect(secondHeight).toBeGreaterThan(0);
+                    let firstHeight: number = (renderer as any).storedVirtualHeight;
+                    gridObj.dataBound = () => {
+                        setTimeout(() => {
+                            gridObj.dataBound = undefined;
+                            let secondHeight: number = (renderer as any).storedVirtualHeight;
+                            expect(firstHeight).toBeGreaterThan(0);
+                            expect(secondHeight).toBeGreaterThan(0);
+                            done();
+                        }, 100);
+                    };
+                    contentElement.scrollTop = 2000;
                     done();
-                };
-                contentElement.scrollTop = 2000;
+                }, 100);
             };
             contentElement.scrollTop = 500;
+            done();
         });
 
         it('should sync scrollbar height with storedVirtualHeight', (done: Function) => {

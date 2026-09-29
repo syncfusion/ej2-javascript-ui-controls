@@ -1,1 +1,20 @@
 $grid-icon-default-color: $neutral-secondary !default;
+
+// Find & Highlight feature tokens (per-theme-aware, highlight stays universal)
+$grid-find-highlight-bg:  rgba(255, 193, 7, 1) !default;
+$grid-find-highlight-color: rgba(0, 0, 0, .5) !default;
+$grid-find-highlight-active-bg: rgba(253, 126, 20, 1) !default;
+$grid-find-highlight-active-shadow: rgba(rgba(253, 126, 20, 1), .5) !default;
+$grid-find-bg: $content-bg-color !default;
+$grid-find-input-color: $content-text-color !default;
+$grid-find-bar-border-color: $border-light !default;
+$grid-find-bar-focus-color: $primary !default;
+$grid-find-bar-focus-border-color: $primary !default;
+$grid-find-bar-focus-shadow-color: $primary !default;
+$grid-find-text-color: $neutral-secondary !default;
+$grid-find-color: $content-text-color-alt2 !default;
+
+$grid-find-clear-hover-color: $icon-color-pressed !default;
+$grid-find-button-hover-bg: $content-bg-color-alt3 !default;
+$grid-find-button-active-bg: $content-bg-color-alt3 !default;
+$grid-find-input-disabled-bg: $content-bg-color-alt3 !default;

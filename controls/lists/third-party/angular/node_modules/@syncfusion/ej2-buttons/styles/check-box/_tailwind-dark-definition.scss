@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/tailwind-dark' as *;
-@forward 'ej2-base/styles/definition/tailwind-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $cbox-bigger-check-fontsize: 12px !default;
 $cbox-bigger-font-size: $text-base !default;
 $cbox-bigger-height: 18px !default;

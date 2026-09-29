@@ -4,7 +4,7 @@ import { AxisModel } from '@syncfusion/ej2-lineargauge';
 
 /**
  * Represents the directive to render the axes in the Linear Gauge.
- * ```tsx
+ * ```
  * <LinearGaugeComponent>
  * <AxesDirective>
  * <AxisDirective></AxisDirective>

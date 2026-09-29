@@ -7,7 +7,7 @@ export interface ChartAnnotationSettingsDirTypecast {
 /**
  * `Annotation` directive represent a annotation of the react Chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent> 
  * <AnnotationsDirective>
  * <AnnotationDirective></AnnotationDirective>

@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @include export-module('dropdownbase-layout') {
   .e-dropdownbase {
     display: block;
@@ -7,17 +7,17 @@
     position: relative;
     width: $ddl-full-width;
     @at-root {
-      #{if(&, '&', '*')} .e-list-parent {
+      & .e-list-parent {
         margin: $ddl-list-zero-padding;
         padding: $ddl-list-zero-padding;
       }
 
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-list-group-item,
+      & .e-fixed-head {
         cursor: default;
       }
 
-      #{if(&, '&', '*')} .e-list-item {
+      & .e-list-item {
         cursor: pointer;
         overflow: hidden;
         position: relative;
@@ -27,12 +27,12 @@
         width: $ddl-full-width;
       }
 
-      #{if(&, '&', '*')} .e-list-item .e-list-icon {
+      & .e-list-item .e-list-icon {
         font-size: $ddl-nrml-list-item-icon-font-size;
         vertical-align: middle;
       }
 
-      #{if(&, '&', '*')} .e-fixed-head {
+      & .e-fixed-head {
         position: absolute;
         top: $ddl-zero-spacing;
       }

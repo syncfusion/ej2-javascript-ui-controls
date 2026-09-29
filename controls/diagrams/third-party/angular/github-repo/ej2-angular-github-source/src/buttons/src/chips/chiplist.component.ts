@@ -20,23 +20,24 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
         childChips: new ContentChild(ChipsDirective)
     }
 })
 @ComponentMixins([ComponentBase])
 export class ChipListComponent extends ChipList implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	beforeClick: any;
-	click: any;
-	created: any;
-	delete: any;
-	deleted: any;
-	dragStart: any;
-	dragStop: any;
-	public dragging: any;
-    public childChips: QueryList<ChipsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare beforeClick: any;
+	declare click: any;
+	declare created: any;
+	declare delete: any;
+	declare deleted: any;
+	declare dragStart: any;
+	declare dragStop: any;
+	public declare dragging: any;
+    public declare childChips: QueryList<ChipsDirective>;
     public tags: string[] = ['chips'];
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
@@ -67,7 +68,8 @@ export class ChipListComponent extends ChipList implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+
 

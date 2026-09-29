@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-gantt>e-day-working-time-collection>e-day-working-time',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class DayWorkingTimeDirective extends ComplexBase<DayWorkingTimeDirective> {
@@ -34,12 +34,12 @@ export class DayWorkingTimeDirective extends ComplexBase<DayWorkingTimeDirective
      * Defines the start time of the working time range for the day.
      * @default null
      */
-    public from: any;
+    public declare from: any;
     /** 
      * Defines the end time of the working time range for the day.
      * @default null
      */
-    public to: any;
+    public declare to: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -55,6 +55,7 @@ export class DayWorkingTimeDirective extends ComplexBase<DayWorkingTimeDirective
  */
 @Directive({
     selector: 'ejs-gantt>e-day-working-time-collection',
+    standalone: true,
     queries: {
         children: new ContentChildren(DayWorkingTimeDirective)
     },

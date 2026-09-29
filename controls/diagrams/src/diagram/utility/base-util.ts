@@ -229,6 +229,9 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
                                 additionalProp, property, cloneBlazorProp);
                         } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof HTMLElement) {
                             newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHTML;
+                        } else if (typeof obj[`${property}`] === 'function') {
+                            // Preserve function-valued properties (e.g., template functions) directly
+                            newObject[`${property}`] = obj[`${property}`];
                         } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object) {
                             newObject[`${property}`] = cloneObject(
                                 (internalProp.indexOf(property) === -1 && obj[`${keys}`]) ? obj[`${keys}`][`${property}`] : obj[`${property}`],

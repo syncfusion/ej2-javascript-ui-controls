@@ -4,6 +4,8 @@ import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
 import { _isNullOrUndefined } from '../utils';
 import { Rectangle } from './../pdf-type';
+import { PdfRotationAngle } from '../enumerator';
+import { PdfPage } from '../pdf-page';
 /**
  * `PdfAppearance` class represents the appearance of the annotation.
  * ```typescript
@@ -49,6 +51,8 @@ export class PdfAppearance {
     private _crossReference: _PdfCrossReference;
     private _templateNormal: PdfTemplate;
     private  _dictionary: _PdfDictionary = new _PdfDictionary();
+    private _appearanceLayer: PdfTemplate;
+    _isCompletedValidationAppearance: boolean = false;
     /**
      * Initializes a new instance of the `PdfAppearance` class.
      *
@@ -152,5 +156,34 @@ export class PdfAppearance {
      */
     _initialize(): void {
         this.normal = new PdfTemplate(this._bounds, this._crossReference);
+    }
+    /**
+     * Gets the signature appearance layer template.
+     *
+     * Creates the appearance layer if it does not already exist and initializes
+     * it with the annotation bounds and page graphics context.
+     *
+     * @returns {PdfTemplate} The signature appearance layer template.
+     * @private
+     */
+    _getAppearanceLayer(): PdfTemplate {
+        if (!this._appearanceLayer) {
+            let page: PdfPage;
+            if (this._annotations && this._annotations._page) {
+                page = this._annotations._page;
+            }
+            if (page && (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270)) {
+                this._appearanceLayer = new PdfTemplate({ x: 0, y: 0, width: this._annotations.bounds.width,
+                    height: this._annotations.bounds.height },
+                                                        page._crossReference);
+            } else {
+                this._appearanceLayer = new PdfTemplate({ x: 0, y: 0, width: this._annotations.bounds.width,
+                    height: this._annotations.bounds.height },
+                                                        page._crossReference);
+            }
+            this._appearanceLayer._key = 'n2';
+            this._appearanceLayer.graphics._initializeCoordinates(page);
+        }
+        return this._appearanceLayer;
     }
 }

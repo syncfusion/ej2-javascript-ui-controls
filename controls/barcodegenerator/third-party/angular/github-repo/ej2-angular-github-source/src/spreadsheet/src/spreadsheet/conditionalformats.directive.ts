@@ -23,9 +23,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-conditionalformats>e-conditionalformat',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ConditionalFormatDirective extends ComplexBase<ConditionalFormatDirective> {
@@ -38,27 +38,27 @@ export class ConditionalFormatDirective extends ComplexBase<ConditionalFormatDir
      * @default 'GreaterThan'
      * @aspignore 
      */
-    public type: any;
+    public declare type: any;
     /** 
      * Specifies Conditional formatting Highlight Color.
      * @default 'RedFT'
      */
-    public cFColor: any;
+    public declare cFColor: any;
     /** 
      * Specifies format.
      * @default {}
      */
-    public format: any;
+    public declare format: any;
     /** 
      * Specifies Conditional formatting range.
      * @default ''
      */
-    public range: any;
+    public declare range: any;
     /** 
      * Specifies Conditional formatting Value.
      * @default ''
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -74,6 +74,7 @@ export class ConditionalFormatDirective extends ComplexBase<ConditionalFormatDir
  */
 @Directive({
     selector: 'e-sheet>e-conditionalformats',
+    standalone: true,
     queries: {
         children: new ContentChildren(ConditionalFormatDirective)
     },

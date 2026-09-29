@@ -221,8 +221,8 @@ export class ClearFormat {
 
     private static unWrap(docElement: Document, parentNodes: Node[], nodeCutter: NodeCutter, nodeSelection: NodeSelection): void {
         for (let index1: number = 0; index1 < parentNodes.length; index1++) {
-            parentNodes[index1 as number] = (closest(parentNodes[index1 as number], 'li') && parentNodes[index1 as number].nodeName !== 'UL' && parentNodes[index1 as number].nodeName !== 'OL')
-                ? closest(parentNodes[index1 as number], 'li')
+            parentNodes[index1 as number] = (closest(parentNodes[index1 as number], 'li') && parentNodes[index1 as number].nodeName !== 'UL' && parentNodes[index1 as number].nodeName !== 'OL') &&
+                isNOU(closest(parentNodes[index1 as number], 'li').querySelector('.e-richtexteditor')) ? closest(parentNodes[index1 as number], 'li')
                 : parentNodes[index1 as number];
             if (this.NONVALID_TAGS.indexOf(parentNodes[index1 as number].nodeName.toLowerCase()) > -1
             && parentNodes[index1 as number].parentNode

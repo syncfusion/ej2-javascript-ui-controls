@@ -8,7 +8,7 @@ import { Column } from './../models/column';
 import { Row } from './../models/row';
 import * as events from '../base/constant';
 import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfImage, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush, PdfLayoutResult, PdfGridLayoutFormat, PdfLayoutType, PdfLayoutBreakType } from '@syncfusion/ej2-pdf-export';
-import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap } from '@syncfusion/ej2-pdf-export';
+import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap, PdfHorizontalOverflowType } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfGridCell, RectangleF, PdfPageTemplateElement } from '@syncfusion/ej2-pdf-export';
 import { PointF, PdfPageNumberField, PdfCompositeField, PdfSection } from '@syncfusion/ej2-pdf-export';
@@ -19,7 +19,7 @@ import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { compile, getEnumValue, isNullOrUndefined, detach, extend } from '@syncfusion/ej2-base';
+import { compile, getEnumValue, isNullOrUndefined, detach, extend, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
@@ -64,6 +64,7 @@ export class PdfExport {
      * @hidden
      */
     constructor(parent?: IGrid) {
+        initializeTelemetryFeature('PdfExport', 'DataGrid');
         this.parent = parent;
         this.helper = new ExportHelper(parent);
         this.gridPool = {};
@@ -288,10 +289,12 @@ export class PdfExport {
 
     private processGridExport(gObj: IGrid, returnType: ReturnType, pdfExportProperties: PdfExportProperties): PdfGrid {
         let allowHorizontalOverflow: boolean = true;
+        let horizontalOverflowType: PdfHorizontalOverflowType = null;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
                 true : pdfExportProperties.allowHorizontalOverflow;
+            horizontalOverflowType = pdfExportProperties.horizontalOverflowType;
         }
         const helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
         const dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
@@ -323,8 +326,8 @@ export class PdfExport {
         const gridColumns: Column[] = returnValue.columns;
 
         // process grid header content
-        pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows,
-                                          gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow, columns);
+        pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows, gridColumns,
+                                          border, headerFont, headerBrush, gObj, allowHorizontalOverflow, columns, horizontalOverflowType);
 
         // set alignment, width and type of the values of the column
         this.setColumnProperties(gridColumns, pdfGrid, helper, gObj, allowHorizontalOverflow);
@@ -525,7 +528,8 @@ export class PdfExport {
     }
     private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[],
                                gridColumn: Column[], border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
-                               allowHorizontalOverflow: boolean, eCols: Column[]): PdfGrid {
+                               allowHorizontalOverflow: boolean, eCols: Column[],
+                               horizontalOverflowType?: PdfHorizontalOverflowType): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
         const depth: number = measureColumnDepth(eCols);
         const cols: Column[] | string[] | ColumnModel[] = eCols;
@@ -624,6 +628,9 @@ export class PdfExport {
         recuHeader(cols, depth, 0, 0, 0, true);
         if (pdfGrid.columns.count >= 6 && allowHorizontalOverflow) {
             pdfGrid.style.allowHorizontalOverflow = true;
+            if (!isNullOrUndefined(horizontalOverflowType)) {
+                pdfGrid.style.horizontalOverflowType = horizontalOverflowType;
+            }
         }
         return pdfGrid;
     }
@@ -1129,9 +1136,14 @@ export class PdfExport {
                     continue;
                 }
                 const column: Column = gridCell.column;
-                const field: string = column.field;
-                const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
-                let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
+                let value: string  = '';
+                if (!isNullOrUndefined(column) && column.type === 'rownumber') {
+                    value = (row.index + 1).toString();
+                } else {
+                    const field: string = column.field;
+                    const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
+                    value = !isNullOrUndefined(cellValue) ? cellValue : '';
+                }
                 let foreignKeyData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     foreignKeyData = helper.getFData(value, column);

@@ -6,7 +6,7 @@ import { ComponentBase, applyMixins, DefaultHtmlAttributes } from '@syncfusion/e
 
 /**
  * `Represents the react PdfViewer Component.
- * ```tsx
+ * ```ts
  * <PdfViewerComponent />
  * ```
  */

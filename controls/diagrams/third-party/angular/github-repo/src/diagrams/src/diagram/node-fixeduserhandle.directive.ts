@@ -21,9 +21,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-node>e-node-fixeduserhandles>e-node-fixeduserhandle',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class NodeFixedUserHandleDirective extends ComplexBase<NodeFixedUserHandleDirective> {
@@ -35,77 +35,77 @@ export class NodeFixedUserHandleDirective extends ComplexBase<NodeFixedUserHandl
      * Specifies the cornerRadius for fixed user handle container
      * @default 0
      */
-    public cornerRadius: any;
+    public declare cornerRadius: any;
     /** 
      * Specifies the fill color of the fixed user handle
      * @default 'transparent'
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * Specifies the stroke color of the fixed user handle container
      * @default ''
      */
-    public handleStrokeColor: any;
+    public declare handleStrokeColor: any;
     /** 
      * Specifies the stroke width of the fixed user handle container
      * @default 1
      */
-    public handleStrokeWidth: any;
+    public declare handleStrokeWidth: any;
     /** 
      * Specifies the height of the fixed user handle
      * @default 10
      */
-    public height: any;
+    public declare height: any;
     /** 
      * Specifies the stroke color of the fixed user handle
      * @default 'transparent'
      */
-    public iconStrokeColor: any;
+    public declare iconStrokeColor: any;
     /** 
      * Specifies the stroke width of the fixed user handle
      * @default 0
      */
-    public iconStrokeWidth: any;
+    public declare iconStrokeWidth: any;
     /** 
      * Specifies the unique id of the fixed user handle
      * @default ''
      */
-    public id: any;
+    public declare id: any;
     /** 
      * Specifies the space that the fixed user handle has to be moved from its actual position
      * @default new Margin(0,0,0,0)
      */
-    public margin: any;
+    public declare margin: any;
     /** 
      * Specifies the position of the node fixed user handle
      * @default { x: 0, y: 0 }
      */
-    public offset: any;
+    public declare offset: any;
     /** 
      * Specifies the space between the fixed user handle and container
      * @default new Margin(0,0,0,0)
      */
-    public padding: any;
+    public declare padding: any;
     /** 
      * Specifies the shape information for fixed user handle
      * @default ''
      */
-    public pathData: any;
+    public declare pathData: any;
     /** 
      * Used to show tooltip for fixed user handle on mouse over.
      * @default {}
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * Specifies the visibility of the fixed user handle
      * @default true
      */
-    public visibility: any;
+    public declare visibility: any;
     /** 
      * Specifies the width of the fixed user handle
      * @default 10
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -121,6 +121,7 @@ export class NodeFixedUserHandleDirective extends ComplexBase<NodeFixedUserHandl
  */
 @Directive({
     selector: 'e-node>e-node-fixeduserhandles',
+    standalone: true,
     queries: {
         children: new ContentChildren(NodeFixedUserHandleDirective)
     },

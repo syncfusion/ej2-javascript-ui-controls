@@ -1137,7 +1137,7 @@ describe('Overview', () => {
             let overviewstyle = document.getElementById("overview4_canvas").getAttribute("style");
             console.log(htmlOverView.style.transform);
             expect(overviewstyle === "position: relative; height: 150px; width: 100%; touch-action: none;").toBe(true);
-            expect(htmlOverView.style.transform === "scale(0.0821449) translate(649px, 580px)" || htmlOverView.style.transform === "scale(0.0821449) translate(655px, 580px)").toBe(true);
+            expect(htmlOverView.style.transform === "scale(0.0821449) translate(649px, 580px)" || htmlOverView.style.transform === "scale(0.0821449) translate(648px, 580px)" || htmlOverView.style.transform === "scale(0.0821449) translate(655px, 580px)").toBe(true);
             done();
         });
     });

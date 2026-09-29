@@ -4,6 +4,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-this-alias */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DiagramRenderer } from './rendering/renderer';
@@ -36,6 +37,7 @@ export class PrintAndExport {
     private diagram: Diagram;
 
     constructor(diagram: Diagram) {
+        initializeTelemetryFeature('PrintandExport', 'Diagram');
         this.diagram = diagram;
     }
 

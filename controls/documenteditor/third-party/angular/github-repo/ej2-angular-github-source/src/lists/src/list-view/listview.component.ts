@@ -20,63 +20,24 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template'),
+        groupTemplate: new ContentChild('groupTemplate'),
+        headerTemplate: new ContentChild('headerTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ListViewComponent extends ListView implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	scroll: any;
-	public select: any;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare scroll: any;
+	public declare select: any;
 
 
-    /** 
-     * The ListView component supports to customize the content of each list items with the help of `template` property.
-     * 
-     * {% codeBlock src='listview/template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
-    /** 
-     * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
-     * 
-     * {% codeBlock src="listview/groupTemplate/index.md" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('groupTemplate')
-    @Template()
-    public groupTemplate: any;
-    /** 
-     * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
-     * 
-     * {% codeBlock src="listview/headerTemplate/index.md" %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -112,7 +73,11 @@ export class ListViewComponent extends ListView implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ListViewComponent.prototype, 'template');
+Template()(ListViewComponent.prototype, 'groupTemplate');
+Template()(ListViewComponent.prototype, 'headerTemplate');
+
 

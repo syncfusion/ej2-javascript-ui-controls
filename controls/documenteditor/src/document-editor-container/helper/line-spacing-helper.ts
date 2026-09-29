@@ -1,4 +1,4 @@
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor/index';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
@@ -98,14 +98,19 @@ export class LineSpacingHelper {
      * @returns {void}
      */
     public static customizeLineSpacingItem(args: MenuEventArgs, appliedLineSpacing: string): void {
-        args.element.innerHTML = '<span></span>' + args.item.text;
-        const span: HTMLElement = args.element.children[0] as HTMLElement;
+        args.element.textContent = '';
+
+        const span: HTMLElement = document.createElement('span');
+        args.element.appendChild(span);
+        args.element.appendChild(
+            document.createTextNode(args.item.text || '')
+        );
 
         if (args.item.text === appliedLineSpacing) {
-            span.style.marginRight = '10px';
+            updateCSSText(span, 'margin-right:10px;');
             span.setAttribute('class', 'e-de-selected-item e-icons e-de-linespacing');
         } else {
-            span.style.marginRight = '25px';
+            updateCSSText(span, 'margin-right:25px;');
             span.classList.remove('e-de-selected-item');
         }
     }

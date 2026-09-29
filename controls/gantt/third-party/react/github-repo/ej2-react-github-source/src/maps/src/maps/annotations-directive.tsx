@@ -6,7 +6,7 @@ export interface AnnotationDirTypecast {
 }
 /**
  * Represents the directive to define the annotations in the maps.
- * ```tsx
+ * ```
  * <MapsComponent>
  * <AnnotationsDirective>
  * <AnnotationDirective></AnnotationDirective>

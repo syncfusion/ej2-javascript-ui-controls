@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList, isNullOrUndefined, Browser, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { CommentElementBox, CommentCharacterElementBox, ElementBox, CommentEditInfo } from '../../implementation/viewer/page';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -237,6 +237,7 @@ export class CommentReviewPane {
         return this.reviewPane;
     }
     public closePane(): void {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         if (this.commentPane && this.commentPane.isEditMode) {
             if (!isNullOrUndefined(this.commentPane.currentEditingComment)
                 && this.commentPane.isInsertingReply && this.commentPane.currentEditingComment.replyViewTextBox.innerText  === '') {
@@ -252,6 +253,16 @@ export class CommentReviewPane {
                 this.confirmDialog = DialogUtility.confirm({
                     title: localObj.getConstant('Unsaved comments'),
                     content: localObj.getConstant('Discard Comment body'),
+                    open: (e: any) => {
+                        if (isAngularModal)
+                        {
+                            const cdkPane = document.querySelector('.cdk-overlay-pane') as HTMLElement;
+                            const dlgContainer = e.element.parentElement as HTMLElement;
+                            if (dlgContainer && cdkPane) {
+                                cdkPane.appendChild(dlgContainer);
+                            }
+                        }
+                    },
                     okButton: {
                         text: localObj.getConstant('Discard comments'), click: this.discardButtonClick.bind(this), cssClass: 'e-btn e-danger'
                     },
@@ -319,6 +330,7 @@ export class CommentReviewPane {
     }
 
     public insertComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         if (this.owner && this.owner.editorModule) {
             this.owner.editorModule.isUserInsert = true;
             this.owner.editorModule.insertComment('');
@@ -384,12 +396,14 @@ export class CommentReviewPane {
     }
 
     public navigatePreviousComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         if (this.owner && this.owner.editorModule) {
             this.owner.selectionModule.navigatePreviousComment();
         }
     }
 
     public navigateNextComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         if (this.owner && this.owner.editorModule) {
             this.owner.selectionModule.navigateNextComment();
         }
@@ -667,6 +681,11 @@ export class CommentPane {
         if (this.parent) {
             const elements: HTMLCollectionOf<Element> = this.parent.getElementsByClassName(className);
             for (let i: number = 0; i < elements.length; i++) {
+                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                    if (className === 'e-de-cmt-selection') {
+                        (elements[i] as HTMLElement).style.borderLeftColor = '';
+                    }
+                }
                 classList(elements[i], [], [className]);
             }
         }
@@ -674,6 +693,7 @@ export class CommentPane {
 
     public selectComment(comment: CommentElementBox): void {
         this.removeSelectionMark('e-de-cmt-selection');
+        this.owner.selectionModule.isCommentSelected = true;
         if (comment.isReply) {
             comment = comment.ownerComment;
         }
@@ -683,6 +703,10 @@ export class CommentPane {
             const selectedElement: HTMLElement = commentView.parentElement;
             if (selectedElement) {
                 classList(selectedElement, ['e-de-cmt-selection'], []);
+                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                    const authorColor: string = this.owner.documentHelper.getAuthorColor(comment.author);
+                    (selectedElement as HTMLElement).style.borderLeftColor = authorColor;
+                }
                 selectedElement.focus();
             }
             const commentStart: CommentCharacterElementBox = this.getCommentStart(comment);
@@ -704,18 +728,9 @@ export class CommentPane {
         if (commentStart.commentMark !== undefined) {
             commentStart.commentMark.title = localValue.getConstant('Click to see this comment');
         }
-        return this.getFirstCommentInLine(commentStart);
-
+        return commentStart.getFirstCommentInLine();
     }
-    private getFirstCommentInLine(commentStart: CommentCharacterElementBox): CommentCharacterElementBox {
-        for (let i: number = 0; i < commentStart.line.children.length; i++) {
-            const startComment: ElementBox = commentStart.line.children[i];
-            if (startComment instanceof CommentCharacterElementBox && startComment.commentType === 0) {
-                return startComment as CommentCharacterElementBox;
-            }
-        }
-        return commentStart;
-    }
+    
 
     public deleteComment(comment: CommentElementBox): void {
         const commentView: CommentView = this.comments.get(comment);
@@ -890,7 +905,8 @@ export class CommentView {
     }
 
     private initCommentHeader(localObj: L10n): void {
-       
+        let commentHeaderDiv = this;
+        const isAngularModal: boolean = this.owner.isModalDialog;
         var commentDiv = createElement('div', { className: 'e-de-cmt-view' });
         this.resolveDiv = createElement('div', { className: 'e-de-cmt-view' });
         let wrapperDiv = createElement('div', { className: 'e-de-cmt-view' });
@@ -937,7 +953,14 @@ export class CommentView {
             select: this.userOptionSelectEvent.bind(this),
             iconCss: 'e-de-menu-icon',
             cssClass: 'e-caret-hide',
-            enableRtl: this.owner.enableRtl
+            enableRtl: this.owner.enableRtl,
+            beforeOpen: function (this: DropDownButton, e: any): void {
+                if (isAngularModal) {
+                    const popupEl = e.element.parentElement as HTMLElement;
+                    const dropDownButtonEl = this.element as HTMLElement;
+                    commentHeaderDiv.owner.movePopupToCdkOverlay(dropDownButtonEl,popupEl);
+                }
+            }
         });
         this.menuBar.title = localObj.getConstant('More Options') + '...';
         menuItem.appendTo(this.menuBar);
@@ -988,6 +1011,14 @@ export class CommentView {
             select: this.onSelect.bind(this),
         });
         this.textArea.innerHTML = this.comment.text;
+        const isMozilla: boolean = Browser.info.name === 'mozilla';
+        if (isMozilla) {
+            this.textArea.innerHTML = this.textArea.innerHTML.replace(
+                /(<span[^>]*class="e-mention-chip"[^>]*>.*?<\/span>)(?!\uFEFF)/g,
+                '$1\uFEFF'
+            );
+        }
+        this.textArea.addEventListener('input', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         const editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
@@ -1088,6 +1119,7 @@ export class CommentView {
         this.replyViewTextBox.style.borderWidth = '0 0 1px 0';
         this.replyViewTextBox.setAttribute("placeholder" , localObj.getConstant('Reply'));
         this.replyViewTextBox.addEventListener('click', this.enableReplyView.bind(this));
+        this.replyViewTextBox.addEventListener('input', this.updateReplyTextAreaHeight.bind(this));
         this.replyViewTextBox.addEventListener('keydown', this.updateReplyTextAreaHeight.bind(this));
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
         const editRegionFooter: HTMLElement = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
@@ -1170,11 +1202,11 @@ export class CommentView {
         }
     }
 
-    private updateReplyTextAreaHeight(event?: KeyboardEvent): void {
-        if (event) {
+    private updateReplyTextAreaHeight(event?: KeyboardEvent | Event): void {
+        if (event instanceof KeyboardEvent) {
             this.preventKeyboardShortcuts(event);
         }
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             if (!isNullOrUndefined(this.replyViewTextBox)) {
                 this.replyViewTextBox.style.height = 'auto';
                 const scrollHeight: number = this.replyViewTextBox.scrollHeight;
@@ -1245,6 +1277,10 @@ export class CommentView {
     }
 
     private postReply(): void {
+        if (this.replyViewTextBox.innerHTML || this.replyViewTextBox.innerHTML !== '') {
+            this.replyViewTextBox.innerHTML = this.replyViewTextBox.innerHTML.replace(/<span>\s*(<span\b[^>]*class="e-mention-chip"[^>]*>.*?<\/span>)\s*<\/span>/gi,
+                '$1')
+        }
         const replyText: string = this.replyViewTextBox.innerText;
         const replyHtmlText: string = this.replyViewTextBox.innerHTML;
         this.cancelReply();
@@ -1269,11 +1305,11 @@ export class CommentView {
         this.replyFooter.style.display = 'none';
 
     }
-    private updateTextAreaHeight(event?: KeyboardEvent): void {
-        if (event) {
+    private updateTextAreaHeight(event?: KeyboardEvent | Event): void {
+        if (event instanceof KeyboardEvent) {
             this.preventKeyboardShortcuts(event);
         }
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             if (!isNullOrUndefined(this.textArea)) {
                 this.textArea.style.height = 'auto';
                 const scrollHeight: number = this.textArea.scrollHeight;
@@ -1292,6 +1328,27 @@ export class CommentView {
         const commentStart: CommentCharacterElementBox = this.commentPane.getCommentStart(this.comment);
         if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
             commentStart.commentMark.classList.add('e-de-cmt-mark-hover');
+            
+            if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                // Use helper method to update comment mark colors on hover
+                commentStart.updateCommentMarkColorOnHover();
+            }
+        }
+        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+            // For reply comments, apply border to parent comment's element
+            if (this.comment.isReply) {
+                const parentCommentView: CommentView = this.commentPane.comments.get(this.comment.ownerComment);
+                if (parentCommentView && parentCommentView.parentElement && !parentCommentView.parentElement.classList.contains('e-de-cmt-selection')) {
+                    const authorColor: string = this.owner.documentHelper.getAuthorColor(this.comment.ownerComment.author);
+                    (parentCommentView.parentElement as HTMLElement).style.borderLeftColor = authorColor;
+                }
+            } else {
+                // For parent comments, apply border to own element
+                if (!this.parentElement.classList.contains('e-de-cmt-selection')) {
+                    const authorColor: string = this.owner.documentHelper.getAuthorColor(this.comment.author);
+                    (this.parentElement as HTMLElement).style.borderLeftColor = authorColor;
+                }
+            }
         }
     }
 
@@ -1305,6 +1362,25 @@ export class CommentView {
             const commentStart: CommentCharacterElementBox = this.commentPane.getCommentStart(this.comment);
             if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
                 commentStart.commentMark.classList.remove('e-de-cmt-mark-hover');
+
+                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                    // Use helper method to update comment mark colors on unhover
+                    commentStart.updateCommentMarkColorOnUnhover();
+                }
+            }
+        }
+        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+            // For reply comments, clear border on parent comment's element
+            if (this.comment.isReply) {
+                const parentCommentView: CommentView = this.commentPane.comments.get(this.comment.ownerComment);
+                if (parentCommentView && parentCommentView.parentElement && !parentCommentView.parentElement.classList.contains('e-de-cmt-selection')) {
+                    (parentCommentView.parentElement as HTMLElement).style.borderLeftColor = '';
+                }
+            } else {
+                // For parent comments, clear border on own element
+                if (!this.parentElement.classList.contains('e-de-cmt-selection')) {
+                    (this.parentElement as HTMLElement).style.borderLeftColor = '';
+                }
             }
         }
     }
@@ -1323,6 +1399,7 @@ export class CommentView {
     }
 
     public editComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         if (!isNullOrUndefined(this.commentPane.parentPane) && !this.commentPane.parentPane.postReply) {
             const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit', mentions: this.comment.mentions };
             this.owner.trigger(beforeCommentActionEvent, eventArgs);
@@ -1346,6 +1423,7 @@ export class CommentView {
     }
 
     public resolveComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         classList(this.parentElement, ['e-de-cmt-resolved'], []);
         this.resolveDiv.style.display = "inline";
         const localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
@@ -1354,6 +1432,7 @@ export class CommentView {
     }
  
     public reopenComment(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         classList(this.parentElement, [], ['e-de-cmt-resolved']);
         this.resolveDiv.style.display = "none";
         const localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
@@ -1366,17 +1445,21 @@ export class CommentView {
     }
 
     public postComment(): void {
-        this.comment.isPosted = true;
-        if (this.itemData) {
-            this.comment.mentions = this.itemData;
-            this.itemData = [];
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
+        if (this.textArea.innerHTML || this.textArea.innerHTML !== '') {
+            this.textArea.innerHTML = this.textArea.innerHTML.replace(/<span>\s*(<span\b[^>]*class="e-mention-chip"[^>]*>.*?<\/span>)\s*<\/span>/gi,
+                '$1')
         }
+        this.comment.isPosted = true;
+        const updatedText: string = this.textArea.innerHTML;
+        const availableMentions: FieldSettingsModel[] = [...this.comment.mentions, ...this.itemData];
+        this.comment.mentions = this.syncMentionsFromHtml(updatedText, availableMentions);
+        this.itemData = [];
         const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Post', text: this.textArea.innerText, mentions: this.comment.mentions};
         this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Post') {
             return;
         }
-        const updatedText: string = this.textArea.innerHTML;
         if (this.owner.editorModule && this.comment.text != '' && (this.comment.text != updatedText)) {
             this.owner.editorModule.initHistory('EditComment');
             let modifiedObject: CommentEditInfo = {
@@ -1400,6 +1483,28 @@ export class CommentView {
             this.owner.fireContentChange();
         }
     }
+    private syncMentionsFromHtml(html: string, mentions: any[]): any[] {
+        const tempDiv: HTMLElement = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const spanElements = tempDiv.querySelectorAll('span.e-mention-chip');
+        const result: any[] = [];
+        for (let i: number = 0; i < spanElements.length; i++) {
+            const span: Element = spanElements[i];
+            const text: string = (span.textContent);
+            let mentionText: any = null;
+            for (let j: number = 0; j < mentions.length; j++) {
+                const mention: any = mentions[j];
+                if (mention.text === text) {
+                    mentionText = mention;
+                    break;
+                }
+            }
+            if (mentionText) {
+                result.push(mentionText);
+            }
+        }
+        return result;
+    }
 
     public showCommentView(): void {
         this.commentPane.isEditMode = false;
@@ -1410,8 +1515,16 @@ export class CommentView {
     }
 
     public cancelEditing(): void {
+        initializeTelemetryFeature('Comment', 'DOCXEditor');
         this.showCommentView();
         this.textArea.innerHTML = this.comment.text.trim();
+        const isMozilla: boolean = Browser.info.name === 'mozilla';
+        if (isMozilla) {
+            this.textArea.innerHTML = this.textArea.innerHTML.replace(
+                /(<span[^>]*class="e-mention-chip"[^>]*>.*?<\/span>)(?!\uFEFF)/g,
+                '$1\uFEFF'
+            );
+        }
         if (this.commentPane.parentPane.isNewComment) {
             if (this.commentPane && this.commentPane.parentPane) {
                 this.commentPane.parentPane.isNewComment = false;
@@ -1491,8 +1604,13 @@ export class CommentView {
         }
         if (this.textArea) {
             this.textArea.removeEventListener('keydown', this.updateTextAreaHeight.bind(this));
+            this.textArea.removeEventListener('input', this.updateTextAreaHeight.bind(this));
             this.textArea.removeEventListener('keyup', this.enableDisablePostButton.bind(this));
-
+        }
+        if (this.replyViewTextBox) {
+            this.replyViewTextBox.removeEventListener('input', this.updateReplyTextAreaHeight.bind(this));
+            this.replyViewTextBox.removeEventListener('keydown', this.updateReplyTextAreaHeight.bind(this));
+            this.replyViewTextBox.removeEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
         }
         if (this.postButton) {
             this.postButton.removeEventListener('click', this.postComment.bind(this));

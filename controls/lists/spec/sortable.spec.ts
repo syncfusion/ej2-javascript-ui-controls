@@ -160,6 +160,29 @@ describe('Sortable', () => {
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element.children[5];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
         });
+        it('Dragging item outside sortable container', () => {
+            sortable = new Sortable(element, { itemClass: 'e-item' });
+            let consoleErrorSpy: jasmine.Spy = jasmine.createSpy('consoleError');
+            spyOn(console, 'error').and.callFake(consoleErrorSpy);
+            EventHandler.trigger(element, 'mousedown', mousedown);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[1];
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            // Move drag outside the container to a body element without className property
+            mousemove = setMouseCordinates(mousemove, 100, 200);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            // Continue dragging outside
+            mousemove = setMouseCordinates(mousemove, 150, 250);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            // Release outside the container
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.body;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            // Verify no console error occurred
+            expect(consoleErrorSpy).not.toHaveBeenCalled();
+            expect(element.childElementCount).toEqual(8);
+        });
     });
     describe('Property - callback functions', () => {
         let mousedown: any; let mousemove: any; let mouseUp: any; let dragStartEvent: jasmine.Spy;

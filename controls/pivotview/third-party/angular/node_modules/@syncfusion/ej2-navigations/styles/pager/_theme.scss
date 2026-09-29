@@ -1,0 +1,190 @@
+@use 'variables' as *;
+@mixin color-opacity-styles($color, $opacity) {
+  color: $color;
+  opacity: $opacity;
+}
+
+@mixin background-color-opacity-styles($background, $color, $opacity) {
+  background: $background;
+  @include color-opacity-styles($color, $opacity);
+}
+
+@include export-module('pager-theme') {
+
+  /*! Pager theme */
+  #{&}.e-pager {
+    @if $pager-skin == 'material3' {
+      border-color: rgba($border-light);
+    }
+    @else if $pager-skin == 'fluent2' {
+      border-color: $border-light;
+    }
+    @else {
+      border-color: $pager-border-color;
+    }
+
+    @include background-color-opacity-styles($pager-bg-color, $pager-color, $pager-content-opacity);
+
+    div.e-icons.e-pager-default {
+      color: $pager-icon-color;
+    }
+
+    div.e-icons.e-pager-default.e-focused {
+      @if $pager-skin == 'fluent2' {
+        color: $pager-hover-color;
+      }
+    }
+
+    div.e-icons.e-pager-default:not(.e-numericitem):hover {
+      @if $pager-skin == 'fluent2' {
+        color: $pager-hover-color;
+        background-color: $pager-hover-bg-color;
+      }
+    }
+
+    div.e-icons.e-disable {
+      color: $pager-numeric-txt-bg-color;
+    }
+
+    .e-pager-default:hover {
+      @include background-color-opacity-styles($pager-hover-bg-color, $pager-hover-color, $pager-content-opacity);
+      @if $pager-skin == 'material3' {
+        border-radius: $pager-border-radius-4;
+      }
+    }
+
+    .e-parentmsgbar {
+      font-weight: $pager-pagermessage-weight;
+    }
+
+    .e-spacing {
+      @include color-opacity-styles($page-content-color, $pager-content-opacity);
+    }
+
+    .e-spacing.e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+      background: $pager-numeric-hover-bg-color;
+    }
+
+    .e-numericitem:hover {
+      @include color-opacity-styles($pager-hover-color, $pager-content-opacity);
+    }
+
+    .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+      background-color: $pager-number-hover-bg-color;
+      opacity: 1;
+    }
+
+    .e-numericitem {
+      background: $pager-bg-color;
+      color: $page-content-color;
+    }
+
+    .e-prevpagedisabled,
+    .e-prevpage,
+    .e-nextpage,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled,
+    .e-lastpage,
+    .e-firstpage,
+    .e-firstpagedisabled {
+      background-color: $pager-bg-color;
+      color: $pager-icon-color;
+    }
+
+    .e-prevpagedisabled,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled,
+    .e-firstpagedisabled {
+      @if $pager-skin == 'fluent2' {
+        background-color: $content-bg-color-disabled;
+      }
+    }
+
+    @media (max-width: 769px) {
+      .e-prevpagedisabled,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled,
+      .e-firstpagedisabled {
+        @if $pager-skin == 'fluent2' {
+          background-color: $pager-bg-color;
+        }
+      }
+    }
+
+    .e-lastpage,
+    .e-firstpage {
+      background-color: transparent;
+    }
+
+    .e-pagercontainer {
+      background-color: $pager-bg-color;
+      border-color: $pager-border-color;
+    }
+
+    .e-numericitem,
+    .e-firstpage,
+    .e-prevpage,
+    .e-firstpagedisabled,
+    .e-prevpagedisabled,
+    .e-nextpage,
+    .e-lastpage,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled {
+      border-right-color: $pager-border-color;
+    }
+
+    .e-currentitem,
+    .e-currentitem:hover {
+      @if $pager-skin == 'bootstrap5' {
+        border-right-color: $primary-light;
+      }
+      @if $pager-skin == 'material3' {
+        border-radius: $pager-border-radius-4;
+      }
+      @include background-color-opacity-styles($pager-active-bg-color, $pager-active-color, 1);
+    }
+
+    .e-numericitem.e-focused,
+    .e-first.e-focused,
+    .e-prev.e-focused,
+    .e-next.e-focused,
+    .e-last.e-focused,
+    .e-mfirst.e-focused,
+    .e-mprev.e-focused,
+    .e-mnext.e-focused,
+    .e-mlast.e-focused {
+      background-color: $pager-focus-bg-color;
+    }
+
+    .e-currentitem.e-numericitem.e-focused {
+      background: $pager-active-bg-color;
+      box-shadow: $pager-focus-active-box-shadow;
+    }
+
+    .e-focused {
+      box-shadow: $pager-focus-shadow;
+    }
+
+    @media (max-width: 590px) {
+      .e-pager-default:hover {
+        @include background-color-opacity-styles($pager-bg-color, $pager-mhover-color, $pager-content-opacity);
+      }
+    }
+
+    &.e-rtl {
+      & .e-numericitem,
+      & .e-firstpage,
+      & .e-prevpage,
+      & .e-firstpagedisabled,
+      & .e-prevpagedisabled,
+      & .e-nextpage,
+      & .e-lastpage,
+      & .e-nextpagedisabled,
+      & .e-lastpagedisabled,
+      & .e-nextpage,
+      & .e-nextpagedisabled {
+        border-left-color: $pager-border-color;
+      }
+    }
+  }
+}

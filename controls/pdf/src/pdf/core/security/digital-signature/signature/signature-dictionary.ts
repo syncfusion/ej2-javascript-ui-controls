@@ -9,7 +9,11 @@ import { _PdfX509CertificateParser } from '../x509/x509-certificate-parser';
 import { PdfSignature } from './pdf-signature';
 import { _PdfSignaturePrivateKey } from './signature-privatekey';
 import { _PdfCryptographicMessageSyntaxSigner } from './cryptographic-signer';
-import { _bytesToHex, _padStart} from '../../../utils';
+import { _bytesEqual, _bytesToHex, _bytesToString, _padStart} from '../../../utils';
+import { _PdfUniqueEncodingElement } from '../asn1/unique-encoding-element';
+import { _PdfOcspHelper } from '../ocsp/ocsp-response-utils';
+import { _PdfRevocationResponse } from '../ocsp/ocsp-response-model';
+import { _PdfX509CertificateStructure } from '../x509/x509-certificate-structure';
 /**
  * Helper class that builds and manages the PDF signature dictionary.
  *
@@ -126,7 +130,7 @@ export class _PdfSignatureDictionary {
      * Determine the digest algorithm used by the embedded CMS signer.
      *
      * @private
-     * @returns {DigestAlgorithm} The detected digest algorithm.
+     * @returns {DigestAlgorithm} The digest algorithm identified from the CMS signature
      */
     _parseDigestAlgorithm(): DigestAlgorithm {
         let digest: DigestAlgorithm;
@@ -140,8 +144,13 @@ export class _PdfSignatureDictionary {
                 const certificate: _PdfCertificate = new _PdfCertificate(certificateChain);
                 this._certificate = certificate;
                 this._cmsSigner = new _PdfCryptographicMessageSyntaxSigner(bytes, this._dictionary.get('SubFilter').name);
-                if (this._cmsSigner && this._cmsSigner._hasTimeStamp &&
-                    this._cmsSigner._timeStampTokenBytes &&
+                if (this._cmsSigner._certificates && this._cmsSigner._certificates.length > 0) {
+                    this._certificate._chains = this._cmsSigner._certificates;
+                }
+                if (this._cmsSigner._certificates && this._cmsSigner._certificates.length > 0) {
+                    this._certificate._chains = this._cmsSigner._certificates;
+                }
+                if (this._cmsSigner && this._cmsSigner._hasTimeStamp && this._cmsSigner._timeStampTokenBytes &&
                     this._cmsSigner._timeStampTokenBytes.length > 0) {
                     this._signature._hasTimeStamp = this._cmsSigner._hasTimeStamp;
                     this._signature._timeStampTokenBytes = this._cmsSigner._timeStampTokenBytes;
@@ -774,5 +783,203 @@ export class _PdfSignatureDictionary {
         } catch (e) {
             throw new Error(e.message);
         }
+    }
+    /**
+     * Extracts the OCSP responder certificate and thisUpdate/nextUpdate times
+     * from a raw OCSPResponse byte array.
+     *
+     * @private
+     * @param {Uint8Array} ocspBytes Raw OCSPResponse bytes.
+     * @returns {Object} OCSP responder information.
+     */
+    _extractOcspResponderInfo(ocspBytes: Uint8Array): { cert: any; validFrom: Date; validTo: Date } { // eslint-disable-line
+        try {
+            const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+            element._fromBytes(ocspBytes);
+            const helper: _PdfOcspHelper = new _PdfOcspHelper()._getOcspStructure(element);
+            const revResponse: _PdfRevocationResponse = new _PdfRevocationResponse(helper);
+            const responses: any[] = revResponse._responses; // eslint-disable-line
+            let thisUpdate: Date = undefined;
+            let nextUpdate: Date = undefined;
+            if (responses && responses.length > 0) {
+                const singleResp: any = responses[0]; // eslint-disable-line
+                const helperInner: any = (singleResp as any)._helper; // eslint-disable-line
+                if (helperInner) {
+                    const thisUpdateElem: any = helperInner._thisUpdate; // eslint-disable-line
+                    if (thisUpdateElem) {
+                        const tagNo: number = typeof thisUpdateElem._getTagNumber === 'function'
+                            ? thisUpdateElem._getTagNumber() : -1;
+                        if (tagNo === 23 || tagNo === 24) {
+                            const val: any = thisUpdateElem._getValue(); // eslint-disable-line
+                            let str: string = '';
+                            if (typeof val === 'string') {
+                                str = val.trim();
+                            } else if (val instanceof Uint8Array) {
+                                for (let i: number = 0; i < val.length; i++) {
+                                    str += String.fromCharCode(val[<number>i]);
+                                }
+                                str = str.trim();
+                            }
+                            if (str) {
+                                let m: any = str.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(?:\.\d+)?Z$/); // eslint-disable-line
+                                if (m) {
+                                    thisUpdate = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+                                } else {
+                                    m = str.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})Z$/);
+                                    if (m) {
+                                        let yr: number = parseInt(m[1], 10);
+                                        yr += yr < 50 ? 2000 : 1900;
+                                        thisUpdate = new Date(Date.UTC(yr, +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    const nextUpdateTime: any = helperInner._nextUpdateTime; // eslint-disable-line
+                    if (nextUpdateTime && typeof nextUpdateTime._toDate === 'function') {
+                        nextUpdate = nextUpdateTime._toDate();
+                    }
+                }
+            }
+            let responderCert: any = null; // eslint-disable-line
+            const embeddedSeq: any = helper._embeddedCertificates; // eslint-disable-line
+            if (embeddedSeq) {
+                try {
+                    const certElements: any[] = embeddedSeq._getComponents // eslint-disable-line
+                        ? embeddedSeq._getComponents()
+                        : (embeddedSeq._getSequence ? embeddedSeq._getSequence() : []);
+                    for (const certElem of certElements) {
+                        let actual: any = certElem; // eslint-disable-line
+                        while (actual && (actual as any)._tagClass === 2) { // eslint-disable-line
+                            const inner: any[] = actual._getComponents ? actual._getComponents() : []; // eslint-disable-line
+                            if (!inner || inner.length === 0) {
+                                break;
+                            }
+                            actual = inner[0];
+                        }
+                        if (!actual) {
+                            continue;
+                        }
+                        const tagNo: number = typeof actual._getTagNumber === 'function' ? actual._getTagNumber() : -1;
+                        if (tagNo !== 16) {
+                            continue;
+                        }
+                        const raw: Uint8Array = actual._toBytes ? actual._toBytes() : null;
+                        if (!raw) {
+                            continue;
+                        }
+                        const tempElem: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+                        tempElem._fromBytes(raw);
+                        let seq: any[] = tempElem._getSequence ? tempElem._getSequence() : []; // eslint-disable-line
+                        if (seq && seq.length > 0 && seq[0] && (seq[0] as any)._tagClass === 2) { // eslint-disable-line
+                            const inner: any[] = seq[0]._getComponents ? seq[0]._getComponents() : []; // eslint-disable-line
+                            if (inner && inner.length > 0) {
+                                seq[0] = inner[0];
+                            }
+                        }
+                        if (!seq || seq.length !== 3) {
+                            continue;
+                        }
+                        const structure: _PdfX509CertificateStructure = new _PdfX509CertificateStructure();
+                        (structure as any)._applySequence(seq); // eslint-disable-line
+                        responderCert = new _PdfX509Certificate(structure);
+                        break;
+                    }
+                } catch {
+                    /* Ignore */
+                }
+            }
+            if (!thisUpdate && !nextUpdate && !responderCert) {
+                return null;
+            }
+            return { cert: responderCert, validFrom: thisUpdate, validTo: nextUpdate };
+        } catch {
+            return null;
+        }
+    }
+    /**
+     * Tries to parse trusted certificate bytes as a DER-encoded X.509 certificate.
+     *
+     * @private
+     * @param {Uint8Array} bytes Raw bytes of either a DER-encoded X.509 certificate11 or a PKCS#12/PFX file.
+     * @param {string} password Password used to open the PKCS#12/PFX container. An empty string can be provided for unprotected archives.
+     * @returns {any[]} One or more extracted certificates.
+     */
+    _extractTrustedCertsFromBytes(bytes: Uint8Array, password: string): any[] { // eslint-disable-line
+        const pemMarker: string = '-----BEGIN CERTIFICATE-----';
+        const pemEnd: string = '-----END CERTIFICATE-----';
+        let pemText: string;
+        try {
+            pemText = _bytesToString(bytes);
+        } catch {
+            pemText = '';
+        }
+        if (pemText.indexOf(pemMarker) !== -1) {
+            const results: any[] = []; // eslint-disable-line
+            let searchFrom: number = 0;
+            while (true) { // eslint-disable-line
+                const start: number = pemText.indexOf(pemMarker, searchFrom);
+                if (start === -1) {
+                    break;
+                }
+                const end: number = pemText.indexOf(pemEnd, start);
+                if (end === -1) {
+                    break;
+                }
+                const base64Block: string = pemText
+                    .substring(start + pemMarker.length, end)
+                    .replace(/\s+/g, '');
+                try {
+                    const binaryStr: string = atob(base64Block);
+                    const der: Uint8Array = new Uint8Array(binaryStr.length);
+                    for (let k: number = 0; k < binaryStr.length; k++) {
+                        der[<number>k] = binaryStr.charCodeAt(k);
+                    }
+                    const cert: any = this._cmsSigner._parseX509FromUniqueElement(der); // eslint-disable-line
+                    if (cert) {
+                        results.push(cert);
+                    }
+                } catch {
+                    /* Ignore */
+                }
+                searchFrom = end + pemEnd.length;
+            }
+            return results;
+        }
+        try {
+            const cert: any = this._cmsSigner._parseX509FromUniqueElement(bytes); // eslint-disable-line
+            if (cert) {
+                return [cert];
+            }
+        } catch {
+            /* Ignore */
+        }
+        const results: any[] = []; // eslint-disable-line
+        try {
+            const pfxParser: _PdfPublicKeyCryptographyCertificate = new _PdfPublicKeyCryptographyCertificate();
+            pfxParser._loadCertificate(bytes, password);
+            if (pfxParser._chainCertificates) {
+                pfxParser._chainCertificates.forEach((certWrapper: any) => { // eslint-disable-line
+                    if (certWrapper && certWrapper._certificate) {
+                        results.push(certWrapper._certificate);
+                    }
+                });
+            }
+            if (results.length === 0 && pfxParser._keyCertificates) {
+                pfxParser._keyCertificates.forEach((certWrapper: any) => { // eslint-disable-line
+                    if (certWrapper && certWrapper._certificate) {
+                        const already: boolean = results.some(
+                            (c: any) => _bytesEqual(c._getEncoded(), certWrapper._certificate._getEncoded()) // eslint-disable-line
+                        );
+                        if (!already) {
+                            results.push(certWrapper._certificate);
+                        }
+                    }
+                });
+            }
+        } catch {
+            /* Ignore */
+        }
+        return results;
     }
 }

@@ -5,8 +5,8 @@ import { Template } from '@syncfusion/ej2-angular-base';
 import { SheetsDirective } from './sheets.directive';
 import { DefinedNamesDirective } from './definednames.directive';
 
-export const inputs: string[] = ['activeSheetIndex','aiAssistSettings','allowAutoFill','allowCellFormatting','allowChart','allowConditionalFormat','allowDataValidation','allowDelete','allowEditing','allowFiltering','allowFindAndReplace','allowFreezePane','allowHyperlink','allowImage','allowInsert','allowMerge','allowNumberFormatting','allowOpen','allowPrint','allowResizing','allowSave','allowScrolling','allowSorting','allowUndoRedo','allowWrap','author','autoFillSettings','calculationMode','cellStyle','cssClass','currencyCode','definedNames','enableAIAssist','enableClipboard','enableContextMenu','enableKeyboardNavigation','enableKeyboardShortcut','enableNotes','enablePersistence','enableRtl','height','isProtected','listSeparator','locale','openSettings','openUrl','password','saveUrl','scrollSettings','selectionSettings','sheets','showAggregate','showCommentsPane','showFormulaBar','showRibbon','showSheetTabs','width'];
-export const outputs: string[] = ['actionBegin','actionComplete','afterHyperlinkClick','afterHyperlinkCreate','beforeCellFormat','beforeCellRender','beforeCellSave','beforeCellUpdate','beforeConditionalFormat','beforeDataBound','beforeHyperlinkClick','beforeHyperlinkCreate','beforeOpen','beforeSave','beforeSelect','beforeSort','cellEdit','cellEdited','cellEditing','cellSave','contextMenuBeforeClose','contextMenuBeforeOpen','contextMenuItemSelect','created','dataBound','dataSourceChanged','dialogBeforeOpen','fileMenuBeforeClose','fileMenuBeforeOpen','fileMenuItemSelect','openComplete','openFailure','promptRequest','promptResponse','queryCellInfo','saveComplete','select','sortComplete'];
+export const inputs: string[] = ['activeSheetIndex','aiAssistSettings','allowAutoFill','allowCellFormatting','allowChart','allowConditionalFormat','allowDataValidation','allowDelete','allowEditing','allowFiltering','allowFindAndReplace','allowFreezePane','allowHyperlink','allowImage','allowInsert','allowMerge','allowNumberFormatting','allowOpen','allowPrint','allowResizing','allowSave','allowScrolling','allowSorting','allowUndoRedo','allowWrap','author','autoFillSettings','calculationMode','cellStyle','cssClass','currencyCode','definedNames','enableAIAssist','enableClipboard','enableCollaborativeEditing','enableContextMenu','enableKeyboardNavigation','enableKeyboardShortcut','enableNotes','enablePersistence','enableRtl','enableWebMcp','height','isProtected','listSeparator','locale','openSettings','openUrl','password','saveUrl','scrollSettings','selectionSettings','sheets','showAggregate','showCommentsPane','showFormulaBar','showRibbon','showSheetTabs','width'];
+export const outputs: string[] = ['actionBegin','actionComplete','afterHyperlinkClick','afterHyperlinkCreate','beforeCellFormat','beforeCellRender','beforeCellSave','beforeCellUpdate','beforeConditionalFormat','beforeDataBound','beforeHyperlinkClick','beforeHyperlinkCreate','beforeOpen','beforeSave','beforeSelect','beforeSort','beforeWebMcpToolExecute','cellEdit','cellEdited','cellEditing','cellSave','contextMenuBeforeClose','contextMenuBeforeOpen','contextMenuItemSelect','created','dataBound','dataSourceChanged','dialogBeforeOpen','fileMenuBeforeClose','fileMenuBeforeOpen','fileMenuItemSelect','openComplete','openFailure','promptRequest','promptResponse','queryCellInfo','saveComplete','select','sortComplete'];
 export const twoWays: string[] = [''];
 
 /**
@@ -21,59 +21,59 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSheets: new ContentChild(SheetsDirective), 
-        childDefinedNames: new ContentChild(DefinedNamesDirective)
+        childSheets: new ContentChild(SheetsDirective),
+        childDefinedNames: new ContentChild(DefinedNamesDirective),
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase])
 export class SpreadsheetComponent extends Spreadsheet implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	afterHyperlinkClick: any;
-	afterHyperlinkCreate: any;
-	beforeCellFormat: any;
-	beforeCellRender: any;
-	beforeCellSave: any;
-	beforeCellUpdate: any;
-	beforeConditionalFormat: any;
-	beforeDataBound: any;
-	beforeHyperlinkClick: any;
-	beforeHyperlinkCreate: any;
-	beforeOpen: any;
-	beforeSave: any;
-	beforeSelect: any;
-	beforeSort: any;
-	cellEdit: any;
-	cellEdited: any;
-	cellEditing: any;
-	cellSave: any;
-	contextMenuBeforeClose: any;
-	contextMenuBeforeOpen: any;
-	contextMenuItemSelect: any;
-	created: any;
-	dataBound: any;
-	dataSourceChanged: any;
-	dialogBeforeOpen: any;
-	fileMenuBeforeClose: any;
-	fileMenuBeforeOpen: any;
-	fileMenuItemSelect: any;
-	openComplete: any;
-	openFailure: any;
-	promptRequest: any;
-	promptResponse: any;
-	queryCellInfo: any;
-	saveComplete: any;
-	select: any;
-	public sortComplete: any;
-    public childSheets: QueryList<SheetsDirective>;
-    public childDefinedNames: QueryList<DefinedNamesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare afterHyperlinkClick: any;
+	declare afterHyperlinkCreate: any;
+	declare beforeCellFormat: any;
+	declare beforeCellRender: any;
+	declare beforeCellSave: any;
+	declare beforeCellUpdate: any;
+	declare beforeConditionalFormat: any;
+	declare beforeDataBound: any;
+	declare beforeHyperlinkClick: any;
+	declare beforeHyperlinkCreate: any;
+	declare beforeOpen: any;
+	declare beforeSave: any;
+	declare beforeSelect: any;
+	declare beforeSort: any;
+	declare beforeWebMcpToolExecute: any;
+	declare cellEdit: any;
+	declare cellEdited: any;
+	declare cellEditing: any;
+	declare cellSave: any;
+	declare contextMenuBeforeClose: any;
+	declare contextMenuBeforeOpen: any;
+	declare contextMenuItemSelect: any;
+	declare created: any;
+	declare dataBound: any;
+	declare dataSourceChanged: any;
+	declare dialogBeforeOpen: any;
+	declare fileMenuBeforeClose: any;
+	declare fileMenuBeforeOpen: any;
+	declare fileMenuItemSelect: any;
+	declare openComplete: any;
+	declare openFailure: any;
+	declare promptRequest: any;
+	declare promptResponse: any;
+	declare queryCellInfo: any;
+	declare saveComplete: any;
+	declare select: any;
+	public declare sortComplete: any;
+    public declare childSheets: QueryList<SheetsDirective>;
+    public declare childDefinedNames: QueryList<DefinedNamesDirective>;
     public tags: string[] = ['sheets', 'definedNames'];
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -175,6 +175,18 @@ export class SpreadsheetComponent extends Spreadsheet implements IComponentBase 
                     this.injectedModules.push(mod)
                 }
             } catch { }
+        try {
+                let mod = this.injector.get('SpreadsheetWebMcpAdapter');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
+        try {
+                let mod = this.injector.get('SpreadsheetCollaborativeEditingHandler');
+                if(this.injectedModules.indexOf(mod) === -1) {
+                    this.injectedModules.push(mod)
+                }
+            } catch { }
 
         this.registerEvents(outputs);
         this.addTwoWay.call(this, twoWays);
@@ -202,7 +214,9 @@ export class SpreadsheetComponent extends Spreadsheet implements IComponentBase 
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(SpreadsheetComponent.prototype, 'template');
+
 

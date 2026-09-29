@@ -394,11 +394,22 @@ export class ContextMenu {
             }
         }
         else {
-            contextMenuClickDate =
-                this.parent.dataOperation.getEndDate(startDate, splitTaskDuration, this.rowData.ganttProperties.duration > 1 ?
-                    this.rowData.ganttProperties.durationUnit : (this.parent.timelineSettings.bottomTier.unit !== 'None') ?
-                        this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase() :
-                        this.parent.timelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false);
+            if (this.rowData.ganttProperties.durationUnit === 'week') {
+                splitTaskDuration = splitTaskDuration / this.parent.daysPerWeek;
+            } else if (this.rowData.ganttProperties.durationUnit === 'month') {
+                splitTaskDuration = splitTaskDuration / this.parent.daysPerMonth;
+            }
+            const unit: string = this.rowData.ganttProperties.duration > 1
+                ? this.rowData.ganttProperties.durationUnit
+                : (this.parent.timelineSettings.bottomTier.unit !== 'None')
+                    ? this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase()
+                    : this.parent.timelineSettings.topTier.unit.toLocaleLowerCase();
+            if (unit === 'day' && this.rowData.ganttProperties.calendarContext.exceptionsRanges.length > 0) {
+                contextMenuClickDate = this.parent.calendarModule['getDirectEndDate'](startDate, splitTaskDuration);
+            } else {
+                contextMenuClickDate =
+                    this.parent.dataOperation.getEndDate(startDate, splitTaskDuration, unit, this.rowData, false);
+            }
         }
         return contextMenuClickDate;
     }

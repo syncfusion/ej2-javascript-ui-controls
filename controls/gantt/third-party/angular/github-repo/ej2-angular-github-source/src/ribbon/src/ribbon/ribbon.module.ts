@@ -7,36 +7,26 @@ import { RibbonTabDirective, RibbonTabsDirective } from './tabs.directive';
 import { RibbonContextualTabDirective, RibbonContextualTabsDirective } from './contextualtabs.directive';
 import { RibbonComponent } from './ribbon.component';
 
+const RIBBON_DIRECTIVES = [
+    RibbonComponent,
+        RibbonItemDirective,
+        RibbonItemsDirective,
+        RibbonCollectionDirective,
+        RibbonCollectionsDirective,
+        RibbonGroupDirective,
+        RibbonGroupsDirective,
+        RibbonTabDirective,
+        RibbonTabsDirective,
+        RibbonContextualTabDirective,
+        RibbonContextualTabsDirective
+];
 /**
  * NgModule definition for the Ribbon component.
+ * Re-exports standalone Ribbon component and directives so existing apps can keep using:
+ * `imports: [RibbonModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        RibbonComponent,
-        RibbonItemDirective,
-        RibbonItemsDirective,
-        RibbonCollectionDirective,
-        RibbonCollectionsDirective,
-        RibbonGroupDirective,
-        RibbonGroupsDirective,
-        RibbonTabDirective,
-        RibbonTabsDirective,
-        RibbonContextualTabDirective,
-        RibbonContextualTabsDirective
-    ],
-    exports: [
-        RibbonComponent,
-        RibbonItemDirective,
-        RibbonItemsDirective,
-        RibbonCollectionDirective,
-        RibbonCollectionsDirective,
-        RibbonGroupDirective,
-        RibbonGroupsDirective,
-        RibbonTabDirective,
-        RibbonTabsDirective,
-        RibbonContextualTabDirective,
-        RibbonContextualTabsDirective
-    ]
+    imports: [CommonModule, ...RIBBON_DIRECTIVES],
+    exports: [...RIBBON_DIRECTIVES]
 })
 export class RibbonModule { }

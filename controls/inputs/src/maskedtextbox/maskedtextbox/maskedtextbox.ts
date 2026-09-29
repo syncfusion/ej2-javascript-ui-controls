@@ -453,7 +453,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     private setMaskPlaceholder(setVal: boolean, dynamicPlaceholder: boolean): void {
         if (dynamicPlaceholder || this.placeholder) {
-            Input.setPlaceholder(this.placeholder, this.element);
+            Input.setPlaceholder(this.placeholder, this.element, this.getModuleName());
             if ((this.element.value === this.promptMask && setVal && this.floatLabelType !== 'Always') ||
                 this.element.value === this.promptMask && this.floatLabelType === 'Never') {
                 setElementValue.call(this, '');

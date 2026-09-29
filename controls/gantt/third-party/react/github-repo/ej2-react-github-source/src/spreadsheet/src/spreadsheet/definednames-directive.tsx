@@ -5,7 +5,7 @@ import { DefineNameModel } from '@syncfusion/ej2-spreadsheet';
 /**
  * `DefinedNameDirective` represent a defined name of the React Spreadsheet.
  * It must be contained in a Spreadsheet component(`SpreadsheetComponent`).
- * ```tsx
+ * ```ts
  * <SpreadsheetComponent>
  *   <DefinedNamesDirective>
  *    <DefinedNameDirective></DefinedNameDirective>

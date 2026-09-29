@@ -11,7 +11,7 @@ import * as events from '../../common/base/constant';
 import { IOlapField, OlapEngine } from '../../base/olap/engine';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, GraphQLAdaptor, Query } from '@syncfusion/ej2-data';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -414,11 +414,17 @@ export class DrillThroughDialog {
                     const primaryKeyField: string | undefined = !isNullOrUndefined(primaryKeyColumn) ? primaryKeyColumn.field : undefined;
                     if (!isNullOrUndefined(this.parent.dataManager) && !isNullOrUndefined(primaryKeyField)) {
                         const dataManager: DataManager = this.parent.dataManager;
+                        const query: Query = !isNullOrUndefined(this.drillThroughGrid.getQuery()) ?
+                            this.drillThroughGrid.getQuery().clone() : new Query();
                         if (args.requestType === 'save' && args.action === 'add') {
-                            dataManager.insert(args.data);
+                            const { __index, ...recordToInsert } = args.data as { [key: string]: Object };
+                            dataManager.insert(recordToInsert, query.fromTable, query, args.index);
                         }
                         else if (args.requestType === 'save' && args.action === 'edit') {
-                            dataManager.update(primaryKeyField, args.data as Object);
+                            const { __index, ...recordToUpdate } = args.data as { [key: string]: Object };
+                            dataManager.update(
+                                primaryKeyField as string, recordToUpdate, query.fromTable, query, args.previousData
+                            );
                         }
                         else if (args.requestType === 'delete') {
                             const recordToDelete: { [key: string]: Object } = (args.data as Object[])[0] as { [key: string]: Object };

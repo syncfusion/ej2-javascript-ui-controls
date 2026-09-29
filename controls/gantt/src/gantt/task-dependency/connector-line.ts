@@ -642,7 +642,8 @@ export class ConnectorLine {
                         addTop = -5;
                     }
                 }
-                else if (this.parent.currentViewData[data.childIndex].ganttProperties.isMilestone) {
+                else if (!isNullOrUndefined(this.parent.currentViewData[data.childIndex])
+                         && this.parent.currentViewData[data.childIndex].ganttProperties.isMilestone) {
                     if (data.parentIndex > data.childIndex) {
                         addTop = 5;
                         borderTopWidth = -10;

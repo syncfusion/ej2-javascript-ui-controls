@@ -20,55 +20,28 @@ export const twoWays: string[] = [''];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childButtons: new ContentChild(ButtonModelPropsDirective)
+        childButtons: new ContentChild(ButtonModelPropsDirective),
+        title: new ContentChild('title'),
+        content: new ContentChild('content'),
+        template: new ContentChild('template')
     }
 })
 @ComponentMixins([ComponentBase])
 export class ToastComponent extends Toast implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeClose: any;
-	beforeOpen: any;
-	beforeSanitizeHtml: any;
-	click: any;
-	close: any;
-	created: any;
-	destroyed: any;
-	public open: any;
-    public childButtons: QueryList<ButtonModelPropsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeClose: any;
+	declare beforeOpen: any;
+	declare beforeSanitizeHtml: any;
+	declare click: any;
+	declare close: any;
+	declare created: any;
+	declare destroyed: any;
+	public declare open: any;
+    public declare childButtons: QueryList<ButtonModelPropsDirective>;
     public tags: string[] = ['buttons'];
-    /** 
-     * Specifies the title to be displayed on the Toast. 
-     * Accepts selectors, string values and HTML elements.
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('title')
-    @Template()
-    public title: any;
-    /** 
-     * Specifies the content to be displayed on the Toast. 
-     * Accepts selectors, string values and HTML elements.
-     * @default null
-     * @blazortype string
-     * @asptype string
-     */
-    @ContentChild('content')
-    @Template()
-    public content: any;
-    /** 
-     * Specifies the HTML element/element ID as a string that can be displayed as a Toast. 
-     * The given template is taken as preference to render the Toast, even if the built-in properties such as title and content are defined.
-     * 
-     * {% codeBlock src='toast/template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -98,7 +71,10 @@ export class ToastComponent extends Toast implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ToastComponent.prototype, 'title');
+Template()(ToastComponent.prototype, 'content');
+Template()(ToastComponent.prototype, 'template');
 

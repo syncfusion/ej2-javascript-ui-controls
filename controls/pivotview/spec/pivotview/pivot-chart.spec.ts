@@ -1,16 +1,19 @@
-import { IDataSet } from '../../src/base/engine';
+import { IDataSet, IAxisSet, IDataOptions } from '../../src/base/engine';
 import { pivot_smalldata, pivot_dataset } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, closest } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldList } from '../../src/common/actions/field-list';
 import { ChartSeriesCreatedEventArgs } from '../../src/common/base/interface';
-import { IResizeEventArgs, Chart } from '@syncfusion/ej2-charts';
+import { IResizeEventArgs, Chart, ChartSeriesType } from '@syncfusion/ej2-charts';
 import { PivotChart } from '../../src/pivotchart/index';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
 import { Toolbar } from '../../src/common/popups/toolbar';
+import { DrillThrough } from '../../src/pivotview/actions/drill-through';
+import { TreeView } from '@syncfusion/ej2-navigations';
+import { ChartSettingsModel } from '../../src/pivotview/model/chartsettings-model';
 
 describe('Chart - ', () => {
     beforeAll(() => {
@@ -522,20 +525,20 @@ describe('Chart - ', () => {
                 showFieldList: true,
                 displayOption: { view: 'Chart' },
                 chartSettings: {
-                    load:(args:ILoadedEventArgs) =>{
-                        loadEvent ="Load";
+                    load: (args: ILoadedEventArgs) => {
+                        loadEvent = "Load";
                     },
-                    loaded:(args:ILoadedEventArgs) =>{
-                        loadedEvent ="Loaded";
+                    loaded: (args: ILoadedEventArgs) => {
+                        loadedEvent = "Loaded";
                     },
-                    axisLabelRender:(args:any)=>{
-                        axisLabelEvent="AxisLabel";
+                    axisLabelRender: (args: any) => {
+                        axisLabelEvent = "AxisLabel";
                     },
-                    legendRender:(args:any)=>{
-                        legendRenderEvent="LegendRender";
+                    legendRender: (args: any) => {
+                        legendRenderEvent = "LegendRender";
                     },
-                    seriesRender:(args:any)=>{
-                        seriesRenderEvent="SeriesRender";
+                    seriesRender: (args: any) => {
+                        seriesRenderEvent = "SeriesRender";
                     }
                 }
             });
@@ -614,9 +617,9 @@ describe('Chart - ', () => {
         it('Switch from grid to chart', (done: Function) => {
             setTimeout(() => {
                 let li: HTMLElement = document.getElementById('PivotViewchart_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
-                    done();
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                done();
             }, 100);
         });
         it('Click chart menu', (done: Function) => {
@@ -687,6 +690,512 @@ describe('Chart - ', () => {
             }, 1000);
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('PivotChart Module Code Coverage - 2', () => {
+    let pivotGridObj: PivotView;
+    let pivotChart: PivotChart;
+    let element: HTMLElement;
+
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'test-pivot' });
+        element.style.width = '600px';
+        element.style.height = '400px';
+        document.body.appendChild(element);
+
+        const dataBound: EmitType<Object> = () => { done(); };
+        PivotView.Inject(GroupingBar, FieldList, PivotChart);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                columns: [{ name: 'Date' }],
+                rows: [{ name: 'Country' }],
+                values: [{ name: 'Amount' }],
+                filters: []
+            },
+            dataBound: dataBound,
+            height: 500,
+            displayOption: { view: 'Chart' },
+            chartSettings: {
+                value: 'Amount',
+                chartSeries: { type: 'Column' }
+            }
+        });
+        pivotGridObj.appendTo('#test-pivot');
+    });
+
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        if (element && element.parentElement) {
+            remove(element);
+        }
+    });
+
+    beforeEach((done: Function) => {
+        setTimeout(() => {
+            done();
+        }, 500);
+    });
+
+    describe('PivotChart Initialization', () => {
+        it('should access pivotChart from parent pivotView', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            expect(pivotChart).toBeDefined();
+            expect(pivotChart.getModuleName()).toBe('pivotChart');
+            expect(pivotChart.parent).toBe(pivotGridObj);
+            done();
+        });
+
+        it('should create pivot chart instance directly', (done: Function) => {
+            const directChart = new PivotChart();
+            expect(directChart).toBeDefined();
+            expect(directChart.getModuleName()).toBe('pivotChart');
+            expect(directChart.parent).toBeUndefined();
+            done();
+        });
+
+        it('should set parent property in constructor', (done: Function) => {
+            const chartWithParent = new PivotChart(pivotGridObj);
+            expect(chartWithParent.parent).toBe(pivotGridObj);
+            done();
+        });
+    });
+
+    describe('Chart Height and Width Calculations', () => {
+        it('should calculate chart height correctly', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            const height = pivotChart.getChartHeight();
+            expect(height).toBeDefined();
+            expect(typeof height).toBe('string');
+            done();
+        });
+
+        it('should calculate width from pivotGridObj', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            const width = pivotChart.getCalulatedWidth();
+            expect(width).toBeGreaterThan(0);
+            done();
+        });
+
+        it('should return resized chart height', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            const height = pivotChart.getResizedChartHeight();
+            expect(typeof height).toBe('string');
+            done();
+        });
+    });
+
+    describe('Column Index Utilities', () => {
+        it('should identify column total indices correctly', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            const pivotValues: IAxisSet[][] = [
+                [
+                    { axis: 'column', type: 'sum', colIndex: 0, rowSpan: 1 } as any,
+                    { axis: 'value' } as any
+                ],
+                [
+                    { axis: 'column', type: 'grand sum', colIndex: 1, rowSpan: -1 } as any,
+                    { axis: 'value' } as any
+                ]
+            ];
+            const result = pivotChart.getColumnTotalIndex(pivotValues);
+            expect(result[0]).toBe(0);
+            done();
+        });
+
+        it('should handle various column configurations', (done: Function) => {
+            pivotChart = pivotGridObj.pivotChartModule;
+            const pivotValues: IAxisSet[][] = [
+                [
+                    { axis: 'row', type: 'sum', colIndex: 0 } as any,
+                    { axis: 'value' } as any
+                ]
+            ];
+            const result = pivotChart.getColumnTotalIndex(pivotValues);
+            expect(result).toBeDefined();
+            done();
+        });
+    });
+
+    describe('PivotChart Properties and Methods', () => {
+        beforeEach(() => {
+            pivotChart = pivotGridObj.pivotChartModule;
+        });
+
+        it('should store and update calculated width', (done: Function) => {
+            const width = pivotChart.getCalulatedWidth();
+            expect(pivotChart.calculatedWidth).toBeGreaterThan(0);
+            done();
+        });
+
+        it('should manage current measure property', (done: Function) => {
+            pivotChart.currentMeasure = 'Amount';
+            expect(pivotChart.currentMeasure).toBe('Amount');
+            done();
+        });
+
+        it('should store engine module reference', (done: Function) => {
+            expect(pivotChart.engineModule).toBeDefined();
+            done();
+        });
+
+        it('should track parent pivot reference', (done: Function) => {
+            expect(pivotChart.parent).toBe(pivotGridObj);
+            done();
+        });
+
+        it('should initialize chart series info', (done: Function) => {
+            expect(pivotChart['chartSeriesInfo']).toBeDefined();
+            done();
+        });
+
+        it('should initialize column group object', (done: Function) => {
+            expect(pivotChart['columnGroupObject']).toBeDefined();
+            done();
+        });
+
+        it('should track selected legend', (done: Function) => {
+            pivotChart['selectedLegend'] = 0;
+            expect(pivotChart['selectedLegend']).toBe(0);
+            done();
+        });
+
+        it('should identify accumulation chart types', (done: Function) => {
+            const accTypes = pivotChart['accumulationType'];
+            expect(accTypes.length).toBeGreaterThan(0);
+            done();
+        });
+
+        it('should track empty point flag', (done: Function) => {
+            pivotChart['accEmptyPoint'] = false;
+            expect(pivotChart['accEmptyPoint']).toBe(false);
+            done();
+        });
+
+        it('should initialize chart initial state', (done: Function) => {
+            expect(pivotChart['isChartInitial']).toBe(true);
+            done();
+        });
+
+        it('should store current column tracking', (done: Function) => {
+            pivotChart['currentColumn'] = 'Column1 | Amount';
+            expect(pivotChart['currentColumn']).toBe('Column1 | Amount');
+            done();
+        });
+
+        it('should track pivot index', (done: Function) => {
+            pivotChart['pivotIndex'] = { rIndex: 5, cIndex: 10 };
+            expect(pivotChart['pivotIndex'].rIndex).toBe(5);
+            done();
+        });
+
+        it('should track measure position', (done: Function) => {
+            pivotChart['measurePos'] = 0;
+            expect(pivotChart['measurePos']).toBe(0);
+            done();
+        });
+
+        it('should manage measure list', (done: Function) => {
+            pivotChart['measureList'] = ['Amount', 'Quantity'];
+            expect(pivotChart['measureList'].length).toBe(2);
+            done();
+        });
+
+        it('should store chart element reference', (done: Function) => {
+            const chartDiv = createElement('div');
+            pivotChart['element'] = chartDiv;
+            expect(pivotChart['element']).toBe(chartDiv);
+            done();
+        });
+
+        it('should handle template function storage', (done: Function) => {
+            const templateFn = () => '<div>Test</div>';
+            pivotChart['templateFn'] = templateFn;
+            expect(pivotChart['templateFn']).toBe(templateFn);
+            done();
+        });
+
+        it('should manage chart settings', (done: Function) => {
+            const settings: ChartSettingsModel = {
+                chartSeries: [{ type: 'Column' as ChartSeriesType }] as any
+            };
+            pivotChart['chartSettings'] = settings;
+            expect(pivotChart['chartSettings']).toBe(settings);
+            done();
+        });
+
+        it('should store persist settings', (done: Function) => {
+            const settings: ChartSettingsModel = {
+                chartSeries: [{ type: 'Bar' as ChartSeriesType }] as any
+            };
+            pivotChart['persistSettings'] = settings;
+            expect(pivotChart['persistSettings']).toBe(settings);
+            done();
+        });
+
+        it('should store data source settings', (done: Function) => {
+            const settings: IDataOptions = { values: [] } as any;
+            pivotChart['dataSourceSettings'] = settings;
+            expect(pivotChart['dataSourceSettings']).toBe(settings);
+            done();
+        });
+
+        it('should initialize header collection', (done: Function) => {
+            pivotChart['headerColl'][0] = {
+                0: { name: 'Category1', level: 0, text: 'Category1', hasChild: false, isDrilled: false, levelName: 'Category', fieldName: 'Category', rowIndex: 0, colIndex: 0 }
+            };
+            expect(pivotChart['headerColl'][0][0]).toBeDefined();
+            done();
+        });
+
+        it('should map measure names bidirectionally', (done: Function) => {
+            pivotChart['measuresNames']['Amount'] = 'Amount_Field';
+            pivotChart['measuresNames']['Amount_Field'] = 'Amount';
+            expect(pivotChart['measuresNames']['Amount']).toBe('Amount_Field');
+            done();
+        });
+
+        it('should track max level', (done: Function) => {
+            pivotChart['maxLevel'] = 3;
+            expect(pivotChart['maxLevel']).toBe(3);
+            done();
+        });
+
+        it('should initialize measure position to -1', (done: Function) => {
+            const newChart = new PivotChart();
+            expect(newChart['measurePos']).toBe(-1);
+            done();
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('Pivot Chart with Empty data', () => {
+    let pivotGridObj: PivotView;
+    let pivotChart: PivotChart;
+    let element: HTMLElement;
+    beforeAll((done: Function) => {
+        element = createElement('div', { id: 'PivotView' });
+        element.style.width = '600px';
+        element.style.height = '400px';
+        document.body.appendChild(element);
+        const dataBound: EmitType<Object> = () => { done(); };
+        PivotView.Inject(GroupingBar, FieldList, PivotChart, DrillThrough);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                columns: [],
+                rows: [],
+                values: [{ name: 'quantity' }, { name: 'balance' }],
+                filters: []
+            },
+            dataBound: dataBound,
+            height: 500,
+            showGroupingBar: true,
+            allowDrillThrough: true,
+            showValuesButton: true,
+            showFieldList: true,
+            displayOption: { view: 'Chart' },
+            chartSettings: {
+                value: 'quantity',
+                chartSeries: { type: 'Column' },
+                enableMultipleAxis: true,
+                showPointColorByMembers: true
+            }
+        });
+        pivotGridObj.appendTo('#PivotView');
+    });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        if (element && element.parentElement) {
+            remove(element);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(() => {
+            done();
+        }, 500);
+    });
+    describe('Remove Value Field', () => {
+        it('should remove value field when clicking remove icon in grouping bar', (done: Function) => {
+            setTimeout(() => {
+                const valueBeforeRemove = pivotGridObj.dataSourceSettings.values.length;
+                expect(valueBeforeRemove).toBe(2);
+                util.triggerMouseEvent((document.querySelectorAll('.e-remove')[2] as HTMLElement), 'click');
+                expect(pivotGridObj.dataSourceSettings.values.length).toBeLessThan(valueBeforeRemove);
+                done();
+            }, 300);
+        });
+    });
+    describe('Update Report and Hide Legends', () => {
+        it('should add fields to value axis and hide legends by clicking', (done: Function) => {
+            pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }, { name: 'balance' }];
+            pivotGridObj.chartSettings = {
+                value: 'balance',
+                chartSeries: { type: 'Column' }
+            };
+            setTimeout(() => {
+                let legend: HTMLElement = document.getElementById('PivotView_chart_chart_legend_text_0');
+                expect(legend).toBeTruthy();
+                util.triggerMouseEvent(legend, 'click');
+                done();
+            }, 300);
+        });
+    });
+    describe('Update Chart Settings and Show Legends', () => {
+        it('should add fields to value axis and show legends by clicking', (done: Function) => {
+            setTimeout(() => {
+                let legend: HTMLElement = document.getElementById('PivotView_chart_chart_legend_text_0');
+                expect(legend).toBeTruthy();
+                util.triggerMouseEvent(legend, 'click');
+                pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }];
+                pivotGridObj.chartSettings = {
+                    chartSeries: { type: 'Pie' }
+                };
+                done();
+            }, 300);
+        });
+    });
+    describe('Remove Value Field for Accumulation Chart', () => {
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        it('Through Field FieldList', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                let treeObj: TreeView = pivotGridObj.pivotFieldListModule.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                closest(checkEle[0], 'li').dispatchEvent(down);
+                closest(checkEle[0], 'li').dispatchEvent(up);
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click()
+                done();
+            }, 300);
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('Accumulation Chart', () => {
+    let pivotGridObj: PivotView;
+    let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
+    });
+    beforeAll((done: Function) => {
+        if (!document.getElementById(elem.id)) {
+            document.body.appendChild(elem);
+        }
+        let dataBound: EmitType<Object> = () => { done(); };
+        PivotView.Inject(FieldList, Toolbar, PivotChart, DrillThrough);
+        pivotGridObj = new PivotView({
+            dataSourceSettings: {
+                dataSource: pivot_dataset as IDataSet[],
+                expandAll: false,
+                rows: [{ name: 'product' }, { name: 'eyeColor' }],
+                columns: [{ name: 'gender' }],
+                values: [{ name: 'balance' }],
+            },
+            displayOption: { view: 'Chart' },
+            dataBound: dataBound,
+            chartSettings: {
+                value: 'Amount', enableExport: true, chartSeries: { type: 'Pie', animation: { enable: false } },
+                enableMultipleAxis: true, showPointColorByMembers: true
+            },
+            allowDrillThrough: true,
+        });
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+    let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+    });
+    beforeEach((done: Function) => {
+        setTimeout(() => { done(); }, 500);
+    });
+    it('Expand Pie chart members by clicking series point', (done: Function) => {
+        setTimeout(() => {
+            let point: HTMLElement = document.getElementById('PivotGrid_chart_Series_0_Point_1');
+            expect(point).toBeTruthy();
+            util.triggerMouseEvent(point, 'click');
+            setTimeout(() => {
+                let expandMenu: HTMLElement = document.getElementById('PivotGrid_DrillMenuChart_expand');
+                expect(expandMenu).toBeTruthy();
+                expandMenu.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true }));
+                let drillExpandItem: HTMLElement = document.getElementById('PivotGrid_chartdrillExpand_2');
+                expect(drillExpandItem).toBeTruthy();
+                drillExpandItem.click();
+                done();
+            }, 300);
+        }, 500);
+    });
+    it('Collapse Pie chart members by clicking series point', (done: Function) => {
+        setTimeout(() => {
+            let point: HTMLElement = document.getElementById('PivotGrid_chart_Series_0_Point_1');
+            expect(point).toBeTruthy();
+            util.triggerMouseEvent(point, 'click');
+            setTimeout(() => {
+                let collapseMenu: HTMLElement = document.getElementById('PivotGrid_DrillMenuChart_collapse');
+                expect(collapseMenu).toBeTruthy();
+                collapseMenu.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true }));
+                let drillCollapseItem: HTMLElement = document.getElementById('PivotGrid_chartdrillCollapse_2');
+                expect(drillCollapseItem).toBeTruthy();
+                drillCollapseItem.click();
+                done();
+            }, 300);
+        }, 500);
+    });
+    it('Opening Drill Through dialog', (done: Function) => {
+        setTimeout(() => {
+            pivotGridObj.dataSourceSettings.rows = [];
+            pivotGridObj.dataSourceSettings.columns = [];
+            let point: HTMLElement = document.getElementById('PivotGrid_chart_Series_0_Point_1');
+            expect(point).toBeTruthy();
+            util.triggerMouseEvent(point, 'click');
+            done();
+        }, 300);
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

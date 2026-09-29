@@ -14,7 +14,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * `ejs-recurrenceeditor` represents the VueJS RecurrenceEditor Component.
- * ```vue
+ * ```js
  * <ejs-recurrenceeditor></ejs-recurrenceeditor>
  * ```
  */

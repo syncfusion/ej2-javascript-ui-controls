@@ -1,4 +1,5 @@
-import { CalendarExceptionModel, HolidayModel, ProjectCalendarModel } from '../models/models';
+import { CalendarExceptionModel, HolidayModel, ProjectCalendarModel, DayWorkingTimeModel } from '../models/models';
+import { CalendarExceptionRange, CalendarExceptionResult, IWorkingTimeRange } from './interface';
 import { Gantt } from './gantt';
 
 /**
@@ -10,11 +11,21 @@ export class CalendarContext {
     private calendar: ProjectCalendarModel;
     public defaultHolidays: number[] = [];
     public sortedDefaultHolidays: number[] = [];
-    private exceptionDateSet: Set<number> = new Set<number>();
+    private exceptionDateSet: Map<number, any> = new Map<number, any>();
     public exceptionsRanges: {
         id: string;
         from: Date;
         to: Date;
+        workingTime?: DayWorkingTimeModel[];
+        label?: string;
+        secondsPerDay?: number;
+        workingRange?: IWorkingTimeRange[];
+        nonWorkingRange?: IWorkingTimeRange[];
+        nonWorkingHours?: number[];
+        totalDurationDays?: number;
+        totalWorkingHours?: number;
+        startTime?: number;
+        endTime?: number;
     }[] = [];
     constructor(parent: Gantt, calendar: ProjectCalendarModel) {
         this.parent = parent;
@@ -59,14 +70,58 @@ export class CalendarContext {
             const override: CalendarExceptionModel = overrides[i as number];
             const fromDate: Date = new Date(override.from);
             const toDate: Date = new Date(override.to);
+            const totalDurationDays: number = Math.floor((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
             const id: string = `exception_${i}`;
-            this.exceptionsRanges.push({
+            const effectiveExceptionWorkingTime: DayWorkingTimeModel[] = override.exceptionWorkingTime &&
+                override.exceptionWorkingTime.length > 0
+                ? override.exceptionWorkingTime
+                : this.calendar.workingTime || this.parent.defaultCalendarContext.calendar.workingTime;
+            const range: CalendarExceptionRange = {
                 id,
                 from: fromDate,
-                to: toDate
-            });
+                to: toDate,
+                label: override.label,
+                exceptionWorkingTime: effectiveExceptionWorkingTime
+            };
+            const workingRanges: IWorkingTimeRange[] = [];
+            let totalSeconds: number = 0;
+            const nonWorkingHours: number[] = [];
+            const nonWorking: IWorkingTimeRange[] = [];
+            const startDate: Date = new Date('10/11/2018'); // This seems to be a reference date
+            const startTimeObj: { startTime: number; } = { startTime: 0 };
+            const endTimeObj: { endTime: number; } = { endTime: 0 };
+            let seconds: number = 0;
+            for (let j: number = 0; j < range.exceptionWorkingTime.length; j++) {
+                const currentRange: DayWorkingTimeModel = range.exceptionWorkingTime[j as number];
+                seconds = seconds + this.parent.dateValidationModule['getWorkingTime']('', currentRange, startDate, totalSeconds, j, nonWorkingHours, workingRanges, nonWorking, startTimeObj, endTimeObj);
+            }
+            if (endTimeObj.endTime / 3600 !== 24) {
+                nonWorking.push({ from: endTimeObj.endTime, to: 86400, isWorking: false, interval: 86400 - endTimeObj.endTime });
+            }
+            totalSeconds = seconds;
+            let dailyWorkingHours: number = 0;
+            for (const timeRange of range.exceptionWorkingTime) {
+                dailyWorkingHours += timeRange.to - timeRange.from;
+            }
+            const totalWorkingHours: number = dailyWorkingHours * totalDurationDays;
+            const exceptionRange: any = {
+                id,
+                from: fromDate,
+                to: toDate,
+                workingTime: override.exceptionWorkingTime,
+                label: override.label,
+                secondsPerDay: totalSeconds,
+                workingRange: workingRanges,
+                nonWorkingRange: nonWorking,
+                nonWorkingHours: nonWorkingHours,
+                totalDurationDays: totalDurationDays,
+                totalWorkingHours: totalWorkingHours,
+                startTime: startTimeObj.startTime,
+                endTime: endTimeObj.endTime
+            };
+            this.exceptionsRanges.push(exceptionRange);
             for (let d: Date = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
-                this.exceptionDateSet.add(new Date(d).setHours(0, 0, 0, 0));
+                this.exceptionDateSet.set(new Date(d).setHours(0, 0, 0, 0), exceptionRange);
             }
         }
     }
@@ -76,8 +131,12 @@ export class CalendarContext {
      * @returns {boolean} True if the date is part of an exception, otherwise false.
      * @public
      */
-    public getExceptionForDate(date: Date): boolean {
+    public getExceptionForDate(date: Date): { hasException: boolean; data: any } {
         const timestamp: number = new Date(date.getTime()).setHours(0, 0, 0, 0);
-        return this.exceptionDateSet.has(timestamp);
+        const range: any = this.exceptionDateSet.get(timestamp);
+        return {
+            hasException: !!range,
+            data: range || null
+        };
     }
 }

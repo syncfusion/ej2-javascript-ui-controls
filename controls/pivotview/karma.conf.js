@@ -22,6 +22,7 @@ module.exports = function (config) {
       { pattern: "spec/common.spec.js", included: false },
       { pattern: "spec/utils.spec.js", included: false },
       { pattern: "spec/base/datasource.spec.js", included: false },
+      { pattern: "spec/common/keyboard-interaction.spec.js", included: false },
       { pattern: "spec/pivotview/pivotView-public.spec.js", included: false },
       { pattern: "spec/pivotview/aggregation.spec.js", included: false },
       { pattern: "spec/field-list/pivotfieldlist-public.spec.js", included: false },
@@ -53,9 +54,9 @@ module.exports = function (config) {
       { pattern: "spec/pivotview/paging.spec.js", included: false },
       { pattern: "spec/pivotview/number-formatting.spec.js", included: false },
       { pattern: "spec/pivotview/classic-layout.spec.js", included: false },
+      { pattern: "spec/pivotview/context-menu.spec.js", included: false },
       // { pattern: "spec/pivotview/grouping.spec.js", included: false },
       // { pattern: "spec/pivotview/virtual-scrolling.spec.js", included: false },
-      // { pattern: "spec/pivotview/context-menu.spec.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },
@@ -74,6 +75,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-charts/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-querybuilder/**/*.js", included: false },
       { pattern: 'node_modules/es6-promise/dist/es6-promise.js', included: false }
       // Add dependent package's script files here              
     ],

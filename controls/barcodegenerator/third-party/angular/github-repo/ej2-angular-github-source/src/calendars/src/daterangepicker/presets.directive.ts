@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-presets>e-preset',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class PresetDirective extends ComplexBase<PresetDirective> {
@@ -33,15 +33,15 @@ export class PresetDirective extends ComplexBase<PresetDirective> {
     /** 
      * Defines the end date of the preset range
      */
-    public end: any;
+    public declare end: any;
     /** 
      * Defines the label string of the preset range.
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Defines the start date of the preset range.
      */
-    public start: any;
+    public declare start: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -57,6 +57,7 @@ export class PresetDirective extends ComplexBase<PresetDirective> {
  */
 @Directive({
     selector: 'ejs-daterangepicker>e-presets',
+    standalone: true,
     queries: {
         children: new ContentChildren(PresetDirective)
     },

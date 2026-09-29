@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 
 @include export-module('drop-down-button-bigger') {
   .e-bigger .e-dropdown-btn,
@@ -49,15 +49,15 @@
     }
   }
 
-  #{if(&, '&', '*')}.e-bigger .e-dropdown-popup {
+  *.e-bigger .e-dropdown-popup {
     @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $theme-name == 'tailwind-dark' or $theme-name == 'bootstrap5-dark' {
       background-color: transparent;
       border-radius: $drop-down-btn-ul-border-radius;
     }
   }
 
-  #{if(&, '&', '*')}.e-bigger .e-dropdown-popup ul,
-  #{if(&, '&', '*')}.e-bigger.e-dropdown-popup ul {
+  *.e-bigger .e-dropdown-popup ul,
+  *.e-bigger.e-dropdown-popup ul {
     box-shadow: $drop-down-btn-parent-ul-box-shadow;
     font-size: $drop-down-btn-bigger-font-size;
     min-width: $drop-down-btn-bigger-min-width;

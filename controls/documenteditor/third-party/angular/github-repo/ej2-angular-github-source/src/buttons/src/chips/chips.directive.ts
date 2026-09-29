@@ -19,9 +19,10 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chips>e-chip',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
+        template: new ContentChild('template')
     }
 })
 export class ChipDirective extends ComplexBase<ChipDirective> {
@@ -33,70 +34,59 @@ export class ChipDirective extends ComplexBase<ChipDirective> {
      * Specifies the icon CSS class for the avatar in the chip.
      * @default ''
      */
-    public avatarIconCss: any;
+    public declare avatarIconCss: any;
     /** 
      * Specifies the customized text value for the avatar in the chip.
      * @default ''
      */
-    public avatarText: any;
+    public declare avatarText: any;
     /** 
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Specifies a value that indicates whether the chip component is enabled or not.
      * @default true
      */
-    public enabled: any;
+    public declare enabled: any;
     /** 
      * Specifies the additional HTML attributes, such as title, styles, class, id, and name, in a key-value pair format 
      * and appended to the chip item element of the Chip component. If both the property and equivalent HTML attributes are configured, 
      * then the component overrides the property value with the HTML attributes.
      * @default {}
      */
-    public htmlAttributes: any;
+    public declare htmlAttributes: any;
     /** 
      * Specifies the leading icon CSS class for the chip.
      * @default ''
      */
-    public leadingIconCss: any;
+    public declare leadingIconCss: any;
     /** 
      * Specifies the leading icon url for the chip.
      * @default ''
      */
-    public leadingIconUrl: any;
+    public declare leadingIconUrl: any;
     /** 
      * Specifies the text content for the chip.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
     /** 
      * Specifies the trailing icon CSS class for the chip.
      * @default ''
      */
-    public trailingIconCss: any;
+    public declare trailingIconCss: any;
     /** 
      * Specifies the trailing icon url for the chip.
      * @default ''
      */
-    public trailingIconUrl: any;
+    public declare trailingIconUrl: any;
     /** 
      * Defines the value of the chip.
      * @default ''
      */
-    public value: any;
-    /** 
-     * Specifies the template content to be rendered for each individual chip item. This template allows for the rendering of custom HTML elements, such as anchor tags, SVG icons, or other components, within each chip item.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -105,6 +95,7 @@ export class ChipDirective extends ComplexBase<ChipDirective> {
         this.directivePropList = input;
     }
 }
+Template()(ChipDirective.prototype, 'template');
 
 /**
  * Chip Array Directive
@@ -112,6 +103,7 @@ export class ChipDirective extends ComplexBase<ChipDirective> {
  */
 @Directive({
     selector: 'ejs-chiplist>e-chips',
+    standalone: true,
     queries: {
         children: new ContentChildren(ChipDirective)
     },

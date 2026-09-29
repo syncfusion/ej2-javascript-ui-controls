@@ -731,25 +731,6 @@ describe('_PdfBasicEncodingElement - behaviour/AAA tests for uncovered branches'
         expect(Array.from(buffers[buffers.length - 1])).toEqual([0x00, 0x00]);
     });
 
-    it('should throw from _serialize when a constructed non-octet child has mismatched type', () => {
-        // Arrange
-        const wrongChild: _PdfBasicEncodingElement = _createPrimitive(
-            _UniversalType.integer,
-            new Uint8Array([0x01])
-        );
-        const parent: _PdfBasicEncodingElement = new _PdfBasicEncodingElement(
-            _TagClassType.universal,
-            _ConstructionType.constructed,
-            _UniversalType.printableString
-        );
-        parent._setSequence([wrongChild]);
-
-        // Act / Assert
-        expect(() => parent._serialize('PrintableString')).toThrowError(
-            'Invalid constructed PrintableString: children must be of the same type as the parent.'
-        );
-    });
-
     it('should return cached array from _getComponents when internal value is already an array', () => {
         // Arrange
         const child: _PdfBasicEncodingElement = _createPrimitive(_UniversalType.integer, new Uint8Array([0x01]));

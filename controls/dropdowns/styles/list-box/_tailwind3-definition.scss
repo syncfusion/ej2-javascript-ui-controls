@@ -1,5 +1,4 @@
-@use 'ej2-base/styles/definition/tailwind3' as *;
-@forward 'ej2-base/styles/definition/tailwind3';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //layout variables
 $listbox-font-family: $font-family !default;
@@ -179,3 +178,7 @@ $list-border: 1px !default;
 $zero-border: 0 !default;
 $zero-width: 0% !default;
 $list-box-tool-tail-radius: $radius-8 !default;
+
+.e-listbox-wrapper.e-wrapper li.e-list-item.e-focused {
+  background-color: $listbox-item-hover-bg;
+}

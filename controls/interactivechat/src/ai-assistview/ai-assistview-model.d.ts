@@ -1,5 +1,5 @@
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';import { Fab } from '@syncfusion/ej2-buttons';import { AIAssistBase, ToolbarPosition } from '../ai-assist-base/ai-assist-base';
-import {AssistViewType,AttachmentClickEventArgs,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs} from "./ai-assistview";
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';import { ItemModel, Toolbar, ClickEventArgs, FieldSettings } from '@syncfusion/ej2-navigations';import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, RemovingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';import { DataManager, Query } from '@syncfusion/ej2-data';import { Fab } from '@syncfusion/ej2-buttons';import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';import { ResponseBlock, TextBlock, ToolBlock, ThinkingContextItem, ThinkingBlock, ThinkingStage } from './interface';import { AssistThinking } from '../ai-assist-base/index';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import {MentionItems,AssistViewType,AttachmentClickEventArgs,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs,EditableContextClickedEventArgs,AssistMentionSelectEventArgs} from "./ai-assistview";
 import {AIAssistBaseModel} from "../ai-assist-base/ai-assist-base-model";
 
 /**
@@ -43,6 +43,31 @@ export interface PromptModel {
      * @default null
      */
     attachedFiles?: FileInfo[];
+
+    /**
+     * Optional list of regenerated responses.
+     * When provided, response navigation will be enabled.
+     */
+    regeneratedResponses?: string[];
+
+    /**
+     * Specifies the list of block responses within the AI assist view.
+     * This property accepts an array of `ResponseBlock` objects that represent the response to be added.
+     * By providing these blocks, the response will be rendered as tool, text or thinking block.
+     *
+     * @type {ResponseBlock}
+     * @default null
+     */
+    blocks?: ResponseBlock[];
+
+    /**
+     * Specifies the collection of mention configurations available in the prompt.
+     * Accepts an array of mention items with trigger characters and associated data.
+     *
+     * @type {MentionItems}
+     * @default null
+     */
+    mentions?: MentionItems[];
 
 }
 
@@ -93,117 +118,57 @@ export interface AssistViewModel {
 }
 
 /**
- * Interface for a class SpeechToTextSettings
+ * Interface for a class TextToSpeechSettings
  */
-export interface SpeechToTextSettingsModel {
+export interface TextToSpeechSettingsModel {
 
     /**
-     * Specifies whether speech-to-text functionality is enabled.
-     *
-     * @default false
-     */
-    enable?: boolean;
-
-    /**
-     * Specifies whether interim results should be captured during speech recognition.
-     *
-     * @default true
-     */
-    allowInterimResults?: boolean;
-
-    /**
-     * Specifies the language for speech recognition using ISO language codes.
+     * Specifies the language used for text-to-speech synthesis.
+     * Accepts valid ISO language codes such as 'en-US', 'fr-FR', or 'de-DE'.
      *
      * @default 'en-US'
      */
-    lang?: string;
+    language?: string;
 
     /**
-     * Specifies whether the speech-to-text control is disabled.
+     * Specifies the pitch of the synthesized voice.
+     * Accepts numeric values typically between 0 (low) and 2 (high).
      *
-     * @default false
+     * @default 1
      */
-    disabled?: boolean;
+    speechPitch?: number;
 
     /**
-     * Configuration object for the mic button appearance and behavior.
-     * Defines the button text, icons, position, and styling for both start and stop states.
+     * Specifies the speaking rate of the synthesized voice.
+     * Accepts numeric values typically between 0.1 (slow) and 10 (fast).
      *
-     * @type {ButtonSettingsModel}
-     * @default {}
+     * @default 1
      */
-    buttonSettings?: ButtonSettingsModel;
+    speechRate?: number;
 
     /**
-     * Specifies whether to show tooltip for the mic button.
+     * Specifies the text content to be converted into speech.
+     * Accepts plain string input for synthesis.
      *
-     * @default true
-     */
-    showTooltip?: boolean;
-
-    /**
-     * Configuration object for tooltip appearance and behavior.
-     * Defines the tooltip text and position for both listening and stop states.
-     *
-     * @type {TooltipSettingsModel}
-     * @default {}
-     */
-    tooltipSettings?: TooltipSettingsModel;
-
-    /**
-     * Applies custom CSS classes to the speech-to-text component.
-     *
-     * @type {string}
      * @default ''
      */
-    cssClass?: string;
+    inputText?: string;
 
     /**
-     * Stores the recognized speech transcript.
-     * This property is read-only and updated when speech recognition results are received.
+     * Specifies the voice used for speech synthesis.
+     * Must be a valid SpeechSynthesisVoice from speechSynthesis.getVoices().
      *
-     * @type {string}
-     * @default ''
+     * @default null
      */
-    transcript?: string;
+    voice?: SpeechSynthesisVoice;
 
     /**
-     * Indicates whether the component is currently listening.
+     * Specifies the volume level of the synthesized voice.
+     * Accepts numeric values between 0 (mute) and 1 (maximum).
      *
-     * @default 'Inactive'
+     * @default 1
      */
-    listeningState?: SpeechToTextState;
-
-    /**
-     * Event raised when speech recognition starts.
-     * Triggered when the user clicks the mic button and begins speaking.
-     *
-     * @event onStart
-     */
-    onStart?: EmitType<StartListeningEventArgs>;
-
-    /**
-     * Event raised when speech recognition stops.
-     * Triggered when the user stops speaking and clicks the mic button.
-     *
-     * @event onStop
-     */
-    onStop?: EmitType<StopListeningEventArgs>;
-
-    /**
-     * Event raised when the transcript changes during speech recognition.
-     * Triggered for both interim results (if enabled) and final results.
-     *
-     * @event transcriptChanged
-     */
-    transcriptChanged?: EmitType<TranscriptChangedEventArgs>;
-
-    /**
-     * Event raised when an error occurs during speech recognition.
-     *
-     * @event onError
-     */
-    onError?: EmitType<ErrorEventArgs>;
+    volume?: number;
 
 }
 
@@ -253,6 +218,19 @@ export interface AttachmentSettingsModel {
      * @default 10
      */
     maximumCount?: number;
+
+    /**
+     * Specifies a custom template for rendering attachments in footer and assistview.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachments (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default attachments will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    attachmentTemplate?: string | Function;
 
     /**
      * Event raised when a attachment item is clicked in the assistview component either before sending or after the attachment is sent.
@@ -359,6 +337,130 @@ export interface FooterToolbarSettingsModel {
      * @event itemClick
      */
     itemClick?: EmitType<ToolbarItemClickedEventArgs>;
+
+}
+
+/**
+ * Interface for a class MentionSettings
+ */
+export interface MentionSettingsModel {
+
+    /**
+     * Specifies the character used to trigger mention suggestions.
+     * Accepts a single character such as '@', '#', or '/'.
+     *
+     * @type {string}
+     * @default ''
+     */
+    mentionChar?: string;
+
+    /**
+     * Specifies the data source used to populate mention suggestions.
+     * Accepts local collections, DataManager instances, or remote data sources.
+     *
+     * @type {string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[]}
+     * @default []
+     */
+    dataSource?: string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[];
+
+    /**
+     * Specifies the field mappings for the mention data source.
+     * Maps data fields used for displaying and identifying mention items.
+     *
+     * @type {FieldSettingsModel}
+     * @default { text: 'text', value: 'id' }
+     */
+    fields?: FieldSettingsModel;
+
+    /**
+     * Specifies the query used to retrieve and filter mention data.
+     * Applies additional data operations to the configured data source.
+     *
+     * @type {Query}
+     * @default null
+     */
+    query?: Query;
+
+    /**
+     * Specifies the filtering type used for matching suggestion items.
+     * Accepts filtering options such as Contains, StartsWith, or EndsWith.
+     *
+     * @type {FilterType}
+     * @default 'Contains'
+     */
+    filterType?: FilterType;
+
+    /**
+     * Specifies whether matching characters are highlighted in mention suggestions.
+     * When enabled, matched text is visually emphasized in the popup list.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    highlight?: boolean;
+
+    /**
+     * Specifies whether the mention character is displayed in the rendered mention item.
+     * When set to false, the mention character is omitted from the selected mention display.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    showMentionChar?: boolean;
+
+    /**
+     * Specifies the width of the mention suggestion popup.
+     * Accepts CSS width values such as '400px' or '50%', or numeric pixel dimensions.
+     *
+     * @type {string | number}
+     * @default 'auto'
+     */
+    popupWidth?: string | number;
+
+    /**
+     * Specifies the height of the mention suggestion popup.
+     * Accepts CSS height values such as '300px' or '50%', or numeric pixel dimensions.
+     *
+     * @type {string | number}
+     * @default '300px'
+     */
+    popupHeight?: string | number;
+
+    /**
+     * Specifies the template used to display selected mention items.
+     * Accepts a string template or a framework-specific template function.
+     *
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     * @default ''
+     */
+    displayTemplate?: string | Function;
+
+    /**
+     * Specifies the template used to render suggestion list items.
+     * Accepts a template string to customize the appearance of suggestion items.
+     *
+     * @angularType string
+     * @reactType string
+     * @vueType string
+     * @aspType string
+     * @default ''
+     */
+    itemTemplate?: string;
+
+    /**
+     * Specifies the template displayed when no matching suggestions are found.
+     * Accepts a string value to customize the empty state content shown in the suggestion popup.
+     *
+     * @angularType string
+     * @reactType string
+     * @vueType string
+     * @aspType string
+     * @default 'No records found'
+     */
+    noRecordsTemplate?: string;
 
 }
 
@@ -532,6 +634,15 @@ export interface AIAssistViewModel extends AIAssistBaseModel{
     speechToTextSettings?: SpeechToTextSettingsModel;
 
     /**
+     * Configuration object for rendering Text-to-Speech in the AssistView.
+     * This property holds the settings required to control speech synthesis behavior.
+     *
+     * @type {TextToSpeechSettingsModel}
+     * @default {}
+     */
+    textToSpeechSettings?: TextToSpeechSettingsModel;
+
+    /**
      * Specifies whether the attachments is enabled in the AIAssistView component.
      *
      * @type {boolean}
@@ -547,6 +658,15 @@ export interface AIAssistViewModel extends AIAssistBaseModel{
      * @default null
      */
     attachmentSettings?: AttachmentSettingsModel;
+
+    /**
+     * Specifies the collection of mention configurations available in the AssistView.
+     * Each mention setting defines a mention character and the behavior of its suggestion popup.
+     *
+     * @type {MentionSettingsModel[]}
+     * @default []
+     */
+    mentions?: MentionSettingsModel[];
 
     /**
      * Specifies whether the clear button of text area is displayed in the AIAssistView component.
@@ -643,6 +763,47 @@ export interface AIAssistViewModel extends AIAssistBaseModel{
     bannerTemplate?: string | Function;
 
     /**
+     * Specifies the content template for rendering the thinking block item.
+     * Can be a string or function template to customize the block's HTML structure.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    blockTemplate?: string | Function;
+
+    /**
+     * Specifies the content template for rendering the stage item.
+     * Can be a string or function template to customize the stage display.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    itemTemplate?: string | Function;
+
+    /**
+     * Specifies a custom template for rendering the response animation (skeleton/loading) state
+     * while a response is being generated in the AIAssistView component.
+     * Accepts a string or function to define the HTML structure or rendering logic for the loading
+     * experience (e.g., shimmer placeholders, typing indicators, custom structured blocks).
+     * The template context includes the loading state, the current thinking-step index (if applicable),
+     * and any partial/streamed content available at the time of rendering.
+     * If not provided, the component falls back to its default skeleton animation.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    responseAnimationTemplate?: string | Function;
+
+    /**
      * Event triggered when a prompt request is made in the AIAssistView component.
      * Provides details about the prompt request, including whether it should be cancelled, the prompt text, output, and toolbar items.
      *
@@ -696,5 +857,29 @@ export interface AIAssistViewModel extends AIAssistBaseModel{
      * @event attachmentRemoved
      */
     attachmentRemoved?: EmitType<object>;
+
+    /**
+     * Triggers when an uploaded file is being removed.
+     * Provides details about the file removal operation.
+     *
+     * @event attachmentRemoving
+     */
+    attachmentRemoving?: EmitType<RemovingEventArgs>;
+
+    /**
+     * Event triggered when clickable thinking context item is clicked.
+     * Provides context item details and event information for custom handling.
+     *
+     * @event editableContextClicked
+     */
+    editableContextClicked?: EmitType<EditableContextClickedEventArgs>;
+
+    /**
+     * Event triggered when a mention item is selected from the mention popup.
+     * Provides details about the selected mention item and allows the selection action to be canceled.
+     *
+     * @event mentionSelect
+     */
+    mentionSelect?: EmitType<AssistMentionSelectEventArgs>;
 
 }

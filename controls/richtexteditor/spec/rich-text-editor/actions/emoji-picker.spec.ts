@@ -2468,7 +2468,34 @@ describe('Emoji Picker with bottom toolbar positioning', () => {
         }, 100);
     });
 });
-
+    describe('852541 -ToolbarClick event should trigger before the opening of emoji picker popup in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let toolbarClick: any;
+        beforeAll(() => {
+            toolbarClick = null;
+            toolbarClick = jasmine.createSpy('toolbarClick');
+            rteObj = renderRTE({
+                toolbarClick: toolbarClick,
+                value: '<span id="rte">RTE</span>',
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('toolbarClick event should trigger', () => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent((rteObj as any).inputElement, 'focusin');
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+            item.click();
+            expect(toolbarClick).toHaveBeenCalled();
+        });
+    });
     describe('When toolbar is in extended the emoji picker popup z-index has greater than toolbar' , () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -2501,6 +2528,100 @@ describe('Emoji Picker with bottom toolbar positioning', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
             element.click();
             expect(rteObj.emojiPickerModule.popupObj.zIndex).toBe(10002);
+        });
+    });
+    describe('Bug 985502: Script error throws when using EmojiPicker with the Inline toolbar in RichTextEditor', () => {
+            let rteObj: RichTextEditor;
+            let keyboardEventArgs: any;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    inlineMode: {
+                        enable: true,
+                        onSelection: true,
+                    },
+                    toolbarSettings: {
+                        items: ['EmojiPicker']
+                    },
+                });
+                keyboardEventArgs = {
+                    preventDefault: function () { },
+                    keyCode: 186,
+                    shiftKey: true,
+                    altKey: false,
+                    ctrlKey: false,
+                    char: '',
+                    key: ':',
+                    charCode: 13,
+                    which: 13,
+                    code: 'Semicolon',
+                    action: 'Semicolon',
+                    type: 'keydown'
+                };
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it(' Should insert emoji through : when toolbar is in inline mode', () => {
+                rteObj.focusIn();
+                keyboardEventArgs = {
+                    preventDefault: function () { },
+                    keyCode: 186,
+                    shiftKey: true,
+                    altKey: false,
+                    ctrlKey: false,
+                    char: '',
+                    key: ':',
+                    charCode: 13,
+                    which: 13,
+                    code: 'Semicolon',
+                    action: 'Semicolon',
+                    type: 'keydown'
+                };
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
+                emoji[0].focus();
+                keyboardEventArgs = {
+                    preventDefault: function () { },
+                    keyCode: 13,
+                    shiftKey: false,
+                    altKey: false,
+                    ctrlKey: false,
+                    char: '',
+                    key: ':',
+                    charCode: 13,
+                    which: 13,
+                    code: 'Enter',
+                    action: 'Enter',
+                    type: 'Enter',
+                    target: emoji[0]
+                };
+                (<any>rteObj).emojiPickerModule.onKeyDown({ preventDefault: function () { }, keyCode: 13, target: emoji[0], type: 'keydown' });
+                expect(rteObj.contentModule.getEditPanel().innerHTML).toBe('<p>😀</p>');
+            });
+        });
+        describe('Bug 985502: Script error throws when using EmojiPicker with the Inline toolbar in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' When inline mode is enabled, invoking showEmojiPicker should bring up the emoji picker popup without throwing any error.', () => {
+            rteObj.focusIn();
+            rteObj.showEmojiPicker();
+            const emojiPickerPopup: HTMLElement = document.querySelector('.e-rte-emojipicker-popup') as HTMLElement;
+            expect(emojiPickerPopup).not.toBeNull();
+            const inputElement: HTMLElement = document.querySelector('.e-rte-emoji-search') as HTMLElement;
+            expect(document.activeElement).toBe(inputElement);
         });
     });
 });

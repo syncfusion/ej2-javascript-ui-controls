@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/highcontrast' as *;
-@forward 'ej2-base/styles/definition/highcontrast';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $switch-wrapper-width: 44px !default;
 $switch-active-background: initial !default;
 $switch-wrapper-height: 20px !default;

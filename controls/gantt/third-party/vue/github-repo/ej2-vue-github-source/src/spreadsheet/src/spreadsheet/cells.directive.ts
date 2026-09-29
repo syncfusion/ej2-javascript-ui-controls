@@ -34,7 +34,7 @@ export const CellsPlugin = {
 /**
  * `e-cell` directive represent a cell of the VueJS Spreadsheet.
  * It must be contained in a `e-row` directive.
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-sheets>
  *    <e-sheet>

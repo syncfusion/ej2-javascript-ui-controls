@@ -351,7 +351,7 @@ export class WCharacterFormat {
     private checkBaseStyle(property: string): Object {
         let baseStyle: any;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph)) {
+            if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.paragraphFormat)) {
                 baseStyle = (this.ownerBase as TextElementBox).paragraph.paragraphFormat.baseStyle;
             } else {
 

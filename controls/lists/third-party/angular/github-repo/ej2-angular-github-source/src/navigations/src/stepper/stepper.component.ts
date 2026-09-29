@@ -20,47 +20,25 @@ export const twoWays: string[] = ['activeStep'];
     outputs: outputs,
     template: `<ng-content select='nav'></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSteps: new ContentChild(StepsDirective)
+        childSteps: new ContentChild(StepsDirective),
+        template: new ContentChild('template'),
+        tooltipTemplate: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class StepperComponent extends Stepper implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	beforeStepRender: any;
-	created: any;
-	stepChanged: any;
-	stepChanging: any;
-	stepClick: any;
-	public activeStepChange: any;
-    public childSteps: QueryList<StepsDirective>;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare beforeStepRender: any;
+	declare created: any;
+	declare stepChanged: any;
+	declare stepChanging: any;
+	declare stepClick: any;
+	public declare activeStepChange: any;
+    public declare childSteps: QueryList<StepsDirective>;
     public tags: string[] = ['steps'];
-    /** 
-     * Defines the template content for each step.
-     * 
-     * {% codeBlock src='stepper/template/index.md' %}{% endcodeBlock %}
-     *     
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('template')
-    @Template()
-    public template: any;
-    /** 
-     * Defines the template content for the tooltip.
-     * @default ''
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltipTemplate: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -90,7 +68,9 @@ export class StepperComponent extends Stepper implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(StepperComponent.prototype, 'template');
+Template()(StepperComponent.prototype, 'tooltipTemplate');
 

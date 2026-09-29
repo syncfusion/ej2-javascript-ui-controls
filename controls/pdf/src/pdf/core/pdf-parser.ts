@@ -14,6 +14,7 @@ import { _PdfFaxStream } from './compression/pdf-fax-stream';
 import { _PdfRunLengthStream } from './compression/run-length-stream';
 import { _PdfJbig2Stream } from './compression/jbig2-stream';
 import { _CipherTransform } from './security/encryptors/cipher-tranform';
+import { _AdvancedEncryptionGcmCipher } from './security/encryptors/advanced-encryption-gcm-cipher';
 const maxCacheLength: number = 1000;
 const maxNumberLength: number = 5552;
 const endOfFile: string = 'EOF';
@@ -646,7 +647,7 @@ export class _PdfParser {
                     if (this.recoveryMode) {
                         return dictionary;
                     }
-                    throw new ParserEndOfFileException('End of file inside dictionary.');
+                    return null;
                 }
                 if (_isCommand(this.second, 'stream')) {
                     if (this.allowStreams === true) {
@@ -985,9 +986,18 @@ export class _PdfParser {
         stream = stream.makeSubStream(startPosition, length, dictionary);
         if (!makeFilter) {
             if (cipherTransform) {
-                stream = cipherTransform.createStream(stream, length);
+                if (cipherTransform._streamCipher instanceof _AdvancedEncryptionGcmCipher) {
+                    const encryptedBytes: Uint8Array = stream.getBytes(length);
+                    const decryptedBytes: Uint8Array = cipherTransform._streamCipher._decryptBlock(encryptedBytes, true);
+                    stream = new _PdfStream(decryptedBytes);
+                    stream = this.filter(stream, dictionary, decryptedBytes.length);
+                } else {
+                    stream = cipherTransform.createStream(stream, length);
+                    stream = this.filter(stream, dictionary, length);
+                }
+            } else {
+                stream = this.filter(stream, dictionary, length);
             }
-            stream = this.filter(stream, dictionary, length);
         }
         stream.dictionary = dictionary;
         return stream;

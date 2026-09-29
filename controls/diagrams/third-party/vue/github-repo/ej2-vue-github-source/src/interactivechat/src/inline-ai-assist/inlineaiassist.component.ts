@@ -4,7 +4,7 @@ import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { InlineAIAssist, InlineAIAssistModel } from '@syncfusion/ej2-interactive-chat';
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'commandSettings', 'cssClass', 'editorTemplate', 'enablePersistence', 'enableRtl', 'enableStreaming', 'inlineToolbarSettings', 'locale', 'placeholder', 'popupHeight', 'popupWidth', 'prompt', 'prompts', 'relateTo', 'responseMode', 'responseSettings', 'responseTemplate', 'target', 'zIndex', 'close', 'created', 'open', 'promptRequest'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'commandSettings', 'cssClass', 'editorTemplate', 'enablePersistence', 'enableRtl', 'enableStreaming', 'inlineToolbarSettings', 'locale', 'placeholder', 'popupHeight', 'popupWidth', 'prompt', 'prompts', 'relateTo', 'responseMode', 'responseSettings', 'responseTemplate', 'speechToTextSettings', 'target', 'zIndex', 'close', 'created', 'open', 'promptRequest'];
 export const modelProps: string[] = [];
 
 export const testProp: any = getProps({props: properties});

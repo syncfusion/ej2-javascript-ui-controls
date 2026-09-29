@@ -1,5 +1,7 @@
 import { _PdfAbstractSyntaxElement } from '../asn1/abstract-syntax';
+import { _ConstructionType, _TagClassType, _UniversalType } from '../asn1/enumerator';
 import { _PdfObjectIdentifier } from '../asn1/identifier-mapping';
+import { _PdfUniqueEncodingElement } from '../asn1/unique-encoding-element';
 /**
  * Represents a single X.509 extension (critical flag + value element).
  *
@@ -119,6 +121,111 @@ export class _PdfX509Extensions {
         const key: string = objectIdentifier._encoding.toString().replace(/,/g, '.');
         const ext: _PdfX509Extension = this._extensions.get(key);
         return ext ? ext : null;
+    }
+    /**
+     * Builds the ASN.1 representation of the X.509 extensions sequence.
+     *
+     * @private
+     * @returns {_PdfUniqueEncodingElement} The context‑specific ASN.1 element
+     * representing the encoded certificate extensions.
+     */
+    _getAsn1(): _PdfUniqueEncodingElement {
+        const children: _PdfAbstractSyntaxElement[] = [];
+        for (const oid of this._ordering) {
+            const ext: _PdfX509Extension = this._extensions.get(oid);
+            if (!ext) {
+                continue;
+            }
+            const v: _PdfAbstractSyntaxElement[] = [];
+            const oidEl: _PdfUniqueEncodingElement = this._createPrimitive(_UniversalType.objectIdentifier,
+                                                                           this._encodeObjectIdentifier(oid));
+            v.push(oidEl);
+            if (ext._critical) {
+                const criticalEl: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement(
+                    _TagClassType.universal,
+                    _ConstructionType.primitive,
+                    _UniversalType.abstractSyntaxBoolean
+                );
+                criticalEl._setBooleanValue(true);
+                v.push(criticalEl);
+            }
+            if (ext._value instanceof _PdfAbstractSyntaxElement) {
+                v.push(ext._value);
+            } else {
+                const valueEl: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement(
+                    _TagClassType.universal,
+                    _ConstructionType.primitive,
+                    _UniversalType.octetString
+                );
+                valueEl._setOctetString(ext._value);
+                v.push(valueEl);
+            }
+            const innerSeq: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement(
+                _TagClassType.universal,
+                _ConstructionType.constructed,
+                _UniversalType.sequence
+            );
+            innerSeq._setSequence(v);
+            children.push(innerSeq);
+        }
+        const outerSeq: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement(
+            _TagClassType.universal,
+            _ConstructionType.constructed,
+            _UniversalType.sequence
+        );
+        outerSeq._setSequence(children);
+        const outerOutSeq: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement(
+            _TagClassType.context,
+            _ConstructionType.constructed,
+            2
+        );
+        outerOutSeq._setSequence([outerSeq]);
+        return outerOutSeq;
+    }
+    /**
+     * Creates a primitive ASN.1 encoding element with the specified universal tag and value.
+     *
+     * @private
+     * @param {number} tag The universal ASN.1 tag number.
+     * @param {Uint8Array} value The raw value bytes of the ASN.1 element.
+     * @returns {_PdfUniqueEncodingElement} The created primitive ASN.1 encoding element.
+     */
+    _createPrimitive(tag: number, value: Uint8Array): _PdfUniqueEncodingElement {
+        const element: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
+        element._tagClass = _TagClassType.universal;
+        element._construction = _ConstructionType.primitive;
+        element._setTagNumber(tag);
+        element._setValue(value);
+        return element;
+    }
+    /**
+     * Encodes a dotted‑decimal object identifier (OID) string into ASN.1 DER format.
+     *
+     * @private
+     * @param {string} oidString The dotted‑decimal OID string (for example, `"1.2.840.113549"`).
+     * @returns {Uint8Array} The DER‑encoded byte representation of the object identifier.
+     */
+    _encodeObjectIdentifier(oidString: string): Uint8Array {
+        const parts: number[] = oidString.split('.').map(Number);
+        const bytes: number[] = [];
+        bytes.push(parts[0] * 40 + parts[1]);
+        for (let i: number = 2; i < parts.length; i++) {
+            let value: number = parts[<number>i];
+            if (value < 128) {
+                bytes.push(value);
+            } else {
+                const temp: number[] = [];
+                while (value > 0) {
+                    temp.unshift(value & 0x7F);
+                    value >>>= 7;
+                }
+                for (let j: number = 0; j < temp.length - 1; j++) {
+                    temp[<number>j] |= 0x80;
+                }
+                bytes.push(...temp);
+            }
+        }
+        return new Uint8Array(bytes);
     }
 }
 /**

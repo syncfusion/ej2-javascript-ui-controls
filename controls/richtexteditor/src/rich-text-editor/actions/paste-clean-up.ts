@@ -5,7 +5,7 @@ import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass, getComponent, createElement } from '@syncfusion/ej2-base';
-import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
+import { getUniqueID, Browser, closest, initializeTelemetryFeature} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { NodeSelection } from '../../selection/selection';
@@ -53,6 +53,7 @@ export class PasteCleanup {
     private pendingPasteQueue: string[] = [];
     private validFiles: File[] = [];
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+        initializeTelemetryFeature('PasteCleanup', 'RichTextEditor');
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
@@ -1300,6 +1301,10 @@ export class PasteCleanup {
         const dialogRef: Dialog = this.dialogObj;
         this.dialogRenderObj.close(dialogRef);
         this.dialogObj.destroy();
+        const wrapper: HTMLElement | null = this.parent.element.querySelector('#' + this.parent.getID() + '_pasteCleanupDialog');
+        if (wrapper) {
+            detach(wrapper);
+        }
         // Reset the image Queue
         this.pendingPasteQueue = [];
     }

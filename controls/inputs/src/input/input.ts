@@ -49,6 +49,7 @@ export namespace Input {
     };
     let floatType: string;
     let isBindClearAction: boolean = true;
+    const resizeHandlers: Map<HTMLElement, EventListener> = new Map<HTMLElement, EventListener>();
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
      * ```
@@ -492,6 +493,11 @@ export namespace Input {
             _internalRipple(false, null, args.buttons as any);
         }
         unwireFloatingEvents(args.element);
+        const resizeHandler: EventListener = resizeHandlers.get(args.element as HTMLElement);
+        if (resizeHandler) {
+            window.removeEventListener('resize', resizeHandler);
+            resizeHandlers.delete(args.element as HTMLElement);
+        }
         if (!isNullOrUndefined(args.element)) {
             delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers;
             if (args.element.classList.contains(CLASSNAMES.INPUT)) {
@@ -614,10 +620,30 @@ export namespace Input {
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
     export function calculateWidth(element: any, container: HTMLElement, moduleName?: string): void {
+        if (moduleName !== 'multiselect' && element && container && !resizeHandlers.has(element as HTMLElement)) {
+            const resizeHandler: EventListener = (): void => {
+                if (!document.documentElement.contains(container)) {
+                    window.removeEventListener('resize', resizeHandler);
+                    resizeHandlers.delete(element as HTMLElement);
+                    return;
+                }
+                calculateWidth(element, container, moduleName);
+            };
+            resizeHandlers.set(element as HTMLElement, resizeHandler);
+            window.addEventListener('resize', resizeHandler);
+        }
         if (moduleName !== 'multiselect' && !_isElementVisible(element)) {
             return;
         }
-        const elementWidth : number | Element = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
+        let elementWidth : number | Element = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
+        if (moduleName !== 'multiselect' && element && container) {
+            let iconWidth: number = 0;
+            const icons: HTMLCollectionOf<Element> = container.getElementsByClassName('e-input-group-icon');
+            Array.from(icons).forEach((icon: HTMLElement) => {
+                iconWidth += icon.clientWidth + parseInt(getComputedStyle(icon, null).getPropertyValue('margin-right'), 10);
+            });
+            elementWidth = (elementWidth as number) + (iconWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10));
+        }
         if ( !isNullOrUndefined(container) && !isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
@@ -658,7 +684,7 @@ export namespace Input {
     export function setPlaceholder(placeholder: string, element: HTMLInputElement | HTMLTextAreaElement, moduleName?: string): void {
         const modules: string[] = [
             'textbox', 'numerictextbox', 'textarea', 'combobox',
-            'datepicker', 'daterangepicker', 'datetimepicker'
+            'datepicker', 'daterangepicker', 'datetimepicker', 'maskedtextbox'
         ];
         placeholder = encodePlaceHolder(placeholder);
         const parentElement: HTMLElement = getParentNode(element);

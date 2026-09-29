@@ -435,6 +435,9 @@ export class Scroll implements IAction {
         if (isAdd && this.parentElement) {
             this.eventElement = this.parentElement.tagName === 'HTML' || this.parentElement.tagName === 'BODY' ? document :
                 this.parentElement;
+            if (this.stickyScrollHandler) {
+                EventHandler.remove(this.eventElement, 'scroll', this.stickyScrollHandler);
+            }
             this.stickyScrollHandler = this.makeStickyHeader();
             EventHandler.add(this.eventElement, 'scroll', this.stickyScrollHandler, this);
         } else if (this.eventElement) {

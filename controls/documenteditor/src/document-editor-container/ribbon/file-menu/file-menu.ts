@@ -176,6 +176,7 @@ export class FileMenu {
      * @returns {void}
      */
     private onFileChange(): void {
+        const isAngularModal: boolean = this.container.isModalDialog;   
         const file: File = this.filePicker.files[0];
         const fileSize: number = file.size;
         let check: boolean;
@@ -213,6 +214,11 @@ export class FileMenu {
                     const localizeValue: L10n = new L10n('documenteditor', this.container.documentEditor.defaultLocale);
                     DialogUtility.alert({
                         content: localizeValue.getConstant('Unsupported format'),
+                        open: (e: any) => {
+                            if (isAngularModal) {
+                                this.container.moveAlertToCdkOverlay(e);
+                            }
+                        },
                         closeOnEscape: true,
                         showCloseIcon: true,
                         position: { X: 'center', Y: 'center' }

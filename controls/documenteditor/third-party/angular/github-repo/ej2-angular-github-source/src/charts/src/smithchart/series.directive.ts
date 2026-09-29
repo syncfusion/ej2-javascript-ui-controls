@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-seriesCollection>e-series',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class SmithchartSeriesDirective extends ComplexBase<SmithchartSeriesDirective> {
@@ -23,76 +23,76 @@ export class SmithchartSeriesDirective extends ComplexBase<SmithchartSeriesDirec
      * perform animation of series based on animation duration.
      * @default '2000ms'
      */
-    public animationDuration: any;
+    public declare animationDuration: any;
     /** 
      * Specifies the dataSource
      * @default null
      * @isdatamanager false
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * enable or disable the animation of series.
      * @default false
      */
-    public enableAnimation: any;
+    public declare enableAnimation: any;
     /** 
      * avoid the overlap of dataLabels.
      * @default false
      */
-    public enableSmartLabels: any;
+    public declare enableSmartLabels: any;
     /** 
      * color for series.
      * @default null
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * options for customizing marker.
      */
-    public marker: any;
+    public declare marker: any;
     /** 
      * The name of the series visible in legend.
      * @default ''
      */
-    public name: any;
+    public declare name: any;
     /** 
      * opacity for series.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * points for series.
      * @default []
      */
-    public points: any;
+    public declare points: any;
     /** 
      * reactance name for dataSource.
      * @default ''
      */
-    public reactance: any;
+    public declare reactance: any;
     /** 
      * resistance name for dataSource.
      * @default ''
      */
-    public resistance: any;
+    public declare resistance: any;
     /** 
      * options for customizing tooltip.
      */
-    public tooltip: any;
+    public declare tooltip: any;
     /** 
      * tooltip mapping name for the series.
      * @default ''
      */
-    public tooltipMappingName: any;
+    public declare tooltipMappingName: any;
     /** 
      * visibility for series.
      * @default 'visible'
      */
-    public visibility: any;
+    public declare visibility: any;
     /** 
      * width for series.
      * @default 1
      */
-    public width: any;
+    public declare width: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -108,6 +108,7 @@ export class SmithchartSeriesDirective extends ComplexBase<SmithchartSeriesDirec
  */
 @Directive({
     selector: 'ejs-smithchart>e-seriesCollection',
+    standalone: true,
     queries: {
         children: new ContentChildren(SmithchartSeriesDirective)
     },

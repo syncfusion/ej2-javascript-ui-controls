@@ -1,0 +1,14 @@
+#{&}.e-chip-list {
+  .e-chip-delete {
+    &.e-dlt-btn::before {
+      content: '\e7e7';
+      font-size: 10px;
+    }
+  }
+
+  &.e-multi-selection .e-chip {
+    &::before {
+      content: '\e774';
+    }
+  }
+}

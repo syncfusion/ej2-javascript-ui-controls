@@ -9,7 +9,8 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-richtexts>e-richtext',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
 
     }
@@ -24,12 +25,12 @@ export class RichTextDirective extends ComplexBase<RichTextDirective> {
      * However, in a rich text segment, only the superscript or subscript options are supported.
      * @default {}
      */
-    public style: any;
+    public declare style: any;
     /** 
      * Specifies the text content of the segment.
      * @default ''
      */
-    public text: any;
+    public declare text: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -45,6 +46,7 @@ export class RichTextDirective extends ComplexBase<RichTextDirective> {
  */
 @Directive({
     selector: 'e-cell>e-richtexts',
+    standalone: true,
     queries: {
         children: new ContentChildren(RichTextDirective)
     },

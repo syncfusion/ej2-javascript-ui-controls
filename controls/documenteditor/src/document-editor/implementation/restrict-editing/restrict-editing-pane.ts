@@ -150,6 +150,7 @@ export class RestrictEditing {
             fields: {text:'Name', value: 'Value'},
             enableRtl: this.documentHelper.owner.enableRtl
         });
+        this.protectionTypeDrop.isAngular = this.documentHelper.owner.isModalDialog;
         this.protectionTypeDrop.value = 'Read only';
         this.protectionTypeDrop.appendTo(protectionTypeInput);
         // let allowPrint: HTMLInputElement = createElement('input', {
@@ -186,7 +187,7 @@ export class RestrictEditing {
             select: this.selectHandler.bind(this),
             enableRtl: this.documentHelper.owner.enableRtl
         });
-
+        this.addedUser.isAngular = this.documentHelper.owner.isModalDialog;
         this.addedUser.appendTo(emptyuserDiv);
         this.addUser = createElement('button', {
             className: 'e-btn e-primary e-flat e-de-rp-mu-btn',

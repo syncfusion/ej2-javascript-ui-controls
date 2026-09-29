@@ -3,7 +3,8 @@
  */
 import { Browser, L10n } from "@syncfusion/ej2-base";
 import { RichTextEditor } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy, setCursorPoint } from './../render.spec';
+import { renderRTE, destroy, dispatchEvent , setCursorPoint} from './../render.spec';
+import { ESCAPE_KEY_EVENT_INIT } from "../../constant.spec";
 
 describe('Toolbar - view html', () => {
     describe('div content source code', () => {
@@ -743,6 +744,444 @@ describe('Toolbar - view html', () => {
             expect(window.getSelection().getRangeAt(0).startOffset === 0).toBe(true);
             expect(window.getSelection().getRangeAt(0).endOffset === 0).toBe(true);
             done();
+        });
+    });
+
+    describe('1039545: Blazor RichTextEditor - script executes from source code view content when MaxLength is set', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                maxLength: 25,
+                enableHtmlSanitizer: true,
+                value: '<p>data</p>'
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('should not trigger alert while pasting and malicious content pressing keydown in source view', (done: Function) => {
+            const alertSpy: jasmine.Spy = spyOn(window, 'alert');
+            const sourceCodeButton: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
+            sourceCodeButton.click();
+            setTimeout(() => {
+                const textArea: HTMLTextAreaElement = rteEle.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement;
+                const maliciousHtml: string = '<img src=x onerror=alert(document.domain)>';
+                const dataTransfer: DataTransfer = new DataTransfer();
+                dataTransfer.setData('text/html', maliciousHtml);
+                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                    bubbles: true,
+                    cancelable: true,
+                    clipboardData: dataTransfer
+                } as ClipboardEventInit);
+                textArea.dispatchEvent(pasteEvent);
+                const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+                    bubbles: true,
+                    cancelable: true,
+                    key: 'a',
+                    code: 'KeyA',
+                    keyCode: 65,
+                    which: 65
+                } as KeyboardEventInit);
+                textArea.dispatchEvent(keyDownEvent);
+                setTimeout(() => {
+                    expect(alertSpy).not.toHaveBeenCalled();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+ describe('RichTextEditor databinding not working in SourceCode view', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+        });
+        it(' Check SourceCode view ', (done) => {
+            rteObj.showSourceCode();
+            let item: HTMLInputElement = rteObj.element.querySelector('.e-rte-srctextarea');
+            rteObj.value = 'rich text editor';
+            rteObj.dataBind();
+            setTimeout(() => {
+                expect((item as HTMLInputElement).value).toBe('<p>rich text editor</p>');
+                done();
+              }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('BLAZ-6889 - RichTextEditor value changes are not maintained in source code view after focusing out', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            rteObj.value = 'Initial Content';
+            rteObj.dataBind();
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it('Checking Source code value changes after focusing out', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            sourceCode.click();
+            rteObj.focusIn();
+            let item: HTMLInputElement = rteObj.element.querySelector('.e-rte-srctextarea');
+            item.value = 'rich text editor'; 
+            rteObj.isBlur = true; 
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(rteObj.value === '<p>rich text editor</p>').toBe(true);
+                expect(item.value === '<p>rich text editor</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('865055 - ValueChange event not triggered when we edit in Code view in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let previousValue: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                },
+                autoSaveOnIdle: true,
+            });
+        });
+        it('Value change event triger when editing in the Code view', (done) => {
+            rteObj.value = "Rich Text Editor";
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).click();
+            rteObj.value = "Rich Text Editor componnent";
+            previousValue = rteObj.value;
+            rteObj.dataBind();
+            setTimeout(function () {
+                rteObj.value = "Rich Text Editor";
+                setTimeout(function () {
+                    rteObj.value = "Rich Text Editor value";
+                    expect(previousValue != rteObj.value).toBe(true);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('BLAZ-8584 - Clicking on view source code with small value', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>aaaaa</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it(' Clicking on view source code with small value ', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(sourceCode, 'mousedown');
+            dispatchEvent(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === "<p>aaaaa</p>").toBe(true);
+                done();
+            }, 50)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('EJ2-21814 - Clicking on view source code with single character inside textarea removes the character.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>a</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it(' Click the source code with single character ', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(sourceCode, 'mousedown');
+            dispatchEvent(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === "<p>a</p>").toBe(true);
+                done();
+            }, 50)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe("Bug 1043157: 'e-count-enabled' class name is not removed when switching to code view", () => {
+        let rteObj: RichTextEditor;
+        let rteContainer: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                showCharCount: true,
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+            });
+            rteContainer = (rteObj.element as HTMLElement).querySelector('.e-rte-container') as HTMLElement;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Should remove and add the e-count-enabled class when switching between code view and preview', (done) => {
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>Provide a toolbar support</p>';
+            let trgEle: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            setTimeout(() => {
+                expect(rteContainer.classList.contains('e-count-enabled')).toBe(false);
+                trgEle = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0];
+                trgEle.click();
+                setTimeout(() => {
+                    expect(rteContainer.classList.contains('e-count-enabled')).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe("966215 - Maximize Shortcut Does Not Work When Code View Is Enabled", () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><b>Description:</b></p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>`,
+                toolbarSettings: {
+                    items: ['FullScreen', 'SourceCode']
+                }
+            });
+        });
+        it("Maximize should work", (done) => {
+            rteObj.focusIn();
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: true,
+                shiftKey: true,
+                char: '',
+                key: 'F',
+                charCode: 0,
+                keyCode: 70,
+                which: 70,
+                code: 'KeyF',
+                action: '',
+                type: 'keydown'
+            };
+            const toolbarElems:NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+            toolbarElems[1].click();
+            let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+            textarea.parentElement.dispatchEvent(new KeyboardEvent('keydown', keyboardEventArgs));
+            expect(rteObj.element.classList.contains('e-rte-full-screen')).toBe(true);
+            const escapeKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ESCAPE_KEY_EVENT_INIT);
+            textarea.dispatchEvent(escapeKeyDownEvent);
+            expect(rteObj.element.classList.contains('e-rte-full-screen')).toBe(false);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 998768: Rich Text Editor height reduces when toolbar is expanded/collapsed in code view', function () {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 300,
+                width: 500,
+                toolbarSettings: {
+                    items: ['FormatPainter', 'SourceCode', 'Bold', 'Italic', 'Underline', 'StrikeThrough',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                        'LowerCase', 'UpperCase', 'SuperScript', 'SubScript', 'EmojiPicker', '|',
+                        'Formats', 'Alignments', 'NumberFormatList', 'BulletFormatList',
+                        'Outdent', 'Indent', '|', 'CreateTable', 'CreateLink', 'Image', 'Audio', 'Video', 'FileManager', '|', 'ClearFormat', 'Print',
+                        'FullScreen', '|', 'Undo', 'Redo'
+                    ]
+                },
+                value: `<p><b>Description:</b></p>
+                    <p>The Rich Text Editor (RTE) control is an easy to render in the
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>
+                    <p><b>Description:</b></p>
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol><img class="e-rte-image" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" alt="Flowers in Chania" />
+                    `,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Collapsing the toolbar should not affect the source code text area height.', (done: Function) => {
+            (document.querySelector(".e-richtexteditor .e-toolbar-wrapper .e-expended-nav") as any).click();
+            const initialInputElementHeight: number = rteObj.inputElement.getBoundingClientRect().height;
+            const toolbarElems: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+            toolbarElems[1].click();
+            let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-source-content');
+            expect(textarea).not.toBe(null);
+            const initialHeight: number = textarea.getBoundingClientRect().height;
+            expect(initialInputElementHeight).toBe(initialHeight);
+            (document.querySelector(".e-richtexteditor .e-toolbar-wrapper .e-expended-nav") as any).click();
+            const afterCollapseHeight: number = textarea.getBoundingClientRect().height;
+            toolbarElems[1].click();
+            const afterCollapseInputElementHeight: number = rteObj.inputElement.getBoundingClientRect().height;
+            expect(afterCollapseInputElementHeight).toBe(afterCollapseHeight);
+            done();
+        });
+    });
+    describe('Bug 927325: The "& times;" symbol is converted to "x" when focus is removed from the editor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<p>&times &divide &ne</p>`,
+                placeholder: 'Type something'
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it("Value should be same as entered, should not change to x", (done) => {
+            rteObj.focusIn();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x after the focus out", (done) => {
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+                done();
+            }, 110);
+        });
+        it("Value should be same as entered, should not change to x after the code view switch", (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(sourceCode, 'mousedown');
+            dispatchEvent(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;times &amp;divide &amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x after the code view switch and focus out", (done) => {
+            rteObj.focusOut();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;times &amp;divide &amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x, after the pre view switch", (done) => {
+            rteObj.focusIn();
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x after the code view switch and focus out, when sanitizer is off", (done) => {
+            rteObj.enableHtmlSanitizer = false;
+            rteObj.focusOut();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;amp;times &amp;amp;divide &amp;amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x, after the pre view switch, when sanitizer is off", (done) => {
+            rteObj.enableHtmlSanitizer = false;
+            rteObj.focusIn();
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x", (done) => {
+            rteObj.enableHtmlSanitizer = true;
+            rteObj.focusIn();
+            rteObj.executeCommand('insertHTML', '<p>&times &divide &ne</p>');
+            expect(rteObj.inputElement.innerText === '&times &divide &ne\n\n&times &divide &ne').toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('966048 - XSS security issues in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('should sanitize and update the DOM after toggling source code view', (done) => {
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>abc</p><p>afaf<img src="mir" onerror="alert`test`" /></p>';
+            let sourceCodeButton: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
+            sourceCodeButton.click();
+            const sourceCodeTextarea = rteObj.element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement;
+            expect(sourceCodeTextarea).not.toBe(null);
+            expect(sourceCodeTextarea.value).toBe('<p>abc</p>\n<p>afaf<img src="mir" class="e-rte-image e-img-inline"/></p>');
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

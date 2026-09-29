@@ -1,4 +1,4 @@
-import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonPropsModel, Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { ContextMenu, DetailsView, FileManager as EJ2FileManager } from '@syncfusion/ej2-filemanager';
@@ -36,6 +36,7 @@ export class FileManager {
     private onDocumentClickBoundFn: (e: MouseEvent) => void;
 
     private constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
+        initializeTelemetryFeature('FileManager', 'RichTextEditor');
         EJ2FileManager.Inject(ContextMenu, DetailsView, NavigationPane, Toolbar);
         this.parent = parent;
         this.i10n = locator.getService<L10n>('rteLocale');

@@ -19,9 +19,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-gantt>e-event-markers>e-event-marker',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class EventMarkerDirective extends ComplexBase<EventMarkerDirective> {
@@ -34,25 +34,25 @@ export class EventMarkerDirective extends ComplexBase<EventMarkerDirective> {
      * This can be used to apply custom styles to the line and label of the marker.
      * @default null
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Specifies the date or day of the event marker. 
      * The value can be a `Date` object or a date string.
      * @default null
      */
-    public day: any;
+    public declare day: any;
     /** 
      * Specifies the label for the event marker.
      * @default null
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Vertical offset of the label from the timeline top. 
      * Must be in pixels (e.g., '50px'). Invalid values default to '50px'. 
      * Negative values are normalized to '50px'.
      * @default '50px'
      */
-    public top: any;
+    public declare top: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -68,6 +68,7 @@ export class EventMarkerDirective extends ComplexBase<EventMarkerDirective> {
  */
 @Directive({
     selector: 'ejs-gantt>e-event-markers',
+    standalone: true,
     queries: {
         children: new ContentChildren(EventMarkerDirective)
     },

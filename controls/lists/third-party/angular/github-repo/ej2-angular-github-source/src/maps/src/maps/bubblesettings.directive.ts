@@ -21,45 +21,47 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-layer>e-bubbleSettings>e-bubbleSetting',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-        childColorMapping: new ContentChild(ColorMappingsDirective)
+        childColorMapping: new ContentChild(ColorMappingsDirective),
+        tooltipSettings_template: new ContentChild('tooltipSettingsTemplate')
     }
 })
 export class BubbleDirective extends ComplexBase<BubbleDirective> {
     public directivePropList: any;
 	
-    public childColorMapping: any;
+    public declare childColorMapping: any;
     public tags: string[] = ['colorMapping'];
     /** 
      * Gets or sets the delay in animation for the bubbles in maps.
      * @default 0
      */
-    public animationDelay: any;
+    public declare animationDelay: any;
     /** 
      * Gets or sets the duration for the animation of the bubbles in maps.
      * @default 1000
      */
-    public animationDuration: any;
+    public declare animationDuration: any;
     /** 
      * Gets or sets the options to customize the style properties of the border for the bubbles in maps.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * Gets or sets the type of the bubble in maps.
      * @default Circle
      */
-    public bubbleType: any;
+    public declare bubbleType: any;
     /** 
      * Gets or sets the color-mapping for the bubbles in maps.
      * @default []
      */
-    public colorMapping: any;
+    public declare colorMapping: any;
     /** 
      * Gets or sets the field name from the data source of bubble settings to set the color for each bubble in maps.
      * @default null
      */
-    public colorValuePath: any;
+    public declare colorValuePath: any;
     /** 
      * Gets or sets the data source for the bubble. 
      * The data source must contain the size value of the bubble that can be bound to the bubble 
@@ -68,58 +70,55 @@ export class BubbleDirective extends ComplexBase<BubbleDirective> {
      * @isobservable true
      * @default []
      */
-    public dataSource: any;
+    public declare dataSource: any;
     /** 
      * Gets or sets the color for the bubbles in maps.
      * @default ''
      */
-    public fill: any;
+    public declare fill: any;
     /** 
      * Gets or sets the options to customize the highlight of the bubbles in maps.
      */
-    public highlightSettings: any;
+    public declare highlightSettings: any;
     /** 
      * Gets or sets the maximum radius for the bubbles in maps.
      * @default 20
      */
-    public maxRadius: any;
+    public declare maxRadius: any;
     /** 
      * Gets or sets the minimum radius for the bubbles in maps.
      * @default 10
      */
-    public minRadius: any;
+    public declare minRadius: any;
     /** 
      * Gets or sets the opacity of the bubbles in maps.
      * @default 1
      */
-    public opacity: any;
+    public declare opacity: any;
     /** 
      * Gets or sets the query to select particular data from the bubble data source. 
      * This property is applicable only when the data source is created by data manager.
      * @default null
      */
-    public query: any;
+    public declare query: any;
     /** 
      * Gets or sets the options to customize the selection of the bubbles in maps.
      */
-    public selectionSettings: any;
+    public declare selectionSettings: any;
     /** 
      * Gets or sets the options to customize the tooltip of the bubbles in maps.
      */
-    public tooltipSettings: any;
+    public declare tooltipSettings: any;
     /** 
      * Gets or sets the field name from the data source of bubble settings based on which the bubbles are rendered on the maps.
      * @default null
      */
-    public valuePath: any;
+    public declare valuePath: any;
     /** 
      * Enables or disables the visibility of the bubbles in maps.
      * @default false
      */
-    public visible: any;
-    @ContentChild('tooltipSettingsTemplate')
-    @Template()
-    public tooltipSettings_template: any;
+    public declare visible: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -128,6 +127,7 @@ export class BubbleDirective extends ComplexBase<BubbleDirective> {
         this.directivePropList = input;
     }
 }
+Template()(BubbleDirective.prototype, 'tooltipSettings_template');
 
 /**
  * Bubble Array Directive
@@ -135,6 +135,7 @@ export class BubbleDirective extends ComplexBase<BubbleDirective> {
  */
 @Directive({
     selector: 'e-layer>e-bubbleSettings',
+    standalone: true,
     queries: {
         children: new ContentChildren(BubbleDirective)
     },

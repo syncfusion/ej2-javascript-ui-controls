@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
-@forward 'ej2-base/styles/definition/bootstrap5-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $inline-ai-assist-bg: $flyout-bg-color !default;
 $inline-ai-assist-popup-border-radius: 4px !default;
 $inline-ai-assist-content-padding: 8px 8px 16px 8px !default;
@@ -25,8 +25,9 @@ $inline-ai-assist-send-font-size: 14px !default;
 $inline-ai-assist-popup-border: 1px solid $border-light !default;
 $inline-ai-assist-response-text-color: $content-text-color !default;
 $inline-ai-assist-textarea-placeholder-color: $placeholder-text-color !default;
+$inline-ai-assist-textarea-color: $content-text-color !default;
 $inline-ai-assist-footer-focused-border-color: rgba(97, 97, 97, 1) !default;
-$inline-ai-assist-send-color: $secondary-bg-color-focus !default;
+$inline-ai-assist-send-color: $icon-color !default;
 $inline-ai-assist-send-disabled-color: $secondary-bg-color-disabled !default;
 $inline-ai-assist-content-bg: $flyout-bg-color !default;
 $inline-ai-assist-popup-box-shadow: 0 32px 64px 0 rgba(0, 0, 0, .24), 0 0 8px 0 rgba(0, 0, 0, .2) !default;

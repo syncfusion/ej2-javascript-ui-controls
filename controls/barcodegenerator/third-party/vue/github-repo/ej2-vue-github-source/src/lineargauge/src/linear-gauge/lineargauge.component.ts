@@ -18,7 +18,7 @@ for (let props of modelProps) { emitProbs.push('update:'+props) }
 
 /**
  * Represents the Vue Linear Gauge Component. This tag is used to customize the properties of the linear gauge to visualize the data in linear scale.
- * ```vue
+ * ```
  * <ejs-lineargauge></ejs-lineargauge>
  * ```
  */

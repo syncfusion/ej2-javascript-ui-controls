@@ -123,7 +123,7 @@ export class Fields extends ChildProperty<Fields> {
     public parentValue: string;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query/)
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will execute along with the data processing.
      *
      * @default null
@@ -425,6 +425,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isValueChange: boolean;
     private keyEventArgs: KeyboardEvent;
     private keyboardModule: KeyboardEvents;
+    private treeKeyboardModule: KeyboardEvents | null;
+    private checkAllKeyboardModule: KeyboardEvents | null;
     private keyConfigs: { [key: string]: string };
     private overFlowWrapper: HTMLElement;
     private isFilteredData: boolean = false;
@@ -437,13 +439,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private clearIconWidth: number;
     private isClicked: boolean = false;
     private documentClickContext: EventListenerObject = this.onDocumentClick.bind(this);
+    private windowResizeHandler: EventListener;
+    private documentClickHandler: EventListener;
     private windowResizeContext: EventListener = this.windowResize.bind(this);
     // Specifies if the checkAll method has been called
     private isCheckAllCalled: boolean = false;
+    private isNodeChecked: boolean = false;
     private isFromFilterChange: boolean = false;
     private valueTemplateContainer: HTMLElement;
     private previousFilterText: string;
     private fallbackValue: string[] = [];
+    private uncheckedNodeId: string | null = null;
 
     /**
      * Specifies the template that renders to the popup list content of the
@@ -637,7 +643,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies a template to render customized content for all the items.
      * If the **itemTemplate** property is set, the template content overrides the displayed item text.
-     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine/)
+     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine)
      * or HTML element ID holding the content.
      *
      * @default null
@@ -824,7 +830,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     /**
      * Specifies the way to customize the selected values in the Dropdown Tree component based on application needs. If the **valueTemplate** property is set, the template content overrides the displayed item text.
-     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
+     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
      *
      * @default null
      * @angularType string | object
@@ -1452,12 +1458,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         EventHandler.add(this.inputWrapper, 'mousemove', this.mouseIn, this);
         EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResizeContext);
+        this.windowResizeHandler = this.windowResize.bind(this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResizeHandler, this);
         const formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetValueHandler, this);
         }
-        this.keyboardModule = new KeyboardEvents(
+        this.treeKeyboardModule = new KeyboardEvents(
             this.inputWrapper,
             {
                 keyAction: this.keyActionHandler.bind(this),
@@ -1479,7 +1486,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private wireCheckAllWrapperEvents(): void {
-        this.keyboardModule = new KeyboardEvents(
+        this.checkAllKeyboardModule = new KeyboardEvents(
             this.checkAllParent,
             {
                 keyAction: this.checkAllAction.bind(this),
@@ -1500,12 +1507,20 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         EventHandler.remove(this.inputWrapper, 'mousemove', this.mouseIn);
         EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResizeContext);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResizeHandler);
         const formElement: HTMLFormElement = closest(this.inputWrapper, 'form') as HTMLFormElement;
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
-        this.keyboardModule.destroy();
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
+        if (this.treeKeyboardModule) {
+            this.treeKeyboardModule.destroy();
+        }
+        if (this.checkAllKeyboardModule) {
+            this.checkAllKeyboardModule.destroy();
+        }
         if (this.showSelectAll && this.checkAllParent) {
             EventHandler.remove(this.checkAllParent, 'mouseup', this.clickHandler);
         }
@@ -2462,7 +2477,112 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             checkOnClick: true
         });
         this.treeObj.root = this.root ? this.root : this;
+        (this.treeObj as any).filterIndeterminateNodes = [];
+        (this.treeObj as any).filterCheckedNodes = [];
         this.treeObj.appendTo(this.tree);
+    }
+
+    private updateIndeterminateNodes(): void {
+        if (!(this.allowFiltering && this.treeSettings.autoCheck) || (this.isRemoteData || this.treeSettings.loadOnDemand)) {
+            return;
+        }
+        const checkedNodes: string[] = Array.isArray(this.value) ? this.value.slice() : [];
+        const checkedSet: { [key: string]: boolean } = {};
+        for (let i: number = 0; i < checkedNodes.length; i++) {
+            checkedSet[checkedNodes[i as number]] = true;
+        }
+        const treeData: { [key: string]: Object }[] = this.treeObj.element.classList.contains('e-filtering') ? this.treeData : this.treeItems;
+        const valueField: string = this.fields.value;
+        const parentValueField: string = this.fields.parentValue;
+        const hasChildrenField: string = this.fields.hasChildren;
+        const childField: string | FieldsModel = this.fields.child;
+        const indeterminateNodes: string[] = [];
+        const childrenMap: { [key: string]: string[] } = {};
+        for (let i: number = 0; i < treeData.length; i++) {
+            const node: { [key: string]: Object } = treeData[i as number];
+            const nodeId: string = getValue(valueField, node);
+            const nodePid: string = getValue(parentValueField, node);
+            if (isNOU(node) || isNOU(nodeId) || isNOU(nodePid)) { continue; }
+            const parentId: string = nodePid.toString();
+            if (!childrenMap[parentId as string]) {
+                childrenMap[parentId as string] = [];
+            }
+            childrenMap[parentId as string].push(nodeId.toString());
+        }
+        const allNodes: { [key: string]: Object }[] = treeData.slice();
+        if (!isNOU(childField)) {
+            const collectNestedChildren: (nodes: { [key: string]: Object }[], fields: FieldsModel) => void =
+                (nodes: { [key: string]: Object }[], fields: FieldsModel): void => {
+                    if (!nodes) { return; }
+                    for (let i: number = 0; i < nodes.length; i++) {
+                        const node: { [key: string]: Object } = nodes[i as number];
+                        if (isNOU(node)) { continue; }
+                        const nodeId: string = getValue(fields.value, node);
+                        if (isNOU(nodeId)) { continue; }
+                        allNodes.push(node);
+                        const childMapper: string | FieldsModel = fields.child;
+                        let childrenArr: { [key: string]: Object }[];
+                        if (typeof childMapper === 'string') {
+                            childrenArr = node[childMapper as string] as { [key: string]: Object }[];
+                        } else if (!isNOU(childMapper)) {
+                            childrenArr = node[(childMapper as FieldsModel).value] as { [key: string]: Object }[];
+                        } else {
+                            childrenArr = null;
+                        }
+                        if (!isNOU(childrenArr) && Array.isArray(childrenArr) && childrenArr.length) {
+                            const parentId: string = nodeId.toString();
+                            if (!childrenMap[parentId as string]) {
+                                childrenMap[parentId as string] = [];
+                            }
+                            for (let k: number = 0; k < childrenArr.length; k++) {
+                                const childId: string = getValue(fields.value, childrenArr[k as number]);
+                                if (!isNOU(childId) && childrenMap[parentId as string].indexOf(childId.toString()) === -1) {
+                                    childrenMap[parentId as string].push(childId.toString());
+                                }
+                            }
+                            const nextFields: FieldsModel = (typeof childMapper !== 'string' && !isNOU(childMapper)) ?
+                                (childMapper as FieldsModel) : fields;
+                            collectNestedChildren(childrenArr, nextFields);
+                        }
+                    }
+                };
+            collectNestedChildren(treeData, this.fields);
+        }
+        for (let i: number = 0; i < allNodes.length; i++) {
+            const node: { [key: string]: Object } = allNodes[i as number];
+            const nodeId: string = getValue(valueField, node);
+            if (isNOU(node) || isNOU(nodeId)) { continue; }
+            const nodeIdStr: string = nodeId.toString();
+            if (hasChildrenField && getValue(hasChildrenField, node) === false) { continue; }
+            if (checkedSet[nodeIdStr as string]) { continue; }
+            const descendants: string[] = [];
+            const queue: string[] = childrenMap[nodeIdStr as string] ? childrenMap[nodeIdStr as string].slice() : [];
+            let head: number = 0;
+            while (head < queue.length) {
+                const current: string = queue[head as number];
+                head++;
+                descendants.push(current);
+                const kids: string[] = childrenMap[current as string];
+                if (kids) {
+                    for (let j: number = 0; j < kids.length; j++) {
+                        queue.push(kids[j as number]);
+                    }
+                }
+            }
+            if (descendants.length === 0) { continue; }
+            let checkedDescendantCount: number = 0;
+            for (let j: number = 0; j < descendants.length; j++) {
+                if (checkedSet[descendants[j as number]]) {
+                    checkedDescendantCount++;
+                }
+            }
+            if (checkedDescendantCount > 0 && checkedDescendantCount < descendants.length &&
+                indeterminateNodes.indexOf(nodeIdStr) === -1) {
+                indeterminateNodes.push(nodeIdStr);
+            }
+        }
+        (this.treeObj as any).filterCheckedNodes = checkedNodes;
+        (this.treeObj as any).filterIndeterminateNodes = indeterminateNodes;
     }
 
     /* To render the popup element */
@@ -2725,7 +2845,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         } else if (this.popupDiv.classList.contains(NODATA) && this.treeItems.length >= 1) {
             removeClass([this.popupDiv], NODATA);
             this.hideCheckAll(false);
-        }else {
+        } else {
             this.hideCheckAll(this.treeItems.length <= 1);
         }
         if (!this.isFilteredData) {
@@ -2752,6 +2872,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.isFilterRestore = false;
             }
         }
+        this.updateIndeterminateNodes();
     }
 
     private restoreFilterSelection(): void {
@@ -3003,6 +3124,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private onNodeChecked(args: NodeCheckEventArgs): void {
         const eventArgs: DdtSelectEventArgs = this.getEventArgs(args);
         this.trigger('select', eventArgs);
+        this.isNodeChecked = args.action === 'check';
+        this.uncheckedNodeId = args.action === 'uncheck' && !isNOU(args.data[0]) ?
+            getValue('id', args.data[0]).toString() : null;
         if (this.isFilteredData && args.action === 'uncheck') {
             const id: string = getValue('id', args.data[0]).toString();
             this.removeSelectedData(id , true);
@@ -3034,6 +3158,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.triggerChangeEvent(this.keyEventArgs);
             this.isValueChange = false;
         }
+        this.updateIndeterminateNodes();
+        this.uncheckedNodeId = null;
     }
 
     private beforeCheck(args: NodeCheckEventArgs): void {
@@ -3322,6 +3448,155 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private getChildren(parentId: string, result: string[]): void {
+        this.treeData.forEach((item: { [key: string]: Object }) => {
+            const itemId: string = !isNOU(item) ? getValue(this.fields.value, item) as string : null;
+            const itemPid: string = !isNOU(item) ? getValue(this.fields.parentValue, item) as string : null;
+            if (!isNOU(itemId) && !isNOU(itemPid) && itemPid.toString() === parentId.toString()) {
+                const childId: string = itemId.toString();
+                if (result.indexOf(childId) === -1) {
+                    result.push(childId);
+                    this.getChildren(childId, result);
+                }
+            }
+        });
+    }
+
+    private getDirectChildren(parentId: string): string[] {
+        return this.treeData
+            .filter((childNode: { [key: string]: Object }) => {
+                const childId: string = !isNOU(childNode) ? getValue(this.fields.value, childNode) as string : null;
+                const childPid: string = !isNOU(childNode) ? getValue(this.fields.parentValue, childNode) as string : null;
+                return !isNOU(childId) && !isNOU(childPid) && childPid.toString() === parentId;
+            })
+            .map((childNode: { [key: string]: Object }) => (getValue(this.fields.value, childNode) as string).toString());
+    }
+
+    private updateFilteredAutoCheckValues(): void {
+        let currentValues: string[] = Array.isArray(this.value) ? this.value.map((item: string) => item.toString()) : [];
+        const removeParent: (parentId: string) => void = (parentId: string): void => {
+            this.value = this.value.filter((value: string) => value.toString() !== parentId);
+        };
+        if (this.isNodeChecked) {
+            this.treeObj.checkedNodes.map((item: string) => item.toString()).forEach((value: string) => {
+                if (this.value.indexOf(value) === -1) { this.value.push(value); }
+            });
+            this.treeData.forEach((node: { [key: string]: Object }) => {
+                const nodeId: string = isNOU(node) ? null : getValue(this.fields.value, node) as string;
+                const nodeHasChild: boolean = !isNOU(node) && !!this.fields.hasChildren && getValue(this.fields.hasChildren, node) === true;
+                if (isNOU(nodeId)) { return; }
+                const parentId: string = nodeId.toString();
+                if (nodeHasChild && this.value.indexOf(parentId) !== -1) {
+                    const childValues: string[] = [];
+                    this.getChildren(parentId, childValues);
+                    if (this.value.indexOf(parentId) === -1) { this.value.push(parentId); }
+                    childValues.forEach((value: string) => {
+                        if (this.value.indexOf(value) === -1) { this.value.push(value); }
+                    });
+                }
+                currentValues = this.value.map((item: string) => item.toString());
+            });
+            this.treeData.forEach((node: { [key: string]: Object }) => {
+                const nodeId: string = isNOU(node) ? null : getValue(this.fields.value, node) as string;
+                const nodeHasChild: boolean = !isNOU(node) && !!this.fields.hasChildren && getValue(this.fields.hasChildren, node) === true;
+                if (isNOU(nodeId)) { return; }
+                if (!nodeHasChild) { return; }
+                const parentId: string = nodeId.toString();
+                const directChildren: string[] = this.getDirectChildren(parentId);
+                if (!directChildren.length) { return; }
+                const allChildrenSelected: boolean = directChildren.every((childId: string) => this.value.indexOf(childId) !== -1);
+                if (allChildrenSelected) {
+                    const childValues: string[] = [];
+                    this.getChildren(parentId, childValues);
+                    if (this.value.indexOf(parentId) === -1) { this.value.push(parentId); }
+                    childValues.forEach((value: string) => {
+                        if (this.value.indexOf(value) === -1) { this.value.push(value); }
+                    });
+                } else {
+                    removeParent(parentId);
+                }
+                currentValues = this.value.map((item: string) => item.toString());
+            });
+            this.selectedData.forEach((item: { [key: string]: Object }) => {
+                const value: string = getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', item).toString();
+                if (this.value.indexOf(value) === -1) {
+                    this.selectedData = this.selectedData.filter((data: { [key: string]: Object }) =>
+                        getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', data).toString() !== value);
+                }
+            });
+            return;
+        }
+        const removeValues: string[] = [];
+        this.treeData.forEach((node: { [key: string]: Object }) => {
+            const nodeId: string = isNOU(node) ? null : getValue(this.fields.value, node) as string;
+            const nodeHasChild: boolean = !isNOU(node) && !!this.fields.hasChildren && getValue(this.fields.hasChildren, node) === true;
+            if (isNOU(nodeId)) { return; }
+            if (!nodeHasChild) { return; }
+            const parentId: string = nodeId.toString();
+            if (parentId !== this.uncheckedNodeId) {
+                return;
+            }
+            if (currentValues.indexOf(parentId) === -1) {
+                const childValues: string[] = [];
+                this.getChildren(parentId, childValues);
+                if (childValues.some((child: string) => currentValues.indexOf(child) !== -1)) {
+                    removeValues.push(...childValues);
+                }
+            }
+        });
+        if (removeValues.length) {
+            this.value = this.value.filter((value: string) => removeValues.indexOf(value.toString()) === -1);
+            currentValues = this.value.map((item: string) => item.toString());
+        }
+        let stabilized: boolean = false;
+        const valueBeforeReconciliation: string[] = [...this.value];
+        let iterationCount: number = 0;
+        const maxIterations: number = this.treeData.length + 1;
+        while (!stabilized && iterationCount < maxIterations) {
+            stabilized = true;
+            iterationCount++;
+            this.treeData.forEach((node: { [key: string]: Object }) => {
+                const nodeId: string = isNOU(node) ? null : getValue(this.fields.value, node) as string;
+                const nodeHasChild: boolean = !isNOU(node) && !!this.fields.hasChildren && getValue(this.fields.hasChildren, node) === true;
+                if (isNOU(nodeId)) {
+                    return;
+                }
+                if (!nodeHasChild) {
+                    return;
+                }
+                const parentId: string = nodeId.toString();
+                const directChildren: string[] = this.getDirectChildren(parentId);
+                if (!directChildren.length) {
+                    return;
+                }
+                const allDirectChildrenChecked: boolean = directChildren.every(
+                    (childId: string) => currentValues.indexOf(childId) !== -1
+                );
+                if (allDirectChildrenChecked) {
+                    if (currentValues.indexOf(parentId) === -1) {
+                        this.value.push(parentId);
+                        currentValues = this.value.map(
+                            (item: string | number) => item.toString()
+                        );
+                        stabilized = false;
+                    }
+                } else if (currentValues.indexOf(parentId) !== -1) {
+                    removeParent(parentId);
+                    currentValues = this.value.map(
+                        (item: string | number) => item.toString()
+                    );
+                    stabilized = false;
+                }
+            });
+        }
+        if (
+            (valueBeforeReconciliation.length > 0 && this.value.length === 0) ||
+            iterationCount >= maxIterations
+        ) {
+            this.value = valueBeforeReconciliation;
+        }
+    }
+
     private updateSelectedValues(): void {
         this.dataValue = '';
         let temp: string;
@@ -3334,6 +3609,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.chipCollection.innerHTML = '';
         }
         if (!this.isFilteredData) { this.selectedData = []; }
+        if (!this.isRemoteData && !this.treeSettings.loadOnDemand && this.treeSettings.autoCheck &&
+            this.isFilteredData && !isNOU(this.value)) {
+            this.updateFilteredAutoCheckValues();
+        }
         if (!isNOU(this.value)) {
             const compiledString: Function = this.initializeValueTemplate();
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
@@ -3407,6 +3686,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         else {
             this.inputWrapper.setAttribute('aria-label', this.getModuleName());
         }
+        this.updateIndeterminateNodes();
     }
     private setChipValues(text: string, value: string): void {
         if (!this.inputWrapper.contains(this.chipWrapper)) {
@@ -4102,10 +4382,23 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.overFlowWrapper = null;
         this.keyboardModule = null;
         super.destroy();
+        this.treeKeyboardModule = null;
+        this.checkAllKeyboardModule = null;
+        this.selectedData = [];
+        this.treeData = null;
+        this.treeItems = [];
+        this.valueTemplateContainer = null;
+        this.filterContainer = null;
+        this.windowResizeHandler = null;
+        this.documentClickHandler = null;
         this.setProperties({ value: [] }, true);
     }
 
     private destroyFilter(): void {
+        if (this.filterTimer) {
+            window.clearTimeout(this.filterTimer);
+            this.filterTimer = null;
+        }
         if (this.filterObj) {
             this.filterObj.destroy();
             detach(this.filterObj.element);

@@ -95,4 +95,19 @@ export class _PdfBigInt {
         }
         return bits;
     }
+    /**
+     * Initializes the value from a big-endian byte array.
+     *
+     * @param {Uint8Array} bytes The big-endian byte array representation of the value.
+     * @returns {this} The current instance.
+     * @private
+     */
+    _fromBytesBE(bytes: Uint8Array): this {
+        this.digits = [0];
+        for (let i: number = 0; i < bytes.length; i++) {
+            this._multiply();
+            this._add(bytes[<number>i] & 0xFF);
+        }
+        return this;
+    }
 }

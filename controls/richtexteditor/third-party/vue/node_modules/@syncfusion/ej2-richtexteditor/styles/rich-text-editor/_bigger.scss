@@ -8,31 +8,31 @@
       height: calc(100% - 56px);
     }
 
-    .e-rte-edit-table {
+    .e-rte-edit-table.e-popup-open {
       max-height: $rte-big-table-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-edit-table-prop-dialog {
+    .e-rte-edit-table-prop-dialog.e-popup-open {
       max-height: $rte-big-edit-table-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-link-dialog {
+    .e-rte-link-dialog.e-popup-open {
       max-height: $rte-big-link-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-img-dialog {
+    .e-rte-img-dialog.e-popup-open {
       min-height: $rte-big-img-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-img-link-dialog {
+    .e-rte-img-link-dialog.e-popup-open {
       max-height: $rte-big-img-link-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-img-size-dialog {
+    .e-rte-img-size-dialog.e-popup-open {
       max-height: $rte-big-img-size-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    .e-rte-img-alt-dialog {
+    .e-rte-img-alt-dialog.e-popup-open {
       min-height: $rte-big-img-alt-dlg-max-height !important; /* stylelint-disable-line declaration-no-important */
     }
   }

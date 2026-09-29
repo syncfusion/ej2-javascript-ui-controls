@@ -1501,3 +1501,528 @@ describe('New Taskbar added is not correct after enabling the Include Weekend', 
         }
     });
 });
+describe('Checking for width calculation calculateWidthWithExceptions', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2,
+                            TaskName: 'Defining the product and its usage',
+                            StartDate: new Date('03/31/2019'),
+                            Duration: 3,
+                            Progress: 30
+                        },
+                        {
+                            TaskID: 3,
+                            TaskName: 'Defining target audience',
+                            StartDate: new Date('04/05/2019'),
+                            Duration: 3,
+                            calendar: "task-calendar-1"
+                        },
+                        {
+                            TaskID: 4,
+                            TaskName: 'Prepare product sketch and notes',
+                            StartDate: new Date('04/10/2019'),
+                            Duration: 3,
+                            Progress: 30,
+                            calendar: "task-calendar-1"
+                        },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                calendarId: 'calendar'
+            },
+            calendarSettings: {
+                projectCalendar: {
+                    workingTime: [
+                        { from: 9, to: 13 },
+                        { from: 14, to: 18 }
+                    ],
+                    holidays: [
+                        {
+                            from: '04/05/2019',
+                            to: '04/05/2019',
+                            label: 'Good Friday',
+                        }
+                    ],
+                    exceptions: [
+                        {
+                            from: '03/31/2019',
+                            to: '03/31/2019',
+                            label: 'Extended Work Day'
+                        },
+                    ]
+                },
+                taskCalendars: [
+                    {
+                        calendarId: 'task-calendar-1',
+                        holidays: [
+                            {
+                                from: '04/10/2019',
+                                to: '04/10/2019',
+                                label: 'Task-Specific Holiday',
+                            },
+                            {
+                                from: '04/17/2019',
+                                to: '04/17/2019',
+                                label: 'Task-Specific Holiday2',
+                            }
+
+                        ],
+                        exceptions: [
+                            {
+                                from: '04/01/2019',
+                                to: '04/01/2019',
+                                label: 'Task Deadline Extension'
+                            },
+                            {
+                                from: '04/17/2019',
+                                to: '04/17/2019',
+                                label: 'Task Deadline Extension2',
+                            }
+                        ]
+                    }
+                ]
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+            ],
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            searchSettings: {
+                fields: ['TaskName', 'Duration']
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Calculate width', () => {
+        const sDate: Date = new Date(2026, 1, 5, 9, 0, 0);
+        const eDate: Date = new Date(2026, 1, 5, 12, 0, 0);
+        const startException = ganttObj.defaultCalendarContext.getExceptionForDate(sDate);
+        const endException = ganttObj.defaultCalendarContext.getExceptionForDate(eDate);
+        const width: number = ganttObj.calendarModule['calculateWidthWithExceptions'](sDate, eDate, startException, endException)
+        expect(width).toBe(12.375);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking getDirectEndDate method on exception', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2,
+                            TaskName: 'Defining the product and its usage',
+                            StartDate: new Date('03/31/2019'),
+                            Duration: 3,
+                            Progress: 30
+                        },
+                        {
+                            TaskID: 3,
+                            TaskName: 'Defining target audience',
+                            StartDate: new Date('04/05/2019'),
+                            Duration: 3,
+                            calendar: "task-calendar-1"
+                        },
+                        {
+                            TaskID: 4,
+                            TaskName: 'Prepare product sketch and notes',
+                            StartDate: new Date('04/10/2019'),
+                            Duration: 3,
+                            Progress: 30,
+                            calendar: "task-calendar-1"
+                        },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                calendarId: 'calendar'
+            },
+            calendarSettings: {
+                projectCalendar: {
+                    workingTime: [
+                        { from: 9, to: 13 },
+                        { from: 14, to: 18 }
+                    ],
+                    holidays: [
+                        {
+                            from: '04/05/2019',
+                            to: '04/05/2019',
+                            label: 'Good Friday',
+                        }
+                    ],
+                    exceptions: [
+                        {
+                            from: '03/31/2019',
+                            to: '03/31/2019',
+                            label: 'Extended Work Day',
+                            exceptionWorkingTime: [
+                                { from: 8, to: 12 },
+                                { from: 13, to: 20 }
+                            ]
+                        },
+                    ]
+                },
+                taskCalendars: [
+                    {
+                        calendarId: 'task-calendar-1',
+                        holidays: [
+                            {
+                                from: '04/10/2019',
+                                to: '04/10/2019',
+                                label: 'Task-Specific Holiday',
+                            },
+                            {
+                                from: '04/17/2019',
+                                to: '04/17/2019',
+                                label: 'Task-Specific Holiday2',
+                            }
+
+                        ],
+                        exceptions: [
+                            {
+                                from: '04/01/2019',
+                                to: '04/01/2019',
+                                label: 'Task Deadline Extension'
+                            },
+                            {
+                                from: '04/17/2019',
+                                to: '04/17/2019',
+                                label: 'Task Deadline Extension2',
+                            }
+                        ]
+                    }
+                ]
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+            ],
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            searchSettings: {
+                fields: ['TaskName', 'Duration']
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it("should return startDate when duration is negative", () => {
+        const startDate = new Date(2026, 1, 5, 9, 0, 0);
+        const result = ganttObj.calendarModule['getDirectEndDate'](startDate, -2);
+        expect(result).toEqual(startDate);
+    });
+    it("should set end time from exception when exception exists", () => {
+        const startDate = new Date(2019, 2, 30, 9, 0, 0);
+        const result = ganttObj.calendarModule['getDirectEndDate'](startDate, 2);
+        expect(result.getHours()).toBe(20);
+    });
+    it("should set end time from defaultEndTime when no exception", () => {
+        const startDate = new Date(2019, 2, 31, 9, 0, 0);
+        const result = ganttObj.calendarModule['getDirectEndDate'](startDate, 2);
+        expect(result.getHours()).toBe(18);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Rendering manual scheduling with calendar settings', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'PLO Kickoff',
+                        StartDate: new Date('07/06/2026'),
+                        EndDate: new Date('07/15/2026'),
+                        isManual: false,
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'PLO Charter sign-off', StartDate: new Date('07/05/2026'), Duration: 4, Progress: 100, isManual: false },
+                            { TaskID: 3, TaskName: 'Stakeholder mapping', StartDate: new Date('07/05/2026'), Duration: 4, calendar: 'Steering-committee', Progress: 80, isManual: true },
+                            { TaskID: 4, TaskName: 'Initial risk register', StartDate: new Date('07/05/2026'), Duration: 4, calendar: 'Compliance-audit', Progress: 60, isManual: false }
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    manual: 'isManual',
+                    calendarId: 'calendar'
+                },
+                taskMode: 'Custom',
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'calendar'},
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                calendarSettings: {
+                    projectCalendar: {
+                        holidays: [
+                            { from: '07/06/2026', to: '07/06/2026', label: 'Company Foundation Day' },
+                            { from: '07/14/2026', to: '07/14/2026', label: 'Regional Office Closure' },
+                        ],
+                        exceptions: [
+                            { from: '07/05/2026', to: '07/05/2026', label: 'Extended Work Day' }
+                        ]
+                    },
+                    taskCalendars: [
+                        {
+                            calendarId: 'Steering-committee',
+                            holidays: [
+                                { from: '07/07/2026', to: '07/07/2026', label: 'SC Strategy Day' },
+                                { from: '07/22/2026', to: '07/22/2026', label: 'Board Offsite' }
+                            ],
+                            exceptions: [
+                                { from: '07/06/2026', to: '07/06/2026', label: 'Compensatory Working' },
+                                { from: '07/19/2026', to: '07/19/2026', label: 'Compensatory Working' }
+                            ]
+                        },
+                        {
+                            calendarId: 'Compliance-audit',
+                            holidays: [
+                                { from: '07/09/2026', to: '07/10/2026', label: 'Compliance Blackout' }
+                            ],
+                            exceptions: [
+                                { from: '07/25/2026', to: '07/25/2026', label: 'Mandatory Audit Working Day' }
+                            ]
+                        }
+                    ]
+                },
+            },
+            done
+        );
+    });
+    it('Calender setting in manual scheduling', () => {
+        expect(ganttObj.currentViewData[2].ganttProperties.calendarId).toBe('Steering-committee');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('07/08/2026');
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('hoursPerDay dynamic change - duration recalculation', () => {
+    Gantt.Inject(DayMarkers, Selection, Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task',
+                    StartDate: new Date('04/01/2019'),
+                    EndDate: new Date('04/05/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2,
+                            TaskName: 'Child Task 1',
+                            StartDate: new Date('04/01/2019'),
+                            Duration: 5
+                        },
+                        {
+                            TaskID: 3,
+                            TaskName: 'Child Task 2',
+                            StartDate: new Date('04/01/2019'),
+                            Duration: 3,
+                            Predecessor: '2'
+                        }
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' },
+                { field: 'Duration', headerText: 'Duration' }
+            ],
+            height: '550px',
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Verify duration before and after hoursPerDay change', (done: Function) => {
+        // Initial: default 8 hoursPerDay, child task 1 has duration 5
+        const initialDuration: number = ganttObj.flatData[1].ganttProperties.duration;
+        const initialStartDate: Date = ganttObj.flatData[1].ganttProperties.startDate;
+        const initialEndDate: Date = ganttObj.flatData[1].ganttProperties.endDate;
+        expect(initialDuration).toBe(5);
+        // Change hoursPerDay - this will trigger onPropertyChange automatically
+        ganttObj.hoursPerDay = 4;
+        ganttObj.dataBound = () => {
+            // Duration should be recalculated based on new hoursPerDay (4)
+            // With 4 hours per day instead of 8, the same working time range requires more days
+            expect(ganttObj.flatData[1].ganttProperties.duration).not.toBe(initialDuration);
+            // Start and end dates should be preserved
+            expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.startDate, 'M/d/yyyy'))
+                .toBe(ganttObj.getFormatedDate(initialStartDate, 'M/d/yyyy'));
+            expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.endDate, 'M/d/yyyy'))
+                .toBe(ganttObj.getFormatedDate(initialEndDate, 'M/d/yyyy'));
+            done();
+        };
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

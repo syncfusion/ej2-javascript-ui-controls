@@ -1069,6 +1069,10 @@
       text-align: center !important; /* stylelint-disable-line declaration-no-important */
       text-indent: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
+
+    .e-chart-root-container {
+      height: 100%;
+    }
   }
 
   .e-gantt-dialog .e-tab .e-tab-header {

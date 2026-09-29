@@ -4,7 +4,7 @@ import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DocumentEditorContainer, DocumentEditorContainerModel } from '@syncfusion/ej2-documenteditor';
 
 
-export const properties: string[] = ['isLazyUpdate', 'plugins', 'autoResizeOnVisibilityChange', 'backstageMenu', 'currentUser', 'documentEditorSettings', 'documentSettings', 'enableAutoFocus', 'enableComment', 'enableCsp', 'enableLocalPaste', 'enableLockAndEdit', 'enablePersistence', 'enableRtl', 'enableSpellCheck', 'enableToolbar', 'enableTrackChanges', 'fileMenuItems', 'headers', 'height', 'layoutType', 'locale', 'restrictEditing', 'ribbonLayout', 'serverActionSettings', 'serviceUrl', 'showPropertiesPane', 'toolbarItems', 'toolbarMode', 'userColor', 'width', 'zIndex', 'beforeAcceptRejectChanges', 'beforeCommentAction', 'beforePaneSwitch', 'beforePaste', 'commentDelete', 'contentChange', 'contentControl', 'created', 'customContextMenuBeforeOpen', 'customContextMenuSelect', 'destroyed', 'documentChange', 'fileMenuItemClick', 'selectionChange', 'serviceFailure', 'toolbarClick', 'trackChange', 'beforeXmlHttpRequestSend'];
+export const properties: string[] = ['isLazyUpdate', 'plugins', 'autoResizeOnVisibilityChange', 'backstageMenu', 'currentUser', 'documentEditorSettings', 'documentSettings', 'enableAutoFocus', 'enableComment', 'enableCsp', 'enableLocalPaste', 'enableLockAndEdit', 'enablePersistence', 'enableRtl', 'enableSpellCheck', 'enableToolbar', 'enableTrackChanges', 'enableWebMcp', 'fileMenuItems', 'headers', 'height', 'layoutType', 'locale', 'restrictEditing', 'ribbonLayout', 'serverActionSettings', 'serviceUrl', 'showPropertiesPane', 'toolbarItems', 'toolbarMode', 'userColor', 'width', 'zIndex', 'beforeAcceptRejectChanges', 'beforeCommentAction', 'beforePaneSwitch', 'beforePaste', 'beforeWebMcpToolExecute', 'commentDelete', 'contentChange', 'contentControl', 'created', 'customContextMenuBeforeOpen', 'customContextMenuSelect', 'destroyed', 'documentChange', 'fileMenuItemClick', 'selectionChange', 'serviceFailure', 'toolbarClick', 'trackChange', 'beforeXmlHttpRequestSend'];
 export const modelProps: string[] = [];
 
 export const testProp: any = getProps({props: properties});
@@ -110,6 +110,12 @@ export let DocumentEditorContainerComponent: DefineVueComponent<DocumentEditorCo
         getDocumentParagraphFormat(): Object {
             return this.ej2Instances.getDocumentParagraphFormat();
         },
+        getWebMcpTools(toolNames?: string[]): Object[] {
+            return this.ej2Instances.getWebMcpTools(toolNames);
+        },
+        registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void {
+            return this.ej2Instances.registerWebMcpTools(prefix, tools, exposedTo);
+        },
         resize(width?: number, height?: number): void {
             return this.ej2Instances.resize(width, height);
         },
@@ -153,6 +159,8 @@ export type DocumentEditorContainerComponent = typeof ComponentBase & {
     getDefaultSectionFormat(): Object;
     getDocumentCharacterFormat(): Object;
     getDocumentParagraphFormat(): Object;
+    getWebMcpTools(toolNames?: string[]): Object[];
+    registerWebMcpTools(prefix?: string, tools?: string[] | Object[], exposedTo?: string[]): void;
     resize(width?: number, height?: number): void;
     setDefaultCharacterFormat(characterFormat: Object): void;
     setDefaultParagraphFormat(paragraphFormat: Object): void;

@@ -35,7 +35,7 @@ type JTDOptions = CurrentOptions & {
   multipleOfPrecision?: never
 }
 
-class Ajv extends AjvCore {
+export class Ajv extends AjvCore {
   constructor(opts: JTDOptions = {}) {
     super({
       ...opts,
@@ -93,6 +93,7 @@ class Ajv extends AjvCore {
 }
 
 module.exports = exports = Ajv
+module.exports.Ajv = Ajv
 Object.defineProperty(exports, "__esModule", {value: true})
 
 export default Ajv
@@ -127,3 +128,5 @@ export {_, str, stringify, nil, Name, Code, CodeGen, CodeGenOptions} from "./com
 
 export {JTDSchemaType, SomeJTDSchemaType, JTDDataType}
 export {JTDOptions}
+export {default as ValidationError} from "./runtime/validation_error"
+export {default as MissingRefError} from "./compile/ref_error"

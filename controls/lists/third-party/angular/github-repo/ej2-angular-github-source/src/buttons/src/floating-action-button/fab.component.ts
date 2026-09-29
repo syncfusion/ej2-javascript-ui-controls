@@ -20,16 +20,16 @@ export const twoWays: string[] = [];
     outputs: outputs,
     template: `<ng-content ></ng-content>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-
     }
 })
 @ComponentMixins([ComponentBase])
 export class FabComponent extends Fab implements IComponentBase {
-    public containerContext : any;
-    public tagObjects: any;
-	clicked: any;
-	public created: any;
+    public declare containerContext : any;
+    public declare tagObjects: any;
+	declare clicked: any;
+	public declare created: any;
 
 
 
@@ -61,7 +61,7 @@ export class FabComponent extends Fab implements IComponentBase {
         this.containerContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
 

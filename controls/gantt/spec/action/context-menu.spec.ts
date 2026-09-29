@@ -157,7 +157,7 @@ describe('Context-', () => {
             let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
             setTimeout(() => {
                 triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-                expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+                expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedcell').length).toBe(1);
                 done(); 
             }, 100); 
         }, 500);
@@ -5604,3 +5604,48 @@ describe('Empty content context menu', () => {
         }, 0);
     });
 });
+describe('Split task segment start date validation with hourly timeline', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Split task sample',
+                        StartDate: new Date('03/29/2022'),
+                        Duration: 8,
+                        Progress: 50
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    segments: 'Segments'
+                },
+                enableContextMenu: true,
+                projectStartDate: new Date('03/28/2022'),
+                projectEndDate: new Date('04/06/2022'),
+                timelineSettings: {
+                    topTier: { unit: 'Day', format: 'MMM dd, yyyy', count: 1 },
+                    bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }
+                },
+                height: '450px'
+            }, done);
+        });
+        it('should update the second segment start date as March 30 09:00 when splitting the task', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === 'splitTaskbar') {
+                    args.splitDate = new Date('03/29/2022 17:00');
+                }
+            };
+            ganttObj.splitTask(1, new Date('03/29/2022 17:00:00'));
+            expect(ganttObj.currentViewData[0].ganttProperties.segments.length).toBeGreaterThan(1);
+            expect(ganttObj.currentViewData[0].ganttProperties.segments[1].startDate.getTime()).toBe(new Date(2022, 2, 30, 9, 0).getTime());
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });

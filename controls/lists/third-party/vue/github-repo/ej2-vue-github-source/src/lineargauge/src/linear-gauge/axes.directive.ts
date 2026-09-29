@@ -33,7 +33,7 @@ export const AxesPlugin = {
 
 /**
  * Represents the directive to render the axes in the Linear Gauge.
- * ```vue
+ * ```
  * <ejs-lineargauge>
  * <e-axes><e-axis></e-axis></e-axes>
  * </ejs-lineargauge>

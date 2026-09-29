@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-levels>e-colorMappings>e-colorMapping',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
@@ -23,42 +23,42 @@ export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
      * Sets and gets the color for the color-mapping in treemap.
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * Sets and gets the value from which the range of color mapping starts.
      * @default null
      */
-    public from: any;
+    public declare from: any;
     /** 
      * Sets and gets the label text for the legend when it is rendered based on color mapping.
      * @default null
      */
-    public label: any;
+    public declare label: any;
     /** 
      * Sets and gets the maximum opacity for the color-mapping in the treemap.
      * @default null
      */
-    public maxOpacity: any;
+    public declare maxOpacity: any;
     /** 
      * Sets and gets the minimum opacity for the color-mapping in the treemap.
      * @default null
      */
-    public minOpacity: any;
+    public declare minOpacity: any;
     /** 
      * Enables or disables the visibility of the legend for color mapping in the treemap.
      * @default true
      */
-    public showLegend: any;
+    public declare showLegend: any;
     /** 
      * Sets and gets the value to which the range of color mapping ends.
      * @default null
      */
-    public to: any;
+    public declare to: any;
     /** 
      * Sets and gets the value for the color-mapping from the data source.
      * @default null
      */
-    public value: any;
+    public declare value: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -74,6 +74,7 @@ export class ColorMappingDirective extends ComplexBase<ColorMappingDirective> {
  */
 @Directive({
     selector: 'e-levels>e-colorMappings',
+    standalone: true,
     queries: {
         children: new ContentChildren(ColorMappingDirective)
     },

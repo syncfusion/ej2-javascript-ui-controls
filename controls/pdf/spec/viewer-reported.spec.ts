@@ -1,7 +1,7 @@
-import { PdfAnnotationBorder, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfPopupAnnotation, PdfRectangleAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfSquareAnnotation, PdfUriAnnotation, PdfFreeTextAnnotation, PdfRadioButtonListItem, PdfListFieldItem } from "../src/pdf/core/annotations/annotation";
+import { PdfAnnotationBorder, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfPopupAnnotation, PdfRectangleAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfSquareAnnotation, PdfUriAnnotation, PdfFreeTextAnnotation, PdfRadioButtonListItem, PdfListFieldItem, PdfRedactionAnnotation, PdfInkAnnotation, PdfDocumentLinkAnnotation } from "../src/pdf/core/annotations/annotation";
 import { _ContentParser, _PdfRecord } from "../src/pdf/core/content-parser";
 import { _JsonDocument } from '../src/pdf/core/import-export/json-document';
-import { DataFormat, PdfAnnotationFlag, PdfRotationAngle, PdfRubberStampAnnotationIcon, PdfTextMarkupAnnotationType, PdfAnnotationIntent, PdfLineEndingStyle, PdfTextAlignment, PdfCrossReferenceType, PdfBorderStyle, PdfFormFieldVisibility } from "../src/pdf/core/enumerator";
+import { DataFormat, PdfAnnotationFlag, PdfRotationAngle, PdfRubberStampAnnotationIcon, PdfTextMarkupAnnotationType, PdfAnnotationIntent, PdfLineEndingStyle, PdfTextAlignment, PdfCrossReferenceType, PdfBorderStyle, PdfFormFieldVisibility, PdfDestinationMode } from "../src/pdf/core/enumerator";
 import { PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from "../src/pdf/core/fonts/pdf-standard-font";
 import { PdfStringFormat, PdfVerticalAlignment } from "../src/pdf/core/fonts/pdf-string-format";
 import { PdfRadioButtonListField, PdfCheckBoxField, PdfComboBoxField, PdfSignatureField } from "../src/pdf/core/form/field";
@@ -12,7 +12,9 @@ import { PdfAnnotationExportSettings, PdfFormFieldExportSettings, PdfDocument, P
 import { PdfTextBoxField } from "../src/pdf/core/form/field";
 import { _XfdfDocument } from "../src/pdf/core/import-export/xfdf-document";
 import { PdfForm } from "../src/pdf/core/form/form";
-import { PdfPage } from "../src/pdf/core/pdf-page";
+import { PdfDestination, PdfPage } from "../src/pdf/core/pdf-page";
+import { Rectangle, Point, PdfColor } from "../src/pdf/core/pdf-type";
+import { _XmlWriter } from '../src/pdf/core/import-export/xml-writer';
 import { _PdfDictionary, _PdfName, _PdfReference } from "../src/pdf/core/pdf-primitives";
 import { _bytesToString, _decodeText, _decodeUtf16Bytes, _trimTailIfMatches, _updateBounds } from "../src/pdf/core/utils";
 import { ttfArialBase64 } from "./font-input.spec";
@@ -3484,6 +3486,29 @@ describe('Viewer Reported Issues', () => {
         textMarkupAnnot.boundsCollection = [{ x: 35, y: 49, width: 76, height: 13 }, {x: 20, y: 90, width: 100, height: 20}];
         textMarkupAnnot.setAppearance(true);
         page.annotations.add(textMarkupAnnot);
+        const redactionBounds: Rectangle = { x: 50, y: 100, width: 100, height: 50 };
+        const redactionAnnot: PdfRedactionAnnotation = new PdfRedactionAnnotation(redactionBounds);
+        redactionAnnot.boundsCollection = [redactionBounds];
+        redactionAnnot.author = 'Guest';
+        redactionAnnot.subject = 'Redact';
+        redactionAnnot.setAppearance(true);
+        page.annotations.add(redactionAnnot);
+        // Ink annotation
+        const inkStroke1: Point[] = [
+            { x: 50, y: 100 },
+            { x: 80, y: 120 },
+            { x: 110, y: 100 }
+        ];
+        const inkStroke2: Point[] = [
+            { x: 50, y: 150 },
+            { x: 75, y: 170 }
+        ];
+        const inkAnnot: PdfInkAnnotation = new PdfInkAnnotation(
+            { x: 50, y: 100, width: 60, height: 70 },
+            inkStroke1
+        );
+        inkAnnot.inkPointsCollection = [inkStroke1, inkStroke2];
+        page.annotations.add(inkAnnot);
         var savedDDoc = document.save();
         document.destroy();
         document = new PdfDocument(savedDDoc);
@@ -3491,6 +3516,27 @@ describe('Viewer Reported Issues', () => {
         let newAnnot = newPage.annotations.at(0) as PdfTextMarkupAnnotation;
         expect(newAnnot.bounds).toEqual({x: 20, y: 49, width: 100, height: 61});
         expect(newAnnot.boundsCollection).toEqual([{x: 35, y: 49, width: 76, height: 13}, {x: 20, y: 90, width: 100, height: 20}]);
+        const reloadedPage: PdfPage = document.getPage(0);
+        expect(reloadedPage.annotations.count).toBeGreaterThanOrEqual(3);
+        // Validate redaction annotation
+        const loadedRedaction: PdfRedactionAnnotation =
+            reloadedPage.annotations.at(1) as PdfRedactionAnnotation;
+        expect(loadedRedaction.boundsCollection).toBeDefined();
+        expect(loadedRedaction.boundsCollection.length).toBe(1);
+        expect(loadedRedaction.boundsCollection[0].x).toBe(50);
+        expect(loadedRedaction.boundsCollection[0].y).toBe(100);
+        expect(loadedRedaction.boundsCollection[0].width).toBe(100);
+        expect(loadedRedaction.boundsCollection[0].height).toBe(50);
+        // Validate ink annotation
+        const loadedInk: PdfInkAnnotation =
+            reloadedPage.annotations.at(2) as PdfInkAnnotation;
+        expect(loadedInk.inkPointsCollection).toBeDefined();
+        expect(loadedInk.inkPointsCollection[0][0].x).toBe(50);
+        expect(loadedInk.inkPointsCollection[0][0].y).toBe(100);
+        expect(loadedInk.inkPointsCollection[0][1].x).toBe(80);
+        expect(loadedInk.inkPointsCollection[0][1].y).toBe(120);
+        expect(loadedInk.inkPointsCollection[0][2].x).toBe(110);
+        expect(loadedInk.inkPointsCollection[0][2].y).toBe(100);
         document.destroy();
     });
 	it('1025945 - Free Text Font issue', () => {
@@ -3876,6 +3922,609 @@ describe('Viewer Reported Issues', () => {
         importDoc.destroy();
         document.destroy();
     });
+    it('1021081 - XFDF ColorSpace coverage', () => {
+        const xfdf: any = new _XfdfDocument();
+        const writer: _XmlWriter = new _XmlWriter(true);
+        const dictionary: _PdfDictionary = new _PdfDictionary();
+        dictionary.set('ColorSpace', ['RGB', 1, 0, 0]);
+        writer._writeStartElement('ROOT');
+        xfdf._writeObject(
+            writer,
+            ['Dummy'],
+            dictionary,
+            'ColorSpace'
+        );
+        xfdf._isColoSpace = true;
+        xfdf._writeObject(
+            writer,
+            'RGB',
+            dictionary,
+            'ColorSpace'
+        );
+        writer._writeEndElement();
+        const result: string = _bytesToString(writer.buffer, true);
+        expect(result).toContain('<ARRAY KEY="ColorSpace">');
+        // RGB -> 524742
+        expect(result).toContain('524742');
+        expect(result).toContain('MODE="RAW"');
+        expect(result).toContain('ENCODING="HEX"');
+        // STRING branch
+        expect(result).toContain('<STRING KEY="ColorSpace"');
+        expect(result).toContain('VAL="524742"');
+        writer._destroy();
+    });
+    it('1041130 - FreeText visible issue with fill color issue coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage(0);
+        let annot: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({
+            x: 50,
+            y: 100,
+            width: 100,
+            height: 50,
+        });
+        annot.author = 'Guest';
+        annot.flags = PdfAnnotationFlag.print;
+        annot.subject = 'Text Box';
+        annot.lineEndingStyle = PdfLineEndingStyle.openArrow;
+        annot.annotationIntent = PdfAnnotationIntent.freeTextTypeWriter;
+        annot.borderColor = { r: 0, g: 0, b: 255 };
+        annot.border.width = 2;
+        annot.bounds = { x: 100, y: 100, width: 113.25, height: 18.75 };
+        annot.text = 'Type Here';
+        annot.color = { r: 255, g: 255, b: 0 };
+        annot.setAppearance(true);
+        page.annotations.add(annot);
+        let updatedData = document.save();
+        document.destroy();
+        document = new PdfDocument(updatedData);
+        page = document.getPage(0) as PdfPage;
+        annot = page.annotations.at(0) as PdfFreeTextAnnotation;
+        let appearance = annot._dictionary.get('AP').get('N')
+        let parser: _ContentParser = new _ContentParser(appearance.getBytes());
+        let result: _PdfRecord[] = parser._readContent();
+        expect(result[0]._operands).toEqual(['/DeviceRGB']);
+        expect(result[0]._operator).toEqual('CS');
+        expect(result[1]._operands).toEqual(['/DeviceRGB']);
+        expect(result[1]._operator).toEqual('cs');
+        expect(result[2]._operands).toEqual(['[]', '0']);
+        expect(result[2]._operator).toEqual('d');
+        expect(result[3]._operands).toEqual(['2.000']);
+        expect(result[3]._operator).toEqual('w');
+        expect(result[4]._operands).toEqual(['0']);
+        expect(result[4]._operator).toEqual('j');
+        expect(result[5]._operands).toEqual(['0']);
+        expect(result[5]._operator).toEqual('J');
+        expect(result[6]._operands).toEqual(['0.000', '0.000', '1.000']);
+        expect(result[6]._operator).toEqual('RG');
+        expect(result[7]._operands).toEqual(['1.000', '1.000', '0.000']);
+        expect(result[7]._operator).toEqual('rg');
+        expect(result[8]._operands).toEqual(['141.000', '684.250', '111.250', '16.750']);
+        expect(result[8]._operator).toEqual('re');
+        expect(result[9]._operands).toEqual([]);
+        expect(result[9]._operator).toEqual('B');
+        expect(result[10]._operands).toEqual([]);
+        expect(result[10]._operator).toEqual('q');
+        expect(result[11]._operands).toEqual(['144.000', '698.000', '105.250', '-8.092']);
+        expect(result[11]._operator).toEqual('re');
+        expect(result[12]._operands).toEqual([]);
+        expect(result[12]._operator).toEqual('W');
+        expect(result[13]._operands).toEqual([]);
+        expect(result[13]._operator).toEqual('n');
+        expect(result[14]._operands).toEqual([]);
+        expect(result[14]._operator).toEqual('BT');
+        expect(result[15]._operands).toEqual(['0.000', '0.000', '0.000']);
+        expect(result[15]._operator).toEqual('rg');
+        expect(result[16]._operator).toEqual('Tf');
+        expect(result[17]._operands).toEqual(['0']);
+        expect(result[17]._operator).toEqual('Tr');
+        expect(result[18]._operands).toEqual(['0.000']);
+        expect(result[18]._operator).toEqual('Tc');
+        expect(result[19]._operands).toEqual(['0.000']);
+        expect(result[19]._operator).toEqual('Tw');
+        expect(result[20]._operands).toEqual(['100.000']);
+        expect(result[20]._operator).toEqual('Tz');
+        expect(result[21]._operands).toEqual([
+            '1.00',
+            '.00',
+            '.00',
+            '1.00',
+            '144.00',
+            '691.48',
+        ]);
+        expect(result[21]._operator).toEqual('Tm');
+        expect(result[22]._operands).toEqual(['(Type Here)']);
+        expect(result[22]._operator).toEqual("'");
+        expect(result[23]._operands).toEqual([]);
+        expect(result[23]._operator).toEqual('ET');
+        expect(result[24]._operands).toEqual([]);
+        expect(result[24]._operator).toEqual('Q');
+        document.destroy();
+    });
+    it('1041999 - Ink isFlatten BBox and Matrix present with aligned values skips Matrix update', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page: PdfPage = document.addPage() as PdfPage;
+        let annot: PdfInkAnnotation = new PdfInkAnnotation(
+            { x: 0, y: 0, width: 100, height: 50 },
+            [{ x: 0, y: 0 }, { x: 50, y: 25 }, { x: 100, y: 0 }]
+        );
+        annot.color = { r: 0, g: 0, b: 255 };
+        annot.border.width = 1;
+        annot.opacity = 1;
+        annot.inkPointsCollection = [[{ x: 0, y: 0 }, { x: 50, y: 25 }, { x: 100, y: 0 }]];
+        annot.setAppearance(true);
+        page.annotations.add(annot);
+        let output: Uint8Array = document.save();
+        document.destroy();
+        document = new PdfDocument(output);
+        annot = document.getPage(0).annotations.at(0) as PdfInkAnnotation;
+        let appearance = annot._dictionary.get('AP').get('N');
+        appearance.dictionary.update('Matrix', [1, 0, 0, 1, 50, 50]);
+        document._crossReference._cacheMap.set(annot._dictionary.get('AP').getRaw('N') as _PdfReference, appearance);
+        annot.flatten = true;
+        output = document.save();
+        document.destroy();
+        document = new PdfDocument(output);
+        page = document.getPage(0) as PdfPage;
+        let resources = page._pageDictionary.get('Resources');
+        let xObject = resources.get('XObject');
+        expect(xObject.size).toEqual(1);
+        xObject.forEach((key: string, value: any) => {
+            let stream: any = xObject.get(key);
+            let bbox = stream.dictionary.get('BBox');
+            let matrix = stream.dictionary.get('Matrix');
+            expect(bbox[0]).toEqual(-matrix[4]);
+            expect(bbox[1]).toEqual(-matrix[5]);
+        });
+        document.destroy();
+    });
+    it('1041619 - form coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage(0);
+        let form: PdfForm = document.form;
+        let dictionary = new _PdfDictionary(document._crossReference);
+        dictionary.update('FT', new _PdfName('Tx'));
+        dictionary.update('Subtype', new _PdfName('Widget'));
+        dictionary.update('Type', new _PdfName('Annot'));
+        dictionary.update('T', 'Text Box');
+        dictionary.update('P', page._ref);
+        let fieldRef = document._crossReference._getNextReference();
+        document._crossReference._cacheMap.set(fieldRef, dictionary);
+        page._pageDictionary.update('Annots', [fieldRef]);
+        expect(form._terminalFields.length).toEqual(0);
+        let updatedData = document.save();
+        document.destroy();
+        document = new PdfDocument(updatedData);
+        form = document.form;
+        expect(form.count).toEqual(0);
+        expect(form._terminalFields.length).toEqual(0);
+        document.destroy();
+    });
+    it('1043673 - Ink Rotate issue appearance and flatten', () => {
+        let document: PdfDocument = new PdfDocument();
+        let pageSettings: PdfPageSettings = new PdfPageSettings({rotation: PdfRotationAngle.angle180});
+        document.addPage(pageSettings);
+        let page: PdfPage = document.getPage(0) as PdfPage;
+        let linePoints: Point[] = [
+            { x: 696.4005540281862, y: 173.5398351648352 },
+            { x: 696.2329716106037, y: 172.19917582417582 },
+            { x: 695.562641940274, y: 161.80906593406593 },
+            { x: 695.562641940274, y: 152.59203296703305 },
+            { x: 696.0653891930214, y: 148.73763736263737 },
+            { x: 696.5681364457686, y: 146.7266483516484 },
+            { x: 697.0708836985158, y: 144.3804945054946 },
+            { x: 697.2384661160983, y: 144.21291208791212 },
+            { x: 697.2384661160983, y: 143.87774725274727 },
+        ];
+        let linePointCollection: Point[] = [
+            { x: 696.4892312269945, y: 157.1167582417583 },
+            { x: 694.8923122699445, y: 157.1167582417583 },
+            { x: 694.724729852362, y: 157.1167582417583 },
+            { x: 694.0544001820323, y: 157.1167582417583 },
+            { x: 693.2164880941202, y: 157.1167582417583 },
+            { x: 688.3565979842301, y: 156.4464285714286 },
+            { x: 687.1835210611532, y: 156.27884615384625 },
+            { x: 685.507696885329, y: 156.11126373626377 },
+            { x: 682.1560485336806, y: 155.77609890109892 },
+            { x: 679.6423122699445, y: 155.2733516483517 },
+            { x: 677.1285760062082, y: 154.93818681318686 },
+            { x: 672.7714331490653, y: 154.26785714285717 },
+            { x: 670.9280265556587, y: 154.1002747252748 },
+            { x: 670.0901144677466, y: 154.1002747252748 },
+            { x: 669.7549496325818, y: 154.1002747252748 },
+            { x: 669.4197847974169, y: 153.76510989010995 },
+            { x: 669.4197847974169, y: 153.76510989010995 },
+            { x: 669.0846199622521, y: 153.76510989010995 },
+            { x: 668.7494551270872, y: 153.76510989010995 },
+            { x: 668.24670787434, y: 153.59752747252747 },
+            { x: 668.0791254567575, y: 153.59752747252747 },
+            { x: 667.9115430391752, y: 153.59752747252747 },
+        ];
+        let annot: PdfInkAnnotation = new PdfInkAnnotation({ x: 667.9115430391752, y: 438.4601648351648, width: 29.32692307692308, height: 29.829670329670332 }, linePoints);
+        annot.bounds = { x: 667.9115430391752, y: 438.4601648351648, width: 29.32692307692308, height: 29.829670329670332 };
+        annot.color = { r: 0, g: 0, b: 0 };
+        annot.flags = 4;
+        annot.border.width = 0;
+        annot.inkPointsCollection.push(linePointCollection);
+        annot._dictionary.set('T', 'Signature1');
+        annot.rotationAngle = 3;
+        annot.setAppearance(true);
+        page.annotations.add(annot);
+        let data = document.save();
+        let appearance = annot._dictionary.get('AP').get('N');
+        expect(appearance.dictionary.get('Matrix')).toEqual([1, 0, 0, 1, -667.9115430391752, -143.87774725274727]);
+        document.destroy();
+        document = new PdfDocument(data);
+        page = document.getPage(0) as PdfPage;
+        annot = page.annotations.at(0) as PdfInkAnnotation;
+        annot.rotationAngle = 2;
+        annot.flatten = true;
+        data = document.save();
+        document.destroy();
+        document = new PdfDocument(data);
+        page = document.getPage(0) as PdfPage;
+        expect(page.annotations.count).toEqual(0);
+        let resources = page._pageDictionary.get('Resources');
+        let xObject = resources.get('XObject');
+        expect(xObject.size).toEqual(1);
+        xObject.forEach((key: string, value: any) => {
+            let stream: any = xObject.get(key);
+            let matrix = stream.dictionary.get('Matrix');
+            expect(matrix).toEqual([1, 0, 0, 1, -667.911543, -143.8777473]);
+        });
+        document.destroy();
+    });
+    it('1050184 - Polygon And PolyLine dashed border coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage() as PdfPage;
+        let polylineAnnotation: PdfPolyLineAnnotation =
+            new PdfPolyLineAnnotation(
+                JSON.parse(
+                    '[{"x":292.5,"y":741.75},{"x":372,"y":647.25},{"x":230.25,"y":675},{"x":291.75,"y":740.25},{"x":291.75,"y":740.25}]'
+                )
+            );
+        polylineAnnotation.author = 'Guest';
+        polylineAnnotation.text = '4.97 in';
+        polylineAnnotation._dictionary.set(
+            'NM',
+            'a8c09ecb-6c20-4927-e812-64544d95c1e1'
+        );
+        polylineAnnotation.subject = 'Perimeter calculation';
+        const strokeColor: any = JSON.parse(`{"r":255,"g":0,"b":0,"a":1}`);
+        const color: PdfColor = {
+            r: strokeColor.r,
+            g: strokeColor.g,
+            b: strokeColor.b,
+        };
+        polylineAnnotation.color = color;
+        polylineAnnotation._dictionary.update('FillOpacity', 0);
+        polylineAnnotation.opacity = 1;
+        const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
+        lineBorder.width = 1;
+        lineBorder.style = PdfBorderStyle.dashed;
+        lineBorder.dash = [20, 5];
+        polylineAnnotation.border = lineBorder;
+        polylineAnnotation.rotationAngle = 0;
+        polylineAnnotation.beginLineStyle = PdfLineEndingStyle.openArrow;
+        polylineAnnotation.endLineStyle = PdfLineEndingStyle.openArrow;
+        polylineAnnotation.modifiedDate = new Date();
+        const bounds: any = JSON.parse(
+            `{"left":307,"top":67,"height":126,"width":189,"right":496,"bottom":193}`
+        );
+        polylineAnnotation.bounds = bounds;
+        polylineAnnotation.bounds.x = bounds.left;
+        polylineAnnotation.bounds.y = bounds.top;
+        polylineAnnotation.lineExtension = 30;
+        polylineAnnotation._dictionary.set(
+            'IT',
+            _PdfName.get('PolyLineDimension')
+        );
+        const measureDetail: any = JSON.parse(
+            '{"ratio":"1 in = 1 in","x":[{"unit":"in","fractionalType":"D","conversionFactor":0.013888888888888888,"denominator":100,"formatDenominator":false}],"distance":"[{\\"unit\\":\\"in\\",\\"fractionalType\\":\\"D\\",\\"conversionFactor\\":1,\\"denominator\\":100,\\"formatDenominator\\":false}]","area":"[{\\"unit\\":\\"sq in\\",\\"fractionalType\\":\\"D\\",\\"conversionFactor\\":1,\\"denominator\\":100,\\"formatDenominator\\":false}]"}'
+        );
+        if (measureDetail) {
+            polylineAnnotation._dictionary.set(
+                'Measure',
+                setMeasureDictionary(measureDetail)
+            );
+        }
+        polylineAnnotation.setAppearance(true);
+        page.annotations.add(polylineAnnotation);
+        let annot: PdfPolygonAnnotation = new PdfPolygonAnnotation([{ x: 100, y: 300 }, { x: 150, y: 200 }, { x: 300, y: 200 }, { x: 350, y: 300 }, { x: 300, y: 400 }, { x: 150, y: 400 }]);
+        annot.author = 'Syncfusion';
+        annot.border.width = 5;
+        annot.border.style = PdfBorderStyle.dashed;
+        annot.flags = PdfAnnotationFlag.print;
+        annot.border.dash = [2, 2];
+        annot.bounds = { x: 100, y: 150, width: 200, height: 100 };
+        annot.color = { r: 255, g: 255, b: 0 };
+        annot.innerColor = { r: 0, g: 0, b: 255 };
+        annot.lineExtension = 2;
+        annot.name = 'Poly Annot';
+        annot.subject = 'Annotation';
+        annot.text = 'Polygon';
+        annot.setAppearance(true);
+        page.annotations.add(annot);
+        let updatedData = document.save();
+        document.destroy();
+        document = new PdfDocument(updatedData);
+        page = document.getPage(0) as PdfPage;
+        polylineAnnotation = page.annotations.at(0) as PdfPolyLineAnnotation;
+        expect(polylineAnnotation.border.dash).toEqual([20, 5]);
+        expect(polylineAnnotation.border.style).toEqual(PdfBorderStyle.dashed);
+        let appearance = polylineAnnotation._dictionary.get('AP').get('N')
+        let parser: _ContentParser = new _ContentParser(appearance.getBytes());
+        let result: _PdfRecord[] = parser._readContent();
+        expect(result[0]._operator).toBe('q');
+        expect(result[0]._operands).toEqual([]);
+        expect(result[1]._operator).toBe('CS');
+        expect(result[1]._operands).toEqual(['/DeviceRGB']);
+        expect(result[2]._operator).toBe('cs');
+        expect(result[2]._operands).toEqual(['/DeviceRGB']);
+        expect(result[3]._operator).toBe('d');
+        expect(result[3]._operands).toEqual(['[20 5]', '0']);
+        expect(result[4]._operator).toBe('w');
+        expect(result[4]._operands).toEqual(['1.000']);
+        expect(result[5]._operator).toBe('j');
+        expect(result[5]._operands).toEqual(['0']);
+        expect(result[6]._operator).toBe('J');
+        expect(result[6]._operands).toEqual(['0']);
+        expect(result[7]._operator).toBe('RG');
+        expect(result[7]._operands).toEqual(['1.000', '0.000', '0.000']);
+        expect(result[8]._operator).toBe('m');
+        expect(result[8]._operands).toEqual(['293.144', '740.985']);
+        expect(result[9]._operator).toBe('l');
+        expect(result[9]._operands).toEqual(['372.000', '647.250']);
+        expect(result[10]._operator).toBe('l');
+        expect(result[10]._operands).toEqual(['230.250', '675.000']);
+        expect(result[11]._operator).toBe('l');
+        expect(result[11]._operands).toEqual(['291.750', '740.250']);
+        expect(result[12]._operator).toBe('l');
+        expect(result[12]._operands).toEqual(['291.750', '740.250']);
+        expect(result[13]._operator).toBe('S');
+        expect(result[13]._operands).toEqual([]);
+        expect(result[14]._operator).toBe('d');
+        expect(result[14]._operands).toEqual(['[20 5]', '0']);
+        expect(result[15]._operator).toBe('w');
+        expect(result[15]._operands).toEqual(['1.000']);
+        expect(result[16]._operator).toBe('j');
+        expect(result[16]._operands).toEqual(['0']);
+        expect(result[17]._operator).toBe('J');
+        expect(result[17]._operands).toEqual(['0']);
+        expect(result[18]._operator).toBe('RG');
+        expect(result[18]._operands).toEqual(['1.000', '0.000', '0.000']);
+        expect(result[19]._operator).toBe('m');
+        expect(result[19]._operands).toEqual(['293.144', '740.985']);
+        expect(result[20]._operator).toBe('l');
+        expect(result[20]._operands).toEqual(['301.605', '737.917']);
+        expect(result[21]._operator).toBe('l');
+        expect(result[21]._operands).toEqual(['293.144', '740.985']);
+        expect(result[22]._operator).toBe('l');
+        expect(result[22]._operands).toEqual(['294.718', '732.123']);
+        expect(result[23]._operator).toBe('S');
+        expect(result[23]._operands).toEqual([]);
+        expect(result[24]._operator).toBe('d');
+        expect(result[24]._operands).toEqual(['[20 5]', '0']);
+        expect(result[25]._operator).toBe('w');
+        expect(result[25]._operands).toEqual(['1.000']);
+        expect(result[26]._operator).toBe('j');
+        expect(result[26]._operands).toEqual(['0']);
+        expect(result[27]._operator).toBe('J');
+        expect(result[27]._operands).toEqual(['0']);
+        expect(result[28]._operator).toBe('RG');
+        expect(result[28]._operands).toEqual(['1.000', '0.000', '0.000']);
+        expect(result[29]._operator).toBe('m');
+        expect(result[29]._operands).toEqual(['291.750', '741.250']);
+        expect(result[30]._operator).toBe('l');
+        expect(result[30]._operands).toEqual(['296.250', '749.044']);
+        expect(result[31]._operator).toBe('l');
+        expect(result[31]._operands).toEqual(['291.750', '741.250']);
+        expect(result[32]._operator).toBe('l');
+        expect(result[32]._operands).toEqual(['287.250', '749.044']);
+        expect(result[33]._operator).toBe('S');
+        expect(result[33]._operands).toEqual([]);
+        expect(result[34]._operator).toBe('Q');
+        expect(result[34]._operands).toEqual([]);
+        expect(result).not.toBeUndefined();
+        annot = page.annotations.at(1) as PdfPolygonAnnotation;
+        expect(annot.border.dash).toEqual([2, 2]);
+        expect(annot.border.style).toEqual(PdfBorderStyle.dashed);
+        appearance = annot._dictionary.get('AP').get('N')
+        parser = new _ContentParser(appearance.getBytes());
+        result = parser._readContent();
+        expect(result[0]._operator).toBe('q');
+        expect(result[0]._operands).toEqual([]);
+        expect(result[1]._operator).toBe('CS');
+        expect(result[1]._operands).toEqual(['/DeviceRGB']);
+        expect(result[2]._operator).toBe('cs');
+        expect(result[2]._operands).toEqual(['/DeviceRGB']);
+        expect(result[3]._operator).toBe('d');
+        expect(result[3]._operands).toEqual(['[2 2]', '0']);
+        expect(result[4]._operator).toBe('w');
+        expect(result[4]._operands).toEqual(['5.000']);
+        expect(result[5]._operator).toBe('j');
+        expect(result[5]._operands).toEqual(['0']);
+        expect(result[6]._operator).toBe('J');
+        expect(result[6]._operands).toEqual(['0']);
+        expect(result[7]._operator).toBe('RG');
+        expect(result[7]._operands).toEqual(['1.000', '1.000', '0.000']);
+        expect(result[8]._operator).toBe('rg');
+        expect(result[8]._operands).toEqual(['0.000', '0.000', '1.000']);
+        expect(result[9]._operator).toBe('m');
+        expect(result[9]._operands).toEqual(['100.000', '300.000']);
+        expect(result[10]._operator).toBe('l');
+        expect(result[10]._operands).toEqual(['150.000', '200.000']);
+        expect(result[11]._operator).toBe('l');
+        expect(result[11]._operands).toEqual(['300.000', '200.000']);
+        expect(result[12]._operator).toBe('l');
+        expect(result[12]._operands).toEqual(['350.000', '300.000']);
+        expect(result[13]._operator).toBe('l');
+        expect(result[13]._operands).toEqual(['300.000', '400.000']);
+        expect(result[14]._operator).toBe('l');
+        expect(result[14]._operands).toEqual(['150.000', '400.000']);
+        expect(result[15]._operator).toBe('l');
+        expect(result[15]._operands).toEqual(['100.000', '300.000']);
+        expect(result[16]._operator).toBe('b');
+        expect(result[16]._operands).toEqual([]);
+        expect(result[17]._operator).toBe('Q');
+        expect(result[17]._operands).toEqual([]);
+    });
+    it('1049280 - FreeText Callout flatten issue', () => {
+        let pdf: PdfDocument = new PdfDocument();
+        let page: PdfPage = pdf.addPage();
+        let freeText: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(
+            { x: 50, y: 100, width: 100, height: 50 },
+            {
+                text: 'Free Text with Callout',
+                annotationIntent: PdfAnnotationIntent.freeTextCallout,
+                calloutLines: [
+                    { x: 200, y: 250 },
+                    { x: 200, y: 200 },
+                    { x: 100, y: 150 },
+                ],
+                lineEndingStyle: PdfLineEndingStyle.openArrow,
+                font: pdf.embedFont(PdfFontFamily.helvetica, 7, PdfFontStyle.regular),
+                textMarkUpColor: { r: 0, g: 0, b: 0 },
+                borderColor: { r: 250, g: 0, b: 0 },
+                opacity: 0.5,
+                border: new PdfAnnotationBorder({
+                    width: 0.5,
+                    hRadius: 0,
+                    vRadius: 0,
+                    style: PdfBorderStyle.solid,
+                }),
+            }
+        );
+        freeText.flags = PdfAnnotationFlag.default;
+        freeText.color = { r: 250, g: 250, b: 0 };
+        freeText.borderColor
+        freeText.setAppearance(true);
+        freeText.flatten = true;
+        page.annotations.add(freeText);
+        let updatedData = pdf.save();
+        pdf.destroy();
+        let document: PdfDocument = new PdfDocument(updatedData);
+        page = document.getPage(0);
+        let resources = page._pageDictionary.get('Resources');
+        let xObject = resources.get('XObject');
+        expect(xObject.size).toEqual(1);
+        xObject.forEach((key: string, value: any) => {
+            let stream: any = xObject.get(key);
+            let parser = new _ContentParser(stream.getBytes());
+            let result = parser._readContent();
+            expect(result[0]._operator).toBe('CS');
+            expect(result[0]._operands).toEqual(['/DeviceRGB']);
+            expect(result[1]._operator).toBe('cs');
+            expect(result[1]._operands).toEqual(['/DeviceRGB']);
+            expect(result[2]._operator).toBe('d');
+            expect(result[2]._operands).toEqual(['[]', '0']);
+            expect(result[3]._operator).toBe('w');
+            expect(result[3]._operands).toEqual(['0.500']);
+            expect(result[4]._operator).toBe('j');
+            expect(result[4]._operands).toEqual(['0']);
+            expect(result[5]._operator).toBe('J');
+            expect(result[5]._operands).toEqual(['0']);
+            expect(result[6]._operator).toBe('RG');
+            expect(result[6]._operands).toEqual(['0.980', '0.000', '0.000']);
+            expect(result[7]._operator).toBe('m');
+            expect(result[7]._operands).toEqual(['240.000', '552.000']);
+            expect(result[8]._operator).toBe('l');
+            expect(result[8]._operands).toEqual(['240.000', '602.000']);
+            expect(result[9]._operator).toBe('l');
+            expect(result[9]._operands).toEqual(['140.000', '652.000']);
+            expect(result[10]._operator).toBe('S');
+            expect(result[10]._operands).toEqual([]);
+            expect(result[11]._operator).toBe('d');
+            expect(result[11]._operands).toEqual(['[]', '0']);
+            expect(result[12]._operator).toBe('w');
+            expect(result[12]._operands).toEqual(['0.500']);
+            expect(result[13]._operator).toBe('j');
+            expect(result[13]._operands).toEqual(['0']);
+            expect(result[14]._operator).toBe('J');
+            expect(result[14]._operands).toEqual(['0']);
+            expect(result[15]._operator).toBe('RG');
+            expect(result[15]._operands).toEqual(['0.980', '0.000', '0.000']);
+            expect(result[16]._operator).toBe('m');
+            expect(result[16]._operands).toEqual(['240.000', '552.500']);
+            expect(result[17]._operator).toBe('l');
+            expect(result[17]._operands).toEqual(['242.250', '556.397']);
+            expect(result[18]._operator).toBe('l');
+            expect(result[18]._operands).toEqual(['240.000', '552.500']);
+            expect(result[19]._operator).toBe('l');
+            expect(result[19]._operands).toEqual(['237.750', '556.397']);
+            expect(result[20]._operator).toBe('S');
+            expect(result[20]._operands).toEqual([]);
+            expect(result[21]._operator).toBe('q');
+            expect(result[21]._operands).toEqual([]);
+            expect(result[22]._operator).toBe('gs');
+            expect(result[23]._operator).toBe('d');
+            expect(result[23]._operands).toEqual(['[]', '0']);
+            expect(result[24]._operator).toBe('w');
+            expect(result[24]._operands).toEqual(['0.500']);
+            expect(result[25]._operator).toBe('j');
+            expect(result[25]._operands).toEqual(['0']);
+            expect(result[26]._operator).toBe('J');
+            expect(result[26]._operands).toEqual(['0']);
+            expect(result[27]._operator).toBe('RG');
+            expect(result[27]._operands).toEqual(['0.980', '0.000', '0.000']);
+            expect(result[28]._operator).toBe('rg');
+            expect(result[28]._operands).toEqual(['0.980', '0.980', '0.000']);
+            expect(result[29]._operator).toBe('re');
+            expect(result[29]._operands).toEqual([
+                '90.000',
+                '652.000',
+                '100.000',
+                '50.000',
+            ]);
+            expect(result[30]._operator).toBe('B');
+            expect(result[30]._operands).toEqual([]);
+            expect(result[31]._operator).toBe('q');
+            expect(result[31]._operands).toEqual([]);
+            expect(result[32]._operator).toBe('re');
+            expect(result[32]._operands).toEqual([
+                '90.750',
+                '701.250',
+                '98.500',
+                '-8.092',
+            ]);
+            expect(result[33]._operator).toBe('W');
+            expect(result[33]._operands).toEqual([]);
+            expect(result[34]._operator).toBe('n');
+            expect(result[34]._operands).toEqual([]);
+            expect(result[35]._operator).toBe('BT');
+            expect(result[35]._operands).toEqual([]);
+            expect(result[36]._operator).toBe('rg');
+            expect(result[36]._operands).toEqual(['0.000', '0.000', '0.000']);
+            expect(result[37]._operator).toBe('Tf');
+            expect(result[38]._operator).toBe('Tr');
+            expect(result[38]._operands).toEqual(['0']);
+            expect(result[39]._operator).toBe('Tc');
+            expect(result[39]._operands).toEqual(['0.000']);
+            expect(result[40]._operator).toBe('Tw');
+            expect(result[40]._operands).toEqual(['0.000']);
+            expect(result[41]._operator).toBe('Tz');
+            expect(result[41]._operands).toEqual(['100.000']);
+            expect(result[42]._operator).toBe('Tm');
+            expect(result[42]._operands).toEqual([
+                '1.00',
+                '.00',
+                '.00',
+                '1.00',
+                '90.75',
+                '694.73',
+            ]);
+            expect(result[43]._operator).toBe("'");
+            expect(result[43]._operands).toEqual([
+                '(Free Text with Callout)',
+            ]);
+            expect(result[44]._operator).toBe('ET');
+            expect(result[44]._operands).toEqual([]);
+            expect(result[45]._operator).toBe('Q');
+            expect(result[45]._operands).toEqual([]);
+            expect(result[46]._operator).toBe('Q');
+            expect(result[46]._operands).toEqual([]);
+        });
+        document.destroy();
+    });
 });
 describe('1023771 - PdfForm internal methods coverage', () => {
     let document: PdfDocument;
@@ -4255,9 +4904,8 @@ describe('1023771 - PdfForm internal methods coverage', () => {
     });
 
     it('_createFormFieldsFromWidgets - returns early when no terminalFields', () => {
-        form._terminalFields = null;
         form._createFormFieldsFromWidgets(0);
-        expect(form._terminalFields).toBeNull();
+        expect(form._terminalFields).not.toBeNull();
     });
 
     it('_createFormFieldsFromWidgets - returns early when terminalFields empty', () => {
@@ -4607,5 +5255,27 @@ describe('1026363 - allowImportCustomData full coverage', () => {
         expect(exportValue).toEqual('CustomValue');
         expect(exportValue).not.toEqual('Yes');
         document.destroy();
+    });
+    it('1049054 - Destination location issue1', () => {
+        let document: PdfDocument = new PdfDocument();
+        let pageSettings: PdfPageSettings = new PdfPageSettings({rotation: PdfRotationAngle.angle270});
+        let page: PdfPage = document.addPage(pageSettings);
+        let annotation: PdfDocumentLinkAnnotation = new PdfDocumentLinkAnnotation({ x: 195.75, y: 150, width: 56.25, height: 112.75, });
+        let destination: PdfDestination = new PdfDestination( page, { x: 462, y: 75 }, { zoom: 4, mode: PdfDestinationMode.location } );
+        annotation.destination = destination;
+        annotation.opacity = 1;
+        const color: PdfColor = { r: 0, g: 0, b: 0, };
+        annotation.color = color;
+        annotation.setAppearance(true);
+        page.annotations.add(annotation);
+        const outputDoc = document.save();
+        document.destroy();
+        const newDoc = new PdfDocument(outputDoc);
+        const newPag = newDoc.getPage(0);
+        annotation = newPag.annotations.at(0) as PdfDocumentLinkAnnotation;
+        let points: Point = annotation.destination.location;
+        expect(points.x).toBe(462);
+        expect(points.y).toBe(75);
+        newDoc.destroy();
     });
 });

@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/bootstrap4' as *;
-@forward 'ej2-base/styles/definition/bootstrap4';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $radio-btn-background-color: $content-bg !default;
 $radio-btn-border: 1px solid !default;
 $radio-btn-border-color: $gray-500 !default;

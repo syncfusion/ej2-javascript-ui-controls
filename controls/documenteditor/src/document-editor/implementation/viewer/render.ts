@@ -198,6 +198,12 @@ export class Renderer {
         if (this.documentHelper.compatibilityMode === 'Word2003') {
             headerFooterHeight = this.getScaledValue(page.boundingRectangle.height) / 100 * 50;
         }
+        if (isNullOrUndefined(page.bodyWidgets)
+            || page.bodyWidgets.length === 0
+            || isNullOrUndefined(page.bodyWidgets[0])
+            || isNullOrUndefined(page.bodyWidgets[0].sectionFormat)) {
+            return;
+        }
         if (isHeader) {
             const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
             const widgetHeight: number = Math.max((widget.y + widget.height), topMargin);
@@ -565,7 +571,7 @@ export class Renderer {
             && !(this.documentHelper.compatibilityMode !== 'Word2013'
             && (floatingElement.isBelowText
             && floatingElement.textWrappingStyle !== 'InFrontOfText')))
-            || (floatingElement instanceof ShapeElementBox
+            || ((floatingElement instanceof ShapeElementBox || floatingElement instanceof GroupShapeElementBox)
             && floatingElement.textWrappingStyle !== 'Inline'
             && floatingElement.textWrappingStyle !== 'Behind'
             && !(this.documentHelper.compatibilityMode !== 'Word2013'
@@ -1105,9 +1111,27 @@ private calculatePathBounds(data: string): Rect {
         let lineWidth: number = 0;
         let firstLine: LineWidget = paragraphWidet.firstChild as LineWidget;
         let lastLine: LineWidget = paragraphWidet.lastChild as LineWidget;
+        let bottomMargin: number = this.getBottomMargin(paragraphWidet);
+        let sumOfLineHeights: number = 0;
+        for (let i: number = 0; i < paragraphWidet.childWidgets.length; i++) {
+            sumOfLineHeights += (paragraphWidet.childWidgets[i] as LineWidget).height;
+        }
+        let paraHeight: number = Number(paragraphWidet.height.toFixed(2));
+        sumOfLineHeights = Number(sumOfLineHeights.toFixed(2));
+        if (sumOfLineHeights > paraHeight) {
+            let heightDifference: number = sumOfLineHeights - paraHeight;
+            bottomMargin = bottomMargin - heightDifference;
+        }
         let canRenderParagraphBorders: BorderRenderInfo = this.documentHelper.canRenderBorder(paragraphWidet);
         if (!isNullOrUndefined(leftBorder) && leftBorder.lineStyle !== 'None') {
-            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) - HelperMethods.convertPointToPixel(leftBorder.space);
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) - HelperMethods.convertPointToPixel(leftBorder.space + leftBorder.lineWidth);
+            if (paragraphWidet.containerWidget instanceof TextFrame) {
+                let shape: ShapeElementBox =
+                    (paragraphWidet.containerWidget as TextFrame).containerShape as ShapeElementBox;
+                if (shape.x > startX) {
+                    startX += HelperMethods.convertPointToPixel(leftBorder.lineWidth);
+                }
+            }
             endX = startX;
             endY = startY + paragraphWidet.height;
             if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
@@ -1119,7 +1143,7 @@ private calculatePathBounds(data: string): Rect {
                 endY = startY + paragraphWidet.height;
             }
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
-                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
+                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - bottomMargin;
             }
             lineWidth = HelperMethods.convertPointToPixel(leftBorder.lineWidth);
             this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, lineWidth, leftBorder.lineStyle);
@@ -1130,16 +1154,23 @@ private calculatePathBounds(data: string): Rect {
             startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
             endY = startY;
             if (leftBorder.lineStyle !== 'None') {
-                startX -= HelperMethods.convertPointToPixel(leftBorder.space);
+                startX -= HelperMethods.convertPointToPixel(leftBorder.space + leftBorder.lineWidth);
             }
             if (rightBorder.lineStyle !== 'None') {
-                endX += HelperMethods.convertPointToPixel(rightBorder.space);
+                endX += HelperMethods.convertPointToPixel(rightBorder.space + rightBorder.lineWidth);
             }
             lineWidth = HelperMethods.convertPointToPixel(topBorder.lineWidth);
             this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, lineWidth, topBorder.lineStyle);
         }
         if (!isNullOrUndefined(rightBorder) && rightBorder.lineStyle !== 'None') {
-            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space + rightBorder.lineWidth);
+            if (paragraphWidet.containerWidget instanceof TextFrame) {
+                let shape: ShapeElementBox =
+                    (paragraphWidet.containerWidget as TextFrame).containerShape as ShapeElementBox;
+                if (shape.x + shape.width < startX) {
+                    startX -= HelperMethods.convertPointToPixel(rightBorder.lineWidth);
+                }
+            }
             startY = endY;
             endX = startX;
             endY = startY + paragraphWidet.height;
@@ -1152,7 +1183,7 @@ private calculatePathBounds(data: string): Rect {
                 endY = startY + paragraphWidet.height
             }
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
-                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
+                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - bottomMargin;
             }
             lineWidth = HelperMethods.convertPointToPixel(rightBorder.lineWidth);
             this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, lineWidth, rightBorder.lineStyle);
@@ -1160,13 +1191,13 @@ private calculatePathBounds(data: string): Rect {
         if (!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
             endX = startX + this.getContainerWidth(paragraphWidet, page);
-            startY = (paragraphWidet.y + paragraphWidet.height + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - (this.getBottomMargin(paragraphWidet));
+            startY = (paragraphWidet.y + paragraphWidet.height + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - (bottomMargin);
             endY = startY;
             if (leftBorder.lineStyle !== 'None') {
-                startX -= HelperMethods.convertPointToPixel(leftBorder.space);
+                startX -= HelperMethods.convertPointToPixel(leftBorder.space + leftBorder.lineWidth);
             }
             if (rightBorder.lineStyle !== 'None') {
-                endX += HelperMethods.convertPointToPixel(rightBorder.space);
+                endX += HelperMethods.convertPointToPixel(rightBorder.space + rightBorder.lineWidth);
             }
             lineWidth = HelperMethods.convertPointToPixel(bottomBorder.lineWidth);
             this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, lineWidth, bottomBorder.lineStyle);
@@ -1283,16 +1314,12 @@ private calculatePathBounds(data: string): Rect {
         }
     }
     private getBottomMargin(paragarph: ParagraphWidget) {
-        if (paragarph.isEmpty()) {
-            return (paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget).margin.bottom;
-        } else {
-            let widget: LineWidget = paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget;
-            let bottomMargin: number = 0;
-            if (!isNullOrUndefined(widget.margin)) {
-                bottomMargin = widget.margin.bottom;
-            }
-            return bottomMargin;
+        let widget: LineWidget = paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget;
+        let bottomMargin: number = 0;
+        if (!isNullOrUndefined(widget.margin)) {
+            bottomMargin = widget.margin.bottom;
         }
+        return bottomMargin;
     }
 
     private renderfootNoteWidget(page: Page, footnote: FootNoteWidget, width: number): void {
@@ -1349,7 +1376,7 @@ private calculatePathBounds(data: string): Rect {
         this.pageContext.restore();
     }
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
-        if (this.isFieldCode) {
+        if (this.isFieldCode || isNullOrUndefined(tableWidget)) {
             return;
         }
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
@@ -1707,6 +1734,9 @@ private calculatePathBounds(data: string): Rect {
         }
     }
     private  renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
+        if (isNullOrUndefined(lineWidget) || isNullOrUndefined(lineWidget.paragraph)) {
+            return;
+        }
         this.renderSelectionHighlight(page, lineWidget, top);
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
         let x: number = left;
@@ -1836,7 +1866,7 @@ private calculatePathBounds(data: string): Rect {
                 }
 
             }
-            if (elementBox instanceof EditRangeEndElementBox && (this.documentHelper.owner.currentUser === elementBox.editRangeStart.user || (elementBox.editRangeStart.group === "Everyone" && elementBox.editRangeStart.user === ""))) {
+            if (elementBox instanceof EditRangeEndElementBox && !isNullOrUndefined(elementBox.editRangeStart) && (this.documentHelper.owner.currentUser === elementBox.editRangeStart.user || (elementBox.editRangeStart.group === "Everyone" && elementBox.editRangeStart.user === ""))) {
                 if (elementBox.editRangeStart.columnFirst==-1 && this.documentHelper.owner.documentEditorSettings.highlightEditableRanges) {
                     var height = elementBox.line.height - elementBox.line.margin.bottom;
                     let xLeft = left;
@@ -1891,9 +1921,14 @@ private calculatePathBounds(data: string): Rect {
                             if (previousParaElement.containerWidget instanceof TableCellWidget) {
                                 xLeft += previousParaElement.x + this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
                             } else {
-                                xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                               if (!isNullOrUndefined(previousParaElement.paragraphFormat.listFormat.list)) {
+                                    xLeft = previousParaElement.x + this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                                }
+                                else {
+                                    xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                                }
                             }
-                            yTop = this.documentHelper.selection.getTop(prevRenderableElement.line);
+                            yTop = this.documentHelper.selection.getTop(prevRenderableElement.line) + prevRenderableElement.line.margin.top;
                         }
                     }
                     if(!isNullOrUndefined(elementBox.properties)){
@@ -2319,10 +2354,10 @@ private calculatePathBounds(data: string): Rect {
         let baselineAlignment: BaselineAlignment = format.hasValue('baselineAlignment') ? format.baselineAlignment : breakCharacterFormat.baselineAlignment;
         bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.hasValue('italic') ? format.italic ? 'italic' : '' : breakCharacterFormat.italic ? 'italic' : '';
-        if (elementBox.paragraph.paragraphFormat.listFormat.listLevel.listLevelPattern === "Bullet" && !format.bold) {
+        if (!isNullOrUndefined(elementBox.paragraph.paragraphFormat.listFormat.listLevel) && elementBox.paragraph.paragraphFormat.listFormat.listLevel.listLevelPattern === "Bullet" && !format.bold) {
             bold = '';
         }
-        if (elementBox.paragraph.paragraphFormat.listFormat.listLevel.listLevelPattern === "Bullet" && !format.italic) {
+        if (!isNullOrUndefined(elementBox.paragraph.paragraphFormat.listFormat.listLevel) && elementBox.paragraph.paragraphFormat.listFormat.listLevel.listLevelPattern === "Bullet" && !format.italic) {
             italic = '';
         }
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
@@ -2509,6 +2544,12 @@ private calculatePathBounds(data: string): Rect {
         let containerWidget: Widget = elementBox.line.paragraph.containerWidget;
         if (containerWidget instanceof TableCellWidget) {
             isHeightType = ((containerWidget as TableCellWidget).ownerRow.rowFormat.heightType === 'Exactly');
+            if (containerWidget.cellFormat.rowSpan > 1 && containerWidget.ownerTable && containerWidget.ownerRow) {
+                let row: TableRowWidget = containerWidget.ownerTable.childWidgets[containerWidget.ownerRow.index + containerWidget.cellFormat.rowSpan - 1] as TableRowWidget;
+                if(!isNullOrUndefined(row)) {
+                    isHeightType = row.rowFormat.heightType === 'Exactly';
+                }
+            }
         }
         let topMargin: number = elementBox.margin.top;
         let leftMargin: number = elementBox.margin.left;
@@ -3195,7 +3236,10 @@ private calculatePathBounds(data: string): Rect {
 
                     if (!isNullOrUndefined(render.documentHelper) && lastLoaded !== elementBox.element.src) {
                         if (!elementBox.isCrop) {
-                            render.pageContext.drawImage(elementBox.element, imgX, imgY, width, height);
+                            if (!isNullOrUndefined(render.documentHelper.owner) && !isNullOrUndefined(render.documentHelper.owner.imageResizerModule)
+                                && !render.documentHelper.owner.imageResizerModule.isImageResizing) {
+                                render.pageContext.drawImage(elementBox.element, imgX, imgY, width, height);
+                            }
                         } else {
                             render.pageContext.drawImage(elementBox.element,
                                 elementBox.cropX,

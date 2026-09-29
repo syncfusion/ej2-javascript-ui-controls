@@ -1,5 +1,4 @@
-@use 'ej2-base/styles/definition/bds' as *;
-@forward 'ej2-base/styles/definition/bds';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 // layout variables
 $chip-list-padding: 0 !default;

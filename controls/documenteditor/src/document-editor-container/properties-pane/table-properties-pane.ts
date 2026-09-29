@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, BorderSettings, BorderType, LineStyle } from '../../document-editor';
-import { createElement, KeyboardEventArgs, classList, L10n, remove } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, classList, L10n, remove, updateCSSText } from '@syncfusion/ej2-base';
 import { Tab, TabItemModel, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { TextProperties } from './text-properties-pane';
 import { ImageProperties } from './image-properties-pane';
@@ -586,14 +586,15 @@ export class TableProperties {
     }
     /* eslint-disable-next-line max-len */
     private createCellMarginTextBox(textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string, isRight?: boolean): NumericTextBox {
-        const cellMarginParentDiv: HTMLElement = createElement('div', { styles: parentStyle });
+        const cellMarginParentDiv: HTMLElement = createElement('div');
+        updateCSSText(cellMarginParentDiv, parentStyle);
         if (!isRight) {
             cellMarginParentDiv.classList.add('e-de-cell-text-box');
         }
         const cellMarginLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label' });
         cellMarginLabel.textContent = textboxLabel;
         cellMarginParentDiv.appendChild(cellMarginLabel);
-        const cellMarginTextbox: HTMLInputElement = createElement('input', { className: 'e-textbox', id: textboxId, styles: styles }) as HTMLInputElement;
+        const cellMarginTextbox: HTMLInputElement = createElement('input', { className: 'e-textbox e-de-cell-margin-input', id: textboxId }) as HTMLInputElement;
         cellMarginParentDiv.appendChild(cellMarginTextbox);
         const cellMarginNumericText: NumericTextBox = new NumericTextBox({ showSpinButton: false, min: 0, format: 'n0', max: maxValue, enableRtl: this.isRtl }, cellMarginTextbox);
         parentDiv.appendChild(cellMarginParentDiv);
@@ -601,6 +602,9 @@ export class TableProperties {
         return cellMarginNumericText;
     }
     private createBorderSizeDropDown(iconcss: string, button: HTMLElement): DropDownButton {
+        const isAngularModal: boolean = this.container.isModalDialog;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const tabeldiv: any = this;
         const div: HTMLElement = createElement('div', { id: 'borderSizeTarget', styles: 'display:none' });
         const ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px; width: 126px; height: auto;',
@@ -660,10 +664,15 @@ export class TableProperties {
             content: '1.5px'
         };
         const dropdown: DropDownButton = new DropDownButton(menuOptions);
-        dropdown.beforeOpen = (): void => {
+        dropdown.beforeOpen = function (this: DropDownButton, e: any): void {
             div.style.display = 'block';
-            for (let i: number = 0; i < this.borderSizeColorElement.length; i++) {
-                (this.borderSizeColorElement[parseInt(i.toString(), 10)] as HTMLElement).style.borderBottomColor = this.borderColor;
+            for (let i: number = 0; i < tabeldiv.borderSizeColorElement.length; i++) {
+                (tabeldiv.borderSizeColorElement[parseInt(i.toString(), 10)] as HTMLElement).style.borderBottomColor = tabeldiv.borderColor;
+            }
+            if (isAngularModal) {
+                const popupEl: HTMLElement  = e.element.parentElement as HTMLElement;
+                const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
+                tabeldiv.container.movePopupToCdkOverlay(dropDownButtonEl, popupEl);
             }
         };
         dropdown.beforeClose = (): void => {
@@ -688,7 +697,9 @@ export class TableProperties {
             splitButtonClass = 'e-rtl ' + splitButtonClass;
         }
         /* eslint-disable-next-line max-len */
-        const dropDownBtn: DropDownButton = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: splitButtonClass }, buttonElement);
+        const dropDownBtn: DropDownButton = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: splitButtonClass });
+        dropDownBtn.isAngular = this.container.isModalDialog;
+        dropDownBtn.appendTo(buttonElement);
         if (items) {
             dropDownBtn.items = items;
         }
@@ -714,6 +725,9 @@ export class TableProperties {
         const { columns, createPopupOnClick, disabled, enablePersistence, inline,
             mode, modeSwitcher, noColor, presetColors, showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id }) as HTMLInputElement;
+        const isAngularModal: boolean = this.container.isModalDialog;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const colorDiv: any = this;
         divElement.appendChild(inputElement);
         let cssClass: string = 'e-de-prop-font-button e-de-prop-font-colorpicker';
         if (isBorderWidth) {
@@ -724,8 +738,16 @@ export class TableProperties {
             cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false,
             mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns,
             createPopupOnClick: createPopupOnClick, disabled: disabled, enablePersistence: enablePersistence, inline: inline,
-            noColor: noColor, presetColors: presetColors
-        }, inputElement);
+            noColor: noColor, presetColors: presetColors,
+            beforeOpen: function (this: ColorPicker, e: any): void {
+                if (isAngularModal) {
+                    const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
+                    const colorPickerEl: HTMLElement = this.element as HTMLElement;
+                    colorDiv.container.movePopupToCdkOverlay(colorPickerEl, popupEl);
+                }
+            }
+        });
+        colorPicker.appendTo(inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         inputElement.parentElement.setAttribute('aria-label', toolTipText);
         return colorPicker;

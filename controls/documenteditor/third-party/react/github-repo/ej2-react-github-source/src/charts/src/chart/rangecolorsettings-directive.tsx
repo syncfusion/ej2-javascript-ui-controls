@@ -5,7 +5,7 @@ import { RangeColorSettingModel } from '@syncfusion/ej2-charts';
 /**
  * `RangeColorSetting` directive represent range color mapping of the react Chart. 
  * It must be contained in a Chart component(`ChartComponent`). 
- * ```tsx
+ * ```
  * <ChartComponent> 
  * <RangeColorSettingsDirective>
  * <RangeColorSettingDirective></RangeColorSettingDirective>

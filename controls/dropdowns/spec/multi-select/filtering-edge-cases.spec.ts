@@ -252,4 +252,29 @@ describe('MultiSelect - Group 22: Filtering Edge Cases', () => {
         expect(restoredCount).toBeGreaterThanOrEqual(filteredCount);
         done();
     });
+     it('should allow popup open logic for filtered input after select all', () => {
+        listObj = new MultiSelect({
+            dataSource: basicData,
+            fields: { text: 'text', value: 'id' },
+            allowFiltering: true,
+            showSelectAll: true,
+            value: ['list1', 'list2', 'list3', 'list4', 'list5'],
+            debounceDelay: 0
+        });
+        listObj.appendTo(element);
+        listObj.showPopup();
+        (listObj as any).inputElement.value = 'J';
+        expect((listObj as any).inputElement.value.trim() !== '').toBe(true);
+    });
+
+    it('should allow normal popup opening without filtering', () => {
+        listObj = new MultiSelect({
+            dataSource: basicData,
+            fields: { text: 'text', value: 'id' },
+            debounceDelay: 0
+        });
+        listObj.appendTo(element);
+        listObj.showPopup();
+        expect((listObj as any).targetElement() === '').toBe(true);
+    });
 });

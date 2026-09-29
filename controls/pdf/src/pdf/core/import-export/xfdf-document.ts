@@ -1100,6 +1100,13 @@ export abstract class _ExportHelper {
  */
 export class _XfdfDocument extends _ExportHelper {
     /**
+     * Indicates whether color-space values are included or processed
+     * in the XFDF structure.
+     *
+     * @private
+     */
+    _isColoSpace: boolean = false;
+    /**
      * Initializes the XFDF helper with optional file name for export context.
      *
      * @private
@@ -1699,16 +1706,26 @@ export class _XfdfDocument extends _ExportHelper {
                 writer._writeEndElement();
             } else if (Array.isArray(primitive)) {
                 this._writePrefix(writer, 'ARRAY', key);
+                if (key && key === 'ColorSpace') {
+                    this._isColoSpace = true;
+                }
                 if (dictionary.has(key)) {
                     this._writeArray(writer, dictionary.getArray(key), dictionary);
                 } else {
                     this._writeArray(writer, primitive, dictionary);
                 }
+                this._isColoSpace = false;
                 writer._writeEndElement();
             } else if (typeof primitive === 'string') {
                 this._writePrefix(writer, 'STRING', key);
-                writer._writeAttributeString('VAL', primitive);
-                writer._writeEndElement();
+                if (this._isColoSpace) {
+                    const bytes: Uint8Array = _stringToBytes(primitive) as Uint8Array;
+                    writer._writeAttributeString('VAL', _byteArrayToHexString(bytes));
+                    writer._writeEndElement();
+                } else {
+                    writer._writeAttributeString('VAL', primitive);
+                    writer._writeEndElement();
+                }
             } else if (typeof primitive === 'number') {
                 if (Number.isInteger(primitive)) {
                     this._writePrefix(writer, 'INT', key);
@@ -1803,7 +1820,17 @@ export class _XfdfDocument extends _ExportHelper {
      */
     _writeArray(writer: _XmlWriter, array: any[], dictionary: _PdfDictionary): void { // eslint-disable-line
         array.forEach((entry: any) => { // eslint-disable-line
-            this._writeObject(writer, entry, dictionary);
+            if (this._isColoSpace && typeof entry === 'string') {
+                const bytes: Uint8Array = _stringToBytes(entry) as Uint8Array;
+                const hex: string = _byteArrayToHexString(bytes);
+                writer._writeStartElement('DATA');
+                writer._writeAttributeString('MODE', 'RAW');
+                writer._writeAttributeString('ENCODING', 'HEX');
+                writer._writeRaw(hex);
+                writer._writeEndElement();
+            } else {
+                this._writeObject(writer, entry, dictionary);
+            }
         });
     }
     /**
@@ -3063,7 +3090,7 @@ export class _XfdfDocument extends _ExportHelper {
                             isImage = type && type.name === 'Image';
                         }
                         if (isImage) {
-                            source._isCompress = false;
+                            source._isCompress = true;
                         } else {
                             if (source.dictionary.has('Length')) {
                                 delete source.dictionary._map.Length;
@@ -3179,7 +3206,16 @@ export class _XfdfDocument extends _ExportHelper {
             let intValue: number;
             let name: _PdfName;
             let bool: boolean;
+            let originalString: string;
+            let data: number[];
             switch (element.localName) {
+            case 'DATA':
+                data = this._getData(element);
+                originalString = _bytesToString(new Uint8Array(data), true);
+                if (originalString && originalString.length > 0) {
+                    array.push(originalString);
+                }
+                break;
             case 'STREAM':
                 stream = this._getStream(element);
                 if (stream) {

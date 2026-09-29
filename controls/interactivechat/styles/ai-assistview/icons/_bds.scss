@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use '../variables' as *;
 @include export-module('aiassist-bds-icons') {
   .e-assist-send::before {
     content: '\e71d';
@@ -47,5 +47,17 @@
   }
   .e-assist-scroll-down::before {
     content: '\e7fe';
+  }
+  .e-assist-audio::before {
+    content: '\e894';
+  }
+  .e-assist-regenerate::before {
+    content: '\e89b';
+  }
+  .e-assist-next::before {
+    content: '\e748';
+  }
+  .e-assist-previous::before {
+    content: '\e765';
   }
 }

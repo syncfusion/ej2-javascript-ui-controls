@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-stockchart-rows>e-striplines>e-stockchart-row',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class StockChartRowDirective extends ComplexBase<StockChartRowDirective> {
@@ -27,13 +27,13 @@ export class StockChartRowDirective extends ComplexBase<StockChartRowDirective> 
     /** 
      * Options to customize the border of the rows.
      */
-    public border: any;
+    public declare border: any;
     /** 
      * The height of the row as a string accept input both as '100px' and '100%'. 
      * If specified as '100%, row renders to the full height of its chart.
      * @default '100%'
      */
-    public height: any;
+    public declare height: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -49,6 +49,7 @@ export class StockChartRowDirective extends ComplexBase<StockChartRowDirective> 
  */
 @Directive({
     selector: 'ejs-stockchart>e-stockchart-rows',
+    standalone: true,
     queries: {
         children: new ContentChildren(StockChartRowDirective)
     },

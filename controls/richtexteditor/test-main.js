@@ -63,6 +63,11 @@ require.config({
             main: "ej2-layouts.umd.min.js",
         },
         {
+            name: "@syncfusion/ej2-querybuilder",
+            location: "node_modules/@syncfusion/ej2-querybuilder/dist",
+            main: "ej2-querybuilder.umd.min.js",
+        },
+        {
             name: "@syncfusion/ej2-grids",
             location: "node_modules/@syncfusion/ej2-grids/dist",
             main: "ej2-grids.umd.min.js",

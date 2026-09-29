@@ -239,6 +239,7 @@ export class ComponentBase<T> {
         });
     }
 
+
     public ngOnDestroy(isTempRef?: any): void {
         this.baseDestroy(isTempRef);
     }

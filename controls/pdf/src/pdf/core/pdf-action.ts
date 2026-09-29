@@ -971,7 +971,7 @@ export class PdfFieldActions {
             }
             const actionDictionary: _PdfDictionary = action._dictionary;
             const script: string = action._script;
-            if (script && script !== '') {
+            if (script) {
                 actionDictionary.update('JS', script);
             }
             aaDictionary.set(key, actionDictionary);
@@ -1000,9 +1000,8 @@ export class PdfFieldActions {
                         const s: _PdfName = actionDictionary.get('S') as _PdfName;
                         if (s && s.name === 'JavaScript' && actionDictionary.has('JS')) {
                             const js: string = actionDictionary.get('JS');
-                            result = new PdfJavaScriptAction('');
+                            result = new PdfJavaScriptAction(js);
                             result._dictionary = actionDictionary;
-                            result._script = js;
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 import { TreeGrid, RowDD as TreeGridRowDD } from '@syncfusion/ej2-treegrid';
 import { RowDragEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
-import { isNullOrUndefined, extend, classList, addClass, getValue, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, classList, addClass, getValue, closest, initializeTelemetryFeature} from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { IGanttData, RowPosition, isCountRequired } from '../base/common';
 import { RowDropEventArgs, IParent } from '../base/interface';
@@ -40,6 +40,7 @@ export class RowDD {
      * @param {Gantt} gantt .
      */
     constructor(gantt: Gantt) {
+        initializeTelemetryFeature('RowDragAndDrop', 'Gantt');
         this.parent = gantt;
         TreeGrid.Inject(TreeGridRowDD);
         this.parent.treeGrid.allowRowDragAndDrop = this.parent.allowRowDragAndDrop;
@@ -419,7 +420,7 @@ export class RowDD {
                                 if (droppedRecord.ganttProperties.predecessor && (!validPredecessor ||
                                     !this.parent.allowParentDependency)) {
                                     this.parent.editModule.removePredecessorOnDelete(droppedRecord);
-                                    droppedRecord.ganttProperties.predecessor.splice(0, 1);
+                                    droppedRecord.ganttProperties.predecessor.splice(count, 1);
                                     if (droppedRecord.ganttProperties.predecessorsName) {
                                         const splittedName: string[] = (droppedRecord.ganttProperties.predecessorsName as string).split(',');
                                         for (let i: number = 0; i < splittedName.length; i++) {

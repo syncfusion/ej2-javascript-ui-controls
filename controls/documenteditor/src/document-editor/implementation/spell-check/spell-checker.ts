@@ -3,7 +3,7 @@ import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo,
 import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget, FootnoteElementBox, BookmarkElementBox } from '../viewer/page';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { BaselineAlignment, TextWrappingStyle } from '../../base/types';
 import { DocumentHelper } from '../viewer';
 /**
@@ -244,6 +244,7 @@ export class SpellChecker {
     }
 
     public constructor(documentHelper: DocumentHelper) {
+        initializeTelemetryFeature('SpellCheck', 'DOCXEditor');
         this.documentHelper = documentHelper;
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
         this.uniqueWordsCollection = new Dictionary<string, boolean>();
@@ -329,6 +330,9 @@ export class SpellChecker {
             let startElement: ElementBox = (start.currentWidget as LineWidget).getInline(start.offset, 0, false, true).element;
             const endElement: ElementBox = (end.currentWidget as LineWidget).getInline(end.offset, 0, false, true).element;
             while (true) {
+                if (isNullOrUndefined(startElement)) {
+                    break;
+                }
                 if (this.handleErrorElements.indexOf(startElement) === -1) {
                     this.handleErrorElements.push(startElement);
                 }
@@ -1584,7 +1588,7 @@ export class SpellChecker {
                 if (errorElement instanceof ErrorTextElementBox || errorElement instanceof TextElementBox) {
                     if (errorElement instanceof ErrorTextElementBox) {
                         elementStart = errorElement.start;
-                        if ((isNullOrUndefined((errorElement as ErrorTextElementBox).start.paragraph) || (errorElement as ErrorTextElementBox).start.paragraph.indexInOwner === -1) || errorElement.indexInOwner === -1) {
+                        if ((isNullOrUndefined((errorElement as ErrorTextElementBox).start.paragraph) || (errorElement as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
                             errorElements.splice(j, 1);
                             j--;
                             if (errorElements.length === 0) {
@@ -1597,7 +1601,7 @@ export class SpellChecker {
                             continue;
                         }
                     } else {
-                        if (isNullOrUndefined((errorElement as TextElementBox).paragraph) || (errorElement as TextElementBox).paragraph.indexInOwner === -1 || errorElement.indexInOwner === -1) {
+                        if (isNullOrUndefined((errorElement as TextElementBox).paragraph) || (errorElement as TextElementBox).paragraph.indexInOwner === -1) {
                             errorElements.splice(j, 1);
                             j--;
                             if (errorElements.length === 0) {

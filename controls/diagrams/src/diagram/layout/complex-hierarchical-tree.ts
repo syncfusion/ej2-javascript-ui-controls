@@ -1,5 +1,6 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
+import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 import { Connector, OrthogonalSegment } from '../objects/connector';
@@ -22,6 +23,7 @@ export class ComplexHierarchicalTree {
      */
 
     constructor() {
+        initializeTelemetryFeature('ComplexHierarchicalTree', 'Diagram');
         //constructs the layout module
     }
 
@@ -483,7 +485,6 @@ class HierarchicalLayoutUtil {
             }
         }
         if (!checkLinear) {
-
             for (let i: number = 0; i < this.vertices.length; i++) {
                 this.isNodeOverLap(this.nameTable[this.vertices[parseInt(i.toString(), 10)].name], layoutProp);
             }

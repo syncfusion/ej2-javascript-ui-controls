@@ -6,32 +6,25 @@ import { AggregateColumnDirective, AggregateColumnsDirective } from './aggregate
 import { AggregateDirective, AggregatesDirective } from './aggregates.directive';
 import { TreeGridComponent } from './treegrid.component';
 
+const TREEGRID_DIRECTIVES = [
+    TreeGridComponent,
+        StackedColumnDirective,
+        StackedColumnsDirective,
+        ColumnDirective,
+        ColumnsDirective,
+        AggregateColumnDirective,
+        AggregateColumnsDirective,
+        AggregateDirective,
+        AggregatesDirective
+];
+
 /**
  * NgModule definition for the TreeGrid component.
+ * Re-exports standalone TreeGrid component and directives so existing apps can keep using:
+ * `imports: [TreeGridModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        TreeGridComponent,
-        StackedColumnDirective,
-        StackedColumnsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        AggregateColumnDirective,
-        AggregateColumnsDirective,
-        AggregateDirective,
-        AggregatesDirective
-    ],
-    exports: [
-        TreeGridComponent,
-        StackedColumnDirective,
-        StackedColumnsDirective,
-        ColumnDirective,
-        ColumnsDirective,
-        AggregateColumnDirective,
-        AggregateColumnsDirective,
-        AggregateDirective,
-        AggregatesDirective
-    ]
+    imports: [CommonModule, ...TREEGRID_DIRECTIVES],
+    exports: [...TREEGRID_DIRECTIVES]
 })
 export class TreeGridModule { }

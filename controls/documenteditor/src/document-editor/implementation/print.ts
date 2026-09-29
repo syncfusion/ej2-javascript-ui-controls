@@ -45,6 +45,11 @@ export class Print {
         if (isNullOrUndefined(printWindow)) {
             printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
         }
+        // window.open() may return null when the browser blocks popups.
+        // Avoid accessing printWindow.document when printWindow is null.
+        if (isNullOrUndefined(printWindow)) {
+            return;
+        }
         this.windowPrint = printWindow;
         let pageSize: string = width.toString() + 'px ' + height.toString() + 'px';
         if (width > height) {

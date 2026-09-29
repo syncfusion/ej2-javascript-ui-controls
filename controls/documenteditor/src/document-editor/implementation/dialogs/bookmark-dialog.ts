@@ -180,8 +180,9 @@ export class BookmarkDialog {
         const hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
         if (!hasNoBookmark) {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            const firstItem: any = bookmarks[0];
-            this.listviewInstance.selectItem(firstItem);
+            const bookmarkSelect: string[] = this.documentHelper.selection.getBookmarks();
+            const itemSelect: any = bookmarkSelect.length > 0 ? bookmarkSelect[0] : bookmarks[bookmarks.length - 1];
+            this.listviewInstance.selectItem(itemSelect);
         }
         this.documentHelper.dialog.show();
     }

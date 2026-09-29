@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,87 +30,34 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-        childColumns: new ContentChild(ColumnsDirective)
+        childColumns: new ContentChild(ColumnsDirective),
+        footerTemplate: new ContentChild('footerTemplate'),
+        itemTemplate: new ContentChild('itemTemplate'),
+        groupTemplate: new ContentChild('groupTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate'),
+        actionFailureTemplate: new ContentChild('actionFailureTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class MultiColumnComboBoxComponent extends MultiColumnComboBox implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	change: any;
-	close: any;
-	created: any;
-	filtering: any;
-	open: any;
-	select: any;
-	public valueChange: any;
-    public childColumns: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare change: any;
+	declare close: any;
+	declare created: any;
+	declare filtering: any;
+	declare open: any;
+	declare select: any;
+	public declare valueChange: any;
+    public declare childColumns: any;
     public tags: string[] = ['columns'];
-    /** 
-     * Accepts the template design and assigns it to the footer container of the popup.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to each items present in the popup.
-     * 
-     * {% codeBlock src='multicolumn-combobox/itemTemplate/index.md' %}{% endcodeBlock %}
-     *     
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('groupTemplate')
-    @Template()
-    public groupTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to popup list of component when no data is available on the component.
-     * @default 'No records found'
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No records found')
-    public noRecordsTemplate: any;
-    /** 
-     * Accepts the template and assigns it to the popup content when the data fetch request from the remote server fails.
-     * @default 'Request Failed'
-     * @angulartype string | object
-     * @reacttype string | function | JSX.Element
-     * @vuetype string | function
-     * @asptype string
-     */
-    @ContentChild('actionFailureTemplate')
-    @Template('Request Failed')
-    public actionFailureTemplate: any;
 
-    public focus: any;
-    public blur: any;
+    public declare focus: any;
+    public declare blur: any;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
         super();
         this.element = this.ngEle.nativeElement;
@@ -151,7 +99,12 @@ export class MultiColumnComboBoxComponent extends MultiColumnComboBox implements
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(MultiColumnComboBoxComponent.prototype, 'footerTemplate');
+Template()(MultiColumnComboBoxComponent.prototype, 'itemTemplate');
+Template()(MultiColumnComboBoxComponent.prototype, 'groupTemplate');
+Template('No records found')(MultiColumnComboBoxComponent.prototype, 'noRecordsTemplate');
+Template('Request Failed')(MultiColumnComboBoxComponent.prototype, 'actionFailureTemplate');
 

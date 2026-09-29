@@ -1,0 +1,1675 @@
+@use 'variables' as *;
+@mixin active-wrap-styles {
+  @if ($field-list-skin =='bootstrap4') {
+    background-color: $field-list-sort-select-background-color;
+    border-color: $field-list-sort-select-border-color;
+    color: $field-list-sort-select-color;
+    outline: none;
+  }
+}
+
+@mixin wrap-styles {
+  @if ($field-list-skin =='bootstrap4') {
+    /* stylelint-disable */
+    background-color: $gray-600 !important;
+    border-color: $gray-600 !important;
+    color: $white !important;
+    /* stylelint-enable */
+  }
+}
+
+@include export-module('field-list-layout') {
+  .e-pivotfieldlist {
+    .e-disable {
+      display: none;
+    }
+
+    .e-hide {
+      visibility: hidden;
+    }
+
+    &.sf-pivotfieldlist {
+      position: relative;
+      
+      &:not(.e-device) {
+        height: $field-list-height-100p;
+      }
+    }
+  }
+
+  .e-pivot-formatting-dialog {
+    /* stylelint-disable */
+    height: auto !important;
+    max-height: $field-list-height-480 !important;
+    max-width: $field-list-width-627 !important;
+    width: $field-list-width-100p;
+    min-width: $field-list-width-375 !important;
+    /* stylelint-enable */
+
+    .e-format-table {
+      width: $field-list-width-100p;
+  
+      tr:nth-child(odd) {
+        td {
+          padding-bottom: $field-list-spacing-4;
+        }
+      }
+    }
+
+    .e-format-delete-icon {
+      font-size: $field-list-font-icon-10;
+      font-weight: $field-list-font-weight-normal;
+      @if ($field-list-skin == 'bootstrap4') {
+        /* stylelint-disable */
+        color: $black;
+        /* stylelint-enable */
+        opacity: .5;
+      }
+
+      &:hover {
+        font-weight: $field-list-font-weight-semibold;
+        @if ($field-list-skin == 'bootstrap4') {
+          opacity: 1;
+        }
+      }
+    }
+
+    .e-format-table tr:nth-child(even) {
+      td {
+        padding-bottom: $field-list-spacing-16;
+        padding-right: $pivot-formatting-format-table-data-padding-right;
+        white-space: nowrap;
+      }
+      td.e-format-input-value {
+        padding-right: $field-list-spacing-0;
+        margin-right: $field-list-spacing-8;
+        display: table;
+
+        .e-format-input-value-row {
+          display: table-row;
+
+          .e-format-input-value-cell {
+            display: table-cell;
+          }
+        }
+      }
+    }
+
+    .e-format-table.e-grandtotal-checkbox-table tr:nth-child(1) {
+      td {
+        padding-bottom: $field-list-spacing-20;
+      }
+    }
+
+    .e-visible-hide {
+      visibility: hidden;
+    }
+
+    .e-format-value-span {
+      display: table-cell;
+      padding-right: $field-list-spacing-10;
+      vertical-align: bottom;
+    }
+
+    .e-format-value1,
+    .e-format-value2 {
+      display: inline-block;
+      margin-right: $field-list-spacing-10;
+      margin-bottom: $field-list-spacing-0;
+      width: $field-list-width-45p;
+    }
+
+    .e-colorpicker-wrapper.e-format-font-color-picker {
+      margin-left: $field-list-spacing-0;
+      margin-right: $field-list-spacing-16;
+    }
+
+    .e-format-inner-div {
+      padding-left: $field-list-spacing-14;
+      padding-top: $field-list-spacing-14;
+      max-width: $field-list-width-579;
+
+      @if ($skin-name == 'tailwind3') {
+        padding-left: $field-list-spacing-16;
+        padding-top: $field-list-spacing-0;
+      }
+    }
+
+    .e-format-outer-div {
+      background-color: $format-outer-fill-color;
+      border: $field-list-border-1 solid $format-outer-border-color;
+      border-radius: $format-outer-border-radius;
+      margin-bottom: $field-list-spacing-14;
+      @if ($skin-name == 'tailwind') {
+        min-width: 460px;
+      }
+
+      @if ($skin-name == 'FluentUI') {
+        min-width: 440px;
+      }
+    }
+
+    .e-format-condition-button {
+      float: left;
+      @if ($skin-name == 'fluent2') {
+        border-color: $format-condition-button-color;
+      }
+    }
+
+    .e-split-colorpicker {
+      @if ($field-list-skin == 'bootstrap4') {
+        /* stylelint-disable */
+        background-color: $format-label-font-color !important;
+        color: $field-list-default-bg-color !important;
+        /* stylelint-enable */
+      }
+    }
+
+    .e-format-delete-button {
+      background-color: transparent;
+      border-color: transparent;
+      float: right;
+      padding-right: $field-list-spacing-12;
+      padding-top: $field-list-spacing-12;
+
+      @if ($skin-name == 'bootstrap5') {
+        /* stylelint-disable */
+        color: $field-list-default-font-color !important;
+        /* stylelint-enable */
+      }
+    }
+
+    .e-format-delete-button:hover,
+    .e-format-delete-button:focus,
+    .e-format-delete-button:active {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: 0 0 0 transparent;
+
+      @if ($skin-name =='fluent2' or $skin-name == 'bootstrap5.3'){
+        color: $field-list-button-back-color;
+      }
+
+      .e-format-delete-icon {
+        font-weight: $field-list-font-weight-semibold;
+        @if ($field-list-skin == 'bootstrap4') {
+          opacity: 1;
+        }
+      }
+    }
+
+    .e-format-label,
+    .e-format-value-label {
+      color: $format-label-font-color;
+      font-size: $format-label-font-size;
+      font-weight: $format-label-font-weight;
+      opacity: $format-label-font-opacity;
+
+      @if ($field-list-skin == 'bootstrap5') or ($field-list-skin == 'FluentUI') or ($field-list-skin == 'tailwind') {
+        opacity: 1;
+      }
+    }
+
+    .e-format-value-preview {
+      border: $field-list-border-1 solid $format-preview-border-color;
+      border-radius: $field-list-default-border-radius;
+      pointer-events: none;
+      margin: $field-list-spacing-0;
+      @if ($skin-name =='bootstrap4') or ($skin-name =='bootstrap5') or ($skin-name =='bootstrap') or ($skin-name =='FluentUI') or ($skin-name =='tailwind') {
+        padding: $field-list-spacing-0;
+      }
+      /* stylelint-disable */
+      width: $field-list-width-80;
+      /* stylelint-enable */
+      text-align: center;
+    }
+
+    .e-format-color-picker {
+      .e-split-btn-wrapper .e-split-btn {
+        pointer-events: none;
+
+        @if ($skin-name == 'bootstrap5.3') {
+          &:focus {
+            color: $field-list-tree-icon-color;
+          }
+        }
+        .e-selected-color {
+          background: none;
+          margin: $field-list-spacing-0 $field-list-spacing-2;
+          width: $field-list-width-14;
+          @if ($skin-name == 'bootstrap5') {
+            /* stylelint-disable */
+            color: $field-list-default-font-color !important;
+            &:hover {
+              color: $field-list-active-color !important;
+            }
+            /* stylelint-enable */
+          }
+        }
+      }
+    }
+
+    .e-format-color-picker .e-split-btn-wrapper .e-btn.e-icon-btn {
+      @if ($field-list-skin == 'bootstrap4') {
+        padding: $field-list-spacing-4 $field-list-spacing-5;
+      }
+    }
+
+    .e-split-preview,
+    .e-tip-transparent {
+      border: $field-list-border-1 solid $format-preview-border-color;
+      /* stylelint-disable */
+      border-radius: $field-list-radius-0 !important;
+      /* stylelint-enable */
+      height: $field-list-height-40p;
+      left: -3px;
+      position: absolute;
+      top: 67%;
+      width: $field-list-width-150p;
+      @if ($skin-name == 'Material3') {
+        max-height: 4px;
+      }
+      @if ($skin-name =='fluent2') or ($skin-name =='FluentUI') {
+        top: 80%;
+      }
+    }
+
+    &.e-device {
+      /* stylelint-disable */
+      min-width: $field-list-width-320 !important;
+      width: $field-list-width-100p  !important;
+      .e-format-inner-div {
+        width: $field-list-width-100p !important;
+      }
+      .e-format-condition-button {
+        .e-add-icon {
+          margin-left: $field-list-spacing-0 !important;
+        }
+      }
+      /* stylelint-enable */
+
+      .e-format-delete-button {
+        font-size: $field-list-font-icon-12;
+        padding-right: $field-list-spacing-16;
+        padding-top: $field-list-spacing-16;
+      }
+
+      .e-format-apply-button,
+      .e-format-cancel-button {
+        max-width: $field-list-width-40p;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-format-font-color-picker {
+        @if ($skin-name == 'tailwind') {
+          margin-right: $field-list-spacing-30;
+        }
+      }
+
+      .e-format-outer-div {
+        @if ($skin-name == 'tailwind') {
+          min-width: 0;
+        }
+  
+        @if ($skin-name == 'FluentUI') {
+          min-width: 0;
+        }
+      }
+
+      .e-visible-hide {
+        display: none;
+      }
+
+      .e-format-value-preview {
+        min-height: $format-device-preview-height;
+        width: $field-list-width-100p;
+      }
+    }
+
+    &.e-rtl {
+      .e-colorpicker-wrapper.e-format-font-color-picker {
+        margin-left: $field-list-spacing-16;
+        margin-right: $field-list-spacing-0;
+      }
+
+      .e-format-condition-button {
+        float: right;
+
+        .e-add-icon {
+          margin-left: $field-list-spacing-auto;
+        }
+      }
+
+      .e-format-inner-div {
+        padding-left: $field-list-spacing-0;
+        padding-right: $field-list-spacing-14;
+      }
+
+      .e-format-delete-button {
+        float: left;
+        padding-left: $field-list-spacing-12;
+      }
+
+      .e-format-table tr:nth-child(even) {
+        td {
+          padding-right: $field-list-spacing-0;
+          padding-left: $field-list-spacing-10;
+        }
+      }
+
+      &.e-device {
+        .e-format-font-color-picker {
+          margin-right: $field-list-spacing-0;
+        }
+      }
+    }
+  }
+
+  .e-pivotfieldlist-container,
+  .e-pivot-formatting-dialog {
+    &.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+      @if ($skin-name == 'FluentUI') {
+        margin-right: $field-list-spacing-6;
+      }
+      @if ($skin-name == 'Material3') {
+        padding: $field-list-spacing-0;
+      }
+    }
+  }
+
+  .e-pivot-calc-dialog-div {
+    /* stylelint-disable */
+    max-height: $field-list-height-600 !important;
+    /* stylelint-enable */
+    min-width: $field-list-width-290;
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: $field-list-border-0;
+    }
+
+    .e-dlg-content {
+      @if ($skin-name != 'tailwind3') {
+        padding-bottom: $pivot-dialog-content-padding;
+      }
+      @if ($skin-name == 'FluentUI') {
+        /* stylelint-disable */
+        padding-top: $field-list-spacing-1 !important;
+        /* stylelint-enable */
+      }
+
+      .e-pivot-calc-custom-format-div {
+        margin-top: $field-list-spacing-15;
+      }
+    }
+
+    .e-pivot-all-field-title,
+    .e-pivot-field-name-title,
+    .e-pivot-formula-title,
+    .e-olap-hierarchy-title,
+    .e-pivot-format-title,
+    .e-olap-member-title {
+      color: $field-list-default-header-font-color;
+      font-size: $field-list-default-header-font-size;
+      margin-bottom: $field-list-spacing-4;
+      margin-top: $field-list-spacing-12;
+      overflow: hidden;
+      padding: $pivot-calculated-header-padding $field-list-spacing-0;
+      padding-bottom: $field-list-spacing-0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @if ($skin-name == 'bootstrap5') {
+        padding-bottom: $field-list-spacing-4;
+      }
+      @if ($skin-name == 'tailwind') {
+        padding: $field-list-spacing-0;
+      }
+
+      @if ($skin-name == 'FluentUI') {
+        font-weight: 600;
+      }
+    }
+
+    .e-treeview {
+      .e-sibling {
+        display: none;
+      }
+
+      .e-list-selected {
+        opacity: .5;
+      }
+    }
+
+    .e-treeview ul {
+      overflow: hidden;
+
+      li {
+        padding: $field-list-spacing-0;
+
+        .e-list-text {
+          font-family: $field-list-font-family;
+        }
+
+        &:not(.e-active) {
+          .e-list-icon {
+            color: $field-list-tree-icon-color;
+
+            @if ($skin-name == 'fluent2') {
+              &:hover {
+                color: $field-list-icon-hover-color;
+              }
+            }
+          }
+        }
+
+        .e-list-icon {
+          @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3') {
+            color: $field-list-tree-icon-color;
+          }
+          /* stylelint-disable */
+          float: right !important;
+          margin: $field-list-spacing-0 $field-list-spacing-12 $field-list-spacing-0 $field-list-spacing-0;
+          /* stylelint-enable */
+
+          @if ($skin-name == 'fluent2') {
+            &:hover {
+              color: $field-list-icon-hover-color;
+            }
+            &:active {
+              color: $field-list-icon-hover-color;
+            }
+          }
+        }
+      }
+
+      .e-fullrow {
+        cursor: default;
+      }
+
+      .e-list-item .e-text-content {
+        align-items: center;
+        display: flex;
+        height: $field-list-height-auto;
+        padding-left: $field-list-spacing-0;
+        padding-right: $field-list-spacing-0;
+        vertical-align: middle;
+      }
+    }
+
+    .e-treeview .e-list-item div.e-icons {
+      cursor: pointer;
+      font-size: $field-list-icon-size;
+      height: $field-list-height-auto;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: $field-list-spacing-0 $field-list-spacing-4;
+      pointer-events: auto;
+      width: $field-list-width-auto;
+    }
+
+    .e-treeview .e-list-item div.e-icons.e-format {
+      float: right;
+      font-size: $field-list-font-icon-20;
+      height: $field-list-height-auto;
+      margin-right: $field-list-spacing-12;
+      padding: $field-list-spacing-0;
+    }
+
+    .e-treeview .e-list-item div.e-iconspace {
+      cursor: pointer;
+      display: inline-block;
+      font-size: $field-list-font-icon-12;
+      height: $field-list-height-24;
+      margin-right: $field-list-calc-dialog-iconspace-margin-right;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: $field-list-spacing-0 $field-list-spacing-4;
+      pointer-events: auto;
+      width: $field-list-width-24;
+    }
+
+    .e-treeview .e-list-item {
+      &:not(.e-active) {
+        span.e-icons {
+          color: $field-list-drag-icon-color;
+        }
+      }
+
+      span.e-icons {
+        @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3') {
+          color: $field-list-drag-icon-color;
+        }
+        cursor: move;
+        display: inline-block;
+        font-size: $field-list-icon-size;
+        margin-right: $field-list-spacing-4;
+        pointer-events: auto;
+        width: $field-list-width-20;
+
+        @if ($skin-name == 'fluent2') {
+          font-size: $field-list-font-icon-16;
+          margin-top: $field-list-spacing-3;
+        }
+      }
+      @if ($skin-name == 'tailwind') {
+        &.e-active {
+          span.e-icons {
+            color: $field-list-tree-icon-color;
+          }
+        }
+      }
+    }
+
+    .e-dlg-header {
+      font-size: $field-list-font-size-18;
+      font-weight: $field-list-font-weight-medium;
+      opacity: $pivot-calculated-header-opacity;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: $field-list-width-74p;
+    }
+
+    .e-contextmenu {
+      background-color: $pivot-formula-background;
+      border-radius: $field-list-default-border-radius;
+    }
+
+    .e-contextmenu .e-menu-item {
+      color: $pivot-text-area-background;
+      font-size: $field-list-font-icon-14;
+      height: $field-list-height-48;
+      opacity: .87;
+    }
+
+    &.e-rtl {
+      .e-treeview .e-list-item div.e-edit.e-icons,
+      .e-treeview .e-list-item div.e-edited.e-icons,
+      .e-treeview .e-list-item div.e-remove-report.e-icons {
+        transform: rotate(0deg);
+        margin: $field-list-calc-list-icon-rtl $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0;
+      }
+
+      .e-treeview ul {
+        margin-right: $field-list-spacing-0;
+
+        li {
+          margin-left: $field-list-spacing-0;
+
+          .e-text-content {
+            display: flex;
+          }
+        }
+      }
+    }
+
+    /* stylelint-disable */
+    .e-pivot-calc-input.e-empty-field::-webkit-input-placeholder,
+    .e-pivot-calc-input.e-empty-field:-moz-placeholder,
+    .e-pivot-calc-input.e-empty-field::-moz-placeholder,
+    .e-pivot-calc-input.e-empty-field:-ms-input-placeholder{
+      color: $error-font-color !important;
+      font-weight: $field-list-font-weight-semibold !important;
+    }
+    /* stylelint-enable */
+
+    .e-pivot-formula {
+      background-color: $pivot-formula-background;
+      border: $field-list-border-1 solid $pivot-formula-border;
+      border-radius: $field-list-default-border-radius;
+      color: $field-list-default-formula-font-color;
+      font-size: $field-list-calc-formula-font-size;
+      height: $field-list-height-70;
+      // opacity: .38;
+      padding: $pivot-calculated-formula-font-padding;
+      resize: none;
+      width: $field-list-width-100p;
+
+      &.e-copy-drop {
+        cursor: copy;
+      }
+    }
+
+    .e-list-parent .e-list-text {
+      min-width: $field-list-width-100;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: $field-list-width-100p;
+    }
+
+    .e-pivot-treeview-outer {
+      background-color: $pivot-formula-background;
+      border: $field-list-border-1 solid $pivot-formula-border;
+      border-radius: $field-list-default-border-radius;
+      height: $field-list-height-120;
+      overflow: auto;
+      
+      @if ($skin-name == 'fluent2' or $skin-name =='tailwind3') {
+        .e-pivot-treeview-outer-div{
+          .e-pivot-treeview{
+            border: $field-list-border-none;
+          }
+        }
+      }
+    }
+
+    /* stylelint-disable */
+    &.e-olap-calc-dialog-div {
+      min-width: $field-list-width-575;
+
+      .e-pivot-calc-outer-div {
+        display: flex;
+
+        .e-olap-field-tree-div {
+          height: $olap-tree-wrapper-height;
+          width: $field-list-width-50p;
+
+          .e-pivot-treeview-outer {
+            height: $field-list-height-100p;
+            margin-top: $field-list-spacing-0;
+            overflow: hidden;
+
+            .e-pivot-treeview-outer-div {
+              display: inline-block;
+              height: $olap-tree-outer-div-height;
+              overflow: auto;
+              width: $field-list-width-100p !important;
+            }
+
+            .e-treeview {
+              display: inline-table;
+              height: $field-list-height-100p;
+              width: $field-list-width-100p;
+              min-width: $field-list-width-265;
+
+              @if ($skin-name == 'fluent2' or $skin-name =='tailwind3') {
+                border: $field-list-border-none;
+              }
+
+              ul {
+                .e-list-text {
+                  margin-bottom: $field-list-spacing-0; 
+                  overflow: unset;
+                  width: $field-list-width-100p;
+                }
+
+                .e-calcfieldmember .e-list-text{
+                  width: $field-list-width-150;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .e-list-item .e-text-content {
+                  margin: $field-list-spacing-0;
+                  padding: $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-24;
+                }
+
+                .e-remove-report.e-list-icon {
+                  cursor: pointer;
+                  font-size: $field-list-font-icon-13;
+                  margin-top: $field-list-spacing-3;
+                  padding-left: $field-list-spacing-0;
+                  padding-right: $field-list-spacing-0;
+                  @if($skin-name == 'tailwind') {
+                    margin-top: $field-list-spacing-10;
+                  }
+                }
+
+                .e-list-icon {
+                  cursor: auto;
+                  font-size: $field-list-icon-size;
+                  width: $field-list-width-auto;
+
+                  &.e-edit,
+                  &.e-edited {
+                    cursor: pointer;
+                    padding: $field-list-spacing-7 !important;
+                  }
+                }
+
+                .e-list-item div.e-icons {
+                  padding: $field-list-spacing-0;
+                  height: $field-list-height-auto;
+                  float: none !important;
+                }
+
+                li {
+                  &.e-draggable{
+                    .e-fullrow {
+                      cursor: move;
+                    }
+                  }
+                  
+                  margin-left: $field-list-spacing-0;
+                  margin-right: $field-list-spacing-0;
+                }
+              }
+
+              &.e-rtl {
+                ul {
+                  .e-list-icon {
+                    transform: rotateX(0deg) rotateY(180deg);
+                  }
+
+                  .e-list-item .e-text-content {
+                    padding: $field-list-spacing-0 $field-list-spacing-24 $field-list-spacing-0 $field-list-spacing-0;
+                  }
+
+                  li {
+                    margin-left: $field-list-spacing-0;
+                    margin-right: $field-list-spacing-0;
+                  }
+                }
+              }
+            }
+
+            .e-treeview ul:first-child {
+              padding-left: $field-list-spacing-10;
+              padding-right: $field-list-spacing-10;
+            }
+
+            .e-pivot-all-field-title {
+              color: $field-list-default-header-font-color;
+              flex: auto;
+              margin-top: $field-list-spacing-0;
+              padding-bottom: $pivot-calculated-header-padding;
+              padding-left: $field-list-header-padding;
+              padding-right: $field-list-header-padding;
+              @if ($skin-name == 'Material3') {
+                font-size: $field-list-header-font-size !important;
+              }
+            }
+
+            .e-pivot-all-field-title-container {
+              background: $field-list-header-background-color;
+              color: $field-list-default-header-font-color;
+              display: flex;
+              font-size: $field-list-header-font-size;
+              @if ($skin-name == 'tailwind') {
+                height: 30px;
+              }
+
+              .e-info {
+                padding: $field-list-spacing-7 !important;
+
+                &:hover {
+                  color: $field-list-active-color;
+                }
+              }
+            }
+          }
+        }
+
+        .e-pivot-calculated-div {
+          flex: auto;
+          margin-left: $field-list-spacing-18;
+
+          .e-pivot-formula {
+            height: $field-list-height-100;
+          }
+
+          .e-pivot-calc-custom-format-div {
+            margin-top: $field-list-spacing-15;
+          }
+
+          .e-pivot-formula-title,
+          .e-pivot-field-name-title,
+          .e-olap-hierarchy-title,
+          .e-pivot-format-title,
+          .e-olap-member-title {
+            padding-left: $field-list-spacing-0;
+            padding-right: $field-list-spacing-0;
+          }
+
+          .e-pivot-field-name-title {
+            margin-top: $field-list-spacing-0;
+            padding-top: $field-list-spacing-0;
+          }
+        }
+      }
+
+      &.e-dialog {
+        max-height: $field-list-height-700 !important;
+
+        .e-calc-clear-btn {
+          float: left;
+          margin: $field-list-spacing-0;
+        }
+      }
+
+      &.e-rtl {
+        .e-pivot-calc-outer-div {
+           .e-pivot-calculated-div {
+            margin-left: $field-list-spacing-0;
+            margin-right: $field-list-spacing-18;
+          }
+        }
+
+        &.e-dialog {
+          .e-calc-clear-btn {
+            float: right;
+          }
+        }
+      }
+    }
+    /* stylelint-enable */
+  }
+
+  .e-pivotfieldlist-container {
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog {
+      /* stylelint-disable */
+      max-width: $field-list-width-400 !important;
+      min-width: $field-list-width-320 !important;
+      &.e-node-limit {
+        max-height: $field-list-height-450 !important;
+      }
+      /* stylelint-enable */
+
+      .e-member-prompt {
+        padding: $field-list-spacing-25 $field-list-editor-search-padding-size;
+        text-align: center;
+        width: $field-list-width-100p;
+      }
+
+      .e-editor-search-container {
+        display: flex;
+        padding: $field-list-member-editor-search-padding;
+
+        .e-clear-icon-hide {
+          visibility: hidden;
+        }
+      }
+
+      @if ($field-list-skin == 'bootstrap4') {
+        &:not(.e-excel-filter) {
+          .e-editor-search-container {
+            padding: $field-list-spacing-5 $field-list-editor-search-padding-size $field-list-spacing-10;
+          }
+        }
+      }
+
+      .e-select-all-container {
+        ul li .e-text-content > .e-icon-expandable {
+          display: none;
+        }
+
+        @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
+          .e-select-all {
+            border: $field-list-border-none;
+          }
+        }
+      }
+
+      .e-append-checkbox-container .e-append-checkbox {
+        align-items: center;
+        display: flex;
+        height: $field-list-add-filter-selection-height;
+        margin-left: $field-list-add-filter-selection-margin;
+      }
+
+      .e-member-editor-container-outer-div {
+        display: inline-block;
+        height: $field-list-member-filter-list-height;
+        max-width: $field-list-width-400;
+        overflow: auto;
+        width: $field-list-width-100p;
+      }
+
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-member-editor-container-outer-div {
+        height: calc($field-list-member-filter-list-height - $field-list-add-filter-selection-height);
+      }
+
+      .e-member-editor-container {
+        display: inline-table;
+        width: $field-list-width-100p;
+
+        @if ($skin-name == 'fluent2' or $skin-name =='tailwind3'){
+          border: $field-list-border-none;
+        }
+
+        &.e-rtl {
+          ul {
+            .e-list-icon {
+              transform: rotateX(0deg) rotateY(180deg);
+            }
+          }
+        }
+      }
+
+      &:not(.e-member-editor-dialog):not(.e-olap-field-list-tree) {
+        ul {
+          padding-left: $field-list-treeview-mobile-ul-padding;
+
+          li.e-pivot-parent {
+            @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+              padding-left: $field-list-spacing-13;
+            }
+            @if ($skin-name == 'tailwind') {
+              padding-left: $field-list-spacing-5;
+            }
+          }
+
+          li:not(.e-pivot-parent):not(.e-pivot-child) {
+            .e-text-content {
+              padding-left: $field-list-treeview-mobile-li-padding;
+              margin-left: $field-list-adaptive-footer-padding-size;
+            }
+          }
+        }
+      }
+
+      .e-member-editor-container ul {
+        /* stylelint-disable */
+        margin-left: $field-list-member-filter-list-padding-size;
+        /* stylelint-enable */
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: $field-list-spacing-0;
+          }
+        }
+      }
+
+      /* stylelint-disable */
+      .e-disable {
+        display: none !important;
+      }
+      /* stylelint-enable */
+
+      &.e-rtl {
+        &:not(.e-member-editor-dialog):not(.e-olap-field-list-tree) {
+          ul {
+            padding-right: $field-list-treeview-mobile-ul-padding;
+
+            li.e-pivot-parent {
+              @if ($skin-name == 'bootstrap5') {
+                padding-right: $field-list-spacing-7;
+              }
+              @if ($skin-name == 'FluentUI') {
+                padding-right: $field-list-spacing-13;
+              }
+              @if ($skin-name == 'tailwind') {
+                padding-right: $field-list-spacing-5;
+              }
+            }
+
+            li:not(.e-pivot-parent):not(.e-pivot-child) {
+              .e-text-content {
+                padding-right: $field-list-treeview-mobile-li-padding;
+              }
+            }
+          }
+        }
+        .e-member-editor-outer-container {
+          ul {
+            margin-right: $field-list-member-filter-list-padding-size;
+            margin-left: $field-list-spacing-0;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-outer-container {
+          .e-member-editor-container ul {
+            margin-left: $field-list-spacing-0;
+          }
+
+          .e-treeview ul:first-child {
+            padding-left: $field-list-spacing-10;
+            padding-right: $field-list-spacing-10;
+          }
+
+          .e-editor-search-container {
+            display: flex;
+          }
+
+          @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
+            .e-select-all-container {
+              .e-select-all {
+                border: $field-list-border-none;
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            ul {
+              margin-right: $field-list-spacing-0;
+            }
+          }
+        }
+      }
+    }
+
+    .e-member-editor-dialog {
+      height: 350px;
+
+      &.e-excel-filter,
+      &.e-member-editor-overflow {
+        height: 400px;
+      }
+
+      &.e-excel-filter.e-member-editor-overflow {
+        height: 440px;
+      }
+
+      .e-toolbar .e-toolbar-items {
+        margin-left: $field-list-filter-toolbar-items-margin;
+      }
+
+      .e-clear-filter-button {
+        float: left;
+        /* stylelint-disable */
+        margin: $field-list-spacing-0 !important;
+        /* stylelint-enable */
+        @if ($skin-name == 'FluentUI') {
+          margin-left: $field-list-spacing-0;
+          margin-right: $field-list-spacing-0;
+        }
+
+        &.e-disable {
+          display: none;
+        }
+      }
+
+      .e-editor-label-container {
+        align-items: center;
+        background: $field-list-editor-label-fill;
+        /* stylelint-disable */
+        display: flex !important;
+        /* stylelint-enable */
+        height: $field-list-height-40;
+        justify-content: center;
+        opacity: $field-list-editor-label-excel-opacity;
+        @if ($skin-name == 'Material3') {
+          border-top: $field-list-separator-border;
+        }
+
+        &.e-label-container-visible {
+          display: block;
+        }
+
+        &.e-label-container-hide {
+          /* stylelint-disable */
+          display: none !important;
+          /* stylelint-enable */
+        }
+
+        .e-editor-label {
+          color: $field-list-editor-label-color;
+          font: $field-list-editor-label-font;
+          margin-bottom: $field-list-spacing-0;
+          opacity: $field-list-editor-label-opacity;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .e-filter-sort {
+        box-shadow: none;
+        margin-left: $field-list-sort-wrapper-padding-size;
+
+        .e-member-sort {
+          @if ($field-list-skin == 'bootstrap4') {
+            background-color: $content-bg;
+            border-color: $gray-400;
+            color: $gray-700;
+          }
+
+          @if ($skin-name == 'Material3') {
+            border: $field-list-border-1 solid $format-outer-border-color;
+            border-radius: $field-list-member-sort-border-radius;
+            min-width: 40px;
+          }
+
+          &:hover {
+            @include wrap-styles;
+          }
+
+          &.e-active {
+            @include active-wrap-styles;
+          }
+
+          .e-sort-ascend-icon,
+          .e-sort-descend-icon {
+            font-size: $field-list-font-icon-16;
+          }
+
+          &:focus {
+            @include wrap-styles;
+
+            &.e-active {
+              @include active-wrap-styles;
+            }
+          }
+        }
+      }
+
+      .e-select-all-container ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: $field-list-spacing-0;
+          }
+        }
+      }
+
+      .e-filter-tab-container {
+        border: $field-list-border-0;
+
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-6;
+          }
+
+          .e-text-wrap {
+            .e-tab-icon {
+              height: fit-content;
+
+              &::before {
+                font-size: $field-list-font-icon-14;
+                /* stylelint-disable */
+                top: 0 !important;
+                /* stylelint-enable */
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: $field-list-spacing-0 $field-list-spacing-6 $field-list-spacing-0 $field-list-spacing-0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        padding-top: $field-list-spacing-20;
+
+        @if ($skin-name == 'tailwind') {
+          padding-top: $field-list-spacing-12;
+        }
+
+        @if ($skin-name == 'tailwind3') {
+          padding-top: $field-list-spacing-16;
+        }
+        /* stylelint-disable */
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-height !important;
+        }
+      }
+
+      &:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($field-list-excel-member-filter-height - $field-list-add-filter-selection-height) !important;
+      }
+
+      &.e-node-limit .e-excelfilter .e-member-editor-container-outer-div {
+        height: $field-list-excel-member-filter-node-limit-height !important;
+      }
+
+      &.e-node-limit:has(.e-append-filter-wrapper:not(.e-disable)) .e-excelfilter .e-member-editor-container-outer-div {
+        height: calc($field-list-excel-member-filter-node-limit-height - $field-list-add-filter-selection-height) !important;
+        /* stylelint-enable */
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-height;
+        overflow: auto;
+        padding: $field-list-spacing-20;
+        padding-bottom: $field-list-spacing-0;
+
+        .e-filter-text-div {
+          /* stylelint-disable */
+          color: $field-list-filter-text-color !important;
+          /* stylelint-enable */
+          font-size: $field-list-font-size-14;
+          font-weight: $field-list-font-weight-medium;
+          @if ($skin-name == 'tailwind') {
+            padding: $field-list-spacing-4;
+          }
+        }
+
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
+        .e-separator-div {
+          padding-top: $field-list-spacing-20;
+        }
+
+        .e-between-text-div {
+          padding: $field-list-spacing-8 $field-list-spacing-0;
+        }
+
+        .e-disable {
+          display: none;
+        }
+
+        @if ($skin-name == 'tailwind') {
+          padding-top: $field-list-spacing-0;
+        }
+      }
+
+      &.e-rtl {
+        .e-toolbar .e-toolbar-items {
+          margin-left: $field-list-spacing-0;
+          margin-right: $field-list-filter-toolbar-items-margin;
+        }
+
+        .e-member-editor-outer-container {
+          .e-editor-search-container {
+            .e-filter-sort {
+              margin-left: $field-list-spacing-0;
+              margin-right: $field-list-sort-wrapper-padding-size;
+
+              .e-member-sort {
+                &:first-of-type {
+                  @if ($skin-name == 'Material3') {
+                    border-top-left-radius: $field-list-radius-0;
+                    border-bottom-left-radius: $field-list-radius-0;
+                  }
+                }
+                &:last-of-type {
+                  @if ($skin-name == 'Material3') {
+                    border-top-right-radius: $field-list-radius-0;
+                    border-bottom-right-radius: $field-list-radius-0;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .e-footer-content {
+          .e-clear-filter-button {
+            float: right;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-outer-container {
+          .e-select-all-container ul {
+            margin-left: $field-list-spacing-0;
+          }
+
+          .e-editor-search-container {
+            .e-level-drop {
+              margin: $field-list-spacing-0 $field-list-spacing-5;
+
+              .e-caret {
+                font-size: $field-list-icon-size;
+              }
+
+              li .e-disabled {
+                opacity: .5;
+                pointer-events: none;
+              }
+            }
+          }
+        }
+
+        /* stylelint-disable */
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            .e-editor-search-container {
+              .e-filter-sort {
+                margin-left: $field-list-spacing-0;
+                margin-right: $field-list-sort-wrapper-padding-size;
+              }
+            }
+          }
+        }
+      }
+
+      .e-member-editor-outer-container:not(.e-excelfilter) {
+        .e-editor-search-container {
+          padding-top: $field-list-spacing-4 !important;
+        }
+
+        @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
+          .e-select-all-container {
+            .e-select-all {
+              border: $field-list-border-none;
+            }   
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      ul:first-child {
+        min-height: $field-list-height-170;
+        overflow: auto;
+      }
+
+      .e-member-editor-container ul {
+        li {
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: $field-list-spacing-10;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        &.e-rtl {
+          .e-member-editor-outer-container {
+            ul li {
+              .e-calc-measure-icon,
+              .e-calc-dimension-icon,
+              .e-attributeCDB-icon,
+              .e-hierarchyCDB-icon,
+              .e-level-members,
+              .e-namedSetCDB-icon,
+              .e-measure-icon,
+              .e-kpiGoal-icon,
+              .e-kpiStatus-icon,
+              .e-kpiTrend-icon,
+              .e-kpiValue-icon {
+                margin-left: $field-list-spacing-0;
+                margin-right: $field-list-spacing-10;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      max-width: $field-list-width-400 !important;
+      min-width: $field-list-width-300 !important;
+
+      .e-dlg-content {
+        overflow: auto !important;
+      }
+
+      .e-value-field-div-content {
+        padding: $field-list-spacing-0 $field-list-editor-search-padding-size $field-list-spacing-10;          
+
+        .e-field-option-container {
+          .e-field-name-text-container {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: $field-list-font-size-14;
+              font-weight: $field-list-font-weight-medium;
+            }
+
+            .e-field-name-title {
+              flex: none;
+              white-space: pre;
+            }
+
+            .e-field-name-content {
+              flex: auto;
+              width: $field-list-width-100p;
+            }
+          }
+
+          .e-caption-input-container,
+          .e-type-option-container,
+          .e-base-field-option-container,
+          .e-base-item-option-container {
+            padding-top: $field-list-editor-search-padding-size;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text {
+              font-size: $field-list-value-field-option-text-font-size;
+              font-weight: $field-list-font-weight-medium;
+              width: $field-list-width-100p;
+
+              @if ($skin-name == 'tailwind') {
+                padding-bottom: $field-list-spacing-4;
+              }
+            }
+
+            .e-caption-input-text {
+              font-size: $field-list-value-field-caption-font-size;
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      border-radius: $field-list-dialog-radius;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: $field-list-border-0;
+        font-weight: $field-list-font-weight-normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: $field-list-radius-0;
+        border-top-right-radius: $field-list-radius-0;
+        @if ($skin-name != 'FluentUI') and ($skin-name != 'tailwind3') {
+          padding-top: $field-list-editor-dialog-footer-padding;
+          padding-bottom: $field-list-editor-dialog-footer-padding;
+        }
+        @if ($skin-name == 'FluentUI') {
+          border-top: $field-list-border-0;
+        }
+        @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+          padding: $field-list-editor-dialog-footer-padding;
+        }
+        @if ($skin-name =='Material3') {
+          white-space: nowrap;
+        }
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: $field-list-spacing-0 !important;
+        @if ($skin-name == 'Material3') {
+          border-radius: $field-list-radius-0;
+        }
+
+        .e-member-editor-outer-container ul li .e-text-content .e-checkbox-wrapper {
+          @if ($skin-name == 'Material3') {
+            margin: $field-list-spacing-0 !important;
+          }
+        }
+
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: $field-list-font-weight-semibold !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: $field-list-font-weight-semibold !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: $field-list-font-weight-semibold !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: $field-list-font-weight-semibold !important;
+        }
+        /* stylelint-enable */
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content {
+        .e-member-editor-outer-container {
+          .e-member-editor-container-outer-div {
+            height: $field-list-member-field-list-height;
+          }
+        }
+      }
+    }
+  }
+
+  .e-field-list-tree.e-drag-item.e-treeview,
+  .e-pivot-calc.e-drag-item.e-treeview {
+    background: $field-list-drag-clone-bg-color;
+    border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    height: $field-list-drag-clone-height;
+    line-height: $field-list-drag-clone-line-height;
+    min-width: $field-list-width-100;
+    padding: $field-list-spacing-5 $field-list-spacing-10;
+    @if ($field-list-skin == 'bootstrap4') {
+      border: $field-list-spacing-0;
+      padding: $field-list-spacing-6 $field-list-spacing-10;
+    }
+    @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
+      line-height: $field-list-line-height-normal;
+      padding: $field-list-spacing-0 $field-list-spacing-10;
+    }
+
+    .e-text-content {
+      align-items: center;
+      display: flex;
+      height: $field-list-height-100p;
+      padding: $field-list-spacing-0;
+      text-align: center;
+      width: $field-list-width-100p;
+      @if ($field-list-skin == 'bootstrap4') {
+        box-shadow: none;
+      }
+
+      .e-list-text {
+        color: $field-list-treeview-text-color;
+        font-size: $field-list-drag-clone-font-size;
+        width: $field-list-width-100p;
+        @if ($skin-name == 'Material3') {
+          min-height: auto;
+        }
+        @if ($skin-name == 'fluent2') {
+          padding: $field-list-spacing-7 $field-list-spacing-0;
+        }
+      }
+    }
+
+    .e-text-content > .e-icons,
+    .e-checkbox-wrapper,
+    .e-list-icon {
+      display: none;
+    }
+
+    &.e-rtl {
+      .e-text-content {
+        padding-right: $field-list-spacing-0;
+      }
+    }
+
+    &.e-drag-restrict {
+      .e-text-content {
+        padding-left: $field-list-spacing-24;
+
+        .e-list-text {
+          padding: $field-list-spacing-0;
+        }
+      }
+
+      /* stylelint-disable */
+      .e-no-drop {
+        display: inline-block !important;
+        line-height: $field-list-line-height-0em;
+        @if ($field-list-skin == 'bootstrap4') {
+          color: $field-list-drag-clone-text-color;
+          opacity: 0.7;
+        }
+
+        &::before {
+          float: left;
+          font-size: $field-list-drag-clone-font-size;
+          padding: $field-list-spacing-5 $field-list-spacing-0;
+        }
+      }
+      /* stylelint-enable */
+
+      &.e-rtl {
+        .e-text-content {
+          padding-left: $field-list-spacing-0;
+          padding-right: $field-list-spacing-24;
+
+          .e-icons {
+            transform: rotateY(180deg);
+          }
+        }
+      }
+    }
+  }
+
+  /* stylelint-disable */
+  .e-button-drag-clone {
+    background: $field-list-drag-clone-bg-color !important;
+    border: $field-list-border-size $field-list-border-type $field-list-drag-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    color: $field-list-drag-clone-text-color;
+    font-size: $field-list-drag-clone-font-size;
+    font-family: $field-list-font-family;
+    height: $field-list-drag-clone-height;
+    line-height: $field-list-drag-clone-line-height;
+    min-width: $field-list-width-100;
+    overflow: hidden;
+    padding: $field-list-spacing-5 $field-list-spacing-10;
+    text-align: center;
+    width: $field-list-width-auto;
+    z-index: 100000;
+    @if ($field-list-skin == 'bootstrap4') {
+      border: $field-list-border-0;
+      padding: $field-list-spacing-6 $field-list-spacing-10;
+    }
+    @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+      line-height: $field-list-line-height-normal;
+      padding: $field-list-spacing-0 $field-list-spacing-10;
+    }
+
+    .e-text-content {
+      width: $field-list-width-100p;
+      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+        display: inline;
+        vertical-align: sub;
+      }
+    }
+  }
+
+  .e-pivot-error-dialog {
+    max-width: $field-list-width-400 !important;
+    width: auto !important;
+  }
+}

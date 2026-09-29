@@ -1,5 +1,6 @@
 import { Gantt } from './gantt';
 import { ProjectCalendarModel, TaskCalendarModel, HolidayModel, DayWorkingTimeModel } from '../models/models';
+import { IWorkingTimeRange } from './interface';
 import { CalendarContext } from './calendar-context';
 /**
  * CalendarModule provides calendar management functionality for handling task-specific and project-wide calendars.
@@ -34,6 +35,96 @@ export class CalendarModule {
             return projectCalendar;
         }
         return projectCalendar;
+    }
+    private getDirectEndDate(
+        startDate: Date,
+        duration: number
+    ): Date {
+        if (duration < 0) {
+            return startDate;
+        }
+        const resultDate: Date = new Date(startDate.getTime());
+        resultDate.setDate(resultDate.getDate() + (duration - 1));
+        const exception: {
+            hasException: boolean;
+            data: any;
+        } = this.parent.defaultCalendarContext.getExceptionForDate(resultDate);
+        const endTime: number = exception.hasException ? exception.data.endTime : this.parent.defaultEndTime;
+        const hours: number = Math.floor(endTime / 3600);
+        const minutes: number = Math.floor((endTime % 3600) / 60);
+        const seconds: number = endTime % 60;
+        resultDate.setHours(hours, minutes, seconds, 0);
+        return resultDate;
+    }
+    private calculateDayWidth(ranges: IWorkingTimeRange[], startSec: number, endSec: number, perDayWidth: number): number {
+        let totalSeconds: number = 0;
+        for (const r of ranges) {
+            totalSeconds += (r.to - r.from);
+        }
+        let coveredSeconds: number = 0;
+        for (const r of ranges) {
+            if (endSec <= r.from) {
+                break;
+            }
+            if (startSec >= r.to) {
+                continue;
+            }
+            const effectiveStart: number = Math.max(startSec, r.from);
+            const effectiveEnd: number = Math.min(endSec, r.to);
+            if (effectiveEnd > effectiveStart) {
+                coveredSeconds += (effectiveEnd - effectiveStart);
+            }
+        }
+        return (coveredSeconds / totalSeconds) * perDayWidth;
+    }
+    private calculateWidthWithExceptions(
+        sDate: Date,
+        eDate: Date,
+        startException: { hasException: boolean; data: any },
+        endException: { hasException: boolean; data: any }
+    ): number {
+        let width: number = 0;
+        const sameDay: boolean = sDate.toDateString() === eDate.toDateString();
+        let ranges: IWorkingTimeRange[];
+        if (sameDay) {
+            ranges = startException.hasException
+                ? startException.data.workingRange
+                : this.parent.workingTimeRanges;
+            width = this.calculateDayWidth(
+                ranges,
+                this.parent.dataOperation['getSecondsInDecimal'](sDate),
+                this.parent.dataOperation['getSecondsInDecimal'](eDate),
+                this.parent.perDayWidth
+            );
+        } else {
+            // start date partial
+            ranges = startException.hasException
+                ? startException.data.workingRange
+                : this.parent.workingTimeRanges;
+            width += this.calculateDayWidth(
+                ranges,
+                this.parent.dataOperation['getSecondsInDecimal'](sDate),
+                ranges[ranges.length - 1].to,
+                this.parent.perDayWidth
+            );
+            // in-between full days
+            const daysBetween: number =
+                Math.floor((eDate.getTime() - sDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysBetween > 0) {
+                width += daysBetween * this.parent.perDayWidth;
+            }
+            // end date partial
+            ranges = endException.hasException
+                ? endException.data.workingRange
+                : this.parent.workingTimeRanges;
+            width += this.calculateDayWidth(
+                ranges,
+                ranges[0].from,
+                this.parent.dataOperation['getSecondsInDecimal'](eDate),
+                this.parent.perDayWidth
+            );
+        }
+        return width;
     }
     public holidays: HolidayModel[] = [];
     public workingTime: DayWorkingTimeModel[] = [];

@@ -321,6 +321,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * * `PopulationVar`: Allows to display the pivot table values with population variance.
      * * `SampleVar`: Allows to display the pivot table values with sample variance.
      * * `RunningTotals`: Allows to display the pivot table values with running totals.
+     * * `PercentageOfRunningTotals`: Allows to display the pivot table values with cumulative percentage of running totals.
      * * `DifferenceFrom`: Allows to display the pivot table values with difference from the value of the base item in the base field.
      * * `PercentageOfDifferenceFrom`: Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
      * * `PercentageOfGrandTotal`: Allows to display the pivot table values with percentage of grand total of all values.
@@ -333,11 +334,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * > It is applicable only for Relational data.
      *
      * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar',
-     * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
+     * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfRunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
      * 'PercentageOfParentTotal']
      */
-    @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
+    @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfRunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
     public aggregateTypes: AggregateTypes[];
 
     /**
@@ -494,12 +495,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /**
      * It triggers when UI action begins in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionBegin
      */
@@ -509,12 +510,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /**
      * It triggers when UI action in the Pivot FieldList completed. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionComplete
      */
@@ -524,12 +525,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /**
      * It triggers when UI action failed to achieve the desired results in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
-     * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
+     * [`Calculated field`](../../pivotview/field-list#calculated-fields) UI,
      * Button actions such as
-     * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
-     * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`editing`](../../pivotview/calculated-field#editing-through-the-field-list-and-the-groupingbar),
+     * [`sorting`](../../pivotview/field-list#sorting-members),
+     * [`filtering`](../../pivotview/field-list#filtering-members) and
+     * [`aggregation`](../../pivotview/field-list#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionFailure
      */
@@ -574,7 +575,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public getAllSummaryType(): AggregateTypes[] {
         return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index',
-            'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal',
+            'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfRunningTotals', 'PercentageOfGrandTotal',
             'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
             'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
     }
@@ -669,6 +670,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             LessThanOrEqualTo: 'Less Than Or Equal To',
             Between: 'Between',
             NotBetween: 'Not Between',
+            Top: 'Top',
+            Bottom: 'Bottom',
             Before: 'Before',
             BeforeOrEqualTo: 'Before Or Equal To',
             After: 'After',
@@ -695,6 +698,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             SampleVar: 'Sample Var',
             PopulationVar: 'Population Var',
             RunningTotals: 'Running Totals',
+            PercentageOfRunningTotals: '% of Running Totals',
             DifferenceFrom: 'Difference From',
             PercentageOfDifferenceFrom: '% of Difference From',
             PercentageOfGrandTotal: '% of Grand Total',
@@ -753,7 +757,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             no: 'No',
             None: 'None',
             qtr: 'Qtr',
-            grandTotal: 'Grand Total'
+            grandTotal: 'Grand Total',
+            addCurrentSelection: 'Add current selection to filter'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -1203,10 +1208,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         this.engineModule.data = [];
                         this.engineModule.pivotValues = [];
                         this.engineModule.groupingFieldsInfo = {};
+                        this.engineModule.rowCount = 0;
+                        this.engineModule.columnCount = 0;
                     } else if (this.dataType === 'olap') {
                         this.olapEngineModule.fieldList = {};
                         this.olapEngineModule.fieldListData = undefined;
                         this.olapEngineModule.isEmptyData = true;
+                        this.olapEngineModule.rowCount = 0;
+                        this.olapEngineModule.columnCount = 0;
                     }
                     if (!isNullOrUndefined(this.staticPivotGridModule)) {
                         this.staticPivotGridModule.pivotValues = [];
@@ -1985,7 +1994,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.engineModule.fieldList = {};
             this.engineModule.rMembers = null;
             this.engineModule.cMembers = null;
-            (this.engineModule as PivotEngine).valueMatrix = [];
             this.engineModule.pivotValues = [];
             this.engineModule.data = [];
             this.engineModule = null;

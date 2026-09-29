@@ -833,7 +833,7 @@ describe('PdfFreeTextAnnotation uncovered branches', () => {
                 PdfTextAlignment.left
             );
 
-            expect(rectangle).toEqual([10, 20, 30, 40]);
+            expect(rectangle).toEqual([10, -20, 30, -40]);
             expect((annotation as unknown as { _drawAppearance: jasmine.Spy })._drawAppearance)
                 .toHaveBeenCalledWith(graphics, parameter, rectangle);
             expect((graphics.rotateTransform as jasmine.Spy)).toHaveBeenCalledWith(-90);
@@ -854,7 +854,7 @@ describe('PdfFreeTextAnnotation uncovered branches', () => {
                 PdfTextAlignment.left
             );
 
-            expect(rectangle).toEqual([10, 20, 30, 40]);
+            expect(rectangle).toEqual([10, -20, 30, -40]);
             expect((graphics.rotateTransform as jasmine.Spy)).toHaveBeenCalledWith(-180);
 
             document.destroy();
@@ -873,7 +873,7 @@ describe('PdfFreeTextAnnotation uncovered branches', () => {
                 PdfTextAlignment.left
             );
 
-            expect(rectangle).toEqual([1, 2, 3, 4]);
+            expect(rectangle).toEqual([1, -2, 3, -4]);
             expect((graphics.rotateTransform as jasmine.Spy)).toHaveBeenCalledWith(-270);
 
             document.destroy();
@@ -893,7 +893,7 @@ describe('PdfFreeTextAnnotation uncovered branches', () => {
                 PdfTextAlignment.left
             );
 
-            expect(rectangle).toEqual([5, 6, 7, 8]);
+            expect(rectangle).toEqual([5, -6, 7, -8]);
             expect((graphics.rotateTransform as jasmine.Spy)).not.toHaveBeenCalled();
 
             document.destroy();

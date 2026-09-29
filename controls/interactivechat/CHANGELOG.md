@@ -2,34 +2,6 @@
 
 ## [Unreleased]
 
-## 34.2.9 (2026-09-22)
-
-### Chat UI
-
-#### Features
-
-- `#I824879` - Now we have introduced a new method `prependMessages` to better support loading earlier conversations and improving chat continuity.
-
-    - **prependMessages** – Prepends messages to the beginning of the Chat UI conversation area. This method inserts the specified messages either as `messages[]` or `MessageModel[]` as the first entries in the chat, making it ideal for loading historical messages when users scroll over the chat or reopen previous conversations.
-
-### AI AssistView
-
-#### Bug Fixes
-
-- `#I828524` - Now the issue with scroll to bottom button missing when the response is hidden has been resolved.
-
-### Chat UI
-
-#### Bug Fixes
-
-- `#I823171` - Now the issue with unpin `ItemClick` event not firing for the pinned message has been resolved.
-
-### AI AssistView
-
-#### Bug Fixes
-
-- Now the issue with interacting prompt suggestions containing HTML content not working in AI AssistView has been resolved.
-
 ## 29.1.33 (2025-03-25)
 
 ### Chat UI

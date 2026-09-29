@@ -21,6 +21,7 @@ export const twoWays: string[] = ['value'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,98 +30,40 @@ export const twoWays: string[] = ['value'];
         }
     ],
     queries: {
-
+        footerTemplate: new ContentChild('footerTemplate'),
+        headerTemplate: new ContentChild('headerTemplate'),
+        groupTemplate: new ContentChild('groupTemplate'),
+        itemTemplate: new ContentChild('itemTemplate'),
+        noRecordsTemplate: new ContentChild('noRecordsTemplate'),
+        actionFailureTemplate: new ContentChild('actionFailureTemplate')
     }
 })
 @ComponentMixins([ComponentBase, FormBase])
 export class ComboBoxComponent extends ComboBox implements IComponentBase {
     public formCompContext : any;
     public formContext : any;
-    public tagObjects: any;
-	actionBegin: any;
-	actionComplete: any;
-	actionFailure: any;
-	beforeOpen: any;
-	blur: any;
-	change: any;
-	close: any;
-	created: any;
-	customValueSpecifier: any;
-	dataBound: any;
-	destroyed: any;
-	filtering: any;
-	focus: any;
-	open: any;
-	resizeStart: any;
-	resizeStop: any;
-	resizing: any;
-	select: any;
-	public valueChange: any;
+    public declare tagObjects: any;
+	declare actionBegin: any;
+	declare actionComplete: any;
+	declare actionFailure: any;
+	declare beforeOpen: any;
+	declare blur: any;
+	declare change: any;
+	declare close: any;
+	declare created: any;
+	declare customValueSpecifier: any;
+	declare dataBound: any;
+	declare destroyed: any;
+	declare filtering: any;
+	declare focus: any;
+	declare open: any;
+	declare resizeStart: any;
+	declare resizeStop: any;
+	declare resizing: any;
+	declare select: any;
+	public declare valueChange: any;
 
 
-    /** 
-     * Accepts the template design and assigns it to the footer container of the popup list. 
-     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('footerTemplate')
-    @Template()
-    public footerTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the header container of the popup list. 
-     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('headerTemplate')
-    @Template()
-    public headerTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('groupTemplate')
-    @Template()
-    public groupTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to each list item present in the popup. 
-     * We have built-in `template engine`
-     * 
-     * which provides options to compile template string into a executable function.
-     *For EX: We have expression evolution as like ES6 expression string literals.
-     *     
-     * @default null
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('itemTemplate')
-    @Template()
-    public itemTemplate: any;
-    /** 
-     * Accepts the template design and assigns it to popup list of component 
-     * when no data is available on the component.
-     * @default 'No records found'
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('noRecordsTemplate')
-    @Template('No records found')
-    public noRecordsTemplate: any;
-    /** 
-     * Accepts the template and assigns it to the popup list content of the component 
-     * when the data fetch request from the remote server fails.
-     * @default 'Request failed'
-     * @asptype string
-     * @deprecated 
-     */
-    @ContentChild('actionFailureTemplate')
-    @Template('Request failed')
-    public actionFailureTemplate: any;
 
     private skipFromEvent:boolean = true;
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector, private cdr: ChangeDetectorRef) {
@@ -170,7 +113,13 @@ export class ComboBoxComponent extends ComboBox implements IComponentBase {
         this.formCompContext.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(ComboBoxComponent.prototype, 'footerTemplate');
+Template()(ComboBoxComponent.prototype, 'headerTemplate');
+Template()(ComboBoxComponent.prototype, 'groupTemplate');
+Template()(ComboBoxComponent.prototype, 'itemTemplate');
+Template('No records found')(ComboBoxComponent.prototype, 'noRecordsTemplate');
+Template('Request failed')(ComboBoxComponent.prototype, 'actionFailureTemplate');
 

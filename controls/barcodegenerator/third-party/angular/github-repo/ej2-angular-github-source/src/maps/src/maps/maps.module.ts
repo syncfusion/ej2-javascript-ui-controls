@@ -9,44 +9,31 @@ import { LayerDirective, LayersDirective } from './layers.directive';
 import { AnnotationDirective, AnnotationsDirective } from './annotations.directive';
 import { MapsComponent } from './maps.component';
 
+const MAPS_DIRECTIVES = [
+    MapsComponent,
+        InitialShapeSelectionDirective,
+        InitialShapeSelectionsDirective,
+        MarkerDirective,
+        MarkersDirective,
+        ColorMappingDirective,
+        ColorMappingsDirective,
+        BubbleDirective,
+        BubblesDirective,
+        NavigationLineDirective,
+        NavigationLinesDirective,
+        LayerDirective,
+        LayersDirective,
+        AnnotationDirective,
+        AnnotationsDirective
+];
+
 /**
  * NgModule definition for the Maps component.
+ * Re-exports standalone Maps component and directives so existing apps can keep using:
+ * `imports: [MapsModule]`
  */
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
-        MapsComponent,
-        InitialShapeSelectionDirective,
-        InitialShapeSelectionsDirective,
-        MarkerDirective,
-        MarkersDirective,
-        ColorMappingDirective,
-        ColorMappingsDirective,
-        BubbleDirective,
-        BubblesDirective,
-        NavigationLineDirective,
-        NavigationLinesDirective,
-        LayerDirective,
-        LayersDirective,
-        AnnotationDirective,
-        AnnotationsDirective
-    ],
-    exports: [
-        MapsComponent,
-        InitialShapeSelectionDirective,
-        InitialShapeSelectionsDirective,
-        MarkerDirective,
-        MarkersDirective,
-        ColorMappingDirective,
-        ColorMappingsDirective,
-        BubbleDirective,
-        BubblesDirective,
-        NavigationLineDirective,
-        NavigationLinesDirective,
-        LayerDirective,
-        LayersDirective,
-        AnnotationDirective,
-        AnnotationsDirective
-    ]
+    imports: [CommonModule, ...MAPS_DIRECTIVES],
+    exports: [...MAPS_DIRECTIVES]
 })
 export class MapsModule { }

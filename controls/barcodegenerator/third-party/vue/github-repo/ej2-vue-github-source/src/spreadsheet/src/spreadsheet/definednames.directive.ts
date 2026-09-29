@@ -34,7 +34,7 @@ export const DefinedNamesPlugin = {
 /**
  * `e-definedname` directive represent a defined name of the VueJS Spreadsheet.
  * It must be contained in a Spreadsheet component(`ejs-spreadsheet`).
- * ```vue
+ * ```html
  * <ejs-spreadsheet>
  *   <e-definednames>
  *    <e-definedname></e-definedname>

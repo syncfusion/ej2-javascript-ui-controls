@@ -1639,7 +1639,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (typeof this.filesData[this.count] === 'object') {
                 this.isFirstFileOnSelection = false;
                 this.upload(this.filesData[this.count], isFileListCreated);
-                if (this.filesData[this.count].statusCode === '0') {
+                if (this.filesData[this.count].statusCode === '0' && this.multiple) {
                     this.sequenceUpload(fileData);
                 }
             } else {

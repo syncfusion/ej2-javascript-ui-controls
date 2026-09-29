@@ -20,9 +20,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'ejs-timeline>e-items>e-item',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class ItemDirective extends ComplexBase<ItemDirective> {
@@ -38,22 +38,22 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * @vuetype string | function
      * @asptype string
      */
-    public content: any;
+    public declare content: any;
     /** 
      * Defines the CSS class to customize the Timeline item appearance.
      * @default ''
      */
-    public cssClass: any;
+    public declare cssClass: any;
     /** 
      * Defines whether to enable or disable the timeline item.
      * @default false
      */
-    public disabled: any;
+    public declare disabled: any;
     /** 
      * Defines one or more CSS classes to include an icon or image in the Timeline item.
      * @default ''
      */
-    public dotCss: any;
+    public declare dotCss: any;
     /** 
      * Defines the additional text content or template to be displayed opposite side of the item. The current itemIndex passed as context to build the content.
      * @default ''
@@ -62,7 +62,7 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
      * @vuetype string | function
      * @asptype string
      */
-    public oppositeContent: any;
+    public declare oppositeContent: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -78,6 +78,7 @@ export class ItemDirective extends ComplexBase<ItemDirective> {
  */
 @Directive({
     selector: 'ejs-timeline>e-items',
+    standalone: true,
     queries: {
         children: new ContentChildren(ItemDirective)
     },

@@ -1,4 +1,4 @@
-import { createElement, KeyboardEventArgs, L10n, classList } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, L10n, classList, updateCSSText } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -120,10 +120,11 @@ export class ImageProperties {
     }
     /* eslint-disable-next-line max-len */
     private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
-        const divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
+        const divElement: HTMLElement = createElement('div', { id: this.elementId + id, className: 'e-de-ctnr-segment' });
+        updateCSSText(divElement, 'position:relative;width:100%;');
         divElement.setAttribute('title', tooltip);
         outerDiv.appendChild(divElement);
-        const inputElement: HTMLElement = createElement('input', { id: this.elementId + inputId, className: 'e-textbox', styles: 'width:100%;' });
+        const inputElement: HTMLElement = createElement('input', { id: this.elementId + inputId, className: 'e-textbox e-de-image-property-input' });
         divElement.appendChild(inputElement);
         const spanElement: HTMLElement = createElement('span', { className: 'e-de-img-prty-span' });
         spanElement.textContent = spanContent;

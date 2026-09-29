@@ -5,6 +5,9 @@ import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ToolbarStatus } from '../../../src/editor-manager/plugin/toolbar-status';
 import { IToolbarStatus } from '../../../src/common/interface';
+import { renderRTE, setCursorPoint, destroy } from '../../rich-text-editor/render.spec';
+import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
+import { BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
 
 describe('Update Toolbar commands', () => {
     //HTML value
@@ -565,3 +568,74 @@ describe('962591 - FontName and FontSize should not be detected from block eleme
         expect(format.fontsize).toBe('18pt');
     });
 });
+describe('Bug 1004553: Toolbar font-size indicator stays 10 after pasting word text at 12.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;">Font Size 12</p>
+<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;"><span style="font-size: 10pt; line-height: 107%;">Font Size 10</span></p>
+<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;"><span style="font-size: 14pt; line-height: 107%;">Font Size 14</span></p>`,
+                toolbarSettings: {
+                    items: ['FontSize']
+                },
+                fontSize: {
+                    items: [
+                        { text: '8', value: '8pt' },
+                        { text: '10', value: '10pt' },
+                        { text: '12', value: '12pt' },
+                        { text: '14', value: '14pt' },
+                        { text: '42', value: '42pt' }
+                    ],
+                    width: '40px',
+                    default: '10pt',
+                }
+            });
+        });
+        it('When the cursor is placed on text with font size 12, the toolbar status should update accordingly.', (done) => {
+            const startNode: Element = rteObj.inputElement.firstChild.firstChild as Element;
+            setCursorPoint(startNode, 2);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-toolbar-item')[0].textContent).toBe('12');
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+describe('913719: Format Toolbar Becomes Empty When Focused Before the Table', ()=> {
+        let editor: RichTextEditor;
+        beforeEach(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Formats']
+                },
+                value: `<p>Paragraph 1</p><table class="e-rte-table" style="width: 20.6919%; min-width: 0px; height: 78px;"><tbody><tr style="height: 32.9114%;"><td class="" style="width: 33.3333%;"><br/></td></tr><tr style="height: 32.9114%;"><td style="width: 33.3333%;" class=""><br/></td></tr><tr style="height: 32.9114%;"><td style="width: 33.3333%;"><br/></td></tr></tbody></table><p>Paragraph 2</p>`
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it ('Should not have empty toolbar when focused before the table', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint(editor.inputElement, 1);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-dropdown-btn-text').textContent).not.toBe('');
+                done();
+            }, 100);
+        });
+        it ('Should not have empty toolbar when focused after the table', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint(editor.inputElement, 2);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-dropdown-btn-text').textContent).not.toBe('');
+                done();
+            }, 100);
+        });
+    });

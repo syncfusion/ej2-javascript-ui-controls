@@ -453,3 +453,28 @@ describe('1031002: Enter key does not insert link when Insert button is focused 
         }, 500);
     });
 });
+describe('Bug 988999: Insert Link Dialog Header doesn"t show tooltip in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' check the dialog header has title attribute in it', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                const dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                const headerEle: Element = dialogEle.querySelector('.e-dlg-header');
+                expect(headerEle.textContent.trim() === headerEle.getAttribute('title')).toBe(true);
+                done();
+            }, 100);
+        });
+    });

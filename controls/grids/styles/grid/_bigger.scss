@@ -1,4 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
+@use 'variables' as *;
 @mixin hover-color-styles($grid-skin, $material, $bootstrap) {
   @if $grid-skin == 'material3' {
     background: $material;
@@ -427,54 +427,10 @@
 
     @if $grid-skin == 'fluent2' {
       &.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-        margin-left: -5px;
         margin-top: 4px;
-      }
-      &.e-rtl.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-        margin-right: -2px;
       }
     }
 
-    @if $grid-skin == 'tailwind3' {
-      &.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-        margin-top: 4px;
-      }
-
-      &.e-device .e-gridheader .e-rightalign.e-fltr-icon .e-sortnumber {
-        margin: 0 4px 0 -15px;
-      }
-
-      &.e-device .e-gridheader .e-rightalign.e-fltr-icon .e-sortfilterdiv {
-        margin: -21px 10px -16px -13px;
-      }
-
-      &.e-device .e-gridheader .e-rightalign .e-sortnumber {
-        @if $grid-skin == 'tailwind3' {
-          margin: 1px 4px 0 0;
-        }
-        @else {
-          margin: 0 4px 0 -10px;
-        }
-      }
-
-      &.e-device .e-gridheader .e-rightalign .e-sortfilterdiv {
-        @if $grid-skin == 'tailwind3' {
-          margin: -16px 4px -16px -17px;
-        }
-        @else {
-          margin: -22px 4px -16px -13px;
-        }
-      }
-
-      &.e-device .e-gridheader .e-fltr-icon .e-sortnumber {
-        margin: 0 -4px 0 2px;
-      }
-
-      &.e-device .e-gridheader .e-fltr-icon .e-sortfilterdiv {
-        margin: -20px 18px -14px 5px;
-      }
-    }
-    
     .e-gridheader {
       .e-headercell .e-headercelldiv.e-headerchkcelldiv {
         @if $grid-skin == 'fluent2' {
@@ -830,7 +786,8 @@
 
     /* stylelint-disable */
     &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
-    &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
+    &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty,
+    &:not(.e-grid-min-height) .e-gridfooter tr.e-summaryrow .e-summarycell:empty {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding +  $grid-bigger-content-padding;
     }
 
@@ -884,8 +841,13 @@
 
     .e-row {
       .e-input-group .e-input.e-field,
-      .e-input-focus .e-input.e-field {
+      .e-input-focus .e-input.e-field,
+      .e-field.e-formula-edit {
         @include grid-edit-input-styles($grid-bigger-font-size, $grid-edit-input-bigger-padding-bottom, $grid-edit-input-bigger-padding-top);
+      }
+
+      .e-field.e-formula-edit {
+        height: $formula-edit-bigger-height;
       }
 
       .e-input-group {
@@ -944,13 +906,15 @@
 
       .e-row {
         .e-input-group .e-input.e-field,
-        .e-input-focus .e-input.e-field {
+        .e-input-focus .e-input.e-field,
+        .e-formula-edit.e-field {
           @include grid-top-bottom-padding($grid-edit-input-bigger-device-padding-bottom, $grid-edit-input-bigger-device-padding-bottom);
         }
       }
 
       & .e-normaledit .e-rowcell,
-      & .e-editedbatchcell.e-rowcell {
+      & .e-editedbatchcell.e-rowcell,
+      & .e-editedcell.e-rowcell {
         @include grid-top-bottom-padding(0, 0);
       }
 
@@ -1161,7 +1125,8 @@
     }
 
     & .e-normaledit .e-rowcell,
-    & .e-editedbatchcell.e-rowcell {
+    & .e-editedbatchcell.e-rowcell,
+    & .e-editedcell.e-rowcell {
       @include grid-top-bottom-padding(0, 0);
     }
 
@@ -1352,11 +1317,66 @@
   .e-xlflmenu.e-responsive-dialog.e-bigger {
     .e-dlg-content{
       .e-radio + label{
-        @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'fluent2-highcontrast' {
+        @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'fluent2-highcontrast' or $grid-skin == 'tailwind3' or $grid-skin =='tailwind3-dark'{
           margin: 0;
         }
       }
     }
+  }
+
+  .e-res-toolbar{
+    .e-toolbar-items{
+      .e-toolbar-item.e-find-wrapper{
+        padding: 3px 16px 3px 0;
+        width: auto;
+      }
+      .e-toolbar-item .e-find-bar-wrapper{
+        height: 100%;
+      }
+      .e-toolbar-find,
+      .e-find-input-container,
+      .e-find-bar-wrapper {
+        width: 100%;
+      }
+    }
+    .e-find-bar-wrapper {
+      height: 35px;
+    }
+  
+    .e-find-input {
+      width: 100%;
+      height: 35px;
+      min-width: 0;
+      padding: 7px 12px;
+      font-size: 16px;
+    }
+  
+    .e-find-nav-buttons {
+      height: 35px;
+    }
+  
+    .e-find-nav-btn {
+      min-width: 25px;
+      height: 35px;
+    }
+  }
+
+  .e-find-input-container .e-find-bar-wrapper .e-find-input {
+    font-size: 16px;
+  }
+  
+  .e-search-highlight.e-icons:not(.e-check, .e-stop) {
+    font-size: 16px;
+  }
+  
+  /* Adaptive grid Find layout */
+  /* Larger Find input for the responsive toolbar */
+  .e-find-wrapper {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 150px;
+    max-width: 290px;
+    overflow: hidden;
   }
 }
 
@@ -1399,10 +1419,6 @@
     }
   }
   
-  &.e-rtl.e-device .e-columnmenu {
-    margin: $grid-bigger-device-rtl-cm-margin;
-  }
-  
   &.e-rtl .e-groupheadercell span {
     padding: $grid-bigger-rtl-group-span-padding;
   }
@@ -1432,6 +1448,15 @@
   .e-rowcell:last-child {
     line-height: 0;
     @include grid-top-bottom-padding(0, 0);
+  }
+  .e-gridheader {
+    .e-headercell,
+    .e-detailheadercell,
+    .e-headercell:not(.e-fltr-icon, .e-sort-icon) .e-headercelldiv {
+      height: auto;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
   }
 }
   

@@ -1,5 +1,5 @@
-@use 'ej2-base/styles/definition/fluent2' as *;
-@forward 'ej2-base/styles/definition/fluent2';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
+
 $switch-wrapper-width: 40px !default;
 $switch-wrapper-height: 20px !default;
 $switch-inner-width: 100% !default;

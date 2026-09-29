@@ -94,6 +94,7 @@ export class TextFormFieldDialog {
             fields: { text: 'Name', value: 'Value' },
             htmlAttributes:{'aria-labelledby':localValue.getConstant('Type')}
         });
+        this.typeDropDown.isAngular = this.owner.isModalDialog;
         // this.defaultTextLabel = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
         //     innerHTML: localValue.getConstant('Default text')
@@ -151,6 +152,7 @@ export class TextFormFieldDialog {
             floatLabelType: 'Always',
             fields: { text: 'Name', value: 'Value' }
         });
+        this.textFormatDropDown.isAngular = this.owner.isModalDialog;
         this.textFormatDropDown.focus = (): void => {
             (this.textFormatDropDown.element as HTMLInputElement).select();
         };
@@ -381,6 +383,7 @@ export class TextFormFieldDialog {
      * @returns {void}
      */
     public insertTextField = (): void => {
+        const isAngularModal: boolean = this.owner.isModalDialog;
         let valid: boolean = true;
         if (this.typeDropDown.value === 'Date') {
             valid = this.isValidDateFormat();
@@ -395,6 +398,11 @@ export class TextFormFieldDialog {
                     content: 'The maximum length value must be equal or greater than the length of the default text.',
                     showCloseIcon: true,
                     closeOnEscape: true,
+                    open: (e: any) => {
+                        if (isAngularModal) {
+                            this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                        }
+                    },
                     position: { X: 'center', Y: 'center' },
                     animationSettings: { effect: 'Zoom' }
                 }).enableRtl = this.owner.enableRtl;
@@ -425,6 +433,11 @@ export class TextFormFieldDialog {
                 content: 'A valid date or time is required',
                 showCloseIcon: true,
                 closeOnEscape: true,
+                open: (e: any) => {
+                    if (isAngularModal) {
+                        this.documentHelper.owner.moveAlertToCdkOverlay(e);
+                    }
+                },
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
             }).enableRtl = this.owner.enableRtl;

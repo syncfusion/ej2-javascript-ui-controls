@@ -5,7 +5,7 @@ import { classList, removeClass, compile } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
 import { SplitButton } from '../split-button/split-button';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler, DropDownAnimationEffect } from './../common/common';
+import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler, homeEndKeyHandler, DropDownAnimationEffect } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item, setBlankIconStyle } from './../common/common';
 import { ItemModel } from './../common/common-model';
 import { DropDownButtonModel, DropDownMenuAnimationSettingsModel } from './drop-down-button-model';
@@ -747,6 +747,11 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (e.target === this.element && (e.keyCode === 9 || (!e.altKey && e.keyCode === 40) || e.keyCode === 38)) {
             return;
         }
+        const splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+        if (splitButton && (e.keyCode === 13 || e.keyCode === 40 || e.keyCode === 38)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (splitButton as any).issecondaryBtnClick = true;
+        }
         if (e.target && ((e.target as Element).classList.contains('e-item') || ((e.target as Element).parentElement && (e.target as Element).parentElement.classList.contains('e-split-btn-wrapper'))) && e.keyCode === 13) {
             e.preventDefault();
         }
@@ -758,6 +763,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             } else {
                 this.upDownKeyHandler(e);
             }
+            break;
+        case 35:
+        case 36:
+            this.homeEndKeyHandler(e);
             break;
         case 9:
         case 13:
@@ -779,11 +788,22 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         upDownKeyHandler(this.getULElement(), e.keyCode);
     }
 
-    private keyEventHandler(e: KeyboardEventArgs): void {
-        if (this.target && (e.keyCode === 13 || e.keyCode === 9 )) {
+    protected homeEndKeyHandler(e: KeyboardEventArgs): void {
+        if (this.target && (e.keyCode === 35 || e.keyCode === 36)) {
             return;
         }
-        if (e.keyCode === 13 && this.activeElem[0].classList.contains('e-split-btn')) {
+        e.preventDefault();
+        homeEndKeyHandler(this.getULElement(), e.keyCode);
+    }
+
+    private keyEventHandler(e: KeyboardEventArgs): void {
+        const isSplitbutton: boolean = this.activeElem[0].classList.contains('e-split-btn');
+        if (this.target && (e.keyCode === 13 || e.keyCode === 9 )) {
+            if (!isSplitbutton) {
+                return;
+            }
+        }
+        if (e.keyCode === 13 && isSplitbutton) {
             this.triggerSelect(e);
             this.activeElem[0].focus();
             return;
@@ -834,6 +854,11 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     protected clickHandler(e: MouseEvent | KeyboardEventArgs): void {
+        const splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+        if (splitButton) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (splitButton as any).issecondaryBtnClick = false;
+        }
         const trgt: HTMLElement = e.target as HTMLElement;
         if (closest(trgt, '[id="' + this.element.id + '"]')) {
             if (!this.createPopupOnClick || (this.target && this.target !== '' && !this.isColorPicker() && !this.createPopupOnClick)) {
@@ -907,6 +932,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
         }
         const ul: HTMLElement = this.getULElement();
+        const isSplitbutton: boolean = Boolean(this.element.parentElement && this.element.parentElement.classList.contains('e-split-btn-wrapper'));
         this.popupWireEvents();
         const beforeOpenArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
         this.trigger('beforeOpen', beforeOpenArgs, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
@@ -924,12 +950,20 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.element.setAttribute('aria-expanded', 'true');
                 this.element.setAttribute('aria-owns', this.getPopUpElement().id);
                 if (ul && !this.isSafari()) {
-                    ul.focus();
+                    if (this.target && isSplitbutton) {
+                        if (ul.tagName === 'UL') { ul.focus({ preventScroll: observedArgs.preventScroll }); }
+                        else {
+                            const focusableChild: HTMLElement = ul.querySelector('ul') as HTMLElement;
+                            if (focusableChild) { focusableChild.focus({ preventScroll: observedArgs.preventScroll }); }
+                        }
+                    } else {
+                        ul.focus({ preventScroll: observedArgs.preventScroll });
+                    }
                 }
                 if (this.enableRtl && ul.parentElement.style.left !== '0px')
                 {
                     let wrapperWidth: number;
-                    if (this.element.parentElement && this.element.parentElement.classList.contains('e-split-btn-wrapper')) {
+                    if (isSplitbutton) {
                         wrapperWidth = this.element.parentElement.offsetWidth;
                     } else {
                         wrapperWidth = this.element.offsetWidth;

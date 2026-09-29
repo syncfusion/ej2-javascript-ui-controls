@@ -196,7 +196,7 @@ object, then the hash digests must match, or an error is thrown.
 Any new hashes will be added to the current object's set.
 
 This is useful when an integrity value may be upgraded with a stronger
-algorithm, you wish to prevent accidentally supressing integrity errors by
+algorithm, you wish to prevent accidentally suppressing integrity errors by
 overwriting the expected integrity value.
 
 ##### Example

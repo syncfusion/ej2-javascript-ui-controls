@@ -9,9 +9,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-rangecolors>e-rangecolor',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class RangeColorDirective extends ComplexBase<RangeColorDirective> {
@@ -23,17 +23,17 @@ export class RangeColorDirective extends ComplexBase<RangeColorDirective> {
      * color
      * @default null
      */
-    public color: any;
+    public declare color: any;
     /** 
      * end
      * @default null
      */
-    public end: any;
+    public declare end: any;
     /** 
      * start
      * @default null
      */
-    public start: any;
+    public declare start: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -49,6 +49,7 @@ export class RangeColorDirective extends ComplexBase<RangeColorDirective> {
  */
 @Directive({
     selector: 'ejs-progressbar>e-rangecolors',
+    standalone: true,
     queries: {
         children: new ContentChildren(RangeColorDirective)
     },

@@ -1,22 +1,29 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../ai-assist-base/ai-assist-base-model.d.ts'/>
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';
-import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel, FooterToolbarSettingsModel, SpeechToTextSettingsModel } from './ai-assistview-model';
-import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel, FooterToolbarSettingsModel, TextToSpeechSettingsModel, MentionSettingsModel } from './ai-assistview-model';
+import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';
+import { ItemModel, Toolbar, ClickEventArgs, FieldSettings } from '@syncfusion/ej2-navigations';
+import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';
 import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
-import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';
+import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, RemovingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';
 import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';
 import { ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Fab } from '@syncfusion/ej2-buttons';
-import { AIAssistBase, ToolbarPosition } from '../ai-assist-base/ai-assist-base';
+import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';
+import { ResponseBlock, TextBlock, ToolBlock, ThinkingContextItem, ThinkingBlock, ThinkingStage } from './interface';
+import { AssistThinking } from '../ai-assist-base/index';
+import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 const ASSISTHEADER: string = 'e-aiassist-header-text e-assist-view-header';
 /* eslint-disable @typescript-eslint/no-misused-new, no-redeclare */
 interface ClipboardItem {
     new (items: { [mimeType: string]: Blob }): ClipboardItem;
 }
+
 declare let ClipboardItem: any;
 /* eslint-enable @typescript-eslint/no-misused-new, no-redeclare */
 /**
@@ -63,6 +70,35 @@ export class Prompt extends ChildProperty<Prompt> {
      */
     @Property(null)
     public attachedFiles: FileInfo[];
+
+    /**
+     * Optional list of regenerated responses.
+     * When provided, response navigation will be enabled.
+     */
+    @Property(null)
+    public regeneratedResponses: string[];
+
+    /**
+     * Specifies the list of block responses within the AI assist view.
+     * This property accepts an array of `ResponseBlock` objects that represent the response to be added.
+     * By providing these blocks, the response will be rendered as tool, text or thinking block.
+     *
+     * @type {ResponseBlock}
+     * @default null
+     */
+    @Property(null)
+    public blocks: ResponseBlock[];
+
+    /**
+     * Specifies the collection of mention configurations available in the prompt.
+     * Accepts an array of mention items with trigger characters and associated data.
+     *
+     * @type {MentionItems}
+     * @default null
+     */
+    @Property(null)
+    public mentions: MentionItems[];
+
 }
 
 /**
@@ -77,6 +113,55 @@ export enum AssistViewType {
      * Represents a custom assist view type.
      */
     Custom = 'Custom'
+}
+
+/**
+ * Configuration for registering a custom tool UI in AIAssistView.
+ * Allows to define how a tool UI should be rendered and interactive.
+ */
+export interface ToolUIConfig {
+    /**
+     * The unique name of the tool.
+     */
+    toolName: string;
+
+    /**
+     * Template function that returns HTML string for rendering the tool.
+     * Receives the tool UI arguments (props) and should return an HTML string.
+     *
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    template: string | Function;
+
+    /**
+     * Optional callback invoked after the tool UI is rendered into the DOM.
+     * Use this to attach event listeners or perform post-render setup.
+     *
+     * @param container - The DOM element containing the rendered tool
+     * @param args - The tool UI arguments (props) passed from AI
+     */
+    handler?: (container: HTMLElement, args: Object) => void;
+}
+
+/**
+ * Mention item configuration for context selection using trigger characters.
+ * Defines the trigger character and its associated item data.
+ */
+export interface MentionItems {
+    /**
+     * Specifies the data mapping configuration associated with the mention.
+     * Accepts field settings used to resolve and display mention items.
+     */
+    itemData: FieldSettingsModel;
+
+    /**
+     * Specifies the character that activates the mention suggestions.
+     * Accepts a single trigger character such as '@', '#', or '/'.
+     */
+    mentionChar: string;
 }
 
 /**
@@ -128,133 +213,65 @@ export class AssistView extends ChildProperty<AssistView> {
 }
 
 /**
- * Configuration settings for rendering Syncfusion Speech-to-Text in the AssistView footer.
- * This property holds the settings required to initialize and display the Speech-to-Text component.
+ * Configuration settings for rendering Text-to-Speech in the AssistView.
+ * This property holds the settings required to control speech synthesis behavior.
  *
  */
-export class SpeechToTextSettings extends ChildProperty<SpeechToTextSettings> {
+export class TextToSpeechSettings extends ChildProperty<TextToSpeechSettings> {
 
     /**
-     * Specifies whether speech-to-text functionality is enabled.
-     *
-     * @default false
-     */
-    @Property(false)
-    public enable: boolean;
-
-    /**
-     * Specifies whether interim results should be captured during speech recognition.
-     *
-     * @default true
-     */
-    @Property(true)
-    public allowInterimResults: boolean;
-
-    /**
-     * Specifies the language for speech recognition using ISO language codes.
+     * Specifies the language used for text-to-speech synthesis.
+     * Accepts valid ISO language codes such as 'en-US', 'fr-FR', or 'de-DE'.
      *
      * @default 'en-US'
      */
     @Property('en-US')
-    public lang: string;
+    public language: string;
 
     /**
-     * Specifies whether the speech-to-text control is disabled.
+     * Specifies the pitch of the synthesized voice.
+     * Accepts numeric values typically between 0 (low) and 2 (high).
      *
-     * @default false
+     * @default 1
      */
-    @Property(false)
-    public disabled: boolean;
+    @Property(1)
+    public speechPitch: number;
 
     /**
-     * Configuration object for the mic button appearance and behavior.
-     * Defines the button text, icons, position, and styling for both start and stop states.
+     * Specifies the speaking rate of the synthesized voice.
+     * Accepts numeric values typically between 0.1 (slow) and 10 (fast).
      *
-     * @type {ButtonSettingsModel}
-     * @default {}
+     * @default 1
      */
-    @Complex<ButtonSettingsModel>({}, ButtonSettings)
-    public buttonSettings: ButtonSettingsModel;
+    @Property(1)
+    public speechRate: number;
 
     /**
-     * Specifies whether to show tooltip for the mic button.
+     * Specifies the text content to be converted into speech.
+     * Accepts plain string input for synthesis.
      *
-     * @default true
-     */
-    @Property(true)
-    public showTooltip: boolean;
-
-    /**
-     * Configuration object for tooltip appearance and behavior.
-     * Defines the tooltip text and position for both listening and stop states.
-     *
-     * @type {TooltipSettingsModel}
-     * @default {}
-     */
-    @Complex<TooltipSettingsModel>({}, TooltipSettings)
-    public tooltipSettings: TooltipSettingsModel;
-
-    /**
-     * Applies custom CSS classes to the speech-to-text component.
-     *
-     * @type {string}
      * @default ''
      */
     @Property('')
-    public cssClass: string;
+    public inputText: string;
 
     /**
-     * Stores the recognized speech transcript.
-     * This property is read-only and updated when speech recognition results are received.
+     * Specifies the voice used for speech synthesis.
+     * Must be a valid SpeechSynthesisVoice from speechSynthesis.getVoices().
      *
-     * @type {string}
-     * @default ''
+     * @default null
      */
-    @Property('')
-    public transcript: string;
+    @Property(null)
+    public voice: SpeechSynthesisVoice;
 
     /**
-     * Indicates whether the component is currently listening.
+     * Specifies the volume level of the synthesized voice.
+     * Accepts numeric values between 0 (mute) and 1 (maximum).
      *
-     * @default 'Inactive'
+     * @default 1
      */
-    @Property('Inactive')
-    public listeningState: SpeechToTextState;
-
-    /**
-     * Event raised when speech recognition starts.
-     * Triggered when the user clicks the mic button and begins speaking.
-     *
-     * @event onStart
-     */
-    @Event()
-    public onStart: EmitType<StartListeningEventArgs>;
-
-    /**
-     * Event raised when speech recognition stops.
-     * Triggered when the user stops speaking and clicks the mic button.
-     *
-     * @event onStop
-     */
-    @Event()
-    public onStop: EmitType<StopListeningEventArgs>;
-
-    /**
-     * Event raised when the transcript changes during speech recognition.
-     * Triggered for both interim results (if enabled) and final results.
-     *
-     * @event transcriptChanged
-     */
-    @Event()
-    public transcriptChanged: EmitType<TranscriptChangedEventArgs>;
-
-    /**
-     * Event raised when an error occurs during speech recognition.
-     *
-     * @event onError
-     */
-    @Event()
-    public onError: EmitType<ErrorEventArgs>;
+    @Property(1)
+    public volume: number;
 }
 
 /**
@@ -309,6 +326,20 @@ export class AttachmentSettings extends ChildProperty<AttachmentSettings> {
      */
     @Property(10)
     public maximumCount: number;
+
+    /**
+     * Specifies a custom template for rendering attachments in footer and assistview.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachments (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default attachments will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    @Property('')
+    public attachmentTemplate : string | Function;
 
     /**
      * Event raised when a attachment item is clicked in the assistview component either before sending or after the attachment is sent.
@@ -423,6 +454,141 @@ export class FooterToolbarSettings extends ChildProperty<FooterToolbarSettings> 
     public itemClick: EmitType<ToolbarItemClickedEventArgs>;
 }
 
+/**
+ * Configuration settings for rendering mention in the AssistView.
+ * Specifies the data source, filtering options, popup settings, and templates for mention interactions.
+ */
+export class MentionSettings extends ChildProperty<MentionSettings> {
+    /**
+     * Specifies the character used to trigger mention suggestions.
+     * Accepts a single character such as '@', '#', or '/'.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public mentionChar: string;
+
+    /**
+     * Specifies the data source used to populate mention suggestions.
+     * Accepts local collections, DataManager instances, or remote data sources.
+     *
+     * @type {string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[]}
+     * @default []
+     */
+    @Property([])
+    public dataSource: string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[];
+
+    /**
+     * Specifies the field mappings for the mention data source.
+     * Maps data fields used for displaying and identifying mention items.
+     *
+     * @type {FieldSettingsModel}
+     * @default { text: 'text', value: 'id' }
+     */
+    @Complex<FieldSettingsModel>({ text: 'text', value: 'id' }, FieldSettings)
+    public fields: FieldSettingsModel;
+
+    /**
+     * Specifies the query used to retrieve and filter mention data.
+     * Applies additional data operations to the configured data source.
+     *
+     * @type {Query}
+     * @default null
+     */
+    @Property(null)
+    public query: Query;
+
+    /**
+     * Specifies the filtering type used for matching suggestion items.
+     * Accepts filtering options such as Contains, StartsWith, or EndsWith.
+     *
+     * @type {FilterType}
+     * @default 'Contains'
+     */
+    @Property('Contains')
+    public filterType: FilterType;
+
+    /**
+     * Specifies whether matching characters are highlighted in mention suggestions.
+     * When enabled, matched text is visually emphasized in the popup list.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    @Property(false)
+    public highlight: boolean;
+
+    /**
+     * Specifies whether the mention character is displayed in the rendered mention item.
+     * When set to false, the mention character is omitted from the selected mention display.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    @Property(true)
+    public showMentionChar: boolean;
+
+    /**
+     * Specifies the width of the mention suggestion popup.
+     * Accepts CSS width values such as '400px' or '50%', or numeric pixel dimensions.
+     *
+     * @type {string | number}
+     * @default 'auto'
+     */
+    @Property('auto')
+    public popupWidth: string | number;
+
+    /**
+     * Specifies the height of the mention suggestion popup.
+     * Accepts CSS height values such as '300px' or '50%', or numeric pixel dimensions.
+     *
+     * @type {string | number}
+     * @default '300px'
+     */
+    @Property('300px')
+    public popupHeight: string | number;
+
+    /**
+     * Specifies the template used to display selected mention items.
+     * Accepts a string template or a framework-specific template function.
+     *
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     * @default ''
+     */
+    @Property('')
+    public displayTemplate: string | Function;
+
+    /**
+     * Specifies the template used to render suggestion list items.
+     * Accepts a template string to customize the appearance of suggestion items.
+     *
+     * @angularType string
+     * @reactType string
+     * @vueType string
+     * @aspType string
+     * @default ''
+     */
+    @Property('')
+    public itemTemplate: string;
+
+    /**
+     * Specifies the template displayed when no matching suggestions are found.
+     * Accepts a string value to customize the empty state content shown in the suggestion popup.
+     *
+     * @angularType string
+     * @reactType string
+     * @vueType string
+     * @aspType string
+     * @default 'No records found'
+     */
+    @Property('No records found')
+    public noRecordsTemplate: string;
+}
+
 export interface PromptRequestEventArgs extends BaseEventArgs {
     /**
      * Specifies whether the prompt request should be cancelled.
@@ -469,6 +635,16 @@ export interface PromptRequestEventArgs extends BaseEventArgs {
      *
      */
     attachedFiles?: FileInfo[];
+
+    /**
+     * Specifies the mention items associated with the prompt request.
+     * Contains the mention details inserted into the prompt through configured mention settings.
+     *
+     * @type { MentionItems[]}
+     * @default []
+     *
+     */
+    mentions?: MentionItems[];
 }
 
 export interface PromptChangedEventArgs extends BaseEventArgs {
@@ -555,6 +731,64 @@ export interface AttachmentClickEventArgs extends BaseEventArgs {
     file?: FileInfo
 }
 
+export interface EditableContextClickedEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the event object associated with context item click.
+     * Represents underlying browser event triggered when clicking context item.
+     *
+     * @type {Event}
+     * @default null
+     */
+    event?: Event
+
+    /**
+     * Specifies the context item that was clicked.
+     * Contains all properties of thinking context item.
+     *
+     * @type {ThinkingContextItem}
+     * @default null
+     */
+    contextItem?: ThinkingContextItem
+}
+
+export interface AssistMentionSelectEventArgs extends BaseEventArgs {
+    /**
+     * Specifies whether the mention selection should be canceled.
+     * Set to true to prevent the default selection action.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    cancel?: boolean;
+
+    /**
+     * Specifies the original event that triggered the mention selection.
+     * Provides access to the underlying browser event details.
+     *
+     * @type {Event}
+     * @default null
+     */
+    event?: Event;
+
+    /**
+     * Specifies whether the selection was initiated through user interaction.
+     * Returns true when the action is performed directly by the user.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    isInteracted?: boolean;
+
+    /**
+     * Specifies the data associated with the selected mention item.
+     * Contains the field settings information for the selected mention.
+     *
+     * @type {FieldSettingsModel}
+     * @default null
+     */
+    itemData?: FieldSettingsModel;
+}
+
 /**
  * The `AIAssistView` component is designed to enhance user interaction by integrating AI driven assistance features.
  * It provides a seamless interface for incorporating suggestions & AI responses.
@@ -570,6 +804,11 @@ export interface AttachmentClickEventArgs extends BaseEventArgs {
 
 @NotifyPropertyChanges
 export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged {
+
+    /**
+     * @hidden
+     */
+    private assistThinkingModule: AssistThinking;
 
     /**
      * Specifies the text input prompt for the AIAssistView component.
@@ -754,6 +993,16 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     public speechToTextSettings: SpeechToTextSettingsModel;
 
     /**
+     * Configuration object for rendering Text-to-Speech in the AssistView.
+     * This property holds the settings required to control speech synthesis behavior.
+     *
+     * @type {TextToSpeechSettingsModel}
+     * @default {}
+     */
+    @Complex<TextToSpeechSettingsModel>({}, TextToSpeechSettings)
+    public textToSpeechSettings: TextToSpeechSettingsModel;
+
+    /**
      * Specifies whether the attachments is enabled in the AIAssistView component.
      *
      * @type {boolean}
@@ -769,8 +1018,18 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
      *
      * @default null
      */
-    @Complex<AttachmentSettingsModel>({saveUrl: '', removeUrl: '', maxFileSize: 2000000, allowedFileTypes: '', maximumCount: 10}, AttachmentSettings)
+    @Complex<AttachmentSettingsModel>({saveUrl: '', removeUrl: '', maxFileSize: 2000000, allowedFileTypes: '', maximumCount: 10, attachmentTemplate: ''}, AttachmentSettings)
     public attachmentSettings: AttachmentSettingsModel;
+
+    /**
+     * Specifies the collection of mention configurations available in the AssistView.
+     * Each mention setting defines a mention character and the behavior of its suggestion popup.
+     *
+     * @type {MentionSettingsModel[]}
+     * @default []
+     */
+    @Collection<MentionSettingsModel>([], MentionSettings)
+    public mentions: MentionSettingsModel[];
 
     /**
      * Specifies whether the clear button of text area is displayed in the AIAssistView component.
@@ -874,6 +1133,50 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     public bannerTemplate: string | Function;
 
     /**
+     * Specifies the content template for rendering the thinking block item.
+     * Can be a string or function template to customize the block's HTML structure.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property('')
+    public blockTemplate: string | Function;
+
+    /**
+     * Specifies the content template for rendering the stage item.
+     * Can be a string or function template to customize the stage display.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property('')
+    public itemTemplate: string | Function;
+
+    /**
+     * Specifies a custom template for rendering the response animation (skeleton/loading) state
+     * while a response is being generated in the AIAssistView component.
+     * Accepts a string or function to define the HTML structure or rendering logic for the loading
+     * experience (e.g., shimmer placeholders, typing indicators, custom structured blocks).
+     * The template context includes the loading state, the current thinking-step index (if applicable),
+     * and any partial/streamed content available at the time of rendering.
+     * If not provided, the component falls back to its default skeleton animation.
+     *
+     * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property('')
+    public responseAnimationTemplate: string | Function;
+
+    /**
      * Event triggered when a prompt request is made in the AIAssistView component.
      * Provides details about the prompt request, including whether it should be cancelled, the prompt text, output, and toolbar items.
      *
@@ -935,6 +1238,33 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     @Event()
     public attachmentRemoved: EmitType<object>;
 
+    /**
+     * Triggers when an uploaded file is being removed.
+     * Provides details about the file removal operation.
+     *
+     * @event attachmentRemoving
+     */
+    @Event()
+    public attachmentRemoving: EmitType<RemovingEventArgs>;
+
+    /**
+     * Event triggered when clickable thinking context item is clicked.
+     * Provides context item details and event information for custom handling.
+     *
+     * @event editableContextClicked
+     */
+    @Event()
+    public editableContextClicked: EmitType<EditableContextClickedEventArgs>;
+
+    /**
+     * Event triggered when a mention item is selected from the mention popup.
+     * Provides details about the selected mention item and allows the selection action to be canceled.
+     *
+     * @event mentionSelect
+     */
+    @Event()
+    public mentionSelect: EmitType<AssistMentionSelectEventArgs>;
+
     /* Private variables */
     private l10n: L10n;
     private viewWrapper: HTMLElement;
@@ -961,15 +1291,32 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     private lastStreamPrompt: string;
     private uploadedFiles: FileInfo[] = [];
     private uploaderObj: Uploader;
+    private isAttachmentRemovalCancelled: boolean = false;
     private speechToTextObj: SpeechToText;
     private dropArea: HTMLElement;
     private footerToolbarEle: Toolbar;
+    private footerLeftToolbarEle: Toolbar;
     private sendToolbarItem: ItemModel = null;
     private clearToolbarItem: ItemModel = null;
     private attachmentToolbarItem: ItemModel = null;
     private speechToTextToolbarItem: ItemModel = null;
     private latestResponseMinHeight: number | null = null;
     private downArrowIcon: Fab;
+    private currentUtterance: SpeechSynthesisUtterance | null = null;
+    private mentionModels: Mention[] = [];
+    private regeneratedResponses: Map<number, string[]> = new Map();
+    private regeneratedBlocks: Map<number, ResponseBlock[][]> = new Map();
+    private currentRegeneratedIndex: Map<number, number> = new Map();
+    private originalResponses: Map<number, string> = new Map();
+    private originalBlocks: Map<number, ResponseBlock[]> = new Map();
+    private isRegenerating: boolean = false;
+    private regeneratingPromptIndex: number = -1;
+    private blockIndex: number = 0;
+    private lastRenderedBlockCount: number = 0;
+    private isToolResponse: boolean;
+    private registeredTools: Map<string, ToolUIConfig> = new Map();
+    private selectedMentions: {itemData: FieldSettingsModel, mentionChar: string, element: HTMLElement}[] = [];
+    private mentionCounter: number = 0;
 
     /**
      * Enhanced setup: Enforce viewport on .e-content + dynamic min-height on latest .e-output-container.
@@ -1044,7 +1391,7 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             const scrollDownButton: HTMLButtonElement = this.createElement('button', { id: `${this.element.id}-scrollDownButton`, className: 'e-scroll-down-btn' });
             this.downArrowIcon = new Fab({
                 iconCss: 'e-icons e-assist-scroll-down',
-                position: 'BottomRight',
+                position: 'BottomCenter',
                 target: this.outputElement.parentElement,
                 isPrimary: false,
                 visible: false
@@ -1070,6 +1417,10 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         if (this.enableScrollToBottom) {
             this.scrollToBottom();
         }
+    }
+
+    private hasSkeletonEle(): boolean {
+        return this.skeletonContainer && this.outputElement.contains(this.skeletonContainer);
     }
 
     /**
@@ -1348,7 +1699,12 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             fileCountFailure: 'Upload limit reached: Maximum {0} files allowed. Remove extra files to proceed uploading',
             send: 'Send',
             attachments: 'Attach File',
-            clear: 'Clear'
+            clear: 'Clear',
+            readAloud: 'Read Aloud',
+            stopAudio: 'Stop',
+            previousResponse: 'Previous',
+            nextResponse: 'Next',
+            noRecordsTemplate: 'No records found'
         }, this.locale);
         this.l10n.setLocale(this.locale);
     }
@@ -1399,6 +1755,58 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         return false;
     }
 
+    private finalizeIncompleteThinkingBlocks(): void {
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        // Step 1: Get last prompt index
+        const lastPromptIndex: number = this.prompts.length - 1;
+        if (lastPromptIndex < 0) { return; } // No prompts yet
+
+        const lastPrompt: PromptModel = this.prompts[parseInt(lastPromptIndex.toString(), 10)];
+        if (!lastPrompt.blocks || lastPrompt.blocks.length === 0) { return; } // No blocks
+
+        // Step 2: Single-pass transform + check for incomplete thinking blocks
+        let hasIncompleteThinking: boolean = false;
+        const finalizedBlocks: ResponseBlock[] = lastPrompt.blocks.map((block: ResponseBlock) => {
+            if (block.blockType === 'thinking') {
+                const thinkingBlock: ThinkingBlock = block as ThinkingBlock;
+                // Track if this block is incomplete
+                if (thinkingBlock.isActive ||
+                    (thinkingBlock.stages && thinkingBlock.stages.some((s: ThinkingStage) => s.status === 'inprogress'))) {
+                    hasIncompleteThinking = true;
+                }
+                // Transform block
+                return {
+                    ...thinkingBlock,
+                    isActive: false,  // Stop showing spinner
+                    stages: (thinkingBlock.stages || []).map((stage: ThinkingStage) => ({
+                        ...stage,
+                        // Only change inProgress → failed; keep others
+                        status: stage.status.toLowerCase() === 'inprogress' ? 'failed' : stage.status,
+                        iconCss: stage.status.toLowerCase() === 'inprogress'
+                            ? 'e-icons e-close'  // Error icon instead of progress
+                            : stage.iconCss
+                    }))
+                };
+            }
+            // Non-thinking blocks pass through unchanged
+            return block;
+        });
+
+        if (!hasIncompleteThinking) {
+            this.isProtectedOnChange = prevOnChange;
+            return;  // Nothing to finalize
+        }
+
+        // Step 3: Replace blocks in last prompt (immutable update)
+        lastPrompt.blocks = finalizedBlocks;
+        this.isProtectedOnChange = prevOnChange;
+
+        // Step 4: Re-render existing response without adding new response
+        // This updates the existing response with finalized blocks
+        this.addPromptResponse( { blocks: finalizedBlocks});
+    }
+
     private renderContent(): void {
         this.renderOutputContent();
         this.renderSuggestions(this.promptSuggestions, this.promptSuggestionsHeader, this.promptSuggestionItemTemplate,
@@ -1421,8 +1829,27 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
         if (this.prompts) {
             this.prompts.forEach((prompt: PromptModel, i: number) => {
+                if (!this.originalResponses.has(i)) {
+                    this.originalResponses.set(i, prompt.response || '');
+                    this.originalBlocks.set(i, prompt.blocks || []);
+                }
+                if (prompt.regeneratedResponses && prompt.regeneratedResponses.length > 0) {
+                    const responseStack: string[] = [this.originalResponses.get(i)!, ...prompt.regeneratedResponses];
+                    this.regeneratedResponses.set(i, responseStack);
+                    const blocksStack: ResponseBlock[][] = [this.originalBlocks.get(i) || []];
+                    for (let j: number = 0; j < prompt.regeneratedResponses.length; j++) {
+                        blocksStack.push([]);
+                    }
+                    this.regeneratedBlocks.set(i, blocksStack);
+                    this.currentRegeneratedIndex.set(i, responseStack.length - 1);
+                    const prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    prompt.response = responseStack[responseStack.length - 1];
+                    prompt.blocks = [];
+                    this.isProtectedOnChange = prevOnChange;
+                }
                 this.renderOutputContainer(SanitizeHtmlHelper.sanitize(prompt.prompt)
-                    , SanitizeHtmlHelper.sanitize(prompt.response), prompt.attachedFiles, i, undefined, true);
+                    , SanitizeHtmlHelper.sanitize(prompt.response), prompt.attachedFiles, i, undefined, true, prompt.blocks);
             });
         }
         if (this.suggestionsElement && this.content.contains(this.suggestionsElement)) {
@@ -1464,19 +1891,36 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.footer.append(textareaAndIconsWrapper);
         }
         if (!this.footerTemplate) {
-            const footerIconsWrapper: HTMLDivElement = this.createElement('div', { attrs: { class: 'e-footer-icons-wrapper'}});
+            const footerIconsWrapper: HTMLDivElement = this.createElement('div', { attrs: { class: 'e-footer-icons-wrapper e-footer-right-items'}});
             this.renderFooterToolbar(footerIconsWrapper);
             textareaAndIconsWrapper.appendChild(footerIconsWrapper);
             this.footer.appendChild(textareaAndIconsWrapper);
             this.footer.classList.add('e-footer-focus-wave-effect');
             this.refreshTextareaUI();
             this.pushToUndoStack(this.prompt);
+            this.initializeMentions();
         }
     }
 
+    private getUploaderElement(): HTMLElement {
+        let uploaderElement: HTMLElement = null;
+
+        if (this.footerLeftToolbarEle) {
+            uploaderElement = this.footerLeftToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
+        }
+
+        if (!uploaderElement && this.footerToolbarEle) {
+            uploaderElement = this.footerToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
+        }
+
+        return uploaderElement;
+    }
+
     private renderFooterToolbar(container: HTMLElement): void {
-        const toolbarItems: ItemModel[] = [];
         const customItems: ToolbarItemModel[] = this.footerToolbarSettings.items || [];
+        const isInlineMode: boolean = (this.footerToolbarSettings.toolbarPosition || '').toLowerCase() !== 'bottom';
+        const rightItems: ItemModel[] = [];
+        const leftItems: ItemModel[] = [];
 
         for (const customItem of customItems) {
             const isSttToolbarItem: boolean = customItem.iconCss.indexOf('e-assist-speech-to-text') !== -1;
@@ -1490,107 +1934,144 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                 prefixIcon: customItem.iconCss,
                 text: customItem.text,
                 align: customItem.align,
-                tabIndex: customItem.tabIndex
+                tabIndex: customItem.disabled ? -1 : (customItem.tabIndex >= 0 ? customItem.tabIndex : 0)
+
             };
-            toolbarItems.push(mappedItem);
+            if (isInlineMode && customItem.align === 'Left') {
+                leftItems.push(mappedItem);
+            } else {
+                rightItems.push(mappedItem);
+            }
         }
-        if (this.enableAttachments && !this.isDuplicatedItem('e-icons e-assist-attachment-icon', toolbarItems)) {
+
+        if (this.enableAttachments && !this.isDuplicatedItem('e-icons e-assist-attachment-icon', rightItems.concat(leftItems))) {
             this.attachmentToolbarItem = {
                 prefixIcon: 'e-icons e-assist-attachment-icon',
                 tooltipText: this.l10n.getConstant('attachments'),
                 align: 'Right'
             };
-            toolbarItems.push(this.attachmentToolbarItem);
+            rightItems.push(this.attachmentToolbarItem);
         }
 
-        if (this.speechToTextSettings.enable && !this.isDuplicatedItem('e-icons e-assist-speech-to-text', toolbarItems)) {
+        if (this.speechToTextSettings.enable && !this.isDuplicatedItem('e-icons e-assist-speech-to-text', rightItems.concat(leftItems))) {
             this.speechToTextToolbarItem = {
                 id: this.element.id + '_speechtotext',
-                template: '<button class="e-assistview-speech-to-text"></button>',
+                template: '<button class="e-assistview-speech-to-text e-tbar-btn"></button>',
                 prefixIcon: 'e-icons e-assist-speech-to-text',
                 align: 'Right'
             };
-            toolbarItems.push(this.speechToTextToolbarItem);
+            rightItems.push(this.speechToTextToolbarItem);
         }
 
-        if (this.showClearButton && !this.isDuplicatedItem('e-icons e-assist-clear-icon', toolbarItems)) {
+        if (this.showClearButton && !this.isDuplicatedItem('e-icons e-assist-clear-icon', rightItems.concat(leftItems))) {
             this.clearToolbarItem = {
                 prefixIcon: 'e-icons e-assist-clear-icon',
                 tooltipText: this.l10n.getConstant('clear'),
                 align: 'Right'
             };
-            toolbarItems.push(this.clearToolbarItem);
+            rightItems.push(this.clearToolbarItem);
         }
 
-        if (!this.isDuplicatedItem('e-icons e-assist-send', toolbarItems)) {
+        if (!this.isDuplicatedItem('e-icons e-assist-send', rightItems.concat(leftItems))) {
             this.sendToolbarItem = {
                 prefixIcon: 'e-icons e-assist-send',
                 align: 'Right'
             };
-            toolbarItems.push(this.sendToolbarItem);
+            rightItems.push(this.sendToolbarItem);
         }
 
-        this.footerToolbarEle = new Toolbar({
-            items: toolbarItems,
-            enableRtl: this.enableRtl,
-            width: '100%',
-            clicked: (args: ClickEventArgs) => {
-                const eventItemArgs: ToolbarItemModel = {
-                    type: args.item.type,
-                    text: args.item.text,
-                    iconCss: args.item.prefixIcon,
-                    cssClass: args.item.cssClass,
-                    tooltip: args.item.tooltipText,
-                    template: args.item.template as string | Function,
-                    disabled: args.item.disabled,
-                    visible: args.item.visible,
-                    align: args.item.align,
-                    tabIndex: args.item.tabIndex
-                };
-                const eventArgs: ToolbarItemClickedEventArgs = {
-                    item: eventItemArgs,
-                    event: args.originalEvent,
-                    cancel: false
-                };
-                if (this.footerToolbarSettings.itemClick) {
-                    this.footerToolbarSettings.itemClick.call(this, eventArgs);
-                }
-                if (!eventArgs.cancel) {
-                    switch (args.item.prefixIcon) {
-                    case 'e-icons e-assist-send':
-                        if (!this.isResponseRequested && !args.item.disabled) {
-                            this.onSendIconClick();
-                        }
-                        break;
-                    case 'e-icons e-assist-stop':
-                        this.respondingStopper(args.originalEvent as MouseEvent);
-                        break;
-                    case 'e-icons e-assist-clear-icon':
-                        this.clearIconHandler();
-                        break;
-                    case 'e-icons e-assist-attachment-icon':
-                        if (this.uploaderObj && this.attachmentToolbarItem) {
-                            let uploaderElement: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
-                            if (!uploaderElement) {
-                                this.updateAttachmentElement();
-                                uploaderElement = this.footerToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
-                            }
-                            if (uploaderElement) {
-                                uploaderElement.click();
-                            }
-                        }
-                        break;
+        const toolbarClickHandler: (args: ClickEventArgs) => void = (args: ClickEventArgs): void => {
+            const eventItemArgs: ToolbarItemModel = {
+                type: args.item.type,
+                text: args.item.text,
+                iconCss: args.item.prefixIcon,
+                cssClass: args.item.cssClass,
+                tooltip: args.item.tooltipText,
+                template: args.item.template as string | Function,
+                disabled: args.item.disabled,
+                visible: args.item.visible,
+                align: args.item.align,
+                tabIndex: args.item.tabIndex
+            };
+            const eventArgs: ToolbarItemClickedEventArgs = {
+                item: eventItemArgs,
+                event: args.originalEvent,
+                cancel: false
+            };
+            if (this.footerToolbarSettings.itemClick) {
+                this.footerToolbarSettings.itemClick.call(this, eventArgs);
+            }
+            if (!eventArgs.cancel) {
+                switch (args.item.prefixIcon) {
+                case 'e-icons e-assist-send':
+                    if (!this.isResponseRequested && !args.item.disabled) {
+                        this.onSendIconClick();
                     }
+                    break;
+                case 'e-icons e-assist-stop':
+                    this.respondingStopper(args.originalEvent as MouseEvent);
+                    break;
+                case 'e-icons e-assist-clear-icon':
+                    this.clearIconHandler();
+                    break;
+                case 'e-icons e-assist-attachment-icon':
+                    if (this.uploaderObj && this.attachmentToolbarItem) {
+                        let uploaderElement: HTMLElement = this.getUploaderElement();
+                        if (!uploaderElement) {
+                            this.updateAttachmentElement();
+                            uploaderElement = this.getUploaderElement();
+                        }
+                        if (uploaderElement) {
+                            uploaderElement.click();
+                        }
+                    }
+                    break;
                 }
             }
+        };
+
+        this.footerToolbarEle = new Toolbar({
+            items: rightItems,
+            enableRtl: this.enableRtl,
+            width: '100%',
+            clicked: toolbarClickHandler
         });
 
         const toolbarContainer: HTMLElement = this.createElement('div');
         this.footerToolbarEle.appendTo(toolbarContainer);
         this.footerToolbarEle.element.setAttribute('aria-label', 'assist-footer-toolbar');
         container.appendChild(toolbarContainer);
+
+        if (isInlineMode && leftItems.length > 0) {
+            this.footerLeftToolbarEle = new Toolbar({
+                items: leftItems,
+                enableRtl: this.enableRtl,
+                width: '100%',
+                clicked: toolbarClickHandler
+            });
+            const leftToolbarContainer: HTMLElement = this.createElement('div');
+            this.footerLeftToolbarEle.appendTo(leftToolbarContainer);
+            this.footerLeftToolbarEle.element.setAttribute('aria-label', 'assist-footer-left-toolbar');
+            const leftItemsContainer: HTMLElement = this.createElement('div', {
+                attrs: { class: 'e-footer-left-items' }
+            });
+            leftItemsContainer.appendChild(leftToolbarContainer);
+            this.insertLeftItems(leftItemsContainer);
+        }
+
         this.updateAttachmentElement();
         this.renderSpeechToText();
+    }
+
+    private insertLeftItems(leftItems: HTMLElement): void {
+        const textareaAndIconsWrapper: HTMLElement = this.footer.querySelector('.e-textarea-icons-wrapper') as HTMLElement;
+        if (!textareaAndIconsWrapper) { return; }
+        const textarea: HTMLElement = textareaAndIconsWrapper.querySelector('.e-assist-textarea') as HTMLElement;
+        if (textarea) {
+            textareaAndIconsWrapper.insertBefore(leftItems, textarea);
+        } else {
+            textareaAndIconsWrapper.appendChild(leftItems);
+        }
     }
 
     private isDuplicatedItem(iconCss: string, toolbarItems: ItemModel[]): boolean {
@@ -1684,17 +2165,105 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                     }
                 }
             });
-            const speechToTextButton: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assistview-speech-to-text') as HTMLElement;
+            let speechToTextButton: HTMLElement = null;
+            if (this.footerLeftToolbarEle) {
+                speechToTextButton = this.footerLeftToolbarEle.element.querySelector('.e-assistview-speech-to-text') as HTMLElement;
+            }
+
+            if (!speechToTextButton && this.footerToolbarEle) {
+                speechToTextButton = this.footerToolbarEle.element.querySelector('.e-assistview-speech-to-text') as HTMLElement;
+            }
             if (speechToTextButton) {
                 this.speechToTextObj.appendTo(speechToTextButton);
             }
         }
     }
 
+    private initializeMentions(): void {
+        if (!this.mentions || this.mentions.length === 0 || !this.editableTextarea) {
+            return;
+        }
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        for (const settings of this.mentions) {
+            if (!settings.mentionChar) {
+                continue; // Skip entries with empty mentionChar
+            }
+
+            const displayTemplate: string | Function = settings.displayTemplate || this.getMentionElement(settings);
+            const noRecordsTemplate: string = settings.noRecordsTemplate || this.l10n.getConstant('noRecordsTemplate');
+
+            const mentionInstance: Mention = new Mention({
+                mentionChar: settings.mentionChar,
+                dataSource: settings.dataSource,
+                fields: settings.fields,
+                query: settings.query,
+                filterType: settings.filterType,
+                highlight: settings.highlight,
+                popupWidth: settings.popupWidth,
+                popupHeight: settings.popupHeight,
+                cssClass: this.enableRtl ? 'e-assist-mention e-rtl' : 'e-assist-mention',
+                requireLeadingSpace: false,
+                suffixText: '&nbsp;',
+                allowSpaces: true,
+                displayTemplate: displayTemplate,
+                itemTemplate: settings.itemTemplate,
+                noRecordsTemplate: noRecordsTemplate,
+                change: this.onMentionUpdated.bind(this, settings.mentionChar),
+                select: this.onMentionSelect.bind(this)
+            }, this.editableTextarea);
+
+            this.mentionModels.push(mentionInstance);
+        }
+        this.isProtectedOnChange = prevOnChange;
+    }
+
+    private getMentionElement(mentionItem: MentionSettingsModel, itemData?: FieldSettingsModel): string {
+        const iconCssFieldName: string = mentionItem.fields.iconCss;
+        let hasIconCss: boolean = false;
+        let iconCssValue: string = '';
+        if (itemData) {
+            // eslint-disable-next-line security/detect-object-injection
+            iconCssValue = (itemData as any)[iconCssFieldName] || itemData.iconCss || '';
+            hasIconCss = !isNOU(iconCssValue) && typeof iconCssValue === 'string' && iconCssValue.trim() !== '';
+        } else if (mentionItem.dataSource && (mentionItem.dataSource as any[]).length > 0) {
+            const firstItem: any = (mentionItem.dataSource as any)[0];
+            // eslint-disable-next-line security/detect-object-injection
+            const iconValue: string = firstItem[iconCssFieldName] as string;
+            hasIconCss = !isNOU(iconValue) && typeof iconValue === 'string' && iconValue.trim() !== '';
+        }
+        const shouldShowMentionChar: boolean = !hasIconCss && (!isNOU(mentionItem.showMentionChar) ? mentionItem.showMentionChar : true);
+        let textContent: string = '';
+        if (itemData) {
+            const textFieldName: string = mentionItem.fields.text;
+            // eslint-disable-next-line security/detect-object-injection
+            const textValue: any = (itemData as any)[textFieldName] || itemData.text;
+            textContent = !isNOU(textValue) ? String(textValue) : '';
+        } else {
+            textContent = '${' + mentionItem.fields.text + '}';
+        }
+        const mentionHTMLContent: string =
+            (hasIconCss ? (itemData
+                ? `<span class="${iconCssValue}"></span>`
+                : `<span class="\${${mentionItem.fields.iconCss}}"></span>`)
+                : '') +
+            (shouldShowMentionChar ? `<span class="e-mention-char">${mentionItem.mentionChar}</span>` : '') +
+            '<span class="e-aiassist-mention-item-chip">' +
+                textContent +
+            '</span>';
+        return mentionHTMLContent;
+    }
+
     private renderAttachmentIcon(): void {
         this.dropArea = this.createElement('div', { attrs: { class: 'e-assist-drop-area' } });
         this.footer.prepend(this.dropArea);
-        const attachmentIcon: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assist-attachment-icon') as HTMLElement;
+        let attachmentIcon: HTMLElement = null;
+        if (this.footerLeftToolbarEle) {
+            attachmentIcon = this.footerLeftToolbarEle.element.querySelector('.e-assist-attachment-icon') as HTMLElement;
+        }
+        if (!attachmentIcon && this.footerToolbarEle) {
+            attachmentIcon = this.footerToolbarEle.element.querySelector('.e-assist-attachment-icon') as HTMLElement;
+        }
         const uploaderElement: HTMLElement = this.createElement('input', { attrs: { class: 'e-assist-file-upload', type: 'file', name: 'UploadFiles', id: 'fileUpload'} });
         attachmentIcon.appendChild(uploaderElement);
         this.uploaderObj = new Uploader({
@@ -1708,7 +2277,9 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             success: this.onUploadSuccess.bind(this),
             failure: this.onUploadFailure.bind(this),
             uploading: this.onUploadStart.bind(this),
+            removing: this.onAttachmentRemoving.bind(this),
             multiple: true,
+            dropArea: this.footer,
             selected: (args: any) => {
                 const oversized: FileInfo[] = args.filesData.filter((file: FileInfo) =>
                     file.status === (this.uploaderObj as any).l10n.getConstant('invalidMaxFileSize') && file.statusCode === '0');
@@ -1762,6 +2333,67 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
     }
 
+    private onMentionUpdated(mentionChar: string, args: MentionChangeEventArgs): void {
+        const mentionId: string = (++this.mentionCounter).toString();
+        const mentionElements: NodeListOf<HTMLElement> = this.editableTextarea.querySelectorAll('.e-mention-chip');
+        const mentionElement: HTMLElement = mentionElements[mentionElements.length - 1] as HTMLElement;
+        if (mentionElement) {
+            mentionElement.setAttribute('data-mention-id', mentionId);
+            this.selectedMentions.push({
+                itemData: args.itemData,
+                element: mentionElement,
+                mentionChar: mentionChar
+            });
+        }
+    }
+
+    private onMentionSelect(args: SelectEventArgs): void {
+        const eventArgs: AssistMentionSelectEventArgs = {
+            cancel: false,
+            event: args.e,
+            isInteracted: args.isInteracted,
+            itemData: args.itemData
+        };
+        this.trigger('mentionSelect', eventArgs);
+
+        // If the event handler cancelled the selection, propagate it to the Mention control
+        if (eventArgs.cancel) {
+            args.cancel = true;
+        }
+    }
+
+    private restoreMentionsFromPrompt(promptIndex: number): void {
+        // Reset the selectedMentions and counter
+        this.selectedMentions = [];
+        this.mentionCounter = 0;
+
+        // Get the stored mentions from the prompt data
+        const storedMentions: MentionItems[] = this.prompts[parseInt(promptIndex.toString(), 10)].mentions;
+        if (!storedMentions || storedMentions.length === 0 || !this.editableTextarea) {
+            return;
+        }
+
+        // Get the rendered chips from the textarea
+        const mentionElements: NodeListOf<HTMLElement> = this.editableTextarea.querySelectorAll('.e-mention-chip') as NodeListOf<HTMLElement>;
+
+        // Rebuild selectedMentions array by matching stored mentions to rendered chips
+        for (let i: number = 0; i < mentionElements.length; i++) {
+            const mentionElement: HTMLElement = mentionElements[parseInt(i.toString(), 10)];
+            const mentionId: string = (++this.mentionCounter).toString();
+            mentionElement.setAttribute('data-mention-id', mentionId);
+
+            // Match the chip with the corresponding stored mention
+            if (i < storedMentions.length) {
+                const storedMention: MentionItems = storedMentions[parseInt(i.toString(), 10)];
+                this.selectedMentions.push({
+                    itemData: storedMention.itemData,
+                    element: mentionElement,
+                    mentionChar: storedMention.mentionChar
+                });
+            }
+        }
+    }
+
     private onUploadSuccess(args: any): void {
         if (args.operation === 'upload') {
             this.trigger('attachmentUploadSuccess', args);
@@ -1787,6 +2419,20 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
     }
 
+    /**
+     * Handles the internal Uploader's `removing` event and forwards it to the public
+     * `attachmentRemoving` event. The same args object reference is passed through, so any
+     * changes made by the consumer (`args.cancel`, `args.customFormData`, `args.postRawFile`)
+     * are honored by the Uploader before the remove request is dispatched.
+     *
+     * @param {RemovingEventArgs} args - Specifies the removing event arguments from the Uploader.
+     * @returns {void}
+     */
+    private onAttachmentRemoving(args: RemovingEventArgs): void {
+        this.trigger('attachmentRemoving', args);
+        this.isAttachmentRemovalCancelled = !!args.cancel;
+    }
+
     private onUploadFailure(args: any): void {
         if (args.operation === 'remove') {
             this.trigger('attachmentRemoved', args);
@@ -1805,17 +2451,26 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
 
     private createFileItem(fileData: FileInfo, isForFooter: boolean): HTMLElement {
         const fileItem: HTMLElement = this.createElement('div', { className: 'e-assist-uploaded-file-item' });
-        const fileIcon: HTMLElement = this.createElement('div', { className: 'e-icons e-assist-file-format-icon' });
-        const fileDetails: HTMLElement = this.createElement('div', { className: 'e-assist-file-details' });
-        const fileName: HTMLElement = this.createElement('span', { className: 'e-assist-file-name', innerHTML: fileData.name });
-        const fileSize: HTMLElement = this.createElement('span', { className: 'e-assist-file-size', innerHTML: `${(fileData.size / 1024).toFixed(2)} KB` });
-
+        if (this.attachmentSettings.attachmentTemplate) {
+            const introContainer: HTMLElement = this.createElement('div', { className: 'e-attachment-template' });
+            fileItem.appendChild(introContainer);
+            this.getContextObject('attachmenttemplate', introContainer, -1 , -1, fileData);
+        }
+        else {
+            const fileIcon: HTMLElement = this.createElement('div', {
+                className: 'e-assist-file-icon-svg'
+            });
+            fileIcon.appendChild(this.createFileTypeIcon(fileData.name));
+            const fileDetails: HTMLElement = this.createElement('div', { className: 'e-assist-file-details' });
+            const fileName: HTMLElement = this.createElement('span', { className: 'e-assist-file-name', innerHTML: fileData.name });
+            const fileSize: HTMLElement = this.createElement('span', { className: 'e-assist-file-size', innerHTML: `${(fileData.size / 1024).toFixed(2)} KB` });
+            fileDetails.append(fileName, fileSize);
+            fileItem.append(fileIcon, fileDetails);
+        }
         const progressBar: HTMLElement = this.createElement('div', { className: 'e-assist-progress-bar' });
         const progressFill: HTMLElement = this.createElement('div', { id: `e-assist-progress-${fileData.name}`, className: 'e-assist-progress-fill' });
 
         progressBar.appendChild(progressFill);
-        fileDetails.append(fileName, fileSize);
-        fileItem.append(fileIcon, fileDetails);
         let closeButton: HTMLElement;
         if (isForFooter) {
             closeButton = this.createElement('span', { attrs: { class: 'e-icons e-assist-clear-icon', role: 'button', 'aria-label': 'Clear file', tabindex: '-1' } });
@@ -1841,6 +2496,9 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
 
     private handleRemoveUploadedFile(closeButton: HTMLElement, fileData: FileInfo, fileItem: HTMLElement): void {
         this.uploaderObj.remove(fileData);
+        if (this.isAttachmentRemovalCancelled) {
+            return;
+        }
         this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== fileData.name);
         EventHandler.remove(closeButton, 'click', this.handleRemoveUploadedFile);
         fileItem.remove();
@@ -1866,7 +2524,12 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         const prevPrompt: string = this.prompt;
-        this.prompt = SanitizeHtmlHelper.sanitize(textContent);
+        if (this.selectedMentions.length > 0)
+        {
+            this.prompt = this.getPromptTextWithPlaceholders();
+        } else {
+            this.prompt = SanitizeHtmlHelper.sanitize(textContent);
+        }
         this.isProtectedOnChange = prevOnChange;
         this.refreshTextareaUI();
         this.editableTextarea.focus();
@@ -1910,15 +2573,29 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
     }
 
+    private attachFooterIconHandlersTo(container: HTMLElement): void {
+        EventHandler.add(container, 'pointerdown', this.onFooterIconsPointerDown, this);
+        EventHandler.add(container, 'click', this.onFooterIconsClick, this);
+        EventHandler.add(container, 'focusout', this.onFooterIconsFocusOut, this);
+    }
+
+    private removeFooterIconHandlersFrom(container: HTMLElement): void {
+        EventHandler.remove(container, 'pointerdown', this.onFooterIconsPointerDown);
+        EventHandler.remove(container, 'click', this.onFooterIconsClick);
+        EventHandler.remove(container, 'focusout', this.onFooterIconsFocusOut);
+    }
+
     private wireEvents(): void {
         this.wireFooterEvents(this.footerTemplate);
+
         if (this.editableTextarea) {
             const footerIconsWrapper: HTMLElement = this.footer.querySelector('.e-footer-icons-wrapper') as HTMLElement;
             if (footerIconsWrapper) {
-                EventHandler.add(footerIconsWrapper, 'pointerdown', this.onFooterIconsPointerDown, this);
-                // Optional fallback for environments without Pointer Events
-                EventHandler.add(footerIconsWrapper, 'click', this.onFooterIconsClick, this);
-                EventHandler.add(footerIconsWrapper, 'focusout', this.onFooterIconsFocusOut, this);
+                this.attachFooterIconHandlersTo(footerIconsWrapper);
+            }
+            const footerLeftItems: HTMLElement = this.footer.querySelector('.e-footer-left-items') as HTMLElement;
+            if (footerLeftItems) {
+                this.attachFooterIconHandlersTo(footerLeftItems);
             }
         }
         if (this.enableScrollToBottom) {
@@ -1930,9 +2607,11 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         if (this.editableTextarea) {
             const footerIconsWrapper: HTMLElement = this.footer.querySelector('.e-footer-icons-wrapper') as HTMLElement;
             if (footerIconsWrapper) {
-                EventHandler.remove(footerIconsWrapper, 'pointerdown', this.onFooterIconsPointerDown);
-                EventHandler.remove(footerIconsWrapper, 'click', this.onFooterIconsClick);
-                EventHandler.remove(footerIconsWrapper, 'focusout', this.onFooterIconsFocusOut);
+                this.removeFooterIconHandlersFrom(footerIconsWrapper);
+            }
+            const footerLeftItems: HTMLElement = this.footer.querySelector('.e-footer-left-items') as HTMLElement;
+            if (footerLeftItems) {
+                this.removeFooterIconHandlersFrom(footerLeftItems);
             }
         }
         this.detachCodeCopyEventHandler();
@@ -1982,6 +2661,10 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
 
     private keyHandler(event: KeyboardEvent, value: string): void {
         if (event.key === 'Enter' && !event.shiftKey) {
+            const mentionPopup: HTMLElement = document.querySelector('.e-assist-mention.e-mention');
+            if (mentionPopup && mentionPopup.classList.contains('e-popup-open')) {
+                return;
+            }
             switch (value) {
             case 'footer':
                 this.pushToUndoStack(this.editableTextarea.innerText);
@@ -2019,12 +2702,16 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         this.checkAndActivateSendIcon();
     }
     private respondingStopper(event: KeyboardEvent | MouseEvent): void {
+        // Finalize incomplete thinking blocks to error state before stopping output
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.finalizeIncompleteThinkingBlocks();
+        this.isProtectedOnChange = prevOnChange;
         this.isOutputRenderingStop = true;
         this.isResponseRequested = false;
         this.lastStreamPrompt = '';
         if (this.outputElement.hasChildNodes) {
-            const skeletonElement: HTMLElement = this.element.querySelector('.e-loading-body');
-            if (skeletonElement) {
+            if (this.skeletonContainer && (this.skeletonContainer.parentNode === this.outputElement)) {
                 this.outputElement.removeChild(this.skeletonContainer);
             }
         }
@@ -2072,14 +2759,18 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.updateBannerTemplate('');
         }
         this.createOutputElement();
+        const mentionChips: MentionItems[] = this.getMentionItems();
         const eventArgs: PromptRequestEventArgs = {
             cancel: false,
             responseToolbarItems: this.responseToolbarSettings.items,
             prompt: this.prompt,
             promptSuggestions: this.promptSuggestions,
-            attachedFiles: [...this.uploadedFiles]
+            attachedFiles: [...this.uploadedFiles],
+            mentions: mentionChips
         };
         this.clearUploadedFiles();
+        this.selectedMentions = [];
+        this.mentionCounter = 0;
         if (!this.footerTemplate) {
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
@@ -2100,14 +2791,126 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
     }
 
+    private getMentionItems(): MentionItems[] {
+        const mentions: MentionItems[] = [];
+
+        if (!this.editableTextarea || this.mentions.length === 0) {
+            return mentions;
+        }
+        // Remove deleted mentions
+        const currentEditorChips: NodeListOf<HTMLElement> = this.editableTextarea.querySelectorAll('.e-mention-chip') as NodeListOf<HTMLElement>;
+        for (let i: number = 0; i < currentEditorChips.length; i++) {
+            const mentionElement: HTMLElement = currentEditorChips[parseInt(i.toString(), 10)];
+            const mention: { itemData: FieldSettingsModel; mentionChar: string; element: HTMLElement; } = this.selectedMentions.find((item: { itemData: FieldSettingsModel; mentionChar: string; element: HTMLElement; }) => item.element.getAttribute('data-mention-id') === mentionElement.getAttribute('data-mention-id'));
+            if (mention) {
+                mentions.push({ itemData: mention.itemData, mentionChar: mention.mentionChar });
+            }
+        }
+        return mentions;
+    }
+
+    private getPromptText(promptText: string, promptIndex: number, isCopyAction?: boolean): string {
+        let mentions: MentionItems[] = [];
+        if (this.prompts[parseInt(promptIndex.toString(), 10)].mentions &&
+         this.prompts[parseInt(promptIndex.toString(), 10)].mentions.length > 0) {
+            mentions = this.prompts[parseInt(promptIndex.toString(), 10)].mentions;
+        }
+        if (!mentions || mentions.length === 0) {
+            return SanitizeHtmlHelper.sanitize(promptText);
+        }
+
+        const placeholderRegex: RegExp = /\{(-?\d+)\}/g;
+        let renderedText: string = this.prompts[parseInt(promptIndex.toString(), 10)].prompt || promptText;
+        let match: RegExpExecArray | null = placeholderRegex.exec(renderedText);
+        const placeholders: Array<{ fullMatch: string; index: number }> = [];
+        while (match !== null) {
+            placeholders.push({
+                fullMatch: match[0],
+                index: parseInt(match[1], 10)
+            });
+            match = placeholderRegex.exec(renderedText);
+        }
+        for (const placeholder of placeholders) {
+            const mentionIndex: number = placeholder.index;
+            if (mentionIndex >= 0 && mentionIndex < mentions.length) {
+                const mention: MentionItems = mentions[parseInt(mentionIndex.toString(), 10)];
+                if (mention) {
+                    renderedText = renderedText.replace(placeholder.fullMatch, this.renderMentionChipSimple(mention, isCopyAction));
+                }
+            }
+        }
+        return SanitizeHtmlHelper.sanitize(renderedText);
+    }
+
+    private renderMentionChipSimple(mention: MentionItems, isCopyAction?: boolean): string {
+        const settings: MentionSettingsModel = this.mentions.find(
+            (m: MentionSettingsModel) => m.mentionChar === mention.mentionChar
+        );
+        if (isNOU(settings) || !mention.itemData)
+        {
+            return '';
+        }
+        const textFieldName: string = settings.fields.text;
+        // eslint-disable-next-line security/detect-object-injection
+        const textValue: any = (mention.itemData as any)[textFieldName] || mention.itemData.text;
+        const textContent: string = !isNOU(textValue) ? String(textValue) : '';
+        if (isCopyAction) {
+            return SanitizeHtmlHelper.sanitize(textContent);
+        }
+        const displayTemplate: string | Function = settings.displayTemplate;
+        if (!isNOU(displayTemplate) && !(typeof displayTemplate === 'string' && displayTemplate === '')) {
+            const tempContainer: HTMLElement = this.createElement('div');
+            this.updateContent(displayTemplate, tempContainer, mention.itemData, 'mentionDisplayTemplate');
+            let mentionContent: string = tempContainer.innerHTML;
+            // Interpolate ${field} placeholders with data values
+            for (const key in mention.itemData) {
+                if (Object.prototype.hasOwnProperty.call(mention.itemData, key)) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    const value: any = (mention as any).itemData[key];
+                    const escapeKey: string = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const pattern: string = '\\$\\{' + escapeKey + '\\}';
+                    // eslint-disable-next-line security/detect-non-literal-regexp
+                    mentionContent = mentionContent.replace( new RegExp(pattern, 'g'), !isNOU(value) ? String(value) : '');
+                }
+            }
+            return '<span class="e-mention-chip">' + SanitizeHtmlHelper.sanitize(mentionContent) + '</span>';
+        }
+        const mentionElement: string =
+            '<span class="e-mention-chip">' +
+                this.getMentionElement(settings, mention.itemData) +
+            '</span>';
+        return SanitizeHtmlHelper.sanitize(mentionElement);
+    }
+
+    private getPromptTextWithPlaceholders(): string {
+        if (!this.editableTextarea) {
+            return this.prompt;
+        }
+
+        const contentClone: HTMLElement = this.editableTextarea.cloneNode(true) as HTMLElement;
+        let placeholderIndex: number = 0;
+
+        const mentionElements: NodeListOf<HTMLElement> = contentClone.querySelectorAll('.e-mention-chip');
+        for (const mentionElement of Array.from(mentionElements)) {
+            const placeholder: Text = document.createTextNode(`{${placeholderIndex}}`);
+            mentionElement.replaceWith(placeholder);
+            placeholderIndex++;
+        }
+
+        return SanitizeHtmlHelper.sanitize(contentClone.innerHTML);
+    }
+
     private addPrompt(): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.prompts = [...this.prompts, { prompt: this.prompt, response: '', isResponseHelpful: null, attachedFiles: this.uploadedFiles }];
+        const mentionChips: MentionItems[] = this.getMentionItems();
+        const promptTextWithPlaceholders: string = this.getPromptTextWithPlaceholders();
+        this.prompts = [...this.prompts, { prompt: promptTextWithPlaceholders, response: '', isResponseHelpful: null, attachedFiles: this.uploadedFiles, blocks: null, mentions: mentionChips }];
         this.isProtectedOnChange = prevOnChange;
     }
 
-    private getContextObject(templateName: string, contentElement: HTMLElement, index?: number, arrayPosition?: number): void {
+    private getContextObject(templateName: string, contentElement: HTMLElement, index?: number, arrayPosition?: number,
+                             file?: FileInfo): void {
         let template: string | Function;
         let context: object = { };
         const contextIndex: number = index >= 0 ? index : -1;
@@ -2120,7 +2923,8 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                 prompt: contextPrompt,
                 toolbarItems: this.promptToolbarSettings.items,
                 index: contextIndex,
-                attachedFiles: this.uploadedFiles
+                attachedFiles: this.uploadedFiles,
+                mentions: index >= 0 ? this.prompts[parseInt(contextIndex.toString(), 10)].mentions : null
             };
             break;
         }
@@ -2130,13 +2934,19 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                 prompt: contextPrompt,
                 response: contextOutput,
                 index: contextIndex,
-                toolbarItems: this.responseToolbarSettings.items
+                toolbarItems: this.responseToolbarSettings.items,
+                blocks: index >= 0 ? this.prompts[parseInt(contextIndex.toString(), 10)].blocks : null
             };
             break;
         }
         case 'customviewtemplate':
         case 'assistviewtemplate': {
             template = this.views[parseInt(arrayPosition.toString(), 10)].viewTemplate || '';
+            break;
+        }
+        case 'attachmenttemplate': {
+            template = this.attachmentSettings.attachmentTemplate;
+            context = { selectedFile: file};
             break;
         }
         }
@@ -2156,23 +2966,32 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         attachedFiles?: FileInfo[],
         index?: number,
         isMethodCall?: boolean,
-        isFinalUpdate?: boolean
+        isFinalUpdate?: boolean,
+        blocks?: ResponseBlock[]
     ): void {
         const outputContainer: HTMLElement = this.createElement('div', { attrs: { id: `e-response-item_${index}`, class: `e-output-container ${this.responseItemTemplate ? 'e-response-item-template' : ''}`, ...(this.latestResponseMinHeight != null ?
             {style: `min-height:${this.latestResponseMinHeight}px`} : {}) } });
-        this.renderOutput(outputContainer, promptText, outputText, attachedFiles, isMethodCall, index, isFinalUpdate);
+        this.renderOutput(outputContainer, promptText, outputText, attachedFiles, isMethodCall, index, isFinalUpdate, blocks);
         if (promptText) {
             this.outputElement.append(this.outputSuggestionEle);
         }
         this.outputElement.append(outputContainer);
-        if (this.hasStopResponseButton() && isFinalUpdate) { this.toggleStopRespondingButton(false); }
+        if (this.hasStopResponseButton() && isFinalUpdate && !this.isToolResponse) { this.toggleStopRespondingButton(false); }
         if (!this.isOutputRenderingStop && !this.content.contains(this.suggestionsElement) && this.suggestionsElement) {
             this.content.append(this.suggestionsElement);
         }
     }
 
+    protected requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        modules.push(
+            { member: 'assistThinking', args: [this] }
+        );
+        return modules;
+    }
+
     private renderOutput(outputContainer: HTMLElement, promptText?: string, outputText?: string, attachedFiles?: FileInfo[],
-                         isMethodCall?: boolean, index?: number, isFinalUpdate?: boolean): void {
+                         isMethodCall?: boolean, index?: number, isFinalUpdate?: boolean, blocks?: ResponseBlock[]): void {
         const promptIcon: HTMLElement = this.createElement('span', {
             className: 'e-output-icon e-icons ' + (this.responseIconCss || (this.isAssistView && this.views[0].iconCss) || 'e-assistview-icon' ) });
         const aiOutputEle: HTMLElement = this.createElement('div', { className: 'e-output' });
@@ -2182,18 +3001,24 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                 this.renderPrompt(promptText, index, attachedFiles);
             }
         }
-        const lastPrompt: PromptModel = { prompt: promptText, response: outputText };
-        if (lastPrompt.response) {
+        const lastPrompt: PromptModel = { prompt: promptText, response: outputText, blocks: blocks };
+        const hasToolBlocks: boolean = Array.isArray(lastPrompt.blocks) && lastPrompt.blocks.length > 0;
+        if (lastPrompt.response || hasToolBlocks) {
             if (this.responseItemTemplate) {
                 this.getContextObject('responseItemTemplate', aiOutputEle, index);
-                if (this.outputElement.querySelector('.e-skeleton')) { this.outputElement.removeChild(this.skeletonContainer); }
+                if (this.hasSkeletonEle() || this.outputElement.querySelector('.e-skeleton')) {
+                    this.outputElement.removeChild(this.skeletonContainer);
+                }
                 if (this.contentFooterEle) { this.contentFooterEle.classList.remove('e-assist-toolbar-active'); }
+                if (isFinalUpdate && this.hasStopResponseButton()) {
+                    this.toggleStopRespondingButton(false);
+                }
                 this.renderOutputToolbarItems(index, isFinalUpdate);
                 aiOutputEle.append(this.contentFooterEle);
                 outputContainer.append(aiOutputEle);
             }
             else {
-                this.renderOutputTextContainer(lastPrompt.response, aiOutputEle, index, false, isFinalUpdate);
+                this.renderOutputTextContainer(lastPrompt.response, aiOutputEle, index, false, isFinalUpdate, lastPrompt.blocks);
                 outputContainer.append(promptIcon, aiOutputEle);
             }
         }
@@ -2205,25 +3030,327 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
     }
 
+    private renderResponseSegments( outputEle: HTMLElement, blocks: ResponseBlock[] , isFinalUpdate?: boolean ): void {
+        if (blocks.length === 0) {
+            return;
+        }
+        if (!this.lastRenderedBlockCount) {
+            this.lastRenderedBlockCount = 0;
+        }
+        if (blocks.length > this.lastRenderedBlockCount) {
+            // NEW BLOCKS: Update already-rendered blocks state, then render new blocks
+            this.updateExistingBlocksState(blocks, this.lastRenderedBlockCount);
+            this.blockIndex = this.lastRenderedBlockCount;
+            this.renderNextSegment(outputEle, blocks, isFinalUpdate);
+            this.lastRenderedBlockCount = blocks.length;
+        } else if (blocks.length === this.lastRenderedBlockCount) {
+            // SAME COUNT: Update state of all already-rendered blocks
+            this.updateExistingBlocksState(blocks, this.lastRenderedBlockCount);
+            if (blocks[this.lastRenderedBlockCount - 1].blockType === 'text') {
+                const block: TextBlock = blocks[this.lastRenderedBlockCount - 1] as TextBlock;
+                const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
+                this.updateResponse('', this.prompts.length - 1, isFinalUpdate, responseItem, block);
+            }
+            this.updateLastThinkingBlock(blocks);
+        }
+        if (isFinalUpdate) {
+            if (this.blockIndex >= blocks.length && this.hasStopResponseButton()) {
+                this.toggleStopRespondingButton(false);
+                this.isResponseRequested = false;
+            }
+        }
+    }
+
+    private updateExistingBlocksState(blocks: ResponseBlock[], renderedCount: number): void {
+        const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
+        if (responseItem) {
+            // Check and update only the blocks that were already rendered (0 to renderedCount-1)
+            for (let index: number = 0; index < renderedCount; index++) {
+                const block: ResponseBlock = blocks[parseInt(index.toString(), 10)];
+                // Only thinking blocks have state that can change (isActive, stages status)
+                if (block.blockType === 'thinking') {
+                    const thinkingBlock: ThinkingBlock = block as ThinkingBlock;
+                    const blockWrapper: HTMLElement = responseItem.querySelector(`.e-response-block-item-${index}`);
+                    if (blockWrapper) {
+                        // Update isActive state (spinner/check icon)
+                        const isActiveChanged: boolean = thinkingBlock.isActive !== (blockWrapper.classList.contains('e-thinking-active'));
+                        if (isActiveChanged) {
+                            if (thinkingBlock.isActive) {
+                                // Block becoming active: replace check icon with spinner
+                                blockWrapper.classList.add('e-thinking-active');
+                                blockWrapper.classList.remove('e-thinking-finished');
+
+                                // Find the check icon span and replace with spinner span
+                                const headerButton: HTMLElement = blockWrapper.querySelector('.e-aiassist-thinking-toggle');
+                                if (headerButton) {
+                                    const checkIconSpan: HTMLElement = headerButton.querySelector('.e-icons.e-check');
+                                    if (checkIconSpan) {
+                                        // Create new spinner span
+                                        const spinnerSpan: HTMLElement = this.createElement('span', {
+                                            attrs: { class: 'e-active-spinner' }
+                                        });
+                                        // Create and show spinner
+                                        createSpinner({ target: spinnerSpan, type: 'Bootstrap' });
+                                        // Replace check icon with spinner
+                                        checkIconSpan.replaceWith(spinnerSpan);
+                                        showSpinner(spinnerSpan);
+                                    }
+                                }
+                            } else {
+                                // Block becoming inactive: replace spinner with check icon
+                                blockWrapper.classList.remove('e-thinking-active');
+                                blockWrapper.classList.add('e-thinking-finished');
+                                // Find the spinner span and replace with check icon span
+                                const headerButton: HTMLElement = blockWrapper.querySelector('.e-aiassist-thinking-toggle');
+                                if (headerButton) {
+                                    const spinnerSpan: HTMLElement = headerButton.querySelector('.e-active-spinner');
+                                    if (spinnerSpan) {
+                                        // Hide and destroy spinner
+                                        hideSpinner(spinnerSpan);
+                                        // Create new check icon span
+                                        const checkIconSpan: HTMLElement = this.createElement('span', {
+                                            attrs: { class: 'e-icons e-check' }
+                                        });
+                                        // Replace spinner with check icon
+                                        spinnerSpan.replaceWith(checkIconSpan);
+                                    }
+                                }
+                            }
+                        }
+                        // Update stages if they changed
+                        if (thinkingBlock.stages && thinkingBlock.stages.length > 0) {
+                            // Determine if this is single stage or timeline rendering
+                            const isSingleStage: boolean = thinkingBlock.stages.length === 1;
+
+                            if (isSingleStage) {
+                                // Single stage rendering uses .e-single-stage-container
+                                const stage: ThinkingStage = thinkingBlock.stages[0];
+                                const stageElement: HTMLElement = blockWrapper.querySelector('.e-single-stage-container');
+                                if (stageElement) {
+                                    // Get current stage status from DOM
+                                    const statusMatch: RegExpMatchArray = stageElement.className.match(/e-stage-(\w+)/);
+                                    const currentStatus: string = statusMatch ? statusMatch[1] : '';
+                                    const statusChanged: boolean = stage.status !== currentStatus;
+                                    if (statusChanged) {
+                                        // Update stage status class (replace old status with new)
+                                        stageElement.className = stageElement.className.replace(/e-stage-\w+/g, `e-stage-${stage.status}`);
+                                        // Update stage status icon when status changes
+                                        const stageIconElement: HTMLElement = stageElement.querySelector('.e-stage-icon');
+                                        if (stageIconElement && stage.iconCss) {
+                                            // Replace all icon classes with new one
+                                            const iconClassList: string[] = stageIconElement.className.split(' ').filter((c: string) => {
+                                                return !c.includes('e-') || c === 'e-icons' || c === 'e-stage-icon';
+                                            });
+                                            stageIconElement.className = `${iconClassList.join(' ')} ${stage.iconCss}`.trim();
+                                        }
+                                        // Add visual indicator when transitioning to completed
+                                        if (stage.status === 'completed') {
+                                            stageElement.classList.add('e-stage-completed');
+                                            // Hide any spinners in this stage
+                                            const stageSpinners: NodeListOf<Element> = stageElement.querySelectorAll('.e-active-spinner');
+                                            stageSpinners.forEach((spinner: HTMLElement) => {
+                                                hideSpinner(spinner);
+                                            });
+                                        }
+                                        // Remove completed indicator and show spinners if status reverts to inprogress
+                                        else if (stage.status === 'inprogress') {
+                                            stageElement.classList.remove('e-stage-completed');
+                                            // Show spinners when transitioning back to inprogress
+                                            const stageSpinners: NodeListOf<Element> = stageElement.querySelectorAll('.e-active-spinner');
+                                            stageSpinners.forEach((spinner: HTMLElement) => {
+                                                spinner.style.display = '';  // Restore display
+                                                showSpinner(spinner);
+                                            });
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Multiple stages: Timeline rendering uses .e-timeline-wrapper with Timeline component
+                                const timelineWrapper: HTMLElement = blockWrapper.querySelector('.e-timeline-wrapper');
+                                if (timelineWrapper) {
+                                    // Query timeline item elements and update their states
+                                    const timelineItems: NodeListOf<Element> = timelineWrapper.querySelectorAll('.e-timeline-item');
+                                    for (let stageIndex: number = 0; stageIndex < thinkingBlock.stages.length; stageIndex++) {
+                                        const stage: ThinkingStage = thinkingBlock.stages[parseInt(stageIndex.toString(), 10)];
+                                        const timelineItem: HTMLElement = timelineItems[parseInt(stageIndex.toString(), 10)] as HTMLElement;
+                                        if (timelineItem) {
+                                            // Get current stage status from DOM
+                                            const statusMatch: RegExpMatchArray = timelineItem.className.match(/e-stage-(\w+)/);
+                                            const currentStatus: string = statusMatch ? statusMatch[1] : '';
+                                            const statusChanged: boolean = stage.status !== currentStatus;
+                                            if (statusChanged) {
+                                                // Update timeline item status class (replace old status with new)
+                                                timelineItem.className = timelineItem.className.replace(/e-stage-\w+/g, `e-stage-${stage.status}`);
+                                                // Update stage status icon when status changes
+                                                const dotElement: HTMLElement = timelineItem.querySelector('.e-timeline-dot');
+                                                if (dotElement && stage.iconCss) {
+                                                    // Update dot CSS (for status icon)
+                                                    dotElement.className = `e-timeline-dot ${stage.iconCss}`;
+                                                }
+                                                // Add visual indicator when transitioning to completed
+                                                if (stage.status === 'completed') {
+                                                    timelineItem.classList.add('e-stage-completed');
+                                                    // Hide any spinners in this timeline item
+                                                    const stageSpinners: NodeListOf<Element> = timelineItem.querySelectorAll('.e-stage-spinner');
+                                                    stageSpinners.forEach((spinner: HTMLElement) => {
+                                                        hideSpinner(spinner);
+                                                    });
+                                                }
+                                                // Remove completed indicator and show spinners if status reverts to inprogress
+                                                else if (stage.status === 'inprogress') {
+                                                    timelineItem.classList.remove('e-stage-completed');
+                                                    // Show spinners when transitioning back to inprogress
+                                                    const stageSpinners: NodeListOf<Element> = timelineItem.querySelectorAll('.e-stage-spinner');
+                                                    stageSpinners.forEach((spinner: HTMLElement) => {
+                                                        spinner.style.display = '';  // Restore display
+                                                        showSpinner(spinner);
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private updateLastThinkingBlock(blocks: ResponseBlock[]): void {
+        const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
+        if (responseItem) {
+            for (let index: number = 0; index < blocks.length; index++) {
+                if (blocks[parseInt(index.toString(), 10)].blockType === 'thinking') {
+                    const thinkingBlock: ThinkingBlock = blocks[parseInt(index.toString(), 10)] as ThinkingBlock;
+                    let existingThinkingWrapper: HTMLElement = responseItem.querySelector('.e-response-block-item-' + (index));
+                    if (existingThinkingWrapper) {
+                        // Clear spinnerInstances Map for this block
+                        const oldSpinners: NodeListOf<Element> = existingThinkingWrapper.querySelectorAll('.e-active-spinner');
+                        oldSpinners.forEach((spinner: HTMLElement) => {
+                            hideSpinner(spinner);
+                        });
+                        // Clear existing thinking content and re-render with new block data
+                        existingThinkingWrapper.innerHTML = '';
+                    }
+                    else {
+                        const outputContentBodyEle: HTMLElement = responseItem.querySelector('.e-content-body');
+                        existingThinkingWrapper = this.createElement('div', { attrs: { class: `e-response e-response-block-item-${index}` } });
+                        outputContentBodyEle.append(existingThinkingWrapper);
+                    }
+                    this.assistThinkingModule.createThinkingWrapper(thinkingBlock, existingThinkingWrapper,
+                                                                    this.lastRenderedBlockCount - 1);
+                }
+            }
+        }
+    }
+
+    private renderNextSegment( outputEle: HTMLElement, blocks: ResponseBlock[], isFinalUpdate?: boolean ): void {
+        if (this.blockIndex >= blocks.length) {
+            if (this.enableStreaming) {
+                isFinalUpdate = true;
+            }
+            if (isFinalUpdate) {
+                if (this.hasStopResponseButton()) {
+                    this.toggleStopRespondingButton(false);
+                }
+                const responseIndex: number = this.prompts.length - 1;
+                const responseItem: HTMLElement = this.element.querySelector('#e-response-item_' + (responseIndex));
+                if (!this.responseItemTemplate && responseItem) {
+                    const outputContainer: HTMLElement = responseItem.querySelector('.e-output') as HTMLElement;
+                    if (isFinalUpdate && this.suggestionsElement) {
+                        this.suggestionsElement.hidden = false;
+                    }
+                    if (isFinalUpdate && outputContainer.querySelector('.e-content-footer') === null) {
+                        this.renderOutputToolbarItems(responseIndex, isFinalUpdate);
+                        this.appendChildren(outputContainer, this.contentFooterEle);
+                    }
+                }
+                this.isResponseRequested = false;
+            }
+            return;
+        }
+        const responseBlock: ResponseBlock = blocks[parseInt(this.blockIndex.toString(), 10)];
+        const responseWrapper: HTMLElement = this.createElement('div', { attrs: { class: `e-response e-response-block-item-${this.blockIndex}` } });
+        this.blockIndex++;
+        // TEXT SEGMENT
+        if (responseBlock.blockType === 'text') {
+            const responseText: HTMLElement = this.createElement('div', {
+                attrs: { class: 'e-text' }
+            });
+            responseWrapper.append(responseText);
+            outputEle.appendChild(responseWrapper);
+            const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(responseBlock.content);
+            if (this.enableStreaming && !isFinalUpdate) {
+                this.streamToolResponse(htmlResponse as string, responseText, () => {
+                    if (isFinalUpdate) {
+                        this.renderPreTag(responseText);
+                    }
+                    this.renderNextSegment(outputEle, blocks, isFinalUpdate);
+                });
+            } else {
+                responseText.innerHTML = htmlResponse as string;
+                this.renderNextSegment(outputEle, blocks, isFinalUpdate);
+            }
+            return;
+        }
+        // TOOL SEGMENT
+        if (responseBlock.blockType === 'tool') {
+            const tool: ToolUIConfig = this.registeredTools.get(responseBlock.toolName.toLowerCase());
+            if (tool) {
+                const toolContainer: HTMLElement = this.createElement('div', {
+                    attrs: {
+                        class: 'e-assist-tool'
+                    }
+                });
+                responseWrapper.append(toolContainer);
+                outputEle.appendChild(responseWrapper);
+                this.renderToolUI(responseBlock, tool, toolContainer);
+            }
+            this.renderNextSegment(outputEle, blocks, isFinalUpdate);
+            return;
+        }
+
+        //Thinking SEGMENT
+        if (responseBlock.blockType === 'thinking') {
+            this.assistThinkingModule.createThinkingWrapper(responseBlock, responseWrapper, this.blockIndex - 1);
+            outputEle.appendChild(responseWrapper);
+            this.renderNextSegment(outputEle, blocks, isFinalUpdate);
+            return;
+        }
+    }
+
+    private renderToolUI( toolBlock: ToolBlock, tool: ToolUIConfig, container: HTMLElement ): void {
+        const toolArgs: any = toolBlock.props || {};
+        try {
+            this.updateContent(tool.template, container, toolArgs, 'toolTemplate');
+            if (tool.handler) {
+                tool.handler(container, toolArgs);
+            }
+        } catch (error) {
+            //error statement
+        }
+    }
+
     private renderOutputTextContainer(
         response: string,
         aiOutputEle: HTMLElement,
         index?: number,
         isMethodCall?: boolean,
-        isFinalUpdate?: boolean
+        isFinalUpdate?: boolean,
+        blocks?: ResponseBlock[]
     ): void {
         if (this.contentFooterEle) { this.contentFooterEle.classList.remove('e-assist-toolbar-active'); }
         this.outputContentBodyEle = this.createElement('div', { attrs: { class: 'e-content-body', tabindex: '0' } });
-        if (!isMethodCall) {
-            if (!this.enableStreaming || isFinalUpdate) {
-                const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(response);
-                this.outputContentBodyEle.innerHTML = htmlResponse as string;
-            } else {
-                this.outputContentBodyEle.innerHTML = response;
-            }
-            if (isFinalUpdate) { this.renderPreTag(this.outputContentBodyEle); }
+        if (!isMethodCall && blocks && blocks.length > 0) {
+            this.lastRenderedBlockCount = 0;
+            this.renderResponseSegments(this.outputContentBodyEle, blocks, isFinalUpdate);
         }
-        if (this.outputElement.querySelector('.e-skeleton')) {
+        if (!isMethodCall && !isNOU(response) && response !== '') {
+            this.updateDynamicResponse(this.outputContentBodyEle, isFinalUpdate, response, isNOU(blocks) ? 0 : blocks.length);
+        }
+        if (this.hasSkeletonEle() || this.outputElement.querySelector('.e-skeleton')) {
             this.outputElement.removeChild(this.skeletonContainer);
         }
         this.appendChildren(aiOutputEle, this.outputContentBodyEle);
@@ -2232,6 +3359,26 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.appendChildren(aiOutputEle, this.contentFooterEle);
         }
     }
+
+    private updateDynamicResponse(outputContentBodyEle: HTMLElement, isFinalUpdate: boolean, response: string, blocksLength: number): void {
+        // Method used for updating the response value from prompt collection
+        let responseWrapper: HTMLElement = outputContentBodyEle.querySelector(`.e-response.e-response-block-item-${blocksLength}`);
+        const existingResponseWrapper: boolean = responseWrapper === null;
+        if (existingResponseWrapper) {
+            responseWrapper = this.createElement('div', { attrs: { class: `e-response e-response-block-item-${blocksLength}` } });
+        }
+        if (!this.enableStreaming || isFinalUpdate) {
+            const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(response);
+            responseWrapper.innerHTML = htmlResponse as string;
+        } else {
+            responseWrapper.innerHTML = response;
+        }
+        if (isFinalUpdate) { this.renderPreTag(responseWrapper); }
+        if (existingResponseWrapper) {
+            outputContentBodyEle.append(responseWrapper);
+        }
+    }
+
     private renderPreTag (outputContentEle: HTMLElement): void {
         const preTags: HTMLPreElement[] = Array.from(outputContentEle.querySelectorAll('pre'));
         preTags.forEach((preTag: HTMLPreElement) => {
@@ -2247,7 +3394,10 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         return function(): void {
             const preText: string = preTag.innerText;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).navigator.clipboard.writeText(preText);
+            if ((window as any).navigator.clipboard && typeof (window as any).navigator.clipboard.writeText === 'function') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (window as any).navigator.clipboard.writeText(preText);
+            }
             const copyIcon: HTMLSpanElement = preTag.querySelector('.e-code-copy');
             copyIcon.className = 'e-icons e-code-copy e-assist-check';
             setTimeout(() => {
@@ -2257,16 +3407,162 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     }
 
     private renderOutputToolbarItems(index?: number, isFinalUpdate?: boolean): void {
-        this.contentFooterEle = this.createElement('div', { className: 'e-content-footer e-assist-toolbar-active' });
-        const footerContent: HTMLElement = this.createElement('div');
-        this.renderResponseToolbar(index);
+        this.contentFooterEle = this.createElement('div', {
+            className: 'e-content-footer e-assist-toolbar-active'
+        });
         if (this.aiAssistViewRendered) {
             if (this.outputElement.querySelector('.e-skeleton')) { this.outputElement.removeChild(this.skeletonContainer); }
             if (isFinalUpdate && this.suggestionsElement) { this.suggestionsElement.hidden = false; }
         }
-        this.responseToolbarEle.appendTo(footerContent);
+        const navigationUI: HTMLElement = this.renderResponseNavigation(index);
+        if (navigationUI) {
+            this.contentFooterEle.appendChild(navigationUI);
+        }
+        this.renderResponseToolbar(index);
+        const toolbarContainer: HTMLElement = this.createElement('div', {
+            attrs: { class: 'e-response-toolbar-wrapper' }
+        });
+        this.responseToolbarEle.appendTo(toolbarContainer);
         this.responseToolbarEle.element.setAttribute('aria-label', `response-toolbar-${index}`);
-        this.contentFooterEle.appendChild(footerContent);
+        this.contentFooterEle.appendChild(toolbarContainer);
+    }
+
+    private renderResponseNavigation(promptIndex: number): HTMLElement {
+        const regeneratedResponses: string[] = this.regeneratedResponses.get(promptIndex);
+        if (!regeneratedResponses || regeneratedResponses.length <= 1) {
+            return this.createElement('div', {});
+        }
+        const navigationContainer: HTMLElement = this.createElement('div', {
+            attrs: { class: 'e-response-navigation-container' }
+        });
+        const currentIndex: number = this.currentRegeneratedIndex.get(promptIndex) || 0;
+        const totalCount: number = regeneratedResponses.length;
+        const prevButtonAttrs: { [key: string]: string } = {
+            class: 'e-btn e-icons e-assist-previous',
+            'aria-label': this.l10n.getConstant('previousResponse'),
+            title: this.l10n.getConstant('previousResponse')
+        };
+        if (currentIndex === 0) {
+            prevButtonAttrs['class'] += ' e-disabled';
+        }
+        const prevButton: HTMLElement = this.createElement('button', { attrs: prevButtonAttrs });
+        const indexIndicator: HTMLElement = this.createElement('span', {
+            attrs: { class: 'e-response-index-indicator' },
+            innerHTML: `${currentIndex + 1} / ${totalCount}`
+        });
+        const nextButtonAttrs: { [key: string]: string } = {
+            class: 'e-btn e-icons e-assist-next',
+            'aria-label': this.l10n.getConstant('nextResponse'),
+            title: this.l10n.getConstant('nextResponse')
+        };
+        if (currentIndex === totalCount - 1) {
+            nextButtonAttrs['class'] += ' e-disabled';
+        }
+        const nextButton: HTMLElement = this.createElement('button', { attrs: nextButtonAttrs });
+        if (prevButton.classList.contains('e-disabled')) { prevButton.tabIndex = -1; } else { prevButton.tabIndex = 0; }
+        if (nextButton.classList.contains('e-disabled')) { nextButton.tabIndex = -1; } else { nextButton.tabIndex = 0; }
+        navigationContainer.appendChild(prevButton);
+        navigationContainer.appendChild(indexIndicator);
+        navigationContainer.appendChild(nextButton);
+        EventHandler.add(prevButton, 'click', () => {
+            if (prevButton.classList.contains('e-disabled')) { return; }
+            this.navigateRegeneratedResponse(promptIndex, -1);
+        });
+        EventHandler.add(nextButton, 'click', () => {
+            if (nextButton.classList.contains('e-disabled')) { return; }
+            this.navigateRegeneratedResponse(promptIndex, 1);
+        });
+        return navigationContainer;
+    }
+
+    private navigateRegeneratedResponse(promptIndex: number, direction: number): void {
+        const regeneratedResponses: string[] = this.regeneratedResponses.get(promptIndex);
+        const regeneratedBlocksArr: ResponseBlock[][] = this.regeneratedBlocks.get(promptIndex);
+        const currentIndex: number = this.currentRegeneratedIndex.get(promptIndex) || 0;
+        const newIndex: number = currentIndex + direction;
+        if (newIndex < 0 || newIndex >= regeneratedResponses.length) {
+            return;
+        }
+        this.currentRegeneratedIndex.set(promptIndex, newIndex);
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        // eslint-disable-next-line security/detect-object-injection
+        this.prompts[promptIndex].response = regeneratedResponses[newIndex];
+        const blocksAtIndex: ResponseBlock[] = regeneratedBlocksArr && newIndex < regeneratedBlocksArr.length
+            ? regeneratedBlocksArr[newIndex as number] : [];
+        this.prompts[promptIndex as number].blocks = blocksAtIndex;
+        this.isProtectedOnChange = prevOnChange;
+        const responseContainer: HTMLElement = this.element.querySelector(`#e-response-item_${promptIndex}`) as HTMLElement;
+        if (responseContainer) {
+            if (this.responseItemTemplate) {
+                // For custom template: preserve footer during navigation
+                const outputEle: HTMLDivElement = responseContainer.querySelector('.e-output') as HTMLDivElement;
+                const footer: HTMLElement = responseContainer.querySelector('.e-content-footer') as HTMLDivElement;
+                if (outputEle && footer) {
+                    const childrenToRemove: Element[] = Array.from(outputEle.children).filter((child: Element) => child !== footer);
+                    childrenToRemove.forEach((child: Element) => {
+                        outputEle.removeChild(child);
+                    });
+                    this.getContextObject('responseItemTemplate', outputEle, promptIndex);
+                    outputEle.appendChild(footer);
+                }
+            } else {
+                const contentBody: HTMLElement = responseContainer.querySelector('.e-content-body') as HTMLElement;
+                if (contentBody) {
+                    contentBody.innerHTML = '';
+                    this.lastRenderedBlockCount = 0;
+                    this.blockIndex = 0;
+                    if (blocksAtIndex && blocksAtIndex.length > 0) {
+                        this.renderResponseSegments(contentBody, blocksAtIndex, true);
+                    }
+
+                    const responseText: string = regeneratedResponses[newIndex as number];
+                    if (!isNOU(responseText) && responseText !== '') {
+                        this.updateDynamicResponse(contentBody, true, responseText, blocksAtIndex ? blocksAtIndex.length : 0);
+                    }
+
+                    if ((!blocksAtIndex || blocksAtIndex.length === 0) && (isNOU(responseText) || responseText === '')) {
+                        const newResponse: string | Promise<string> = MarkdownConverter.toHtml(regeneratedResponses[newIndex as number]);
+                        contentBody.innerHTML = newResponse as string;
+                        this.renderPreTag(contentBody);
+                    }
+                }
+            }
+            const existingNav: HTMLElement = responseContainer.querySelector('.e-response-navigation-container') as HTMLElement;
+            if (existingNav) {
+                this.updateNavigationUI(promptIndex, existingNav);
+            }
+        }
+    }
+
+    private updateNavigationUI(promptIndex: number, existingNav: HTMLElement): void {
+        const regeneratedResponses: string[] = this.regeneratedResponses.get(promptIndex);
+        const currentIndex: number = this.currentRegeneratedIndex.get(promptIndex) || 0;
+        const totalCount: number = regeneratedResponses.length;
+        const prevButton: HTMLElement = existingNav.querySelector('.e-assist-previous') as HTMLElement;
+        const nextButton: HTMLElement = existingNav.querySelector('.e-assist-next') as HTMLElement;
+        const indexIndicator: HTMLElement = existingNav.querySelector('.e-response-index-indicator') as HTMLElement;
+        if (prevButton) {
+            if (currentIndex === 0) {
+                addClass([prevButton], 'e-disabled');
+                prevButton.tabIndex = -1;
+            } else {
+                removeClass([prevButton], 'e-disabled');
+                prevButton.tabIndex = 0;
+            }
+        }
+        if (nextButton) {
+            if (currentIndex === totalCount - 1) {
+                addClass([nextButton], 'e-disabled');
+                nextButton.tabIndex = -1;
+            } else {
+                removeClass([nextButton], 'e-disabled');
+                nextButton.tabIndex = 0;
+            }
+        }
+        if (indexIndicator) {
+            indexIndicator.innerHTML = `${currentIndex + 1} / ${totalCount}`;
+        }
     }
 
     private renderResponseToolbar(index?: number): void {
@@ -2321,9 +3617,96 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             }
         });
     }
+
+    private extractResponseText(output: any): string {
+        if (typeof output === 'string') {
+            return output;
+        }
+        if (typeof output === 'object') {
+            return output.response;
+        }
+        return '';
+    }
+
+    private handleRegenerateClick(promptIndex: number): void {
+        // eslint-disable-next-line security/detect-object-injection
+        const currentResponse: string = this.prompts[promptIndex].response;
+        // eslint-disable-next-line security/detect-object-injection
+        const currentBlocks: ResponseBlock[] = this.prompts[promptIndex].blocks;
+        if (!this.regeneratedResponses.has(promptIndex)) {
+            this.regeneratedResponses.set(promptIndex, [currentResponse]);
+            this.regeneratedBlocks.set(promptIndex, [currentBlocks || []]);
+            this.currentRegeneratedIndex.set(promptIndex, 0);
+        }
+        this.isRegenerating = true;
+        this.regeneratingPromptIndex = promptIndex;
+        this.isResponseRequested = true;
+        this.isOutputRenderingStop = false;
+        this.toggleStopRespondingButton(true);
+        this.resetResponse(promptIndex);
+        // eslint-disable-next-line security/detect-object-injection
+        const promptText: string = this.prompts[promptIndex].prompt;
+        const eventArgs: PromptRequestEventArgs = {
+            cancel: false,
+            prompt: promptText,
+            // eslint-disable-next-line security/detect-object-injection
+            attachedFiles: this.prompts[promptIndex].attachedFiles || [],
+            mentions: this.prompts[parseInt(promptIndex.toString(), 10)].mentions || []
+        };
+        this.trigger('promptRequest', eventArgs);
+    }
+
+    private resetResponse(promptIndex: number): void {
+        const responseContainer: HTMLElement = this.element.querySelector(`#e-response-item_${promptIndex}`) as HTMLElement;
+        let loadingIndicatorElement: HTMLElement;
+        if (this.responseAnimationTemplate) {
+            loadingIndicatorElement = this.skeletonContainer;
+        } else {
+            loadingIndicatorElement  = this.skeletonContainer.querySelector('.e-loading-body') as HTMLElement;
+        }
+        if (this.responseItemTemplate) {
+            const outputEle: HTMLElement = responseContainer.querySelector('.e-output') as HTMLElement;
+            const footer: HTMLElement = outputEle.querySelector('.e-content-footer') as HTMLElement;
+            const childrenToRemove: Element[] = Array.from(outputEle.children).filter((child: Element) => child !== footer);
+            childrenToRemove.forEach((child: Element) => {
+                outputEle.removeChild(child);
+            });
+            outputEle.insertBefore(loadingIndicatorElement, footer);
+            this.hideResponseToolbar(responseContainer);
+        } else {
+            const contentBody: HTMLElement = responseContainer.querySelector('.e-content-body') as HTMLElement;
+            contentBody.innerHTML = '';
+            contentBody.appendChild(loadingIndicatorElement);
+            this.hideResponseToolbar(responseContainer);
+        }
+        this.renderSkeleton();
+    }
+
+    private hideResponseToolbar(responseContainer: HTMLElement): void {
+        const navigationContainer: HTMLElement = responseContainer.querySelector('.e-response-navigation-container') as HTMLElement;
+        if (navigationContainer) {
+            navigationContainer.classList.add('e-response-hidden');
+        }
+        const toolbarWrapper: HTMLElement = responseContainer.querySelector('.e-response-toolbar-wrapper') as HTMLElement;
+        if (toolbarWrapper) {
+            toolbarWrapper.classList.add('e-response-hidden');
+        }
+    }
+
     private handleItemClick(args: ClickEventArgs, index: number): void {
         if (args.item.prefixIcon === 'e-icons e-assist-copy') {
-            this.getClipBoardContent(SanitizeHtmlHelper.sanitize(this.prompts[parseInt(index.toString(), 10)].response));
+            const currentPrompt: PromptModel = this.prompts[parseInt(index.toString(), 10)];
+            let contentToCopy: string = currentPrompt.response;
+            if (!contentToCopy && currentPrompt.blocks && currentPrompt.blocks.length > 0) {
+                const blocks: ResponseBlock[] = currentPrompt.blocks;
+                for (let i: number = blocks.length - 1; i >= 0; i--) {
+                    if (blocks[parseInt(i.toString(), 10)].blockType === 'text') {
+                        contentToCopy = (blocks[parseInt(i.toString(), 10)] as TextBlock).content;
+                        break;
+                    }
+                }
+            }
+            this.getClipBoardContent(SanitizeHtmlHelper.sanitize(contentToCopy));
             args.item.prefixIcon = 'e-icons e-assist-check';
             this.responseToolbarEle.dataBind();
             setTimeout(() => {
@@ -2378,7 +3761,51 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.responseToolbarEle.dataBind();
             this.isProtectedOnChange = prevOnChange;
         }
+        // Built-in Text-to-Speech
+        if (args.item.prefixIcon === 'e-icons e-assist-audio' ||
+            args.item.prefixIcon === 'e-icons e-assist-stop') {
+            if (this.currentUtterance) {
+                speechSynthesis.cancel();
+                this.currentUtterance = null;
+                args.item.prefixIcon = 'e-icons e-assist-audio';
+                args.item.tooltipText = this.l10n.getConstant('readAloud');
+            } else {
+                const contentBody: HTMLElement | null = this.element.querySelector(`#e-response-item_${index} .e-content-body`) as HTMLElement | null;
+                const cleanText: string = (contentBody && contentBody.innerText) ? contentBody.innerText.trim() : '';
+                this.speakText(cleanText, args.item);
+            }
+            this.responseToolbarEle.dataBind();
+        }
+
+        // Built-in Regenerate Support
+        if (args.item.prefixIcon === 'e-icons e-assist-regenerate') {
+            this.handleRegenerateClick(index);
+        }
+
     }
+
+    private speakText(cleanText: string, item: ItemModel): void {
+        if (!cleanText) { return; }
+        const utterance: SpeechSynthesisUtterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = this.textToSpeechSettings.language;
+        utterance.pitch = this.textToSpeechSettings.speechPitch;
+        utterance.rate = this.textToSpeechSettings.speechRate;
+        utterance.volume = this.textToSpeechSettings.volume;
+        if (this.textToSpeechSettings.voice) {
+            utterance.voice = this.textToSpeechSettings.voice;
+        }
+        utterance.onend = () => {
+            this.currentUtterance = null;
+            item.prefixIcon = 'e-icons e-assist-audio';
+            item.tooltipText = this.l10n.getConstant('readAloud');
+            if (this.responseToolbarEle) { this.responseToolbarEle.dataBind(); }
+        };
+        speechSynthesis.speak(utterance);
+        this.currentUtterance = utterance;
+        item.prefixIcon = 'e-icons e-assist-stop';
+        item.tooltipText = this.l10n.getConstant('stopAudio');
+    }
+
     private renderPrompt(promptText?: string, promptIndex?: number, attachedFiles?: FileInfo[]): void {
         const outputPrompt: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-text', tabindex: '0' } });
         const promptFiles: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-uploaded-files' } });
@@ -2392,7 +3819,8 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.getContextObject('promptItemTemplate', this.outputSuggestionEle, promptIndex);
         }
         else {
-            outputPrompt.innerHTML = promptText;
+            // Use getPromptText to render mention chips if mentions are available
+            outputPrompt.innerHTML = this.getPromptText(promptText, promptIndex);
             const uploadedFiles: FileInfo[] = attachedFiles || this.uploadedFiles;
             if (uploadedFiles.length > 0)
             {
@@ -2471,10 +3899,11 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                 }
                 if (!eventArgs.cancel) {
                     if (args.item.prefixIcon === 'e-icons e-assist-edit') {
-                        this.onEditIconClick(promptIndex as number);
+                        this.onEditIconClick(promptIndex as number, args.originalEvent);
                     }
                     if (args.item.prefixIcon === 'e-icons e-assist-copy') {
-                        this.getClipBoardContent(SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].prompt));
+                        this.getClipBoardContent(this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt,
+                                                                    promptIndex, true));
                         args.item.prefixIcon = 'e-icons e-assist-check';
                         this.promptToolbarEle.dataBind();
                         setTimeout(() => {
@@ -2491,37 +3920,46 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
 
     private renderSkeleton(): void {
         this.skeletonContainer = this.createElement('div', { className: 'e-output-container' });
-        const outputViewWrapper: HTMLElement = this.createElement('div', {  className: 'e-output', styles : 'width: 70%;'});
-        const skeletonIconEle: HTMLElement = this.createElement('span', { className: 'e-output-icon e-skeleton e-skeleton-text e-shimmer-wave' });
-        const skeletonBodyEle: HTMLElement = this.createElement('div', { className: 'e-loading-body' });
-        const skeletonFooterEle: HTMLElement = this.createElement('div', { className: 'e-loading-footer' });
-        const [skeletonLine1, skeletonLine2, skeletonLine3] = [
-            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 100%; height: 15px;' }),
-            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 75%; height: 15px;' }),
-            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 50%; height: 15px;' })
-        ];
-        const [footerSkeleton] = [
-            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave', styles: 'width: 100%; height: 30px;' })
-        ];
-        this.appendChildren(skeletonBodyEle, skeletonLine1, skeletonLine2, skeletonLine3);
-        skeletonFooterEle.append(footerSkeleton);
-        this.appendChildren(outputViewWrapper, skeletonBodyEle, skeletonFooterEle);
-        this.appendChildren(this.skeletonContainer, skeletonIconEle, outputViewWrapper);
+        if (this.responseAnimationTemplate) {
+            this.skeletonContainer.classList.add('e-response-animation-template');
+            this.updateContent(this.responseAnimationTemplate, this.skeletonContainer, {}, 'responseAnimationTemplate');
+        } else {
+            const outputViewWrapper: HTMLElement = this.createElement('div', {  className: 'e-output', styles : 'width: 70%;'});
+            const skeletonIconEle: HTMLElement = this.createElement('span', { className: 'e-output-icon e-skeleton e-skeleton-text e-shimmer-wave' });
+            const skeletonBodyEle: HTMLElement = this.createElement('div', { className: 'e-loading-body' });
+            const skeletonFooterEle: HTMLElement = this.createElement('div', { className: 'e-loading-footer' });
+            const [skeletonLine1, skeletonLine2, skeletonLine3] = [
+                this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 100%; height: 15px;' }),
+                this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 75%; height: 15px;' }),
+                this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 50%; height: 15px;' })
+            ];
+            const [footerSkeleton] = [
+                this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave', styles: 'width: 100%; height: 30px;' })
+            ];
+            this.appendChildren(skeletonBodyEle, skeletonLine1, skeletonLine2, skeletonLine3);
+            skeletonFooterEle.append(footerSkeleton);
+            this.appendChildren(outputViewWrapper, skeletonBodyEle, skeletonFooterEle);
+            this.appendChildren(this.skeletonContainer, skeletonIconEle, outputViewWrapper);
+        }
     }
 
-    private onEditIconClick(promptIndex: number): void {
+    private onEditIconClick(promptIndex: number, event?: Event): void {
         if (this.editableTextarea) {
             if (this.suggestionsElement ) { this.suggestionsElement.hidden = true; }
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
+            const prevPrompt: string = this.prompt;
             this.editableTextarea.innerHTML = this.prompt =
-SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].prompt);
+this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, promptIndex);
             this.isProtectedOnChange = prevOnChange;
+            // Restore selectedMentions array from stored prompt data
+            this.restoreMentionsFromPrompt(promptIndex);
             this.refreshTextareaUI();
             this.editableTextarea.focus();
             this.setFocusAtEnd(this.editableTextarea);
             this.pushToUndoStack(this.prompt);
             this.redoStack = [];
+            this.triggerPromptChanged(event as Event, prevPrompt);
         }
     }
     private refreshTextareaUI(): void {
@@ -2642,6 +4080,11 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
     private updateFooterToolbar(): void {
         const footerIconsWrapper: HTMLElement = this.footer.querySelector('.e-footer-icons-wrapper') as HTMLElement;
         if (footerIconsWrapper) {
+            const leftItems: HTMLElement = this.footer.querySelector('.e-footer-left-items') as HTMLElement;
+            if (leftItems) {
+                this.destroyAndNullify(this.footerLeftToolbarEle);
+                remove(leftItems);
+            }
             footerIconsWrapper.innerHTML = '';
             this.footerToolbarEle = null;
             this.sendToolbarItem = null;
@@ -2652,11 +4095,23 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
         }
     }
 
-    private updateResponse(response: string, index: number, isFinalUpdate: boolean, responseItem: HTMLDivElement | null): void {
+    private updateResponse(response: string, index: number, isFinalUpdate: boolean, responseItem: HTMLDivElement | null,
+                           block?: TextBlock, blocksLength?: number): void {
         if (!this.responseItemTemplate && responseItem) {
             const outputEle: HTMLDivElement | null = responseItem.querySelector('.e-output');
             const outputContentBodyEle: HTMLDivElement = responseItem.querySelector('.e-content-body');
-            if (outputContentBodyEle) { outputContentBodyEle.innerHTML = response; }
+            if (response && !this.isToolResponse) {
+                if (outputContentBodyEle) {
+                    //outputContentBodyEle.innerHTML = response;
+                    this.updateDynamicResponse(outputContentBodyEle, isFinalUpdate, response, blocksLength);
+                }
+            } else if (this.isToolResponse) {
+                const textContainers: NodeListOf<HTMLElement> = outputContentBodyEle.querySelectorAll('.e-text');
+                const textContainer: HTMLElement = textContainers[textContainers.length - 1] as HTMLElement;
+                if (textContainer) {
+                    textContainer.innerHTML = block.content;
+                }
+            }
             if (isFinalUpdate && this.suggestionsElement) {
                 this.suggestionsElement.hidden = false;
             }
@@ -2666,47 +4121,120 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 this.appendChildren(outputEle, this.contentFooterEle);
             }
         }
+        else if (this.responseItemTemplate && responseItem) {
+            // Template is configured AND container exists: update it instead of creating duplicate
+            const prevOnChange: boolean = this.isProtectedOnChange;
+            this.isProtectedOnChange = true;
+            // Update the prompt model with accumulated response
+            if (index < this.prompts.length) {
+                this.prompts[parseInt(index.toString(), 10)].response = response;
+            }
+            this.isProtectedOnChange = prevOnChange;
+            // Re-render template with updated data
+            const outputEle: HTMLDivElement | null = responseItem.querySelector('.e-output');
+            if (outputEle) {
+                outputEle.innerHTML = '';
+                this.getContextObject('responseItemTemplate', outputEle, index);
+                // Remove skeleton if present
+                if (this.hasSkeletonEle() || this.outputElement.querySelector('.e-skeleton')) {
+                    this.outputElement.removeChild(this.skeletonContainer);
+                }
+                // Handle final update: toolbar and suggestions
+                if (isFinalUpdate) {
+                    if (this.suggestionsElement) {
+                        this.suggestionsElement.hidden = false;
+                    }
+                    if (this.contentFooterEle) {
+                        this.contentFooterEle.classList.remove('e-assist-toolbar-active');
+                    }
+                    if (this.hasStopResponseButton()) {
+                        this.toggleStopRespondingButton(false);
+                    }
+                    this.renderOutputToolbarItems(index, isFinalUpdate);
+                    this.appendChildren(outputEle, this.contentFooterEle);
+                }
+            }
+        }
         else {
+            // Template is configured BUT container doesn't exist yet: create it
             this.renderOutputContainer(undefined, response, undefined, index, false, isFinalUpdate);
         }
     }
 
-    private streamResponse(response: string, index: number): void {
-        const prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
+    private streamText( text: string, onUpdate: (accumulated: string, isComplete: boolean) => void, onComplete?: () => void ): void {
+        if (!text || !text.trim()) {
+            if (onComplete) { onComplete(); }
+            return;
+        }
         let i: number = 0;
-        const words: string[] = response.split(' ');
-        const wordCount: number = words.length;
+        const words: string[] = text.split(' ');
         let lastResponse: string = '';
-        const streamingResponse: () => void = (): void => {
-            if (this.isOutputRenderingStop) {
+        const streamingText: () => void = (): void => {
+            if (this.isOutputRenderingStop || !this.contentWrapper) {
+                if (onComplete) { onComplete(); }
                 return;
             }
+            if (i < words.length) {
+                lastResponse += (i === 0 ? '' : ' ') + words[i++];
+                onUpdate(lastResponse, false);
+                if (!this.isRegenerating) {
+                    this.scrollToBottom();
+                }
+                setTimeout(streamingText, 15);
+            } else {
+                onUpdate(lastResponse, true);
+                if (onComplete) { onComplete(); }
+            }
+        };
+        streamingText();
+    }
+
+    private resetRegeneratingState(): void {
+        this.isRegenerating = false;
+        this.regeneratingPromptIndex = -1;
+    }
+
+    private streamResponse(response: string, index: number, blocksLength: number): void {
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.streamText( response, (lastResponse: string, isComplete: boolean) => {
             if (index >= this.prompts.length) {
+                this.isResponseRequested = false;
                 return;
             }
             const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${index}`);
-            lastResponse += (i === 0 ? '' : ' ') + words[parseInt(i.toString(), 10)];
-            i++;
-            if (this.outputElement.querySelector('.e-skeleton')) {
+            if (this.isRegenerating) {
+                if (responseItem) {
+                    const contentBody: HTMLElement = responseItem.querySelector('.e-content-body') as HTMLElement;
+                    if (contentBody && contentBody.firstChild && contentBody.children.length === 1
+                        && (contentBody.querySelector('.e-skeleton') || contentBody.querySelector('.e-output-container .e-response-animation-template'))) {
+                        contentBody.removeChild(contentBody.firstChild);
+                    }
+                }
+            } else if (this.hasSkeletonEle() || this.outputElement.querySelector('.e-skeleton')) {
                 this.outputElement.removeChild(this.skeletonContainer);
             }
-            this.updateResponse(lastResponse, index, i === wordCount, responseItem);
-            this.scrollToBottom();
+            this.updateResponse(lastResponse, index, isComplete, responseItem, null, blocksLength);
             this.setupViewportFilling();
-            if (i < wordCount) {
-                setTimeout(() => {
-                    streamingResponse();
-                }, 15);
-            } else {
-                const isFinalUpdate: boolean = lastResponse.length === response.length;
-                if (isFinalUpdate && this.hasStopResponseButton()) {
+            if (isComplete) {
+                if (this.hasStopResponseButton()) {
                     this.toggleStopRespondingButton(false);
                 }
-                this.isResponseRequested = !isFinalUpdate;
+                this.isResponseRequested = false;
+                if (this.isRegenerating) {
+                    this.resetRegeneratingState();
+                }
             }
-        };
-        streamingResponse();
+        });
+        this.isProtectedOnChange = prevOnChange;
+    }
+
+    private streamToolResponse(response: string, element: HTMLElement, streamingCompleted: () => void): void {
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.streamText( response, (lastResponse: string) => {
+            element.innerHTML = lastResponse;
+        }, streamingCompleted );
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -2718,6 +4246,14 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 existingTemplate.remove();
             }
             this.updateBannerView(contentContainer);
+        }
+    }
+
+    private updateResponseAnimationTemplate(newTemplate: string | Function): void {
+        const prevSkeleton: HTMLElement = this.skeletonContainer;
+        this.renderSkeleton();
+        if (prevSkeleton && prevSkeleton.parentElement) {
+            prevSkeleton.parentElement.replaceChild(this.skeletonContainer, prevSkeleton);
         }
     }
 
@@ -2790,24 +4326,12 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
         if (this.speechToTextObj == null) { return; }
         this.speechToTextObj.allowInterimResults = newProps.allowInterimResults;
         this.speechToTextObj.transcript = newProps.transcript;
-        if (!isNOU(newProps.lang)) {
-            this.speechToTextObj.lang = newProps.lang || 'en-US';
-        }
-        if (!isNOU(newProps.disabled)) {
-            this.speechToTextObj.disabled = newProps.disabled;
-        }
-        if (!isNOU(newProps.buttonSettings)) {
-            this.speechToTextObj.buttonSettings = newProps.buttonSettings;
-        }
-        if (!isNOU(newProps.showTooltip)) {
-            this.speechToTextObj.showTooltip = newProps.showTooltip;
-        }
-        if (!isNOU(newProps.tooltipSettings)) {
-            this.speechToTextObj.tooltipSettings = newProps.tooltipSettings;
-        }
-        if (!isNOU(newProps.cssClass)) {
-            this.speechToTextObj.cssClass = newProps.cssClass;
-        }
+        this.speechToTextObj.lang = newProps.lang || 'en-US';
+        this.speechToTextObj.disabled = newProps.disabled;
+        this.speechToTextObj.buttonSettings = newProps.buttonSettings;
+        this.speechToTextObj.showTooltip = newProps.showTooltip;
+        this.speechToTextObj.tooltipSettings = newProps.tooltipSettings;
+        this.speechToTextObj.cssClass = newProps.cssClass;
     }
 
     private updateLocale(): void {
@@ -2828,14 +4352,28 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 failureMessageEle.textContent = failureText;
             }
         }
+
+        // Update mention popups with localized noRecordsTemplate
+        if (this.mentionModels && this.mentionModels.length > 0) {
+            for (const mention of this.mentionModels) {
+                if (mention) {
+                    mention.noRecordsTemplate = this.l10n.getConstant('noRecordsTemplate');
+                }
+            }
+        }
     }
 
     public destroy(): void {
+        if (this.currentUtterance) {
+            speechSynthesis.cancel();
+            this.currentUtterance = null;
+        }
         super.destroy();
         this.unWireEvents();
         this.destroyAndNullify(this.responseToolbarEle);
         this.destroyAndNullify(this.promptToolbarEle);
         this.destroyAndNullify(this.footerToolbarEle);
+        this.destroyAndNullify(this.footerLeftToolbarEle);
         this.destroyAndNullify(this.downArrowIcon);
         this.destroyAndNullify(this.toolbar);
         this.destroyAndNullify(this.speechToTextObj);
@@ -2854,6 +4392,16 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
         this.assistCustomSection = null;
         this.speechToTextToolbarItem = null;
         this.preTagElements = [];
+        this.regeneratedResponses.clear();
+        this.regeneratedBlocks.clear();
+        this.currentRegeneratedIndex.clear();
+        this.originalBlocks.clear();
+        this.isRegenerating = false;
+        this.regeneratingPromptIndex = -1;
+        this.registeredTools.clear();
+        this.mentionModels = [];
+        this.selectedMentions = [];
+        this.mentionCounter = 0;
 
         // properties nullify
         this.toolbarSettings = this.promptToolbarSettings = this.responseToolbarSettings = {};
@@ -2905,6 +4453,21 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
     }
 
     /**
+     * Registers a custom tool UI for rendering AI-generated tool responses.
+     * Use this method to define how specific tool blocks should be rendered in the AIAssistView.
+     *
+     * @param {ToolUIConfig} tool - Configuration object containing toolName, template, and optional handler callback
+     * @returns {void}
+     *
+     */
+    public registerToolUI(tool: ToolUIConfig): void {
+        if (tool.toolName) {
+            const name: string = tool.toolName.toLowerCase();
+            this.registeredTools.set(name, { toolName: name, template: tool.template, handler: tool.handler });
+        }
+    }
+
+    /**
      * Adds a response to the last prompt or appends a new prompt data in the AIAssistView component.
      *
      * @param {string | Object} outputResponse - The response to be added. Can be a string representing the response or an object containing both the prompt and the response.
@@ -2919,43 +4482,193 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
     ): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
+        if (this.isRegenerating && this.regeneratingPromptIndex >= 0 && this.regeneratingPromptIndex < this.prompts.length) {
+            const regenerateIndex: number = this.regeneratingPromptIndex;
+            const responseText: string = this.extractResponseText(outputResponse);
+            const blocks: ResponseBlock[] = typeof outputResponse === 'object' && outputResponse !== null && !isNOU((<{blocks: ResponseBlock[] }>outputResponse).blocks)
+                ? ((<{blocks: ResponseBlock[] }>outputResponse).blocks as ResponseBlock[])
+                : [];
+            // eslint-disable-next-line security/detect-object-injection
+            const responseHistory: string[] = this.regeneratedResponses.get(regenerateIndex) || [this.prompts[regenerateIndex].response];
+            responseHistory.push(responseText);
+            this.regeneratedResponses.set(regenerateIndex, responseHistory);
+            // Store corresponding blocks
+            const blocksHistory: ResponseBlock[][] = this.regeneratedBlocks.get(regenerateIndex) ||
+                [this.prompts[regenerateIndex as number].blocks || []];
+            blocksHistory.push(blocks);
+            this.regeneratedBlocks.set(regenerateIndex, blocksHistory);
+            this.currentRegeneratedIndex.set(regenerateIndex, responseHistory.length - 1);
+            // eslint-disable-next-line security/detect-object-injection
+            this.prompts[regenerateIndex].response = responseText;
+            this.prompts[regenerateIndex as number].blocks = blocks;
+            const responseContainer: HTMLElement = this.element.querySelector(`#e-response-item_${regenerateIndex}`) as HTMLElement;
+            if (responseContainer) {
+                if (this.responseItemTemplate) {
+                    this.updateResponse(responseText, regenerateIndex, isFinalUpdate, responseContainer as HTMLDivElement);
+                } else {
+                    const contentBody: HTMLElement = responseContainer.querySelector('.e-content-body') as HTMLElement;
+                    if (contentBody) {
+                        if (this.enableStreaming) {
+                            const blocksLength: number =
+                                typeof outputResponse === 'object' && outputResponse !== null && !isNOU((<{blocks: ResponseBlock[] }>outputResponse).blocks)
+                                    ? ((<{blocks: ResponseBlock[] }>outputResponse).blocks as ResponseBlock[]).length
+                                    : 0;
+                            this.streamResponse(responseText, regenerateIndex, blocksLength);
+                        } else {
+                            const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(responseText);
+                            contentBody.innerHTML = htmlResponse as string;
+                            this.renderPreTag(contentBody);
+                        }
+                        const navigationContainer: HTMLElement = responseContainer.querySelector('.e-response-navigation-container') as HTMLElement;
+                        if (navigationContainer) {
+                            navigationContainer.classList.remove('e-response-hidden');
+                        }
+                    }
+                }
+                const toolbarWrapper: HTMLElement = responseContainer.querySelector('.e-response-toolbar-wrapper') as HTMLElement;
+                if (toolbarWrapper) {
+                    toolbarWrapper.classList.remove('e-response-hidden');
+                }
+                const oldNav: HTMLElement = responseContainer.querySelector('.e-response-navigation-container') as HTMLElement;
+                const footer: HTMLElement = responseContainer.querySelector('.e-content-footer') as HTMLElement;
+                if (oldNav) {
+                    this.updateNavigationUI(regenerateIndex, oldNav);
+                } else if (responseHistory.length >= 2 && footer) {
+                    const newNav: HTMLElement = this.renderResponseNavigation(regenerateIndex);
+                    if (newNav && newNav.children.length > 0) {
+                        footer.insertBefore(newNav, footer.firstChild);
+                    }
+                }
+            }
+            if (isFinalUpdate) {
+                if (!this.enableStreaming) {
+                    this.resetRegeneratingState();
+                    if (this.hasStopResponseButton()) {
+                        this.toggleStopRespondingButton(false);
+                    }
+                }
+            }
+            this.isResponseRequested = false;
+            this.isProtectedOnChange = prevOnChange;
+            if (this.enableScrollToBottom && this.downArrowIcon && this.outputContentBodyEle && this.contentWrapper) {
+                this.downArrowIcon.visible = this.outputContentBodyEle.scrollHeight > this.contentWrapper.clientHeight;
+            }
+            return;
+        }
         if (!this.isOutputRenderingStop) {
             const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
             let lastPrompt: PromptModel = this.prompts[this.prompts.length - 1];
-            const processResponse: (rawResponse: string) => void = (rawResponse: string): void => {
-                if (this.enableStreaming) {
+            // If lastPrompt is undefined, initialize a new prompt entry
+            if (!lastPrompt) {
+                this.prompts = [...this.prompts, {
+                    prompt: null,
+                    response: null,
+                    isResponseHelpful: null,
+                    attachedFiles: null,
+                    blocks: []
+                }];
+                lastPrompt = this.prompts[this.prompts.length - 1];
+                this.lastRenderedBlockCount = 0;
+            }
+
+            const processResponse: (rawResponse: string, blocks?: ResponseBlock[]) => void = (rawResponse: string,
+                                                                                              blocks?: ResponseBlock[]): void => {
+                if (this.enableStreaming && !this.isToolResponse) {
+                    if (this.prompts.length === 0) {
+                        this.isResponseRequested = false;
+                        return;
+                    }
                     isFinalUpdate = false;
                     const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(rawResponse);
                     lastPrompt.response = htmlResponse as string;
-                    this.streamResponse(lastPrompt.response, this.prompts.length - 1);
+                    this.streamResponse(lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length);
                 } else {
-                    lastPrompt.response =  rawResponse;
-                    this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem);
+                    if (this.prompts.length === 0) {
+                        this.isResponseRequested = false;
+                        return;
+                    }
+                    lastPrompt.response =  rawResponse ? MarkdownConverter.toHtml(rawResponse) as string : rawResponse;
+                    if (!this.isToolResponse) {
+                        this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem,
+                                            null, isNOU(blocks) ? 0 : blocks.length);
+                    } else {
+                        if (!blocks) {
+                            return;
+                        }
+                        blocks.forEach((block: ResponseBlock) => {
+                            if (block.blockType === 'text') {
+                                this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem, block);
+                            }
+                        });
+                        this.updateLastThinkingBlock(blocks);
+                        if (rawResponse) {
+                            this.isToolResponse = false;
+                            if (this.enableStreaming) {
+                                this.streamResponse(lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length);
+                            } else {
+                                this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate,
+                                                    responseItem, null, isNOU(blocks) ? 0 : blocks.length);
+                            }
+                        }
+                    }
                 }
             };
             if (typeof outputResponse === 'string') {
                 if (!this.isResponseRequested) {
-                    this.prompts = [...this.prompts, { prompt: null, response: null, isResponseHelpful: null, attachedFiles: null}];
+                    this.prompts = [...this.prompts, { prompt: null, response: null, isResponseHelpful: null, attachedFiles: null,
+                        blocks: [] }];
                     lastPrompt = this.prompts[this.prompts.length - 1];
+                    this.lastRenderedBlockCount = 0;
                 }
+                this.isToolResponse = false;
                 processResponse(outputResponse);
             }
             if (typeof outputResponse === 'object') {
+                if (this.enableStreaming) {
+                    isFinalUpdate = false;
+                }
                 const tPrompt: PromptModel = {
                     prompt: (<{ prompt: string }>outputResponse).prompt,
                     attachedFiles: (<{ attachedFiles: FileInfo[] }>outputResponse).attachedFiles,
                     response: (<{ response: string }>outputResponse).response,
                     isResponseHelpful: isNOU((<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful) ? null :
-                        (<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful
+                        (<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful,
+                    blocks: (<{blocks: ResponseBlock[] }>outputResponse).blocks
                 };
+                this.isToolResponse = tPrompt.blocks ?  tPrompt.blocks.length > 0 ? true : false : false;
                 if (this.prompt === tPrompt.prompt || this.lastStreamPrompt === tPrompt.prompt) {
                     lastPrompt.attachedFiles = tPrompt.attachedFiles;
                     lastPrompt.isResponseHelpful = tPrompt.isResponseHelpful;
-                    processResponse(tPrompt.response);
+                    lastPrompt.blocks = tPrompt.blocks;
+                    const hasBlocksOnly: boolean = Array.isArray(tPrompt.blocks) && tPrompt.blocks.length > 0 && (isNOU(tPrompt.response) || tPrompt.response === '');
+                    // Check if this is a newly created prompt (when blocks-only called with no existing prompts)
+                    const isNewlyCreatedPrompt: boolean = lastPrompt.prompt === null && lastPrompt.response === null;
+                    // Render blocks only if: hasBlocksOnly AND responseItem exists AND (existing prompt OR template exists for new prompt)
+                    if (hasBlocksOnly && responseItem && !this.responseItemTemplate && !isNewlyCreatedPrompt) {
+                        const outputEle: HTMLElement = responseItem.querySelector('.e-output') as HTMLElement;
+                        let outputContentBodyEle: HTMLDivElement = responseItem.querySelector('.e-content-body') as HTMLDivElement;
+                        if (!outputContentBodyEle) {
+                            outputContentBodyEle = this.createElement('div', { attrs: { class: 'e-content-body', tabindex: '0' } });
+                            if (outputEle) {
+                                outputEle.appendChild(outputContentBodyEle);
+                            }
+                        }
+                        this.renderResponseSegments(outputContentBodyEle, tPrompt.blocks, isFinalUpdate);
+                        if (this.outputElement.querySelector('.e-skeleton')) {
+                            this.outputElement.removeChild(this.skeletonContainer);
+                        }
+                    } else {
+                        processResponse(tPrompt.response, tPrompt.blocks);
+                    }
                 } else {
-                    this.prompts = [...this.prompts, tPrompt];
+                    if (!this.isResponseRequested) {
+                        this.prompts = [...this.prompts, tPrompt];
+                        lastPrompt = this.prompts[this.prompts.length - 1];
+                    }
+                    lastPrompt.blocks = tPrompt.blocks;
+                    this.lastRenderedBlockCount = 0;
                     this.renderOutputContainer(tPrompt.prompt, tPrompt.response, tPrompt.attachedFiles,
-                                               this.prompts.length - 1, true, isFinalUpdate);
+                                               this.prompts.length - 1, true, isFinalUpdate, tPrompt.blocks);
                 }
                 if (!isFinalUpdate) {
                     this.lastStreamPrompt = tPrompt.prompt;
@@ -2964,7 +4677,7 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
             if (isFinalUpdate) {
                 this.setupViewportFilling();
             }
-            if (!this.enableStreaming) {
+            if (!this.enableStreaming && !this.isToolResponse) {
                 if (isFinalUpdate && this.hasStopResponseButton()) {
                     this.toggleStopRespondingButton(false);
                 }
@@ -2986,7 +4699,29 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
      * @returns {void}
      */
     public scrollToBottom(): void {
-        this.updateScroll(this.contentWrapper);
+        if  (this.contentWrapper) {
+            this.updateScroll(this.contentWrapper);
+        }
+    }
+
+    private updateMentionObjs(): void {
+        if (this.editableTextarea) {
+            this.destroyAndNullifyMentions();
+            this.initializeMentions();
+        }
+    }
+
+    private destroyAndNullifyMentions(): void {
+        if (this.mentionModels && this.mentionModels.length > 0) {
+            for (const mention of this.mentionModels) {
+                if (mention && mention.destroy) {
+                    mention.destroy();
+                }
+            }
+            this.mentionModels = [];
+            this.selectedMentions = [];
+            this.mentionCounter = 0;
+        }
     }
 
     /**
@@ -3051,7 +4786,7 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 this.updateToolbarSettings(oldProp.toolbarSettings);
                 break;
             case 'footerToolbarSettings':
-                if (newProp.footerToolbarSettings.items) {
+                if (newProp.footerToolbarSettings.items || newProp.footerToolbarSettings.toolbarPosition) {
                     this.updateFooterToolbar();
                 }
                 if (newProp.footerToolbarSettings.toolbarPosition) {
@@ -3066,6 +4801,13 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 if (this.hasStopResponseButton()) { this.toggleStopRespondingButton(false); }
                 this.aiAssistViewRendered = false;
                 this.latestResponseMinHeight = null;
+                this.regeneratedResponses.clear();
+                this.regeneratedBlocks.clear();
+                this.currentRegeneratedIndex.clear();
+                this.originalResponses.clear();
+                this.originalBlocks.clear();
+                this.isRegenerating = false;
+                this.regeneratingPromptIndex = -1;
                 this.renderOutputContent(true);
                 this.detachCodeCopyEventHandler();
                 if (this.bannerTemplate) {
@@ -3109,6 +4851,10 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 }
                 break;
             }
+            case 'responseAnimationTemplate': {
+                this.updateResponseAnimationTemplate(newProp.responseAnimationTemplate);
+                break;
+            }
             case 'enableScrollToBottom': {
                 if (this.enableScrollToBottom) {
                     this.bindScroll();
@@ -3123,6 +4869,9 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 break;
             case 'speechToTextSettings':
                 this.handleSTTDynamicChange(newProp.speechToTextSettings, oldProp.speechToTextSettings);
+                break;
+            case 'mentions':
+                this.updateMentionObjs();
                 break;
             }
         }

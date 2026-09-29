@@ -7,7 +7,7 @@ export interface HeaderRowsDirTypecast {
 /**
  * `HeaderRowsDirective` represent a header rows of the react Schedule. 
  * It must be contained in a Schedule component(`SchduleComponent`). 
- * ```tsx
+ * ```ts
  * <ScheduleComponent>
  *  <HeaderRowsDirective>
  *   <HeaderRowDirective option='Week'></HeaderRowDirective>

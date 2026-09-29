@@ -14,9 +14,9 @@ let outputs: string[] = [];
 @Directive({
     selector: 'e-chart3d-rows>e-chart3d-row',
     inputs: input,
-    outputs: outputs,    
+    outputs: outputs,
+    standalone: true,
     queries: {
-
     }
 })
 export class Chart3DRowDirective extends ComplexBase<Chart3DRowDirective> {
@@ -29,7 +29,7 @@ export class Chart3DRowDirective extends ComplexBase<Chart3DRowDirective> {
      * If specified as '100%, row renders to the full height of its chart.
      * @default '100%'
      */
-    public height: any;
+    public declare height: any;
 
     constructor(private viewContainerRef:ViewContainerRef) {
         super();
@@ -45,6 +45,7 @@ export class Chart3DRowDirective extends ComplexBase<Chart3DRowDirective> {
  */
 @Directive({
     selector: 'ejs-chart3d>e-chart3d-rows',
+    standalone: true,
     queries: {
         children: new ContentChildren(Chart3DRowDirective)
     },

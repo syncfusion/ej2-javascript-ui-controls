@@ -1,5 +1,19 @@
 # Angular Image Editor Component (React Photo Editor Component)
 
+> **Using this package with an AI coding agent**
+>
+> Before generating Syncfusion® code, ask your AI coding agent to run the Syncfusion® setup using the following prompt:
+>
+> ```text
+> Set up this project for Syncfusion® before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com/,
+> then report the detected platform, installed skill pack, MCP 
+> status, and any required licensing action.
+> ```
+> The setup detects your project’s platform and loads the appropriate Syncfusion® skill pack. No Syncfusion® account or MCP key is required to install or read Syncfusion® agent skills.
+>
+> **Platform reference:** [https://ai.syncfusion.com/angular/llms.txt](https://ai.syncfusion.com/angular/llms.txt)
+
 The [Angular Image Editor](https://www.syncfusion.com/angular-components/angular-image-editor?utm_source=npm&utm_medium=listing&utm_campaign=angular-image-editor-npm) component is a graphical user interface used for editing images. It provides built-in support for rotate, flip, zoom, and crop the images based on the selection. It also has support for inserting an annotations including rectangle, ellipse, line, text, and freehand drawings.
 
 <p align="center">

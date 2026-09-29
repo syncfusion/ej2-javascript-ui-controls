@@ -31738,3 +31738,226 @@ export let CR1023089 = [
     { TaskID: 1, TaskName: 'Project 1', subtasks: [{ TaskID: 2, TaskName: 'unscheduled Task 1.1', Duration: 4 } ],},
     { TaskID: 3, TaskName: 'Project 2', Predecessor: '1 FF+4days', Duration: 3, subtasks: [{ TaskID: 4, TaskName: 'unscheduled Task 2.1', Duration: 3 } ] },
 ];
+export let durationUnitSupportData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5+1 Week", Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5+2 Weeks" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9+1 Month" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10+2 Months" }
+        ]
+    }
+];
+export let allTypeAllowedData = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Predecessor: '5FF' },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: ["2SS"] },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "3FS", Progress: 30 },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: ["3FS, 4SF"] }
+];
+export let depSegmentData = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60', Predecessor: '2SS',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 },
+                            { StartDate: new Date('02/05/2019'), Duration: 5 },
+                            { StartDate: new Date('02/08/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90',  Predecessor: '3FF',
+                    },
+                    {
+                        TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                    {
+                        TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5FS'
+                    },
+                    {
+                        TaskID: 7, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75', Predecessor: '6FF,5SF',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                ]
+            }
+        ]
+    }
+];
+export let revSegmentData = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60', Predecessor: '2SS',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 },
+                            { StartDate: new Date('02/05/2019'), Duration: 5 },
+                            { StartDate: new Date('02/08/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90',  Predecessor: '3FS',
+                    },
+                    {
+                        TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                    {
+                        TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5SS'
+                    },
+                    {
+                        TaskID: 7, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75', Predecessor: '6FF,5SS',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                ]
+            }
+        ]
+    }
+];
+export let depRstrcitResourcesData = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20, Predecessor: ['6FF']
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: '2SF', Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: '3FF', work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2019'), Duration: 12,
+                resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,Predecessor: ['7SF']
+            },
+            {
+                TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 4, Progress: 30, resources: [4], Predecessor: 4
+            },
+            {
+                TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                Progress: 30, Predecessor: '9SS', resources: [3]
+            },
+            {
+                TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                Duration: 3, resources: [2], Predecessor:[3,'6FF']
+            },
+            {
+                TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                Duration: 4, Progress: 30, resources: [3], Predecessor: '8SS'
+            }
+        ]
+    },
+    {
+        TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+        Progress: 30,
+    }
+];
+export let MT1050112 = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience' },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+];

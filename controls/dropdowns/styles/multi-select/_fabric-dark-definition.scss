@@ -1,6 +1,4 @@
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/fabric-dark' as *;
-@forward 'ej2-base/styles/definition/fabric-dark';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 //default
 $ddl-chip-mobile-close-font: 16px !default;
@@ -209,6 +207,8 @@ $ddl-bigger-small-input-height: 34px !default;
 $ddl-delim-bigger-small-font-size: 14px !default;
 $ddl-delimviewheight-bigger-small: 34px !default;
 $ddl-closer-margin-top-bigger-small: -3.2em !default;
+$ddl-list-padding-right: 16px !default;
+$ddl-list-rtl-padding-left: 16px !default;
 
 $ddl-bigger-small-filled-chip-height: 28px !default;
 $ddl-bigger-filled-chip-height: 24px !default;

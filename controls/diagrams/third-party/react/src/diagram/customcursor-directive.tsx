@@ -5,7 +5,7 @@ import { CustomCursorActionModel } from '@syncfusion/ej2-diagrams';
 /**
  * `custormaps Directive` directive represent a connectors of the react diagram. 
  * It must be contained in a Diagram component(`DiagramComponent`). 
- * ```tsx
+ * ```ts
  * <DiagramComponent>
  * <CustormapsDirective>
  * <CustormapDirective></CustormapDirective>

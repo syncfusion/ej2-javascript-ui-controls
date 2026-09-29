@@ -27,59 +27,56 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(StockChartSeriesCollectionDirective), 
-        childAxes: new ContentChild(StockChartAxesDirective), 
-        childRows: new ContentChild(StockChartRowsDirective), 
-        childAnnotations: new ContentChild(StockChartAnnotationsDirective), 
-        childSelectedDataIndexes: new ContentChild(StockChartSelectedDataIndexesDirective), 
-        childPeriods: new ContentChild(StockChartPeriodsDirective), 
-        childStockEvents: new ContentChild(StockEventsDirective), 
-        childIndicators: new ContentChild(StockChartIndicatorsDirective)
+        childSeries: new ContentChild(StockChartSeriesCollectionDirective),
+        childAxes: new ContentChild(StockChartAxesDirective),
+        childRows: new ContentChild(StockChartRowsDirective),
+        childAnnotations: new ContentChild(StockChartAnnotationsDirective),
+        childSelectedDataIndexes: new ContentChild(StockChartSelectedDataIndexesDirective),
+        childPeriods: new ContentChild(StockChartPeriodsDirective),
+        childStockEvents: new ContentChild(StockEventsDirective),
+        childIndicators: new ContentChild(StockChartIndicatorsDirective),
+        tooltip_template: new ContentChild('tooltipTemplate'),
+        legendSettings_template: new ContentChild('legendSettingsTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class StockChartComponent extends StockChart implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	axisLabelRender: any;
-	beforeExport: any;
-	beforeIndicatorChange: any;
-	crosshairLabelRender: any;
-	indicatorChanged: any;
-	legendClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	onZooming: any;
-	pointClick: any;
-	pointMove: any;
-	rangeChange: any;
-	selectorRender: any;
-	seriesRender: any;
-	stockChartMouseClick: any;
-	stockChartMouseDown: any;
-	stockChartMouseLeave: any;
-	stockChartMouseMove: any;
-	stockChartMouseUp: any;
-	stockEventRender: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<StockChartSeriesCollectionDirective>;
-    public childAxes: QueryList<StockChartAxesDirective>;
-    public childRows: QueryList<StockChartRowsDirective>;
-    public childAnnotations: QueryList<StockChartAnnotationsDirective>;
-    public childSelectedDataIndexes: QueryList<StockChartSelectedDataIndexesDirective>;
-    public childPeriods: QueryList<StockChartPeriodsDirective>;
-    public childStockEvents: QueryList<StockEventsDirective>;
-    public childIndicators: QueryList<StockChartIndicatorsDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare axisLabelRender: any;
+	declare beforeExport: any;
+	declare beforeIndicatorChange: any;
+	declare crosshairLabelRender: any;
+	declare indicatorChanged: any;
+	declare legendClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare onZooming: any;
+	declare pointClick: any;
+	declare pointMove: any;
+	declare rangeChange: any;
+	declare selectorRender: any;
+	declare seriesRender: any;
+	declare stockChartMouseClick: any;
+	declare stockChartMouseDown: any;
+	declare stockChartMouseLeave: any;
+	declare stockChartMouseMove: any;
+	declare stockChartMouseUp: any;
+	declare stockEventRender: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<StockChartSeriesCollectionDirective>;
+    public declare childAxes: QueryList<StockChartAxesDirective>;
+    public declare childRows: QueryList<StockChartRowsDirective>;
+    public declare childAnnotations: QueryList<StockChartAnnotationsDirective>;
+    public declare childSelectedDataIndexes: QueryList<StockChartSelectedDataIndexesDirective>;
+    public declare childPeriods: QueryList<StockChartPeriodsDirective>;
+    public declare childStockEvents: QueryList<StockEventsDirective>;
+    public declare childIndicators: QueryList<StockChartIndicatorsDirective>;
     public tags: string[] = ['series', 'axes', 'rows', 'annotations', 'selectedDataIndexes', 'periods', 'stockEvents', 'indicators'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
-    @ContentChild('legendSettingsTemplate')
-    @Template()
-    public legendSettings_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -334,7 +331,10 @@ export class StockChartComponent extends StockChart implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(StockChartComponent.prototype, 'tooltip_template');
+Template()(StockChartComponent.prototype, 'legendSettings_template');
+
 

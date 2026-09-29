@@ -6,7 +6,7 @@ export interface AggregateColumnDirTypecast {
 }
 /**
  * `AggregateColumnDirective represent a aggregate column of the react TreeGrid. 
- * ```tsx
+ * ```
  * <TreeGridComponent dataSource={data} allowPaging={true} allowSorting={true}> 
  * <ColumnsDirective>
  * <ColumnDirective field='ID' width='100'></ColumnDirective>

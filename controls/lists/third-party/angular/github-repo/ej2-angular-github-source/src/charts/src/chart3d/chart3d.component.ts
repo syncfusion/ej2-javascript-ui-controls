@@ -24,50 +24,49 @@ export const twoWays: string[] = ['dataSource'];
     outputs: outputs,
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
     queries: {
-        childSeries: new ContentChild(Chart3DSeriesCollectionDirective), 
-        childAxes: new ContentChild(Chart3DAxesDirective), 
-        childRows: new ContentChild(Chart3DRowsDirective), 
-        childColumns: new ContentChild(Chart3DColumnsDirective), 
-        childSelectedDataIndexes: new ContentChild(Chart3DSelectedDataIndexesDirective)
+        childSeries: new ContentChild(Chart3DSeriesCollectionDirective),
+        childAxes: new ContentChild(Chart3DAxesDirective),
+        childRows: new ContentChild(Chart3DRowsDirective),
+        childColumns: new ContentChild(Chart3DColumnsDirective),
+        childSelectedDataIndexes: new ContentChild(Chart3DSelectedDataIndexesDirective),
+        tooltip_template: new ContentChild('tooltipTemplate')
     }
 })
 @ComponentMixins([ComponentBase])
 export class Chart3DComponent extends Chart3D implements IComponentBase {
-    public context : any;
-    public tagObjects: any;
-	afterExport: any;
-	axisLabelRender: any;
-	beforeExport: any;
-	beforePrint: any;
-	beforeResize: any;
-	chart3DMouseClick: any;
-	chart3DMouseDown: any;
-	chart3DMouseLeave: any;
-	chart3DMouseMove: any;
-	chart3DMouseUp: any;
-	legendClick: any;
-	legendRender: any;
-	load: any;
-	loaded: any;
-	pointClick: any;
-	pointMove: any;
-	pointRender: any;
-	resized: any;
-	selectionComplete: any;
-	seriesRender: any;
-	textRender: any;
-	tooltipRender: any;
-	public dataSourceChange: any;
-    public childSeries: QueryList<Chart3DSeriesCollectionDirective>;
-    public childAxes: QueryList<Chart3DAxesDirective>;
-    public childRows: QueryList<Chart3DRowsDirective>;
-    public childColumns: QueryList<Chart3DColumnsDirective>;
-    public childSelectedDataIndexes: QueryList<Chart3DSelectedDataIndexesDirective>;
+    public declare context : any;
+    public declare tagObjects: any;
+	declare afterExport: any;
+	declare axisLabelRender: any;
+	declare beforeExport: any;
+	declare beforePrint: any;
+	declare beforeResize: any;
+	declare chart3DMouseClick: any;
+	declare chart3DMouseDown: any;
+	declare chart3DMouseLeave: any;
+	declare chart3DMouseMove: any;
+	declare chart3DMouseUp: any;
+	declare legendClick: any;
+	declare legendRender: any;
+	declare load: any;
+	declare loaded: any;
+	declare pointClick: any;
+	declare pointMove: any;
+	declare pointRender: any;
+	declare resized: any;
+	declare selectionComplete: any;
+	declare seriesRender: any;
+	declare textRender: any;
+	declare tooltipRender: any;
+	public declare dataSourceChange: any;
+    public declare childSeries: QueryList<Chart3DSeriesCollectionDirective>;
+    public declare childAxes: QueryList<Chart3DAxesDirective>;
+    public declare childRows: QueryList<Chart3DRowsDirective>;
+    public declare childColumns: QueryList<Chart3DColumnsDirective>;
+    public declare childSelectedDataIndexes: QueryList<Chart3DSelectedDataIndexesDirective>;
     public tags: string[] = ['series', 'axes', 'rows', 'columns', 'selectedDataIndexes'];
-    @ContentChild('tooltipTemplate')
-    @Template()
-    public tooltip_template: any;
 
     constructor(private ngEle: ElementRef, private srenderer: Renderer2, private viewContainerRef:ViewContainerRef, private injector: Injector) {
         super();
@@ -193,7 +192,9 @@ export class Chart3DComponent extends Chart3D implements IComponentBase {
         this.context.ngAfterContentChecked(this);
     }
 
-    public registerEvents: (eventList: string[]) => void;
-    public addTwoWay: (propList: string[]) => void;
+    public declare registerEvents: (eventList: string[]) => void;
+    public declare addTwoWay: (propList: string[]) => void;
 }
+Template()(Chart3DComponent.prototype, 'tooltip_template');
+
 

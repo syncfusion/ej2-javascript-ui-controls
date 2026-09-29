@@ -173,7 +173,7 @@ export class _PdfStringLayouter {
     _layoutLine(line: string, lineIndent: number): _PdfStringLayoutResult {
         const lineResult: _PdfStringLayoutResult = new _PdfStringLayoutResult();
         lineResult._lineHeight = this._getLineHeight();
-        let lines: _LineInfo[] = [];
+        const lines: _LineInfo[] = [];
         const maxWidth: number = this._size[0];
         let lineWidth: number = this._getLineWidth(line) + lineIndent;
         let lineType: _LineType = _LineType.firstParagraphLine;
@@ -274,7 +274,6 @@ export class _PdfStringLayouter {
         for (let index: number = 0; index < lines.length; index++) {
             lineResult._layoutLines.push(lines[index]); // eslint-disable-line
         }
-        lines = [];
         return lineResult;
     }
     /**
@@ -375,7 +374,6 @@ export class _PdfStringLayouter {
         if (!this._reader._end) {
             result._remainder = this._reader._readToEnd();
         }
-        lines = [];
     }
     /**
      * Trims leading and trailing spaces and recomputes the line width if needed.

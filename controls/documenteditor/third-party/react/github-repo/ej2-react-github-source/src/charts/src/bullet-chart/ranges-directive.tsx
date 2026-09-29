@@ -4,7 +4,7 @@ import { RangeModel } from '@syncfusion/ej2-charts';
 
 /**
  * `BulletRangeDirective` directive represent a ranges of the react BulletChart. 
- * ```tsx
+ * ```
  * <BulletChartComponent>
  * <BulletRangeCollectionDirective>
  * <BulletRangeDirective></BulletRangeDirective>

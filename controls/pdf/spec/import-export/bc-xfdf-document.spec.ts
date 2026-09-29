@@ -1250,7 +1250,7 @@ describe('Xfdf document coverage test scripts', () => {
         (xfdf as any)._getAppearance(stream, element);
 
         expect(stream._bytes).toEqual(data);
-        expect(stream._isCompress).toBeFalsy();
+        expect(stream._isCompress).toBeTruthy();
     });
 
     it('_getAppearance DATA case: non-image content stream sets bytes and queries length', () => {

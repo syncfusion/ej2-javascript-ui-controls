@@ -130,24 +130,6 @@ describe('_PdfCryptographicEncoding behavior', () => {
         }
     });
 
-    it('decodeBlock throws on invalid block type', () => {
-        const mockCipher: any = {
-            _processBlock: () => new Uint8Array([3, 0x00, 1, 2, 3, 4, 5, 6, 7, 8, 0x00, 9]),
-            _getOutputBlock: () => 12,
-            _initialize: () => { }
-        };
-
-        const enc = new _PdfCryptographicEncoding(mockCipher);
-        enc._initialize(false, { _isPrivate: false } as any);
-
-        try {
-            enc._decodeBlock(new Uint8Array([0]), 0, 1);
-            fail('Expected error was not thrown');
-        } catch (e) {
-            expect(e.message).toBe('Invalid block type: 3.');
-        }
-    });
-
     it('decodeBlock throws on bad padding bytes for type 1', () => {
         const arr = new Uint8Array(20);
         arr[0] = 1;
@@ -217,5 +199,45 @@ describe('_PdfCryptographicEncoding behavior', () => {
         // Assert
         expect(out.length).toBe(5);
         for (let i = 0; i < message.length; i++) expect(out[i]).toBe(message[i]);
+    });
+    it('1046121 - _decodeBlock should return block unchanged for unsupported block type', () => {
+        const block: Uint8Array = new Uint8Array([
+            3, 10, 20, 30, 40, 50
+        ]);
+        const mockCipher: any = {
+            _processBlock: (): Uint8Array => {
+                return block;
+            },
+            _getOutputBlock: (): number => {
+                return block.length;
+            },
+            _initialize: (): void => {
+            }
+        };
+        const encoding: any = new _PdfCryptographicEncoding(mockCipher);
+        encoding._initialize(false, {
+            _isPrivate: true
+        });
+        const result: Uint8Array = encoding._decodeBlock(
+            new Uint8Array([0]),
+            0,
+            block.length
+        );
+        expect(result).toBe(block);
+        expect(result.length).toBe(6);
+        expect(Array.from(result)).toEqual([
+            3,
+            10,
+            20,
+            30,
+            40,
+            50
+        ]);
+        expect(result[0]).toBe(3);
+        expect(result[1]).toBe(10);
+        expect(result[2]).toBe(20);
+        expect(result[3]).toBe(30);
+        expect(result[4]).toBe(40);
+        expect(result[5]).toBe(50);
     });
 });

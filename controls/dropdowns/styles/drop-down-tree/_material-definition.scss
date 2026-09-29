@@ -1,7 +1,5 @@
 @use 'sass:color';
-@use 'ej2-base/styles/common/mixin' as *;
-@use 'ej2-base/styles/definition/material' as *;
-@forward 'ej2-base/styles/definition/material';
+@use '@syncfusion/ej2-base/styles/common/base-variables' as *;
 
 /* stylelint-disable */
 $ddt-skin-name: 'material' !default;
