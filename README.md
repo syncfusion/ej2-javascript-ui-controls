@@ -8,24 +8,27 @@
 <a href="https://www.npmjs.com/package/@syncfusion/ej2">
 <img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm" style="height:20px;"></a>&nbsp;&nbsp;<a href="https://www.syncfusion.com/eula/es/"><img src="https://ej2.syncfusion.com/github/images/license.svg" alt="license"></a>
 
-The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 65 high-performance, lightweight, modular, and responsive UI components in a single package.
+The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 100+ high-performance, lightweight, modular, and responsive UI components in a single package.
 
  [![Screens of showcase applications](https://ej2.syncfusion.com/products/ej2-banner.gif)](https://syncfusion.com/javascript-ui-controls/)
  
  *Screens of [showcase applications](#showcase-applications) created using Syncfusion Essential JS 2 UI controls*
  
 ## Table of Contents
+* [Table of Contents](#table-of-contents)
 * [Framework highlights](#framework-highlights)
 * [Control list](#control-list)
     * [Grids](#grids)
     * [Editors](#editors)
     * [Dropdowns](#dropdowns)
+    * [Inputs](#inputs)
     * [Data Visualization](#data-visualization)
     * [Calendars](#calendars)
     * [Navigation](#navigation)
     * [Buttons](#buttons)
     * [Layout](#layout)
     * [Notification](#notification)
+    * [Forms](#forms)
     * [Viewer](#viewer)
 * [Resources](#resources)
 * [Supported Frameworks](#supported-frameworks)
@@ -178,6 +181,74 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="https://ej2.syncfusion.com/documentation/document-editor/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-headless-editor"><b>Headless Editor</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-headless-editor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-headless-editor" title="@syncfusion/ej2-headless-editor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-headless-editor"><img src="https://ej2.syncfusion.com/badges/ej2-headless-editor/coverage.svg" alt="code coverage of @syncfusion/ej2-headless-editor" title="@syncfusion/ej2-headless-editor" /></a>
+        </td>
+        <td>
+            <a href="controls/headlesseditor/src">Source</a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-headless-editor">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/document-editor/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-blockeditor"><b>Block Editor</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-blockeditor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-blockeditor" title="@syncfusion/ej2-blockeditor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-blockeditor"><img src="https://ej2.syncfusion.com/badges/ej2-blockeditor/coverage.svg" alt="code coverage of @syncfusion/ej2-blockeditor" title="@syncfusion/ej2-blockeditor" /></a>
+        </td>
+        <td>
+            <a href="controls/blockeditor/src">Source</a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-blockeditor">Live demo</a>
+        </td>
+        <td>
+            <a href="https://github.com/syncfusion/ej2-javascript-ui-controls/wiki">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-richtexteditor-ui"><b>Rich Text Editor UI</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-richtexteditor-ui"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-richtexteditor-ui" title="@syncfusion/ej2-richtexteditor-ui" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-richtexteditor-ui"><img src="https://ej2.syncfusion.com/badges/ej2-richtexteditor-ui/coverage.svg" alt="code coverage of @syncfusion/ej2-richtexteditor-ui" title="@syncfusion/ej2-richtexteditor-ui" /></a>
+        </td>
+        <td>
+            <a href="controls/richtexteditorui/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos#/material/rich-text-editor/tools.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-collaborator"><b>Collaborator</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-collaborator"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-collaborator" title="@syncfusion/ej2-collaborator" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-collaborator"><img src="https://ej2.syncfusion.com/badges/ej2-collaborator/coverage.svg" alt="code coverage of @syncfusion/ej2-collaborator" title="@syncfusion/ej2-collaborator" /></a>
+        </td>
+        <td>
+            <a href="controls/collaborator/src">Source</a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-collaborator">Live demo</a>
+        </td>
+        <td>
+            <a href="https://github.com/syncfusion/ej2-javascript-ui-controls/wiki">Documentation</a>
+        </td>
+    </tr>
 </table>
 
 ### Dropdowns
@@ -268,6 +339,23 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/multi-select/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-multicolumn-combobox"><b>Multicolumn ComboBox</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-multicolumn-combobox"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-multicolumn-combobox" title="@syncfusion/ej2-multicolumn-combobox" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-multicolumn-combobox"><img src="https://ej2.syncfusion.com/badges/ej2-multicolumn-combobox/coverage.svg" alt="code coverage of @syncfusion/ej2-multicolumn-combobox" title="@syncfusion/ej2-multicolumn-combobox" /></a>
+        </td>
+        <td>
+            <a href="controls/multicolumncombobox/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/multicolumn-combobox/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/multicolumn-combobox/getting-started/">Documentation</a>
         </td>
     </tr>
 </table>
@@ -489,6 +577,23 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/diagram/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-image-editor"><b>Image Editor</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-image-editor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-image-editor" title="@syncfusion/ej2-image-editor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-image-editor"><img src="https://ej2.syncfusion.com/badges/ej2-image-editor/coverage.svg" alt="code coverage of @syncfusion/ej2-image-editor" title="@syncfusion/ej2-image-editor" /></a>
+        </td>
+        <td>
+            <a href="controls/imageeditor/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/image-editor/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/image-editor/getting-started/">Documentation</a>
         </td>
     </tr>
     <tr>
@@ -1087,6 +1192,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
     </tr>
     <tr>
         <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-ribbon"><b>Ribbon</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-ribbon"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-ribbon" title="@syncfusion/ej2-ribbon" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-ribbon"><img src="https://ej2.syncfusion.com/badges/ej2-ribbon/coverage.svg" alt="code coverage of @syncfusion/ej2-ribbon" title="@syncfusion/ej2-ribbon" /></a>
+        </td>
+        <td>
+            <a href="controls/ribbon/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/ribbon/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/ribbon/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-interactive-chat"><b>AI Chat</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-interactive-chat"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-interactive-chat" title="@syncfusion/ej2-interactive-chat" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-interactive-chat"><img src="https://ej2.syncfusion.com/badges/ej2-interactive-chat/coverage.svg" alt="code coverage of @syncfusion/ej2-interactive-chat" title="@syncfusion/ej2-interactive-chat" /></a>
+        </td>
+        <td>
+            <a href="controls/interactivechat/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/ai-chat/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/ai-chat/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-modal-dialog?utm_medium=listing&utm_source=github"><b>Dialog</b></a>
         </td>
         <td rowspan="2">
@@ -1206,6 +1345,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/query-builder/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-formbuilder"><b>Form Builder</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-formbuilder"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-formbuilder" title="@syncfusion/ej2-formbuilder" style="height:20px;" /></a>
+        </td>
+        <td>
+            <a href="controls/formbuilder/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/form-builder/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/form-builder/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-formrenderer"><b>Form Renderer</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-formrenderer"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-formrenderer" title="@syncfusion/ej2-formrenderer" style="height:20px;" /></a>
+        </td>
+        <td>
+            <a href="controls/formrenderer/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/form-renderer/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/form-renderer/getting-started/">Documentation</a>
         </td>
     </tr>
 </table>
@@ -1364,5 +1537,5 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ## License
  This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
  A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
-     © Copyright 2021 Syncfusion, Inc. All Rights Reserved. 
+     © Copyright 2026 Syncfusion, Inc. All Rights Reserved. 
     The Syncfusion Essential Studio license and copyright applies to this distribution.

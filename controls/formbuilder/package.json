@@ -1,0 +1,67 @@
+{
+  "name": "@syncfusion/ej2-form-builder",
+  "version": "28.1.33",
+  "description": "A package of feature-rich Essential JS 2 form builder component.",
+  "author": "Syncfusion Inc.",
+  "license": "SEE LICENSE IN license",
+  "main": "./dist/ej2-form-builder.umd.min.js",
+  "module": "./index.js",
+  "es2015": "./dist/es6/ej2-form-builder.es5.js",
+  "dependencies": {
+    "@syncfusion/ej2-buttons": "*",
+    "@syncfusion/ej2-calendars": "*",
+    "@syncfusion/ej2-dropdowns": "*",
+    "@syncfusion/ej2-form-renderer": "*",
+    "@syncfusion/ej2-grids": "*",
+    "@syncfusion/ej2-image-editor": "*",
+    "@syncfusion/ej2-inplace-editor": "*",
+    "@syncfusion/ej2-inputs": "*",
+    "@syncfusion/ej2-layouts": "*",
+    "@syncfusion/ej2-lists": "*",
+    "@syncfusion/ej2-navigations": "*",
+    "@syncfusion/ej2-notifications": "*",
+    "@syncfusion/ej2-popups": "*",
+    "@syncfusion/ej2-querybuilder": "*",
+    "@syncfusion/ej2-richtexteditor": "*",
+    "@syncfusion/ej2-splitbuttons": "*"
+    },
+  "devDependencies": {
+    "@syncfusion/ej2-build-test": "*",
+    "@types/chai": "^3.4.28",
+    "@types/jasmine": "2.8.9",
+    "@types/jasmine-ajax": "^3.1.27",
+    "@types/requirejs": "^2.1.26"
+  },
+  "scripts": {
+    "test": "gulp ci-test",
+    "local-test": "gulp local-test",
+    "compile": "gulp ci-compile",
+    "ci-publish": "gulp ci-publish",
+    "post-publish": "gulp post-publish",
+    "es-lint-config": "npx tslint-to-eslint-config --config .eslintrc.json --tslint ./tslint.json",
+    "es-lint": "eslint -c .eslintrc.json --ext .ts ./src/**"
+  },
+  "keywords": [
+    "syncfusion",
+    "ej2",
+    "react",
+    "form",
+    "form-builder",
+    "dynamic-forms",
+    "json-forms",
+    "schema-forms",
+    "ui-components"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "gulp pre-commit",
+      "pre-push": "gulp pre-push",
+      "commit-msg": "gulp commit-msg"
+    }
+  },
+  "typings": "index.d.ts"
+}
