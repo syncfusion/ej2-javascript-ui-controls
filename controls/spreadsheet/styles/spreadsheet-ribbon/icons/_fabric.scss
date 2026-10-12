@@ -1,0 +1,28 @@
+@use '../variables' as *;
+@include export-module('spreadsheet-ribbon-fabric-icons') {
+  .e-spreadsheet .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e36a';
+      }
+    }
+
+    & .e-ai-icon {
+      &::before {
+        content: '\e9d5';
+      }
+    }
+  }
+
+  .e-spreadsheet.sf-spreadsheet {
+    & .e-spreadsheet-ribbon {
+      & .e-btn.e-split-btn {
+        & .e-clear-icon {
+          &::before {
+            content: '\eb80';
+          }
+        }
+      }
+    }
+  }
+}

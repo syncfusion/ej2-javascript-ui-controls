@@ -1,0 +1,76 @@
+import { Spreadsheet } from '../base/index';
+import { SortEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, BeforeSaveEventArgs, triggerDataChange } from '../../workbook/index';
+import { BeforeSortEventArgs, beginAction } from '../../workbook/index';
+import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, positionAutoFillElement, NoteSaveEventArgs } from '../common/index';
+import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeChartEventArgs, spreadsheetDestroyed } from '../common/index';
+
+/**
+ *  Begin and complete events.
+ *
+ * @hidden
+ */
+export class ActionEvents {
+    private parent: Spreadsheet;
+
+    /**
+     * Constructor for initializing action begin and action complete services.
+     *
+     * @param {Spreadsheet} parent - Specifies the spreadsheet element.
+     */
+    constructor(parent: Spreadsheet) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+
+    private actionBeginHandler(args: {
+        eventArgs: BeforeCellFormatArgs | BeforeOpenEventArgs | BeforeSaveEventArgs | BeforeSelectEventArgs
+        | BeforeSortEventArgs | BeforePasteEventArgs | BeforeChartEventArgs,
+        action: string, preventAction?: boolean, isUndo?: boolean, isRedo?: boolean
+    }): void {
+        const preventAction: boolean = args.preventAction; delete args.preventAction;
+        const actionArgs: { [key: string]: Object } = { action: args.action };
+        if (args.isUndo) { actionArgs.isUndo = true; delete args.isUndo; }
+        if (args.isRedo) { actionArgs.isUndo = false; delete args.isRedo; }
+        actionArgs.args = args;
+        this.parent.trigger('actionBegin', actionArgs);
+        if (!preventAction && !this.parent.isPrintingProcessing && (args.action === 'clipboard' || args.action === 'format' ||
+            args.action === 'cellSave' || args.action === 'addNote' || args.action === 'editNote' || args.action === 'deleteNote' ||
+            args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter' || args.action === 'beforeClear' ||
+            args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign' ||
+            args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'validation' ||
+            args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage' ||
+            args.action === 'addComment' || args.action === 'editComment' || args.action === 'deleteComment' || args.action === 'resolveComment' ||
+            args.action === 'reopenComment' || args.action === 'addReply' || args.action === 'editReply' || args.action === 'deleteReply')) {
+            this.parent.notify(setActionData, { args: args });
+        }
+        if (preventAction) { args.preventAction = true; }
+        if (actionArgs.isUndo) { args.isUndo = true; }
+        if (actionArgs.isUndo === false) { args.isRedo = true; }
+    }
+
+    private actionCompleteHandler(
+        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs | NoteSaveEventArgs, action: string,
+            preventAction?: boolean, preventEventTrigger?: boolean }): void {
+        const preventAction: boolean = args.preventAction; delete args.preventAction;
+        this.parent.notify(triggerDataChange, args);
+        if (!args.preventEventTrigger) {
+            this.parent.trigger('actionComplete', args);
+        }
+        if (!preventAction && args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
+            this.parent.notify(updateUndoRedoCollection, { args: args });
+        }
+        this.parent.notify(positionAutoFillElement, null);
+    }
+
+    private addEventListener(): void {
+        this.parent.on(completeAction, this.actionCompleteHandler, this);
+        this.parent.on(beginAction, this.actionBeginHandler, this);
+        this.parent.on(spreadsheetDestroyed, this.removeEventListener, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.off(completeAction, this.actionCompleteHandler);
+        this.parent.off(beginAction, this.actionBeginHandler);
+        this.parent.off(spreadsheetDestroyed, this.removeEventListener);
+    }
+}

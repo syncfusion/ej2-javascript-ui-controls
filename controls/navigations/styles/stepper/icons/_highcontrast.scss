@@ -1,0 +1,6 @@
+@use '../variables' as *;
+@include export-module('stepper-highcontrast-icons') {
+  .e-step-indicator::before {
+    content: '\e9a1';
+  }
+}

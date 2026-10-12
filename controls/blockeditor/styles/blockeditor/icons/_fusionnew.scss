@@ -1,0 +1,99 @@
+@use '../variables' as *;
+@include export-module('blockeditor-fusionnew-icons') {
+
+  .e-block-add-icon::before {
+    content: '\e805';
+  }
+  .e-block-drag-icon::before {
+    content: '\e726';
+  }
+  .e-checkmark-checked::after {
+    content: '\e727';
+  }
+  .e-block-image-icon::before {
+    content: '\e786';
+  }
+
+  .e-be-check::before {
+    content: '\e8b1';
+  }
+  .e-be-close::before {
+    content: '\e7e7';
+  }
+
+  /* ======== Inline Toolbar styles ======== */
+  .e-blockeditor-inline-toolbar-popup {
+    .e-inline-color-icon::before {
+      content: '\e79f'; /* A-style icon */
+    }
+
+    .e-inline-bgColor-icon::before {
+      content: '\e783'; /* Paint bucket icon */
+    }
+
+    .e-colorpicker-wrapper .e-split-btn-wrapper {
+      .e-split-colorpicker.e-split-btn.e-be-fontcolor-dropdown::before {
+        content: '\e79f';
+      }
+      .e-split-colorpicker.e-split-btn.e-be-bgcolor-dropdown::before {
+        content: '\e783';
+      }
+    }
+  }
+
+  /* ======== Slash Command styles ======== */
+  .e-blockeditor-command-menu.e-popup,
+  .e-blockeditor-command-menu {
+    .e-be-paragraph::before {
+      content: '\e82e';
+    }
+
+    .e-be-divider::before {
+      content: '\e920';
+    }
+
+    .e-be-callout::before {
+      content: '\e942';
+    }
+
+    .e-be-h1::before {
+      content: '\e943';
+    }
+
+    .e-be-h2::before {
+      content: '\e944';
+    }
+
+    .e-be-h3::before {
+      content: '\e945';
+    }
+
+    .e-be-h4::before {
+      content: '\e946';
+    }
+
+    .e-be-toggle-h1::before {
+      content: '\e947';
+    }
+
+    .e-be-toggle-h2::before {
+      content: '\e948';
+    }
+
+    .e-be-toggle-h3::before {
+      content: '\e949';
+    }
+
+    .e-be-toggle-h4::before {
+      content: '\e94a';
+    }
+
+    .e-be-toggle-paragraph::before {
+      content: '\e844';
+    }
+
+    .e-be-table::before {
+      content: '\e294';
+    }
+  }
+}

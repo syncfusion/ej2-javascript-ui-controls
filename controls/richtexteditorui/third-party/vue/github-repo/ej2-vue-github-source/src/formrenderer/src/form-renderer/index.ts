@@ -1,2 +1,0 @@
-export { CustomWidgetSettingsDirective, CustomWidgetSettingDirective, CustomWidgetSettingsPlugin, CustomWidgetSettingPlugin } from './customwidgetsettings.directive';
-export { FormRendererComponent, FormRendererPlugin } from './formrenderer.component';

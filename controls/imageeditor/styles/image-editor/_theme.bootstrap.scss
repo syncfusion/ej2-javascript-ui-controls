@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import 'ej2-buttons/styles/button/theme-variables.bootstrap';
+@import 'ej2-navigations/styles/toolbar/theme-variables.bootstrap';
+@import './theme-variables.bootstrap';
+@import './_theme';

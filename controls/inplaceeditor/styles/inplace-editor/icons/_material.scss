@@ -1,0 +1,20 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@include export-module('inplaceeditor-material-icons') {
+
+  /*! inplaceeditor icons */
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
+
+    .e-save-icon::before {
+      content: '\e614';
+    }
+
+    .e-cancel-icon::before {
+      content: '\eb36';
+    }
+
+    .e-editable-overlay-icon::before {
+      content: '\e891';
+    }
+  }
+}

@@ -1,0 +1,34 @@
+@use '../variables' as *;
+@include export-module('spreadsheet-ribbon-material-icons') {
+  .e-spreadsheet .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e94d';
+      }
+    }
+
+    & .e-ai-icon {
+      &::before {
+        content: '\e9c7';
+      }
+    }
+
+    & .e-menu-wrapper.e-file-menu ul .e-menu-item .e-caret {
+      &::before {
+        content: '\e969';
+      }
+    }
+  }
+
+  .e-spreadsheet.sf-spreadsheet {
+    & .e-spreadsheet-ribbon {
+      & .e-btn.e-split-btn {
+        & .e-clear-icon {
+          &::before {
+            content: '\e340';
+          }
+        }
+      }
+    }
+  }
+}

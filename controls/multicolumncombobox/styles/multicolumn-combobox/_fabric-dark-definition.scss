@@ -1,0 +1,49 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+$header-font-weight: 600 !default;
+$multicolumn-grid-height: 36px !default;
+$multicolumn-margin-top-value: unset !default;
+$footer-border-width: 0 0 0 0 !default;
+$grid-border-width: 0 !default;
+$multicolumn-popup-border-radius: 0 !default;
+
+$multicolumn-grid-small-height: 32px !default;
+$multicolumn-margin-top-small-value: unset !default;
+
+$multicolumn-grid-bigger-height: 40px !default;
+$multicolumn-margin-top-bigger-value: unset !default;
+
+$multicolumn-grid-bigger-small-height: 38px !default;
+$multicolumn-margin-top-bigger-small-value: unset !default;
+
+$footer-border-color: $neutral-quintenary !default;
+$popup-text-color: $theme-primary !default;
+$grid-content-color: $neutral-light-font !default;
+$grid-content-hover-bg-color: $neutral-light !default;
+$grid-content-active-bg-color: $neutral-quintenary !default;
+$grid-content-active-color: $neutral-light-font !default;
+$grid-footer-bg-color: $neutral-lighter-alt !default;
+$grid-footer-color: $theme-primary !default;
+$grid-group-content-header-color: $theme-primary !default;
+$grid-group-content-header-bg-color: $neutral-lighter-alt !default;
+$grid-header-content-bg-color: $neutral-white !default;
+$grid-header-content-color: $theme-primary !default;
+$altrow-bg-color: $neutral-light !default;
+$popup-box-shadow: 0 .6px 1.8px 0 rgba($shadow, .11), 0 3.2px 7.2px 0 rgba($shadow, .13) !default;
+$nodata-bg-color: $neutral-lighter-alt !default;
+$nodata-border-color: $neutral-lighter-alt !default;
+
+$padding-zero: 0;
+$multicolumn-nodata-padding: 14px 16px;
+$multicolumn-bigger-spin-pane-height: 26px !default;
+$multicolumn-bgr-small-font-size: 14px !default;
+$multicolumn-spin-pane-height: 20px !default;
+$multicolumn-grid-cation-font-weight: 600 !default;
+$multicolumn-font-size: 14px !default;
+$multicolumn-zero-height: 0 !default;
+$multicolumn-zero-border-radius: 0 !default;
+$multicolumn-small-grid-footer-font-size: 12px !default;
+$multicolumn-bigger-spinner-width: 26px !default;
+$multicolumn-spinner-width: 20px !default;
+$multicolumn-zero-width: 0 !default;
+$multicolumn-bigger-popup-footer-font-size: 16px !default;

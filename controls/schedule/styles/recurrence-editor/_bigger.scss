@@ -1,0 +1,134 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@include export-module('recurrence-editor-bigger') {
+  .e-bigger {
+    .e-recurrenceeditor {
+      padding: $recurrence-spacing-0;
+
+      .e-input-wrapper-side.e-form-left {
+        padding: $recurrence-spacing-0 $recurrence-spacing-12 $recurrence-spacing-11 $recurrence-spacing-0;
+      }
+
+      .e-form-left {
+        padding: $recurrence-spacing-0 $recurrence-spacing-12 $recurrence-spacing-14 $recurrence-spacing-0;
+      }
+
+      .e-recurrence-table .e-monthday-element {
+        padding-left: $recurrence-spacing-50;
+      }
+
+      .e-week-position {
+        min-width: $recurrence-week-position-bgr-min-width;
+        right: 0;
+      }
+
+      .e-day-position {
+        min-width: $recurrence-day-position-bgr-min-width;
+        padding-left: $recurrence-day-position-bgr-padding-left;
+      }
+
+      .e-input-wrapper-side.e-non-week > .e-month-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: $recurrence-month-label-bottom-bgr;
+        font-weight: $recurrence-label-font-weight;
+      }
+
+      .e-input-wrapper-side.e-end-on .e-end-on-left {
+        padding-right: $recurrence-end-bgr-padding-right;
+      }
+
+      .e-end-on-label {
+        margin-bottom: $recurrence-spacing-0;
+      }
+
+      .e-days .e-week-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: $recurrence-spacing-8;
+      }
+
+      .e-input-wrapper-side.e-end-on .e-end-on-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: $recurrence-spacing-1;
+      }
+
+      .e-month-expander tr:first-child .e-input-wrapper,
+      .e-year-expander {
+        margin-bottom: $recurrence-spacing-11;
+      }
+
+      .e-recurrence-table {
+        &.e-month-expand-wrapper td:first-child {
+          width: 30px;
+        }
+      }
+
+      @if $skin-name == 'fluent2' {
+        .e-recurrence-table {
+          &.e-month-expand-wrapper .e-radio + label {
+            margin: $recurrence-spacing-0;
+          }
+        }
+      }
+
+      .e-days {
+        button {
+          height: $recurrence-height-40;
+          width: 40px;
+        }
+      }
+
+      &.e-rtl {
+
+        .e-form-left,
+        .e-input-wrapper-side.e-form-left {
+          padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10 $recurrence-spacing-12;
+        }
+
+        .e-form-right,
+        .e-input-wrapper-side.e-form-right {
+          padding: $recurrence-spacing-0 $recurrence-spacing-12 $recurrence-spacing-10 $recurrence-spacing-0;
+        }
+
+        .e-recurrence-table .e-monthday-element,
+        .e-recurrence-table .e-day-position {
+          padding: $recurrence-spacing-0 $recurrence-spacing-64 $recurrence-spacing-0 $recurrence-spacing-0;
+        }
+
+        .e-input-wrapper-side.e-end-on .e-end-on-label,
+        .e-input-wrapper-side.e-non-week > .e-month-expander-label {
+          padding-right: $recurrence-spacing-0;
+        }
+
+        .e-end-on-label {
+          margin-bottom: $recurrence-spacing-5;
+        }
+
+        .e-input-wrapper-side.e-end-on .e-end-on-left {
+          padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-12;
+        }
+
+        .e-input-wrapper.e-end-on-date,
+        .e-input-wrapper.e-end-on-count {
+          padding: $recurrence-spacing-0 $recurrence-spacing-12 $recurrence-spacing-0 $recurrence-spacing-0;
+        }
+
+        .e-recurrence-table .e-week-position {
+          left: 0;
+        }
+      }
+    }
+
+    .e-device {
+      .e-recurrence-table .e-monthday-element {
+        padding-left: $recurrence-spacing-20;
+      }
+
+      .e-recurrenceeditor {
+        &.e-rtl {
+          .e-recurrence-table .e-monthday-element {
+            padding: $recurrence-spacing-0 $recurrence-spacing-20 $recurrence-spacing-0 $recurrence-spacing-0;
+          }
+        }
+      }
+    }
+  }
+}

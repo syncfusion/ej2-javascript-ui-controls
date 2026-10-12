@@ -1,0 +1,47 @@
+@use 'ej2-base/styles/common/mixin' as *;
+
+@include export-module('tooltip-bigger') {
+  .e-bigger .e-tooltip-wrap,
+  .e-tooltip-wrap.e-bigger {
+  
+    .e-tooltip-close {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+        border-radius: $tooltip-bgr-close-border-radius;
+        border-width: $tooltip-bgr-close-border;
+        height: $tooltip-bgr-close-height;
+        width: $tooltip-bgr-close-width;
+      }
+  
+      &::before {
+        @if ($skin-name == 'tailwind') {
+          font-size: 10px;
+          vertical-align: middle;
+        }
+  
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          font-size: $tooltip-bgr-before-font-size;
+          left: $tooltip-bgr-before-left;
+        }
+      }
+    }
+  
+    .e-tip-content {
+      line-height: $tooltip-tip-content-line-height;
+      padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+    }
+  
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if ($skin-name == 'tailwind') {
+          font-size: 10px;
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-tooltip-wrap .e-tip-content,
+  .e-tooltip-wrap.e-bigger .e-tip-content {
+    font-size: $tooltip-mobile-font-size;
+  }
+}

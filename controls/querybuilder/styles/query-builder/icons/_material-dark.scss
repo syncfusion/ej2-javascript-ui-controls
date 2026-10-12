@@ -1,0 +1,12 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@include export-module('query-builder-material-icons') {
+  .e-query-builder {
+    & .e-collapse-rule::before {
+      content: '\e907';
+    }
+
+    & .e-drag-qb-rule::before {
+      content: '\e330';
+    }
+  }
+}

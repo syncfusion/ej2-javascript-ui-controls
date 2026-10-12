@@ -1,0 +1,72 @@
+@use 'variables' as *;
+
+@mixin tab-header-layout {
+  height: $spreadsheet-ribbon-tab-text-wrap-height;
+  min-height: $spreadsheet-ribbon-tab-text-wrap-height;
+
+  & .e-toolbar-item:not(.e-separator) {
+    height: $spreadsheet-ribbon-tab-text-wrap-height;
+    min-height: $spreadsheet-ribbon-tab-text-wrap-height;
+
+    & .e-tab-wrap {
+      height: $spreadsheet-ribbon-tab-text-wrap-height;
+    }
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      &.e-active .e-text-wrap,
+      & .e-text-wrap {
+        height: 33px;
+      }
+    }
+    @else {
+      & .e-text-wrap {
+        height: $spreadsheet-ribbon-tab-text-wrap-height;
+      }
+    }
+  }
+
+  & .e-toolbar-items {
+    height: $spreadsheet-ribbon-tab-text-wrap-height;
+    min-height: $spreadsheet-ribbon-tab-text-wrap-height;
+
+    & .e-tab-text {
+      @if $skin-name == 'fluent2' {
+        margin-bottom: 0;
+      }
+    }
+
+    & .e-scroll-nav {
+      height: $spreadsheet-ribbon-tab-text-wrap-height;
+      min-height: $spreadsheet-ribbon-tab-text-wrap-height;
+      @if $skin-name == 'Material3' {
+        height: 36px;
+        min-height: 36px;
+      }
+      @if $skin-name == 'fluent2' {
+        & .e-nav-left-arrow::before,
+        & .e-nav-right-arrow::before {
+          font-size: $spreadsheet-sheet-tab-navigation-arrow-font;
+        }
+      }
+    }
+  }
+}
+
+@mixin default-props {
+  & .e-tab {
+    & .e-tab-header .e-toolbar-item {
+      user-select: none;
+
+      & .e-tab-text {
+        text-transform: none;
+        @if $skin-name == 'Material3' {
+          font-weight: 500;
+          letter-spacing: .24px;
+        }
+      }
+    }
+
+    &.e-sheet-tab .e-tab-header .e-tab-text {
+      white-space: pre;
+    }
+  }
+}

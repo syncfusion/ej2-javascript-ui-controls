@@ -1,0 +1,15 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'ej2-buttons/styles/button/highcontrast-definition' as *;
+@use 'popup/highcontrast-definition' as *;
+@use 'dialog/highcontrast-definition' as *;
+@use 'dialog/icons/highcontrast' as *;
+@use 'dialog/all.highcontrast' as *;
+@use 'dialog/bigger.highcontrast' as *;
+@use 'popup/all.highcontrast' as *;
+
+@use 'tooltip/highcontrast-definition' as *;
+@use 'tooltip/icons/highcontrast' as *;
+@use 'tooltip/all.highcontrast' as *;
+@use 'tooltip/bigger.highcontrast' as *;
+@use 'spinner/highcontrast-definition' as *;
+@use 'spinner/all.highcontrast' as *;

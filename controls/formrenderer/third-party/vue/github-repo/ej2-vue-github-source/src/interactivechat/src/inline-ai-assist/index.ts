@@ -1,1 +1,0 @@
-export { InlineAIAssistComponent, InlineAIAssistPlugin } from './inlineaiassist.component';

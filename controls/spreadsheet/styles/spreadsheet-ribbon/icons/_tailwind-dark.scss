@@ -1,0 +1,34 @@
+@use '../variables' as *;
+@include export-module('spreadsheet-ribbon-tailwind-dark-icons') {
+  .e-spreadsheet .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e729';
+      }
+    }
+
+    & .e-ai-icon {
+      &::before {
+        content: '\e903';
+      }
+    }
+
+    & .e-menu-wrapper.e-file-menu ul .e-menu-item .e-caret {
+      &::before {
+        content: '\e729';
+      }
+    }
+  }
+
+  .e-spreadsheet.sf-spreadsheet {
+    & .e-spreadsheet-ribbon {
+      & .e-btn.e-split-btn {
+        & .e-clear-icon {
+          &::before {
+            content: '\e7cc';
+          }
+        }
+      }
+    }
+  }
+}
