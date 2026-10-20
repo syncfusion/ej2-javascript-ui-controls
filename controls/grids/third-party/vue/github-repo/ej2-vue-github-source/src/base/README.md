@@ -79,5 +79,5 @@ Check the license detail [here](https://github.com/syncfusion/ej2-vue-ui-compone
 
 Check the changelog [here](https://ej2.syncfusion.com/vue/documentation/release-notes?utm_source=npm&utm_campaign=ej2-vue-base)
 
-    © Copyright 2024 Syncfusion, Inc. All Rights Reserved.
+    © Copyright 2026 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
     The Syncfusion Essential Studio license and copyright applies to this distribution.

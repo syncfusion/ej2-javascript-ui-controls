@@ -86,5 +86,5 @@ Check the license detail [here](https://github.com/syncfusion/ej2-angular-ui-com
 
 Check the changelog [here](https://ej2.syncfusion.com/angular/documentation/release-notes?utm_source=npm&utm_campaign=ej2-angular-base)
 
-    © Copyright 2024 Syncfusion<sup>®</sup> Inc. All Rights Reserved.
+    © Copyright 2026 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
     The Syncfusion<sup>®</sup> Essential<sup>®</sup> Studio license and copyright applies to this distribution.
