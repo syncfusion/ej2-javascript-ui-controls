@@ -1,0 +1,1460 @@
+import { Component, L10n } from '@syncfusion/ej2-base';
+import { ItemAlign, ItemModel, ItemType, Menu, MenuItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
+import { ItemModel as DropDownItemModel, DropDownButton, SplitButton, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
+import { RenderType } from './enum';
+import { ToolbarType, CommandName, DialogType, ColorModeType } from '../../common/enum';
+import { Toolbar } from '../actions/toolbar';
+import { UndoRedoManager } from '../../editor-manager/plugin/undo';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { BaseToolbar } from '../actions/base-toolbar';
+import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
+import { NodeSelection } from '../../selection/selection';
+import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel, CodeBlockSettingsModel } from '../../models/models';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, EmojiSettingsModel } from '../../models/models';
+import { AIAssistantSettingsModel, FileManagerSettingsModel } from '../models/models';
+import { Count } from '../actions/count';
+import { ColorPicker, FileInfo } from '@syncfusion/ej2-inputs';
+import { Image } from '../renderer/image-module';
+import { Audio } from '../renderer/audio-module';
+import { Video } from '../renderer/video-module';
+import { Table } from '../renderer/table-module';
+import { ServiceLocator } from '../services/service-locator';
+import { MDSelectionFormats } from '../../markdown-parser/plugin/md-selection-formats';
+import { QuickToolbar } from '../actions/quick-toolbar';
+import { HtmlEditor } from '../actions/html-editor';
+import { MarkdownEditor } from '../actions/markdown-editor';
+import { FullScreen } from '../actions/full-screen';
+import { DropDownButtons } from '../actions/dropdown-buttons';
+import { IColorPickerModel, IDropDownItemModel, IDropDownModel, IEditorModel, IExecutionGroup, IFormatPainter, ISplitButtonModel, IToolbarItemModel, IToolbarItems, IToolbarStatus, ResponseEventArgs, IListDropDownModel, ISlashMenuItem, ICodeBlockCommandsArgs, ExecuteCommandOption } from '../../common/interface';
+import { KeyboardEvents } from '../actions/keyboard';
+import { ViewSource } from '../renderer/view-source';
+import { PasteCleanup } from '../actions/paste-clean-up';
+import { Popup } from '@syncfusion/ej2-popups';
+import { Resize } from '../actions/resize';
+import { ClipBoardCleanup } from '../actions/clipboard-cleanup';
+import { FileManager } from '../actions/file-manager';
+import { EmojiPicker } from '../actions/emoji-picker';
+import { SlashMenuSettingsModel } from '../../models';
+import { CustomUserAgentData } from '../../common/user-agent';
+import { CodeBlock } from '../actions/code-block';
+import { AssistantToolbarType, EditorPopupType, IMenuRenderTargetType } from './types';
+import { ToolbarItemModel } from '@syncfusion/ej2-interactive-chat';
+import { ILineHeightProperties } from '../../editor-manager/base/interface';
+import { PopupUploader } from '../renderer/popup-uploader-renderer';
+
+/**
+ * Specifies Rich Text Editor interfaces.
+ *
+ * @hidden
+ * @deprecated
+ */
+export interface IRichTextEditor extends Component<HTMLElement> {
+    /**
+     * Provides data about the user agent, platform and then whether its a mobile device.
+     *
+     * @hidden
+     *
+     */
+    userAgentData: CustomUserAgentData;
+    /**
+     * Specifies the root container of the Rich Text Editor component.
+     *
+     **/
+    rootContainer: HTMLElement;
+    toolbarSettings?: ToolbarSettingsModel
+
+    quickToolbarSettings?: QuickToolbarSettingsModel
+
+    iframeSettings?: IFrameSettingsModel
+
+    /**
+     * Configures the image settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedTypes: ['jpeg', 'jpg', 'png'],
+     * display: 'inline', width: '200px', saveFormat: 'Base64',
+     * height: '200px', saveUrl:null, path: null, resize: false,
+     * maxFileSize: 30000000
+     * }
+     */
+    insertImageSettings: ImageSettingsModel
+    /**
+     * Configures the import word of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * }
+     */
+    importWord: ImportWordModel
+    /**
+     * Configures the export word of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null, fileName:Sample.docx, stylesheet: null,
+     * }
+     */
+    exportWord: ExportWordModel
+    /**
+     * Configures the export pdf of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null, fileName:Sample.pdf, stylesheet: null,
+     * }
+     */
+    exportPdf: ExportPdfModel
+    /**
+     * Configures the image settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedTypes: ['wav', 'mp3', 'm4a','wma'],
+     * layoutOption: 'Inline', saveFormat: 'Blob',
+     * saveUrl:null, path: null,
+     * maxFileSize: 30000000
+     * }
+     */
+    insertAudioSettings: AudioSettingsModel
+    /**
+     * Configures the video settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedTypes: ['mp4', 'mov', 'wmv', 'avi'],
+     * layoutOption: 'Inline', width: '200px', saveFormat: 'Blob',
+     * height: '200px', saveUrl:null, path: null, resize: false,
+     * maxFileSize: 30000000
+     * }
+     */
+    insertVideoSettings: VideoSettingsModel
+    fileManagerSettings: FileManagerSettingsModel
+
+    tableSettings: TableSettingsModel
+
+    pasteCleanupSettings: PasteCleanupSettingsModel
+    /**
+     * Configure the format painter settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
+     * deniedFormats: null
+     * }
+     */
+    formatPainterSettings: FormatPainterSettingsModel
+
+    emojiPickerSettings: EmojiSettingsModel
+
+    floatingToolbarOffset?: number
+
+    showCharCount?: boolean
+    enableTabKey?: boolean
+
+    maxLength?: number
+
+    inlineMode?: InlineModeModel
+
+    width?: string | number
+
+    height?: string | number
+
+    fontFamily?: IFontProperties
+
+    fontSize?: IFontProperties
+
+    lineHeight?: ILineHeightProperties
+
+    fontColor?: IColorProperties
+
+    numberFormatList?: INumberFormatListPropertiesProperties
+
+    bulletFormatList?: IBulletFormatListPropertiesProperties
+
+    codeBlockSettings?: CodeBlockSettingsModel
+
+    backgroundColor?: IColorProperties
+
+    format?: IFormatProperties
+
+    value?: string
+    saveInterval?: number
+
+    showTooltip?: boolean;
+    isBlur?: boolean
+    isRTE?: boolean
+    contentModule?: IRenderer
+    enabled?: boolean
+    readonly?: boolean
+    placeholder?: string
+    cssClass?: string
+    valueContainer?: HTMLTextAreaElement
+    editorMode?: EditorMode
+    enableHtmlEncode?: boolean
+    formatter?: IFormatter
+    inputElement?: HTMLElement
+    toolbarModule?: Toolbar
+    tableModule?: Table
+    fileManagerModule?: FileManager
+    sourceCodeModule?: ViewSource
+    getToolbarElement?(): Element
+    fullScreenModule?: FullScreen
+    resizeModule?: Resize
+    refreshUI?(): void
+    enterKey?: EnterKey
+    shiftEnterKey?: ShiftEnterKey
+    audioModule?: Audio
+    videoModule?: Video
+    clipBoardCleanupModule?: ClipBoardCleanup
+    pasteCleanupModule?: PasteCleanup
+    codeBlockModule?: CodeBlock
+    undoRedoModule?: UndoRedoManager
+    quickToolbarModule?: QuickToolbar
+    undoRedoSteps?: number
+    markdownEditorModule: MarkdownEditor
+    htmlEditorModule: HtmlEditor
+    countModule?: Count
+    formatPainterModule?: IFormatPainter
+    emojiPickerModule?: EmojiPicker
+    serviceLocator?: ServiceLocator
+    setEnable?(): void
+    setReadOnly?(isInit?: boolean): void
+    setPlaceHolder?(): void
+    updateValue?(): void
+    print(): void
+    getContent?(): Element
+    setRTEContent?(value: Element): void
+    ensureModuleInjected(module: object): boolean
+    getToolbar(): HTMLElement
+    getTBarItemsIndex?(items: string[]): number[]
+    getCollection?(items: string | string[]): string[]
+    getRange(): Range
+    getID(): string
+    getCssClass(isSpace?: boolean): string
+    getText(): string
+    updateValueData?(): void
+    getBaseToolbarObject(): BaseToolbar
+    keyConfig?: { [key: string]: string }
+    undoRedoTimer?: number
+    sourceCode?(): void
+    enableToolbarItem?(items: string | string[]): void
+    disableToolbarItem?(items: string | string[]): void
+    wireScrollElementsEvents?(): void
+    unWireScrollElementsEvents?(): void
+    keyDown?(e?: KeyboardEvent): void
+    keyboardModule?: KeyboardEvents
+    onCopy?(): void
+    onCut?(): void
+    onPaste?(): void
+    clipboardAction?: Function
+    localeObj?: L10n
+    invokeChangeEvent?(): void
+    addAudioVideoWrapper?(): void
+    preventDefaultResize?(e?: FocusEvent | MouseEvent): void
+    autoResize?(): void
+    executeCommand?(commandName: CommandName, value?: string | HTMLElement | ICodeBlockCommandsArgs,  option?: ExecuteCommandOption): void
+    serializeValue?(value: string): string
+    sanitizeHtml?(value: string): string
+    enableAutoUrl?: boolean
+    enableXhtml?: boolean
+    enableHtmlSanitizer?: boolean
+    getInsertImgMaxWidth?(): string | number
+    getInsertVidMaxWidth?(): string | number
+    getSelection(): string
+    currentTarget: HTMLElement
+    focusIn(): void
+    showEmojiPicker?(x?: number, y?: number): void
+    addAnchorAriaLabel?(value: string): string
+    autoSaveOnIdle: boolean
+    slashMenuSettings: SlashMenuSettingsModel
+    aiAssistantSettings: AIAssistantSettingsModel;
+    showDialog(type: DialogType): void
+    scrollParentElements: HTMLElement[];
+    isModalDialog: boolean;
+    /**
+     * Retrieves the HTML representation of the selected content as a string.
+     *
+     * @returns {string} - The HTML content of the selected area.
+     */
+    getSelectedHtml(): string;
+    isEntireRTEContentSelected(): boolean
+    imageModule: Image;
+    isRTEFocused: boolean;
+    isFullTableDeleted: boolean;
+    isSelectAll: boolean
+    getHtml(): string;
+}
+
+export interface IQuickToolbar {
+    linkQTBar: BaseQuickToolbar;
+    textQTBar: BaseQuickToolbar;
+    imageQTBar: BaseQuickToolbar;
+    audioQTBar: BaseQuickToolbar;
+    videoQTBar: BaseQuickToolbar;
+    tableQTBar: BaseQuickToolbar;
+    inlineQTBar: BaseQuickToolbar;
+    debounceTimeout: number;
+}
+
+/**
+ * Provides information about the current and previous cssClass property .
+ */
+export interface ICssClassArgs {
+    cssClass?: string
+    oldCssClass?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IImageNotifyArgs {
+    module?: string
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent
+    cancel?: boolean
+    requestType?: string
+    enable?: boolean
+    properties?: object
+    selection?: NodeSelection
+    selfImage?: Image
+    selfAudio?: Audio
+    selfVideo?: Video
+    link?: HTMLInputElement | HTMLElement
+    selectNode?: Node[]
+    selectParent?: Node[]
+    target?: string
+    alt?: HTMLInputElement | HTMLElement
+    text?: string
+    member?: string
+    name?: string
+    cssClass?: string
+    ariaLabel?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IRenderer {
+    renderPanel?(): void
+    setPanel?(panel: Element): void
+    /**
+     * Retrieves the parent element of the content editable div.
+     * If the editor is in iframe mode, it returns the `iframe` element.
+     * Otherwise, it returns the parent element with the class `e-rte-content`.
+     *
+     * @returns {Element} - The parent element of the content editable div or the `iframe` element.
+     */
+    getPanel?(): Element
+    /**
+     * Retrieves the content editable `div` element of the RichTextEditor.
+     * If the editor is in iframe mode, it returns the `body` element of the iframe.
+     *
+     */
+    getEditPanel?(): Element
+    getText?(): string
+    getDocument?(): Document
+    addEventListener?(): void
+    removeEventListener?(): void
+    renderToolbar?(args: IToolbarOptions): void
+    renderDropDownButton?(args: DropDownItemModel, width?: string, type?: string): DropDownButton
+    renderColorPicker?(args: IColorPickerModel, item?: string, toobarType?: string): ColorPicker
+    renderListDropDown?(args: IDropDownModel): DropDownButton
+    renderSplitButton?(args: ISplitButtonModel): SplitButton
+    renderMenu?(args: IMenuRenderArgs): { menu: Menu, dropDownButton : DropDownButton}
+}
+
+/**
+ * @deprecated
+ */
+export interface IToolbarOptions {
+    enableRtl: boolean
+    target: HTMLElement
+    items?: ItemModel[]
+    rteToolbarObj: BaseToolbar
+    enablePersistence: boolean
+    overflowMode?: OverflowMode
+    cssClass?: string
+    type?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IToolbarSettings {
+    enable?: boolean
+    items?: (string | IToolbarItems)[]
+    target?: HTMLElement
+    type?: ToolbarType
+}
+
+/**
+ * @deprecated
+ */
+export interface IToolbarRenderOptions {
+    target: HTMLElement
+    items?: (string | IToolbarItems)[]
+    mode?: OverflowMode
+    container?: string
+    cssClass?: string
+}
+
+
+/**
+ * @deprecated
+ */
+export interface IUpdateItemsModel {
+    targetItem: string
+    updateItem: string
+    baseToolbar: BaseToolbar
+}
+
+/**
+ * @deprecated
+ */
+export interface IDropDownRenderArgs {
+    items?: string[]
+    containerType?: string
+    container?: HTMLElement
+}
+
+/**
+ * @deprecated
+ */
+export interface IShowQuickTBarOptions {
+    x: number
+    y: number
+    target: HTMLElement
+    editTop: number
+    editHeight: number
+    popup: HTMLElement
+    parentElement: HTMLElement
+    tBarElementHeight: number
+    parentData: ClientRect
+    windowY: number
+    windowHeight: number
+    windowWidth: number
+    popWidth: number
+    popHeight: number
+    bodyRightSpace: number
+}
+
+/**
+ * @deprecated
+ */
+export interface IPositionChanged {
+    x: boolean
+    y: boolean
+}
+
+/**
+ * @deprecated
+ */
+export interface IQuickToolbarOptions {
+    popupType: string
+    mode: OverflowMode
+    renderType: RenderType
+    toolbarItems: (string | IToolbarItems)[],
+    cssClass: string
+}
+
+/**
+ * Provides detailed information about the AfterImageDeleteEvent event in the editor.
+ */
+export interface AfterImageDeleteEventArgs {
+    /** Defines the image DOM element that was deleted. */
+    element: Node
+    /** Defines the 'src' attribute of the deleted image element. */
+    src: string
+}
+
+/**
+ * Provides detailed information about the AfterMediaDeleteEvent event in the editor.
+ */
+export interface AfterMediaDeleteEventArgs {
+    /** Defines the audio/video DOM element that was deleted. */
+    element: Node
+    /** Defines the 'src' attribute of the deleted audio/video element. */
+    src: string
+}
+
+/**
+ * Provides detailed information about the QuickToolbar event in the editor.
+ */
+export interface QuickToolbarEventArgs {
+    /**
+     * Defines the instance of the current popup element
+     *
+     * @deprecated
+     */
+    popup?: Popup
+    /**
+     * Returns the HTMLElement associated with the dialog in the quick toolbar.
+     */
+    element: HTMLElement
+    /**
+     * Specify the name identifier of the event within the quick toolbar.
+     */
+    name?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IAdapterProcess {
+    text: string
+    range: Range
+    actionName: string
+}
+
+/**
+ * Provides information about a Formatter.
+ */
+export interface IFormatter {
+    /** Configure the format tags, mapping tag names to their respective format. */
+    formatTags?: { [key: string]: string }
+    /** Configure the list tags, mapping tag names to their respective list format. */
+    listTags?: { [key: string]: string }
+    /** Configure the key settings with specific shortcut key configurations. */
+    keyConfig?: { [key: string]: string }
+    process?: Function
+    onKeyHandler?: Function
+    editorManager?: IEditorModel
+    /** Retrieves the undo and redo stack arrays for tracking changes. */
+    getUndoRedoStack?: Function
+    onSuccess?: Function
+    /** Saves the current state for undo and redo actions within the editor. */
+    saveData?: Function
+    disableToolbarItem?(items: string | string[]): void
+    /** Enables the undo functionality to revert changes. */
+    enableUndo?: Function
+    setDocument?: Function
+    getDocument?: Function
+    setEditPanel?: Function
+    getEditPanel?: Function
+    updateFormatter?: Function
+    initializePlugin?: Function
+    isAppliedCommand?(e?: MouseEvent): string
+    mdSelectionFormat?: MDSelectionFormats
+    beforeSlashMenuApply(): void
+    getCurrentStackIndex(): number
+    clearUndoRedoStack(): void
+}
+
+/**
+ * @deprecated
+ */
+export interface IFontProperties {
+    default?: string
+    items?: IDropDownItemModel[]
+    width?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IBulletFormatListPropertiesProperties {
+    types?: IListDropDownModel[]
+}
+
+/**
+ * @deprecated
+ */
+export interface INumberFormatListPropertiesProperties {
+    types?: IListDropDownModel[]
+}
+
+/**
+ * @deprecated
+ */
+export interface IFormatProperties {
+    default?: string
+    types?: IDropDownItemModel[]
+    width?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface ISetToolbarStatusArgs {
+    args: IToolbarStatus
+    parent: IRichTextEditor
+    tbElements: HTMLElement[]
+    tbItems: IToolbarItemModel[]
+    dropDownModule: DropDownButtons
+    fontColorPicker?: ColorPicker
+    backgroundColorPicker?: ColorPicker
+}
+
+/**
+ * Provides detailed information about a change event in the RichTextEditor.
+ */
+export interface ChangeEventArgs {
+    /**
+     * Returns the current value/content of the RichTextEditor.
+     */
+    value: string
+    /** Defines the name of the event. */
+    name?: string
+    /** Specifies if the request should be saved automatically or triggered by user interaction (focus out). */
+    isInteracted: boolean
+}
+
+/**
+ * Provides information regarding a DialogOpen event in the RichTextEditor.
+ */
+export interface DialogOpenEventArgs {
+    /**
+     * Defines if the current dialog action can be prevented.
+     */
+    target: HTMLElement | string
+    /**
+     * Returns the root container element of the dialog being opened.
+     */
+    container: HTMLElement
+    /**
+     * Returns the element reference of the dialog.
+     */
+    element: Element
+    /**
+     * Name of the event if specified.
+     */
+    name?: string
+}
+
+/**
+ * Provides detailed information about a failed Image upload event in the RichTextEditor.
+ */
+export interface ImageFailedEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object
+    /**
+     * Details about the file that failed to upload.
+     */
+    file: FileInfo
+    /**
+     * Provides status text describing the failed upload.
+     */
+    statusText?: string
+    /**
+     * Describes the operation performed during the failed upload attempt.
+     */
+    operation: string
+    /**
+     * Returns the response details of the failed upload event.
+     */
+    response?: ResponseEventArgs
+    /**
+     * Specifies the event name.
+     */
+    name?: string
+}
+
+/**
+ * Provides specific details about a Destroyed event in the RichTextEditor.
+ */
+export interface DestroyedEventArgs {
+    /**
+     * Specifies the name of the event.
+     */
+    name?: string
+    /**
+     * Determines if the current action of destruction can be prevented.
+     */
+    cancel: boolean
+}
+
+/**
+ * Provides information regarding content pasted in the RichTextEditor for cleanup operations.
+ */
+export interface PasteCleanupArgs {
+    /**
+     * Returns the content data present in the ClipboardEvent arguments.
+     */
+    value: string;
+    /**
+     * Returns a list of image file data that was pasted into the editor.
+     */
+    filesData: FileInfo[]
+}
+
+/**
+ * Provides specific information about a Blur event in the RichTextEditor.
+ */
+export interface BlurEventArgs {
+    /**
+     * Contains the original event arguments related to the blur event.
+     */
+    event: Event
+    /**
+     * Indicates if the blur event was caused by user interaction.
+     */
+    isInteracted: boolean
+    /**
+     * Specifies the name of the blur event.
+     */
+    name?: string
+}
+
+/**
+ * Provides details about a Focus event in the RichTextEditor.
+ */
+export interface FocusEventArgs {
+    /**
+     * Contains the original event arguments associated with the focus event.
+     */
+    event: FocusEvent
+    /**
+     * Indicates if the focus event was triggered by user interaction.
+     */
+    isInteracted: boolean
+    /**
+     * Specifies the name of the focus event.
+     */
+    name?: string
+}
+
+
+/**
+ * @deprecated
+ */
+export interface IColorProperties {
+    default?: string
+    mode?: ColorModeType
+    columns?: number
+    colorCode?: { [key: string]: string[] }
+    modeSwitcher?: boolean
+    showRecentColors? : boolean
+}
+
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const executeGroup: { [key: string]: IExecutionGroup } = {
+    'bold': {
+        command: 'Style',
+        subCommand: 'Bold',
+        value: 'strong'
+    },
+    'italic': {
+        command: 'Style',
+        subCommand: 'Italic',
+        value: 'em'
+    },
+    'underline': {
+        command: 'Style',
+        subCommand: 'Underline',
+        value: 'span'
+    },
+    'strikeThrough': {
+        command: 'Style',
+        subCommand: 'StrikeThrough',
+        value: 'span'
+    },
+    'insertCode': {
+        command: 'Formats',
+        subCommand: 'Pre',
+        value: 'pre'
+    },
+    'superscript': {
+        command: 'Effects',
+        subCommand: 'SuperScript',
+        value: 'sup'
+    },
+    'subscript': {
+        command: 'Effects',
+        subCommand: 'SubScript',
+        value: 'sub'
+    },
+    'uppercase': {
+        command: 'Casing',
+        subCommand: 'UpperCase'
+    },
+    'lowercase': {
+        command: 'Casing',
+        subCommand: 'LowerCase'
+    },
+    'fontColor': {
+        command: 'font',
+        subCommand: 'fontcolor',
+        value: '#ff0000'
+    },
+    'fontName': {
+        command: 'font',
+        subCommand: 'fontname',
+        value: 'Segoe UI'
+    },
+    'fontSize': {
+        command: 'font',
+        subCommand: 'fontsize',
+        value: '10pt'
+    },
+    'lineHeight': {
+        command: 'lineHeight',
+        value: ''
+    },
+    'backColor': {
+        command: 'font',
+        subCommand: 'backgroundcolor',
+        value: '#ffff00'
+    },
+    'justifyCenter': {
+        command: 'Alignments',
+        subCommand: 'JustifyCenter'
+    },
+    'justifyFull': {
+        command: 'Alignments',
+        subCommand: 'JustifyFull'
+    },
+    'justifyLeft': {
+        command: 'Alignments',
+        subCommand: 'JustifyLeft'
+    },
+    'justifyRight': {
+        command: 'Alignments',
+        subCommand: 'JustifyRight'
+    },
+    'undo': {
+        command: 'Actions',
+        subCommand: 'Undo'
+    },
+    'redo': {
+        command: 'Actions',
+        subCommand: 'Redo'
+    },
+    'createLink': {
+        command: 'Links',
+        subCommand: 'createLink'
+    },
+    'editLink': {
+        command: 'Links',
+        subCommand: 'createLink'
+    },
+    'createImage': {
+        command: 'Images',
+        subCommand: 'Images'
+    },
+    'formatBlock': {
+        command: 'Formats',
+        value: 'P'
+    },
+    'heading': {
+        command: 'Formats',
+        value: 'H1'
+    },
+    'indent': {
+        command: 'Indents',
+        subCommand: 'Indent'
+    },
+    'outdent': {
+        command: 'Indents',
+        subCommand: 'Outdent'
+    },
+    'insertHTML': {
+        command: 'InsertHTML',
+        subCommand: 'InsertHTML',
+        value: ''
+    },
+    'insertText': {
+        command: 'InsertText',
+        subCommand: 'InsertText',
+        value: ''
+    },
+    'insertHorizontalRule': {
+        command: 'InsertHTML',
+        subCommand: 'InsertHTML',
+        value: '<hr/>'
+    },
+    'insertImage': {
+        command: 'Images',
+        subCommand: 'Image'
+    },
+    'insertAudio': {
+        command: 'Audios',
+        subCommand: 'Audio'
+    },
+    'insertVideo': {
+        command: 'Videos',
+        subCommand: 'Video'
+    },
+    'editImage': {
+        command: 'Images',
+        subCommand: 'Image'
+    },
+    'insertTable': {
+        command: 'Table',
+        subCommand: 'CreateTable'
+    },
+    'insertBrOnReturn': {
+        command: 'InsertHTML',
+        subCommand: 'InsertHTML',
+        value: '<br/>'
+    },
+    'insertOrderedList': {
+        command: 'Lists',
+        value: 'OL'
+    },
+    'insertUnorderedList': {
+        command: 'Lists',
+        value: 'UL'
+    },
+    'insertParagraph': {
+        command: 'Formats',
+        value: 'P'
+    },
+    'removeFormat': {
+        command: 'Clear',
+        subCommand: 'ClearFormat'
+    },
+    'copyFormatPainter': {
+        command: 'FormatPainter',
+        value: 'format-copy'
+    },
+    'applyFormatPainter': {
+        command: 'FormatPainter',
+        value: 'format-paste'
+    },
+    'escapeFormatPainter': {
+        command: 'FormatPainter',
+        value: 'escape'
+    },
+    'InlineCode': {
+        command: 'Style',
+        subCommand: 'inlinecode',
+        value: 'inlinecode'
+    },
+    'insertCodeBlock': {
+        command: 'CodeBlock',
+        subCommand: 'CodeBlock'
+    },
+    'numberFormatListNone': {
+        command: 'Lists',
+        subCommand: 'NumberFormatList',
+        value: 'none'
+    },
+    'numberFormatList': {
+        command: 'Lists',
+        subCommand: 'NumberFormatList'
+    },
+    'bulletFormatList': {
+        command: 'Lists',
+        subCommand: 'BulletFormatList'
+    },
+    'checklist': {
+        command: 'Checklist',
+        subCommand: 'Checklist'
+    }
+};
+
+/**
+ * Provides detailed information about the updatedToolbarStatus event in the Rich Text Editor.
+ */
+export interface ToolbarStatusEventArgs {
+    /** Defines the name of the event. */
+    name?: string
+    /** Defines the undo state argument, indicating whether an undo action can be performed. */
+    undo: boolean
+    /** Defines the redo state argument, indicating whether a redo action can be performed. */
+    redo: boolean
+    /** Defines the HTML toolbar status arguments, providing the current status of the HTML toolbar. */
+    html?: object
+    /** Defines the markdown toolbar status arguments, providing the current status of the Markdown toolbar. */
+    markdown?: object
+}
+
+/**
+ * @hidden
+ * @private
+ */
+export interface IBaseQuickToolbar {
+    /**
+     * Instance of the Quick Toolabr Popup.
+     */
+    popupObj: Popup;
+    /**
+     * Parent Element of the Quick Toolbar.
+     */
+    element: HTMLElement;
+    /**
+     * Boolean to check whether the quick toolbar is rendered in the DOM.
+     */
+    isRendered: boolean;
+    /**
+     * Instance of the Toolbar rendered inside the Popup.
+     */
+    quickTBarObj: BaseToolbar;
+    /**
+     * Element of the Toolbar rendered inside the Popup.
+     */
+    toolbarElement: HTMLElement;
+}
+
+/**
+ * Provides detailed information about a SlashMenuItemSelect event.
+ */
+export interface SlashMenuItemSelectArgs {
+    /**
+     * If the event is triggered by user interaction, it returns true. Otherwise, it returns false.
+     */
+    isInteracted: boolean;
+    /**
+     * Returns the selected list item of the slash menu list as an HTMLLIElement.
+     */
+    item: HTMLLIElement;
+    /**
+     * Returns the selected slash menu item data corresponding to the interface.
+     */
+    itemData: ISlashMenuItem;
+    /**
+     * Specifies the original event arguments such as MouseEvent, KeyboardEvent, or TouchEvent.
+     */
+    originalEvent: MouseEvent | KeyboardEvent | TouchEvent;
+    /**
+     * Specifies the boolean value to cancel the default action if set to true.
+     */
+    cancel?: boolean;
+}
+
+/**
+ * Defines the structure of AI command items displayed in the command dropdown menu.
+ * Supports hierarchical organization through nested items.
+ */
+export interface AICommands {
+    /**
+     * The display text shown for this command in the UI.
+     */
+    text: string;
+
+    /**
+     * The actual prompt or command text sent to the AI service when selected.
+     */
+    prompt?: string;
+
+    /**
+     * CSS class name for the icon to display with this command.
+     */
+    iconCss?: string;
+
+    /**
+     * Collection of nested command items for creating multi-level command menus.
+     */
+    items?: AICommands[];
+}
+
+/**
+ * Extends the standard toolbar settings with additional properties specific to
+ * the AI Assistant functionality.
+ */
+export interface IAIAssistantToolbarItem {
+    /**
+     * Specifies the primary command to execute when toolbar actions are triggered.
+     *
+     * @type {string}
+     * @default ''
+     */
+    command: string;
+
+    /**
+     * Specifies the secondary or sub-command to execute when toolbar actions are triggered.
+     *
+     * @type {string}
+     * @default ''
+     */
+    subCommand: string;
+
+    /**
+     * Specifies the CSS class for the icon of the toolbar item.
+     * Represents the icon displayed for the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    iconCss?: string;
+
+    /**
+     * Specifies the text of the toolbar item.
+     * Represents the display text of the toolbar item.
+     *
+     * @type {string}
+     * @default null
+     */
+    text?: string;
+
+    /**
+     * Specifies the type of the toolbar item.
+     * Represents the item type of the toolbar item.
+     *
+     * @type {ItemType}
+     * @default "Button"
+     * @aspPopulateDefaultValue
+     */
+    type?: ItemType;
+
+    /**
+     * Specifies the alignment of the toolbar item.
+     *
+     * @type {ItemAlign}
+     * @default "Left"
+     * @aspPopulateDefaultValue
+     */
+    align?: ItemAlign;
+
+    /**
+     * Specifies whether the toolbar item is visible.
+     * Indicates if the toolbar item should be displayed.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    visible?: boolean;
+
+    /**
+     * Specifies whether the toolbar item is disabled.
+     * Indicates if the toolbar item is interactive or not.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    disabled?: boolean;
+
+    /**
+     * Specifies the tooltip text for the toolbar item.
+     * Represents the text shown when hovering over the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    tooltip?: string;
+
+    /**
+     * Specifies the CSS class for styling the toolbar item.
+     * Represents the additional CSS classes applied to the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    cssClass?: string;
+
+    /**
+     * Specifies the template that defines the appearance of the toolbar item.
+     * Represents the custom template for rendering the toolbar item, which can be a string or a function.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    template?: string | Function;
+
+    /**
+     * Specifies the tab order of the toolbar items.
+     * When assigned positive values, it allows switching focus to the next/previous toolbar items using the Tab/Shift+Tab keys.
+     * If the value is set to 0 for all toolbar items, the tab order switches based on the element's order in the DOM.
+     *
+     * @type {number}
+     * @default -1
+     */
+    tabIndex?: number;
+}
+
+/**
+ * Interface defining the arguments for toolbar item click events in the AI Assistant Popup.
+ * Used to handle and control click events on custom toolbar items across header, prompt, and
+ * response toolbars. Allows for rendering custom toolbar elements such as button dropdowns and inputs.
+ *
+ *
+ */
+export interface AIAssitantToolbarClickEventArgs {
+    /**
+     * Specifies the toolbar section where the click event occurred.
+     * Identifies which of the three toolbars (Header, Prompt, or Response) contained the clicked item.
+     *
+     * @type {AssistantToolbarType}
+     * @required
+     */
+    requestType: AssistantToolbarType;
+
+    /**
+     * Specifies the AI Assistant toolbar item that was clicked.
+     * Represents the model of the toolbar item that triggered the click event.
+     *
+     * @type {IAIAssistantToolbarItem}
+     * @default null
+     * @optional
+     */
+    item: IAIAssistantToolbarItem;
+
+    /**
+     * Specifies the event object associated with the toolbar item click.
+     * Represents the underlying event that triggered the click action, providing details about the event.
+     *
+     * @type {Event}
+     * @default null
+     * @optional
+     */
+    originalEvent: Event;
+
+    /**
+     * Specifies whether the click event should be cancelled.
+     * Determines if the default action associated with the click event should be prevented.
+     *
+     * @type {boolean}
+     * @default false
+     * @optional
+     */
+    cancel: boolean;
+
+    /**
+     * Specifies the index of the message data associated with the toolbar item click event.
+     * This property is not applicable for header toolbar item click.
+     *
+     * @type {number}
+     * @default -1
+     * @optional
+     */
+    dataIndex?: number;
+}
+
+/**
+ * @private
+ */
+export interface PopupRootBound {
+    popupRoot: HTMLElement
+    self: PopupUploader | PasteCleanup
+}
+
+
+/**
+ * Represents the Menu Rendering args of the Toolbar renderer.
+ *
+ * @private
+ */
+export interface IMenuRenderArgs {
+    menuItems: MenuItemModel;
+    dropDownItems: DropDownButtonModel;
+    name: string;
+    containerType: IMenuRenderTargetType;
+    toolbarElement: HTMLElement;
+    dropDownRoot: HTMLButtonElement;
+    menuRoot: HTMLUListElement;
+}
+
+export interface AIAssistantPromptRequestArgs {
+    /**
+     * The current selection in the editor, represented as HTML.
+     * This includes formatting tags and other HTML elements.
+     *
+     * @type {string}
+     */
+    html: string;
+    /**
+     * The current selection in the editor, represented as plain text.
+     * This excludes any HTML formatting or markup.
+     *
+     * @type {string}
+     */
+    text: string;
+    /**
+     * Specifies whether the prompt request should be cancelled.
+     * Determines if the prompt request should be stopped, giving control over whether the prompt processing continues or is aborted.
+     *
+     * @type {boolean}
+     * @default false
+     *
+     */
+    cancel: boolean;
+    /**
+     * Specifies the toolbar items for the output view in the AI Assistant.
+     * Represents the collection of toolbar items that are displayed alongside the output view, allowing for additional interactions.
+     *
+     * @type {ToolbarItemModel[]}
+     * @default null
+     *
+     */
+    responseToolbarItems: ToolbarItemModel[];
+    /**
+     * Specifies the text of the prompt request.
+     *
+     * @type {string}
+     * @default null
+     *
+     */
+    prompt: string;
+    /**
+     * Specifies the list of prompt suggestions.
+     * Represents an array of suggested prompts that can assist the user.
+     *
+     * @type {string[]}
+     * @default null
+     *
+     */
+    promptSuggestions: string[];
+}
+
+export interface AIAssistantStopRespondingArgs {
+    /**
+     * Specifies the event object associated with the stop responding action.
+     * Represents the underlying event that triggered the action.
+     *
+     * @type {Event}
+     * @default null
+     */
+    event?: Event;
+    /**
+     * Specifies the prompt text associated with the request.
+     * Represents the input prompt for which the response was being generated.
+     *
+     * @type {string}
+     * @default ''
+     *
+     */
+    prompt?: string;
+    /**
+     * Specifies the index of the prompt in the prompt list.
+     * Represents the position of the prompt in the stored collection.
+     *
+     * @type {number}
+     * @default -1
+     */
+    dataIndex?: number;
+}
+
+/**
+ * Interface that defines the arguments for before popup open and close events.
+ *
+ * This interface is used when a popup is about to be opened or closed in the editor.
+ * It provides information about the popup and allows cancellation of the event.
+ *
+ */
+export interface BeforePopupOpenCloseEventArgs {
+    /**
+     * Specifies the type of popup that is being opened or closed.
+     *
+     * @type {EditorPopupType}
+     */
+    type: EditorPopupType;
+
+    /**
+     * The popup instance that is being opened or closed.
+     *
+     * @type {Popup}
+     */
+    popup?: Popup;
+
+    /**
+     * The HTML element associated with the popup.
+     *
+     * @type {HTMLElement}
+     */
+    element: HTMLElement;
+
+    /**
+     * Determines whether the popup open/close action should be canceled.
+     * Set to true to prevent the popup from opening or closing.
+     *
+     * @type {boolean}
+     */
+    cancel: boolean;
+
+    /**
+     * The original DOM event that triggered the popup action, if available.
+     *
+     * @type {Event}
+     * @optional
+     */
+    originalEvent?: Event;
+}
+
+/**
+ * Defines the event arguments for the `beforeWebMcpToolExecute` event.
+ * Provides access to the tool name and its input arguments before execution,
+ * and allows the application to inspect, modify, or cancel the operation.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /**
+     * Specifies whether the tool execution should be cancelled.
+     * Set to `true` to prevent the tool from executing.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the name of the WebMCP tool being executed (e.g. `'getContent'`, `'getSelectedHtml'`).
+     */
+    toolName?: string;
+    /**
+     * Specifies the arguments passed to the tool.
+     * The shape of this object matches the tool's `inputSchema` as defined in the tool registry.
+     */
+    toolArgs?: object;
+    /**
+     * Set to `true` to display a confirmation dialog to the user before the tool executes.
+     * Execution proceeds only if the user confirms.
+     */
+    showConfirmationDialog?: boolean;
+    /**
+     * Specifies a custom response message to send back to the AI when tool execution is cancelled,
+     * either by setting `cancel` to `true` or when the user dismisses the confirmation dialog.
+     * When not provided, a default cancellation message is sent to the AI.
+     */
+    cancellationResponse?: string;
+}
+
+
+/**
+ * Defines the structure of a WebMCP tool, including its name, description,
+ * and input/output JSON schemas used for tool registration and execution.
+ */
+export interface WebMcpTool {
+    /**
+     * The unique identifier name of the WebMCP tool (e.g., 'getContent', 'getSelectedHtml').
+     */
+    name: string;
+    /**
+     * A description of the tool's functionality and purpose.
+     */
+    description: string;
+    /**
+     * The JSON schema object that defines the expected input parameters for the tool.
+     */
+    inputSchema: object;
+    /**
+     * The JSON schema object that defines the structure of the tool's output response.
+     */
+    outputSchema: object;
+    /**
+     * A readOnlyHint flag indicating whether the tool performs read-only operations without modifying state.
+     */
+    annotations: object;
+    /**
+     * A function that executes the tool's logic when invoked.
+     */
+    execute?: Function;
+}
+
+/**
+ * Defines the result returned by a WebMCP tool execution,
+ * containing the response content array and an optional error flag.
+ *
+ * @hidden
+ */
+export interface WebMcpToolResponse {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+}
+
+/**
+ * Defines the result returned after executing an AI assist command,
+ * including success status, message, optional data payload, and error details.
+ */
+export interface CommandResult {
+    action: string;
+    success: boolean;
+    message: string;
+    data?: Record<string, unknown>;
+    error?: { code: string; message: string; retryable?: boolean };
+}
