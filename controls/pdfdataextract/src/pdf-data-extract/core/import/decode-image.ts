@@ -1,0 +1,71 @@
+import { _PdfOpenJpegRunner } from './openjpeg-runner';
+/**
+ * Worker-backed image processor that decodes JPX images into raw bytes.
+ *
+ * @private
+ */
+export class _PdfImageProcessor {
+    /**
+     * Decodes a JPX stream using a dedicated Web Worker running the OpenJPEG runtime.
+     *
+     * @private
+     * @param {Uint8Array} bytes Raw JPX bytes.
+     * @param {any} jpxStream Stream object that can supply bytes when `bytes` is not provided.
+     * @param {string} platform Host application/platform used to resolve asset base URLs.
+     * @returns {Promise<Uint8Array>} Resolves to decoded image bytes.
+     */
+    async _decodeImage(bytes: Uint8Array, jpxStream: any, platform: string): Promise<Uint8Array> { //eslint-disable-line
+        const workerBob: Blob = new Blob([_PdfOpenJpegRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
+        const workerBlobUrl: string = URL.createObjectURL(workerBob);
+        const worker: Worker = new Worker(workerBlobUrl);
+        const { protocol, host, pathname } = document.location;
+        // Remove trailing slashes from the pathname using a regular expression
+        const trimmedPathname: string = pathname.replace(/\/+$/, '');
+        let baseUrl: string = `${protocol}//${host}${trimmedPathname}`;
+        if (platform === 'angular') {
+            baseUrl =  baseUrl + '/assets/ej2-pdf-lib';
+        }  else if (platform === 'vue') {
+            baseUrl = baseUrl + '/public/js/ej2-pdf-lib';
+        } else {
+            (window as any).getRunningScript = (): (() => string) => { //eslint-disable-line
+                return (): string => {
+                    const stackTrace: string = new Error().stack;
+                    // eslint-disable-next-line
+                    const match: any = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
+                    return match ? match[0] : location.href;
+                };
+            };
+            const scriptLinkURL: string = (window as any).getRunningScript()(); // eslint-disable-line
+            const splitURL: any = scriptLinkURL.split('/'); // eslint-disable-line
+            const path: string = scriptLinkURL.replace('/' + splitURL[splitURL.length - 1], '');
+            if (platform === 'javascript' || platform === 'typescript' || platform === 'react' || platform === 'react' ||
+                platform === 'aspnetcore' || platform === 'aspnetmvc') {
+                baseUrl = path + '/ej2-pdf-lib';
+            } else {
+                baseUrl = path.replace('import', 'ej2-pdf-lib');
+            }
+        }
+        await new Promise<void>((resolve: any, reject: any) => { //eslint-disable-line
+            worker.onmessage = (event: any) => { //eslint-disable-line
+            const msg: any = event.data; //eslint-disable-line
+                if (msg.message === 'loaded') {
+                    resolve();
+                } else if (msg.message === 'decodeError') {
+                    reject(new Error(msg.error));
+                }
+            };
+            worker.postMessage({ message: 'initialLoading', url: baseUrl });
+        });
+        const data: any = bytes || jpxStream.bytes; // eslint-disable-line
+        let imagedata: any; // eslint-disable-line
+        await new Promise<void>((resolve: any, reject: any) => { // eslint-disable-line
+            worker.onmessage = (event: any) => { //eslint-disable-line
+                const msg: any = event.data; //eslint-disable-line
+                imagedata = msg.message;
+                resolve();
+            };
+            worker.postMessage({ message: 'decodeJPX', url: data });
+        });
+        return imagedata;
+    }
+}

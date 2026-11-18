@@ -1,0 +1,44 @@
+{
+	"name": "@syncfusion/ej2-xlsx",
+	"version": "35.1.37",
+	"description": "Syncfusion EJ2 XLSX - Programmatic XLSX/OOXML class library for JavaScript and TypeScript",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-xlsx.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-xlsx.es5.js",
+	"typings": "index.d.ts",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-compression": "*"
+	},
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.15",
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"markdown-spellcheck": "^1.3.1",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"xlsx",
+		"excel",
+		"spreadsheet",
+		"workbook"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/xlsx"
+	}
+}

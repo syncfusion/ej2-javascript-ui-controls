@@ -1,0 +1,768 @@
+import {
+    PdfGrid, PdfPen, PointF, PdfGridRow, PdfDocument, PdfPage, PdfFont,
+    PdfStandardFont, PdfFontFamily, PdfSolidBrush, PdfColor, PdfStringFormat,
+    PdfVerticalAlignment, PdfTextAlignment, PdfFontStyle, PdfTrueTypeFont, PdfBorders,
+    PdfGridCell, SizeF, PdfSection, PdfPageOrientation, PdfMargins, PdfLayoutResult, PdfPaddings
+} from '@syncfusion/ej2-pdf-export';
+import { PivotView } from '../base/pivotview';
+import * as events from '../../common/base/constant';
+import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs, ExportCompleteEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
+import { IAxisSet, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
+import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
+import { OlapEngine } from '../../base/olap/engine';
+import { PivotExportUtil } from '../../base/export-util';
+import { PdfExportProperties, PdfHeaderFooterContent, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
+import { PivotUtil } from '../../base/util';
+import { PDFExportHelper } from './pdf-export-helper';
+
+/**
+ * @hidden
+ * `PDFExport` module is used to handle the PDF export action.
+ */
+export class PDFExport {
+    private parent: PivotView;
+    private gridStyle: PdfTheme;
+    private engine: PivotEngine | OlapEngine;
+    private document: PdfDocument
+    /** @hidden */
+    public exportProperties: BeforeExportEventArgs;
+    private pdfExportHelper: PDFExportHelper;
+    private createdDocuments: PdfDocument[] = [];
+    /** @hidden */
+    public drawPosition: { xPosition: number; yPosition: number } = { xPosition: 0, yPosition: 0 };
+
+    /**
+     * Constructor for the PivotGrid PDF Export module.
+     *
+     * @param {PivotView} parent - Instance of pivot table.
+     * @hidden
+     */
+    constructor(parent?: PivotView) {
+        initializeTelemetryFeature('PDFExport', 'PivotTable');
+        this.parent = parent;
+        this.pdfExportHelper = new PDFExportHelper();
+    }
+
+    /**
+     * For internal use only - Get the module name.
+     *
+     * @returns {string} - string.
+     * @private
+     */
+    protected getModuleName(): string {
+        return 'pdfExport';
+    }
+
+    private addPage(
+        eventParams: { document: PdfDocument; args: EnginePopulatedEventArgs }, pdfExportProperties?: PdfExportProperties
+    ): PdfPage {
+        if (this.createdDocuments.indexOf(eventParams.document) === -1) {
+            this.createdDocuments.push(eventParams.document);
+        }
+        pdfExportProperties = pdfExportProperties ? pdfExportProperties : this.exportProperties.pdfExportProperties;
+        const documentSection: PdfSection = eventParams.document.sections.add() as PdfSection;
+        const documentHeight: number = eventParams.document.pageSettings.height;
+        const documentWidth: number = eventParams.document.pageSettings.width;
+        if (this.exportProperties.width || this.exportProperties.height) {
+            eventParams.document.pageSettings.orientation = ((this.exportProperties.width > this.exportProperties.height)
+                || (!this.exportProperties.height && (this.exportProperties.width > documentHeight)) || (!this.exportProperties.width
+                && (documentWidth > this.exportProperties.height))) ? PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
+            eventParams.document.pageSettings.size = new SizeF(this.exportProperties.width ? this.exportProperties.width :
+                documentWidth, this.exportProperties.height ? this.exportProperties.height : documentHeight);
+        } else {
+            eventParams.document.pageSettings.orientation = (this.exportProperties.orientation === 0 || this.exportProperties.orientation)
+                ? this.exportProperties.orientation : (!isNullOrUndefined(pdfExportProperties) &&
+                !isNullOrUndefined(pdfExportProperties.pageOrientation)) ? (pdfExportProperties.pageOrientation === 'Landscape' ?
+                        PdfPageOrientation.Landscape : PdfPageOrientation.Portrait) : PdfPageOrientation.Landscape;
+            if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.pageSize)) {
+                eventParams.document.pageSettings.size = PivotUtil.getPageSize(pdfExportProperties.pageSize);
+            }
+        }
+        if (!isNullOrUndefined(this.exportProperties.pdfMargins)) {
+            const margins: PdfMargins = eventParams.document.pageSettings.margins;
+            margins.top = !isNullOrUndefined(this.exportProperties.pdfMargins.top) ? this.exportProperties.pdfMargins.top : margins.top;
+            margins.bottom = !isNullOrUndefined(this.exportProperties.pdfMargins.bottom) ? this.exportProperties.pdfMargins.bottom :
+                margins.bottom;
+            margins.left = !isNullOrUndefined(this.exportProperties.pdfMargins.left) ? this.exportProperties.pdfMargins.left : margins.left;
+            margins.right = !isNullOrUndefined(this.exportProperties.pdfMargins.right) ? this.exportProperties.pdfMargins.right :
+                margins.right;
+        }
+        documentSection.setPageSettings(eventParams.document.pageSettings);
+        const page: PdfPage = documentSection.pages.add();
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
+            this.pdfExportHelper.drawHeader(pdfExportProperties, eventParams.document);
+        }
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)
+            && !isNullOrUndefined(this.pdfExportHelper)) {
+            this.pdfExportHelper.drawFooter(pdfExportProperties, eventParams.document);
+        }
+        return page;
+    }
+
+    private getFontStyle(theme: PdfThemeStyle): PdfFontStyle {
+        let fontType: PdfFontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(theme) && theme.bold) {
+            fontType |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(theme) && theme.italic) {
+            fontType |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(theme) && theme.underline) {
+            fontType |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(theme) && theme.strikeout) {
+            fontType |= PdfFontStyle.Strikeout;
+        }
+        return fontType;
+    }
+
+    private getBorderStyle(borderStyle: PdfBorder): PdfBorders {
+        const borders: PdfBorders = new PdfBorders();
+        if (!isNullOrUndefined(borderStyle)) {
+            const borderWidth: number = borderStyle.width;
+            // set border width
+            const width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? borderWidth * 0.75 : undefined;
+            // set border color
+            let color: PdfColor = new PdfColor(196, 196, 196);
+            if (!isNullOrUndefined(borderStyle.color)) {
+                const borderColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(borderStyle.color);
+                color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
+            }
+            const pen: PdfPen = new PdfPen(color, width);
+            // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
+            if (!isNullOrUndefined(borderStyle.dashStyle)) {
+                pen.dashStyle = this.pdfExportHelper.getDashStyle(borderStyle.dashStyle);
+            }
+            borders.all = pen;
+        } else {
+            const pdfColor: PdfColor = new PdfColor(234, 234, 234);
+            borders.all = new PdfPen(pdfColor);
+        }
+        return borders;
+    }
+
+    private getStyle(): ITheme {
+        const header: PdfThemeStyle = (!isNullOrUndefined(this.gridStyle) && !isNullOrUndefined(this.gridStyle.header))
+            ? this.gridStyle.header : undefined;
+        const fontFamily: number = (!isNullOrUndefined(header) && !isNullOrUndefined(header.fontName) &&
+            !isNullOrUndefined(this.pdfExportHelper)) ? this.pdfExportHelper.getFontFamily(header.fontName) :
+            PdfFontFamily.Helvetica;
+        const fontStyle: PdfFontStyle = !isNullOrUndefined(header) ? this.getFontStyle(header) : this.getFontStyle(undefined);
+        const fontSize: number = (!isNullOrUndefined(header) && !isNullOrUndefined(header.fontSize)) ? (header.fontSize * 0.80) : 11;
+        let pdfColor: PdfColor = new PdfColor();
+        if (!isNullOrUndefined(header) && !isNullOrUndefined(header.fontColor)) {
+            const rgb: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(header.fontColor);
+            pdfColor = new PdfColor(rgb.r, rgb.g, rgb.b);
+        }
+        let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+        if (!isNullOrUndefined(header) && !isNullOrUndefined(header.font)) {
+            font = header.font;
+        }
+        const border: PdfBorders = !isNullOrUndefined(header) ? this.getBorderStyle(header.border) : this.getBorderStyle(undefined);
+        return {
+            border: border,
+            font: font,
+            brush: new PdfSolidBrush(pdfColor)
+        };
+    }
+
+    private setRecordThemeStyle(row: PdfGridRow): PdfGridRow {
+        const record: PdfThemeStyle = (!isNullOrUndefined(this.gridStyle) && !isNullOrUndefined(this.gridStyle.record))
+            ? this.gridStyle.record : undefined;
+        const fontFamily: number = (!isNullOrUndefined(record) && !isNullOrUndefined(record.fontName) &&
+            !isNullOrUndefined(this.pdfExportHelper)) ? this.pdfExportHelper.getFontFamily(record.fontName) : PdfFontFamily.Helvetica;
+        const fontSize: number = (!isNullOrUndefined(record) && !isNullOrUndefined(record.fontSize)) ? (record.fontSize * 0.80) : 11;
+        const fontStyle: PdfFontStyle = !isNullOrUndefined(record) ? this.getFontStyle(record) : this.getFontStyle(undefined);
+        let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+        if (!isNullOrUndefined(record) && !isNullOrUndefined(record.font)) {
+            font = record.font;
+        }
+        row.style.setFont(font);
+        let pdfColor: PdfColor = new PdfColor();
+        if (!isNullOrUndefined(record) && !isNullOrUndefined(record.fontColor)) {
+            const rgb: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(record.fontColor);
+            pdfColor = new PdfColor(rgb.r, rgb.g, rgb.b);
+        }
+        row.style.setTextBrush(new PdfSolidBrush(pdfColor));
+        const borderRecord: PdfBorders = (!isNullOrUndefined(record) && !isNullOrUndefined(record.border))
+            ? this.getBorderStyle(record.border) : this.getBorderStyle(undefined);
+        row.style.setBorder(borderRecord);
+        return row;
+    }
+
+    /**
+     * Method to perform pdf export.
+     *
+     * @param  {PdfExportProperties} pdfExportProperties - Defines the export properties of the Grid.
+     * @param  {boolean} isMultipleExport - Define to enable multiple export.
+     * @param  {Object} pdfDoc - Defined the PDF document if multiple export is enabled.
+     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
+     * @param  {PivotView} currentPivotInstance - The current PivotView instance.
+     * @returns {Promise<Object>}
+     * @hidden
+     */
+
+    public exportToPDF(
+        pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object,
+        isBlob?: boolean, currentPivotInstance?: PivotView
+    ): Promise<Object> {
+        this.parent = !isNullOrUndefined(currentPivotInstance) ? currentPivotInstance : this.parent;
+        this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        this.gridStyle = (!isNullOrUndefined(this.exportProperties) && !isNullOrUndefined(this.exportProperties.pdfExportProperties)) ?
+            this.exportProperties.pdfExportProperties.theme : undefined;
+        const eventParams: { document: PdfDocument; args: EnginePopulatedEventArgs } = this.applyEvent();
+        let result: PdfLayoutResult;
+        let appendPageDrawCount: number = 0;
+        if (!isNullOrUndefined(pdfDoc)) {
+            eventParams.document = (pdfDoc as { [key: string]: PdfDocument })['document'];
+        }
+        const headerStyle: ITheme = this.getStyle();
+        const fileName: string = !isNullOrUndefined(this.exportProperties) && !isNullOrUndefined(this.exportProperties.fileName) ?
+            this.exportProperties.fileName : (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.fileName)) ?
+                pdfExportProperties.fileName : 'default';
+        const indent: number = (this.parent.renderModule && this.parent.renderModule.maxIndent) || 5;
+        const firstColumnWidth: number = 100 + (indent * 20);
+        /** Fill data and export */
+        let dataCollIndex: number = 0; let pivotValues: IAxisSet[][] =
+            eventParams.args.pivotValues[dataCollIndex as number] as IAxisSet[][];
+        const isEmptyPivotTable: boolean = PivotUtil.getPivotEmptyInfo(this.parent, this.engine);
+        if (isEmptyPivotTable) {
+            pivotValues = PivotUtil.getEmptyPivotValues(this.parent);
+        }
+        const pivotFirstRow: IAxisSet[] = !isNullOrUndefined(pivotValues) && !isNullOrUndefined(pivotValues[0])
+            ? pivotValues[0] : undefined;
+        let size: number = (!isNullOrUndefined(this.exportProperties) && this.exportProperties.columnSize > 0) ?
+            this.exportProperties.columnSize : (!isNullOrUndefined(this.exportProperties) &&
+                !isNullOrUndefined(this.exportProperties.pdfExportProperties) &&
+                this.exportProperties.pdfExportProperties.allowHorizontalOverflow && !isNullOrUndefined(pivotFirstRow))
+                ? pivotFirstRow.length : (!isNullOrUndefined(pivotFirstRow) && pivotFirstRow.length > 5) ? 6
+                    : !isNullOrUndefined(pivotFirstRow) ? pivotFirstRow.length : Math.floor((540 - firstColumnWidth) / 90) + 1;
+        this.exportProperties.allowRepeatHeader =
+            this.exportProperties.allowRepeatHeader === true || isNullOrUndefined(this.exportProperties.allowRepeatHeader);
+        const allowRepeatHeader: boolean = this.exportProperties.allowRepeatHeader ? this.exportProperties.allowRepeatHeader : false;
+        const isHeaderRepeatEligible: boolean = allowRepeatHeader && size > 1;
+        let rowMaxLevel: number;
+        if (this.parent.isTabular) {
+            rowMaxLevel = this.parent.engineModule.rowMaxLevel;
+            size = rowMaxLevel + 1 < size ? size : rowMaxLevel + 2;
+        }
+        for (let vLen: number = 0; isHeaderRepeatEligible && vLen < pivotValues.length; vLen++) {
+            for (let vCnt: number = size; pivotValues[vLen as number] && vCnt < pivotValues[vLen as number].length; vCnt += size) {
+                const rowHeaderLevel: IAxisSet[] = this.parent.isTabular
+                    ? pivotValues[vLen as number].slice(0, rowMaxLevel + 1) : [pivotValues[vLen as number][0]];
+                pivotValues[vLen as number].splice(vCnt, 0, ...rowHeaderLevel);
+            }
+        }
+        let colLength: number = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
+        let integratedCnt: number = 0;
+        do {
+            if (!isNullOrUndefined(pdfExportProperties)) {
+                this.exportProperties.header = (!isNullOrUndefined(pdfExportProperties.header) &&
+                !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].value))
+                    ? pdfExportProperties.header.contents[0].value : this.exportProperties.header;
+                this.exportProperties.footer = (!isNullOrUndefined(pdfExportProperties.footer) &&
+                !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value))
+                    ? pdfExportProperties.footer.contents[0].value : this.exportProperties.footer;
+            }
+            const lastResult: PdfLayoutResult = (pdfDoc && (pdfDoc as { [key: string]: PdfLayoutResult })['result'])
+                ? ((pdfDoc as { [key: string]: PdfLayoutResult })['result'] as PdfLayoutResult) : null;
+            let page: PdfPage = (pdfDoc && pdfExportProperties && pdfExportProperties.multipleExport &&
+                pdfExportProperties.multipleExport.type === 'AppendToPage' && lastResult)
+                ? lastResult.page : this.addPage(eventParams, pdfExportProperties);
+            const pdfGrid: PdfGrid = new PdfGrid();
+            const pageSize: number = size > 0 ? size : 5;
+            if (pivotValues && pivotValues.length > 0) {
+                pdfGrid.columns.add(pivotValues[0].length - integratedCnt >= pageSize ? pageSize : pivotValues[0].length - integratedCnt);
+                const rowLen: number = pivotValues.length;
+                let actualrCnt: number = 0; let maxLevel: number = 0;
+                let columnWidth: number = 0;
+                for (let rCnt: number = 0; rCnt < rowLen; rCnt++) {
+                    if (pivotValues[rCnt as number]) {
+                        const isColHeader: boolean = !(pivotValues[rCnt as number][0] && (pivotValues[rCnt as number][0] as IAxisSet).axis === 'row');
+                        const colLen: number = pivotValues[rCnt as number].length > (integratedCnt + pageSize) ? (integratedCnt + pageSize)
+                            : pivotValues[rCnt as number].length;
+                        let rowCount: number = 0;
+                        if (isColHeader) {
+                            pdfGrid.headers.add(1);
+                        }
+                        let pdfGridRow: PdfGridRow = !isColHeader ? pdfGrid.rows.addRow() : pdfGrid.headers.getHeader(actualrCnt);
+                        if (!isNullOrUndefined(pdfGridRow)) {
+                            pdfGridRow.height = (this.parent && this.parent.gridSettings) ?
+                                this.parent.gridSettings.rowHeight : pdfGridRow.height;
+                        }
+                        if (!isNullOrUndefined(pdfGrid.style)) {
+                            pdfGrid.style.cellPadding = new PdfPaddings(5.76, 5.76, 1.76, 1.76);
+                        }
+                        pdfGrid.repeatHeader = true;
+                        if (isColHeader) {
+                            pdfGridRow.style.setBorder(headerStyle.border);
+                            if (headerStyle.font) {
+                                pdfGridRow.style.setFont(headerStyle.font);
+                            }
+                            pdfGridRow.style.setTextBrush(headerStyle.brush);
+                        } else {
+                            this.setRecordThemeStyle(pdfGridRow);
+                        }
+                        let localCnt: number = 0; let isEmptyRow: boolean = true;
+                        for (let cCnt: number = integratedCnt; cCnt < colLen; cCnt++) {
+                            let isValueCell: boolean = false;
+                            const stringFormat: PdfStringFormat = new PdfStringFormat();
+                            stringFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                            if (pivotValues[rCnt as number][cCnt as number]) {
+                                let pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
+                                const isHeaderCollapsed: boolean = pivotCell.hasChild === true && pivotCell.isDrilled === false;
+                                const isSubTotalCell: boolean = pivotCell.type === 'sum' || pivotCell.type === 'grand sum';
+                                const isRepeatRowHeaderLabels: boolean = this.parent.gridSettings.repeatRowHeaderLabels === true ||
+                                    this.parent.gridSettings.repeatItemLabels === true;
+                                const isRepeatLabelEnabled: boolean =
+                                    isRepeatRowHeaderLabels && !isHeaderCollapsed && !isSubTotalCell;
+                                if (pivotCell.rowSpan === 0 && isRepeatLabelEnabled) {
+                                    pivotCell = Object.assign({}, pivotCell, { rowSpan: 1 });
+                                }
+                                let cellValue: string | number = pivotCell.formattedText;
+                                let parentCell: PdfGridCell;
+                                if (pivotCell.rowSpan !== 0) {
+                                    cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
+                                    cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
+                                        this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
+                                        cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
+                                    if (pivotCell.colSpan > 1) {
+                                        parentCell = pdfGridRow.cells.getCell(localCnt);
+                                    }
+                                    if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
+                                        pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
+                                            (pageSize - localCnt < pivotCell.colSpan ? pageSize - localCnt : pivotCell.colSpan) : 1;
+                                        if ((isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) ||
+                                            (!isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1 && this.parent.isTabular)) {
+                                            pdfGridRow.cells.getCell(localCnt).rowSpan =
+                                                isRepeatLabelEnabled ? 1 : (pivotCell.rowSpan ? pivotCell.rowSpan : 1);
+                                        } else if (isRepeatLabelEnabled && pivotCell.rowSpan === 1) {
+                                            pdfGridRow.cells.getCell(localCnt).rowSpan = 1;
+                                        }
+                                        pdfGridRow.cells.getCell(localCnt).value = cellValue ? cellValue.toString() : '';
+                                        if (cellValue !== '') {
+                                            isEmptyRow = false;
+                                        }
+                                    }
+                                }
+                                maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
+                                isValueCell = pivotCell.axis === 'value';
+                                cCnt = cCnt + (pdfGridRow.cells.getCell(localCnt).columnSpan ?
+                                    (pdfGridRow.cells.getCell(localCnt).columnSpan - 1) : 0);
+                                localCnt = localCnt + (pdfGridRow.cells.getCell(localCnt).columnSpan ?
+                                    (pdfGridRow.cells.getCell(localCnt).columnSpan - 1) : 0);
+                                const isParentCellSpanned: boolean = !isNullOrUndefined(parentCell) && parentCell['colSpan'] > 1;
+                                const cell: PdfGridCell = isParentCellSpanned ? parentCell : pdfGridRow.cells.getCell(localCnt);
+                                const shouldApplyHeaderCellStyle: boolean = (pdfGridRow && pdfGridRow.isHeaderRow) || pivotCell.isGrandSum
+                                    || pivotCell.type === 'grand sum' || pivotCell.axis === 'row';
+                                if (shouldApplyHeaderCellStyle && !isNullOrUndefined(this.pdfExportHelper)) {
+                                    this.pdfExportHelper.applyHeaderBackground(cell);
+                                }
+                                if (pivotCell.style) {
+                                    pdfGridRow = this.applyStyle(pdfGridRow, pivotCell, localCnt);
+                                }
+                                stringFormat.alignment = isValueCell ? PdfTextAlignment.Right : PdfTextAlignment.Left;
+                                cell.style.stringFormat = stringFormat;
+                                let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
+                                    style: undefined,
+                                    pivotCell: pivotCell,
+                                    cell: pdfGridRow.cells.getCell(localCnt),
+                                    column: pdfGrid.columns.getColumn(localCnt)
+                                };
+                                this.parent.trigger(events.onPdfCellRender, args);
+                                if (pivotCell.axis === 'column') {
+                                    args = {
+                                        style: args.style,
+                                        cell: args.cell,
+                                        gridCell: args.pivotCell,
+                                        value: cellValue
+                                    };
+                                    this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+                                    cell.value = (args as PdfQueryCellInfoEventArgs).value ?
+                                        (args as PdfQueryCellInfoEventArgs).value : cellValue;
+                                    if (!isNullOrUndefined(this.pdfExportHelper)) {
+                                        if (!isNullOrUndefined((args as PdfHeaderQueryCellInfoEventArgs).image)) {
+                                            this.pdfExportHelper.configureCellImage(
+                                                cell, (args as PdfHeaderQueryCellInfoEventArgs).image, pdfGridRow
+                                            );
+                                        }
+                                        this.pdfExportHelper.setHyperLink(cell, args, pdfGridRow, pivotCell, this.parent);
+                                    }
+                                }
+                                else {
+                                    args = {
+                                        style: args.style,
+                                        cell: args.cell,
+                                        column: undefined,
+                                        data: args.pivotCell,
+                                        value: cellValue
+                                    };
+                                    this.parent.trigger(events.pdfQueryCellInfo, args);
+                                    cell.value = args.value ? args.value : cellValue;
+                                    if (!isNullOrUndefined(this.pdfExportHelper)) {
+                                        if (!isNullOrUndefined(args.image)) {
+                                            this.pdfExportHelper.configureCellImage(cell, args.image, pdfGridRow);
+                                        }
+                                        this.pdfExportHelper.setHyperLink(cell, args, pdfGridRow, pivotCell, this.parent);
+                                    }
+                                }
+                                if (args.style) {
+                                    this.processCellStyle(cell, args);
+                                }
+                            } else {
+                                stringFormat.alignment = isValueCell ? PdfTextAlignment.Right : PdfTextAlignment.Left;
+                                const cell: PdfGridCell = pdfGridRow.cells.getCell(localCnt);
+                                cell.style.stringFormat = stringFormat;
+                                let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
+                                    style: undefined,
+                                    pivotCell: undefined,
+                                    cell: cell,
+                                    column: pdfGrid.columns.getColumn(localCnt)
+                                };
+                                this.parent.trigger(events.onPdfCellRender, args);
+                                columnWidth = args.column.width;
+                                const pivotCell: IAxisSet = { formattedText: '', colIndex: 0, rowIndex: rCnt };
+                                args = {
+                                    style: args.style,
+                                    cell: args.cell,
+                                    gridCell: pivotCell,
+                                    value: undefined
+                                };
+                                this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+                                cell.value = (args as PdfQueryCellInfoEventArgs).value ?
+                                    (args as PdfQueryCellInfoEventArgs).value : '';
+                                if (!isNullOrUndefined(this.pdfExportHelper)) {
+                                    if (!isNullOrUndefined((args as PdfQueryCellInfoEventArgs).image)) {
+                                        this.pdfExportHelper.configureCellImage(
+                                            cell, (args as PdfQueryCellInfoEventArgs).image, pdfGridRow
+                                        );
+                                    }
+                                    if (pdfGridRow.isHeaderRow) {
+                                        this.pdfExportHelper.applyHeaderBackground(cell);
+                                    }
+                                    this.pdfExportHelper.setHyperLink(cell, args, pdfGridRow, pivotCell, this.parent);
+                                }
+                                if (args.style) {
+                                    this.processCellStyle(cell, args);
+                                }
+                                if (!isEmptyPivotTable) {
+                                    if (this.parent.isTabular && rowCount === 0) {
+                                        if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                            this.parent.dataSourceSettings.columns.length > 0) {
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan =
+                                                Object.keys(this.engine.headerContent).length + 1;
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).columnSpan =
+                                                this.parent.engineModule.rowMaxLevel + 1;
+                                        } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                            this.parent.dataSourceSettings.columns.length > 0 &&
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
+                                            Object.keys(this.engine.headerContent).length) {
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan =
+                                                Object.keys(this.engine.headerContent).length;
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).columnSpan =
+                                                this.parent.engineModule.rowMaxLevel + 1;
+                                        }
+                                        rowCount++;
+                                    } else {
+                                        if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                            this.parent.dataSourceSettings.columns.length > 0) {
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                        } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                            this.parent.dataSourceSettings.columns.length > 0 &&
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
+                                            Object.keys(this.engine.headerContent).length) {
+                                            pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                        }
+                                    }
+                                }
+                            }
+                            if (this.parent.dataType === 'olap') {
+                                let indent: number = 0;
+                                if (!isColHeader && localCnt === 0) {
+                                    const cell: IAxisSet = pivotValues[rCnt as number][cCnt as number] as IAxisSet | undefined;
+                                    if (cell) {
+                                        const levelName: string = cell.valueSort.levelName.toString();
+                                        indent = levelName.split(
+                                            this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
+                                        ).length - 1;
+                                    }
+                                }
+                                stringFormat.paragraphIndent = indent * 15;
+                                maxLevel = maxLevel > indent ? maxLevel : indent;
+                            } else {
+                                stringFormat.paragraphIndent = 0;
+                                if ((!isColHeader && localCnt === 0 && (pivotValues[rCnt as number][cCnt as number] as IAxisSet) &&
+                                    (pivotValues[rCnt as number][cCnt as number] as IAxisSet).level !== -1)) {
+                                    const cell: IAxisSet = pivotValues[rCnt as number][cCnt as number] as IAxisSet;
+                                    const levelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+                                    const memberPos: number = cell.actualText ?
+                                        cell.actualText.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter)
+                                            .length : 0;
+                                    const levelPosition: number =
+                                        levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
+                                        (memberPos ? memberPos - 1 : memberPos);
+                                    const level: number = levelPosition ? (levelPosition - 1) : 0;
+                                    stringFormat.paragraphIndent = level * 10;
+                                }
+                            }
+                            localCnt++;
+                        }
+                        if (isEmptyRow) {
+                            pdfGridRow.height = 16;
+                        }
+                        actualrCnt++;
+                    }
+                }
+                pdfGrid.columns.getColumn(0).width = columnWidth > 0 ? columnWidth : 100 + (maxLevel * 20);
+            }
+            if (integratedCnt === 0 && this.parent.dataSourceSettings.columns && this.parent.dataSourceSettings.columns.length > 0 &&
+                !isEmptyPivotTable) {
+                pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;
+            }
+            const xPosition: number = this.drawPosition['xPosition'];
+            let yPosition: number;
+            const isAppendToPage: boolean = !isNullOrUndefined(pdfDoc) && !isNullOrUndefined(pdfExportProperties) &&
+                !isNullOrUndefined(pdfExportProperties.multipleExport) &&
+                pdfExportProperties.multipleExport.type === 'AppendToPage' && !isNullOrUndefined(lastResult) &&
+                !isNullOrUndefined(lastResult.bounds);
+            if (isAppendToPage) {
+                const baseYPosition: number = lastResult.bounds.y + lastResult.bounds.height;
+                yPosition = !isNullOrUndefined(pdfExportProperties.multipleExport.blankSpace) ?
+                    baseYPosition + pdfExportProperties.multipleExport.blankSpace : baseYPosition;
+                const shouldAddNewPage: boolean = appendPageDrawCount > 0 ||
+                    ((pdfGrid['gridHeaders'].rows[0].height + pdfGrid['gridHeaders'].count + yPosition) >= page.getClientSize().height);
+                if (shouldAddNewPage) {
+                    page = this.addPage(eventParams, pdfExportProperties);
+                    yPosition = this.drawPosition['yPosition'];
+                }
+            } else {
+                yPosition = this.drawPosition['yPosition'];
+            }
+            result = pdfGrid.draw(page, new PointF(xPosition, yPosition));
+            appendPageDrawCount++;
+            integratedCnt = integratedCnt + pageSize;
+            if (integratedCnt >= colLength && eventParams.args.pivotValues.length > (dataCollIndex + 1)) {
+                dataCollIndex++;
+                pivotValues = eventParams.args.pivotValues[dataCollIndex as number] as IAxisSet[][];
+                colLength = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
+                integratedCnt = 0;
+                appendPageDrawCount = 0;
+            }
+        } while (integratedCnt < colLength);
+        return new Promise((resolve: Function) => {
+            let blobData: Promise<{ blobData: Blob; }>;
+            appendPageDrawCount = 0;
+            if (isBlob || isMultipleExport) {
+                if (isBlob) {
+                    blobData = eventParams.document.save();
+                }
+            } else {
+                eventParams.document.save(fileName + '.pdf');
+                eventParams.document.destroy();
+            }
+            const exportCompleteEventArgs: ExportCompleteEventArgs = {
+                type: 'PDF',
+                promise: isBlob ? blobData : null
+            };
+            this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
+            if (pdfExportProperties && pdfExportProperties.multipleExport && pdfExportProperties.multipleExport.type === 'AppendToPage') {
+                resolve({ document: eventParams.document, result: result });
+            }
+            else {
+                resolve(eventParams.document);
+            }
+        });
+    }
+
+    private applyStyle(pdfGridRow: PdfGridRow, pivotCell: IAxisSet, localCnt: number): PdfGridRow {
+        const backgroundColor: { r: number, g: number, b: number } = PivotUtil.hexToRgb(pivotCell.style.backgroundColor);
+        if (backgroundColor) {
+            pdfGridRow.cells.getCell(localCnt).style.backgroundBrush =
+                new PdfSolidBrush(new PdfColor(backgroundColor.r, backgroundColor.g, backgroundColor.b));
+        }
+        const size: number = Number(pivotCell.style.fontSize.split('px')[0]);
+        const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, size, PdfFontStyle.Regular);
+        pdfGridRow.cells.getCell(localCnt).style.font = font;
+        const textColor: { r: number, g: number, b: number } = PivotUtil.hexToRgb(pivotCell.style.color);
+        if (textColor) {
+            const brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(textColor.r, textColor.g, textColor.b));
+            pdfGridRow.cells.getCell(localCnt).style.textBrush = brush;
+        }
+        return pdfGridRow;
+    }
+
+    private getFont(theme: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): PdfFont {
+        if ((theme.style as PdfHeaderFooterContent).font) {
+            return (theme.style as PdfHeaderFooterContent).font;
+        }
+        const fontSize: number = !isNullOrUndefined(theme.style.fontSize) ? (theme.style.fontSize * 0.80) :
+            ((theme.cell as PdfGridCell)['cellStyle'].font && (theme.cell as PdfGridCell)['cellStyle'].font.fontSize)
+                ? (theme.cell as PdfGridCell)['cellStyle'].font.fontSize : 11;
+        const fontFamily: number = (!isNullOrUndefined(theme.style.fontFamily) && !isNullOrUndefined(this.pdfExportHelper)) ?
+            (this.pdfExportHelper.getFontFamily(theme.style.fontFamily)) : PdfFontFamily.TimesRoman;
+        let fontStyle: PdfFontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(theme.style.bold) && theme.style.bold) {
+            fontStyle |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(theme.style.italic) && theme.style.italic) {
+            fontStyle |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(theme.style.underline) && theme.style.underline) {
+            fontStyle |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(theme.style.strikeout) && theme.style.strikeout) {
+            fontStyle |= PdfFontStyle.Strikeout;
+        }
+        return new PdfStandardFont(fontFamily, fontSize, fontStyle);
+    }
+
+    private processCellStyle(gridCell: PdfGridCell, arg?: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs)
+        : void {
+        if (!isNullOrUndefined(arg.style.backgroundColor)) {
+            const backColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.backgroundColor);
+            gridCell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.textBrushColor)) {
+            const textBrushColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.textBrushColor);
+            gridCell.style.textBrush = new PdfSolidBrush(new PdfColor(textBrushColor.r, textBrushColor.g, textBrushColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.textPenColor)) {
+            const textColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.textPenColor);
+            gridCell.style.textPen = new PdfPen(new PdfColor(textColor.r, textColor.g, textColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.fontFamily) || !isNullOrUndefined(arg.style.fontSize) || !isNullOrUndefined(arg.style.bold) ||
+            !isNullOrUndefined(arg.style.italic) || !isNullOrUndefined(arg.style.underline) || !isNullOrUndefined(arg.style.strikeout)) {
+            gridCell.style.font = this.getFont(arg);
+        }
+        if (!isNullOrUndefined(arg.style.border)) {
+            const border: PdfBorders = new PdfBorders();
+            const borderWidth: number = arg.style.border.width;
+            // set border width
+            const width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? (borderWidth * 0.75) : (undefined);
+            // set border color
+            let color: PdfColor = new PdfColor(196, 196, 196);
+            if (!isNullOrUndefined(arg.style.border.color)) {
+                const borderColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.border.color);
+                color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
+            }
+            const pen: PdfPen = new PdfPen(color, width);
+            // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
+            if (!isNullOrUndefined(arg.style.border.dashStyle)) {
+                pen.dashStyle = this.pdfExportHelper.getDashStyle(arg.style.border.dashStyle);
+            }
+            border.all = pen;
+            gridCell.style.borders = border;
+        }
+        if (!isNullOrUndefined(arg.style) && !isNullOrUndefined((arg.style as PdfStyle).textAlignment)
+            && !isNullOrUndefined(gridCell.style) && !isNullOrUndefined(gridCell.style.stringFormat)) {
+            gridCell.style.stringFormat.alignment = (arg.style as PdfStyle).textAlignment === 'Right' ? PdfTextAlignment.Right :
+                PdfTextAlignment.Left;
+        }
+        if (!isNullOrUndefined(arg.style) && !isNullOrUndefined((arg.style as PdfStyle).verticalAlignment)
+            && !isNullOrUndefined(gridCell.style) && !isNullOrUndefined(gridCell.style.stringFormat)) {
+            gridCell.style.stringFormat.lineAlignment = (arg.style as PdfStyle).verticalAlignment === 'Top' ?
+                PdfVerticalAlignment.Top : (arg.style as PdfStyle).verticalAlignment === 'Bottom' ?
+                    PdfVerticalAlignment.Bottom : PdfVerticalAlignment.Middle;
+        }
+    }
+
+    private applyEvent(): { document: PdfDocument, args: EnginePopulatedEventArgs } {
+        /** Event trigerring */
+        let clonedValues: IAxisSet[][];
+        let mdxQuery: string;
+        const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
+        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataSourceSettings.mode !== 'Server') {
+            const pageSettings: IPageSettings = this.engine.pageSettings;
+            (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(true);
+                mdxQuery = this.parent.olapEngineModule.mdxQuery.slice(0);
+            } else {
+                this.engine.pageSettings = null;
+            }
+            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true, true);
+            this.parent.applyFormatting(this.engine.pivotValues);
+            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
+            this.engine.pivotValues = currentPivotValues;
+            this.engine.pageSettings = pageSettings;
+            (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(false);
+                this.parent.olapEngineModule.mdxQuery = mdxQuery;
+            }
+        } else {
+            clonedValues = currentPivotValues;
+        }
+        const args: EnginePopulatedEventArgs = {
+            pivotValues: [clonedValues] as IAxisSet[][]
+        };
+        this.parent.trigger(events.enginePopulated, args);
+        this.document = new PdfDocument();
+        return { document: this.document, args: args };
+    }
+
+    private updateOlapPageSettings(isUpdate: boolean): void {
+        this.parent.olapEngineModule.isExporting = isUpdate ? true : false;
+        if (!this.parent.exportSpecifiedPages) {
+            this.parent.olapEngineModule.pageSettings = isUpdate ? null : this.parent.olapEngineModule.pageSettings;
+            this.parent.olapEngineModule.isPaging = isUpdate ? false : true;
+        } else {
+            this.parent.olapEngineModule.exportSpeciedPages = this.parent.exportSpecifiedPages = isUpdate ?
+                this.parent.exportSpecifiedPages : undefined;
+        }
+    }
+
+    private cleanupDocument(document: PdfDocument): void {
+        if (document) {
+            document.destroy();
+            const index: number = this.createdDocuments.indexOf(document);
+            if (index !== -1) {
+                this.createdDocuments.splice(index, 1);
+            }
+        }
+    }
+
+    /**
+     * To destroy the pdf export module.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        for (let i: number = 0; i < this.createdDocuments.length; i++) {
+            this.cleanupDocument(this.createdDocuments[i as number]);
+        }
+        this.createdDocuments = [];
+        if (this.document) {
+            this.cleanupDocument(this.document);
+            this.document = null;
+        }
+        if (this.pdfExportHelper) {
+            this.pdfExportHelper = null;
+        }
+        if (this.engine) {
+            this.engine = null;
+        }
+        if (this.exportProperties) {
+            this.exportProperties = null;
+        }
+        if (this.gridStyle) {
+            this.gridStyle = null;
+        }
+    }
+}
+
+/**
+ * @hidden
+ */
+interface ITheme {
+    fontColor?: string;
+    fontName?: string;
+    fontSize?: number;
+    bold?: boolean;
+    border?: PdfBorders;
+    font?: PdfStandardFont | PdfTrueTypeFont;
+    brush?: PdfSolidBrush;
+    backgroundBrush?: PdfSolidBrush;
+}

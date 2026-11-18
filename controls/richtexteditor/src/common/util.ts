@@ -1,0 +1,1576 @@
+/**
+ * Defines common util methods used by Rich Text Editor.
+ */
+import { isNullOrUndefined, Browser, removeClass, addClass, closest, createElement, detach } from '@syncfusion/ej2-base';
+import { IToolbarStatus, OffsetPosition } from './interface';
+import { CLS_AUD_FOCUS, CLS_IMG_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE, CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END, CLS_VID_FOCUS } from './constant';
+import { IsFormatted } from '../editor-manager/plugin/isformatted';
+import { BLOCK_TAGS } from '../editor-manager/base/constant';
+import * as CONSTANT from './constant';
+
+/**
+ * Mapping of legacy image layout class names to normalized layout class names.
+ *
+ * Keys are legacy layout class names that may appear on image elements or
+ * caption wrappers (for example, when content is pasted). Values are the
+ * normalized class names used throughout the editor styles.
+ *
+ * @private
+ */
+export const layoutMap: { [key: string]: string } = {
+    'e-imginline': 'e-img-inline',
+    'e-imgbreak': 'e-img-break',
+    'e-imgleft': 'e-img-left',
+    'e-imgright': 'e-img-right',
+    'e-imgcenter': 'e-img-center'
+};
+
+/**
+ * @returns {boolean} - returns boolean value
+ * @hidden
+ */
+export function isIDevice(): boolean {
+    let result: boolean = false;
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
+    }
+    return result;
+}
+
+/**
+ * @param {Element} editableElement - specifies the editable element.
+ * @param {string} selector - specifies the string values.
+ * @returns {void}
+ * @hidden
+ */
+export function setEditFrameFocus(editableElement: Element, selector: string): void {
+    if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
+        const iframe: HTMLIFrameElement = <HTMLIFrameElement>top.window.document.querySelector(selector);
+        if (!isNullOrUndefined(iframe)) {
+            iframe.contentWindow.focus();
+        }
+    }
+}
+
+/**
+ * @param {string} value - specifies the string value
+ * @param {boolean} [isBlazor] - specifies if the editor is in Blazor mode
+ * @returns {void}
+ * @hidden
+ */
+export function updateTextNode(value: string, isBlazor?: boolean): string {
+    const resultElm: HTMLElement = document.createElement('div');
+    resultElm.innerHTML = value;
+    const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
+    for (let i: number = 0; i < tableElm.length; i++) {
+        if (tableElm[i as number].classList.length > 0 &&
+        !tableElm[i as number].classList.contains('e-rte-table') && !tableElm[i as number].classList.contains('e-rte-custom-table')) {
+            tableElm[i as number].classList.add('e-rte-paste-table');
+            if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-word-table');
+                continue; // Skiping the removal of the border if the source is from word.
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-excel-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-excel-table');
+                if (tableElm[i as number].getAttribute('border') === '0') {
+                    tableElm[i as number].removeAttribute('border');
+                }
+                const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
+                for (let j: number = 0; j < tdElm.length; j++) {
+                    const style: string = tdElm[j as number].getAttribute('style');
+                    if (style) {
+                        // While this code execution the table is not in virtual DOM. So that is why we can't use removeAttribute method to remove unwanted styles
+                        const updated: string = style.replace(/border-left\s*:\s*none;?/gi, '')
+                            .replace(/border-right\s*:\s*none;?/gi, '')
+                            .replace(/border-bottom\s*:\s*none;?/gi, '')
+                            .replace(/border-top\s*:\s*none;?/gi, '')
+                            .replace(/border\s*:\s*none;?/gi, '');
+                        tdElm[j as number].setAttribute('style', updated);
+                    }
+                }
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-onenote-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
+                continue;
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-html-table')) {
+                const currentTable: HTMLTableElement = tableElm[i as number] as HTMLTableElement;
+                currentTable.classList.remove('e-rte-paste-html-table');
+                if (!currentTable.classList.contains('e-rte-table-border')) {
+                    const cells: NodeListOf<HTMLElement> = currentTable.querySelectorAll('td, th');
+                    const tableStyle: string = currentTable.getAttribute('style');
+                    let hasBorder: boolean = tableStyle && tableStyle.includes('border');
+                    if (!hasBorder) {
+                        for (const cell of Array.from(cells)) {
+                            const cellStyle: string = cell.getAttribute('style');
+                            if (cellStyle && cellStyle.includes('border')) {
+                                hasBorder = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasBorder) {
+                        currentTable.classList.add('e-rte-table');
+                        currentTable.classList.remove('e-rte-paste-table');
+                    }
+                }
+                continue;
+            }
+        }
+    }
+    // Handle <u> tags with any number of children - move the u tag to wrap text nodes
+    swapUnderlineEle(resultElm);
+    const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
+    for (let i: number = 0; i < imageElm.length; i++) {
+        const img: HTMLElement = imageElm[i as number] as HTMLElement;
+        if (img.classList.contains('e-rte-image-unsupported')) {
+            continue; // Should not add the class if the image is Broken.
+        }
+        if (!img.classList.contains('e-rte-image')) { img.classList.add('e-rte-image'); }
+        if (!isBlazor) {
+            const wrap: HTMLElement = (closest(img, '.e-img-caption') as HTMLElement) || (closest(img, '.e-rte-img-caption') as HTMLElement) ||
+                (closest(img, '.e-caption-inline') as HTMLElement);
+            if (wrap) {
+                swapCaptionClassName(wrap, img, layoutMap);
+            } else {
+                swapImageClassName(img, layoutMap);
+            }
+        } else {
+            if (!(img.classList.contains('e-imginline') ||
+            img.classList.contains('e-imgbreak'))) {
+                img.classList.add('e-imginline');
+            }
+        }
+    }
+    return resultElm.innerHTML;
+}
+
+/**
+ * Recursively wraps all text nodes and BR elements within the given node with `<u>` tags.
+ * Inline element children are processed recursively; block-level elements are skipped.
+ *
+ * @param {Node} node - The DOM node whose text/BR children will be wrapped with `<u>` tags.
+ * @returns {void}
+ * @private
+ * @hidden
+ */
+export function wrapTextNodesWithUnderline(node: Node): void {
+    const childNodes: Node[] = Array.from(node.childNodes);
+    for (const child of childNodes) {
+        if (child.nodeType === Node.TEXT_NODE || child.nodeName === 'BR') {
+            // Wrap the text node with a u tag
+            const newUElement: HTMLElement = document.createElement('u');
+            child.parentNode.insertBefore(newUElement, child);
+            newUElement.appendChild(child);
+        } else if (child.nodeType === Node.ELEMENT_NODE && !isBlockNode(child as Element)) {
+            // Recursively process inline element children
+            wrapTextNodesWithUnderline(child);
+        }
+    }
+}
+
+/**
+ * Swap underline element to the inner most text node wrapper.
+ *
+ * @param {HTMLElement} resultElm - Div element created to store the editor insertion data
+ * @returns {void}
+ * @private
+ * @hidden
+ */
+export function swapUnderlineEle(resultElm: HTMLElement): void {
+    const uElements: NodeListOf<HTMLElement> = resultElm.querySelectorAll('u');
+    for (let i: number = 0; i < uElements.length; i++) {
+        const uElement: HTMLElement = uElements[i as number] as HTMLElement;
+        // Only process if it has children and at least one is an inline element or text node
+        if (uElement.childNodes.length > 0) {
+            let shouldProcess: boolean = false;
+            for (let j: number = 0; j < uElement.childNodes.length; j++) {
+                const child: Node = uElement.childNodes[j as number];
+                if (child.nodeType === Node.TEXT_NODE ||
+                    (child.nodeType === Node.ELEMENT_NODE && !isBlockNode(child as Element))) {
+                    shouldProcess = true;
+                    break;
+                }
+            }
+            if (shouldProcess) {
+                wrapTextNodesWithUnderline(uElement);
+                // Replace the u element with its children
+                const parentEle: Node = uElement.parentNode;
+                while (uElement.firstChild) {
+                    parentEle.insertBefore(uElement.firstChild, uElement);
+                }
+                parentEle.removeChild(uElement);
+            }
+        }
+    }
+}
+
+/**
+ * Swap and normalize caption wrapper class names and layout classes.
+ *
+ * @param {HTMLElement} wrap - The caption wrapper element that may contain legacy classes.
+ * @param {HTMLElement} img - The image element associated with the caption.
+ * @param {Object} layoutMap - Mapping of legacy layout class names to new class names.
+ * @returns {void}
+ * @private
+ * @hidden
+ */
+export function swapCaptionClassName(wrap: HTMLElement, img: HTMLElement, layoutMap: { [key: string]: string }): void {
+    removeClass([wrap], 'e-img-caption');
+    removeClass([wrap], 'e-rte-img-caption');
+    removeClass([wrap], 'e-caption-inline');
+    wrap.classList.add('e-img-caption-container');
+    wrap.style.width = img.style.width === '' ? 'auto' : img.style.width;
+    const captionTextEle: HTMLElement = wrap.querySelector('.e-img-inner');
+    removeClass([captionTextEle], 'e-img-inner');
+    addClass([captionTextEle], 'e-img-caption-text');
+    // Move any older layout class from image/wrapper to wrapper with new name
+    for (const old of Object.keys(layoutMap)) {
+        if (wrap.classList.contains(old)) {
+            removeClass([wrap], old);
+        }
+    }
+    for (const old of Object.keys(layoutMap)) {
+        if (img.classList.contains(old)) {
+            removeClass([img], old);
+            wrap.classList.add(layoutMap[old as string]);
+            break;
+        }
+    }
+}
+
+/**
+ * Swap and normalize image-only layout class names.
+ *
+ * @param {HTMLElement} img - The image element to normalize.
+ * @param {Object} layoutMap - Mapping of legacy layout class names to new class names.
+ * @returns {void}
+ * @private
+ * @hidden
+ */
+export function swapImageClassName(img: HTMLElement, layoutMap: { [key: string]: string }): void {
+    for (const old of Object.keys(layoutMap)) {
+        if (img.classList.contains(old)) {
+            removeClass([img], old);
+            img.classList.add(layoutMap[old as string]);
+            break;
+        }
+    }
+    if (isNullOrUndefined(img.closest('.e-img-caption-container'))) {
+        const hasLayout: boolean = ['e-img-inline', 'e-img-break', 'e-img-left',
+            'e-img-right', 'e-img-center', 'e-img-left-wrap', 'e-img-right-wrap']
+            .some((c: string) => img.classList.contains(c));
+        if (!hasLayout) { img.classList.add('e-img-inline'); }
+    }
+}
+
+/**
+ * @param {Node} startChildNodes - specifies the node
+ * @returns {void}
+ * @hidden
+ */
+export function getLastTextNode(startChildNodes: Node): Node {
+    let finalNode: Node = startChildNodes;
+    do {
+        if (finalNode.childNodes.length > 0) {
+            finalNode = finalNode.childNodes[0];
+        }
+    }
+    while (finalNode.childNodes.length > 0);
+    return finalNode;
+}
+
+/**
+ * @returns {void}
+ * @hidden
+ */
+export function getDefaultHtmlTbStatus(): IToolbarStatus {
+    return {
+        bold: false,
+        italic: false,
+        subscript: false,
+        superscript: false,
+        strikethrough: false,
+        orderedlist: false,
+        unorderedlist: false,
+        numberFormatList: false,
+        bulletFormatList: false,
+        underline: false,
+        alignments: null,
+        lineHeight: null,
+        backgroundcolor: null,
+        fontcolor: null,
+        fontname: null,
+        fontsize: null,
+        formats: null,
+        createlink: false,
+        insertcode: false,
+        blockquote: false,
+        inlinecode: false,
+        isCodeBlock: false,
+        isCheckList: false
+    };
+}
+
+/**
+ * @returns {void}
+ * @hidden
+ */
+export function getDefaultMDTbStatus(): IToolbarStatus {
+    return {
+        bold: false,
+        italic: false,
+        subscript: false,
+        superscript: false,
+        strikethrough: false,
+        orderedlist: false,
+        uppercase: false,
+        lowercase: false,
+        inlinecode: false,
+        unorderedlist: false,
+        formats: null
+    };
+}
+
+/**
+ * Checks if the node has any formatting
+ *
+ * @param {Node} node - specifies the node.
+ * @param {IsFormatted} isFormatted - specifies the IsFormatted instance.
+ * @returns {boolean} - returns whether the node has any formatting
+ */
+export function hasAnyFormatting(node: Node, isFormatted: IsFormatted = null): boolean {
+    if (!node) {
+        return false;
+    }
+
+    const nodeName: string = node.nodeName.toUpperCase();
+    if (['TABLE', 'IMG', 'VIDEO', 'AUDIO'].indexOf(nodeName) !== -1) {
+        return false;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).hasAttribute('style')) {
+        return true;
+    }
+
+    if (!isFormatted) {
+        isFormatted = new IsFormatted();
+    }
+
+    const semanticFormats: string[] = [
+        'bold', 'italic', 'underline', 'strikethrough',
+        'superscript', 'subscript', 'fontcolor', 'fontname',
+        'fontsize', 'backgroundcolor', 'inlinecode'
+    ];
+
+    for (const format of semanticFormats) {
+        if (isFormatted.isFormattedNode(node, format)) {
+            return true;
+        }
+    }
+
+    for (let i: number = 0; i < node.childNodes.length; i++) {
+        if (hasAnyFormatting(node.childNodes[i as number], isFormatted)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @param {Range} range - specifies the range
+ * @param {Node} parentNode - specifies the parent node
+ * @returns {void}
+ * @hidden
+ */
+export function nestedListCleanUp(range: Range , parentNode: Node): void {
+    if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
+        range.extractContents();
+        const liElem: NodeListOf<HTMLLIElement> = (range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li');
+        if (liElem.length > 0) {
+            liElem.forEach((item: HTMLLIElement) => {
+                if (!isNullOrUndefined(item.firstChild) && (item.firstChild.nodeName === 'OL' || item.firstChild.nodeName === 'UL')){
+                    item.style.listStyleType = 'none';
+                }
+                if (item.innerHTML.trim() === '' && item !== parentNode) {
+                    item.remove();
+                }
+                const parentLi: Element = parentNode.nodeName === 'LI' ? parentNode as HTMLElement : closest(parentNode as HTMLElement, 'li');
+                // Only remove if the list item is empty and not the parent's list item
+                if (item.textContent.trim() === '' && item !== parentLi) {
+                    item.remove();
+                }
+            });
+        }
+    }
+}
+
+/**
+ * Method to scroll the content to the cursor position
+ *
+ * @param {Document} document - specifies the document.
+ * @param {HTMLElement | HTMLBodyElement} inputElement - specifies the input element.
+ * @returns {void}
+ */
+export function scrollToCursor(
+    document: Document, inputElement: HTMLElement | HTMLBodyElement) : void {
+    const rootElement: HTMLElement = inputElement.nodeName === 'BODY' ?
+        inputElement.ownerDocument.defaultView.frameElement.closest('.e-richtexteditor') as HTMLElement :
+        inputElement.closest('.e-richtexteditor') as HTMLElement;
+    const height: string = rootElement.style.height;
+    if (document.getSelection().rangeCount === 0) {
+        return;
+    }
+    const range: Range = document.getSelection().getRangeAt(0);
+    let finalFocusElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement as HTMLElement :
+        range.startContainer as HTMLElement;
+    const rangeCursorChildNode: HTMLElement = (range.startContainer as HTMLElement).childNodes[range.startOffset] as HTMLElement;
+    const isElementNode: boolean = rangeCursorChildNode && rangeCursorChildNode.nodeType === Node.ELEMENT_NODE;
+    let rangeRect: DOMRect | null;
+    if (range.startContainer.nodeName === '#text') {
+        rangeRect = range.getBoundingClientRect() as DOMRect;
+    } else if (isElementNode) {
+        rangeRect = rangeCursorChildNode.getBoundingClientRect() as DOMRect;
+        finalFocusElement = rangeCursorChildNode;
+    }
+    const rect: DOMRect = finalFocusElement.getBoundingClientRect() as DOMRect;
+    const cursorTop: number = rect.top;
+    const cursorBottom: number = rect.bottom;
+    const rootRect : DOMRect = rootElement.getBoundingClientRect() as DOMRect;
+    const hasMargin: boolean = rootElement.querySelectorAll('.e-count-enabled, .e-resize-enabled').length > 0;
+    if (inputElement.nodeName === 'BODY') {
+        if (height === 'auto') {
+            if (window.innerHeight < cursorTop) {
+                finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
+            } else if (cursorBottom > finalFocusElement.getBoundingClientRect().top){
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+        } else {
+            if (cursorTop > inputElement.getBoundingClientRect().height || cursorBottom > rootRect.bottom) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+            if (cursorBottom > finalFocusElement.getBoundingClientRect().top){
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+        }
+    } else {
+        if (height === 'auto') {
+            if (window.innerHeight < cursorTop) {
+                finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
+            }
+            if (cursorTop > finalFocusElement.getBoundingClientRect().top) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+        } else {
+            if (rangeRect && (rangeRect.bottom > rootRect.bottom)) {
+                if (cursorBottom > finalFocusElement.getBoundingClientRect().top) {
+                    finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                }
+                if (cursorBottom > rootRect.bottom) {
+                    rootElement.querySelector('.e-rte-content').scrollTop += (cursorBottom - rootRect.bottom) + (hasMargin ? 20 : 0);
+                }
+            }
+        }
+    }
+    const scrollVal: HTMLElement = inputElement.closest('div[style*="overflow-y: scroll"]') as HTMLElement;
+    if (!isNullOrUndefined(scrollVal)) {
+        const parentRect: DOMRect = scrollVal.getBoundingClientRect() as DOMRect;
+        if (cursorBottom > parentRect.bottom) {
+            scrollVal.scrollTop += (cursorBottom - parentRect.bottom);
+        }
+    }
+}
+
+/**
+ * Inserts items at a specific index in an array.
+ *
+ * @template T
+ * @param {Array<T>} oldArray - Specifies the old array.
+ * @param {Array<T>} newArray - Specifies the elements to insert.
+ * @param {number} indexToInsert - Specifies the index to insert.
+ * @returns {Array<T>} - Returns the array after inserting the elements.
+ */
+export function insertItemsAtIndex<T>(oldArray: Array<T>, newArray: Array<T>, indexToInsert: number): Array<T> {
+    // This is a work around for ES6 ...spread operator usage.
+    // Usecase: When a new array is inserted into an existing array at a specific index.
+    for (let i: number = 0; i < newArray.length; i++) {
+        if (i === 0) {
+            oldArray.splice(indexToInsert + i, 1, newArray[i as number]);
+        } else {
+            oldArray.splice(indexToInsert + i, 0, newArray[i as number]);
+        }
+    }
+    return oldArray;
+}
+
+/**
+ * Wrapper function to remove a class from the element and remove the attribute if the class is empty.
+ *
+ * @param  {Element[]|NodeList} elements - An array of elements that need to remove a list of classes
+ * @param  {string|string[]} classes - String or array of string that need to add an individual element as a class
+ *
+ * @returns {Element[]|NodeList} - Returns the array of elements after removing the class.
+ * @private
+ */
+export function removeClassWithAttr(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
+    removeClass(elements, classes);
+    for (let i: number = 0; i < elements.length; i++) {
+        if ((elements[i as number] as Element).classList.length === 0 && (elements[i as number] as Element).hasAttribute('class')) {
+            (elements[i as number] as Element).removeAttribute('class');
+        }
+    }
+    return elements;
+}
+
+/**
+ * Creates a two-dimensional array mapping the logical structure of a table.
+ *
+ * @private
+ * @param  {HTMLTableElement} table - The HTMLTableElement to process.
+ * @returns {Array.<Array.<HTMLElement>>} A 2D matrix of table cells accounting for colspan and rowspan.
+ * @hidden
+ */
+export function getCorrespondingColumns(table: HTMLTableElement): HTMLElement[][] {
+    const elementArray: HTMLElement[][] = [];
+    const allRows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
+    for (let i: number = 0; i <= allRows.length - 1; i++) {
+        const currentRow: HTMLElement = allRows[i as number];
+        let columnIndex: number = 0;
+        for (let j: number = 0; j <= currentRow.children.length - 1; j++) {
+            const currentCell: Element = currentRow.children[j as number];
+            const cellColspan: number = parseInt(currentCell.getAttribute('colspan'), 10) || 1;
+            const cellRowspan: number = parseInt(currentCell.getAttribute('rowspan'), 10) || 1;
+            columnIndex = mapCellToMatrixPositions(
+                elementArray,
+                currentCell as HTMLElement,
+                i,
+                columnIndex,
+                cellColspan,
+                cellRowspan
+            );
+            columnIndex += cellColspan;
+        }
+    }
+    return elementArray;
+}
+
+/**
+ * Maps a cell to all its positions in the logical table matrix.
+ *
+ * @param {Array.<Array.<HTMLElement>>} matrix - The 2D matrix being constructed.
+ * @param {HTMLElement} cell - The current cell being placed.
+ * @param {number} startRow - The row index where the cell starts.
+ * @param  {number} startCol - The column index where the cell starts.
+ * @param {number} colspan - The number of columns the cell spans.
+ * @param {number} rowspan - The number of rows the cell spans.
+ * @returns {number} - The adjusted starting column index for the next cell in the row.
+ * @hidden
+ */
+export function mapCellToMatrixPositions(
+    matrix: HTMLElement[][],
+    cell: HTMLElement,
+    startRow: number,
+    startCol: number,
+    colspan: number,
+    rowspan: number
+): number {
+    for (let rowIndex: number = startRow; rowIndex < startRow + rowspan; rowIndex++) {
+        if (!matrix[rowIndex as number]) {
+            matrix[rowIndex as number] = [];
+        }
+        for (let colIndex: number = startCol; colIndex < startCol + colspan; colIndex++) {
+            if (matrix[rowIndex as number][colIndex as number]) {
+                startCol++;
+            } else {
+                matrix[rowIndex as number][colIndex as number] = cell;
+            }
+        }
+    }
+    return startCol;
+}
+
+/**
+ * Finds the position of a specific cell element in the table matrix.
+ *
+ * @param {HTMLElement} cell - The HTML element to find in the table
+ * @param {Array.<Array.<HTMLElement>>} allCells - The 2D array representing the table structure
+ * @returns {number[]} An array containing the row and column indices [rowIndex, columnIndex], or empty array if not found
+ * @hidden
+ */
+export function getCorrespondingIndex(cell: HTMLElement, allCells: HTMLElement[][]): number[] {
+    for (let i: number = 0; i < allCells.length; i++) {
+        for (let j: number = 0; j < allCells[i as number].length; j++) {
+            if (allCells[i as number][j as number] === cell) {
+                return [i, j];
+            }
+        }
+    }
+    return [];
+}
+
+/**
+ * Inserts a <colgroup> with calculated sizes to the table.
+ * This function analyzes the table structure and adds appropriate column definitions
+ * with width values based on the current table layout.
+ *
+ * @param {HTMLTableElement} curTable - The table element to add colgroup to table.
+ * @param {boolean} hasUpdate - Flag indicating whether to update existing colgroup (default: false)
+ * @returns {void}
+ * @hidden
+ */
+export function insertColGroupWithSizes(curTable: HTMLTableElement, hasUpdate: boolean = false): void {
+    if (!curTable) {
+        return;
+    }
+    const colGroup: HTMLTableColElement | null = getColGroup(curTable);
+    if (!colGroup || hasUpdate) {
+        const cellCount: number = getMaxCellCount(curTable);
+        const sizes: number[] = new Array(cellCount);
+        const colGroupEle: HTMLElement = createElement('colgroup');
+        const rowSpanCells: Map<string, HTMLTableDataCellElement> = new Map();
+        for (let i: number = 0; i < curTable.rows.length; i++) {
+            let currentColIndex: number = 0;
+            for (let k: number = 0; k < curTable.rows[i as number].cells.length; k++) {
+                for (let l: number = 1; l < curTable.rows[i as number].cells[k as number].rowSpan; l++) {
+                    const key: string = '' + (i + l) + currentColIndex;
+                    rowSpanCells.set(key, curTable.rows[i as number].cells[k as number]);
+                }
+                const cellIndex: number = getCellIndex(rowSpanCells, i, k);
+                if (cellIndex > currentColIndex) {
+                    currentColIndex = cellIndex;
+                }
+                const width: number = curTable.rows[i as number].cells[k as number].offsetWidth;
+                if (!sizes[currentColIndex as number] || width < sizes[currentColIndex as number]) {
+                    sizes[currentColIndex as number] = width;
+                }
+                currentColIndex += 1 + curTable.rows[i as number].cells[k as number].colSpan - 1;
+            }
+        }
+        for (let size: number = 0; size < sizes.length; size++) {
+            const cell: HTMLElement = createElement('col');
+            cell.appendChild(createElement('br'));
+            cell.style.width = convertPixelToPercentage(sizes[size as number], parseInt(getComputedStyle(curTable).width, 10)) + '%';
+            colGroupEle.appendChild(cell);
+        }
+        if (hasUpdate) {
+            const colGroup: HTMLTableColElement | null = getColGroup(curTable);
+            if (colGroup) {
+                detach(colGroup);
+            }
+        }
+        curTable.insertBefore(colGroupEle, curTable.firstChild);
+        for (let rowIndex: number = 0; rowIndex < curTable.rows.length; rowIndex++) {
+            const row: HTMLTableRowElement = curTable.rows[rowIndex as number];
+            for (let cellIndex: number = 0; cellIndex < row.cells.length; cellIndex++) {
+                const cell: HTMLTableCellElement = row.cells[cellIndex as number];
+                cell.style.width = '';
+            }
+        }
+        if (isNullOrUndefined((curTable as HTMLElement).style.width) || (curTable as HTMLElement).style.width === '') {
+            (curTable as HTMLElement).style.width = (curTable as HTMLElement).offsetWidth + 'px';
+        }
+    }
+}
+
+/**
+ * Gets the colgroup element from a table
+ *
+ * @param {HTMLTableElement} table - The table element to search in
+ * @returns {HTMLTableColElement | null} The colgroup element or null if not found
+ * @hidden
+ */
+export function getColGroup(table: HTMLTableElement): HTMLTableColElement | null {
+    if (!table || !table.children) {
+        return null;
+    }
+
+    const colGroup: HTMLTableColElement | undefined = Array.from(table.children).find(
+        (child: Element) => child.tagName === 'COLGROUP'
+    ) as HTMLTableColElement | undefined;
+
+    return colGroup || null;
+}
+
+/**
+ * Gets the maximum cell count in a table, accounting for colspan attributes.
+ * This function calculates the effective number of columns by examining all rows
+ * and considering the colspan attribute of each cell.
+ *
+ * @param {HTMLTableElement} table - The table element to analyze
+ * @returns {number} - The maximum number of cells/columns in the table
+ * @hidden
+ */
+export function getMaxCellCount(table: HTMLTableElement): number {
+    if (!table || !table.rows || table.rows.length === 0) {
+        return 0;
+    }
+    const cellColl: HTMLCollectionOf<HTMLTableDataCellElement> = table.rows[0].cells;
+    let cellCount: number = 0;
+    for (let cell: number = 0; cell < cellColl.length; cell++) {
+        cellCount += cellColl[cell as number].colSpan;
+    }
+    return cellCount;
+}
+
+/**
+ * Recursively finds the correct column index for a cell, accounting for rowspan cells.
+ * This function adjusts the column index by checking if there are any rowspan cells
+ * from previous rows that occupy the current position.
+ *
+ * @param {Map<string, HTMLTableDataCellElement>} rowSpanCells - Map of rowspan cells with their positions
+ * @param {number} rowIndex - Current row index
+ * @param {number} colIndex - Initial column index to check
+ * @returns {number} - The adjusted column index accounting for rowspan cells
+ * @hidden
+ */
+export function getCellIndex(rowSpanCells: Map<string, HTMLTableDataCellElement>, rowIndex: number, colIndex: number): number {
+    const cellKey: string = `${rowIndex}${colIndex}`;
+    const spannedCell: HTMLTableDataCellElement = rowSpanCells.get(cellKey);
+    if (spannedCell) {
+        return getCellIndex(rowSpanCells, rowIndex, colIndex + spannedCell.colSpan);
+    } else {
+        return colIndex;
+    }
+}
+
+/**
+ * Converts a pixel measurement to a percentage relative to a container's width.
+ * Used to maintain proper proportions when splitting cells.
+ *
+ * @param {number} value - The pixel value to convert
+ * @param {number} offsetValue - The container width in pixels
+ * @returns {number} The equivalent percentage value
+ * @hidden
+ */
+export function convertPixelToPercentage(value: number, offsetValue: number): number {
+    // Avoid division by zero
+    if (offsetValue === 0) {
+        return 0;
+    }
+    return (value / offsetValue) * 100;
+}
+
+/**
+ * @param {string} value - specifies the string value
+ * @param {string} editorMode - specifies the string value
+ * @returns {string} - returns the string value
+ * @hidden
+ */
+export function resetContentEditableElements(value: string, editorMode: string): string {
+    if (editorMode && editorMode === 'HTML' && value) {
+        const valueElementWrapper: HTMLElement = document.createElement('div');
+        valueElementWrapper.innerHTML = value.trim();
+        valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
+            el.setAttribute('contenteditable', 'true');
+        });
+        //will modify after caption class changes for blazor
+        valueElementWrapper.querySelectorAll('.e-img-caption-text').forEach((el: Element) => {
+            el.setAttribute('contenteditable', 'true');
+        });
+        value = valueElementWrapper.innerHTML;
+        valueElementWrapper.remove();
+    }
+    return value;
+}
+
+/**
+ * @param {string} value - specifies the string value
+ * @param {string} editorMode - specifies the string value
+ * @returns {string} - returns the string value
+ * @hidden
+ */
+export function cleanupInternalElements(value: string, editorMode: string): string {
+    if (value && editorMode) {
+        const valueElementWrapper: HTMLElement = document.createElement('div');
+        if (editorMode === 'HTML') {
+            valueElementWrapper.innerHTML = value;
+            valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
+                el.setAttribute('contenteditable', 'false');
+            });
+            //will modify after caption class changes for blazor
+            valueElementWrapper.querySelectorAll('.e-img-caption-text').forEach((el: Element) => {
+                el.setAttribute('contenteditable', 'false');
+            });
+            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize, .e-vid-resize, .e-tb-row-insert, .e-tb-col-insert, .e-table-wrapper , .e-row-wrapper, .e-col-wrapper');
+            if (item.length > 0) {
+                for (let i: number = 0; i < item.length; i++) {
+                    detach(item[i as number]);
+                }
+            }
+            removeSelectionClassStates(valueElementWrapper);
+        } else {
+            valueElementWrapper.textContent = value;
+        }
+        return (editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
+    }
+    return value;
+}
+
+/**
+ * @param {HTMLElement} element - specifies the element
+ * @returns {void}
+ * @hidden
+ */
+export function removeSelectionClassStates(element: HTMLElement): void {
+    const classNames: string[] = [CLS_IMG_FOCUS, CLS_TABLE_SEL,
+        CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL_END, CLS_VID_FOCUS,
+        CLS_AUD_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE];
+    for (let i: number = 0; i < classNames.length; i++) {
+        const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
+        removeClass(item, classNames[i as number]);
+        if (item.length === 0) { continue; }
+        for (let j: number = 0; j < item.length; j++) {
+            if (item[j as number].classList.length === 0) {
+                item[j as number].removeAttribute('class');
+            }
+            if ((item[j as number].nodeName === 'IMG' || item[j as number].nodeName === 'VIDEO') &&
+                (item[j as number] as HTMLElement).style.outline !== '') {
+                (item[j as number] as HTMLElement).style.outline = '';
+            }
+        }
+    }
+    element.querySelectorAll('[class=""]').forEach((el: Element) => {
+        el.removeAttribute('class');
+    });
+}
+
+
+/**
+ * Processes the given inner HTML value and returns a structured HTML string.
+ *
+ * @param {string} innerValue - The inner HTML content to be processed.
+ * @param {string} enterKey - The key used for inserting line breaks.
+ * @param {boolean} enableHtmlEncode - A flag indicating whether HTML encoding should be enabled.
+ * @param {boolean} isFromPaste - A flag indicating whether the content is from the paste operation.
+ * @returns {string} - The structured HTML string.
+ */
+export function getStructuredHtml(innerValue: string, enterKey: string, enableHtmlEncode: boolean, isFromPaste?: boolean): string {
+    // Early return for special cases
+    if (enableHtmlEncode || enterKey.toLowerCase() === 'br' || isNullOrUndefined(innerValue)) {
+        return innerValue;
+    }
+    // Create a safe wrapper element for HTML manipulation
+    const tempDiv: HTMLDivElement = document.createElement('div');
+    tempDiv.innerHTML = innerValue;
+    // Get parent element tag from configuration - whitelist for safety
+    const allowedTags: string[] = ['div', 'p'];
+    const parentElementLower: string = enterKey.toLowerCase();
+    const parentElement: string = allowedTags.indexOf(parentElementLower) >= 0 ? parentElementLower : 'div';
+    // Build ignoreElements when content is from paste: collect initial inline/text children
+    let ignoreElements: Set<Node> | undefined;
+    if (isFromPaste) {
+        ignoreElements = new Set<Node>();
+        const children: Node[] = Array.from(tempDiv.childNodes);
+        for (const child of children) {
+            // If we encounter a block-level element, stop collecting for this run
+            if (child.nodeType === Node.ELEMENT_NODE && isBlockNode(child as Element)) {
+                break;
+            }
+            // Collect text nodes and non-block elements
+            if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.TEXT_NODE) {
+                ignoreElements.add(child);
+            }
+        }
+    }
+    // Apply processing to the temporary div
+    wrapTextAndInlineNodes(tempDiv, parentElement, ignoreElements);
+    // Flatten any <ul>/<ol> -> <div> -> <li>/<ul>/<ol> wrappers anywhere in the tree.
+    flattenListMiddleDivsInTree(tempDiv);
+    // Extract and return processed HTML
+    const value: string = tempDiv.innerHTML;
+    tempDiv.remove();
+    return value;
+}
+
+/**
+ * Recursively walks a node tree and invokes {@link flattenListMiddleDiv} on every
+ * `<div>` that is a direct child of a `<ul>`/`<ol>`. This handles arbitrarily deep
+ * nesting, e.g. `<ul><div><ol><li>x</li></ol></div></ul>` and even deeper chains.
+ *
+ * @param {Node} root - The root node to start the traversal from.
+ * @returns {void}
+ * @private
+ */
+export function flattenListMiddleDivsInTree(root: Node): void {
+    if (!root) {
+        return;
+    }
+    // Snapshot the children first, since flattenListMiddleDiv mutates the tree.
+    const children: Node[] = Array.from(root.childNodes);
+    for (const child of children) {
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        const childElement: HTMLElement = child as HTMLElement;
+        if (childElement.nodeName === 'DIV'
+            && childElement.parentElement
+            && (childElement.parentElement.nodeName === 'UL' || childElement.parentElement.nodeName === 'OL')) {
+            flattenListMiddleDiv(childElement);
+            // After flattening, the <div> has been removed from the tree; do not recurse.
+            if (!childElement.parentNode) {
+                continue;
+            }
+        }
+        // Recurse into the (possibly mutated) subtree.
+        flattenListMiddleDivsInTree(childElement);
+    }
+}
+/**
+ *
+ * checks if tag is in set
+ *
+ * @param {Set<string>} set - The set to check for the tag.
+ * @param {string} value - The tag to check for.
+ *
+ * @returns {boolean} - True if the tag is in the set, false otherwise.
+ */
+export function isInSet (set: Set<string>, value: string): boolean {
+    const iterator: Iterator<string> = set.values();
+    let current: IteratorResult<string> = iterator.next();
+    while (!current.done) {
+        if (current.value === value) {
+            return true;
+        }
+        current = iterator.next();
+    }
+    return false;
+}
+
+/**
+ *
+ * Wraps text and inline nodes within a given node to ensure proper HTML structure.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @param {string} parentElement - The parent element tag to use for wrapping.
+ * @param {Set<Node> | undefined} ignoreElements - An optional set of elements to ignore during wrapping.
+ * @returns {void} - This function does not return anything.
+ */
+export function wrapTextAndInlineNodes(node: Node, parentElement: string, ignoreElements?: Set<Node>): void {
+    // Define HTML tag categories
+    const recursiveBlockTags: Set<string> = new Set([
+        'DIV', 'TH', 'TD', 'LI', 'BLOCKQUOTE', 'OL', 'UL',
+        'TABLE', 'TBODY', 'TR', 'THEAD', 'TFOOT'
+    ]);
+    const inlineBlockTags: Set<string> = new Set([
+        'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'IMG', 'LABEL', 'IFRAME', 'VIDEO',
+        'AUDIO', 'OBJECT', 'EMBED', 'CANVAS', 'METER', 'PROGRESS', 'OBJECT'
+    ]);
+    const nonWrappableTags: Set<string> = new Set(['BASE', 'AREA', 'LINK']);
+    const nodes: Node[] = Array.from(node.childNodes);
+    let currentWrapper: HTMLElement | null = null;
+    for (const child of nodes) {
+        let needTowrap: boolean = true;
+        if (child.parentElement && child.parentElement.nodeName === 'LI') {
+            needTowrap = needToWrapLiChild(child.parentElement);
+        }
+        // Process text nodes
+        if (child.nodeType === Node.TEXT_NODE) {
+            // Skip wrapping if this text node (or its parent element) is in ignoreElements
+            if (ignoreElements && ignoreElements.has(child)) {
+                continue;
+            }
+            if (child.nodeValue && child.nodeValue.trim() && needTowrap) {
+                if (!currentWrapper) {
+                    currentWrapper = document.createElement(parentElement);
+                    node.insertBefore(currentWrapper, child);
+                }
+                currentWrapper.appendChild(child);
+            }
+        }
+        // Process element nodes
+        else if (child.nodeType === Node.ELEMENT_NODE) {
+            const childElement: HTMLElement = child as HTMLElement;
+            const tagName: string = childElement.tagName.toUpperCase();
+            // Handle block elements
+            if (isBlockNode(childElement) && !isInSet(inlineBlockTags, tagName)) {
+                currentWrapper = null;
+                const childElements: Element[] = Array.from(childElement.childNodes) as Element[];
+                // Check if has block children (safe alternative to Array.some())
+                let hasBlock: boolean = false;
+                childElements.forEach((node: Element) => {
+                    if (node.nodeType === Node.ELEMENT_NODE && isBlockNode(node as HTMLElement)) {
+                        hasBlock = true;
+                        // Can't break from forEach, but we can use other patterns
+                    }
+                });
+                if (isInSet(recursiveBlockTags, tagName) && childElements.length > 0 && hasBlock) {
+                    wrapTextAndInlineNodes(childElement, parentElement, ignoreElements);
+                }
+            }
+            // Handle inline elements
+            else if (!isBlockNode(childElement) && !isInSet(inlineBlockTags, tagName) && !nonWrappableTags.has(tagName) && tagName !== 'HR') {
+                // Skip wrapping for elements present in ignoreElements
+                if (ignoreElements && ignoreElements.has(childElement)) {
+                    continue;
+                }
+                if (child.parentNode && needTowrap && child.parentNode.childNodes.length > 1) {
+                    if (!currentWrapper) {
+                        currentWrapper = document.createElement(parentElement);
+                        node.insertBefore(currentWrapper, child);
+                    }
+                    currentWrapper.appendChild(child);
+                }
+            }
+        }
+        // Flatten nested structures
+        if (child.nodeType === Node.ELEMENT_NODE) {
+            const childElement: HTMLElement = child as HTMLElement;
+            const tagName: string = childElement.tagName.toUpperCase();
+            // Check if tag is in blockTags
+            let isBlockTag: boolean = false;
+            isBlockTag = isBlockNode(childElement);
+            if (isBlockTag) {
+                if (childElement.childNodes.length === 1 &&
+                    childElement.firstChild &&
+                    childElement.firstChild.nodeType === Node.ELEMENT_NODE &&
+                    (childElement.firstChild.nodeName === 'P' && childElement.nodeName !== 'DIV') &&
+                    (childElement.nodeName === 'TD' || childElement.nodeName === 'TH') &&
+                    (childElement.firstChild as HTMLElement).childNodes.length === 1 &&
+                    childElement.firstChild.firstChild &&
+                    (childElement.firstChild as HTMLElement).firstChild.nodeType !== Node.ELEMENT_NODE &&
+                    (childElement.firstChild as HTMLElement).attributes.length === 0) {
+                    childElement.replaceChild(
+                        (childElement.firstChild as HTMLElement).firstChild,
+                        childElement.firstChild
+                    );
+                } else if (childElement.nodeName === 'P' && childElement.parentElement && childElement.parentElement.nodeName === 'LI' && !needTowrap && (childElement as HTMLElement).attributes.length === 0) {
+                    let isEmptyText: boolean;
+                    const next: Node = getNextMeaningfulSibling(childElement.nextSibling);
+                    const prev: Node = getPreviousMeaningfulSibling(childElement.previousSibling);
+                    if (!next && !prev) {
+                        isEmptyText = true;
+                    }
+                    if (isEmptyText) {
+                        while (childElement.firstChild) {
+                            childElement.parentElement.insertBefore(childElement.firstChild, childElement); // Move each child before the <p>
+                        }
+                        childElement.parentElement.removeChild(childElement); // Remove the empty <p>
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Flattens a `<div>` that sits as a direct child between a `<ul>`/`<ol>`
+ *
+ * @param {HTMLElement} middleDiv - The `<div>` that wraps the list children of a `<ul>`/`<ol>`.
+ * @returns {void}
+ * @private
+ */
+export function flattenListMiddleDiv(middleDiv: HTMLElement): void {
+    if (!middleDiv || middleDiv.nodeName !== 'DIV') {
+        return;
+    }
+    const listParent: HTMLElement = middleDiv.parentElement;
+    if (!listParent || (listParent.nodeName !== 'UL' && listParent.nodeName !== 'OL')) {
+        return;
+    }
+    // Collect direct-child list nodes (li, ul, ol) of the middle <div>.
+    const liftableChildren: HTMLElement[] = [];
+    for (let i: number = 0; i < middleDiv.childNodes.length; i++) {
+        const node: Node = middleDiv.childNodes[i as number];
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        const tag: string = (node as HTMLElement).nodeName;
+        if (tag === 'LI' || tag === 'UL' || tag === 'OL') {
+            liftableChildren.push(node as HTMLElement);
+        }
+    }
+    if (liftableChildren.length === 0) {
+        return;
+    }
+    // Move <li>/<ul>/<ol> elements out of the middle <div>, placing them right before it
+    // so they become direct children of the surrounding <ul>/<ol>.
+    for (const item of liftableChildren) {
+        listParent.insertBefore(item, middleDiv);
+    }
+    // Any remaining non-list content inside the <div> is hoisted to the surrounding
+    // <ul>/<ol> so no data is lost, then the <div> is removed.
+    if (middleDiv.childNodes.length === 0) {
+        listParent.removeChild(middleDiv);
+    } else {
+        while (middleDiv.firstChild) {
+            listParent.insertBefore(middleDiv.firstChild, middleDiv);
+        }
+        listParent.removeChild(middleDiv);
+    }
+}
+/**
+ *
+ * Returns the next meaningful sibling of the given node.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @returns {Node | null} - Returns a node or null.
+ */
+export function getNextMeaningfulSibling (node: Node | null): Node | null {
+    while (node) {
+        if ((node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') || (node.nodeName === 'OL' || node.nodeName === 'UL')) {
+            node = node.nextSibling;
+        } else {
+            return node;
+        }
+    }
+    return null;
+}
+/**
+ *
+ * Returns the previous meaningful sibling of the given node.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @returns {Node | null} - Returns a node or null.
+ */
+export function getPreviousMeaningfulSibling (node: Node | null): Node | null {
+    while (node) {
+        if ((node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') || (node.nodeName === 'OL' || node.nodeName === 'UL')) {
+            node = node.previousSibling;
+        } else {
+            return node;
+        }
+    }
+    return null;
+}
+
+/**
+ *
+ * Checks if the given node is need to be wrapped.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @param {Set<string>} blockTags - The set of block tags.
+ * @returns {boolean} - Returns a boolean value.
+ */
+export function needToWrapLiChild(node: Node): boolean {
+    let hasBlockElement: boolean = false;
+    let hasNonBlockContent: boolean = false;
+    const liElement: HTMLElement = node as HTMLElement;
+
+    liElement.childNodes.forEach((child: Node) => {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+            const tag: string = child.nodeName;
+
+            if (isBlockNode(child as HTMLElement) && tag !== 'OL' && tag !== 'UL') {
+                const next: Node = child.nextSibling;
+                const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
+                if (!isFollowedByList) {
+                    hasBlockElement = true;
+                }
+            } else if (['OL', 'UL'].indexOf(tag) !== -1) {
+                const prev: Node = child.previousSibling;
+                const next: Node = child.nextSibling;
+                const isSurroundedByContent: boolean = prev &&
+                isBlockNode(prev as HTMLElement) && next && next.nodeType === Node.TEXT_NODE &&
+                next.textContent.trim().length > 0;
+                if (isSurroundedByContent) {
+                    hasBlockElement = true;
+                }
+            } else if (!isBlockNode(child as HTMLElement) && tag !== 'LI') {
+                const next: Node = child.nextSibling;
+                const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
+                if (!isFollowedByList) {
+                    hasNonBlockContent = true;
+                }
+            }
+        } else if (child.nodeType === Node.TEXT_NODE && child.textContent.trim().length > 0) {
+            hasNonBlockContent = true;
+        }
+    });
+    return hasBlockElement && hasNonBlockContent;
+}
+
+/**
+ * Checks if the given HTML element is a block-level element.
+ *
+ * @param {Element} element - The HTML element to check.
+ * @returns {boolean} - True if the element is a block-level element, false otherwise.
+ */
+export function isBlockNode(element: Element): boolean {
+    return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
+}
+
+/**
+ * Removes all newlines from a string and replaces consecutive spaces between tags with a single space.
+ *
+ * @param {string} htmlString - The string value from which newlines will be removed.
+ * @param {Element} editNode - The editable element.
+ * @returns {string} - Returns the modified string without newline characters.
+ * @hidden
+ */
+export function cleanHTMLString(htmlString: string, editNode: Element): string {
+    let isPreLine: boolean = false;
+    if (getComputedStyle(editNode).whiteSpace === 'pre-wrap' || getComputedStyle(editNode).whiteSpace === 'pre') {
+        return htmlString;
+    } else if (getComputedStyle(editNode).whiteSpace === 'pre-line') {
+        isPreLine = true;
+    }
+    /**
+     * Checks if the given HTML element has the 'pre-line' style.
+     *
+     * @param {HTMLElement} node - The HTML element to check.
+     * @returns {boolean} - True if the element has the 'pre-line' style, false otherwise.
+     */
+    function hasPreLineStyle(node: HTMLElement): boolean {
+        if (node.style.whiteSpace === 'pre-line') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Checks if the given HTML element is a preformatted text element ('<pre>').
+     *
+     * @param {HTMLElement} node - The HTML element to check.
+     * @returns {boolean} - True if the element is a '<pre>' tag, false otherwise.
+     */
+    function hasPre(node: HTMLElement): boolean {
+        if (node.tagName === 'PRE') {
+            return true;
+        }
+        if (node.style.whiteSpace === 'pre' || node.style.whiteSpace === 'pre-wrap') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Cleans the text content of a given node by processing its child nodes.
+     *
+     * @param {Node} node - The DOM node whose text content needs to be cleaned.
+     * @param {boolean} hasPreLine - Indicates whether the node has the 'pre-line' style.
+     * @returns {void}
+     */
+    function cleanTextContent(node: Node, hasPreLine: boolean = false): void {
+        if (node == null) {
+            return;
+        }
+        let child: Node | null = node.firstChild;
+        while (child != null) {
+            const nodeType: number = child.nodeType;
+            if (nodeType === 3) { // Node.TEXT_NODE
+                let nodeValue: string = child.nodeValue;
+                if (hasPreLine) {
+                    nodeValue = nodeValue.replace(/[\t]/g, ' ');
+                } else {
+                    nodeValue = nodeValue.replace(/[\n\r\t]/g, ' ');
+                }
+                if (nodeValue.replace(/[ ]{2,}/g, ' ').length === 1) {
+                    nodeValue = nodeValue.replace(/[ ]{2,}/g, ' ');
+                }
+                if (child.nodeValue !== nodeValue) {
+                    child.nodeValue = nodeValue;
+                }
+                const textContent: string = nodeValue;
+                const textLength: number = textContent.length;
+                // Avoid expensive serialization via `innerHTML` by checking whether
+                // the parent contains exactly one text node whose value is a single space.
+                const parentEl: HTMLElement = child.parentElement as HTMLElement;
+                const parentIsSingleSpace: boolean = !!(parentEl && parentEl.childNodes.length === 1 &&
+                    parentEl.firstChild.nodeType === Node.TEXT_NODE && parentEl.firstChild.nodeValue === ' ');
+                if (textLength > 0 && (textContent === ' ' || textContent[0] === ' ' || textContent[textLength - 1] === ' ') && !parentIsSingleSpace) {
+                    const isEmptyText: boolean = textContent === ' ';
+                    const isTrimStart: boolean = textContent[0] === ' ';
+                    const isTrimend: boolean = textContent[textLength - 1] === ' ';
+
+                    const nextSibling: Node = child.nextSibling;
+                    const prevSibling: Node = child.previousSibling;
+
+                    if (nextSibling && isBlockNode(nextSibling as Element) && isEmptyText) {
+                        child.nodeValue = '';
+                    } else if (prevSibling && isBlockNode(prevSibling as Element) && isEmptyText) {
+                        child.nodeValue = '';
+                    } else {
+                        let element: HTMLElement = child as HTMLElement;
+                        let hasNextSibling: boolean = false;
+                        let hasPreviousSibling: boolean = false;
+                        let nextElement: HTMLElement;
+                        while (element && !isBlockNode(element)) {
+                            if (element.previousSibling && !hasPreviousSibling) {
+                                hasPreviousSibling = true;
+                            }
+                            if (element.nextSibling && !hasNextSibling) {
+                                hasNextSibling = true;
+                                nextElement = element.nextSibling as HTMLElement;
+                            }
+                            element = element.parentElement as HTMLElement;
+                        }
+                        if (isEmptyText) {
+                            if (!hasPreviousSibling && hasNextSibling) {
+                                child.nodeValue = '';
+                            } else if (hasPreviousSibling && !hasNextSibling) {
+                                child.nodeValue = '';
+                            } else if (hasPreviousSibling && hasNextSibling && nextElement && nextElement.nodeType === 3 && nextElement.textContent.trim() === '') {
+                                child.nodeValue = '';
+                            }
+                        }
+                        if (isTrimStart || isTrimend) {
+                            let updatedText: string = child.textContent;
+                            if (!hasPreviousSibling && updatedText[0] === ' ') {
+                                updatedText = updatedText.substring(1);
+                            }
+                            if (!hasNextSibling && updatedText.length > 0 && updatedText[updatedText.length - 1] === ' ' && isBlockNode(child.parentElement)) {
+                                updatedText = updatedText.substring(0, updatedText.length - 1);
+                            }
+                            if (hasNextSibling && nextElement && isBlockNode(nextElement) && updatedText.length > 0 && updatedText[updatedText.length - 1] === ' ') {
+                                updatedText = updatedText.substring(0, updatedText.length - 1);
+                            }
+                            if (child.textContent !== updatedText) {
+                                child.textContent = updatedText;
+                            }
+                        }
+                    }
+                }
+            } else if (nodeType === 1) { // Node.ELEMENT_NODE
+                const element: HTMLElement = child as HTMLElement;
+                if (!hasPre(element) && !hasPreLineStyle(element)) {
+                    cleanTextContent(child, hasPreLine);
+                }
+                if (hasPreLineStyle(element)) {
+                    cleanTextContent(child, true);
+                }
+            }
+            child = child.nextSibling;
+        }
+    }
+    const container: HTMLDivElement = document.createElement('div');
+    container.innerHTML = htmlString;
+    cleanTextContent(container, isPreLine);
+    return container.innerHTML;
+}
+
+/**
+ * Converting the base64 url to blob
+ *
+ * @param {string} dataUrl - specifies the string value
+ * @returns {Blob} - returns the blob
+ * @hidden
+ */
+export function convertToBlob(dataUrl: string): Blob {
+    const arr: string[] = dataUrl.split(',');
+    const mime: string = arr[0].match(/:(.*?);/)[1];
+    const bstr: string = atob(arr[1]);
+    let n: number = bstr.length;
+    const u8arr: Uint8Array = new Uint8Array(n);
+    while (n--) {
+        u8arr[n as number] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+/**
+ * Escapes HTML characters in a string.
+ *
+ * @param {string} html - The HTML string to be escaped.
+ * @returns {string} The escaped HTML string.
+ */
+export function escaseHtml(html: string): string {
+    return html
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Aligns HTML content by parsing it through the DOM parser and returning the structured HTML.
+ *
+ * @param {string} htmlString - The HTML string to be aligned.
+ * @returns {string} The aligned HTML string.
+ */
+export function alignmentHtml(htmlString: string): string {
+    const parser: DOMParser = new DOMParser();
+    const doc: Document = parser.parseFromString(htmlString, 'text/html');
+    const formatted: string = formatNode(doc.body, 0).trim();
+    return formatted;
+}
+
+/**
+ * Formats a DOM node with proper indentation for improved readability.
+ *
+ * @param {Node} node - The DOM node to format.
+ * @param {number} indentLevel - The current indentation level.
+ * @returns {string} The formatted node as a string with proper indentation.
+ */
+export function formatNode(node: Node, indentLevel: number): string {
+    // Self-closing HTML tags
+    const selfClosingTags: Set<string> = new Set([
+        'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'
+    ]);
+    const indent: string = '   '.repeat(indentLevel);
+    let result: string = '';
+    // Recursively process child nodes
+    node.childNodes.forEach((child: Node) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+            let text: string = child.textContent;
+            if (text) {
+                text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                result += text;
+            }
+
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+            const element: HTMLElement = child as HTMLElement;
+            const tagName: string = element.tagName.toLowerCase();
+            const attrs: string = Array.from(element.attributes)
+                .map((attr: Attr) => `${attr.name}="${escaseHtml(attr.value)}"`)
+                .join(' ');
+            const attrString: string = attrs ? ` ${attrs}` : '';
+            const openTag: string = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
+            const closeTag: string = `</${tagName}>`;
+            const isBlock: boolean = isBlockNode(element);
+            const isSelfClosing: boolean = selfClosingTags.has(tagName);
+            if (isSelfClosing) {
+                if (tagName === 'col') {
+                    if (result[result.length - 1] === '\n') {
+                        result += `${indent}<${tagName}${attrString}>\n`;
+                    }
+                    else {
+                        result += `\n${indent}<${tagName}${attrString}>\n`;
+                    }
+                } else {
+                    result += `<${tagName}${attrString}/>`;
+                }
+            } else if (isBlock) {
+                if (result[result.length - 1] === '\n') {
+                    result += `${indent}${openTag}`;
+                } else {
+                    result += `\n${indent}${openTag}`;
+                }
+                const inner: string = formatNode(child, indentLevel + 1);
+                if (inner) {
+                    result += `${inner}`;
+                }
+                if (result[result.length - 1] === '\n') {
+                    result += `${indent}${closeTag}\n`;
+                } else {
+                    result += `${closeTag}\n`;
+                }
+            } else {
+                result += `${openTag}${formatNode(child, 0)}${closeTag}`;
+            }
+        }
+    });
+    return result;
+}
+
+/**
+ * Opens a new window, injects the given element and styles, and triggers print.
+ *
+ * @param {Element} element - The element to clone and print.
+ * @param {Window} [printWindow] - Optional existing window, otherwise a new one is created.
+ * @returns {Window} - The print window instance.
+ */
+export function openPrintWindow(element: Element, printWindow ?: Window): Window {
+    const div: Element = element.ownerDocument.createElement('div');
+    const links: HTMLElement[] = [].slice.call(element.ownerDocument.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
+    const blinks: HTMLElement[] = [].slice.call(element.ownerDocument.getElementsByTagName('body')[0].querySelectorAll('link, style'));
+    if (blinks.length) {
+        for (let l: number = 0, len: number = blinks.length; l < len; l++) {
+            links.push(blinks[parseInt(l.toString(), 10)]);
+        }
+    }
+    let reference: string = '';
+    if (isNullOrUndefined(printWindow)) {
+        printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
+    }
+    div.appendChild(element.cloneNode(true) as Element);
+    for (let i: number = 0, len: number = links.length; i < len; i++) {
+        reference += links[parseInt(i.toString(), 10)].outerHTML;
+    }
+    printWindow.document.write('<!DOCTYPE html> <html><head>' + reference + '</head><body>' + div.innerHTML +
+        '<script> (function() { window.ready = true; })(); </script>' + '</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    const interval: any = setInterval(
+        () => {
+            if ((<{ ready: Function } & Window>printWindow).ready) {
+                printWindow.print();
+                printWindow.close();
+                clearInterval(interval);
+            }
+        },
+        500);
+    return printWindow;
+}
+
+/**
+ * Determines the effective root offset parent of a given image or Video element,
+ *
+ * @private
+ * @param {HTMLElement} mediaElement - The image or Video element whose offset parent is to be found.
+ * @param {string} parentID - The ID of the parent element.
+ * @returns {HTMLElement} - The resolved root offset parent element.
+ */
+export function getRootOffsetParent(mediaElement: HTMLElement, parentID: string): HTMLElement {
+    const ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
+    const doc: Document = mediaElement.ownerDocument;
+    let offsetParent: Node;
+    const rootEle: HTMLElement = closest(mediaElement, '#' + parentID + '_rte-edit-view') as HTMLElement;
+    if (mediaElement.closest('.e-rte-checklist')) {
+        offsetParent = rootEle ? rootEle : doc.documentElement;
+    } else {
+        offsetParent = ((mediaElement.offsetParent &&
+            ((mediaElement.offsetParent.classList.contains('e-img-caption') ||
+            mediaElement.offsetParent.classList.contains('e-img-caption-container') ||
+            mediaElement.offsetParent.classList.contains('e-video-clickelem')) ||
+            ignoreOffset.indexOf(mediaElement.offsetParent.tagName) > -1)) ?
+            rootEle : mediaElement.offsetParent) || doc.documentElement;
+    }
+    while (offsetParent &&
+            (offsetParent === doc.body || offsetParent === doc.documentElement) &&
+            (<HTMLElement>offsetParent).style.position === 'static') {
+        offsetParent = offsetParent.parentNode;
+    }
+    return offsetParent as HTMLElement;
+}
+
+/**
+ * Determines the image or video element top and left position,
+ *
+ * @private
+ * @param {HTMLElement} mediaElement - The image or Video element whose offset parent is to be found.
+ * @param {HTMLTextAreaElement} rootEle - RichTextEditor root div element.
+ * @returns {OffsetPosition} - The resolved media element top and left position value.
+ */
+export function getMediaResizeBarValue(mediaElement: HTMLElement, rootEle: HTMLTextAreaElement): OffsetPosition {
+    // Client rects in the same document coordinate space
+    const elemRect: OffsetPosition = mediaElement.getBoundingClientRect();
+    const rootRect: OffsetPosition = rootEle.getBoundingClientRect();
+    // Determine scroll context
+    const documentEle: Document = rootEle.ownerDocument as Document;
+    // Page scroll (used if you need page-relative, but cancels out when subtracting rects)
+    const pageX: number = documentEle.documentElement.scrollLeft || 0;
+    const pageY: number = documentEle.documentElement.scrollTop || 0;
+    // Content-root internal scroll (if the editor area is scrollable)
+    const rootScrollX: number = rootEle.scrollLeft || 0;
+    const rootScrollY: number = rootEle.scrollTop || 0;
+    return {
+        top: (elemRect.top + pageY) - (rootRect.top + pageY) + rootScrollY,
+        left: (elemRect.left + pageX) - (rootRect.left + pageX) + rootScrollX
+    };
+}
+
+/**
+ * Converts font size from one unit to another.
+ *
+ * @param {number} value - The font size value to convert.
+ * @param {string} originalUnit - The original unit of the font size.
+ * @param {string} targetUnit - The target unit to convert the font size to.
+ * @returns {number} - The converted font size value.
+ */
+export function convertFontSize(value: number, originalUnit: string, targetUnit: string): number {
+    if (CONSTANT.supportedUnits.indexOf(originalUnit) !== -1 || CONSTANT.supportedUnits.indexOf(targetUnit) !== -1) {
+        originalUnit = 'px';
+    }
+    const convertedValue: number = value * CONSTANT.conversionFactors[originalUnit as string][targetUnit as string];
+    return convertedValue;
+}
+
+/**
+ * Returns the deepest last non-block descendant node of the given HTMLElement.
+ *
+ * @param {HTMLElement} BlockElement - The node to search from.
+ * @returns {Node} - The deepest last non-block descendant node.
+ */
+export function getDeepestLastInlineNode(BlockElement: HTMLElement): Node {
+    let lastChild: Node = BlockElement;
+    while (lastChild && lastChild.nodeType === Node.ELEMENT_NODE &&
+        isBlockNode(lastChild as Element) && lastChild.hasChildNodes()) {
+        lastChild = lastChild.lastChild as Node;
+    }
+    return lastChild;
+}
