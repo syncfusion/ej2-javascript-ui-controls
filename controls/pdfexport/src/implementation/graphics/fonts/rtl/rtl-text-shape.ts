@@ -4,82 +4,20 @@
 import { Dictionary} from './../../../collections/dictionary';
 export class ArabicShapeRenderer {
         //#region Constants
-        private readonly arabicCharTable : string[][] = [['\u0621', '\uFE80'], ['\u0622', '\uFE81', '\uFE82'],
-            ['\u0623', '\uFE83', '\uFE84'],
-            ['\u0624', '\uFE85', '\uFE86'],
-            ['\u0625', '\uFE87', '\uFE88'],
-            ['\u0626', '\uFE89', '\uFE8A', '\uFE8B', '\uFE8C'],
-            ['\u0627', '\uFE8D', '\uFE8E'],
-            ['\u0628', '\uFE8F', '\uFE90', '\uFE91', '\uFE92'],
-            ['\u0629', '\uFE93', '\uFE94'],
-            ['\u062A', '\uFE95', '\uFE96', '\uFE97', '\uFE98'],
-            ['\u062B', '\uFE99', '\uFE9A', '\uFE9B', '\uFE9C'],
-            ['\u062C', '\uFE9D', '\uFE9E', '\uFE9F', '\uFEA0'],
-            ['\u062D', '\uFEA1', '\uFEA2', '\uFEA3', '\uFEA4'],
-            ['\u062E', '\uFEA5', '\uFEA6', '\uFEA7', '\uFEA8'],
-            ['\u062F', '\uFEA9', '\uFEAA'],
-            ['\u0630', '\uFEAB', '\uFEAC'],
-            ['\u0631', '\uFEAD', '\uFEAE'],
-            ['\u0632', '\uFEAF', '\uFEB0'],
-            ['\u0633', '\uFEB1', '\uFEB2', '\uFEB3', '\uFEB4'],
-            ['\u0634', '\uFEB5', '\uFEB6', '\uFEB7', '\uFEB8'],
-            ['\u0635', '\uFEB9', '\uFEBA', '\uFEBB', '\uFEBC'],
-            ['\u0636', '\uFEBD', '\uFEBE', '\uFEBF', '\uFEC0'],
-            ['\u0637', '\uFEC1', '\uFEC2', '\uFEC3', '\uFEC4'],
-            ['\u0638', '\uFEC5', '\uFEC6', '\uFEC7', '\uFEC8'],
-            ['\u0639', '\uFEC9', '\uFECA', '\uFECB', '\uFECC'],
-            ['\u063A', '\uFECD', '\uFECE', '\uFECF', '\uFED0'],
-            ['\u0640', '\u0640', '\u0640', '\u0640', '\u0640'],
-            ['\u0641', '\uFED1', '\uFED2', '\uFED3', '\uFED4'],
-            ['\u0642', '\uFED5', '\uFED6', '\uFED7', '\uFED8'],
-            ['\u0643', '\uFED9', '\uFEDA', '\uFEDB', '\uFEDC'],
-            ['\u0644', '\uFEDD', '\uFEDE', '\uFEDF', '\uFEE0'],
-            ['\u0645', '\uFEE1', '\uFEE2', '\uFEE3', '\uFEE4'],
-            ['\u0646', '\uFEE5', '\uFEE6', '\uFEE7', '\uFEE8'],
-            ['\u0647', '\uFEE9', '\uFEEA', '\uFEEB', '\uFEEC'],
-            ['\u0648', '\uFEED', '\uFEEE'],
-            ['\u0649', '\uFEEF', '\uFEF0', '\uFBE8', '\uFBE9'],
-            ['\u064A', '\uFEF1', '\uFEF2', '\uFEF3', '\uFEF4'],
-            ['\u0671', '\uFB50', '\uFB51'],
-            ['\u0679', '\uFB66', '\uFB67', '\uFB68', '\uFB69'],
-            ['\u067A', '\uFB5E', '\uFB5F', '\uFB60', '\uFB61'],
-            ['\u067B', '\uFB52', '\uFB53', '\uFB54', '\uFB55'],
-            ['\u067E', '\uFB56', '\uFB57', '\uFB58', '\uFB59'],
-            ['\u067F', '\uFB62', '\uFB63', '\uFB64', '\uFB65'],
-            ['\u0680', '\uFB5A', '\uFB5B', '\uFB5C', '\uFB5D'],
-            ['\u0683', '\uFB76', '\uFB77', '\uFB78', '\uFB79'],
-            ['\u0684', '\uFB72', '\uFB73', '\uFB74', '\uFB75'],
-            ['\u0686', '\uFB7A', '\uFB7B', '\uFB7C', '\uFB7D'],
-            ['\u0687', '\uFB7E', '\uFB7F', '\uFB80', '\uFB81'],
-            ['\u0688', '\uFB88', '\uFB89'],
-            ['\u068C', '\uFB84', '\uFB85'],
-            ['\u068D', '\uFB82', '\uFB83'],
-            ['\u068E', '\uFB86', '\uFB87'],
-            ['\u0691', '\uFB8C', '\uFB8D'],
-            ['\u0698', '\uFB8A', '\uFB8B'],
-            ['\u06A4', '\uFB6A', '\uFB6B', '\uFB6C', '\uFB6D'],
-            ['\u06A6', '\uFB6E', '\uFB6F', '\uFB70', '\uFB71'],
-            ['\u06A9', '\uFB8E', '\uFB8F', '\uFB90', '\uFB91'],
-            ['\u06AD', '\uFBD3', '\uFBD4', '\uFBD5', '\uFBD6'],
-            ['\u06AF', '\uFB92', '\uFB93', '\uFB94', '\uFB95'],
-            ['\u06B1', '\uFB9A', '\uFB9B', '\uFB9C', '\uFB9D'],
-            ['\u06B3', '\uFB96', '\uFB97', '\uFB98', '\uFB99'],
-            ['\u06BA', '\uFB9E', '\uFB9F'],
-            ['\u06BB', '\uFBA0', '\uFBA1', '\uFBA2', '\uFBA3'],
-            ['\u06BE', '\uFBAA', '\uFBAB', '\uFBAC', '\uFBAD'],
-            ['\u06C0', '\uFBA4', '\uFBA5'],
-            ['\u06C1', '\uFBA6', '\uFBA7', '\uFBA8', '\uFBA9'],
-            ['\u06C5', '\uFBE0', '\uFBE1'],
-            ['\u06C6', '\uFBD9', '\uFBDA'],
-            ['\u06C7', '\uFBD7', '\uFBD8'],
-            ['\u06C8', '\uFBDB', '\uFBDC'],
-            ['\u06C9', '\uFBE2', '\uFBE3'],
-            ['\u06CB', '\uFBDE', '\uFBDF'],
-            ['\u06CC', '\uFBFC', '\uFBFD', '\uFBFE', '\uFBFF'],
-            ['\u06D0', '\uFBE4', '\uFBE5', '\uFBE6', '\uFBE7'],
-            ['\u06D2', '\uFBAE', '\uFBAF'],
-            ['\u06D3', '\uFBB0', '\uFBB1']
-        ];
+        private readonly arabicCharTable : string[][] = [];
+        /**
+         * Packed shaping rows with contiguous presentation forms. Each row is packed into three
+         * characters: the base character, the first presentation form and the number of forms.
+         * @private
+         */
+        /* tslint:disable-next-line:max-line-length */
+        private readonly packedContiguousRows : string = '\u0621\ufe80\u0002\u0622\ufe81\u0003\u0623\ufe83\u0003\u0624\ufe85\u0003\u0625\ufe87\u0003\u0626\ufe89\u0005\u0627\ufe8d\u0003\u0628\ufe8f\u0005\u0629\ufe93\u0003\u062a\ufe95\u0005\u062b\ufe99\u0005\u062c\ufe9d\u0005\u062d\ufea1\u0005\u062e\ufea5\u0005\u062f\ufea9\u0003\u0630\ufeab\u0003\u0631\ufead\u0003\u0632\ufeaf\u0003\u0633\ufeb1\u0005\u0634\ufeb5\u0005\u0635\ufeb9\u0005\u0636\ufebd\u0005\u0637\ufec1\u0005\u0638\ufec5\u0005\u0639\ufec9\u0005\u063a\ufecd\u0005\u0641\ufed1\u0005\u0642\ufed5\u0005\u0643\ufed9\u0005\u0644\ufedd\u0005\u0645\ufee1\u0005\u0646\ufee5\u0005\u0647\ufee9\u0005\u0648\ufeed\u0003\u064a\ufef1\u0005\u0671\ufb50\u0003\u0679\ufb66\u0005\u067a\ufb5e\u0005\u067b\ufb52\u0005\u067e\ufb56\u0005\u067f\ufb62\u0005\u0680\ufb5a\u0005\u0683\ufb76\u0005\u0684\ufb72\u0005\u0686\ufb7a\u0005\u0687\ufb7e\u0005\u0688\ufb88\u0003\u068c\ufb84\u0003\u068d\ufb82\u0003\u068e\ufb86\u0003\u0691\ufb8c\u0003\u0698\ufb8a\u0003\u06a4\ufb6a\u0005\u06a6\ufb6e\u0005\u06a9\ufb8e\u0005\u06ad\ufbd3\u0005\u06af\ufb92\u0005\u06b1\ufb9a\u0005\u06b3\ufb96\u0005\u06ba\ufb9e\u0003\u06bb\ufba0\u0005\u06be\ufbaa\u0005\u06c0\ufba4\u0003\u06c1\ufba6\u0005\u06c5\ufbe0\u0003\u06c6\ufbd9\u0003\u06c7\ufbd7\u0003\u06c8\ufbdb\u0003\u06c9\ufbe2\u0003\u06cb\ufbde\u0003\u06cc\ufbfc\u0005\u06d0\ufbe4\u0005\u06d2\ufbae\u0003\u06d3\ufbb0\u0003';
+        /**
+         * Packed shaping rows with non-contiguous presentation forms (tatweel and alef maksura).
+         * Each row is packed as its characters concatenated.
+         * @private
+         */
+        private readonly packedSpecialRows : string = '\u0640\u0640\u0640\u0640\u0640\u0649\ufeef\ufef0\ufbe8\ufbe9';
         private readonly alef : string = '\u0627';
         private readonly alefHamza : string = '\u0623';
         private readonly alefHamzaBelow : string = '\u0625';
@@ -111,6 +49,24 @@ export class ArabicShapeRenderer {
         //#endregion
         //#region Constructor
         public constructor() {
+            let rows : string = this.packedContiguousRows;
+            for (let i : number = 0; i < rows.length; i += 3) {
+                let row : string[] = [rows.charAt(i)];
+                let firstForm : number = rows.charCodeAt(i + 1);
+                let formCount : number = rows.charCodeAt(i + 2);
+                for (let j : number = 1; j < formCount; j++) {
+                    row.push(String.fromCharCode(firstForm + j - 1));
+                }
+                this.arabicCharTable.push(row);
+            }
+            rows = this.packedSpecialRows;
+            for (let i : number = 0; i < rows.length; i += 5) {
+                let row : string[] = [];
+                for (let j : number = 0; j < 5; j++) {
+                    row.push(rows.charAt(i + j));
+                }
+                this.arabicCharTable.push(row);
+            }
             for (let i : number = 0; i < this.arabicCharTable.length; i++) {
                 this.arabicMapTable.setValue(this.arabicCharTable[i][0], this.arabicCharTable[i]);
             }

@@ -136,6 +136,10 @@ export class WUniqueFormat {
             case 'bottomMargin': return 13;
             case 'rightMargin': return 14;
             case 'leftIndent': return 15;
+            case 'verticallyMergedCellsLeftMargin': return 16;
+            case 'verticallyMergedCellsRightMargin': return 17;
+            case 'verticallyMergedCellsTopMargin': return 18;
+            case 'verticallyMergedCellsBottomMargin': return 19;
             default: return 0;
         }
     }
@@ -588,6 +592,18 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('leftIndent', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('verticallyMergedCellsLeftMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('verticallyMergedCellsRightMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('verticallyMergedCellsTopMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('verticallyMergedCellsBottomMargin', source, modifiedProperty, modifiedValue, 6)) {
             return false;
         }
         return true;

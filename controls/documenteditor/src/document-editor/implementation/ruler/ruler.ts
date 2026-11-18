@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { HelperMethods } from '../editor/editor-helper';
 import { RulerHelper } from '../utility/dom-util';
 import { Size } from '../utility/size';
@@ -225,7 +224,6 @@ export class Ruler {
      * @param {RulerModel} oldProp - provide the oldProp value.
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     // public onPropertyChanged(newProp: RulerModel, oldProp: RulerModel): void {
     //     for (const prop of Object.keys(newProp)) {
     //         switch (prop) {
@@ -428,7 +426,6 @@ export class Ruler {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private createTick(svg: SVGElement, tickInterval: number, length: number, run: number): SVGElement {
-        let ruler: Ruler;
         //let line: SVGElement;
         const linePoint: number = this.getLinePoint(svg, tickInterval, length);
         const rulerSize: number = this.getRulerSize();

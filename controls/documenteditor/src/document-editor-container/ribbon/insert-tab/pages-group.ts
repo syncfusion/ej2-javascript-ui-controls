@@ -5,11 +5,13 @@ export const PAGE_BREAK_ID: string = '_page_break';
 
 /**
  * Pages group implementation for Insert tab
+ *
  * @private
  */
 export class PagesGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Pages group
+     *
      * @returns {RibbonGroupModel} - Pages group model
      * @private
      */
@@ -45,6 +47,7 @@ export class PagesGroup extends RibbonGroupBase {
 
     /**
      * Update selection to reflect current state
+     *
      * @returns {void}
      * @private
      */

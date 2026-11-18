@@ -5,11 +5,13 @@ export const TABLE_ID: string = '_table';
 
 /**
  * Tables group implementation for Insert tab
+ *
  * @private
  */
 export class TablesGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Tables group
+     *
      * @returns {RibbonGroupModel} - The ribbon items for Tables group
      * @private
      */
@@ -43,6 +45,7 @@ export class TablesGroup extends RibbonGroupBase {
     }
     /**
      * Update selection to reflect current state
+     *
      * @returns {void}
      * @private
      */

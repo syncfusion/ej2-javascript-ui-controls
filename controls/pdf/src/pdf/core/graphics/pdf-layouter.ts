@@ -1,7 +1,7 @@
 import { PdfLayoutType, PdfLayoutBreakType } from '../enumerator';
 import { PdfPage } from '../pdf-page';
 import { PdfGraphics } from './pdf-graphics';
-import { Rectangle } from './../pdf-type';
+import { Rectangle } from './../pdf-document-helper';
 /**
  * Represent the layout format class for pagination
  * // Load an existing PDF document
@@ -530,7 +530,7 @@ export class PdfLayoutResult {
      * document.destroy();
      * ```
      */
-    get Page(): PdfPage {
+    get page(): PdfPage {
         return this._page;
     }
     /**

@@ -2,7 +2,7 @@ import { _XmlWriter } from './xml-writer';
 import { PdfDocument } from './../pdf-document';
 import { PdfPage } from './../pdf-page';
 import { PdfForm } from './../form/form';
-import { PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfDocumentLinkAnnotation, PdfRadioButtonListItem, PdfStateItem, Pdf3DAnnotation, PdfPopupAnnotation } from './../annotations/annotation';
+import { PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfDocumentLinkAnnotation, PdfRadioButtonListItem, PdfStateItem, PdfPopupAnnotation, Pdf3DAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { _PdfAnnotationType, PdfAnnotationFlag } from './../enumerator';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
@@ -10,7 +10,7 @@ import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode, _compressStream } from './../utils';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListBoxField, PdfRadioButtonListField, PdfTextBoxField, PdfListField } from './../form/field';
-import { PdfColor, Point } from '../pdf-type';
+import { PdfColor, Point } from '../pdf-document-helper';
 /**
  * Provides common helpers for exporting and importing annotations and form fields across formats and manages shared state.
  *
@@ -1107,6 +1107,14 @@ export class _XfdfDocument extends _ExportHelper {
      */
     _isColoSpace: boolean = false;
     /**
+     * Tracks dictionaries already visited during a single _writeDictionary traversal
+     * to prevent infinite recursion caused by circular or deeply self-referencing structures
+     * in complex annotation types such as 3D, RichMedia, Screen, and Movie.
+     *
+     * @private
+     */
+    _visitedDictionaries: Set<_PdfDictionary> = new Set<_PdfDictionary>();
+    /**
      * Initializes the XFDF helper with optional file name for export context.
      *
      * @private
@@ -1403,6 +1411,7 @@ export class _XfdfDocument extends _ExportHelper {
     _writeAnnotationData(writer: _XmlWriter, pageIndex: number, annotation: PdfAnnotation): void
     _writeAnnotationData(writer: _XmlWriter, pageIndex: number, dictionary: _PdfDictionary): void
     _writeAnnotationData(writer: _XmlWriter, pageIndex: number, source: PdfAnnotation | _PdfDictionary): void {
+        this._visitedDictionaries = new Set<_PdfDictionary>();
         let hasAppearance: boolean = false;
         let annotation: PdfAnnotation;
         let dictionary: _PdfDictionary;
@@ -1457,6 +1466,10 @@ export class _XfdfDocument extends _ExportHelper {
      * @returns {void}
      */
     _writeDictionary(dictionary: _PdfDictionary, pageIndex: number, writer: _XmlWriter, hasAppearance: boolean): void {
+        if (this._visitedDictionaries.has(dictionary)) {
+            return;
+        }
+        this._visitedDictionaries.add(dictionary);
         let isBorderStyle: boolean = false;
         if (dictionary.has('Type')) {
             const type: _PdfName = dictionary.get('Type');
@@ -2396,7 +2409,12 @@ export class _XfdfDocument extends _ExportHelper {
                                 if (annotations._comments && annotations._comments.length > 0) {
                                     annotations._comments = [];
                                 }
-                                pageDictionary.set('Annots', annotations._annotations);
+                                const pageAnnotations: _PdfReference[] =
+                                    pageDictionary.has('Annots') ? pageDictionary.get('Annots') : [];
+                                if (pageAnnotations.indexOf(reference) === -1) {
+                                    pageAnnotations.push(reference);
+                                }
+                                pageDictionary.set('Annots', pageAnnotations);
                                 pageDictionary._updated = true;
                                 annotations._parsedAnnotations.set(index, annotation);
                                 this._handlePopup(annotations, reference, annotationDictionary, pageDictionary);
@@ -2489,6 +2507,24 @@ export class _XfdfDocument extends _ExportHelper {
             break;
         case 'link':
             dictionary.update('Subtype', _PdfName.get('Link'));
+            break;
+        case 'printermark':
+            dictionary.update('Subtype', _PdfName.get('PrinterMark'));
+            break;
+        case 'projection':
+            dictionary.update('Subtype', _PdfName.get('Projection'));
+            break;
+        case 'richmedia':
+            dictionary.update('Subtype', _PdfName.get('RichMedia'));
+            break;
+        case 'screen':
+            dictionary.update('Subtype', _PdfName.get('Screen'));
+            break;
+        case 'movie':
+            dictionary.update('Subtype', _PdfName.get('Movie'));
+            break;
+        case 'trapnet':
+            dictionary.update('Subtype', _PdfName.get('TrapNet'));
             break;
         default:
             isValidType = false;
@@ -2750,6 +2786,9 @@ export class _XfdfDocument extends _ExportHelper {
                 break;
             case 'repeat':
                 dictionary.update('Repeat', (value === 'true' || value === 'yes') ? true : false);
+                break;
+            case 'lastmodified':
+                dictionary.update('LastModified', value);
                 break;
             default:
                 if (this._document._allowImportCustomData) {

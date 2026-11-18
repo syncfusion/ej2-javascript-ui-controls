@@ -1,11 +1,12 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
 import { Ribbon, RibbonGroupModel, RibbonItemSize, RibbonSplitButtonSettingsModel } from '@syncfusion/ej2-ribbon';
-import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 import { createElement, getInstance, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 import { HighlightColor, SelectionCharacterFormat } from '../../../document-editor';
 import { FontHelper } from '../../helper/font-helper';
-import { ElementsMap, HighlightColorInfo } from '../../helper/ribbon-interfaces';
+import { HighlightColorInfo } from '../../helper/ribbon-interfaces';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
+import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 
 // Font group constants
 export const FONT_GROUP_ID: string = '_font_group';
@@ -26,6 +27,7 @@ export const CHANGE_CASE_ID: string = '_change_case';
 
 /**
  * FontGroup class for handling font formatting operations in Document Editor ribbon
+ *
  * @private
  */
 export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
@@ -34,6 +36,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Get the Ribbon group model for Font formatting
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Font formatting
      * @private
      */
@@ -84,8 +87,11 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
                                 width: '65px',
                                 cssClass: 'e-de-prop-dropdown',
                                 showClearButton: false,
-                                change: () => {
-                                    this.changeFontSize();
+                                change: (args: any) => {
+                                    // Ignore programmatic value updates (e.g. selection change on document open).
+                                    if (args && args.isInteracted) {
+                                        this.changeFontSize();
+                                    }
                                 }
                             },
                             id: id + FONT_SIZE_ID,
@@ -125,7 +131,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
                                 iconCss: 'e-icons e-de-ctnr-change-case',
                                 content: this.localObj.getConstant('Change case Tooltip'),
                                 items: FontHelper.getChangeCaseItems(this.localObj, id),
-                                select: (args: any) => {
+                                select: (args: MenuEventArgs) => {
                                     this.changeCaseAction(args);
                                 }
                             },
@@ -239,7 +245,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
                             label: this.localObj.getConstant('Font color'),
                             htmlAttributes: { 'aria-label': this.localObj.getConstant('Font color') },
                             value: '#000000',
-                            change: (args: any) => {
+                            change: (args: ColorPickerEventArgs) => {
                                 this.changeFontColor(args);
                             }
                         },
@@ -276,6 +282,7 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Update font UI based on selection state
+     *
      * @returns {void}
      * @private
      */
@@ -311,8 +318,8 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
         } else {
             const fontFamilyElement: HTMLElement = document.getElementById(id + FONT_FAMILY_ID);
             if (fontFamilyElement) {
-                const fontFamilyInstance: any = getInstance(fontFamilyElement, ComboBox);
-                (fontFamilyInstance as any).value = null;
+                const fontFamilyInstance: ComboBox = getInstance(fontFamilyElement, ComboBox) as ComboBox;
+                fontFamilyInstance.value = null;
                 (fontFamilyElement as HTMLInputElement).value = null;
             }
         }
@@ -322,15 +329,15 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             const fontSize: string = characterFormat.fontSize.toString();
             const fontSizeElement: HTMLElement = document.getElementById(id + FONT_SIZE_ID);
             if (fontSizeElement) {
-                const fontSizeInstance: any = getInstance(fontSizeElement, ComboBox);
+                const fontSizeInstance: ComboBox = getInstance(fontSizeElement, ComboBox) as ComboBox;
                 fontSizeInstance.value = fontSize;
             }
         }
         else {
             const fontSizeElement: HTMLElement = document.getElementById(id + FONT_SIZE_ID);
             if (fontSizeElement) {
-                const fontSizeInstance: object = getInstance(fontSizeElement, ComboBox);
-                (fontSizeInstance as any).value = null;
+                const fontSizeInstance: ComboBox = getInstance(fontSizeElement, ComboBox) as ComboBox;
+                fontSizeInstance.value = null;
                 (fontSizeElement as HTMLInputElement).value = null;
             }
         }
@@ -442,8 +449,8 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             // cssClass: this.splitButtonClass,
             htmlAttributes: { 'aria-label': this.localObj.getConstant('Text highlight color') },
             items: this.getHighlightColorItems().map((color: HighlightColorInfo) => ({ id: color.id, text: color.text })),
-            select: (args: any) => {
-                this.applyHighlightColor(args.item.backgroundColor);
+            select: (args: MenuEventArgs) => {
+                this.applyHighlightColor((args.item as HighlightColorInfo).backgroundColor);
             },
             beforeOpen: (): void => {
                 updateCSSText(colorListDropDiv, 'visibility:visible;');
@@ -457,19 +464,20 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
         };
     }
 
-    private onHighlightColorClick(color: string, event: any): void {
+    private onHighlightColorClick(color: string, event: Event): void {
         this.applyHighlightColor(color);
         // Remove the 'e-color-selected' class from all children
-        const container: any = event.currentTarget.closest('#' + this.ribbonId + '_color_list_div')
+        const currentTarget: HTMLElement = event.currentTarget as HTMLElement;
+        const container: HTMLElement = currentTarget.closest('#' + this.ribbonId + '_color_list_div') as HTMLElement
             || document.getElementById(this.ribbonId + '_color_list_div')
-            || event.currentTarget.parentElement;
+            || currentTarget.parentElement;
         if (container) {
-            container.querySelectorAll('.e-color-selected').forEach(function (el: any): void {
+            container.querySelectorAll('.e-color-selected').forEach(function (el: Element): void {
                 el.classList.remove('e-color-selected');
             });
         }
         // Add the 'e-color-selected' class to the clicked element
-        event.currentTarget.classList.add('e-color-selected');
+        currentTarget.classList.add('e-color-selected');
     }
 
     private applyHighlightColor(color: string): void {

@@ -7,7 +7,7 @@ import { _fromRectangle } from './../utils';
 import { PdfSubSuperScript, PdfTextDirection } from './../../core/enumerator';
 import { _TrueTypeReader, _TrueTypeGlyph, _TrueTypeMetrics } from './ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
-import { Size } from './../pdf-type';
+import { Size } from './../pdf-document-helper';
 import { PdfDocument } from '../pdf-document';
 /**
  * Represents the base class for font objects.`
@@ -643,8 +643,32 @@ export abstract class PdfFont {
      */
     public measureString(text: string, layoutArea: Size, format: PdfStringFormat,
         charactersFitted: number, linesFilled: number): Size
+    /**
+     * Measures the size of a given text string when rendered using this PDF font for grid drawing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Gets the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new PDF standard font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
+     * // Measure the size of the text for grid drawing with a maximum width
+     * let size: Size = font.measureString('Syncfusion', 100, true);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {string} text The text to measure.
+     * @param {number} width The maximum width constraint for text measurement.
+     * @param {boolean} isGridDrawing Flag indicating grid drawing mode.
+     * @returns {Size} The measured size of the text.
+     */
+    public measureString(text: string, width: number, isGridDrawing: boolean): Size
     public measureString(text: string, arg2 ?: PdfStringFormat|number|Size,
-                         arg3 ?: number|PdfStringFormat, arg4 ?: number, arg5 ?: number): Size {
+                         arg3 ?: number|PdfStringFormat|boolean, arg4 ?: number, arg5 ?: number): Size {
         if (typeof text === 'string' && typeof arg2 === 'undefined') {
             return this.measureString(text, null);
         } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 === null) &&
@@ -661,6 +685,9 @@ export abstract class PdfFont {
                   && (arg3 instanceof PdfStringFormat || arg3 === null) && typeof arg4 === 'number' && typeof arg5 === 'number') {
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             return this.measureString(text, {width: arg2, height: 0}, temparg3, arg4, arg5);
+        } else if (typeof text === 'string' && typeof arg2 === 'number' && arg3 === true) {
+            const layouter: _PdfStringLayouter = new _PdfStringLayouter();
+            return layouter._layout(text, this, null, [arg2, Number.MAX_VALUE])._actualSize;
         } else {
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             const layouter: _PdfStringLayouter = new _PdfStringLayouter();

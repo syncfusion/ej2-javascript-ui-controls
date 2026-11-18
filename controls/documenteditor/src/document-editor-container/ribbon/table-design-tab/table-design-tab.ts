@@ -1,6 +1,6 @@
 import { L10n } from '@syncfusion/ej2-base';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { RibbonTabModel, Ribbon } from '@syncfusion/ej2-ribbon';
+import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
 import { BordersGroup } from './borders-group';
 import { ShadingGroup } from './shading-group';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
@@ -8,6 +8,7 @@ import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 export const TABLE_DESIGN_TAB_ID: string = '_table_design_tab';
 /**
  * TableDesignTab class provides a ribbon tab for table design options
+ *
  * @private
  */
 export class TableDesignTab {
@@ -18,6 +19,7 @@ export class TableDesignTab {
 
     /**
      * Constructor for the TableDesignTab class
+     *
      * @param {DocumentEditorContainer}  container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -29,6 +31,7 @@ export class TableDesignTab {
 
     /**
      * Gets the Table Design tab configuration
+     *
      * @returns {RibbonTabModel} - RibbonTabModel for the Table Design tab
      * @private
      */
@@ -46,6 +49,7 @@ export class TableDesignTab {
 
     /**
      * Updates the state of table design controls based on the current selection
+     *
      * @returns {void}
      * @private
      */
@@ -58,6 +62,7 @@ export class TableDesignTab {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      * @private
      */

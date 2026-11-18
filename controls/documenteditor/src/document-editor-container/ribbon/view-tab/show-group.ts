@@ -5,6 +5,7 @@ import { ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
 /**
  * Show group implementation for View tab
+ *
  * @private
  */
 export class ShowGroup extends RibbonGroupBase {

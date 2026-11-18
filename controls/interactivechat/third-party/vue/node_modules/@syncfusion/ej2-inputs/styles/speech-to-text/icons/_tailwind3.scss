@@ -1,9 +1,0 @@
-@use '../variables' as *;
-@include export-module('speechtotext-tailwind3-icons') {
-  .e-listen-icon::before {
-    content: '\e91c';
-  }
-  .e-listen-stop::before {
-    content: '\e919';
-  }
-}

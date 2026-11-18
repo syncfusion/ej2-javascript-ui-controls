@@ -9,13 +9,19 @@ import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream'
 import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
-import { Point } from '../pdf-type';
+import { Point } from '../pdf-document-helper';
 /**
  * Provides JSON based export and import utilities for annotations and form fields and manages serialization details.
  *
  * @private
  */
 export class _JsonDocument extends _ExportHelper {
+    /**
+     * Tracks dictionaries during annotation export.
+     *
+     * @private
+     */
+    private _visitedDictionaries: Set<_PdfDictionary> = new Set<_PdfDictionary>();
     /**
      * Indicates whether the document is being imported from JSON
      * instead of being exported to JSON.
@@ -196,9 +202,10 @@ export class _JsonDocument extends _ExportHelper {
      * @returns {void}
      */
     _exportAnnotation(annotation: PdfAnnotation, index: number): void {
+        this._visitedDictionaries.clear();
         let hasAppearance: boolean = false;
         const dictionary: _PdfDictionary = annotation._dictionary;
-        const type: string = this._getAnnotationType(annotation._dictionary);
+        const type: string = this._getAnnotationType(dictionary);
         this._skipBorderStyle = false;
         if (type && type !== '') {
             this._table.set('type', type);
@@ -213,13 +220,11 @@ export class _JsonDocument extends _ExportHelper {
                 this._table.set('end', points[1].x.toString() + ',' + points[1].y.toString());
                 break;
             case 'Stamp':
-                hasAppearance = true;
-                break;
             case 'Square':
                 hasAppearance = true;
                 break;
             }
-            if (dictionary && dictionary.has('BE') && dictionary.has('BS')) {
+            if (dictionary.has('BE') && dictionary.has('BS')) {
                 const borderEffect: _PdfDictionary = dictionary.get('BE');
                 if (borderEffect && borderEffect.has('S')) {
                     this._skipBorderStyle = true;
@@ -238,14 +243,21 @@ export class _JsonDocument extends _ExportHelper {
      * @returns {void}
      */
     _writeDictionary(dictionary: _PdfDictionary, pageIndex: number, hasAppearance: boolean): void {
-        let isBorderStyle: boolean = false;
-        if (dictionary && dictionary.has('Type')) {
-            const type: _PdfName = dictionary.get('Type');
-            isBorderStyle = (type && type.name === 'Border' && this._skipBorderStyle);
+        if (!dictionary || this._visitedDictionaries.has(dictionary)) {
+            return;
         }
-        dictionary.forEach((key: string, value: any) => { // eslint-disable-line
-            if (!((!hasAppearance && key === 'AP') || key === 'P'
-                || key === 'Parent' || key === 'Measure')) {
+        this._visitedDictionaries.add(dictionary);
+        let isBorderStyle: boolean = false;
+        if (dictionary.has('Type')) {
+            const type: _PdfName = dictionary.get('Type');
+            isBorderStyle = Boolean(type && type.name === 'Border' && this._skipBorderStyle);
+        }
+        dictionary.forEach(
+            (key: string, value: any): void => { // eslint-disable-line
+                if ((!hasAppearance && key === 'AP') || key === 'P' ||
+                    key === 'Parent' || key === 'Measure' || key === 'AN') {
+                    return;
+                }
                 let entry: any; // eslint-disable-line
                 if (value instanceof _PdfReference) {
                     entry = dictionary.get(key);
@@ -267,11 +279,11 @@ export class _JsonDocument extends _ExportHelper {
                         this._writeDictionary(entry, pageIndex, false);
                         break;
                     }
-                } else if ((!isBorderStyle) || (isBorderStyle && key !== 'S')) {
+                } else if (!isBorderStyle || key !== 'S') {
                     this._writeAttribute(key, entry, dictionary);
                 }
             }
-        });
+        );
         if (dictionary.has('Measure')) {
             this._exportMeasureDictionary(dictionary.get('Measure'));
         }
@@ -286,27 +298,57 @@ export class _JsonDocument extends _ExportHelper {
             if (sound && sound.dictionary) {
                 const soundDictionary: _PdfDictionary = sound.dictionary;
                 if (soundDictionary.has('B')) {
-                    this._table.set('bits', this._getValue(soundDictionary.get('B'), true));
+                    this._table.set(
+                        'bits',
+                        this._getValue(soundDictionary.get('B'), true)
+                    );
                 }
                 if (soundDictionary.has('C')) {
-                    this._table.set('channels', this._getValue(soundDictionary.get('C'), true));
+                    this._table.set(
+                        'channels',
+                        this._getValue(soundDictionary.get('C'), true)
+                    );
                 }
                 if (soundDictionary.has('E')) {
-                    this._table.set('encoding', this._getValue(soundDictionary.get('E'), true));
+                    this._table.set(
+                        'encoding',
+                        this._getValue(soundDictionary.get('E'), true)
+                    );
                 }
                 if (soundDictionary.has('R')) {
-                    this._table.set('rate', this._getValue(soundDictionary.get('R'), true));
+                    this._table.set(
+                        'rate',
+                        this._getValue(soundDictionary.get('R'), true)
+                    );
                 }
-                if (soundDictionary.has('Length') && soundDictionary.get('Length') > 0) {
-                    const data: string = _byteArrayToHexString(sound.getBytes());
+                if (soundDictionary.has('T')) {
+                    this._table.set(
+                        'file',
+                        this._getValue(soundDictionary.get('T'), true)
+                    );
+                }
+                if (soundDictionary.has('Length') &&
+                    soundDictionary.get('Length') > 0) {
+                    const data: string = _byteArrayToHexString(
+                        sound.getBytes()
+                    );
                     if (data && data !== '') {
                         this._table.set('MODE', 'raw');
-                        this._table.set('encoding', 'hex');
-                        if (soundDictionary.has('Length')) {
-                            this._table.set('length', this._getValue(soundDictionary.get('Length'), true));
-                        }
+                        this._table.set(
+                            'length',
+                            this._getValue(
+                                soundDictionary.get('Length'),
+                                true
+                            )
+                        );
                         if (soundDictionary.has('Filter')) {
-                            this._table.set('filter', this._getValue(soundDictionary.get('Filter'), true));
+                            this._table.set(
+                                'filter',
+                                this._getValue(
+                                    soundDictionary.get('Filter'),
+                                    true
+                                )
+                            );
                         }
                         this._table.set('data', data);
                     }
@@ -321,40 +363,41 @@ export class _JsonDocument extends _ExportHelper {
                 if (fsDictionary.has('EF')) {
                     const efDictionary: _PdfDictionary = fsDictionary.get('EF');
                     if (efDictionary && efDictionary.has('F')) {
-                        const fStream: _PdfBaseStream = efDictionary.get('F');
-                        if (fStream && fStream.dictionary) {
-                            const fDictionary: _PdfDictionary = fStream.dictionary;
-                            if (fDictionary.has('Params')) {
-                                const paramsDictionary: _PdfDictionary = fDictionary.get('Params');
-                                if (paramsDictionary) {
-                                    if (paramsDictionary.has('CreationDate')) {
-                                        const value: string = this._getValue(paramsDictionary.get('CreationDate'), true);
-                                        this._table.set('creation', value);
+                        const fileStream: _PdfBaseStream = efDictionary.get('F');
+                        if (fileStream && fileStream.dictionary) {
+                            const fileDictionary: _PdfDictionary = fileStream.dictionary;
+                            if (fileDictionary.has('Params')) {
+                                const params: _PdfDictionary = fileDictionary.get('Params');
+                                if (params) {
+                                    if (params.has('CreationDate')) {
+                                        this._table.set('creation', this._getValue(params.get('CreationDate'), true));
                                     }
-                                    if (paramsDictionary.has('ModificationDate')) {
-                                        const value: string = this._getValue(paramsDictionary.get('ModificationDate'), true);
-                                        this._table.set('modification', value);
+                                    if (params.has('ModificationDate')) {
+                                        this._table.set('modification',
+                                                        this._getValue(params.get('ModificationDate'), true));
                                     }
-                                    if (paramsDictionary.has('Size')) {
-                                        this._table.set('size', this._getValue(paramsDictionary.get('Size'), true));
+                                    if (params.has('Size')) {
+                                        this._table.set('size', this._getValue(params.get('Size'), true));
                                     }
-                                    if (paramsDictionary.has('CheckSum')) {
-                                        const value: string = this._getValue(paramsDictionary.get('CheckSum'), true);
+                                    if (params.has('CheckSum')) {
+                                        const value: string = this._getValue(
+                                            params.get('CheckSum'), true);
                                         const checksum: Uint8Array = _stringToBytes(value) as Uint8Array;
-                                        const hexString: string = _byteArrayToHexString(checksum);
-                                        this._table.set('checksum', hexString);
+                                        this._table.set('checksum', _byteArrayToHexString(checksum));
                                     }
                                 }
                             }
-                            const data: string = _byteArrayToHexString(fStream.getBytes());
+                            const data: string = _byteArrayToHexString(fileStream.getBytes());
                             if (data && data !== '') {
                                 this._table.set('MODE', 'raw');
                                 this._table.set('encoding', 'hex');
-                                if (fDictionary.has('Length')) {
-                                    this._table.set('length', this._getValue(fDictionary.get('Length'), true));
+                                if (fileDictionary.has('Length')) {
+                                    this._table.set('length', this._getValue(
+                                        fileDictionary.get('Length'), true));
                                 }
-                                if (fDictionary.has('Filter')) {
-                                    this._table.set('filter', this._getValue(fDictionary.get('Filter'), true));
+                                if (fileDictionary.has('Filter')) {
+                                    this._table.set('filter', this._getValue(
+                                        fileDictionary.get('Filter'), true));
                                 }
                                 this._table.set('data', data);
                             }
@@ -962,7 +1005,7 @@ export class _JsonDocument extends _ExportHelper {
         let j: number = 0;
         let json: string = '{';
         table.forEach((value: string, key: string) => {
-            const isJsonObject: boolean = value.startsWith('{') && value.endsWith('}');
+            const isJsonObject: boolean = this._isValidJsonObject(value);
             const isJsonArray: boolean = value.startsWith('[') && value.endsWith(']') && this._isValidJsonArray(value);
             if (isJsonObject || isJsonArray) {
                 json += '"' + key + '":' + value;
@@ -975,6 +1018,19 @@ export class _JsonDocument extends _ExportHelper {
             j++;
         });
         return json + '}';
+    }
+    /**
+     * Validates whether a string value represents a well formed JSON object.
+     *
+     * @private
+     * @param {string} value The string to validate as a JSON object.
+     * @returns {boolean} True when the value is a valid JSON object, otherwise false.
+     */
+    private _isValidJsonObject(value: string): boolean {
+        if (!value) {
+            return false;
+        }
+        return value.startsWith('{"') && value.endsWith('}') && value.includes('":');
     }
     /**
      * Validates whether a string value is a well formed JSON array.
@@ -1146,6 +1202,24 @@ export class _JsonDocument extends _ExportHelper {
                                                 case 'fileattachment':
                                                     dictionary.update('Subtype', _PdfName.get('FileAttachment'));
                                                     break;
+                                                case 'printermark':
+                                                    dictionary.update('Subtype', _PdfName.get('PrinterMark'));
+                                                    break;
+                                                case 'projection':
+                                                    dictionary.update('Subtype', _PdfName.get('Projection'));
+                                                    break;
+                                                case 'richmedia':
+                                                    dictionary.update('Subtype', _PdfName.get('RichMedia'));
+                                                    break;
+                                                case 'screen':
+                                                    dictionary.update('Subtype', _PdfName.get('Screen'));
+                                                    break;
+                                                case 'movie':
+                                                    dictionary.update('Subtype', _PdfName.get('Movie'));
+                                                    break;
+                                                case 'trapnet':
+                                                    dictionary.update('Subtype', _PdfName.get('TrapNet'));
+                                                    break;
                                                 case 'sound':
                                                     dictionary.update('Subtype', _PdfName.get('Sound'));
                                                     break;
@@ -1181,7 +1255,12 @@ export class _JsonDocument extends _ExportHelper {
                                                             if (annotations._comments && annotations._comments.length > 0) {
                                                                 annotations._comments = [];
                                                             }
-                                                            pageDictionary.set('Annots', annotations._annotations);
+                                                            const pageAnnotations: _PdfReference[] =
+                                                                pageDictionary.has('Annots') ? pageDictionary.get('Annots') : [];
+                                                            if (pageAnnotations.indexOf(reference) === -1) {
+                                                                pageAnnotations.push(reference);
+                                                            }
+                                                            pageDictionary.set('Annots', pageAnnotations);
                                                             pageDictionary._updated = true;
                                                             annotations._parsedAnnotations.set(index, annotation);
                                                             this._handlePopup(annotations, reference, dictionary, pageDictionary);
@@ -1334,6 +1413,9 @@ export class _JsonDocument extends _ExportHelper {
                 break;
             case 'creationdate':
                 this._addString(dictionary, 'CreationDate', value);
+                break;
+            case 'lastmodified':
+                this._addString(dictionary, 'LastModified', value);
                 break;
             case 'name':
                 this._addString(dictionary, 'NM', value);
@@ -1813,21 +1895,29 @@ export class _JsonDocument extends _ExportHelper {
             const soundStream: _PdfContentStream = new _PdfContentStream(bytes);
             soundStream.dictionary._crossReference = this._crossReference;
             soundStream.dictionary.update('Type', _PdfName.get('Sound'));
-            data.forEach((value: string, key: string) => {
-                if (key && value) {
-                    switch (key) {
-                    case 'bits':
-                    case 'rate':
-                    case 'channels':
-                        soundStream.dictionary.set(key, Number(value));
-                        break;
-                    case 'encoding':
-                        soundStream.dictionary.set('E', _PdfName.get(value));
-                        break;
-                    case 'filter':
-                        soundStream.dictionary.set('Filter', _PdfName.get('FlateDecode'));
-                        break;
-                    }
+            data.forEach((value: string, key: string): void => {
+                if (!key || !value) {
+                    return;
+                }
+                switch (key) {
+                case 'bits':
+                    soundStream.dictionary.set('B', Number(value));
+                    break;
+                case 'rate':
+                    soundStream.dictionary.set('R', Number(value));
+                    break;
+                case 'channels':
+                    soundStream.dictionary.set('C', Number(value));
+                    break;
+                case 'encoding':
+                    soundStream.dictionary.set('E', _PdfName.get(value));
+                    break;
+                case 'file':
+                    soundStream.dictionary.set('T', value);
+                    break;
+                case 'filter':
+                    soundStream.dictionary.set('Filter', _PdfName.get('FlateDecode'));
+                    break;
                 }
             });
             soundStream.reference = this._crossReference._getNextReference();

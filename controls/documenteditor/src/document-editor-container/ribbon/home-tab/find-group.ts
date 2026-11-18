@@ -1,6 +1,5 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
-import { Ribbon, RibbonGroupModel, RibbonItemSize } from '@syncfusion/ej2-ribbon';
-import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
+import { Ribbon, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 
 // Find and Replace group constants
 export const FIND_GROUP_ID: string = '_find_group';
@@ -9,11 +8,13 @@ export const REPLACE_ID: string = '_replace';
 
 /**
  * FindGroup class for handling find and replace operations in Document Editor ribbon
+ *
  * @private
  */
 export class FindGroup extends RibbonGroupBase implements IRibbonGroup {
     /**
      * Get the Ribbon group model for Find
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Find
      * @private
      */
@@ -71,6 +72,7 @@ export class FindGroup extends RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Update find buttons based on document state
+     *
      * @returns {void}
      * @private
      */

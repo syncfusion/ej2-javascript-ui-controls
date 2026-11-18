@@ -7,3 +7,4 @@ export * from './toc-group';
 export * from './bookmarks-group';
 export * from './comments-group';
 export * from './header-footer-group';
+export * from './text-box-group';

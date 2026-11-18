@@ -1,4 +1,4 @@
-import { NumericTextBox, ChangeEventArgs as NumericChangeArgs, NumericFocusEventArgs, NumericBlurEventArgs } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, ChangeEventArgs as NumericChangeArgs, NumericFocusEventArgs } from '@syncfusion/ej2-inputs';
 import { LayoutViewer } from '../index';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { SelectionParagraphFormat } from '../index';
@@ -974,6 +974,9 @@ export class ParagraphDialog {
         } else if (this.documentHelper.selection.paragraphFormat.widowControl) {
             paraFormat.widowControl = this.documentHelper.selection.paragraphFormat.widowControl;
         }
+        if (this.isStyleDialog && !isNullOrUndefined(this.documentHelper.owner.tabDialogModule.getStyleObject())) {
+            paraFormat.tabs = this.documentHelper.owner.tabDialogModule.getStyleObject().paragraphFormat.tabs;
+        }
         if (isApply) {
             this.onParagraphFormat(paraFormat);
         } else {
@@ -987,6 +990,8 @@ export class ParagraphDialog {
      */
     public openTabDialog = (): void => {
         this.documentHelper.hideDialog();
+        const styleObject: any = this.isStyleDialog ? this.documentHelper.owner.styleDialogModule.getStyles() : undefined;
+        this.documentHelper.owner.tabDialogModule.setStyleDialogContext(this.isStyleDialog, this.paragraphFormat, styleObject);
         this.documentHelper.owner.tabDialogModule.show();
     }
     /**

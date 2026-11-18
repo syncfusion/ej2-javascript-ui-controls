@@ -12,6 +12,7 @@ import { LAYOUT_PARAGRAPH_GROUP } from '../layout-tab/layout-paragraph-group';
 
 /**
  * Manages ribbon events
+ *
  * @private
  */
 export class RibbonEventManager {
@@ -23,6 +24,7 @@ export class RibbonEventManager {
 
     /**
      * Constructor for RibbonEventManager
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @param {DocumentEditorContainer} container - Document editor container instance
      */
@@ -33,6 +35,7 @@ export class RibbonEventManager {
 
     /**
      * Handle launcher icon click
+     *
      * @param {LauncherClickEventArgs} args - Event arguments
      * @returns {void}
      * @private
@@ -61,6 +64,7 @@ export class RibbonEventManager {
 
     /**
      * Handle file menu item selection
+     *
      * @param {MenuEventArgs} args - Event arguments
      * @returns {void}
      * @private
@@ -72,6 +76,7 @@ export class RibbonEventManager {
 
     /**
      * Handle tab selection
+     *
      * @param {TabSelectedEventArgs} args - Event arguments
      * @returns {void}
      * @private
@@ -84,6 +89,7 @@ export class RibbonEventManager {
 
     /**
      * Handle ribbon expand (layout becomes expanded)
+     *
      * @returns {void}
      * @private
      */
@@ -107,6 +113,7 @@ export class RibbonEventManager {
 
     /**
      * Handle ribbon collapse (layout becomes collapsed)
+     *
      * @returns {void}
      * @private
      */
@@ -130,6 +137,7 @@ export class RibbonEventManager {
 
     /**
      * Handle ribbon layout change
+     *
      * @returns {void}
      * @private
      */
@@ -145,6 +153,11 @@ export class RibbonEventManager {
 
         this.updateNumericTextBox(this.ribbon.ribbon.tabs[this.ribbon.ribbon.selectedTab].header);
         this.resizeEditor(this.ribbon.container.editorContainer);
+        // Layout switch rebuilds ribbon items and drops the double-click handler and active class.
+        if (this.ribbon.tabManager && this.ribbon.tabManager.homeTab) {
+            this.ribbon.tabManager.homeTab.wireFormatPainterDoubleClick();
+            this.ribbon.tabManager.homeTab.updateSelection();
+        }
         if (this.ribbon.container.ribbonLayout === 'Simplified') {
             this.ribbon.container.ribbonLayout = 'Classic';
         }
@@ -155,6 +168,7 @@ export class RibbonEventManager {
 
     /**
      * Resize the editor container based on ribbon layout
+     *
      * @param {HTMLElement} editorContainer - The editor container element
      * @returns {void}
      * @private
@@ -171,6 +185,7 @@ export class RibbonEventManager {
 
     /**
      * Update numeric text boxes based on selected tab
+     *
      * @param {string} header - The tab header text
      * @returns {void}
      * @private

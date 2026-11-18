@@ -14,6 +14,8 @@ export interface BookmarkInfo extends IWidget {
     bookmark: BookmarkElementBox
     startIndex: number
     endIndex: number
+    startOffset: number
+    endOffset: number
 }
 
 export interface ContentInfo extends IWidget {

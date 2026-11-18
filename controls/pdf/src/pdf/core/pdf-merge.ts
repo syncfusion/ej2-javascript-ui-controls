@@ -5,7 +5,8 @@ import { PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListFi
 import { PdfForm } from './form/form';
 import { PdfTemplate } from './graphics/pdf-template';
 import { _PdfCrossReference } from './pdf-cross-reference';
-import { PdfDocument, PdfPageSettings } from './pdf-document';
+import { PdfDocument } from './pdf-document';
+import { PdfPageSettings } from './pdf-document-helper';
 import { PdfBookmark, PdfBookmarkBase, PdfNamedDestination } from './pdf-outline';
 import { PdfDestination, PdfPage } from './pdf-page';
 import { PdfPageImportOptions } from './pdf-page-import-options';
@@ -299,6 +300,24 @@ export class _PdfMergeHelper {
         if (result.length > 0) {
             newPage._pageDictionary.update('Annots', result);
         }
+    }
+    _importInteractiveContent(sourcePage: PdfPage, destinationPage: PdfPage): void {
+        if (!sourcePage || !destinationPage) {
+            return;
+        }
+        this._pageReference.set(sourcePage._pageDictionary, destinationPage);
+        if (sourcePage._pageDictionary.has('Annots')) {
+            this._importAnnotation(sourcePage, destinationPage);
+            if (this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
+                if (this._options.groupFormFields && this._destinationDocument.form.count > 0) {
+                    this._formFieldsGroupingSupport(this._sourceDocument.form, sourcePage, destinationPage);
+                } else {
+                    this._importFormField(sourcePage, this._sourceDocument.form, destinationPage);
+                }
+            }
+        }
+        this._mergeFormFieldsWithDocument();
+        destinationPage._pageDictionary._updated = true;
     }
     /**
      * Groups and merges form fields for the imported page, aligning kids arrays and regenerating appearances when required.

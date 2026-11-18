@@ -15,6 +15,7 @@ export const SPACING_AFTER_ID: string = '_spacing_after';
 
 /**
  * Layout Paragraph group implementation for simplified mode
+ *
  * @private
  */
 export class LayoutParagraphGroup extends RibbonGroupBase {
@@ -54,7 +55,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
      */
     public getGroupModel(): RibbonGroupModel {
         const id: string = this.container.element.id + RIBBON_ID;
-        const leftIndentTemplate: any = () => `
+        const leftIndentTemplate: () => string = () => `
             <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
                 title="${this.localObj.getConstant('Indent Left')}">
                 <div class="e-de-indent-label-container">
@@ -63,7 +64,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                 </div>
                 <input id="${this.container.element.id + INDENT_LEFT_ID}" class="e-textbox" />
             </div>`;
-        const rightIndentTemplate: any = () => `
+        const rightIndentTemplate: () => string = () => `
             <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
                 title="${this.localObj.getConstant('Indent Right')}">
                 <div class="e-de-indent-label-container">
@@ -73,7 +74,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                 <input id="${this.container.element.id + INDENT_RIGHT_ID}" class="e-textbox" />
             </div>
         `;
-        const spacingBeforeTemplate: any = () => `
+        const spacingBeforeTemplate: () => string = () => `
             <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
                 title="${this.localObj.getConstant('Spacing Before')}">
                 <div class="e-de-property-label-container">
@@ -83,7 +84,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                 <input id="${this.container.element.id + SPACING_BEFORE_ID}" class="e-textbox" />
             </div>
         `;
-        const spacingAfterTemplate: any = () => `
+        const spacingAfterTemplate: () => string = () => `
             <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
                 title="${this.localObj.getConstant('Spacing After')}">
                 <div class="e-de-property-label-container">

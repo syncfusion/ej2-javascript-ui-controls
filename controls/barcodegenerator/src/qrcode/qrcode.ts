@@ -1,5 +1,5 @@
 import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';
-import { Complex, Property, Component, INotifyPropertyChanged, L10n, Event, EmitType } from '@syncfusion/ej2-base';
+import { Complex, Property, Component, INotifyPropertyChanged, L10n, Event, EmitType, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { ErrorCorrectionLevel, QRCodeVersion, RenderingMode, BarcodeEvent, BarcodeExportType } from '../barcode/enum/enum';
 import { DisplayTextModel } from '../barcode/primitives/displaytext-model';
 import { MarginModel } from '../barcode/primitives/margin-model';
@@ -8,9 +8,13 @@ import { Margin } from '../barcode/primitives/margin';
 import { QRCodeGeneratorModel } from './qrcode-model';
 import { BarcodeRenderer } from '../barcode/rendering/renderer';
 import { QRCode } from './qr-code-util';
+import { Gs1QRCode } from './gs1-qr-code';
 import { ValidateEvent } from '../barcode';
 import { QRCodeLogo } from '../barcode/primitives/icon';
 import { QRCodeLogoModel } from '../barcode/primitives/icon-model';
+import { WebMcpBarcode, WebMcpBarcodeSettings } from '../barcode/integrations/webmcp-adapter';
+import { WebMcpBarcodeSettingsModel } from '../barcode/integrations/webmcp-adapter-model';
+import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../barcode/rendering/canvas-interface';
 
 /**
  * Represents the Qrcode control
@@ -133,6 +137,15 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     @Property()
     public version: QRCodeVersion;
 
+    /**
+     * Specifies whether the value is encoded as a GS1 QR Code. When true, the value is
+     * GS1 data, bracketed or raw; it is validated and encoded with FNC1.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableGS1: boolean;
+
 
     private widthChange: boolean = false;
 
@@ -151,6 +164,42 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
      */
     @Property(undefined)
     public value: string;
+
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    @Complex<WebMcpBarcodeSettingsModel>({}, WebMcpBarcodeSettings)
+    public webMcpSettings: WebMcpBarcodeSettingsModel;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Set `args.cancel` to `true` to prevent the tool from running, or `args.showConfirmationDialog`
+     * to ask the user for confirmation first.
+     *
+     * @event
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
+     * `webMcpBarcodeModule` is used for WebMCP tool integration
+     *
+     * @private
+     */
+    public webMcpBarcodeModule: WebMcpBarcode;
 
     /** @private */
     public localeObj: L10n;
@@ -177,6 +226,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
         this.notify('initial-end', {});
         this.renderElements();
+        this.initWebMcp();
         this.renderComplete();
     }
 
@@ -188,8 +238,16 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     }
 
     private renderElements(): void {
-        const barCode: QRCode = new QRCode();
+        const barCode: QRCode = this.enableGS1 ? new Gs1QRCode() : new QRCode();
         this.value = this.value || '';
+        if (this.enableGS1) {
+            (barCode as Gs1QRCode).locale = this.localeObj;
+            const gs1Message: string = (barCode as Gs1QRCode).validateInput(this.value);
+            if (gs1Message !== undefined) {
+                this.triggerEvent(BarcodeEvent.invalid, gs1Message);
+                return;
+            }
+        }
         barCode.text = this.value;
         barCode.XDimension = this.xDimension;
         barCode.mIsUserMentionedErrorCorrectionLevel = (this.errorCorrectionLevel !== undefined) ? true : false;
@@ -286,6 +344,60 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
 
     /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+
+    /**
+     * Registers WebMCP tools on document.modelContext for this component instance.
+     *
+     * @param {string} [prefix] - Optional: unique prefix for tool names. Defaults to the element `id`.
+     * @param {string[] | WebMcpTool[]} [tools] - Optional: allowlist of tool names or customized tool definitions.
+     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
+     * @returns {void}
+     */
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
+    }
+
+    private initWebMcp(): void {
+        if (this.webMcpBarcodeModule) {
+            this.webMcpBarcodeModule.init(this);
+            const settings: WebMcpBarcodeSettingsModel = this.webMcpSettings || {};
+            this.webMcpBarcodeModule.registerTools({
+                prefix: settings.name || this.element.id,
+                tools: settings.tools,
+                exposedTo: settings.exposedTo
+            });
+        }
+    }
+
+    /**
+     * To provide the array of modules needed for control rendering
+     *
+     * @returns {ModuleDeclaration[]} To provide the array of modules needed for control rendering
+     * @private
+     */
+    public requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        if (this.enableWebMcp) {
+            modules.push({
+                member: 'WebMcpBarcode',
+                args: [this]
+            });
+        }
+        return modules;
+    }
+
+    /**
      * It is used to destroy the Barcode component.
      *
      * @function destroy
@@ -302,7 +414,14 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     private initializePrivateVariables(): void {
         this.defaultLocale = {
-
+            GS1InvalidFormat: 'The value must be GS1 data, in bracketed AI notation such as (01)09506000134376(10)ABC123, or raw.',
+            GS1UnsupportedAI: 'The Application Identifier is not supported.',
+            GS1InvalidLength: 'The value of an Application Identifier has an invalid length.',
+            GS1InvalidCharacter: 'The value of an Application Identifier contains characters outside the GS1 character set.',
+            GS1InvalidDate: 'The date of an Application Identifier is not a valid YYMMDD date.',
+            GS1InvalidCheckDigit: 'The check digit of the GTIN or SSCC is not valid.',
+            GS1DuplicateAI: 'An Application Identifier appears more than once.',
+            GS1MissingRequiredAI: 'The value requires a GTIN (01) for the Application Identifiers used.'
         };
     }
 
@@ -353,6 +472,27 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
+            case 'enableWebMcp':
+                if (newProp.enableWebMcp && !this.webMcpBarcodeModule) {
+                    // Enabling WebMCP at runtime: manually instantiate and initialize the module
+                    this.webMcpBarcodeModule = new WebMcpBarcode(this);
+                    this.initWebMcp();
+                } else if (!newProp.enableWebMcp && this.webMcpBarcodeModule) {
+                    // Disabling WebMCP at runtime: unregister tools and destroy the module
+                    this.webMcpBarcodeModule.unregisterTools();
+                    this.webMcpBarcodeModule.destroy();
+                    this.webMcpBarcodeModule = null;
+                }
+                break;
+            case 'webMcpSettings':
+                if (this.webMcpBarcodeModule) {
+                    this.webMcpBarcodeModule.registerTools({
+                        prefix: this.webMcpSettings.name || this.element.id,
+                        tools: this.webMcpSettings.tools,
+                        exposedTo: this.webMcpSettings.exposedTo
+                    });
+                }
+                break;
             case 'width':
                 this.element.style.width = this.getElementSize(width);
                 this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));

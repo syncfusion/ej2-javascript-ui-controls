@@ -7,10 +7,10 @@ import {
     PMPlugin,
     DirectEditorProps
 } from '../pm-guard';
-import { EditorLifecycleError } from '../../errors/editor-lifecycle-error';
+import { EditorLifecycleError } from '../../core/errors/editor-lifecycle-error';
 import { PositionAdapter } from '../adapters/position-adapter';
-import { EventBus } from '../../events/event-bus';
-import { RENDERER_INITIALIZED, TRANSACTION_APPLIED } from '../../events/event-names';
+import { EventBus } from '../../core/events/event-bus';
+import { RENDERER_INITIALIZED, TRANSACTION_APPLIED } from '../../core/events/event-names';
 
 export interface PMConfig {
     schema: PMSchema;
@@ -176,24 +176,24 @@ export class IntegrationManager {
             this._pmView.updateState(this._pmState);
         }
 
-        // Invalidate position cache so the next toPMPosition walks the new doc
-        this.positionAdapter.invalidateCache();
-
-        // Notify the EventAggregator that a transaction was committed
-        this.eventBus.publish({
-            type: TRANSACTION_APPLIED,
-            payload: {
-                docChanged: tr.docChanged,
-                transaction: tr,
-                ...(tr.docChanged && {
-                    beforeDoc: tr.before,
-                    afterDoc: this._pmState.doc
-                })
-            }
-        });
+        // Notify the EventAggregator that a transaction was committed.
+        if (this.eventBus) {
+            this.eventBus.publish({
+                type: TRANSACTION_APPLIED,
+                payload: {
+                    docChanged: tr.docChanged,
+                    transaction: tr,
+                    ...(tr.docChanged && {
+                        beforeDoc: tr.before,
+                        afterDoc: this._pmState.doc
+                    })
+                }
+            });
+        }
 
         // Allow the SelectionManager to mark its held snapshot stale if the
-        // transaction invalidated any referenced nodeId.
+        // underlying PM state no longer satisfies the snapshot (e.g. a schema
+        // version mismatch).
         if (this.postDispatchHook) {
             try {
                 this.postDispatchHook();
@@ -260,30 +260,33 @@ export class IntegrationManager {
      * No-op when the view is not mounted.
      *
      * @param {boolean} afterUpdate Whether to wait for the updated caption to render before focusing.
+     * @param {boolean} force When true, skip the widget-focus guard and steal focus back to the editor
+     *   unconditionally. Used by code paths that intentionally move focus away from a widget
+     *   (e.g. after a caption blur that needs to fall back to the editor surface).
      * @returns {void}
      * @hidden
      */
-    public focusView(afterUpdate: boolean = false): void {
+    public focusView(afterUpdate: boolean = false, force: boolean = false): void {
         if (!this._pmView) { return; }
 
         if (afterUpdate) {
             requestAnimationFrame((): void => {
                 // Caption commands need focus after the image NodeView renders its updated figcaption.
-                if (this._pmView) {
-                    this.focusView();
-                }
+                this.focusView(false, force);
             });
             return;
         }
 
-        const active: Element | null = document.activeElement;
-        if (active && active !== document.body && this._pmView.dom.contains(active)) {
-            let node: Element | null = active;
-            while (node && node !== this._pmView.dom) {
-                if ((node as HTMLElement).contentEditable === 'false') {
-                    return; // Widget owns focus — do not redirect it
+        if (!force) {
+            const active: Element | null = document.activeElement;
+            if (active && active !== document.body && this._pmView.dom.contains(active)) {
+                let node: Element | null = active;
+                while (node && node !== this._pmView.dom) {
+                    if ((node as HTMLElement).contentEditable === 'false') {
+                        return; // Widget owns focus — do not redirect it
+                    }
+                    node = node.parentElement;
                 }
-                node = node.parentElement;
             }
         }
         this._pmView.focus();

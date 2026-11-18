@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-grids/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-grids)
+
 # JavaScript Grid Control
 
 The [JavaScript Grid](https://www.syncfusion.com/javascript-ui-controls/js-data-grid?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm) control is a powerful and flexible tool for displaying and manipulating tabular data. JavaScript Grid control is its ability to bind to a wide range of data sources, including arrays of JSON objects, `OData web services`, and the Syncfusion<sup>®</sup> [DataManager](https://ej2.syncfusion.com/documentation/data/data-binding/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm). This makes it easy to integrate the grid into your application and display data from a variety of sources. In addition to its data binding capabilities, the JavaScript Grid also offers support for features such as sorting, filtering, paging, grouping, editing, frozen rows and columns, virtualization, and moree. These features allow you to easily manipulate and present large datasets in an efficient and user-friendly way.

@@ -17,12 +17,14 @@ import { DocumentEditorContainer } from '../document-editor-container';
 
 /**
  * Helper class for Ribbon operations
+ *
  * @private
  */
 
 export class RibbonHelper {
     /**
      * Gets the ribbon tab ID from the RibbonTabType.
+     *
      * @param {string | RibbonTabType} tabType - The ribbon tab type.
      * @param {string} containerId - The container element ID.
      * @returns {string} The tab ID.
@@ -36,6 +38,7 @@ export class RibbonHelper {
 
     /**
      * Gets the default tab ID for predefined tab types.
+     *
      * @param {RibbonTabType} tabType - The ribbon tab type.
      * @param {string} containerId - The container element ID.
      * @returns {string} The default tab ID.
@@ -72,6 +75,7 @@ export class RibbonHelper {
 
     /**
      * Gets the group ID from string or RibbonGroupInfo.
+     *
      * @param {string | RibbonGroupInfo} groupId - The group identifier or info.
      * @param {RibbonTabModel[]} tabs - The ribbon tabs.
      * @param {string} containerId - The container element ID.
@@ -88,6 +92,7 @@ export class RibbonHelper {
 
     /**
      * Gets the group model from a tab based on group information.
+     *
      * @param {RibbonGroupInfo} groupInfo - The group information.
      * @param {RibbonTabModel[]} tabs - The ribbon tabs.
      * @param {string} containerId - The container element ID.
@@ -106,6 +111,7 @@ export class RibbonHelper {
 
     /**
      * Finds a tab by ID in the tabs collection.
+     *
      * @param {RibbonTabModel[]} tabs - The tabs collection.
      * @param {string} tabId - The tab ID.
      * @returns {RibbonTabModel} The found tab, or undefined.
@@ -121,6 +127,7 @@ export class RibbonHelper {
 
     /**
      * Gets the collection ID from a group based on group information.
+     *
      * @param {RibbonGroupInfo} groupInfo - The group information.
      * @param {RibbonTabModel[]} tabs - The ribbon tabs.
      * @param {string} containerId - The container element ID.
@@ -165,6 +172,7 @@ export class RibbonHelper {
 
     /**
      * Gets the item IDs from a group based on item information.
+     *
      * @param {RibbonItemInfo} itemInfo - The item information.
      * @param {DocumentEditorContainer} container - The DocumentEditorContainer instance.
      * @returns {string[]} Array of item IDs.
@@ -199,6 +207,7 @@ export class RibbonHelper {
     }
     /**
      * Updates the toggle state of a ribbon button
+     *
      * @param {Ribbon} ribbonObj - The ribbon object instance to update
      * @param {string} buttonId - The unique identifier of the button to toggle
      * @param {boolean} isActive - Boolean value indicating whether the button should be in active/pressed state

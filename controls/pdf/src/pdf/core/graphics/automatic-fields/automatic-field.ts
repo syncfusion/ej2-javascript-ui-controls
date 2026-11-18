@@ -1,6 +1,6 @@
 import { PdfFont, PdfFontFamily, PdfStandardFont } from '../../fonts/pdf-standard-font';
 import { PdfStringFormat } from '../../fonts/pdf-string-format';
-import { Point, Size } from '../../pdf-type';
+import { Point, Size } from '../../pdf-document-helper';
 import { PdfBrush, PdfGraphics } from '../pdf-graphics';
 import { PdfGraphicsElement } from '../pdf-graphics-element';
 /**

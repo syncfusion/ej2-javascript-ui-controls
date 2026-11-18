@@ -1,11 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../ai-assist-base/ai-assist-base-model.d.ts'/>
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';
-import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel, FooterToolbarSettingsModel, TextToSpeechSettingsModel, MentionSettingsModel } from './ai-assistview-model';
+import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel, FooterToolbarSettingsModel, TextToSpeechSettingsModel, MentionSettingsModel, TelemetrySettingsModel } from './ai-assistview-model';
 import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';
-import { ItemModel, Toolbar, ClickEventArgs, FieldSettings } from '@syncfusion/ej2-navigations';
-import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs, FieldSettings } from '@syncfusion/ej2-dropdowns';
 import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';
 import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
 import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, RemovingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';
@@ -16,9 +16,10 @@ import { Fab } from '@syncfusion/ej2-buttons';
 import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';
 import { ResponseBlock, TextBlock, ToolBlock, ThinkingContextItem, ThinkingBlock, ThinkingStage } from './interface';
 import { AssistThinking } from '../ai-assist-base/index';
-import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 
 const ASSISTHEADER: string = 'e-aiassist-header-text e-assist-view-header';
+const TELEMETRY_TOOLBAR_ITEM_CSS_CLASS: string = 'e-assist-telemetry-item';
 /* eslint-disable @typescript-eslint/no-misused-new, no-redeclare */
 interface ClipboardItem {
     new (items: { [mimeType: string]: Blob }): ClipboardItem;
@@ -26,6 +27,84 @@ interface ClipboardItem {
 
 declare let ClipboardItem: any;
 /* eslint-enable @typescript-eslint/no-misused-new, no-redeclare */
+
+/**
+ * Configures which telemetry metrics are included in generated reports.
+ * Accepts one or more values from the TelemetryMetric type.
+ *
+ * @default []
+ */
+
+export type TelemetryMetric =
+    | 'status'
+    | 'toolCalls'
+    | 'duration'
+    | 'streamingChunks'
+    | 'model'
+    | 'inputTokens'
+    | 'outputTokens'
+    | 'totalTokens'
+    | 'reasoningTokens'
+    | 'cachedInputTokens';
+
+export class TelemetrySettings extends ChildProperty<TelemetrySettings> {
+    /**
+     * Enables telemetry reporting for AI interactions.
+     * Accepts true to capture reports or false to disable telemetry.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * Specifies which telemetry metrics are included in reports.
+     * Accepts one or more values from the TelemetryMetric type.
+     *
+     * @default []
+     */
+    @Property([])
+    public metrics: TelemetryMetric[];
+
+    /**
+     * Invoked before a telemetry report is delivered.
+     * Return a report, null to suppress, or void to keep unchanged.
+     *
+     * @default null
+     */
+    @Event()
+    public beforeReport: (report: TelemetryReport) => TelemetryReport | null | void;
+}
+
+/**
+ * Provides optional telemetry metadata for a response.
+ * Accepts model information, token usage details, and custom attributes.
+ */
+export interface TelemetryData {
+    model?: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    reasoningTokens?: number;
+    cachedInputTokens?: number;
+    customAttributes?: Record<string, string | number | boolean | null>;
+}
+
+/**
+ * Represents telemetry details collected for a request.
+ */
+export interface TelemetryReport {
+    status: 'completed' | 'cancelled';
+    toolCalls?: number;
+    duration?: number;
+    streamingChunks?: number;
+    model?: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    reasoningTokens?: number;
+    cachedInputTokens?: number;
+    customAttributes?: Record<string, string | number | boolean | null>;
+}
 /**
  * The prompts property maps the list of the prompts and binds the data to the suggestions.
  */
@@ -473,11 +552,10 @@ export class MentionSettings extends ChildProperty<MentionSettings> {
      * Specifies the data source used to populate mention suggestions.
      * Accepts local collections, DataManager instances, or remote data sources.
      *
-     * @type {string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[]}
      * @default []
      */
     @Property([])
-    public dataSource: string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[];
+    public dataSource: string[] | DataManager | { [key: string]: Object }[] | number[] | boolean[];
 
     /**
      * Specifies the field mappings for the mention data source.
@@ -802,6 +880,10 @@ export interface AssistMentionSelectEventArgs extends BaseEventArgs {
  * ```
  */
 
+/**
+ * Main AI AssistView component.
+ * Renders prompts, responses, tools, telemetry, and footer interactions.
+ */
 @NotifyPropertyChanges
 export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged {
 
@@ -1001,6 +1083,18 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
      */
     @Complex<TextToSpeechSettingsModel>({}, TextToSpeechSettings)
     public textToSpeechSettings: TextToSpeechSettingsModel;
+
+    /**
+     * Configures telemetry reporting behavior for the AIAssistView component.
+     * Accepts a TelemetrySettingsModel object to enable reporting and customize metrics and callbacks.
+     *
+     * {% codeBlock src='ai-assistview/telemetrySettings/index.md' %}{% endcodeBlock %}
+     *
+     * @type {TelemetrySettingsModel}
+     * @default { enable: false }
+     */
+    @Complex<TelemetrySettingsModel>({ enable: false }, TelemetrySettings)
+    public telemetrySettings: TelemetrySettingsModel;
 
     /**
      * Specifies whether the attachments is enabled in the AIAssistView component.
@@ -1317,6 +1411,21 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
     private registeredTools: Map<string, ToolUIConfig> = new Map();
     private selectedMentions: {itemData: FieldSettingsModel, mentionChar: string, element: HTMLElement}[] = [];
     private mentionCounter: number = 0;
+    private activeTurnStartTs: number;
+    private activeTurnChunkCount: number;
+    private activeTurnToolCalls: number;
+
+    /**
+     * Telemetry reports keyed by prompt index.
+     * Powers the per-response toolbar tooltip and is cleared during destroy().
+     */
+    private telemetryReportsByPrompt: Map<number, TelemetryReport> = new Map();
+
+    /**
+     * Syncfusion `Tooltip` instances keyed by prompt index.
+     * Lets each telemetry button update on hover without losing focus or state.
+     */
+    private telemetryTooltipsByPrompt: Map<number, Tooltip> = new Map();
 
     /**
      * Enhanced setup: Enforce viewport on .e-content + dynamic min-height on latest .e-output-container.
@@ -1704,7 +1813,17 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             stopAudio: 'Stop',
             previousResponse: 'Previous',
             nextResponse: 'Next',
-            noRecordsTemplate: 'No records found'
+            noRecordsTemplate: 'No records found',
+            status: 'Status',
+            toolCalls: 'Tool Calls',
+            duration: 'Duration',
+            streamingChunks: 'Streaming chunks',
+            model: 'Model',
+            inputTokens: 'Input tokens',
+            outputTokens: 'Output tokens',
+            totalTokens: 'Total tokens',
+            reasoningTokens: 'Reasoning tokens',
+            cachedInputTokens: 'Cached input tokens'
         }, this.locale);
         this.l10n.setLocale(this.locale);
     }
@@ -1801,6 +1920,10 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         // Step 3: Replace blocks in last prompt (immutable update)
         lastPrompt.blocks = finalizedBlocks;
         this.isProtectedOnChange = prevOnChange;
+
+        // Refresh tool call count from the FINALIZED blocks so the upcoming incomplete
+        // report reflects the failure state.
+        this.activeTurnToolCalls = this.deriveToolCalls(finalizedBlocks) || 0;
 
         // Step 4: Re-render existing response without adding new response
         // This updates the existing response with finalized blocks
@@ -2139,6 +2262,8 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
                     const value: string = this.prompt.length > 0 ? this.prompt + ' ' : '';
                     if (args.isInterimResult) {
                         this.editableTextarea.innerHTML = value + SanitizeHtmlHelper.sanitize(args.transcript);
+                        this.editableTextarea.focus();
+                        this.setFocusAtEnd(this.editableTextarea);
                     }
                     else {
                         const prevPrompt: string = this.prompt;
@@ -2602,6 +2727,474 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             this.bindScroll();
         }
     }
+
+    /*
+     * Telemetry — helper methods.
+     * Maps onPropertyChanged / addPromptResponse activity into a TelemetryReport,
+     * delivers it through the configured hooks, and renders the hover tooltip UI.
+     */
+
+    /**
+     * Wipes the in-flight telemetry accumulators for the current turn.
+     * Re-zeroes the start timestamp, chunk count, and tool call list so the next
+     * turn starts clean.
+     *
+     * @returns {void}
+     */
+    private resetActiveTurn(): void {
+        this.activeTurnStartTs = 0;
+        this.activeTurnChunkCount = 0;
+        this.activeTurnToolCalls = 0;
+    }
+
+    /**
+     * Counts the tool invocations across the given response blocks. Each `tool`
+     * block contributes one count, mirroring the prior `TelemetryToolCall[]` shape
+     * but as a scalar so the telemetry payload stays small and the public
+     * `TelemetryReport.toolCalls` field is a plain `number`.
+     *
+     * @param {ResponseBlock[]} blocks - The accumulated response blocks for the current turn.
+     * @returns {number | undefined} The tool call count, or `undefined` when `blocks`
+     * is missing/empty.
+     */
+    private deriveToolCalls(blocks: ResponseBlock[]): number | undefined {
+        if (!blocks || blocks.length === 0) {
+            return undefined;
+        }
+        let count: number = 0;
+        for (const block of blocks) {
+            if (block && block.blockType === 'tool') {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Renders a millisecond duration for the toolbar label and the tooltip `Duration`
+     * row, returning `"—"` for missing values and switching to a two-decimal `s` once
+     * the value reaches 1 s so the toolbar and tooltip stay visually identical.
+     *
+     * @param {number | undefined | null} durationMs - Measured turn duration in milliseconds.
+     * @returns {string} `"—"` when missing/non-positive, `ms` value when below 1 s,
+     * otherwise the formatted two-decimal `s` value.
+     */
+    private formatDuration(durationMs: number | undefined | null): string {
+        if (typeof durationMs !== 'number' || durationMs <= 0) {
+            return '\u2014';
+        }
+        return durationMs >= 1000
+            ? (durationMs / 1000).toFixed(2) + ' s'
+            : durationMs + ' ms';
+    }
+
+    /**
+     * Creates a telemetry report for the current AI interaction.
+     * Accepts the turn status and optional telemetry enrichment data.
+     *
+     * @param {('completed' | 'cancelled')} status - Specifies the completion status of the turn.
+     * @param {TelemetryData} [telemetryData] - Provides optional model, token, and custom telemetry data.
+     * @returns {TelemetryReport} Returns the generated telemetry report.
+     */
+    private buildReport(
+        status: 'completed' | 'cancelled',
+        telemetryData?: TelemetryData
+    ): TelemetryReport {
+        const report: TelemetryReport = {
+            status: status,
+            toolCalls: this.activeTurnToolCalls,
+            duration: this.activeTurnStartTs
+                ? Math.round(performance.now() - this.activeTurnStartTs)
+                : undefined,
+            streamingChunks: this.activeTurnChunkCount
+        };
+        if (telemetryData) {
+            if (!isNullOrUndefined(telemetryData.model)) { report.model = telemetryData.model; }
+            if (!isNullOrUndefined(telemetryData.inputTokens)) { report.inputTokens = telemetryData.inputTokens; }
+            if (!isNullOrUndefined(telemetryData.outputTokens)) { report.outputTokens = telemetryData.outputTokens; }
+            if (!isNullOrUndefined(telemetryData.reasoningTokens)) { report.reasoningTokens = telemetryData.reasoningTokens; }
+            if (!isNullOrUndefined(telemetryData.cachedInputTokens)) { report.cachedInputTokens = telemetryData.cachedInputTokens; }
+            if (!isNullOrUndefined(telemetryData.customAttributes)) { report.customAttributes = telemetryData.customAttributes; }
+        }
+        if (!isNullOrUndefined(report.inputTokens) || !isNullOrUndefined(report.outputTokens)) {
+            const inputTokens: number = typeof report.inputTokens === 'number' ? report.inputTokens : 0;
+            const outputTokens: number = typeof report.outputTokens === 'number' ? report.outputTokens : 0;
+            report.totalTokens = inputTokens + outputTokens;
+        }
+        return report;
+    }
+
+    /**
+     * Processes a telemetry report before delivery.
+     * Return a modified report, null to suppress delivery, or void to keep it unchanged.
+     *
+     * @param {TelemetryReport} report - Specifies the telemetry report to process.
+     * @returns {TelemetryReport | null} Returns the processed report or null to suppress delivery.
+     */
+    private applyBeforeReport(report: TelemetryReport): TelemetryReport | null {
+        if (!this.telemetrySettings || typeof this.telemetrySettings.beforeReport !== 'function') {
+            return report;
+        }
+        const result: TelemetryReport | null | void = this.telemetrySettings.beforeReport(report);
+        if (result === null) { return null; }
+        if (result === undefined) { return report; }
+        return result as TelemetryReport;
+    }
+
+    /**
+     * Filters a telemetry report based on the configured metrics list.
+     * Returns the full report when no metric filter is specified.
+     *
+     * @param {TelemetryReport} report - Specifies the telemetry report to filter.
+     * @returns {TelemetryReport} Returns the filtered telemetry report.
+     */
+    private applyMetricsFilter(report: TelemetryReport): TelemetryReport {
+        if (!this.telemetrySettings || !this.telemetrySettings.metrics || this.telemetrySettings.metrics.length === 0) {
+            return report;
+        }
+        const allow: Set<string> = new Set(this.telemetrySettings.metrics);
+        const filtered: TelemetryReport = {
+            status: report.status,
+            duration: report.duration
+        };
+        if (allow.has('toolCalls')) { filtered.toolCalls = report.toolCalls; }
+        if (allow.has('streamingChunks')) { filtered.streamingChunks = report.streamingChunks; }
+        if (allow.has('model')) { filtered.model = report.model; }
+        if (allow.has('inputTokens')) { filtered.inputTokens = report.inputTokens; }
+        if (allow.has('outputTokens')) { filtered.outputTokens = report.outputTokens; }
+        if (allow.has('totalTokens')) { filtered.totalTokens = report.totalTokens; }
+        if (allow.has('reasoningTokens')) { filtered.reasoningTokens = report.reasoningTokens; }
+        if (allow.has('cachedInputTokens')) { filtered.cachedInputTokens = report.cachedInputTokens; }
+        if (!isNullOrUndefined(report.customAttributes)) { filtered.customAttributes = report.customAttributes; }
+        return filtered;
+    }
+
+    /**
+     * Generates, processes, and dispatches a telemetry report for the current turn.
+     * Accepts the turn status and optional telemetry enrichment data.
+     *
+     * @param {('completed' | 'cancelled')} status - Specifies the completion status of the turn.
+     * @param {TelemetryData} [telemetryData] - Provides optional model, token, and custom telemetry data.
+     * @returns {void}
+     */
+    private emitTelemetryReport(
+        status: 'completed' | 'cancelled',
+        telemetryData?: TelemetryData
+    ): void {
+        const settings: TelemetrySettingsModel = this.telemetrySettings;
+        if (!settings || settings.enable !== true) {
+            this.resetActiveTurn();
+            return;
+        }
+        const before: TelemetryReport = this.buildReport(status, telemetryData);
+        const filtered: TelemetryReport | null = this.applyBeforeReport(before);
+        if (filtered === null) {
+            this.resetActiveTurn();
+            return;
+        }
+        const finalReport: TelemetryReport = this.applyMetricsFilter(filtered);
+        if (finalReport && this.prompts && this.prompts.length > 0) {
+            const lastPromptIndex: number = this.prompts.length - 1;
+            this.telemetryReportsByPrompt.set(lastPromptIndex, finalReport);
+            // If the toolbar item was skipped at render time (no prior report), inject it now.
+            this.ensureTelemetryToolbarItem(lastPromptIndex, finalReport);
+            this.updateTelemetryToolbarItem(lastPromptIndex, finalReport);
+        }
+        this.resetActiveTurn();
+    }
+
+    /**
+     * Creates the content displayed in the telemetry tooltip.
+     * Shows available telemetry metrics in the configured display order.
+     *
+     * @param {TelemetryReport} report - Specifies the telemetry report to render.
+     * @returns {HTMLElement} Returns the populated tooltip content element.
+     */
+    private formatTelemetryTooltip(report: TelemetryReport): HTMLElement {
+        const wrap: HTMLElement = this.createElement('div', { className: 'e-assist-telemetry-tooltip-body' });
+        const durationValue: string = this.formatDuration(report.duration);
+
+        const allFields: Record<TelemetryMetric, { label: string; value: any }> = {
+            status: { label: this.l10n.getConstant('status'), value: report.status },
+            toolCalls: { label: this.l10n.getConstant('toolCalls'), value: typeof report.toolCalls === 'number' ? report.toolCalls : 0 },
+            duration: { label: this.l10n.getConstant('duration'), value: durationValue },
+            streamingChunks: { label: this.l10n.getConstant('streamingChunks'), value: report.streamingChunks },
+            model: { label: this.l10n.getConstant('model'), value: report.model },
+            inputTokens: { label: this.l10n.getConstant('inputTokens'), value: report.inputTokens },
+            outputTokens: { label: this.l10n.getConstant('outputTokens'), value: report.outputTokens },
+            totalTokens: { label: this.l10n.getConstant('totalTokens'), value: report.totalTokens },
+            reasoningTokens: { label: this.l10n.getConstant('reasoningTokens'), value: report.reasoningTokens },
+            cachedInputTokens: { label: this.l10n.getConstant('cachedInputTokens'), value: report.cachedInputTokens }
+        };
+        // Use typed status mappings and fall back for unexpected values.
+        const statusLabels: Partial<Record<'completed' | 'cancelled', string>> = {
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+        };
+        const defaultOrder: TelemetryMetric[] = [
+            'duration', 'toolCalls', 'model', 'inputTokens',
+            'outputTokens', 'totalTokens'
+        ];
+        const requested: TelemetryMetric[] = this.telemetrySettings.metrics as TelemetryMetric[];
+        const order: TelemetryMetric[] = (requested && requested.length > 0) ? requested : defaultOrder;
+        // Show count-based metrics only when value is greater than zero.
+        const countMetrics: Set<TelemetryMetric> = new Set<TelemetryMetric>([
+            'toolCalls',
+            'inputTokens',
+            'outputTokens',
+            'totalTokens',
+            'reasoningTokens',
+            'cachedInputTokens',
+            'streamingChunks'
+        ]);
+        const fields: Array<{ label: string; value: any }> = [];
+
+        for (let i: number = 0; i < order.length; i++) {
+            const metric: TelemetryMetric = order[parseInt(i.toString(), 10)];
+            // eslint-disable-next-line security/detect-object-injection
+            const field: { label: string; value: any } = allFields[metric];
+            if (!field) { continue; }
+            let hasDataValue: boolean = false;
+            if (metric === 'status') {
+                hasDataValue = (!isNullOrUndefined(field.value));
+            } else if (countMetrics.has(metric)) {
+                // Strict-positive check: hides the row when the metric is absent,
+                // null, or explicitly reported as 0 / NaN / negative.
+                hasDataValue = (typeof field.value === 'number' && isFinite(field.value) && field.value > 0);
+            } else {
+                hasDataValue = (!isNullOrUndefined(field.value) && String(field.value).length > 0);
+            }
+            if (hasDataValue) {
+                fields.push(field);
+            }
+        }
+
+        // Render collected fields
+        for (let i: number = 0; i < fields.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
+            const field: { label: string; value: any } = fields[i];
+            const row: HTMLElement = this.createElement('div', { className: 'e-assist-telemetry-row' });
+            const label: HTMLElement = this.createElement('span', { className: 'e-assist-telemetry-label' });
+            label.textContent = field.label;
+            const value: HTMLElement = this.createElement('span', { className: 'e-assist-telemetry-value' });
+
+            if (field.label === 'Status') {
+                const rawStatus: string = String(field.value);
+                // eslint-disable-next-line security/detect-object-injection
+                const statusText: string = (statusLabels as Record<string, string | undefined>)[rawStatus] || rawStatus;
+                value.textContent = statusText;
+            } else if (field.label === this.l10n.getConstant('model')) {
+                const modelValue: string = String(field.value);
+                value.textContent = modelValue;
+                value.setAttribute('title', modelValue);
+            } else {
+                value.textContent = String(field.value);
+            }
+            row.appendChild(label);
+            row.appendChild(value);
+            wrap.appendChild(row);
+        }
+        if (!isNullOrUndefined(report.customAttributes)) {
+            const customKeys: string[] = Object.keys(report.customAttributes);
+            for (let i: number = 0; i < customKeys.length; i++) {
+                const customKey: string = customKeys[parseInt(i.toString(), 10)];
+                // eslint-disable-next-line security/detect-object-injection
+                const customValue: string | number | boolean | null = report.customAttributes[customKey];
+                if (isNullOrUndefined(customValue)) { continue; }
+                const row: HTMLElement = this.createElement('div', { className: 'e-assist-telemetry-row' });
+                const label: HTMLElement = this.createElement('span', { className: 'e-assist-telemetry-label' });
+                label.textContent = customKey;
+                const value: HTMLElement = this.createElement('span', { className: 'e-assist-telemetry-value' });
+                value.textContent = String(customValue);
+                row.appendChild(label);
+                row.appendChild(value);
+                wrap.appendChild(row);
+            }
+        }
+        return wrap;
+    }
+
+    /**
+     * Creates the telemetry summary button displayed in the response toolbar.
+     * Shows the recorded duration when available or a placeholder when no report exists.
+     *
+     * @param {TelemetryReport} [report] - Specifies the telemetry report used to populate the button label.
+     * @returns {ToolbarItemModel} Returns the telemetry summary toolbar item configuration.
+     */
+    private buildTelemetryToolbarItem(report?: TelemetryReport): ToolbarItemModel {
+        const cssClass: string = TELEMETRY_TOOLBAR_ITEM_CSS_CLASS;
+        if (report) {
+            return {
+                type: 'Button',
+                text: this.formatDuration(report.duration),
+                cssClass: cssClass,
+                align: 'Left'
+            } as ToolbarItemModel;
+        }
+        return {
+            type: 'Button',
+            text: '\u2014 ms',
+            cssClass: cssClass,
+            align: 'Left',
+            disabled: true
+        } as ToolbarItemModel;
+    }
+
+    /**
+     * Adds the telemetry summary button to the response toolbar when applicable.
+     * Accepts a prompt index and telemetry report used to configure the button.
+     *
+     * @param {number} promptIndex - Specifies the prompt index associated with the toolbar.
+     * @param {TelemetryReport} report - Specifies the telemetry report used to populate the button.
+     * @returns {void}
+     */
+    private ensureTelemetryToolbarItem(promptIndex: number, report: TelemetryReport): void {
+        if (!this.element || !this.responseToolbarEle) { return; }
+        const container: HTMLElement | null = this.element.querySelector(
+            '#e-response-item_' + promptIndex + ' .e-toolbar-items, #e-response-item_' + promptIndex + ' .e-toolbar'
+        ) as HTMLElement | null;
+        if (!container) { return; }
+        if (container.querySelector('.' + TELEMETRY_TOOLBAR_ITEM_CSS_CLASS)) { return; }
+        const telemetryItem: ToolbarItemModel = this.buildTelemetryToolbarItem(report);
+        const telemetryEJItem: ItemModel = {
+            type: telemetryItem.type,
+            visible: telemetryItem.visible,
+            disabled: telemetryItem.disabled,
+            tooltipText: telemetryItem.tooltip,
+            template: telemetryItem.template,
+            prefixIcon: telemetryItem.iconCss,
+            text: telemetryItem.text,
+            cssClass: telemetryItem.cssClass,
+            align: telemetryItem.align || 'Left',
+            width: this.responseToolbarSettings.width,
+            tabIndex: telemetryItem.tabIndex
+        };
+        this.responseToolbarEle.addItems([telemetryEJItem], this.responseToolbarEle.items.length);
+    }
+
+    /**
+     * Updates the telemetry button and tooltip content for a response toolbar.
+     * Accepts a prompt index and telemetry report containing the latest display data.
+     *
+     * @param {number} promptIndex - Specifies the prompt index associated with the toolbar item.
+     * @param {TelemetryReport} report - Specifies the telemetry report used to refresh the button and tooltip.
+     * @returns {void}
+     */
+    private updateTelemetryToolbarItem(promptIndex: number, report: TelemetryReport): void {
+        const responseContainer: HTMLElement = this.element.querySelector(
+            '#e-response-item_' + promptIndex + ' .e-toolbar-items, #e-response-item_' + promptIndex + ' .e-toolbar'
+        ) as HTMLElement;
+        if (!responseContainer) { return; }
+        const wrapper: HTMLElement = responseContainer.querySelector('.' + TELEMETRY_TOOLBAR_ITEM_CSS_CLASS) as HTMLElement;
+        if (!wrapper) { return; }
+        const btn: HTMLElement = wrapper.querySelector('button') as HTMLElement;
+        if (!btn) { return; }
+        const tooltip: HTMLElement = this.formatTelemetryTooltip(report);
+        const textSpan: HTMLElement = btn.querySelector('.e-tbar-btn-text') as HTMLElement;
+        if (textSpan) {
+            textSpan.textContent = this.formatDuration(report.duration);
+        }
+        btn.setAttribute('aria-label', 'Telemetry data');
+        wrapper.classList.remove('e-overlay');
+        btn.removeAttribute('aria-disabled');
+        btn.removeAttribute('disabled');
+        this.refreshTelemetryTooltip(promptIndex, btn, tooltip);
+    }
+
+    /**
+     * Creates and attaches a tooltip to a telemetry summary button.
+     * Accepts a prompt index, target button element, and tooltip content.
+     *
+     * @param {number} promptIndex - Specifies the prompt index associated with the tooltip.
+     * @param {HTMLElement} btn - Specifies the telemetry button that hosts the tooltip.
+     * @param {string | HTMLElement} content - Specifies the content displayed inside the tooltip.
+     * @returns {void}
+     */
+    private attachTelemetryTooltip(promptIndex: number, btn: HTMLElement, content: string | HTMLElement): void {
+        const existing: Tooltip = this.telemetryTooltipsByPrompt.get(promptIndex) as Tooltip;
+        if (existing) {
+            existing.destroy();
+        }
+        if (!btn.id) {
+            btn.id = 'e-assist-telemetry-btn-' + promptIndex + '-' + getUniqueID('x');
+        }
+        const tip: Tooltip = new Tooltip({
+            content: content,
+            target: '#' + btn.id,
+            position: 'RightCenter',
+            opensOn: 'Hover',
+            cssClass: 'e-assist-telemetry-tooltip',
+            width: 'auto',
+            height: 'auto'
+        });
+        tip.appendTo(document.body);
+        this.telemetryTooltipsByPrompt.set(promptIndex, tip);
+    }
+
+    /**
+     * Updates the content of an existing telemetry tooltip.
+     * Accepts a prompt index, target button element, and tooltip content to display.
+     *
+     * @param {number} promptIndex - Specifies the prompt index associated with the tooltip.
+     * @param {HTMLElement} btn - Specifies the telemetry button that hosts the tooltip.
+     * @param {string | HTMLElement} content - Specifies the content displayed inside the tooltip.
+     * @returns {void}
+     */
+    private refreshTelemetryTooltip(promptIndex: number, btn: HTMLElement, content: string | HTMLElement): void {
+        const existing: Tooltip = this.telemetryTooltipsByPrompt.get(promptIndex) as Tooltip;
+        if (existing) {
+            existing.content = content;
+            existing.dataBind();
+            return;
+        }
+        this.attachTelemetryTooltip(promptIndex, btn, content);
+    }
+
+    /**
+     * Adds telemetry buttons and tooltips to rendered responses with available reports.
+     * Only responses that have cached telemetry data are updated.
+     *
+     * @returns {void}
+     */
+    private addTelemetryToolbarForAllResponses(): void {
+        const indices: number[] = Array.from(this.telemetryReportsByPrompt.keys());
+        for (let i: number = 0; i < indices.length; i++) {
+            const promptIndex: number = indices[parseInt(i.toString(), 10)];
+            const cached: TelemetryReport = this.telemetryReportsByPrompt.get(promptIndex) as TelemetryReport;
+            if (!cached) { continue; }
+            this.ensureTelemetryToolbarItem(promptIndex, cached);
+            this.updateTelemetryToolbarItem(promptIndex, cached);
+        }
+    }
+
+    /**
+     * Removes all telemetry UI elements and clears cached telemetry data.
+     * Destroys associated tooltips, removes toolbar buttons, and resets telemetry state.
+     *
+     * @returns {void}
+     */
+    private removeTelemetryToolbarForAllResponses(): void {
+        this.telemetryTooltipsByPrompt.forEach((tip: Tooltip) => {
+            if (!tip) { return; }
+            tip.destroy();
+        });
+        this.telemetryTooltipsByPrompt.clear();
+        this.telemetryReportsByPrompt.clear();
+
+        const wrappers: NodeListOf<HTMLElement> = this.element.querySelectorAll(
+            '.e-output-container[id^="e-response-item_"] .e-response-toolbar-wrapper .' +
+            TELEMETRY_TOOLBAR_ITEM_CSS_CLASS
+        );
+
+        if (this.responseToolbarEle && typeof this.responseToolbarEle.removeItems === 'function') {
+            for (let i: number = 0; i < wrappers.length; i++) {
+                const wrapper: HTMLElement = wrappers[parseInt(i.toString(), 10)];
+                this.responseToolbarEle.removeItems(wrapper);
+            }
+            this.responseToolbarEle.dataBind();
+        }
+    }
+
     private unWireEvents(): void {
         this.unWireFooterEvents(this.footerTemplate);
         if (this.editableTextarea) {
@@ -2707,6 +3300,8 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         this.isProtectedOnChange = true;
         this.finalizeIncompleteThinkingBlocks();
         this.isProtectedOnChange = prevOnChange;
+        // Emit cancel telemetry before resetting UI.
+        this.emitTelemetryReport('cancelled');
         this.isOutputRenderingStop = true;
         this.isResponseRequested = false;
         this.lastStreamPrompt = '';
@@ -2751,6 +3346,9 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         }
         this.isResponseRequested = true;
         this.lastStreamPrompt = '';
+        // Telemetry — start of a new turn
+        this.resetActiveTurn();
+        this.activeTurnStartTs = performance.now();
         if (this.suggestionsElement) { this.suggestionsElement.hidden = true; }
         this.isOutputRenderingStop = false;
         this.toggleStopRespondingButton(true);
@@ -2904,7 +3502,7 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         const mentionChips: MentionItems[] = this.getMentionItems();
-        const promptTextWithPlaceholders: string = this.getPromptTextWithPlaceholders();
+        const promptTextWithPlaceholders: string = mentionChips.length > 0 ? this.getPromptTextWithPlaceholders() : this.prompt;
         this.prompts = [...this.prompts, { prompt: promptTextWithPlaceholders, response: '', isResponseHelpful: null, attachedFiles: this.uploadedFiles, blocks: null, mentions: mentionChips }];
         this.isProtectedOnChange = prevOnChange;
     }
@@ -3425,6 +4023,20 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
         this.responseToolbarEle.appendTo(toolbarContainer);
         this.responseToolbarEle.element.setAttribute('aria-label', `response-toolbar-${index}`);
         this.contentFooterEle.appendChild(toolbarContainer);
+        if (this.telemetrySettings && this.telemetrySettings.enable === true) {
+            const promptIndex: number = parseInt((index || 0).toString(), 10);
+            const cached: TelemetryReport = this.telemetryReportsByPrompt.get(promptIndex) as TelemetryReport;
+            const wrapper: HTMLElement = toolbarContainer.querySelector(
+                '.' + TELEMETRY_TOOLBAR_ITEM_CSS_CLASS
+            ) as HTMLElement;
+            const btn: HTMLElement | null = wrapper ? wrapper.querySelector('button') : null;
+            if (btn) {
+                const content: string | HTMLElement = cached
+                    ? this.formatTelemetryTooltip(cached)
+                    : 'Telemetry: awaiting first response.';
+                this.attachTelemetryTooltip(promptIndex, btn, content);
+            }
+        }
     }
 
     private renderResponseNavigation(promptIndex: number): HTMLElement {
@@ -3587,6 +4199,27 @@ export class AIAssistView extends AIAssistBase implements INotifyPropertyChanged
             }
             return toolbarItem;
         });
+        if (this.telemetrySettings && this.telemetrySettings.enable === true) {
+            const promptIndex: number = parseInt((index || 0).toString(), 10);
+            const cachedReport: TelemetryReport = this.telemetryReportsByPrompt.get(promptIndex) as TelemetryReport;
+            if (cachedReport) {
+                const telemetryItem: ToolbarItemModel = this.buildTelemetryToolbarItem(cachedReport);
+                const telemetryEJItem: ItemModel = {
+                    type: telemetryItem.type,
+                    visible: telemetryItem.visible,
+                    disabled: telemetryItem.disabled,
+                    tooltipText: telemetryItem.tooltip,
+                    template: telemetryItem.template,
+                    prefixIcon: telemetryItem.iconCss,
+                    text: telemetryItem.text,
+                    cssClass: telemetryItem.cssClass,
+                    align: telemetryItem.align || 'Left',
+                    width: this.responseToolbarSettings.width,
+                    tabIndex: telemetryItem.tabIndex
+                };
+                pushToolbar.push(telemetryEJItem);
+            }
+        }
         this.responseToolbarEle = new Toolbar({
             items: pushToolbar,
             clicked: (args: ClickEventArgs) => {
@@ -4161,7 +4794,12 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         }
     }
 
-    private streamText( text: string, onUpdate: (accumulated: string, isComplete: boolean) => void, onComplete?: () => void ): void {
+    private streamText(
+        text: string,
+        onUpdate: (accumulated: string, isComplete: boolean) => void,
+        onComplete?: () => void,
+        countTelemetry: boolean = true
+    ): void {
         if (!text || !text.trim()) {
             if (onComplete) { onComplete(); }
             return;
@@ -4176,6 +4814,10 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
             }
             if (i < words.length) {
                 lastResponse += (i === 0 ? '' : ' ') + words[i++];
+                if (countTelemetry) {
+                    // collecting streamingChunks count here
+                    this.activeTurnChunkCount++;
+                }
                 onUpdate(lastResponse, false);
                 if (!this.isRegenerating) {
                     this.scrollToBottom();
@@ -4194,7 +4836,7 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         this.regeneratingPromptIndex = -1;
     }
 
-    private streamResponse(response: string, index: number, blocksLength: number): void {
+    private streamResponse(response: string, index: number, blocksLength: number, onStreamingComplete?: () => void): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         this.streamText( response, (lastResponse: string, isComplete: boolean) => {
@@ -4225,7 +4867,7 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                     this.resetRegeneratingState();
                 }
             }
-        });
+        }, onStreamingComplete);
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -4234,7 +4876,7 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         this.isProtectedOnChange = true;
         this.streamText( response, (lastResponse: string) => {
             element.innerHTML = lastResponse;
-        }, streamingCompleted );
+        }, streamingCompleted, false );
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -4368,6 +5010,8 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
             speechSynthesis.cancel();
             this.currentUtterance = null;
         }
+        // Telemetry — reset scratch state (no work if telemetry is off, but be defensive)
+        this.resetActiveTurn();
         super.destroy();
         this.unWireEvents();
         this.destroyAndNullify(this.responseToolbarEle);
@@ -4385,7 +5029,7 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         this.assistViewTemplateIndex = null;
         this.toolbarItems = [];
         this.displayContents = [];
-        this.isOutputRenderingStop = null;
+        this.isOutputRenderingStop = false;
         this.isResponseRequested = null;
         this.suggestionHeader = null;
         this.previousElement = null;
@@ -4402,6 +5046,13 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         this.mentionModels = [];
         this.selectedMentions = [];
         this.mentionCounter = 0;
+        this.telemetryReportsByPrompt.clear();
+        this.telemetryTooltipsByPrompt.forEach((tip: Tooltip) => {
+            if (tip) {
+                tip.destroy();
+            }
+        });
+        this.telemetryTooltipsByPrompt.clear();
 
         // properties nullify
         this.toolbarSettings = this.promptToolbarSettings = this.responseToolbarSettings = {};
@@ -4468,20 +5119,23 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
     }
 
     /**
-     * Adds a response to the last prompt or appends a new prompt data in the AIAssistView component.
+     * Adds or updates a response in the AIAssistView component.
+     * Accepts response content, update state, and optional telemetry enrichment data.
      *
-     * @param {string | Object} outputResponse - The response to be added. Can be a string representing the response or an object containing both the prompt and the response.
-     * - If `outputResponse` is a string, it updates the response for the last prompt in the prompts collection.
-     * - If `outputResponse` is an object, it can either update the response of an existing prompt if the prompt matches or append a new prompt data.
-     * @param {boolean} isFinalUpdate - Indicates whether this response is the final one, to hide the stop response button.
+     * @param {string | Object} outputResponse - Specifies the response content or prompt-response object to add or update.
+     * @param {boolean} isFinalUpdate - Indicates whether the response update is complete.
+     * @param {TelemetryData} [telemetryData] - Provides optional model, token, and custom telemetry data.
      * @returns {void}
      */
-    public addPromptResponse(
-        outputResponse: string | Object,
-        isFinalUpdate: boolean = true
+    public addPromptResponse(outputResponse: string | Object, isFinalUpdate: boolean = true, telemetryData?: TelemetryData
     ): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
+        if (!outputResponse) {
+            this.isResponseRequested = false;
+            this.isProtectedOnChange = prevOnChange;
+            return;
+        }
         if (this.isRegenerating && this.regeneratingPromptIndex >= 0 && this.regeneratingPromptIndex < this.prompts.length) {
             const regenerateIndex: number = this.regeneratingPromptIndex;
             const responseText: string = this.extractResponseText(outputResponse);
@@ -4558,7 +5212,6 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
         if (!this.isOutputRenderingStop) {
             const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
             let lastPrompt: PromptModel = this.prompts[this.prompts.length - 1];
-            // If lastPrompt is undefined, initialize a new prompt entry
             if (!lastPrompt) {
                 this.prompts = [...this.prompts, {
                     prompt: null,
@@ -4571,6 +5224,8 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                 this.lastRenderedBlockCount = 0;
             }
 
+            const terminalUpdate: boolean = isFinalUpdate;
+
             const processResponse: (rawResponse: string, blocks?: ResponseBlock[]) => void = (rawResponse: string,
                                                                                               blocks?: ResponseBlock[]): void => {
                 if (this.enableStreaming && !this.isToolResponse) {
@@ -4581,7 +5236,10 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                     isFinalUpdate = false;
                     const htmlResponse: string | Promise<string> = MarkdownConverter.toHtml(rawResponse);
                     lastPrompt.response = htmlResponse as string;
-                    this.streamResponse(lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length);
+                    this.streamResponse(
+                        lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length,
+                        () => this.emitTelemetryReport('completed', telemetryData)
+                    );
                 } else {
                     if (this.prompts.length === 0) {
                         this.isResponseRequested = false;
@@ -4589,8 +5247,10 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                     }
                     lastPrompt.response =  rawResponse ? MarkdownConverter.toHtml(rawResponse) as string : rawResponse;
                     if (!this.isToolResponse) {
-                        this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem,
-                                            null, isNOU(blocks) ? 0 : blocks.length);
+                        this.updateResponse(
+                            lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem,
+                            null, isNOU(blocks) ? 0 : blocks.length
+                        );
                     } else {
                         if (!blocks) {
                             return;
@@ -4604,10 +5264,15 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                         if (rawResponse) {
                             this.isToolResponse = false;
                             if (this.enableStreaming) {
-                                this.streamResponse(lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length);
+                                this.streamResponse(
+                                    lastPrompt.response, this.prompts.length - 1, isNOU(blocks) ? 0 : blocks.length,
+                                    () => this.emitTelemetryReport('completed', telemetryData)
+                                );
                             } else {
-                                this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate,
-                                                    responseItem, null, isNOU(blocks) ? 0 : blocks.length);
+                                this.updateResponse(
+                                    lastPrompt.response, this.prompts.length - 1, isFinalUpdate,
+                                    responseItem, null, isNOU(blocks) ? 0 : blocks.length
+                                );
                             }
                         }
                     }
@@ -4623,6 +5288,8 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                 this.isToolResponse = false;
                 processResponse(outputResponse);
             }
+            // Tracks whether the streaming blocks-only path already emitted
+            let telemetryHandledByStreamingBlocks: boolean = false;
             if (typeof outputResponse === 'object') {
                 if (this.enableStreaming) {
                     isFinalUpdate = false;
@@ -4657,6 +5324,10 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                         if (this.outputElement.querySelector('.e-skeleton')) {
                             this.outputElement.removeChild(this.skeletonContainer);
                         }
+                        if (this.enableStreaming && terminalUpdate) {
+                            this.renderOutputToolbarItems(this.prompts.length - 1, true);
+                            telemetryHandledByStreamingBlocks = true;
+                        }
                     } else {
                         processResponse(tPrompt.response, tPrompt.blocks);
                     }
@@ -4669,6 +5340,14 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                     this.lastRenderedBlockCount = 0;
                     this.renderOutputContainer(tPrompt.prompt, tPrompt.response, tPrompt.attachedFiles,
                                                this.prompts.length - 1, true, isFinalUpdate, tPrompt.blocks);
+                    const isStreamingBlocksOnly: boolean =
+                        this.enableStreaming && terminalUpdate && !isFinalUpdate &&
+                        Array.isArray(tPrompt.blocks) && tPrompt.blocks.length > 0 &&
+                        (isNOU(tPrompt.response) || tPrompt.response === '');
+                    if (isStreamingBlocksOnly) {
+                        this.renderOutputToolbarItems(this.prompts.length - 1, true);
+                        telemetryHandledByStreamingBlocks = true;
+                    }
                 }
                 if (!isFinalUpdate) {
                     this.lastStreamPrompt = tPrompt.prompt;
@@ -4682,6 +5361,19 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                     this.toggleStopRespondingButton(false);
                 }
                 this.isResponseRequested = !isFinalUpdate;
+            }
+            if (this.prompts && this.prompts.length > 0) {
+                const lastBlocks: ResponseBlock[] = this.prompts[this.prompts.length - 1].blocks || [];
+                this.activeTurnToolCalls = this.deriveToolCalls(lastBlocks) || 0;
+            }
+            // Emit telemetry here for streaming blocks-only flows; text streaming reports elsewhere.
+            if (terminalUpdate && telemetryHandledByStreamingBlocks) {
+                this.emitTelemetryReport('completed', telemetryData);
+            }
+            if (terminalUpdate) {
+                if (!this.enableStreaming) {
+                    this.emitTelemetryReport('completed', telemetryData);
+                }
             }
         }
         this.isProtectedOnChange = prevOnChange;
@@ -4699,7 +5391,7 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
      * @returns {void}
      */
     public scrollToBottom(): void {
-        if  (this.contentWrapper) {
+        if (this.contentWrapper) {
             this.updateScroll(this.contentWrapper);
         }
     }
@@ -4808,6 +5500,13 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
                 this.originalBlocks.clear();
                 this.isRegenerating = false;
                 this.regeneratingPromptIndex = -1;
+                this.telemetryTooltipsByPrompt.forEach((tip: Tooltip) => {
+                    if (tip) {
+                        tip.destroy();
+                    }
+                });
+                this.telemetryTooltipsByPrompt.clear();
+                this.telemetryReportsByPrompt.clear();
                 this.renderOutputContent(true);
                 this.detachCodeCopyEventHandler();
                 if (this.bannerTemplate) {
@@ -4870,6 +5569,24 @@ this.getPromptText(this.prompts[parseInt(promptIndex.toString(), 10)].prompt, pr
             case 'speechToTextSettings':
                 this.handleSTTDynamicChange(newProp.speechToTextSettings, oldProp.speechToTextSettings);
                 break;
+            case 'telemetrySettings': {
+                const next: TelemetrySettingsModel = newProp.telemetrySettings;
+                let prev: TelemetrySettingsModel = null;
+                if (!isNullOrUndefined(oldProp) && !isNullOrUndefined(oldProp.telemetrySettings)) {
+                    prev = oldProp.telemetrySettings;
+                }
+                const nextEnabled: boolean = !!(next && next.enable === true);
+                const prevEnabled: boolean = !!(prev && prev.enable === true);
+
+                if (nextEnabled !== prevEnabled) {
+                    if (nextEnabled) {
+                        this.addTelemetryToolbarForAllResponses();
+                    } else {
+                        this.removeTelemetryToolbarForAllResponses();
+                    }
+                }
+                break;
+            }
             case 'mentions':
                 this.updateMentionObjs();
                 break;

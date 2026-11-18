@@ -4,6 +4,7 @@ import { ElementsMap, ListStyle } from './ribbon-interfaces';
 
 /**
  * Helper class for bullet list operations in Document Editor
+ *
  * @private
  */
 export class BulletListHelper {
@@ -66,6 +67,7 @@ export class BulletListHelper {
 
     /**
      * Creates a number list tag item for the dropdown
+     *
      * @param {HTMLElement} ulTag - Parent UL element
      * @param {string} text1 - First number format text
      * @param {string} text2 - Second number format text
@@ -100,6 +102,7 @@ export class BulletListHelper {
 
     /**
      * Creates a number none list tag item for the dropdown
+     *
      * @param {HTMLElement} ulTag - Parent UL element
      * @param {L10n} localObj - Localization object
      * @returns {HTMLElement} The created list item element
@@ -127,6 +130,7 @@ export class BulletListHelper {
 
     /**
      * Update the selected bullet list type in the dropdown
+     *
      * @param {string} listText - The list text to match
      * @param {ElementsMap} bulletElements - Map of bullet elements
      * @returns {void}
@@ -184,7 +188,6 @@ export class BulletListHelper {
         const className: string = 'de-list-item-selected';
 
         for (const key in elements) {
-            /* eslint-disable */
             if (Object.prototype.hasOwnProperty.call(elements, key)) {
                 /* eslint-disable */
                 const element: HTMLElement = elements[key];

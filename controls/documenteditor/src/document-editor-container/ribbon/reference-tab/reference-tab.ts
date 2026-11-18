@@ -8,6 +8,7 @@ import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 export const REFERENCES_TAB_ID: string = '_reference_tab';
 /**
  * Reference tab implementation
+ *
  * @private
  */
 export class ReferenceTab {
@@ -18,6 +19,7 @@ export class ReferenceTab {
 
     /**
      * Constructor for ReferenceTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -31,6 +33,7 @@ export class ReferenceTab {
 
     /**
      * Get the Reference tab configuration
+     *
      * @returns {RibbonTabModel} - Reference tab configuration
      * @private
      */
@@ -48,6 +51,7 @@ export class ReferenceTab {
 
     /**
      * Update UI based on selection state
+     *
      * @returns {void}
      * @private
      */
@@ -59,6 +63,7 @@ export class ReferenceTab {
 
     /**
      * Clean up resources
+     *
      * @returns {void}
      * @private
      */

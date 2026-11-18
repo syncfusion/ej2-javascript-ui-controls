@@ -123,6 +123,10 @@ export class Search {
     public replace(replaceText: string, result: TextSearchResult, results: TextSearchResults): number {
         if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode
         || !this.viewer.owner.editorModule.canEditContentControl || isNullOrUndefined(results)) {
+            if (this.viewer && this.viewer.owner && this.viewer.owner.editorModule
+                && this.viewer.owner.editorModule.isUserEditBlocked()) {
+                this.viewer.owner.editorModule.showLockedRegionAlert();
+            }
             return 0;
         }
         if (!isNullOrUndefined(this.viewer)) {
@@ -205,7 +209,12 @@ export class Search {
      */
     public replaceAll(replaceText: string, results: TextSearchResults): number {
         this.documentHelper.layout.isReplacingAll = true;
-        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
+        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)
+            || !this.viewer.owner.editorModule.canEditContentControl) {
+            if (this.viewer && this.viewer.owner && this.viewer.owner.editorModule
+                && this.viewer.owner.editorModule.isUserEditBlocked()) {
+                this.viewer.owner.editorModule.showLockedRegionAlert();
+            }
             return 0;
         }
         if (this.owner.editorHistoryModule) {
@@ -237,7 +246,6 @@ export class Search {
                 result.destroy();
             }
             //if (result.isHeader || result.isFooter) {
-            // eslint-disable-next-line max-len
             //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             //}
         }

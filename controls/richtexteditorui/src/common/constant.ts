@@ -16,6 +16,10 @@ export const insertTable: string = 'insertTable';
 /**
  * @hidden
  */
+export const insertTableBySlash: string = 'insertTableBySlash';
+/**
+ * @hidden
+ */
 export const modelChanged: string = 'modelchanged';
 
 /**
@@ -41,12 +45,12 @@ export const change: string = 'change';
 /**
  * @hidden
  */
-export const focused: string = 'focused';
+export const focused: string = 'focus';
 
 /**
  * @hidden
  */
-export const blurred: string = 'blurred';
+export const blurred: string = 'blur';
 
 /**
  * @hidden

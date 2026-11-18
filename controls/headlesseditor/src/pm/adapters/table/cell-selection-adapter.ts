@@ -4,60 +4,83 @@
  * Sealed inside src/pm/. Nothing outside src/pm/ may import from this file.
  *
  * Conversion strategy:
- *   - Syncfusion CellSelection stores stable cell node UUIDs (anchorCellId, headCellId).
+ *   - Syncfusion CellSelection stores paths (anchorCellPath, headCellPath).
+ *     Each path is `[..tablePath, rowIdx, colIdx]`.
  *   - PM CellSelection stores resolved document positions ($anchorCell, $headCell).
- *   - This adapter walks the PM document to find cells by their `id` attr, converting
- *     nodeId → pmPos and pmPos → nodeId.
+ *   - This adapter converts paths ↔ PM positions by descending through the
+ *     PM tree one child-at-a-time using the integer path indices.
  */
-import { PMNode, PMCellSelection } from '../../pm-guard';
-import { CellSelection, SelectionType } from '../../../model/selection';
+import { PMNode, PMResolvedPos, PMCellSelection, PMFragment } from '../../pm-guard';
+import { CellSelection, SelectionType } from '../../../core/model/selection';
 
-// ── Conversion helpers ────────────────────────────────────────────────────────
+// ── Path → PM position ────────────────────────────────────────────────────────
 
 /**
- * Find the absolute PM position of a cell node by its `id` attribute.
- * Walks the entire document tree; returns -1 if not found.
+ * Resolve a Syncfusion cell path to an absolute PM position.
  *
- * @param {PMNode} pmDoc - The PM document to search.
- * @param {string} cellId - The cell node UUID to locate.
- * @returns {number} Absolute PM position of the cell node, or -1 if not found.
+ * Walks the document by descending through the path indices; returns -1 when
+ * the path does not resolve.
+ *
+ * @param {PMNode} pmDoc The PM document to descend into.
+ * @param {number[]} cellPath Path from document root to a tableCell.
+ * @returns {number} The absolute PM integer position, or -1 if not resolved.
  */
-function findCellPosByNodeId(pmDoc: PMNode, cellId: string): number {
-    let found: number = -1;
+function resolveCellPath(pmDoc: PMNode, cellPath: number[]): number {
+    if (cellPath.length < 3) { return -1; }
+    let node: PMNode = pmDoc;
+    let absPos: number = 0;
 
-    pmDoc.descendants((node: PMNode, pos: number): boolean => {
-        if (found !== -1) { return false; }
-        const nodeId: unknown = node.attrs ? node.attrs['id'] : null;
-        if (nodeId !== null && nodeId !== undefined && String(nodeId) === cellId) {
-            found = pos;
-            return false;
+    for (let depth: number = 0; depth < cellPath.length; depth++) {
+        const idx: number = cellPath[depth as number];
+        const isLast: boolean = depth === cellPath.length - 1;
+
+        if (!node.content || idx < 0 || idx >= node.childCount) {
+            return -1;
         }
-        return true;
-    });
 
-    return found;
-}
+        // Advance absPos past each prior sibling at this level
+        const siblings: PMFragment = node.content;
+        let advanced: number = 0;
+        let target: PMNode | null = null;
+        let childPos: number = -1;
+        siblings.forEach((child: PMNode, cp: number) => {
+            if (target) { return false; }
+            if (advanced === idx) {
+                target = child;
+                childPos = cp;
+                return false;
+            }
+            advanced += child.nodeSize;
+            return undefined as never;
+        });
 
-function extractCellIdFromPos($pos: ReturnType<PMNode['resolve']>): string | null {
-    for (let depth: number = $pos.depth; depth >= 0; depth--) {
-        const node: PMNode = $pos.node(depth);
-        if (node.type.name === 'tableCell') {
-            const id: unknown = node.attrs ? node.attrs['id'] : null;
-            return id !== null && id !== undefined ? String(id) : null;
+        if (!target) { return -1; }
+
+        if (isLast) {
+            // Position is the cell's open token: current absPos + 1
+            return absPos + childPos + 1;
         }
+
+        // For nested containers, move into the child and keep walking.
+        absPos = absPos + childPos + target.nodeSize - /*descending into a container - don't double count*/ 0;
+
+        // Recompute: descend step. After moving past (childIdx) preceding siblings
+        // we land at the open token of `target`; we then need `+1` to enter the
+        // container's content. Update absPos accordingly.
+        const before: number = absPos + childPos;
+        // Replace previous line — recompute properly:
+        absPos = childPos + 1; // open token, on the inside
+        node = target;
+        void before;
     }
-    return null;
+
+    return absPos;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Convert a Syncfusion {@link CellSelection} to a PM {@link PMCellSelection}.
- *
- * Walks the PM document to resolve cell nodeIds to absolute PM positions,
- * then creates a `PMCellSelection` from those positions.
- *
- * Returns `null` if either cell cannot be found in the current document.
  *
  * @param {CellSelection} sel - The Syncfusion cell selection to convert.
  * @param {PMNode} pmDoc - The current PM document.
@@ -67,11 +90,11 @@ export function toPMCellSelection(
     sel: CellSelection,
     pmDoc: PMNode
 ): PMCellSelection | null {
-    const anchorPos: number = findCellPosByNodeId(pmDoc, sel.anchorCellId);
-    if (anchorPos === -1) { return null; }
+    const anchorPos: number = resolveCellPath(pmDoc, sel.anchorCellPath);
+    if (anchorPos < 0) { return null; }
 
-    const headPos: number = findCellPosByNodeId(pmDoc, sel.headCellId);
-    if (headPos === -1) { return null; }
+    const headPos: number = resolveCellPath(pmDoc, sel.headCellPath);
+    if (headPos < 0) { return null; }
 
     try {
         return PMCellSelection.create(pmDoc, anchorPos, headPos);
@@ -83,25 +106,52 @@ export function toPMCellSelection(
 /**
  * Convert a PM {@link PMCellSelection} to a Syncfusion {@link CellSelection}.
  *
- * Extracts cell nodeIds from the resolved positions stored in the PM selection.
- *
- * Returns `null` if either cell nodeId cannot be extracted.
- *
  * @param {PMCellSelection} pmSel - The PM cell selection to convert.
  * @returns {CellSelection | null} The Syncfusion cell selection, or null on failure.
  */
 export function fromPMCellSelection(pmSel: PMCellSelection): CellSelection | null {
-    const anchorCellId: string | null = extractCellIdFromPos(pmSel.$anchorCell);
-    if (!anchorCellId) { return null; }
-
-    const headCellId: string | null = extractCellIdFromPos(pmSel.$headCell);
-    if (!headCellId) { return null; }
+    const anchorPath: number[] | null = extractCellPathFromPos(pmSel.$anchorCell);
+    if (!anchorPath) { return null; }
+    const headPath: number[] | null = extractCellPathFromPos(pmSel.$headCell);
+    if (!headPath) { return null; }
 
     return {
         type: SelectionType.Cell,
-        anchorCellId,
-        headCellId
+        anchorCellPath: anchorPath,
+        headCellPath: headPath
     };
+}
+
+/**
+ * Walk from a PM resolved position up to the root, returning the child-index
+ * path that ends at the first tableCell ancestor.
+ *
+ * @param {PMResolvedPos} $pos The resolved PM position to read from.
+ * @returns {number[] | null} The cell path, or null when no tableCell ancestor exists.
+ */
+function extractCellPathFromPos($pos: PMResolvedPos): number[] | null {
+    const path: number[] = [];
+    let found: boolean = false;
+    for (let depth: number = $pos.depth; depth >= 0; depth--) {
+        const node: PMNode = $pos.node(depth);
+        if (depth > 0) {
+            const parent: PMNode = $pos.node(depth - 1);
+            let idx: number = 0;
+            let matched: boolean = false;
+            parent.content.forEach((sibling: PMNode) => {
+                if (matched) { return false; }
+                if (sibling === node) { matched = true; return false; }
+                idx += 1;
+                return undefined as never;
+            });
+            path.unshift(idx);
+        }
+        if (node.type.name === 'tableCell') {
+            found = true;
+            break;
+        }
+    }
+    return found ? path : null;
 }
 
 /**
@@ -118,18 +168,15 @@ export function remapCellSelection(
     sel: CellSelection,
     newPMDoc: PMNode
 ): CellSelection | null {
-    const anchorPos: number = findCellPosByNodeId(newPMDoc, sel.anchorCellId);
-    const headPos: number = findCellPosByNodeId(newPMDoc, sel.headCellId);
+    const anchorPos: number = resolveCellPath(newPMDoc, sel.anchorCellPath);
+    if (anchorPos < 0) { return null; }
 
-    // If the anchor was deleted, the selection is invalid
-    if (anchorPos === -1) { return null; }
-
-    // If only the head was deleted, collapse selection to anchor
-    const resolvedHeadId: string = headPos !== -1 ? sel.headCellId : sel.anchorCellId;
+    const headPos: number = resolveCellPath(newPMDoc, sel.headCellPath);
+    const resolvedHeadPath: number[] = headPos >= 0 ? sel.headCellPath : sel.anchorCellPath;
 
     return {
         type: SelectionType.Cell,
-        anchorCellId: sel.anchorCellId,
-        headCellId: resolvedHeadId
+        anchorCellPath: sel.anchorCellPath,
+        headCellPath: resolvedHeadPath
     };
 }

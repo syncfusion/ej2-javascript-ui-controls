@@ -1,7 +1,7 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
 import { DocumentEditor } from '../../../document-editor';
-import { classList } from '@syncfusion/ej2-base';
+import { classList, L10n } from '@syncfusion/ej2-base';
 
 /**
  * Constants for protect group identification
@@ -18,6 +18,7 @@ export class DeveloperProtectGroup {
 
     /**
      * Constructor for DeveloperProtectGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -27,6 +28,7 @@ export class DeveloperProtectGroup {
 
     /**
      * Get the DocumentEditor instance
+     *
      * @returns {DocumentEditor} The document editor instance
      */
     private get documentEditor(): DocumentEditor {
@@ -35,10 +37,11 @@ export class DeveloperProtectGroup {
 
     /**
      * Get the Protect group model
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
-        const locale: any = this.container.localObj;
+        const locale: L10n = this.container.localObj;
         const id: string = this.ribbonId + DEVELOPER_PROTECT_GROUP;
 
         return {
@@ -59,10 +62,11 @@ export class DeveloperProtectGroup {
 
     /**
      * Get the Restrict Editing button model
+     *
      * @returns {RibbonItemModel} The ribbon item model
      */
     private getRestrictEditingButtonModel(): RibbonItemModel {
-        const locale: any = this.container.localObj;
+        const locale: L10n = this.container.localObj;
         const id: string = this.ribbonId + DEVELOPER_PROTECT_GROUP;
 
         return {
@@ -81,6 +85,7 @@ export class DeveloperProtectGroup {
 
     /**
      * Handle restrict editing button click
+     *
      * @returns {void}
      */
     private onRestrictEditingClick(): void {
@@ -93,12 +98,12 @@ export class DeveloperProtectGroup {
 
     /**
      * Update UI based on current selection
+     *
      * @returns {void}
      */
     public updateSelection(): void {
         // Update UI state based on current selection
         const isReadOnly: boolean = this.documentEditor.isReadOnly;
-        const isDocumentProtected: boolean = this.documentEditor.documentHelper.isDocumentProtected;
 
         // Enable/disable restrict editing button based on document state
         const enableRestrictEditing: boolean = !isReadOnly;
@@ -116,6 +121,7 @@ export class DeveloperProtectGroup {
 
     /**
      * Toggle button state
+     *
      * @param {HTMLElement} element - The HTML element to toggle
      * @param {boolean} toggle - The toggle state
      * @returns {void}
@@ -133,6 +139,7 @@ export class DeveloperProtectGroup {
 
     /**
      * Destroy the DeveloperProtectGroup instance
+     *
      * @returns {void}
      */
     public destroy(): void {

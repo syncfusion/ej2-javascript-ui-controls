@@ -1777,6 +1777,37 @@ export function inferWidgetFromType(type: string, format?: string, hasOptions?: 
   return 'textbox';
 }
 
+export function inferTypeFromWidget(widget: string): string {
+  switch (widget) {
+    case 'number':
+    case 'rangeSlider':
+    case 'rating':
+      return 'number';
+    case 'checkbox':
+    case 'switch':
+      return 'boolean';
+    case 'multiselect':
+    case 'checkboxGroup':
+      return 'array';
+    case 'button':
+      return 'button';
+    case 'message':
+      return 'message';
+    case 'signature':
+      return 'sign';
+    case 'imageEditor':
+      return 'image';
+    case 'fileUpload':
+      return 'file';
+    case 'colorPicker':
+      return 'color';
+    case 'dataGrid':
+      return 'grid';
+    default:
+      return 'string';
+  }
+}
+
 /**
  * @private
  */

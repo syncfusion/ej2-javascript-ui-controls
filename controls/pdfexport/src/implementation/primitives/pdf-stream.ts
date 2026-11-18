@@ -137,8 +137,8 @@ export class PdfStream extends PdfDictionary {
      */
     public clearStream() : void {
         this.internalStream = [];
-        if (this.items.containsKey(this.dictionaryProperties.filter)) {
-            this.remove(this.dictionaryProperties.filter);
+        if (this.items.containsKey('Filter')) {
+            this.remove('Filter');
         }
         this.bCompress = true;
         this.modify();
@@ -205,7 +205,7 @@ export class PdfStream extends PdfDictionary {
             sw.write(dataArray, 0, dataArray.length);
             sw.close();
             data = sw.getCompressedString;
-            this.addFilter(this.dictionaryProperties.flatedecode);
+            this.addFilter('FlateDecode');
         }
         return data;
     }
@@ -214,7 +214,7 @@ export class PdfStream extends PdfDictionary {
      * @private
      */
     public addFilter(filterName : string) : void {
-        let obj : IPdfPrimitive = this.items.getValue(this.dictionaryProperties.filter);
+        let obj : IPdfPrimitive = this.items.getValue('Filter');
         if (obj instanceof PdfReferenceHolder) {
             let rh : PdfReferenceHolder = obj as PdfReferenceHolder;
             obj = rh.object;
@@ -224,11 +224,11 @@ export class PdfStream extends PdfDictionary {
         if (name != null) {
             array = new PdfArray();
             array.insert(0, name);
-            this.items.setValue(this.dictionaryProperties.filter, array);
+            this.items.setValue('Filter', array);
         }
         name = new PdfName(filterName);
         if (array == null) {
-            this.items.setValue(this.dictionaryProperties.filter, name);
+            this.items.setValue('Filter', name);
         } else {
             array.insert(0, name);
         }
@@ -253,7 +253,7 @@ export class PdfStream extends PdfDictionary {
         }
         data = this.compressContent(data, writer);
         let length : number = data.length;
-        this.items.setValue(this.dictionaryProperties.length, new PdfNumber(length));
+        this.items.setValue('Length', new PdfNumber(length));
         super.save(writer, false);
         writer.write(this.dicPrefix);
         writer.write(Operators.newLine);

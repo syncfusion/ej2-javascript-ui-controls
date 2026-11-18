@@ -1,6 +1,37 @@
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';import { ItemModel, Toolbar, ClickEventArgs, FieldSettings } from '@syncfusion/ej2-navigations';import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, RemovingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';import { DataManager, Query } from '@syncfusion/ej2-data';import { Fab } from '@syncfusion/ej2-buttons';import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';import { ResponseBlock, TextBlock, ToolBlock, ThinkingContextItem, ThinkingBlock, ThinkingStage } from './interface';import { AssistThinking } from '../ai-assist-base/index';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import {MentionItems,AssistViewType,AttachmentClickEventArgs,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs,EditableContextClickedEventArgs,AssistMentionSelectEventArgs} from "./ai-assistview";
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { SpeechToTextSettingsModel } from '../ai-assist-base/ai-assist-base-model';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Mention, SelectEventArgs, FilterType, FieldSettingsModel, MentionChangeEventArgs, FieldSettings } from '@syncfusion/ej2-dropdowns';import { ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs, RemovingEventArgs, StartListeningEventArgs, ErrorEventArgs, TranscriptChangedEventArgs, SpeechToText, StopListeningEventArgs, SpeechToTextState } from '@syncfusion/ej2-inputs';import { MarkdownConverter } from '@syncfusion/ej2-markdown-converter';import { ButtonSettings, ButtonSettingsModel, TooltipSettings, TooltipSettingsModel } from '@syncfusion/ej2-inputs';import { DataManager, Query } from '@syncfusion/ej2-data';import { Fab } from '@syncfusion/ej2-buttons';import { AIAssistBase, ToolbarPosition, SpeechToTextSettings } from '../ai-assist-base/ai-assist-base';import { ResponseBlock, TextBlock, ToolBlock, ThinkingContextItem, ThinkingBlock, ThinkingStage } from './interface';import { AssistThinking } from '../ai-assist-base/index';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
+import {TelemetryMetric,TelemetryReport,MentionItems,AssistViewType,AttachmentClickEventArgs,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs,EditableContextClickedEventArgs,AssistMentionSelectEventArgs} from "./ai-assistview";
 import {AIAssistBaseModel} from "../ai-assist-base/ai-assist-base-model";
+
+/**
+ * Interface for a class TelemetrySettings
+ */
+export interface TelemetrySettingsModel {
+
+    /**
+     * Enables telemetry reporting for AI interactions.
+     * Accepts true to capture reports or false to disable telemetry.
+     *
+     * @default false
+     */
+    enable?: boolean;
+
+    /**
+     * Specifies which telemetry metrics are included in reports.
+     * Accepts one or more values from the TelemetryMetric type.
+     *
+     * @default []
+     */
+    metrics?: TelemetryMetric[];
+
+    /**
+     * Invoked before a telemetry report is delivered.
+     * Return a report, null to suppress, or void to keep unchanged.
+     *
+     * @default null
+     */
+    beforeReport?: (report: TelemetryReport) => TelemetryReport | null | void;
+
+}
 
 /**
  * Interface for a class Prompt
@@ -358,10 +389,9 @@ export interface MentionSettingsModel {
      * Specifies the data source used to populate mention suggestions.
      * Accepts local collections, DataManager instances, or remote data sources.
      *
-     * @type {string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[]}
      * @default []
      */
-    dataSource?: string[] | DataManager | { [key: string]: Object; }[] | number[] | boolean[];
+    dataSource?: string[] | DataManager | { [key: string]: Object }[] | number[] | boolean[];
 
     /**
      * Specifies the field mappings for the mention data source.
@@ -641,6 +671,17 @@ export interface AIAssistViewModel extends AIAssistBaseModel{
      * @default {}
      */
     textToSpeechSettings?: TextToSpeechSettingsModel;
+
+    /**
+     * Configures telemetry reporting behavior for the AIAssistView component.
+     * Accepts a TelemetrySettingsModel object to enable reporting and customize metrics and callbacks.
+     *
+     * {% codeBlock src='ai-assistview/telemetrySettings/index.md' %}{% endcodeBlock %}
+     *
+     * @type {TelemetrySettingsModel}
+     * @default { enable: false }
+     */
+    telemetrySettings?: TelemetrySettingsModel;
 
     /**
      * Specifies whether the attachments is enabled in the AIAssistView component.

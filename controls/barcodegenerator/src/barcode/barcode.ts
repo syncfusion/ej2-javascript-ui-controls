@@ -1,6 +1,8 @@
 import { Component, Property, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';
-import { RenderingMode, BarcodeType, BarcodeEvent, BarcodeExportType} from './enum/enum';
+import { RenderingMode, BarcodeType, BarcodeEvent, BarcodeExportType, BearerBarType} from './enum/enum';
+import { WebMcpBarcode, WebMcpBarcodeSettings } from './integrations/webmcp-adapter';
+import { WebMcpBarcodeSettingsModel } from './integrations/webmcp-adapter-model';
 import { BarcodeRenderer } from './rendering/renderer';
 import { BarcodeCanvasRenderer } from './rendering/canvas-renderer';
 import { Code128B } from './one-dimension/code128B';
@@ -14,6 +16,10 @@ import { Code39 } from './one-dimension/code39';
 import { CodaBar } from './one-dimension/codabar';
 import { Code128A } from './one-dimension/code128A';
 import { Code128 } from './one-dimension/code128';
+import { GS1Code128 } from './one-dimension/gs1-code128';
+import { ITF14 } from './one-dimension/itf14';
+import { GS1DataBar } from './one-dimension/gs1-databar';
+import { GS1DataBarExpanded } from './one-dimension/gs1-databar-expanded';
 import { Ean8 } from './one-dimension/ean8';
 import { Ean13 } from './one-dimension/ean13';
 import { UpcE } from './one-dimension/upcE';
@@ -21,7 +27,7 @@ import { UpcA } from './one-dimension/upcA';
 import { Code11 } from './one-dimension/code11';
 import { Code93 } from './one-dimension/code93';
 import { Code93Extension } from './one-dimension/code93Extension';
-import { ValidateEvent } from './rendering/canvas-interface';
+import { ValidateEvent, WebMcpToolExecuteEventArgs, WebMcpTool } from './rendering/canvas-interface';
 import { Code32 } from './one-dimension/code32';
 import { Code39Extension } from './one-dimension/code39Extension';
 import { removeChildElements, exportAsImage } from './utility/barcode-util';
@@ -152,6 +158,32 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     public foreColor: string;
 
     /**
+     * Defines the bearer bars for the ITF14 type. Other types ignore it.
+     *
+     * @default 'Frame'
+     */
+    @Property('Frame')
+    public bearerBar: BearerBarType;
+
+    /**
+     * Defines the bearer bar thickness, as a multiple of the narrow bar width,
+     * from 1 to 10, for the ITF14 type. Other types ignore it.
+     *
+     * @default 5
+     */
+    @Property(5)
+    public bearerBarWidth: number;
+
+    /**
+     * Defines the number of segments in each row of a GS1DataBarExpandedStacked barcode:
+     * an even number from 2 to 20. Other types ignore it.
+     *
+     * @default 4
+     */
+    @Property(4)
+    public segmentsPerRow: number;
+
+    /**
      * Triggers if you enter any invalid character.
      *
      * @event
@@ -159,7 +191,41 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     @Event()
     public invalid: EmitType<Object>;
 
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
 
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    @Complex<WebMcpBarcodeSettingsModel>({}, WebMcpBarcodeSettings)
+    public webMcpSettings: WebMcpBarcodeSettingsModel;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Set `args.cancel` to `true` to prevent the tool from running, or `args.showConfirmationDialog`
+     * to ask the user for confirmation first.
+     *
+     * @event
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
+     * `webMcpBarcodeModule` is used for WebMCP tool integration
+     *
+     * @private
+     */
+    public webMcpBarcodeModule: WebMcpBarcode;
 
     /** @private */
     public localeObj: L10n;
@@ -200,6 +266,27 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
+            case 'enableWebMcp':
+                if (newProp.enableWebMcp && !this.webMcpBarcodeModule) {
+                    // Enabling WebMCP at runtime: manually instantiate and initialize the module
+                    this.webMcpBarcodeModule = new WebMcpBarcode(this);
+                    this.initWebMcp();
+                } else if (!newProp.enableWebMcp && this.webMcpBarcodeModule) {
+                    // Disabling WebMCP at runtime: unregister tools and destroy the module
+                    this.webMcpBarcodeModule.unregisterTools();
+                    this.webMcpBarcodeModule.destroy();
+                    this.webMcpBarcodeModule = null;
+                }
+                break;
+            case 'webMcpSettings':
+                if (this.webMcpBarcodeModule) {
+                    this.webMcpBarcodeModule.registerTools({
+                        prefix: this.webMcpSettings.name || this.element.id,
+                        tools: this.webMcpSettings.tools,
+                        exposedTo: this.webMcpSettings.exposedTo
+                    });
+                }
+                break;
             case 'width':
                 this.element.style.width = this.getElementSize(this.width);
                 this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
@@ -269,7 +356,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     private renderElements(): void {
         let barCode: Code39Extension | Code32 | Code39 | CodaBar | Code128A | Code128 | Ean8 |
-        Ean13 | UpcE | UpcA | Code11 | Code93 | Code93Extension;
+        Ean13 | UpcE | UpcA | Code11 | Code93 | Code93Extension | GS1Code128 | ITF14 | GS1DataBar | GS1DataBarExpanded;
         this.type = this.type || 'Code128';
         switch (this.type) {
         case 'Code39Extension':
@@ -292,6 +379,23 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
             break;
         case 'Code128':
             barCode = new Code128();
+            break;
+        case 'GS1Code128':
+            barCode = new GS1Code128();
+            break;
+        case 'ITF14':
+            barCode = new ITF14();
+            break;
+        case 'GS1DataBarOmnidirectional':
+        case 'GS1DataBarTruncated':
+        case 'GS1DataBarStacked':
+        case 'GS1DataBarStackedOmnidirectional':
+        case 'GS1DataBarLimited':
+            barCode = new GS1DataBar();
+            break;
+        case 'GS1DataBarExpanded':
+        case 'GS1DataBarExpandedStacked':
+            barCode = new GS1DataBarExpanded();
             break;
         case 'Ean8':
             barCode = new Ean8();
@@ -327,6 +431,11 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         if ((this.type === 'Ean8' || this.type === 'Ean13' || this.type === 'UpcA') && this.displayText.text.length > 0) {
             this.triggerEvent(BarcodeEvent.invalid, 'Invalid Display Text');
         }
+        if (this.type === 'ITF14'
+            && (!this.bearerBarWidth || this.bearerBarWidth < 1 || this.bearerBarWidth > 10)) {
+            this.triggerEvent(BarcodeEvent.invalid, this.localeObj.getConstant('InvalidBearerBarWidth'));
+            return;
+        }
         this.value = this.value || '';
         barCode.value = this.value;
         barCode.margin = this.margin;
@@ -337,6 +446,33 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         barCode.isSvgMode = this.mode === 'SVG' ? true : false;
         barCode.displayText = this.displayText;
         barCode.enableCheckSum = this.enableCheckSum;
+        if (this.type === 'GS1Code128') {
+            (barCode as GS1Code128).locale = this.localeObj;
+        }
+        if (this.type === 'ITF14') {
+            (barCode as ITF14).locale = this.localeObj;
+            (barCode as ITF14).bearerBar = this.bearerBar;
+            (barCode as ITF14).bearerBarWidth = this.bearerBarWidth;
+        }
+        if (this.type === 'GS1DataBarExpandedStacked'
+            && (!this.segmentsPerRow || this.segmentsPerRow < 2 || this.segmentsPerRow > 20
+                || this.segmentsPerRow % 2 !== 0)) {
+            this.triggerEvent(BarcodeEvent.invalid, this.localeObj.getConstant('DataBarInvalidSegmentsPerRow'));
+            return;
+        }
+        if (barCode instanceof GS1DataBarExpanded) {
+            barCode.locale = this.localeObj;
+            barCode.databarVariant = this.type === 'GS1DataBarExpanded' ? 'Expanded' : 'ExpandedStacked';
+            barCode.segmentsPerRow = this.segmentsPerRow;
+        }
+        if (barCode instanceof GS1DataBar) {
+            barCode.locale = this.localeObj;
+            barCode.databarVariant =
+                this.type === 'GS1DataBarOmnidirectional' ? 'Omnidirectional' :
+                    this.type === 'GS1DataBarTruncated' ? 'Truncated' :
+                        this.type === 'GS1DataBarStacked' ? 'Stacked' :
+                            this.type === 'GS1DataBarStackedOmnidirectional' ? 'StackedOmnidirectional' : 'Limited';
+        }
         const validateMessage: string = barCode.validateInput(this.value);
         if (validateMessage === undefined) {
             if (this.type === 'Code39Extension') {
@@ -417,7 +553,23 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
     private initializePrivateVariables(): void {
         this.defaultLocale = {
-
+            GS1InvalidFormat: 'The value must be GS1 data, in bracketed AI notation such as (01)09506000134376(10)ABC123, or raw.',
+            GS1UnsupportedAI: 'The Application Identifier is not supported.',
+            GS1InvalidLength: 'The value of an Application Identifier has an invalid length.',
+            GS1InvalidCharacter: 'The value of an Application Identifier contains characters outside the GS1 character set.',
+            GS1InvalidDate: 'The date of an Application Identifier is not a valid YYMMDD date.',
+            GS1InvalidCheckDigit: 'The check digit of the GTIN or SSCC is not valid.',
+            GS1DuplicateAI: 'An Application Identifier appears more than once.',
+            GS1MissingRequiredAI: 'The value requires a GTIN (01) for the Application Identifiers used.',
+            GS1DataTooLong: 'GS1-128 data must not exceed 48 characters.',
+            ITF14InvalidValue: 'ITF-14 requires 13 or 14 digits.',
+            ITF14InvalidCheckDigit: 'The ITF-14 check digit is not valid.',
+            InvalidBearerBarWidth: 'The bearer bar width must be a number from 1 to 10.',
+            DataBarInvalidGtin: 'GS1 DataBar requires a 13- or 14-digit GTIN, or (01) followed by 14 digits.',
+            DataBarLimitedInvalidGtin: 'GS1 DataBar Limited requires a GTIN starting with 0 or 1.',
+            DataBarDataTooLong: 'GS1 DataBar Expanded data must not exceed 74 digits or 41 letters.',
+            DataBarInvalidSegmentsPerRow: 'segmentsPerRow must be an even number from 2 to 20.',
+            InsufficientSize: 'The width and height are too small to render the barcode after margins and text.'
         };
     }
 
@@ -443,6 +595,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.initWebMcp();
         this.renderComplete();
     }
 
@@ -458,6 +611,43 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
 
 
     /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+
+    /**
+     * Registers WebMCP tools on document.modelContext for this component instance.
+     *
+     * @param {string} [prefix] - Optional: unique prefix for tool names. Defaults to the element `id`.
+     * @param {string[] | WebMcpTool[]} [tools] - Optional: allowlist of tool names or customized tool definitions.
+     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
+     * @returns {void}
+     */
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
+    }
+
+    private initWebMcp(): void {
+        if (this.webMcpBarcodeModule) {
+            this.webMcpBarcodeModule.init(this);
+            const settings: WebMcpBarcodeSettingsModel = this.webMcpSettings || {};
+            this.webMcpBarcodeModule.registerTools({
+                prefix: settings.name || this.element.id,
+                tools: settings.tools,
+                exposedTo: settings.exposedTo
+            });
+        }
+    }
+
+    /**
      *To provide the array of modules needed for control rendering
      *
      * @function destroy
@@ -467,6 +657,13 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     public requiredModules(): ModuleDeclaration[] {
 
         const modules: ModuleDeclaration[] = [];
+
+        if (this.enableWebMcp) {
+            modules.push({
+                member: 'WebMcpBarcode',
+                args: [this]
+            });
+        }
 
         return modules;
     }

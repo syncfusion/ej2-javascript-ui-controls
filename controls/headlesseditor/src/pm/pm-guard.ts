@@ -60,6 +60,7 @@ export { TableMap as PMTableMap } from 'prosemirror-tables';
 export {
     tableEditing,
     columnResizing,
+    handlePaste as pmTableHandlePaste,
     addColumnBefore as pmAddColumnBefore,
     addColumnAfter as pmAddColumnAfter,
     deleteColumn as pmDeleteColumn,

@@ -167,6 +167,117 @@ export class DiagramScroller {
     private isFitToPageAction: boolean = false;
     /** @private */
     public isNegativeOffset: boolean = false;
+
+    /**
+     * Temporarily disables viewport restriction during print and export operations.
+     *
+     * @private
+     */
+    public bypassViewportRestriction: boolean = false;
+
+    /**
+     * Indicates whether scrolling is restricted to the positive coordinate region.
+     *
+     * @returns {boolean} True when the restriction is enabled and not temporarily bypassed.
+     * @private
+     */
+    private get isViewportRestricted(): boolean {
+        return !!this.diagram.scrollSettings.restrictNegativeAxis && !this.bypassViewportRestriction;
+    }
+
+    /**
+     * Clips bounds to the positive coordinate region when viewport restriction is active.
+     *
+     * @param {Rect} bounds - The bounds to clip.
+     * @returns {Rect} The clipped bounds, or the original bounds when restriction is inactive.
+     * @private
+     */
+    private clampBoundsToPositive(bounds: Rect): Rect {
+        if (!this.isViewportRestricted) {
+            return bounds;
+        }
+        const left: number = Math.max(bounds.left, 0);
+        const top: number = Math.max(bounds.top, 0);
+        const right: number = Math.max(bounds.right, left);
+        const bottom: number = Math.max(bounds.bottom, top);
+        return new Rect(left, top, right - left, bottom - top);
+    }
+
+    /**
+     * Limits scroll offsets so the viewport cannot expose negative coordinates.
+     *
+     * @param {PointModel} offset - The proposed horizontal and vertical scroll offsets.
+     * @returns {PointModel} The constrained offsets, or the original offsets when restriction is inactive.
+     * @private
+     */
+    public constrainOffset(offset: PointModel): PointModel {
+        if (!this.isViewportRestricted) {
+            return offset;
+        }
+        return { x: Math.min(offset.x, 0), y: Math.min(offset.y, 0) };
+    }
+
+    /**
+     * Reapplies the viewport restriction after its setting changes at runtime.
+     * Updates the scroll transform and refreshes the diagram's dependent views.
+     *
+     * @param {boolean} updateOverview - Whether to refresh Overview views immediately.
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    public enforceViewportRestriction(updateOverview: boolean = true): void {
+        const offset: PointModel = this.constrainOffset({ x: this.horizontalOffset, y: this.verticalOffset });
+        if (offset.x !== this.horizontalOffset || offset.y !== this.verticalOffset) {
+            this.horizontalOffset = offset.x;
+            this.verticalOffset = offset.y;
+        }
+        const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
+        this.transform = {
+            tx: Math.max(offset.x, -pageBounds.left * this.currentZoom) / this.currentZoom,
+            ty: Math.max(offset.y, -pageBounds.top * this.currentZoom) / this.currentZoom,
+            scale: this.currentZoom
+        };
+        this.setSize();
+        this.updateScrollOffsets();
+        this.diagram.transformLayers();
+        updateRuler(this.diagram);
+        if (this.diagram.mode !== 'SVG' && canVitualize(this.diagram)) {
+            this.virtualizeElements();
+        } else if (this.diagram.mode !== 'SVG') {
+            this.diagram.refreshDiagramLayer();
+        }
+        if (updateOverview) {
+            this.refreshOverview();
+        }
+    }
+
+    /**
+     * Refreshes the Overview transforms and viewport rectangle from the current diagram state.
+     *
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    public refreshOverview(): void {
+        if (this.diagram.views) {
+            const viewIds: string[] = Object.getOwnPropertyNames(this.diagram.views);
+            for (const viewId of viewIds) {
+                const viewDescriptor: PropertyDescriptor = Object.getOwnPropertyDescriptor(this.diagram.views, viewId);
+                const overview: any = viewDescriptor && viewDescriptor.value;
+                if (!overview || typeof overview.updateView !== 'function' ||
+                    typeof overview.scrollOverviewRect !== 'function' ||
+                    typeof overview.updateOverviewrect !== 'function') {
+                    continue;
+                }
+                this.diagram.refreshCanvasDiagramLayer(overview);
+                overview.updateView(overview);
+                const bounds: Rect = overview.scrollOverviewRect(overview.parent.scroller.horizontalOffset,
+                                                                 overview.parent.scroller.verticalOffset,
+                                                                 overview.parent.scroller.currentZoom, true);
+                overview.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height);
+            }
+        }
+    }
+
     constructor(diagram: Diagram) {
         this.diagram = diagram;
         this.objects = [];
@@ -183,10 +294,13 @@ export class DiagramScroller {
     private getBounds(): Rect {
         let pageBounds: Rect;
         const postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);
-        if ((postion.x < 0 || postion.y < 0) && !this.diagram.pageSettings.multiplePage) {
+        if (!this.isViewportRestricted && (postion.x < 0 || postion.y < 0) && !this.diagram.pageSettings.multiplePage) {
             pageBounds = this.getPageBounds(undefined, undefined, true, true);
             this.isNegativeOffset = true;
         } else {
+            if (this.isViewportRestricted) {
+                this.isNegativeOffset = false;
+            }
             pageBounds = this.getPageBounds(undefined, undefined, true);
         }
         return pageBounds;
@@ -202,6 +316,11 @@ export class DiagramScroller {
      * @private
      */
     public updateScrollOffsets(hOffset?: number, vOffset?: number): void {
+        const offset: PointModel = this.constrainOffset({ x: this.horizontalOffset, y: this.verticalOffset });
+        if (offset.x !== this.horizontalOffset || offset.y !== this.verticalOffset) {
+            this.horizontalOffset = offset.x;
+            this.verticalOffset = offset.y;
+        }
         let offsetX: number = 0;
         let offsetY: number = 0;
         const pageBounds: Rect = this.getBounds();
@@ -213,9 +332,10 @@ export class DiagramScroller {
         offsetX = Math.max(0, hOffset - pageBounds.left);
         offsetY = Math.max(0, vOffset - pageBounds.top);
         if (hOffset !== undefined && vOffset !== undefined) {
-            this.horizontalOffset = offsetX;
-            this.verticalOffset = offsetY;
-            this.diagram.setOffset(offsetX, offsetY);
+            const newOffset: PointModel = this.constrainOffset({ x: offsetX, y: offsetY });
+            this.horizontalOffset = newOffset.x;
+            this.verticalOffset = newOffset.y;
+            this.diagram.setOffset(newOffset.x, newOffset.y);
         } else {
             this.diagram.setOffset(-this.horizontalOffset - pageBounds.x, -this.verticalOffset - pageBounds.y);
         }
@@ -269,13 +389,21 @@ export class DiagramScroller {
                 this.verticalOffset = newY;
             }
         }
-
+        const offset: PointModel = this.constrainOffset({ x: this.horizontalOffset, y: this.verticalOffset });
+        const corrected: boolean = offset.x !== this.horizontalOffset || offset.y !== this.verticalOffset;
+        if (corrected) {
+            this.horizontalOffset = offset.x;
+            this.verticalOffset = offset.y;
+        }
         this.transform = {
             tx: Math.max(this.horizontalOffset, -pageBounds.left) / this.currentZoom, ty:
                 Math.max(this.verticalOffset, -pageBounds.top) / this.currentZoom,
             scale: this.currentZoom
         };
         this.setSize();
+        if (corrected) {
+            this.updateScrollOffsets();
+        }
     }
 
     /**
@@ -377,6 +505,14 @@ export class DiagramScroller {
      * @private
      */
     public setSize(newOffset?: PointModel): void {
+        const offset: PointModel = this.constrainOffset({ x: this.horizontalOffset, y: this.verticalOffset });
+        if (offset.x !== this.horizontalOffset || offset.y !== this.verticalOffset) {
+            this.horizontalOffset = offset.x;
+            this.verticalOffset = offset.y;
+        }
+        if (newOffset) {
+            newOffset = this.constrainOffset(newOffset);
+        }
         const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
@@ -476,10 +612,12 @@ export class DiagramScroller {
      * @param {DiagramRegions} region - provide the factor value.
      * @param {boolean} hasPadding - provide the factor value.
      * @param {boolean} isnegativeRegion - provide the isnegativeRegion value.
+     * @param {boolean} ignoreViewportRestriction - bypasses the positive viewport bounds.
      *
      * @private
      */
-    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean, isnegativeRegion?: boolean): Rect {
+    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean, isnegativeRegion?: boolean,
+                         ignoreViewportRestriction?: boolean): Rect {
         let rect: Rect = new Rect();
         const temp: number = 0;
         let pageBounds: Rect;
@@ -525,7 +663,7 @@ export class DiagramScroller {
             pageBounds.width += (scrollpadding.left + scrollpadding.right);
             pageBounds.height += (scrollpadding.top + scrollpadding.bottom);
         }
-        return pageBounds;
+        return ignoreViewportRestriction ? pageBounds : this.clampBoundsToPositive(pageBounds);
     }
 
     /**
@@ -653,6 +791,7 @@ export class DiagramScroller {
                     // EJ2-69238 - add true as an extra parameter to calcuate the horizontal and vertical offset
                     newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan, isBringIntoView, isTrackpadScroll);
                 }
+                newOffset = this.constrainOffset(newOffset);
                 // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
                 // The below condition is used to avoid the flickering of the scroll bar on scrolling the diagram using trackpad.
                 isTrackpadScroll = (-(pageBounds.y) >= newOffset.y && -(pageBounds.x) >= newOffset.x && isTrackpadScroll);
@@ -745,6 +884,15 @@ export class DiagramScroller {
             mode = mode ? mode : 'Page';
             if (region !== 'CustomBounds') {
                 bounds = this.getPageBounds(true, region, true);
+            } else if (bounds) {
+                bounds = this.clampBoundsToPositive(bounds);
+            }
+            if (this.isViewportRestricted && (!bounds || bounds.width <= 0 || bounds.height <= 0)) {
+                factor = 1 / this.currentZoom;
+                this.zoom(factor, -this.horizontalOffset, -this.verticalOffset, { x: 0, y: 0 }, true, undefined, undefined, canZoomOut);
+                this.checkScroll(true);
+                this.isFitToPageAction = false;
+                return;
             }
             const scale: PointModel = { x: 0, y: 0 };
             //Bug 853566: Fit to page is not working when zoom value less than minZoom.
@@ -971,7 +1119,8 @@ export class DiagramScroller {
             let bounds: Rect;
             if (this.diagram.scrollSettings.scrollLimit === 'Limited') {
                 const scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
-                bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
+                bounds = this.clampBoundsToPositive(new Rect(scrollableBounds.x, scrollableBounds.y,
+                                                             scrollableBounds.width, scrollableBounds.height));
             }
             // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
             // Added below code to get the page bounds based on the scroll.

@@ -266,12 +266,11 @@ export class PdfStringLayouter {
                             continue;
                         }
                     } else {
+                        let format: PdfStringFormat = this.format ? this.format : new PdfStringFormat();
                         if (this.getLineWidth(word.toString()) > maxWidth) {
-                            this.format.wordWrap = PdfWordWrapType.Character;
+                            format.wordWrap = PdfWordWrapType.Character;
                         } else {
-                            if (typeof this.format !== 'undefined' && this.format !== null ) {
-                                this.format.wordWrap = PdfWordWrapType.Word;
-                            }
+                            format.wordWrap = PdfWordWrapType.Word;
                         }
                         if (this.getWrapType() !== PdfWordWrapType.Character || !readWord) {
                             let ln : string = builder.toString();

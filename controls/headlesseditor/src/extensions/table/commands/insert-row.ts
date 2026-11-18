@@ -3,7 +3,7 @@
  *
  * PM boundary: allowed inside src/extensions/table/commands/.
  */
-import { PMCommandInternal, PMCommandContext } from '../../../commands/internal/pm-command-context';
+import { PMCommandInternal, PMCommandContext } from '../../../core/commands/internal/pm-command-context';
 import { wrapTransaction } from '../../../pm/adapters/editor-state-adapter';
 import { insertRowBefore, insertRowAfter, isCursorInTable } from '../../../pm/adapters/table';
 import { PMEditorState, PMTransaction } from '../../../pm/pm-guard';
@@ -16,7 +16,7 @@ import { TABLE_COMMAND_META_KEY } from '../table-constants';
  */
 export const insertRowBeforeCommand: PMCommandInternal<void> = {
     name: 'insertRowBefore',
-    meta: { label: 'Insert Row Before', category: 'table' },
+    meta: { label: 'Insert Row Before', category: 'table', focusAfterDispatch: true },
 
     canExecute(ctx: PMCommandContext, _payload: void): boolean {
         return isCursorInTable(ctx.pmState);
@@ -50,7 +50,7 @@ export const insertRowBeforeCommand: PMCommandInternal<void> = {
  */
 export const insertRowAfterCommand: PMCommandInternal<void> = {
     name: 'insertRowAfter',
-    meta: { label: 'Insert Row After', category: 'table' },
+    meta: { label: 'Insert Row After', category: 'table', focusAfterDispatch: true },
 
     canExecute(ctx: PMCommandContext, _payload: void): boolean {
         return isCursorInTable(ctx.pmState);

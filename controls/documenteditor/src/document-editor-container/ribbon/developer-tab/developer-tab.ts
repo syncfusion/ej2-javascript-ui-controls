@@ -13,6 +13,7 @@ export const DEVELOPER_TAB_ID: string = '_developer_tab';
 
 /**
  * DeveloperTab module
+ *
  * @private
  */
 export class DeveloperTab {
@@ -26,6 +27,7 @@ export class DeveloperTab {
 
     /**
      * Constructor for DeveloperTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -41,6 +43,7 @@ export class DeveloperTab {
 
     /**
      * Get the DocumentEditor instance
+     *
      * @returns {DocumentEditor} The DocumentEditor instance
      */
     private get documentEditor(): DocumentEditor {
@@ -49,6 +52,7 @@ export class DeveloperTab {
 
     /**
      * Get the Developer tab configuration
+     *
      * @returns {RibbonTabModel} The Developer tab model
      */
     public getDeveloperTab(): RibbonTabModel {
@@ -67,6 +71,7 @@ export class DeveloperTab {
 
     /**
      * Update UI when selection changes in the document
+     *
      * @returns {void}
      * @private
      */
@@ -81,6 +86,7 @@ export class DeveloperTab {
 
     /**
      * Destroy the DeveloperTab instance
+     *
      * @returns {void}
      */
     public destroy(): void {

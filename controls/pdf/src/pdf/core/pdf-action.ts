@@ -2,7 +2,7 @@ import { PdfWidgetAnnotation } from './annotations/annotation';
 import { PdfDestinationMode } from './enumerator';
 import { PdfField } from './form/field';
 import { _PdfDestinationHelper, PdfDestination, PdfPage } from './pdf-page';
-import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
+import { _PdfDictionary, _PdfName } from './pdf-primitives';
 /**
  * Represents base class for all action types.
  * ```typescript
@@ -43,6 +43,13 @@ export class PdfAction {
      */
     _next: PdfAction;
     /**
+     * Factory registry for action types.
+     * Maps action type names (from PDF 'S' key) to action classes.
+     *
+     * @private
+     */
+    private static _actionFactoryRegistry: { [key: string]: new () => PdfAction } = {};
+    /**
      * Initializes the internal action dictionary and type.
      *
      * @private
@@ -50,6 +57,7 @@ export class PdfAction {
      */
     _initialize(): void {
         this._dictionary = new _PdfDictionary();
+        this._dictionary._currentObj = this;
         this._dictionary.update('Type', new _PdfName('Action'));
     }
     /**
@@ -87,6 +95,12 @@ export class PdfAction {
      * document.destroy();
      */
     get next(): PdfAction {
+        if (!this._next && this._dictionary && this._dictionary.has('Next')) {
+            const dictionary: _PdfDictionary = this._dictionary.get('Next') as _PdfDictionary;
+            if (dictionary instanceof _PdfDictionary) {
+                this._next = PdfAction._createActionFromDictionary(dictionary) as PdfAction;
+            }
+        }
         return this._next;
     }
     /**
@@ -124,138 +138,264 @@ export class PdfAction {
      */
     set next(value: PdfAction) {
         this._next = value;
-        const reference: _PdfReference = this._page._crossReference._getNextReference();
-        this._page._crossReference._cacheMap.set(reference, value._dictionary);
-        value._dictionary.objId = reference.toString();
-        this._dictionary.update('Next', reference);
+        if (value && value._dictionary) {
+            this._dictionary.update('Next', value._dictionary);
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Called before serialization to allow validation.
+     * Subclasses can override to implement custom validation logic.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _beginSave(): void {
+        const self: { _validate?: () => void } = this as unknown as { _validate?: () => void };
+        if (typeof self._validate === 'function') {
+            self._validate();
+        }
+    }
+    /**
+     * Registers an action class in the factory registry.
+     * Called by each action subclass to enable polymorphic deserialization.
+     *
+     * @private
+     * @param {string} typeName The PDF action type name (e.g., 'URI', 'GoTo', 'Named')
+     * @param {any} actionClass The action class constructor
+     * @returns {void}
+     */
+    static _registerActionClass(typeName: string, actionClass: any): void { // eslint-disable-line
+        PdfAction._actionFactoryRegistry[<string>typeName] = actionClass;
+    }
+    /**
+     * Reconstructs an action instance from a dictionary by inspecting the action type.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The action dictionary
+     * @returns {PdfAction} The reconstructed action of the appropriate type, or undefined if invalid
+     */
+    static _createActionFromDictionary(dictionary: _PdfDictionary): PdfAction {
+        if (!(dictionary instanceof _PdfDictionary) || !dictionary.has('S')) {
+            return undefined;
+        }
+        const actionType: _PdfName = dictionary.get('S') as _PdfName;
+        if (!(actionType instanceof _PdfName) || !actionType.name) {
+            return undefined;
+        }
+        const ActionClass: new () => PdfAction = PdfAction._actionFactoryRegistry[actionType.name];
+        let action: PdfAction;
+        if (ActionClass) {
+            action = Object.create(ActionClass.prototype) as PdfAction;
+        } else {
+            action = Object.create(PdfAction.prototype) as PdfAction;
+        }
+        action._dictionary = dictionary;
+        dictionary._currentObj = action;
+        return action;
     }
 }
 /**
- * Represents a JavaScript action in PDF document.
+ * Represents an action that executes JavaScript in a PDF document.
  *
  * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access text box field
- * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
- * // Create a new `PdfJavaScriptAction` for adding the action
- * field.actions.keyPressed = new PdfJavaScriptAction('AFDate_KeystrokeEx("m/d/yy")');
- * field.actions.format = new PdfJavaScriptAction('AFDate_FormatEx("m/d/yy")');
- * field.actions.validate = new PdfJavaScriptAction('AFDate_Validate("m/d/yy")');
- * // Save the document
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create a JavaScript action
+ * let action: PdfJavaScriptAction = new PdfJavaScriptAction('app.alert("Button clicked");');
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     page, 'JavaScript', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Execute script';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
  * document.save('output.pdf');
- * // Destroy the document
  * document.destroy();
+ * ```
  */
 export class PdfJavaScriptAction extends PdfAction {
     /**
-     * Stores the JavaScript source associated with the action.
+     * Stores the JavaScript code associated with the action.
      *
      * @private
      */
     _script: string;
     /**
-     * Initializes a new instance of the `PdfJavaScriptAction` class with JavaScript code.
+     * Initializes a new instance of the `PdfJavaScriptAction` class.
      *
-     * @param {string} script - A string value representing valid JavaScript code to be executed.
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * let page: PdfPage = document.addPage();
+     * // Create a JavaScript action
+     * let action: PdfJavaScriptAction = new PdfJavaScriptAction('app.alert("Button clicked");');
+     * // Create a button and assign the action
+     * let field: PdfButtonField = new PdfButtonField(
+     *     page, 'JavaScript', { x: 20, y: 20, width: 120, height: 30 }
+     * );
+     * field.text = 'Execute script';
+     * field.actions.mouseUp = action;
+     * document.form.add(field);
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @param {string} script The JavaScript code to execute.
      */
     constructor(script: string) {
         super();
         this._initialize();
-        this._script = script;
         this._dictionary.update('S', new _PdfName('JavaScript'));
+        this.script = script;
     }
     /**
-     * Gets the JavaScript code to be executed when this action is executed.
+     * Gets the JavaScript code executed by the action.
      *
-     * @returns {string} A string value representing valid JavaScript code to be executed.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Get the JavaScript action
+     * let action: PdfJavaScriptAction = field.actions.mouseUp as PdfJavaScriptAction;
+     * // Get the JavaScript code
+     * let script: string = action.script;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {string} The JavaScript code executed by the action.
      */
     get script(): string {
-        return this._script;
+        if (this._dictionary && this._dictionary.has('JS')) {
+            return this._dictionary.get('JS') as string;
+        }
+        return undefined;
     }
     /**
-     * Sets the JavaScript code to be executed when this action is executed.
+     * Sets the JavaScript code executed by the action.
      *
-     * @param {string} value A string value representing valid JavaScript code to be executed.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Get the JavaScript action
+     * let action: PdfJavaScriptAction = field.actions.mouseUp as PdfJavaScriptAction;
+     * // Set the JavaScript code
+     * action.script = 'app.alert("Updated script");';
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @param {string} value The JavaScript code to execute.
      */
     set script(value: string) {
         this._script = value;
+        if (this._dictionary) {
+            this._dictionary.update('JS', value);
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Validates the JavaScript action before serialization.
+     *
+     * @private
+     * @returns {void} Nothing.
+     */
+    _validate(): void {
+        const script: string = this.script;
+        if (!script || script.trim() === '') {
+            throw new Error(
+                'PdfJavaScriptAction.script expected non-empty JavaScript code. Actual value: empty string.'
+            );
+        }
     }
 }
+PdfAction._registerActionClass('JavaScript', PdfJavaScriptAction);
 /**
- * Represents an action which goes to a destination in the current document.
+ * Represents an action that navigates to a destination in the current PDF document.
  *
  * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access button field
- * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
- * // Access the second page
- * let secondPage: PdfPage = document.getPage(2);
- * // Create a PdfDestination for the specified page
- * let destination: PdfDestination = new PdfDestination(secondPage)
- * // Create a new PdfGoToAction with the specified destination
- * let gotoAction: PdfGoToAction = new PdfGoToAction(destination);
- * // Set the goto action to the button
- * field.actions.mouseEnter = gotoAction;
- * // Save the document
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let firstPage: PdfPage = document.addPage();
+ * let secondPage: PdfPage = document.addPage();
+ * // Create a destination and GoTo action
+ * let destination: PdfDestination = new PdfDestination(secondPage);
+ * let action: PdfGoToAction = new PdfGoToAction(destination);
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     firstPage, 'GoTo', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Go to page';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
  * document.save('output.pdf');
- * // Destroy the document
  * document.destroy();
+ * ```
  */
 export class PdfGoToAction extends PdfAction {
     /**
-     * Destination to navigate to when the action is executed.
+     * Stores the destination to navigate to when the action is executed.
      *
      * @private
      */
     _destination: PdfDestination;
     /**
-     * Initializes a new instance of the `PdfGoToAction` class.
-     *
-     * @param {PdfDestination} destination Destination to navigate.
+     * Initializes a new instance of the `PdfGoToAction` class with the specified destination.
      *
      * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access button field
-     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
-     * // Access the second page
-     * let secondPage: PdfPage = document.getPage(2);
-     * // Create a PdfDestination for the specified page
-     * let destination: PdfDestination = new PdfDestination(secondPage)
-     * // Create a new PdfGoToAction with the specified destination
-     * let gotoAction: PdfGoToAction = new PdfGoToAction(destination);
-     * // Set the GoTo action to the mouse enter property of the button field
-     * field.actions.mouseEnter = gotoAction;
-     * // Save the document
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * let firstPage: PdfPage = document.addPage();
+     * let secondPage: PdfPage = document.addPage();
+     * // Create a destination and GoTo action
+     * let destination: PdfDestination = new PdfDestination(secondPage);
+     * let action: PdfGoToAction = new PdfGoToAction(destination);
+     * // Create a button and assign the action
+     * let field: PdfButtonField = new PdfButtonField(
+     *     firstPage, 'GoTo', { x: 20, y: 20, width: 120, height: 30 }
+     * );
+     * field.actions.mouseUp = action;
+     * document.form.add(field);
+     * // Save and destroy the document
      * document.save('output.pdf');
-     * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @param {PdfDestination} destination The destination to navigate to.
      */
     public constructor(destination: PdfDestination)
     /**
-     * Initializes a new instance of the `PdfGoToAction` class.
-     *
-     * @param {PdfPage} page page to navigate.
+     * Initializes a new instance of the `PdfGoToAction` class with the specified page.
      *
      * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access button field
-     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
-     * // Access the page
-     * let page: PdfPage = document.getPage(2);
-     * // Create a new GoTo action with the specified page
-     * let gotoAction: PdfGoToAction = new PdfGoToAction(page);
-     * // Set the destination for specified page
-     * gotoAction.destination = new PdfDestination(page);
-     * // Set the goto action to the button
-     * field.actions.mouseEnter = gotoAction;
-     * // Save the document
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * let firstPage: PdfPage = document.addPage();
+     * let secondPage: PdfPage = document.addPage();
+     * // Create a GoTo action for the second page
+     * let action: PdfGoToAction = new PdfGoToAction(secondPage);
+     * // Create a button and assign the action
+     * let field: PdfButtonField = new PdfButtonField(
+     *     firstPage, 'GoTo', { x: 20, y: 20, width: 120, height: 30 }
+     * );
+     * field.actions.mouseUp = action;
+     * document.form.add(field);
+     * // Save and destroy the document
      * document.save('output.pdf');
-     * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @param {PdfPage} page The page to navigate to.
      */
     public constructor(page: PdfPage)
     public constructor(arg: PdfDestination | PdfPage) {
@@ -266,58 +406,94 @@ export class PdfGoToAction extends PdfAction {
             this._page = arg.page;
         } else {
             this._page = arg;
-            this._destination = new PdfDestination(arg, {x: 0, y: 0});
+            this._destination = new PdfDestination(arg, { x: 0, y: 0 });
         }
         this._dictionary.update('S', new _PdfName('GoTo'));
     }
     /**
-     * Get the destination to be navigated.
-     *
-     * @returns {PdfDestination} The destination to be navigated.
+     * Gets the destination to navigate to.
      *
      * ```typescript
      * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access button field
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the button field
      * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
-     * // Get the action value from button field
-     * let action: PdfAction = field.actions.mouseEnter.destination;
-     * // Save the document
+     * // Get the GoTo action and destination
+     * let action: PdfGoToAction = field.actions.mouseUp as PdfGoToAction;
+     * let destination: PdfDestination = action.destination;
+     * // Save and destroy the document
      * document.save('output.pdf');
-     * // Destroy the document
      * document.destroy();
      * ```
+     *
+     * @returns {PdfDestination} The destination to navigate to.
      */
     get destination(): PdfDestination {
+        if (!this._destination && this._dictionary && this._dictionary.has('D')) {
+            const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(this._dictionary, 'D');
+            this._destination = destinationHelper._obtainDestination();
+            if (this._destination && this._destination.page) {
+                this._page = this._destination.page;
+            }
+        }
         return this._destination;
     }
     /**
-     * Set the destination to be navigated.
-     *
-     * @param {PdfDestination} value The destination to be navigated.
+     * Sets the destination to navigate to.
      *
      * ```typescript
      * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access button field
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * let page: PdfPage = document.getPage(1);
+     * // Get the button field and GoTo action
      * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
-     * // Access the second page
-     * let secondPage: PdfPage = document.getPage(2);
-     * // Create a new GoTo action with the specified page
-     * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
-     * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
-     * // Set the goto action to the button
-     * field.actions.mouseEnter = gotoAction;
-     * // Save the document
+     * let action: PdfGoToAction = field.actions.mouseUp as PdfGoToAction;
+     * // Set the destination
+     * action.destination = new PdfDestination(page, { x: 0, y: 100 });
+     * // Save and destroy the document
      * document.save('output.pdf');
-     * // Destroy the document
      * document.destroy();
+     * ```
+     *
+     * @param {PdfDestination} value The destination to navigate to.
      */
     set destination(value: PdfDestination) {
         this._destination = value;
+        if (value && value.page) {
+            this._page = value.page;
+        }
+    }
+    /**
+     * Writes the destination before serialization.
+     *
+     * @private
+     * @returns {void} Nothing.
+     */
+    _beginSave(): void {
+        this._writeDestination();
+    }
+    /**
+     * Writes the destination array to the action dictionary.
+     *
+     * @private
+     * @returns {void} Nothing.
+     */
+    _writeDestination(): void {
+        if (!this._dictionary || !this._destination) {
+            return;
+        }
+        const mode: PdfDestinationMode = this._destination.mode;
+        if (mode !== PdfDestinationMode.location && mode !== PdfDestinationMode.fitToPage &&
+            mode !== PdfDestinationMode.fitR && mode !== PdfDestinationMode.fitH) {
+            return;
+        }
+        this._destination._initializePrimitive();
+        if (this._destination._array.length > 1) {
+            this._dictionary.update('D', this._destination._array);
+        }
     }
 }
+PdfAction._registerActionClass('GoTo', PdfGoToAction);
 /**
  * Represents actions to be performed as response to field events.
  *
@@ -406,6 +582,36 @@ export class PdfFieldActions {
      * @private
      */
     _validate: PdfJavaScriptAction;
+    /**
+     * Cached JavaScript action executed when a page is opened.
+     *
+     * @private
+     */
+    _pageOpen: PdfJavaScriptAction;
+    /**
+     * Cached JavaScript action executed when a page is closed.
+     *
+     * @private
+     */
+    _pageClose: PdfJavaScriptAction;
+    /**
+     * Cached JavaScript action executed when a page becomes visible.
+     *
+     * @private
+     */
+    _pageVisible: PdfJavaScriptAction;
+    /**
+     * Cached JavaScript action executed when a page becomes invisible.
+     *
+     * @private
+     */
+    _pageInvisible: PdfJavaScriptAction;
+    /**
+     * Cached JavaScript action executed for field calculation.
+     *
+     * @private
+     */
+    _calculate: PdfJavaScriptAction;
     /**
      * Initializes a new instance of the `PdfFieldActions` class.
      *
@@ -895,63 +1101,132 @@ export class PdfFieldActions {
         }
     }
     /**
-     * Updates the widget annotation with the specified action under the given additional-actions key.
+     * Gets the JavaScript action executed when the field value is calculated.
      *
-     * @private
-     * @param {PdfAction} action Action instance to associate with the widget.
-     * @param {string} key Additional action key.
-     * @returns {void} nothing.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the text box field
+     * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
+     * // Get the JavaScript action assigned to the calculate event
+     * let action: PdfJavaScriptAction = field.actions.calculate;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfJavaScriptAction} The JavaScript action executed when the field value is calculated.
      */
-    _updateAction(action: PdfAction, key: string): void {
-        let widget: PdfWidgetAnnotation;
-        if (this._field._kidsCount > 0) {
-            widget = this._field.itemAt(0);
-            if (widget && widget._dictionary && action instanceof PdfGoToAction) {
-                const dictionary: _PdfDictionary = new _PdfDictionary();
-                const page: PdfPage = action._page;
-                const destination: PdfDestination = action.destination;
-                if (destination._destinationMode === PdfDestinationMode.location) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('XYZ'), destination.location.x, page.size.height, destination.zoom]);
-                } else if (destination._destinationMode === PdfDestinationMode.fitR) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('FitR'), 0, 0, 0, 0]);
-                } else if (destination._destinationMode === PdfDestinationMode.fitH) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('FitH'), page.size.height]);
-                } else if (destination._destinationMode === PdfDestinationMode.fitToPage) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('Fit')]);
-                }
-                dictionary.set(key, action._dictionary);
-                dictionary._updated = true;
-                widget._dictionary.update('AA', dictionary);
-            }
+    get calculate(): PdfJavaScriptAction {
+        if (!this._calculate) {
+            this._calculate = this._getFieldAction('C');
+        }
+        return this._calculate;
+    }
+    /**
+     * Sets the JavaScript action executed when the field value is calculated.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the text box field
+     * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
+     * // Assign a JavaScript action to the calculate event
+     * field.actions.calculate = new PdfJavaScriptAction('event.value = 10 + 20;');
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfJavaScriptAction} value The JavaScript action to execute when the field value is calculated.
+     */
+    set calculate(value: PdfJavaScriptAction) {
+        if (value) {
+            this._calculate = value;
+            this._updateFieldAction(this._calculate, 'C');
         }
     }
     /**
-     * Retrieves a GoTo action from the widget's additional actions using the specified key.
+     * Updates the field or widget with the specified action.
      *
      * @private
-     * @param {string} key Additional action key to look up.
-     * @returns {PdfAction} The resolved `PdfGoToAction` if available; otherwise, `undefined`.
+     * @param {PdfAction} action Action to associate with the field event.
+     * @param {string} key Additional-action dictionary key.
+     * @returns {void} nothing.
      */
-    _getPdfAction(key: string): PdfAction {
-        let result: PdfGoToAction;
-        const widget: PdfWidgetAnnotation = this._field.itemAt(0);
-        if (widget && widget._dictionary && widget._dictionary.has('AA')) {
-            const action: _PdfDictionary = widget._dictionary.get('AA');
-            if (action && action.has(key)) {
-                const dictionary: _PdfDictionary = action.get(key);
-                if (dictionary && dictionary.has('S')) {
-                    const type: _PdfName = dictionary.get('S');
-                    if (type && type.name === 'GoTo' && dictionary.has('D')) {
-                        if (!dictionary._crossReference) {
-                            dictionary._crossReference = widget._crossReference;
-                        }
-                        const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(dictionary, 'D');
-                        result = new PdfGoToAction(destinationHelper._obtainDestination());
-                    }
+    _updateAction(action: PdfAction, key: string): void {
+        if (this._field && this._field._dictionary && action && key) {
+            const fieldDictionary: _PdfDictionary = this._field._dictionary;
+            let targetDictionary: _PdfDictionary = fieldDictionary;
+            if (this._field._kidsCount && this._field._kidsCount > 0) {
+                const widget: PdfWidgetAnnotation = this._field.itemAt(0);
+                if (widget && widget._dictionary instanceof _PdfDictionary) {
+                    targetDictionary = widget._dictionary;
                 }
             }
+            let aaDictionary: _PdfDictionary = targetDictionary.get('AA') as _PdfDictionary;
+            if (!(aaDictionary instanceof _PdfDictionary)) {
+                aaDictionary = new _PdfDictionary();
+                targetDictionary.update('AA', aaDictionary);
+            }
+            if (action instanceof PdfGoToAction && action._page &&
+                action._dictionary) {
+                action._writeDestination();
+            }
+            if (action._dictionary && !action._dictionary._crossReference) {
+                action._dictionary._crossReference = targetDictionary._crossReference;
+            }
+            aaDictionary.update(key, action._dictionary);
+            aaDictionary._updated = true;
+            targetDictionary._updated = true;
         }
-        return result;
+    }
+    /**
+     * Gets an action from the widget or field additional-actions dictionary.
+     *
+     * @private
+     * @param {string} key Additional-action key.
+     * @returns {PdfAction} The resolved action.
+     */
+    _getPdfAction(key: string): PdfAction {
+        if (!this._field) {
+            return undefined;
+        }
+        let targetDictionary: _PdfDictionary = this._field._dictionary;
+        let aaDictionary: _PdfDictionary;
+        if (this._field._kidsCount && this._field._kidsCount > 0) {
+            const widget: PdfWidgetAnnotation = this._field.itemAt(0);
+            if (widget && widget._dictionary instanceof _PdfDictionary &&
+                widget._dictionary.has('AA')) {
+                targetDictionary = widget._dictionary;
+                aaDictionary = widget._dictionary.get('AA') as _PdfDictionary;
+            }
+        }
+        if (!aaDictionary && this._field._dictionary && this._field._dictionary.has('AA')) {
+            targetDictionary = this._field._dictionary;
+            aaDictionary = this._field._dictionary.get('AA') as _PdfDictionary;
+        }
+        if (!(aaDictionary instanceof _PdfDictionary)) {
+            return undefined;
+        }
+        const dictionary: _PdfDictionary = aaDictionary.get(key) as _PdfDictionary;
+        if (!(dictionary instanceof _PdfDictionary) || !dictionary.has('S')) {
+            return undefined;
+        }
+        const actionType: _PdfName = dictionary.get('S') as _PdfName;
+        if (actionType instanceof _PdfName && actionType.name === 'GoTo' && !dictionary.has('D')) {
+            return undefined;
+        }
+        (dictionary as any)._parentDictionary = targetDictionary;  // eslint-disable-line
+        dictionary.assignXref( targetDictionary._crossReference);
+        if (!dictionary._crossReference &&
+            this._field.itemAt) {
+            const widget: PdfWidgetAnnotation = this._field.itemAt(0);
+            if (widget) {
+                dictionary._crossReference = widget._crossReference;
+            }
+        }
+        return PdfAction._createActionFromDictionary(dictionary);
     }
     /**
      * Creates or updates the field's additional actions dictionary with the JavaScript action for the given key.
@@ -962,9 +1237,9 @@ export class PdfFieldActions {
      * @returns {void} nothing.
      */
     _updateFieldAction(action: PdfJavaScriptAction, key: string): void {
-        if (this._field && this._field._dictionary && action && key) {
+        if (this._field && this._field._dictionary && action && key && action._dictionary !== undefined) {
             const fieldDictionary: _PdfDictionary = this._field._dictionary;
-            let aaDictionary: _PdfDictionary = fieldDictionary.get('AA') as _PdfDictionary;
+            let aaDictionary: any = fieldDictionary.get('AA') as _PdfDictionary; // eslint-disable-line
             if (!aaDictionary || !(aaDictionary instanceof _PdfDictionary)) {
                 aaDictionary = new _PdfDictionary();
                 fieldDictionary.update('AA', aaDictionary);
@@ -974,7 +1249,8 @@ export class PdfFieldActions {
             if (script) {
                 actionDictionary.update('JS', script);
             }
-            aaDictionary.set(key, actionDictionary);
+            aaDictionary.update(key, actionDictionary);
+            (aaDictionary as any)[key] = actionDictionary; // eslint-disable-line
             actionDictionary._updated = true;
             aaDictionary._updated = true;
             fieldDictionary._updated = true;
@@ -982,11 +1258,31 @@ export class PdfFieldActions {
         }
     }
     /**
-     * Retrieves a JavaScript action from the field's additional actions dictionary using the specified key.
+     * Clears a JavaScript action from the field's additional actions dictionary.
      *
      * @private
-     * @param {string} key Additional action key to look up.
-     * @returns {PdfJavaScriptAction} The resolved JavaScript action if available; otherwise, `undefined`.
+     * @param {string} key Additional action key to clear.
+     * @returns {void} nothing.
+     */
+    _clearFieldAction(key: string): void {
+        if (this._field && this._field._dictionary && key) {
+            const fieldDictionary: _PdfDictionary = this._field._dictionary;
+            if (fieldDictionary.has('AA')) {
+                const aaDictionary: _PdfDictionary = fieldDictionary.get('AA') as _PdfDictionary;
+                if (aaDictionary && aaDictionary instanceof _PdfDictionary && aaDictionary.has(key)) {
+                    delete aaDictionary._map[<string>key];
+                    aaDictionary._updated = true;
+                    fieldDictionary._updated = true;
+                }
+            }
+        }
+    }
+    /**
+     * Gets a JavaScript action from the field additional-actions dictionary.
+     *
+     * @private
+     * @param {string} key The additional-action key.
+     * @returns {PdfJavaScriptAction} The resolved JavaScript action, or `undefined` when unavailable.
      */
     _getFieldAction(key: string): PdfJavaScriptAction {
         let result: PdfJavaScriptAction;
@@ -994,14 +1290,14 @@ export class PdfFieldActions {
             const fieldDictionary: _PdfDictionary = this._field._dictionary;
             if (fieldDictionary.has('AA')) {
                 const aaDictionary: _PdfDictionary = fieldDictionary.get('AA') as _PdfDictionary;
-                if (aaDictionary && aaDictionary instanceof _PdfDictionary && aaDictionary.has(key)) {
+                if (aaDictionary instanceof _PdfDictionary && aaDictionary.has(key)) {
                     const actionDictionary: _PdfDictionary = aaDictionary.get(key) as _PdfDictionary;
-                    if (actionDictionary && actionDictionary instanceof _PdfDictionary && actionDictionary.has('S')) {
-                        const s: _PdfName = actionDictionary.get('S') as _PdfName;
-                        if (s && s.name === 'JavaScript' && actionDictionary.has('JS')) {
-                            const js: string = actionDictionary.get('JS');
-                            result = new PdfJavaScriptAction(js);
-                            result._dictionary = actionDictionary;
+                    if (actionDictionary instanceof _PdfDictionary && actionDictionary.has('S') &&
+                        actionDictionary.has('JS')) {
+                        const action: PdfAction = PdfAction._createActionFromDictionary(actionDictionary);
+                        if (action instanceof PdfJavaScriptAction) {
+                            (actionDictionary as any)._parentDictionary = fieldDictionary; // eslint-disable-line
+                            result = action;
                         }
                     }
                 }

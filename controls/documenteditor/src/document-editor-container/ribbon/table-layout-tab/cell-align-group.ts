@@ -9,12 +9,14 @@ export const ALIGN_BOTTOM_BUTTON_ID: string = '_align_bottom_button';
 
 /**
  * Represents the Cell Align Group in Table Layout tab
+ *
  * @private
  */
 export class CellAlignGroup extends RibbonGroupBase {
 
     /**
      * Constructor for the CellAlignGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -23,6 +25,7 @@ export class CellAlignGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Cell Align
+     *
      * @returns {RibbonGroupModel} - Ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -84,6 +87,7 @@ export class CellAlignGroup extends RibbonGroupBase {
 
     /**
      * Applies top alignment to the selected cells
+     *
      * @returns {void}
      */
     private applyAlignTop(): void {
@@ -92,6 +96,7 @@ export class CellAlignGroup extends RibbonGroupBase {
 
     /**
      * Applies center alignment to the selected cells
+     *
      * @returns {void}
      */
     private applyAlignCenterHorizontal(): void {
@@ -100,6 +105,7 @@ export class CellAlignGroup extends RibbonGroupBase {
 
     /**
      * Applies bottom alignment to the selected cells
+     *
      * @returns {void}
      */
     private applyAlignBottom(): void {

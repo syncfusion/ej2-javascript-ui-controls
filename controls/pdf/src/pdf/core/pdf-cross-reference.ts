@@ -10,7 +10,7 @@ import { _PdfSignatureDictionary } from './security/digital-signature/signature/
 import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
 import { _CipherTransform } from './security/encryptors/cipher-tranform';
 import { _MD5 } from './security/encryptors/messageDigest5';
-import { PdfSecurityOptions } from './pdf-type';
+import { PdfSecurityOptions } from './pdf-document-helper';
 import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 /**
  * Manages PDF cross-reference tables and streams, object lookup, and saving operations.

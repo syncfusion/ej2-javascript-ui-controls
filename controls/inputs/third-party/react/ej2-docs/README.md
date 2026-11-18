@@ -1,1 +1,0 @@
-Project description: Repository for EJ2 react API Documentation.

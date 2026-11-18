@@ -1,6 +1,6 @@
 import { TextElementBox, ParagraphWidget, LineWidget, BlockContainer, ElementBox } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
-import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontScriptType, FontHintType } from '../../base/types';
+import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontHintType } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle, WCharacterStyle } from './style';

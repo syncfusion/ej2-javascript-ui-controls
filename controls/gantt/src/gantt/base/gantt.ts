@@ -20,10 +20,11 @@ import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs
 import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';
 import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
-import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel } from '../models/models';
+import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel, GanttWebMcpSettings } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';
 import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
+import { GanttWebMcpSettingsModel } from '../models/models';
 import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';
 import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -68,13 +69,14 @@ import { VirtualScroll } from '../actions/virtual-scroll';
 import { isCountRequired, parentsUntil, isRemoteData } from './utils';
 import { TaskbarEdit } from '../actions/taskbar-edit';
 import { UndoRedo } from '../actions/undo-redo';
+import { NotesEditor } from '../actions/notes-editor';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 import { WeekWorkingTime } from '../models/week-working-time';
 import {CellSaveArgs} from '@syncfusion/ej2-grids';
 import { cyclicValidator } from '../actions/validator';
 import { CalendarModule } from './calendar-module';
 import { CalendarContext } from './calendar-context';
-import { WebMcpAdapter } from '../integrations/webmcp-adapter';
+import { WebMcpGantt } from '../actions/webmcp-adapter';
 /**
  *
  * Represents the Gantt chart component.
@@ -122,6 +124,9 @@ export class Gantt extends Component<HTMLElement>
     public previousZoomingLevel: Object;
     private totalUndoAction: number = 0;
     public previousFlatData: IGanttData[] = [];
+    private recordIdCache: Map<string, IGanttData> = new Map();
+    private recordIdCacheSource: string[] = null;
+    private recordIdCacheLength: number = -1;
     private isExpandPerformed: boolean = false;
     private isCollapsePerformed: boolean = false;
     private oldRecords: IGanttData[] = [];
@@ -176,11 +181,16 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public flatData: IGanttData[];
     /** @hidden */
+    public uniqueIDMap: Map<string, IGanttData> = new Map<string, IGanttData>();
+    /** @hidden */
     public currentViewData: IGanttData[];
     /** @hidden */
     public updatedRecords: IGanttData[];
     /** @hidden */
     public ids: string[];
+    /** Record lookup cache keyed by the `ids` entries (rowUniqueID) for O(1) `getRecordByID` resolution. */
+    /** @hidden */
+    public flatRecordMap: Map<string, IGanttData> = new Map<string, IGanttData>();
     /** resource-task Ids */
     /** @hidden */
     public taskIds: string[];
@@ -412,10 +422,16 @@ export class Gantt extends Component<HTMLElement>
      * The `undoRedoModule` manages the undo and redo functionality in the Gantt chart.
      */
     public undoRedoModule: UndoRedo;
+    /**
+     * The `notesEditorModule` renders the lightweight Notes editor used by the edit dialog Notes tab.
+     */
+    public notesEditorModule: NotesEditor;
     /** @hidden */
     public isConnectorLineUpdate: boolean = false;
     /** @hidden */
     public tooltipModule: Tooltip;
+    /** @hidden */
+    public webMcpGanttModule: WebMcpGantt;
     /** @hidden */
     public globalize: Internationalization;
     /** @hidden */
@@ -569,6 +585,7 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableWebMcp: boolean;
+
     /**
      * Enables Work Breakdown Structure (WBS) functionality in the Gantt Chart.
      * When set to true, the Gantt Chart automatically generates WBS codes based on the task hierarchy.
@@ -1223,6 +1240,15 @@ export class Gantt extends Component<HTMLElement>
      */
     @Complex<EditSettingsModel>({}, EditSettings)
     public editSettings: EditSettingsModel;
+
+    /**
+     * Defines the settings for WebMCP integration in Gantt component.
+     * This property allows configuration of WebMCP tools and their exposure settings.
+     *
+     * @default {}
+     */
+    @Complex<GanttWebMcpSettingsModel>({}, GanttWebMcpSettings )
+    public webMcpSettings: GanttWebMcpSettingsModel;
     /**
      * Enables or disables default tooltip of Gantt element and defines customized tooltip for Gantt elements.
      * {% codeBlock src='gantt/tooltipSettings/index.md' %}{% endcodeBlock %}
@@ -2000,23 +2026,20 @@ export class Gantt extends Component<HTMLElement>
         return 'gantt';
     }
 
-    // Returns the WebMCP tool schemas for the given tool names.
-    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
-        if (this.enableWebMcp && !(this as any)._webMcpAdapter) {
-            (this as any)._webMcpAdapter = new WebMcpAdapter(this);
+    /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * @param {string[]} toolNames - Optional array of tool names to retrieve.
+     * @returns {WebMcpTool[]} Array of WebMCP tool schemas.
+     */
+    private getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        if (this.enableWebMcp && !this.webMcpGanttModule) {
+            this.webMcpGanttModule = new WebMcpGantt(this);
         }
         const args: { toolNames?: string[]; tools?: WebMcpTool[] } = { toolNames };
         this.notify('getWebMcpTools', args);
         return args.tools || [];
     }
 
-    // Registers WebMCP tools with document.modelContext for this component instance.
-    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
-        if (this.enableWebMcp && !(this as any)._webMcpAdapter) {
-            (this as any)._webMcpAdapter = new WebMcpAdapter(this);
-        }
-        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
-    }
     /**
      * For internal use only - Initialize the event handler
      *
@@ -2432,6 +2455,12 @@ export class Gantt extends Component<HTMLElement>
      */
     public insertRecord(record: IGanttData, index: number): void {
         this.flatData.splice(index, 0, record);
+        if (this.uniqueIDMap) {
+            this.uniqueIDMap.set(record.uniqueID, record);
+        }
+        if (this.flatRecordMap && record.ganttProperties) {
+            this.flatRecordMap.set(String(record.ganttProperties.rowUniqueID), record);
+        }
     }
     /**
      * Removes one or more Gantt records from the flatData array starting at the specified index and deletes their entries from the flatDataMap.
@@ -2441,6 +2470,17 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public removeRecords(startIndex: number, count: number = 1): void {
+        for (let i: number = 0; i < count && (startIndex + i) < this.flatData.length; i++) {
+            const removed: IGanttData = this.flatData[startIndex + i];
+            if (removed) {
+                if (this.uniqueIDMap) {
+                    this.uniqueIDMap.delete(removed.uniqueID);
+                }
+                if (this.flatRecordMap && removed.ganttProperties) {
+                    this.flatRecordMap.delete(String(removed.ganttProperties.rowUniqueID));
+                }
+            }
+        }
         this.flatData.splice(startIndex, count);
     }
 
@@ -2588,6 +2628,14 @@ export class Gantt extends Component<HTMLElement>
             const mode: string = this.filterSettings.hierarchyMode;
             this.initialHierarchyMode = mode;
         }
+        // Initialize WebMCP adapter module if WebMCP is enabled
+        if (this.enableWebMcp && this.webMcpGanttModule) {
+            // Register tools from webMcpSettings if provided
+            if (this.webMcpSettings && this.webMcpSettings) {
+                const settings: GanttWebMcpSettingsModel = this.webMcpSettings || {};
+                this.notify('registerWebMcpTools', { name: settings.name, tools: settings.tools, exposedTo: settings.exposedTo });
+            }
+        }
         this.dataOperation.checkDataBinding();
     }
     private actionFailures(): void {
@@ -2664,6 +2712,7 @@ export class Gantt extends Component<HTMLElement>
         checkModule('rowDragAndDrop', dragAndDrop, this.injectedModules, failureCases);
         checkModule('criticalPath', this.enableCriticalPath, this.injectedModules, failureCases);
         checkModule('undoRedo', this.enableUndoRedo, this.injectedModules, failureCases);
+        checkModule('notesEditor', !isNullOrUndefined(this.taskFields.notes), this.injectedModules, failureCases);
         checkModule('resize', this.allowResizing, this.injectedModules, failureCases);
         let toolbar: boolean;
         if (this.toolbar && this.toolbar.length > 0) {
@@ -2698,6 +2747,7 @@ export class Gantt extends Component<HTMLElement>
             freeze = true;
         }
         checkModule('freeze', freeze, this.injectedModules, failureCases);
+        checkModule('webMcpGantt', this.enableWebMcp, this.injectedModules, failureCases);
         if (failureCases.length > 0) {
             /* eslint-disable-next-line */
             const failureEventArgs: any = {
@@ -3424,6 +3474,8 @@ export class Gantt extends Component<HTMLElement>
         if (this.currentViewData.length > 0 && this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             this.isLoad = true;
             this.flatData = [];
+            this.uniqueIDMap = new Map<string, IGanttData>();
+            this.flatRecordMap = new Map<string, IGanttData>();
             this.dataOperation.taskIds = {};
             this.ids = [];
             this.dataOperation.recordIndex = 0;
@@ -4064,6 +4116,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.isLoad) {
             return;  // Skip during initial load
         }
+        this.dataOperation.endDateFromDurationCache.clear();
         // Update the cache with new hoursPerDay value
         this.secondsPerDay = this.dataOperation.getSecondsPerDay();
 
@@ -4101,6 +4154,10 @@ export class Gantt extends Component<HTMLElement>
         const refreshState: {
             isRefresh: boolean;
         } = { isRefresh: false };
+        if (isNullOrUndefined(this.treeGrid) || isNullOrUndefined(this.treeGrid.grid) ||
+            isNullOrUndefined(this.treeGrid.grid.contentModule)) {
+            return;
+        }
         // eslint-disable-next-line
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -4586,6 +4643,13 @@ export class Gantt extends Component<HTMLElement>
         const modules: ModuleDeclaration[] = [];
         const holidays: HolidayModel[] = this.calendarModule.holidays;
         if (this.isDestroyed) { return modules; }
+        if (this.enableWebMcp) {
+            modules.push({
+                member: 'webMcpGantt',
+                args: [this]
+            });
+        }
+
         if (this.allowSorting) {
             modules.push({
                 member: 'sort',
@@ -4644,6 +4708,12 @@ export class Gantt extends Component<HTMLElement>
             || this.editSettings.allowTaskbarEditing || this.allowRowDragAndDrop) {
             modules.push({
                 member: 'edit',
+                args: [this]
+            });
+        }
+        if (!isNullOrUndefined(this.taskFields.notes)) {
+            modules.push({
+                member: 'notesEditor',
                 args: [this]
             });
         }
@@ -4978,6 +5048,25 @@ export class Gantt extends Component<HTMLElement>
             generalTab: 'General',
             customTab: 'Custom Columns',
             writeNotes: 'Write Notes',
+            notesToolbar: 'Notes formatting',
+            bold: 'Bold',
+            italic: 'Italic',
+            underline: 'Underline',
+            orderedList: 'Numbered list',
+            unorderedList: 'Bulleted list',
+            createLink: 'Create link',
+            fontName: 'Font Name',
+            fontSize: 'Font Size',
+            fontColor: 'Font Color',
+            backgroundColor: 'Background Color',
+            linkHeader: 'Insert Link',
+            linkWebUrl: 'Web address',
+            linkText: 'Display text',
+            linkTitle: 'Title',
+            linkOpenInNewWindow: 'Open in new window',
+            linkAriaLabel: 'Opens in a new window',
+            dialogInsert: 'Insert',
+            dialogCancel: 'Cancel',
             addDialogTitle: 'New Task',
             editDialogTitle: 'Task Information',
             add: 'Add',
@@ -5161,6 +5250,12 @@ export class Gantt extends Component<HTMLElement>
             const result: IGanttData = parentRecords.get(cloneParent.uniqueID);
             if (result) {
                 return result;
+            }
+        }
+        if (this.uniqueIDMap && this.uniqueIDMap.size > 0) {
+            const mapped: IGanttData = this.uniqueIDMap.get(cloneParent.uniqueID);
+            if (mapped) {
+                return mapped;
             }
         }
         if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 &&
@@ -5666,6 +5761,10 @@ export class Gantt extends Component<HTMLElement>
      * @isGenericType true
      */
     public getTaskByUniqueID(id: string): IGanttData {
+        if (this.uniqueIDMap && this.uniqueIDMap.size > 0) {
+            return this.uniqueIDMap.get(id) || null;
+        }
+        // Fallback to linear scan when the cache is not populated (e.g. before first load).
         const value: IGanttData[] = this.flatData.filter((val: IGanttData) => {
             return val.uniqueID === id;
         });
@@ -5686,7 +5785,26 @@ export class Gantt extends Component<HTMLElement>
         if (isNullOrUndefined(id)) {
             return null;
         }
-        return this.flatData[this.ids.indexOf(id.toString())];
+        const idStr: string = id.toString();
+        if (this.recordIdCacheSource !== this.ids || this.recordIdCacheLength !== this.ids.length) {
+            this.recordIdCache.clear();
+            this.recordIdCacheSource = this.ids;
+            this.recordIdCacheLength = this.ids.length;
+        }
+        const currentAction: string = this.undoRedoModule &&
+            this.undoRedoModule['currentAction'] ? this.undoRedoModule['currentAction']['action'] : null;
+        if (this.recordIdCache.has(idStr) && !currentAction) {
+            return this.recordIdCache.get(idStr) || null;
+        }
+        const index: number = this.ids.indexOf(idStr);
+        if (index >= 0 && index < this.flatData.length) {
+            const record: IGanttData = this.flatData[index as number];
+            if (!this.recordIdCache.has(idStr)) {
+                this.recordIdCache.set(idStr, record);
+            }
+            return record;
+        }
+        return null;
     }
     /**
      * Method to set splitter position.
@@ -6800,6 +6918,17 @@ export class Gantt extends Component<HTMLElement>
             data: ganttData
         };
         this.editModule.initiateUpdateAction(args);
+    }
+    /**
+     * Invalidate taskIds index cache. Called when taskIds array is mutated via splice.
+     * The cache will rebuild on next getRecordByID() call.
+     * @returns {void}
+     * @private
+     */
+    public invalidateTaskIdsCache(): void {
+        if (this.connectorLineModule && this.connectorLineModule.taskIdsIndexCache) {
+            this.connectorLineModule.taskIdsIndexCache = null;
+        }
     }
     /**
      * @returns {string[]} .

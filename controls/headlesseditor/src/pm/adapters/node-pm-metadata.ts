@@ -41,6 +41,15 @@ export const NODE_PM_METADATA: Record<string, Record<string, any>> = {
         defining: true,
         marks: '',
         code: true
+    },
+    // Image: PM treats `image` as a textblock (content: inline*), so the
+    // generic placeholder-container predicate (isBlock && !isTextblock)
+    // does not match it. The explicit `enablePlaceholderContainer: true` flag
+    // ensures the image node is recognized for placeholder resolution.
+    // Extension authors can override this default by setting
+    // `enablePlaceholderContainer: false` on their own NodeDefinition.
+    'image': {
+        enablePlaceholderContainer: true
     }
 };
 

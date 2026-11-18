@@ -9,7 +9,6 @@ import { PdfArray } from './../primitives/pdf-array';
 import { PdfNumber } from './../primitives/pdf-number';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
 import { PdfString } from './../primitives/pdf-string';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfName } from './../primitives/pdf-name';
 import { PdfSection } from './../pages/pdf-section';
 import { PdfBrush } from './../graphics/brushes/pdf-brush';
@@ -25,11 +24,6 @@ import { PdfTextAlignment } from './../graphics/enum';
  */
 export abstract class PdfAnnotation implements IPdfWrapper {
     // Fields
-    /**
-     * Specifies the Internal variable to store fields of `PdfDictionaryProperties`.
-     * @private
-     */
-    protected dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * `Color` of the annotation
      * @private
@@ -161,7 +155,7 @@ export abstract class PdfAnnotation implements IPdfWrapper {
     }
     public set text(value : string) {
         this.content = value;
-        this.dictionary.items.setValue(this.dictionaryProperties.contents, new PdfString(this.content));
+        this.dictionary.items.setValue('Contents', new PdfString(this.content));
     }
     /**
      * Internal variable to store `dictionary`.
@@ -195,7 +189,7 @@ export abstract class PdfAnnotation implements IPdfWrapper {
      */
     protected initialize() : void {
         this.pdfDictionary.annotationBeginSave = new SaveAnnotationEventHandler(this);
-        this.pdfDictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.annot));
+        this.pdfDictionary.items.setValue('Type', new PdfName('Annot'));
     }
     /**
      * Sets related `page` of the annotation.
@@ -203,7 +197,7 @@ export abstract class PdfAnnotation implements IPdfWrapper {
      */
     public setPage(page : PdfPageBase) : void {
         this.pdfPage = page as PdfPage;
-        this.pdfDictionary.items.setValue(this.dictionaryProperties.p, new PdfReferenceHolder(this.pdfPage));
+        this.pdfDictionary.items.setValue('P', new PdfReferenceHolder(this.pdfPage));
     }
     /**
      * Handles the `BeginSave` event of the Dictionary.
@@ -226,8 +220,8 @@ export abstract class PdfAnnotation implements IPdfWrapper {
         nativeRectangle.width = tempLoacation.x + nativeRectangle.width;
         nativeRectangle.y = (tempLoacation.y - this.page.document.pageSettings.margins.top);
         nativeRectangle.height = nativeRectangle.y - initialHeight;
-        this.pdfDictionary.items.setValue(this.dictionaryProperties.rect, PdfArray.fromRectangle(nativeRectangle));
-        this.dictionary.items.setValue(this.dictionaryProperties.ca, new PdfNumber(this.darkness));
+        this.pdfDictionary.items.setValue('Rect', PdfArray.fromRectangle(nativeRectangle));
+        this.dictionary.items.setValue('ca', new PdfNumber(this.darkness));
     }
     /* tslint:enable */
     // IPdfWrapper Members

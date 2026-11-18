@@ -3,7 +3,9 @@ import { RichTextEditorUI } from '..';
 import { ActionBeginEventArgs, EditorCommandName } from '../../controller/interface';
 import { Browser, extend } from '@syncfusion/ej2-base';
 import { CustomUserAgentData } from '../../common/user-agent';
-
+/**
+ * @private
+ */
 export class KeyBindingRegistry {
     public static normalizeKeyBinding(binding: string, isMac: boolean): string {
         const tokens: string[] = binding
@@ -90,6 +92,7 @@ export class KeyBindingRegistry {
             outdents: 'outdent',
             'ordered-list': 'numberedList',
             'unordered-list': 'bulletList',
+            checklist: 'checklist',
             'clear-format': 'clearFormat',
             'code-block': 'codeBlock',
             inlinecode: 'inlineCode',

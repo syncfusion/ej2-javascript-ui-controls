@@ -2,7 +2,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { DialogFieldType } from '../base/enum';
 import { TreeGridModel } from '@syncfusion/ej2-treegrid';
 import { GridModel } from '@syncfusion/ej2-grids';
-import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
+import { NotesEditorModel } from './notes-editor-model';
 /**
  * Defines dialog fields of edit dialog.
  */
@@ -36,10 +36,10 @@ export class EditDialogFieldSettings extends ChildProperty<EditDialogFieldSettin
     @Property([])
     public fields: string[];
     /**
-     * Specifies the configuration properties for Grid, Rich Text Editor (RTE), or TreeGrid controls within the Gantt edit dialog.
+     * Specifies the configuration properties for Grid, Notes editor, or TreeGrid controls within the Gantt edit dialog.
      *
      * @default null
      */
     @Property({})
-    public additionalParams: TreeGridModel | GridModel | RichTextEditorModel;
+    public additionalParams: TreeGridModel | GridModel | NotesEditorModel | Record<string, unknown>;
 }

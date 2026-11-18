@@ -10,6 +10,7 @@ export const HEADER_FOOTER_TAB_ID: string = '_header_footer_tab';
 
 /**
  * HeaderFooterTab module for document editor ribbon
+ *
  * @private
  */
 export class HeaderFooterTab {
@@ -24,6 +25,7 @@ export class HeaderFooterTab {
 
     /**
      * Constructor for HeaderFooterTab
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -39,6 +41,7 @@ export class HeaderFooterTab {
 
     /**
      * Gets the HeaderFooter tab model for ribbon
+     *
      * @returns {RibbonTabModel} The header footer tab model
      */
     public getHeaderFooterTab(): RibbonTabModel {
@@ -56,6 +59,7 @@ export class HeaderFooterTab {
 
     /**
      * Updates the checkbox states based on current document settings
+     *
      * @returns {void}
      */
     public updateCheckboxStates(): void {
@@ -64,6 +68,7 @@ export class HeaderFooterTab {
 
     /**
      * Clean up resources
+     *
      * @returns {void}
      */
     public destroy(): void {

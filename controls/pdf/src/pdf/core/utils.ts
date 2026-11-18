@@ -1,11 +1,12 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 import { PdfPage } from './pdf-page';
-import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle, PdfDashStyle } from './enumerator';
+import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle, PdfDashStyle, PdfTemplateHorizontalAlignment, PdfTemplateVerticalAlignment, PdfAttachmentRelationship } from './enumerator';
 import { _TagClassType, _ConstructionType, _UniversalType } from './security/digital-signature/asn1/enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
-import { PdfDocument, PdfPageSettings } from './pdf-document';
+import { PdfDocument } from './pdf-document';
+import { PdfPageSettings, Size, PdfColor, Point, PdfImageProperties, Rectangle } from './pdf-document-helper';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
-import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter, PdfRedactionAnnotation, PdfRubberStampAnnotation, PdfListFieldItem } from './annotations/annotation';
+import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter, PdfRubberStampAnnotation, PdfListFieldItem, PdfRedactionAnnotation } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
@@ -20,7 +21,6 @@ import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 import { _CjkWidthTable, _PdfFontMetrics, _StandardWidthTable, _WidthTable } from './fonts/pdf-font-metrics';
 import { _PdfAbstractSyntaxElement } from './security/digital-signature/asn1/abstract-syntax';
 import { _PdfUniqueEncodingElement } from './security/digital-signature/asn1/unique-encoding-element';
-import { Size, PdfColor, Point } from './pdf-type';
 /**
  * Gets the unsigned value.
  *
@@ -6215,4 +6215,321 @@ export function _bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
     }
     return true;
 }
+/**
+ * Returns true when the supplied string value represents a text-derived hyperlink (starts with http:// or https://).
+ *
+ * @private
+ * @param {string} value The cell value string to test.
+ * @returns {boolean} True if the value is a URL that would produce a text-derived annotation.
+ */
+export function _isTextDerivedHyperlink(value: string): boolean {
+    return value.startsWith('http://') || value.startsWith('https://');
+}
+/**
+ * Computes the draw rectangle for an image within a content area, applying fit mode, alignment, and overflow clamping.
+ *
+ * @private
+ * @param {number} intrinsicW The natural pixel width of the image.
+ * @param {number} intrinsicH The natural pixel height of the image.
+ * @param {number} ratio The aspect ratio (intrinsicW / intrinsicH).
+ * @param {PdfImageProperties} imgProps The resolved image properties (fitType, width, height, alignment).
+ * @param {Rectangle} contentBounds The available content area after padding.
+ * @returns {Rectangle} The final draw bounds for the image, clamped to contentBounds.
+ */
+export function _resolveImageDrawBounds(intrinsicW: number, intrinsicH: number,
+                                        ratio: number, imgProps: PdfImageProperties,
+                                        contentBounds: Rectangle): Rectangle {
+    const availW: number = Math.max(contentBounds.width, 1);
+    const availH: number = Math.max(contentBounds.height, 1);
+    const hasExplicitW: boolean = typeof imgProps.width === 'number' && (imgProps.width as number) > 0;
+    const hasExplicitH: boolean = typeof imgProps.height === 'number' && (imgProps.height as number) > 0;
+    const fitType: number = imgProps.fitType;
+    let drawW: number;
+    let drawH: number;
+    if (fitType === 3) {
+        return { x: contentBounds.x, y: contentBounds.y, width: availW, height: availH };
+    }
+    if (hasExplicitW && hasExplicitH) {
+        const boxW: number = Math.min(imgProps.width as number, availW);
+        const boxH: number = Math.min(imgProps.height as number, availH);
+        if (fitType === 0) {
+            drawW = boxW;
+            drawH = boxW / ratio;
+        } else if (fitType === 1) {
+            drawH = boxH;
+            drawW = boxH * ratio;
+        } else if (fitType === 2) {
+            const scale: number = Math.min(boxW / intrinsicW, boxH / intrinsicH);
+            drawW = intrinsicW * scale;
+            drawH = intrinsicH * scale;
+        } else {
+            drawW = boxW;
+            drawH = boxH;
+        }
+    } else if (hasExplicitW) {
+        const boxW: number = Math.min(imgProps.width as number, availW);
+        drawW = boxW;
+        drawH = boxW / ratio;
+    } else if (hasExplicitH) {
+        const boxH: number = Math.min(imgProps.height as number, availH);
+        drawH = boxH;
+        drawW = boxH * ratio;
+    } else if (fitType === 0 ) {
+        drawW = availW;
+        drawH = availW / ratio;
+    } else if (fitType === 1) {
+        drawH = availH;
+        drawW = availH * ratio;
+    } else if (fitType === 2) {
+        const scale: number = Math.min(availW / intrinsicW, availH / intrinsicH);
+        drawW = intrinsicW * scale;
+        drawH = intrinsicH * scale;
+    } else {
+        const scale: number = Math.min(availW / intrinsicW, availH / intrinsicH, 1);
+        drawW = intrinsicW * scale;
+        drawH = intrinsicH * scale;
+    }
+    drawW = Math.min(drawW, availW);
+    drawH = Math.min(drawH, availH);
+    const hAlign: PdfTemplateHorizontalAlignment = typeof imgProps.horizontalAlignment === 'number'
+        ? imgProps.horizontalAlignment : PdfTemplateHorizontalAlignment.center;
+    const vAlign: PdfTemplateVerticalAlignment = typeof imgProps.verticalAlignment === 'number'
+        ? imgProps.verticalAlignment : PdfTemplateVerticalAlignment.middle;
+    let offsetX: number = 0;
+    if (hAlign === PdfTemplateHorizontalAlignment.center) {
+        offsetX = (availW - drawW) / 2;
+    } else if (hAlign === PdfTemplateHorizontalAlignment.right) {
+        offsetX = availW - drawW;
+    }
+    let offsetY: number = 0;
+    if (vAlign === PdfTemplateVerticalAlignment.middle) {
+        offsetY = (availH - drawH) / 2;
+    } else if (vAlign === PdfTemplateVerticalAlignment.bottom) {
+        offsetY = availH - drawH;
+    }
+    return { x: contentBounds.x + Math.max(offsetX, 0), y: contentBounds.y + Math.max(offsetY, 0),
+        width: drawW, height: drawH };
+}
+/**
+ * Converts a JavaScript Date to a PDF date string (D:YYYYMMDDHHmmSSOHH'mm') including the local timezone offset.
+ *
+ * @private
+ * @param {Date} dateTime Input date.
+ * @returns {string} pdfDate PDF date string.
+ */
+export function _dateToString(dateTime: Date): string {
+    const year: number = dateTime.getFullYear();
+    const month: string = _pad2(dateTime.getMonth() + 1);
+    const day: string = _pad2(dateTime.getDate());
+    const hours: string = _pad2(dateTime.getHours());
+    const mins: string = _pad2(dateTime.getMinutes());
+    const secs: string = _pad2(dateTime.getSeconds());
+    const utcOffsetMinutes: number = -dateTime.getTimezoneOffset();
+    const sign: any = utcOffsetMinutes >= 0 ? '+' : '-'; // eslint-disable-line
+    const absMin: number = Math.abs(utcOffsetMinutes);
+    const offH: string = _pad2(Math.floor(absMin / 60));
+    const offM: string = _pad2(absMin % 60);
+    return `D:${year}${month}${day}${hours}${mins}${secs}${sign}${offH}'${offM}'`;
+}
+/**
+ * Parses a PDF or common date string into a JavaScript Date, handling D: format, slashed dates, and timezone offsets.
+ *
+ * @private
+ * @param {string} date Date string.
+ * @returns {Date} parsedDate.
+ */
+export function _stringToDate(date: string): Date {
+    if (!date || typeof date !== 'string') {
+        return new Date(date as any); // eslint-disable-line
+    }
+    if (date.indexOf('/') !== -1) {
+        const list: string[] = date.split('/');
+        const year: number = parseInt(list[2].split(' ')[0], 10);
+        const month: number = parseInt(list[0], 10) - 1;
+        const day: number = parseInt(list[1], 10);
+        const timePart: string[] = (list[2].split(' ')[1] || '00:00:00').split(':');
+        const hour: number = parseInt(timePart[0] || '0', 10);
+        const minute: number = parseInt(timePart[1] || '0', 10);
+        const second: number = parseInt(timePart[2] || '0', 10);
+        return new Date(year, month, day, hour, minute, second);
+    }
+    if (date.startsWith('D:')) {
+        date = date.substring(2);
+    }
+    const raw: string = date.replace(/'/g, '').trim();
+    const y: number = parseInt(raw.slice(0, 4), 10);
+    const haveM: boolean = raw.length >= 6;
+    const haveD: boolean = raw.length >= 8;
+    const haveH: boolean = raw.length >= 10;
+    const havem: boolean = raw.length >= 12;
+    const haves: boolean = raw.length >= 14;
+    const m: number = haveM ? parseInt(raw.slice(4, 6), 10) : 1;
+    const d: number = haveD ? parseInt(raw.slice(6, 8), 10) : 1;
+    const h: number = haveH ? parseInt(raw.slice(8, 10), 10) : 0;
+    const min: number = havem ? parseInt(raw.slice(10, 12), 10) : 0;
+    const s: number = haves ? parseInt(raw.slice(12, 14), 10) : 0;
+    let tzTail: string = raw.slice(14);
+    if (/^[+-]\d{2}:\d{2}$/.test(tzTail)) {
+        tzTail = tzTail.replace(':', '');
+    }
+    let hasTz: boolean = false;
+    let tzSign: number = 0;
+    let tzH: number = 0;
+    let tzM: number = 0;
+    if (tzTail) {
+        if (/^[Zz]$/.test(tzTail)) {
+            hasTz = true;
+            tzSign = +1;
+            tzH = 0;
+            tzM = 0;
+        } else if (/^[+-]\d{2}\d{2}$/.test(tzTail)) {
+            hasTz = true;
+            tzSign = tzTail[0] === '+' ? +1 : -1;
+            tzH = parseInt(tzTail.slice(1, 3), 10);
+            tzM = parseInt(tzTail.slice(3, 5), 10);
+        } else if (/^[+-]\d{2}$/.test(tzTail)) {
+            hasTz = true;
+            tzSign = tzTail[0] === '+' ? +1 : -1;
+            tzH = parseInt(tzTail.slice(1, 3), 10);
+            tzM = 0;
+        }
+    }
+    if (hasTz) {
+        const localUTCms: number = Date.UTC(y, m - 1, d, h, min, s);
+        const offsetMinutes: number = tzSign * (tzH * 60 + tzM);
+        return new Date(localUTCms - offsetMinutes * 60 * 1000);
+    } else {
+        return new Date(y, m - 1, d, h, min, s);
+    }
+}
+/**
+ * Converts a PDF AFRelationship name string to a `PdfAttachmentRelationship` enum value.
+ *
+ * @private
+ * @param {string} name The PDF name string (e.g. `"Data"`).
+ * @returns {PdfAttachmentRelationship} The corresponding enum value.
+ */
+export function _stringToRelationship(name: string): PdfAttachmentRelationship {
+    switch ((name || '').toLowerCase()) {
+    case 'source':
+        return PdfAttachmentRelationship.Source;
+    case 'data':
+        return PdfAttachmentRelationship.Data;
+    case 'alternative':
+        return PdfAttachmentRelationship.Alternative;
+    case 'supplement':
+        return PdfAttachmentRelationship.Supplement;
+    default:
+        return PdfAttachmentRelationship.Unspecified;
+    }
+}
 
+/**
+ * Converts a `PdfAttachmentRelationship` enum value to its PDF name string.
+ *
+ * @private
+ * @param {PdfAttachmentRelationship} rel The relationship enum value.
+ * @returns {string} The PDF name string.
+ */
+export function _relationshipToString(rel: PdfAttachmentRelationship): string {
+    switch (rel) {
+    case PdfAttachmentRelationship.Source:
+        return 'Source';
+    case PdfAttachmentRelationship.Data:
+        return 'Data';
+    case PdfAttachmentRelationship.Alternative:
+        return 'Alternative';
+    case PdfAttachmentRelationship.Supplement:
+        return 'Supplement';
+    default:
+        return 'Unspecified';
+    }
+}
+/**
+ * Resolves the embedded-file stream reference from a file specification dictionary.
+ *
+ * @private
+ * @param {any} fileSpecDict The file specification dictionary.
+ * @returns {_PdfReference | null} The stream reference, or null if not found.
+ */
+export function _resolveEmbeddedFileStreamRef(fileSpecDict: any): _PdfReference | null { // eslint-disable-line
+    if (!fileSpecDict || !(fileSpecDict instanceof _PdfDictionary)) {
+        return null;
+    }
+    if (!fileSpecDict.has('EF')) {
+        return null;
+    }
+    const efDict: _PdfDictionary = fileSpecDict.get('EF');
+    if (!efDict) {
+        return null;
+    }
+    let streamRef: _PdfReference | null = null;
+    const ufRaw: any = efDict.getRaw('UF'); // eslint-disable-line
+    if (ufRaw instanceof _PdfReference) {
+        streamRef = ufRaw;
+    } else {
+        const fRaw: any = efDict.getRaw('F'); // eslint-disable-line
+        if (fRaw instanceof _PdfReference) {
+            streamRef = fRaw;
+        }
+    }
+    return streamRef;
+}
+/**
+ * Decodes bytes from a PDF stream object (handles flate / decrypt streams).
+ *
+ * @private
+ * @param {any} stream The stream object fetched from the cross-reference.
+ * @returns {Uint8Array} The decoded bytes.
+ */
+export function _decodeEmbeddedStream(stream: any): Uint8Array { // eslint-disable-line
+    if (stream.dictionary.has('Filter') && stream.dictionary.get('Filter').name === 'FlateDecode') {
+        const len: number = (stream as any).bytes ? (stream as any).bytes.length : ((stream as any).bufferLength || 0); // eslint-disable-line
+        return stream.getBytes(len) as Uint8Array;
+    }
+    if (stream instanceof _PdfBaseStream) {
+        const raw: Uint8Array = stream.getBytes() as Uint8Array;
+        return raw ? raw : new Uint8Array(0);
+    }
+    throw new Error('Unsupported embedded file stream type.');
+}
+
+/**
+ * Builds the Adobe DataPrep barcode payload: 0x81 0x01 followed by the zlib (Flate) compressed UTF-8 bytes of the text.
+ *
+ * @private
+ * @param {string} text - The uncompressed payload.
+ * @returns {Uint8Array} The compressed payload bytes.
+ */
+export function _compressBarcodeData(text: string): Uint8Array {
+    const utf8: number[] = [];
+    for (let i: number = 0; i < text.length; i++) {
+        let code: number = text.charCodeAt(i);
+        if (code >= 0xD800 && code <= 0xDBFF && i + 1 < text.length) {
+            const low: number = text.charCodeAt(i + 1);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+                code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+                i++;
+            }
+        }
+        if (code >= 0xD800 && code <= 0xDFFF) {
+            code = 0xFFFD;
+        }
+        const bytes: number[] = _encodeCodePointToUtf8(code);
+        for (let k: number = 0; k < bytes.length; k++) {
+            utf8.push(bytes[<number>k]);
+        }
+    }
+    const data: Uint8Array = new Uint8Array(utf8);
+    const writer: CompressedStreamWriter = new CompressedStreamWriter();
+    writer.write(data, 0, data.length);
+    writer.close();
+    const compressed: string = writer.getCompressedString;
+    const result: Uint8Array = new Uint8Array(compressed.length + 2);
+    result[0] = 0x81;
+    result[1] = 0x01;
+    for (let i: number = 0; i < compressed.length; i++) {
+        result[i + 2] = compressed.charCodeAt(i) & 0xFF;
+    }
+    return result;
+}

@@ -100,7 +100,7 @@ export class PdfDocumentLinkAnnotation extends PdfLinkAnnotation {
     public save() : void {
         super.save();
         if (this.pdfDestination != null) {
-            this.dictionary.items.setValue(this.dictionaryProperties.dest, this.pdfDestination.element);
+            this.dictionary.items.setValue('Dest', this.pdfDestination.element);
         }
     }
     /**

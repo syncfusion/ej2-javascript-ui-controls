@@ -5,7 +5,7 @@ import { FormValidator, Signature } from '@syncfusion/ej2-inputs';
 import { FormLayout, FormNode, Schema } from './types/form-schema';
 import { renderFormField } from './render-form-field';
 import { resolveCustomWidget, ResolvedCustomWidget } from './custom-widget-resolver';
-import { mergeSchema, UnifiedSchema } from '../common/json-converter';
+import { mergeSchema, UnifiedSchema, inferTypeFromWidget } from '../common/json-converter';
 import { UniversalJsonParser } from '../common/parser';
 import { VALIDATION_REGEX, formatDateValues, splitWidths } from '../common/utils';
 import StaticHtmlRenderer from '../common/static-html-renderer';
@@ -42,6 +42,8 @@ export interface ChangeEventArgs {
     label: string;
     /** Specifies the new value of the field */
     value: FieldDataType;
+    /** Specifies all the current form field values */
+    dataModel: object;
 }
 
 /**
@@ -390,27 +392,7 @@ export class FormRenderer extends Component<HTMLElement> {
             const rendered: HTMLElement | null = this.renderComponent(component);
             if (rendered) {
                 root.appendChild(rendered);
-            }
-            if (component.type === 'richTextEditor') {
-                const rteElement: any = rendered.querySelector('.e-richtexteditor') as HTMLElement;
-                const rteInstance = getComponent(rteElement, 'richtexteditor');
-                if (rteInstance) {
-                   (rteInstance as RichTextEditor).refreshUI();
-                }
-            }
-            if (component.type === 'dataGrid') {
-                const toolbarElement: any = rendered.querySelector('.e-control.e-toolbar') as HTMLElement;
-                const rteInstance = getComponent(toolbarElement, 'toolbar');
-                if (rteInstance) {
-                    (rteInstance as Toolbar).refresh();
-                }
-            }
-            if (component.type === 'tabs') {
-                const tabElement: any = rendered.querySelector('.e-control.e-tab') as HTMLElement;
-                const tabInstance = getComponent(tabElement, 'tab');
-                if (tabInstance) {
-                    (tabInstance as Tab).refreshOverflow();
-                }
+                this.refreshRenderedComponent(component, rendered);
             }
         });
         if (this.created && !this.createdFired) {
@@ -420,6 +402,56 @@ export class FormRenderer extends Component<HTMLElement> {
                     this.trigger('created', {});
                 }
             }, 0);
+        }
+    }
+
+    private refreshRenderedComponent(component: FormNode, rendered: HTMLElement): void {
+        let componentRoot: HTMLElement = rendered;
+        if (component.type === 'tabs') {
+            componentRoot = rendered.querySelector(`#${component.id}.e-control.e-tab`) as HTMLElement || rendered;
+        } else {
+            componentRoot = rendered.querySelector(`[data-field-id="${component.id}"]`) as HTMLElement || rendered;
+        }
+
+        if (component.type === 'richTextEditor') {
+            const rteElement: HTMLElement | null = componentRoot.querySelector('.e-richtexteditor');
+            const rteInstance: any = rteElement ? getComponent(rteElement, 'richtexteditor') : null;
+            if (rteInstance) {
+                (rteInstance as RichTextEditor).refreshUI();
+            }
+        } else if (component.type === 'dataGrid') {
+            const toolbarElement: HTMLElement | null = componentRoot.querySelector('.e-control.e-toolbar');
+            const toolbarInstance: any = toolbarElement ? getComponent(toolbarElement, 'toolbar') : null;
+            if (toolbarInstance) {
+                (toolbarInstance as Toolbar).refresh();
+            }
+        }  else if (component.type === 'imageEditor') {
+            const editorElement: HTMLElement | null = componentRoot.querySelector('.e-control.e-image-editor');
+            const editorInstance: any = editorElement ? getComponent(editorElement, 'image-editor') : null;
+            if (editorInstance) {
+                (editorInstance as ImageEditor).refresh();
+            }
+        } else if (component.type === 'tabs') {
+            const tabInstance: any = getComponent(componentRoot, 'tab');
+            if (tabInstance) {
+                (tabInstance as Tab).refreshOverflow();
+            }
+        }
+
+        if (component.children) {
+            component.children.forEach((child: FormNode) => this.refreshRenderedComponent(child, rendered));
+        }
+        if (component.tableCells) {
+            component.tableCells.forEach((row: FormNode[][]) => {
+                row.forEach((cell: FormNode[]) => cell.forEach((child: FormNode) => this.refreshRenderedComponent(child, rendered)));
+            });
+        }
+        if (component.tabItems) {
+            component.tabItems.forEach((tab) => {
+                if (tab.content) {
+                    tab.content.forEach((child: FormNode) => this.refreshRenderedComponent(child, rendered));
+                }
+            });
         }
     }
 
@@ -550,6 +582,22 @@ export class FormRenderer extends Component<HTMLElement> {
         };
         traverse(components);
         return all;
+    }
+
+    private getDataModelByName(): Record<string, any> {
+        const dataModel: Record<string, any> = {};
+        const components: FormNode[] = this.collectAllComponents(this.processedSchemaCache.components as FormNode[]);
+        const componentsById: Record<string, FormNode> = {};
+        components.forEach((component: FormNode) => {
+            componentsById[component.id] = component;
+        });
+        Object.keys(this.formState.values).forEach((id: string) => {
+            const component: FormNode | undefined = componentsById[id];
+            if (component && component.name) {
+                dataModel[component.name] = this.formState.values[id];
+            }
+        });
+        return dataModel;
     }
 
     /**
@@ -899,7 +947,7 @@ export class FormRenderer extends Component<HTMLElement> {
         const formState = this.formState;
         const formValues: Record<string, any> = formState ? formState.values : {};
 
-        if (['panel', 'table', 'tabs', 'card', 'message', 'button', 'splitButton', 'staticHtml'].indexOf(component.type) !== -1) {
+        if (['panel', 'table', 'tabs', 'card', 'message', 'staticHtml'].indexOf(component.type) !== -1) {
             return null;
         }
 
@@ -1059,7 +1107,7 @@ export class FormRenderer extends Component<HTMLElement> {
                     this.formState.values[component.id] = value;
                     formState.values[component.id] = value;
                  }
-                this.trigger('change', { fieldName: component.name, label: component.label || component.id, value } as ChangeEventArgs);
+                this.trigger('change', { fieldName: component.name, label: component.label || component.id, value, dataModel: this.getDataModelByName()} as ChangeEventArgs);
                 this.afterValueChange(component.id);
             }
         };
@@ -1106,14 +1154,21 @@ export class FormRenderer extends Component<HTMLElement> {
                     }
                     const swappedComponent = Object.assign({}, component, {
                         id: component.name,
-                        name: component.id
+                        name: component.id,
+                        type: inferTypeFromWidget(component.type),
+                        widget: component.type
                     });
                     const renderedOut: any = compiled({
-                        component: swappedComponent,
+                        fieldData: swappedComponent,
                         value: formState ? formState.values[component.id] : undefined,
-                        formState: formState
                     },
-                    this
+                    this,
+                    'customWidgetTemplate' + component.id,
+                    (this.element.id || 'form-renderer') + 'customWidgetTemplate',
+                    this.isStringTemplate,
+                    undefined,
+                    fieldInput,
+                    this.root
                 );
                     let outList: any[];
                     if (renderedOut == null) {
@@ -1464,6 +1519,9 @@ export class FormRenderer extends Component<HTMLElement> {
             }
 
             case 'button': {
+                if (resolveCustomWidget(component, this.customWidgetSettings)) {
+                    return this.renderField(component);
+                }
                 const buttonlDisabled: boolean = ConditionalRuleEngine.isFieldDisabled(component.conditions, formValues);
                 const buttonComputed: boolean = !!component.disabled || buttonlDisabled;
                 const wrapper: HTMLDivElement = createElement('div', { className: 'form-group' }) as HTMLDivElement;
@@ -1488,6 +1546,12 @@ export class FormRenderer extends Component<HTMLElement> {
                             });
                              form.querySelectorAll('.e-control.e-multiselect.e-lib').forEach((cb: any) => {
                                 (cb.ej2_instances[0]).value = [];
+                            });
+                            form.querySelectorAll('.e-control.e-slider.e-lib').forEach((slider: any) => {
+                                (slider.ej2_instances[0]).value = 0;
+                            });
+                            form.querySelectorAll('.e-control.e-uploader.e-lib').forEach((upload: any) => {
+                                (upload.ej2_instances[0]).clearAll();
                             });
                         }
                         this.formState.values = {};
@@ -1520,6 +1584,9 @@ export class FormRenderer extends Component<HTMLElement> {
             }
 
             case 'splitButton': {
+                if (resolveCustomWidget(component, this.customWidgetSettings)) {
+                    return this.renderField(component);
+                }
                 const splitButtonDisabled: boolean = ConditionalRuleEngine.isFieldDisabled(component.conditions, formValues);
                 const computedDisabled: boolean = !!component.disabled || splitButtonDisabled;
                 const wrapper: HTMLDivElement = createElement('div', { className: 'form-group' }) as HTMLDivElement;
@@ -1585,12 +1652,16 @@ export class FormRenderer extends Component<HTMLElement> {
         if (!inputElement) { return; }
         const inputParent = inputElement.parentElement;
         const grandParent = inputParent.parentElement;
+        const greatGrandParent = grandParent ? grandParent.parentElement : null;
         if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
             (inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
             inputParent.classList.remove('e-error');
         }
         else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
             grandParent.classList.remove('e-error');
+        }
+        else if ((greatGrandParent != null) && (greatGrandParent.classList.contains('e-control-wrapper') || greatGrandParent.classList.contains('e-wrapper'))) {
+            greatGrandParent.classList.remove('e-error');
         }
         else {
             inputElement.classList.remove('e-error');
@@ -1817,6 +1888,24 @@ export class FormRenderer extends Component<HTMLElement> {
         return this.conditionalTriggerFieldIds.has(fieldId);
     }
 
+    private getScrollParent(): HTMLElement | null {
+        let parent: HTMLElement | null = this.element.parentElement;
+        while (parent) {
+            const style: CSSStyleDeclaration = window.getComputedStyle(parent);
+            const overflowY: string = style.overflowY;
+            const overflowX: string = style.overflowX;
+            const canScrollY: boolean = (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') &&
+                parent.scrollHeight > parent.clientHeight;
+            const canScrollX: boolean = (overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay') &&
+                parent.scrollWidth > parent.clientWidth;
+            if (canScrollY || canScrollX) {
+                return parent;
+            }
+            parent = parent.parentElement;
+        }
+        return null;
+    }
+
     /**
      * @private
      */
@@ -1841,6 +1930,9 @@ export class FormRenderer extends Component<HTMLElement> {
         const savedElementScrollLeft: number = this.element.scrollLeft;
         const savedWindowScrollX: number = window.scrollX;
         const savedWindowScrollY: number = window.scrollY;
+        const scrollParent: HTMLElement | null = this.getScrollParent();
+        const savedScrollParentTop: number = scrollParent ? scrollParent.scrollTop : 0;
+        const savedScrollParentLeft: number = scrollParent ? scrollParent.scrollLeft : 0;
 
         this.preservedFields.clear();
         const allComps: FormNode[] = this.collectAllComponents(this.processedSchemaCache.components as FormNode[]);
@@ -1875,6 +1967,10 @@ export class FormRenderer extends Component<HTMLElement> {
         try {
             this.element.scrollTop = savedElementScrollTop;
             this.element.scrollLeft = savedElementScrollLeft;
+            if (scrollParent) {
+                scrollParent.scrollTop = savedScrollParentTop;
+                scrollParent.scrollLeft = savedScrollParentLeft;
+            }
             window.scrollTo(savedWindowScrollX, savedWindowScrollY);
         } catch (e) { /* swallow */ }
 
@@ -2251,11 +2347,6 @@ export class FormRenderer extends Component<HTMLElement> {
         if (inputEl) {
             this.syncValueToInput(inputEl, component.id, value);
         }
-        this.trigger('change', {
-            fieldName: component.name,
-            label: component.label || component.id,
-            value: value
-        } as ChangeEventArgs);
         this.afterValueChange(component.id);
     }
 

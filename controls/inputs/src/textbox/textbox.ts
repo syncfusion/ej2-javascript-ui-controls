@@ -561,7 +561,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.wireEvents();
         if (!isNullOrUndefined(this.value)) {
-            Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+            Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton, this.isReact);
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;
             }

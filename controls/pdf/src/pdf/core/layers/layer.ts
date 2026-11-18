@@ -6,7 +6,7 @@ import { PdfDocument } from '../pdf-document';
 import { PdfPage } from '../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from '../pdf-primitives';
 import { PdfLayerCollection } from './layer-collection';
-import { Size } from './../pdf-type';
+import { Size } from './../pdf-document-helper';
 /**
  * Represents the base class for layer objects.
  * ```typescript

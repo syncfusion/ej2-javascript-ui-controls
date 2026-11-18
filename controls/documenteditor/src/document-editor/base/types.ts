@@ -436,6 +436,22 @@ export type ListLevelPattern =
      */
     'KanjiDigit' |
     /**
+     * Specifies the Hebrew letter numbering pattern (Hebrew1) for the list level.
+     */
+    'Hebrew1' |
+    /**
+     * Specifies the Hebrew alphabet pattern (Hebrew2) for the list level.
+     */
+    'Hebrew2' |
+    /**
+     * Specifies the Arabic alphabet pattern (ArabicAlpha) for the list level.
+     */
+    'Arabic1' |
+    /**
+     * Specifies the Arabic Abjad pattern (ArabicAbjad) for the list level.
+     */
+    'Arabic2' |
+    /**
      * Specifies no pattern for the list level.
      */
     'None';
@@ -1290,7 +1306,11 @@ export type DialogType =
     /**
      * Specifies spell check dialog.
      */
-    'SpellCheck';
+    'SpellCheck' |
+    /**
+     * Opens the Insert Text Box dialog used to create and insert a text box into the document.
+     */
+    'TextBox';
     // /**
     //  * Specifies tab stop dialog.
     //  */
@@ -1351,7 +1371,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' |
 'RemoveRowTrack' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'|'ToggleCase'|'Lowercase'|'SentenceCase'|'CapitalizeEachWord'| 'PasteColumn'|
-'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment'
+'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment' | 'FormatPainter'
 |'TopBorder'
 |'LeftBorder'
 |'RightBorder'
@@ -1553,6 +1573,10 @@ export type ToolbarItem =
      * Break option in the toolbar item.
      */
     'Break' |
+    /**
+     * TextBox option in the toolbar item.
+     */
+    'TextBox' |
     /**
      * Find option in the toolbar item.
      */
@@ -2900,4 +2924,5 @@ export type PasteType =
     'Html' |
     'Rtf' |
     'Text' |
-    'Sfdt';
+    'Sfdt' |
+    'Image';

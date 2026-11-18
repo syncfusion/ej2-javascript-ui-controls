@@ -187,6 +187,7 @@ const registeredCustomExtensions: ExtensionDefinition[] = [];
  *
  * @param {...ExtensionDefinition[]} extensions - Extensions to register.
  * @returns {void}
+ * @private
  */
 export function registerCustomExtension(...extensions: ExtensionDefinition[]): void {
     extensions.forEach((extension: ExtensionDefinition): void => {
@@ -213,6 +214,7 @@ export function registerCustomExtension(...extensions: ExtensionDefinition[]): v
  *
  * @param {...string[]} names - Extension names to drop from the registry.
  * @returns {void}
+ * @private
  */
 export function unregisterCustomExtension(...names: string[]): void {
     for (const target of names) {

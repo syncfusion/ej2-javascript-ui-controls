@@ -20,4 +20,12 @@ export interface ListSettingsModel {
      */
     bulletFormatListItems?: BulletFormatListItem[];
 
+    /**
+     * Defines the checkbox marker shape for checklist items.
+     * Controls the visual appearance of the checkbox in task lists.
+     *
+     * @default 'Square'
+     */
+    checklistType?: 'Circle' | 'Square';
+
 }

@@ -20,6 +20,7 @@ export class PictureFormatTab {
 
     /**
      * Constructor for PictureFormatTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -31,6 +32,7 @@ export class PictureFormatTab {
 
     /**
      * Get the Picture Format tab configuration
+     *
      * @returns {RibbonTabModel} - Picture Format tab configuration
      * @private
      */
@@ -48,6 +50,7 @@ export class PictureFormatTab {
 
     /**
      * Updates the property controls with current image properties
+     *
      * @returns {void}
      * @private
      */
@@ -57,6 +60,7 @@ export class PictureFormatTab {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      * @private
      */

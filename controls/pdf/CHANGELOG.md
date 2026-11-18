@@ -2,7 +2,110 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### PDF
+
+#### Features
+
+- Added support for creating and managing 1D barcodes in PDF documents.
+- Added support for importing, accessing, and managing previously unsupported annotation types in PDF documents.
+- Introduced PDF grid border customization, allowing greater control over table and grid border styles.
+- Introduced automatic shape pagination, enabling shapes to seamlessly span across multiple PDF pages.
+- Added support for converting PDF pages into reusable templates for efficient document generation and content reuse.
+- Added support for custom button form field appearances, including enhanced visual styling and appearance customization.
+- Added support for PDF Hide Actions, enabling form fields and annotations to be programmatically hidden or shown.
+
+#### Bug Fixes
+
+- Resolved an issue where text box field formatting was not being preserved correctly.
+- Resolved an issue where the overlay text color of redaction annotations was not being retrieved correctly.
+- Resolved an issue where the value of loaded custom script barcode form fields was not returned correctly.
+- Improved barcode form field appearance generation by avoiding redundant encoding and drawing.
+- Improved built-in PDF grid styles to match Microsoft Word, including borders, banding,and alignment.
+
 ## 35.1.46 (2026-11-11)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved a PDF signing failure issue that occurred with specific PFX certificates.
+- Resolved an issue where cloud polygon annotations were displayed as standard polygon annotations.
+- Resolved an issue where accessing form field actions resulted in an undefined error.
+- Resolved an issue where custom scripts in barcode form fields were not preserved while parsing the document.
+- Resolved an issue where the barcode form field value was not updated from its custom script.
+- Resolved an issue where the `compressData` option did not compress the barcode payload data in barcode form fields.
+
+## 35.1.43 (2026-11-03)
+
+### PDF
+
+#### Features
+
+- Added support for creating and managing actions in PDF documents.
+- Added support for adding, accessing, removing, and managing file attachments in PDF documents.
+
+#### Bug Fixes
+
+- Resolved an issue where free hand highlight annotations were not preserved correctly.
+
+## 35.1.42 (2026-10-27)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed cloud border style preservation for dashed annotations after PDF reload.
+
+#### Features
+
+- Enhanced digital signature certificate APIs.
+- Added PDF417, QR Code, and Data Matrix barcode drawing support.
+- Added barcode form fields with create, customize, update, and flatten support.
+
+## 35.1.41 (2026-10-20)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where form field values were not preserved when flattening a specific PDF document.
+- Resolved an issue where free text annotation opacity was not applied to the call out lines.
+- Resolved an issue where a script error was thrown when loading and accessing annotations in a specific PDF document.
+- Resolved an issue where text box field values were not preserved after formatting actions were applied.
+
+#### Features
+
+- Enhanced Digital Signature Certificate and Signature Appearance APIs in the JavaScript PDF Library.
+
+## 35.1.40 (2026-10-13)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where polygon annotation border effect style is not retrieved correctly.
+
+## 35.1.39 (2026-10-07)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where free text call out annotation inner bounds were not being retrieved.
+- Resolved an issue where form fields were not preserved when annotations were imported.
+
+## 35.1.37 (2026-09-29)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where a script error was thrown during annotation export and import in JSON format.
+- Fixed the issue where the signature appearance was not preserved after flattening a specific PDF document.
+
+## 34.2.7 (2026-09-08)
 
 ### PDF
 

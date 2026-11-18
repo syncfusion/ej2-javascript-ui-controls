@@ -1,15 +1,17 @@
-import { Ribbon, RibbonGroupModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
+import { Ribbon, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { RibbonConstants } from '../ribbon-constants';
 import { RibbonHelper } from '../../helper/ribbon-helper';
 
 /**
  * Views group implementation for View tab
+ *
  * @private
  */
 export class ViewsGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Document Views group
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -68,6 +70,7 @@ export class ViewsGroup extends RibbonGroupBase {
 
     /**
      * Handler for print layout button click
+     *
      * @returns {void}
      */
     private printLayoutHandler(): void {
@@ -78,6 +81,7 @@ export class ViewsGroup extends RibbonGroupBase {
 
     /**
      * Handler for web layout button click
+     *
      * @returns {void}
      */
     private webLayoutHandler(): void {
@@ -88,6 +92,7 @@ export class ViewsGroup extends RibbonGroupBase {
 
     /**
      * Handler for read only button click
+     *
      * @returns {void}
      */
     private readOnlyHandler(): void {
@@ -97,6 +102,7 @@ export class ViewsGroup extends RibbonGroupBase {
 
     /**
      * Update selection to reflect current state
+     *
      * @returns {void}
      */
     public updateSelection(): void {

@@ -7,6 +7,8 @@ import { Size } from '../diagram/primitives/size';
 import { IArrangeTickOptions } from './objects/interface/interfaces';
 import { PointModel } from '../diagram/primitives/point-model';
 import { getFunction } from '../diagram/utility/base-util';
+import { computeRulerSteps, formatMeasure, isPhysicalUnit, RulerSteps } from '../diagram/utility/measurement-util';
+import { MeasurementUnit } from '../diagram/enum/enum';
 
 
 
@@ -112,6 +114,14 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
     public hRulerOffset: number;
     /**   @private  */
     public vRulerOffset: number;
+    /**   @private  */
+    public unit: MeasurementUnit = 'Pixel';
+    /**   @private  */
+    public minLabelGap: number = 36;
+    /**   @private  */
+    public tickCount: number = 5;   // Minor parts per major step (the diagram ruler's `interval`).
+    /**   @private  */
+    public cultureName: string;
 
 
     /**
@@ -243,12 +253,94 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
             length = this.length;
             availableSize.height = rulerSize;
             offset = this.offset;
-            if (length && length !== Infinity) {
+            if (isPhysicalUnit(this.unit)) {
+                this.updatePhysicalTicks(svg, rulerSize, this.length + 100);
+            } else if (length && length !== Infinity) {
                 const unitLength: number = length + this.segmentWidth;
                 const unitOffset: number = offset;
                 this.updateSegments(unitOffset, (unitLength + Math.abs(unitOffset)), svg, rulerSize);
             }
         }
+    }
+
+    /**
+     * Draws ticks and labels for a physical unit. Positions are computed from the origin and an integer tick index,
+     * so they stay exact at large offsets, and only the visible index range is generated.
+     *
+     * @param {SVGElement} svg - The ruler svg.
+     * @param {number} rulerSize - The ruler thickness.
+     * @param {number} visibleLength - Length of the visible range in pixels.
+     * @returns {void}
+     * @private
+     */
+    public updatePhysicalTicks(svg: SVGElement, rulerSize: number, visibleLength: number): void {
+        const steps: RulerSteps = computeRulerSteps(this.unit, this.scale, this.minLabelGap, this.tickCount);
+        const isHorizontal: boolean = this.orientation === 'Horizontal';
+        const isRightOrBottom: boolean = this.tickAlignment === 'RightOrBottom';
+        const minorPx: number = steps.labelStep * steps.pixelsPerUnit / steps.minorCount;
+        const first: number = Math.floor(this.offset / minorPx);
+        const last: number = Math.ceil((this.offset + visibleLength) / minorPx);
+        // A degenerate scale makes minorPx 0 or non-finite; draw nothing rather than loop without end.
+        if (!(minorPx > 0) || !isFinite(first) || !isFinite(last)) {
+            return;
+        }
+        const base: number = first * minorPx;
+        this.defStartValue = base;
+        this.startValue = first * steps.labelStep / steps.minorCount;
+        if (isHorizontal) {
+            this.hRulerOffset = this.offset - base;
+        } else {
+            this.vRulerOffset = this.offset - base;
+        }
+        const group: SVGElement = createSvgElement('g', { 'class': 'e-ruler-segment', 'transform': 'translate(0.5,0.5)' });
+        const paths: { [length: string]: string } = {};
+        const arrangeTick: Function = getFunction(this.arrangeTick);
+        const labelFrame: number = steps.labelStep * steps.pixelsPerUnit;
+        for (let j: number = first; j <= last; j++) {
+            const position: number = (j - first) * minorPx;
+            const inStep: number = ((j % steps.minorCount) + steps.minorCount) % steps.minorCount;
+            const isMajor: boolean = inStep === 0;
+            let tickLength: number = isMajor ? rulerSize :
+                ((steps.minorCount % 2 === 0 && inStep === steps.minorCount / 2) ? rulerSize * 0.5 : rulerSize * 0.3);
+            const unitValue: number = (j / steps.minorCount) * steps.labelStep;
+            if (arrangeTick) {
+                const args: IArrangeTickOptions = { ruler: undefined, tickLength: tickLength, tickInterval: unitValue };
+                arrangeTick(args);
+                tickLength = args.tickLength;
+            }
+            const near: number = isRightOrBottom ? rulerSize : 0;
+            const far: number = isRightOrBottom ? rulerSize - tickLength : tickLength;
+            const segment: string = isHorizontal ? 'M' + position + ' ' + near + 'L' + position + ' ' + far :
+                'M' + near + ' ' + position + 'L' + far + ' ' + position;
+            const key: string = String(tickLength);
+            paths[`${key}`] = (paths[`${key}`] || '') + segment;
+            if (isMajor) {
+                group.appendChild(this.createPhysicalLabel(
+                    formatMeasure(unitValue, 0, steps.decimals, this.cultureName), position, rulerSize, isHorizontal, isRightOrBottom));
+            }
+        }
+        for (const key of Object.keys(paths)) {
+            const path: SVGElement = createSvgElement('path', {
+                'd': paths[`${key}`], 'stroke-width': '1', 'stroke': 'black', 'fill': 'none', 'class': 'e-ruler-tick'
+            });
+            group.insertBefore(path, group.firstChild);
+        }
+        if (labelFrame > 0) {
+            svg.appendChild(group);
+        }
+    }
+
+    private createPhysicalLabel(
+        text: string, position: number, rulerSize: number, isHorizontal: boolean, isRightOrBottom: boolean): SVGElement {
+        const label: SVGElement = createSvgElement('text', { 'class': 'e-ruler-tick-label' });
+        if (isHorizontal) {
+            setAttributeSvg(label, { 'x': position + 2, 'y': isRightOrBottom ? rulerSize / 2 : rulerSize / 2 + 5.5 });
+        } else {
+            const baseline: number = isRightOrBottom ? rulerSize / 2 : rulerSize / 2 + 8;
+            setAttributeSvg(label, { 'x': 0, 'y': 0, 'text-anchor': 'end', 'transform': 'translate(' + baseline + ',' + (position + 2) + ') rotate(270)' });
+        }
+        label.textContent = text;
+        return label;
     }
 
     private updateSegments(start: number, end: number, svg: SVGElement, rulerSize: number): void {

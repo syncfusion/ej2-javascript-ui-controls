@@ -52,7 +52,7 @@ export function createFloatLabel(
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');
-    updateFloatLabelState(value, floatLabelElement);
+    updateFloatLabelState(value, floatLabelElement, floatLabelType);
     if (floatLabelType === 'Always') {
         if (floatLabelElement.classList.contains(LABELBOTTOM)) {
             removeClass([floatLabelElement], LABELBOTTOM);
@@ -66,9 +66,14 @@ export function createFloatLabel(
  *
  * @param {string[] | number[] | boolean[]} value - Value of the MultiSelect.
  * @param {HTMLElement} label - Float label element.
+ * @param {FloatLabelType} floatlabeltype - specify the float label type.
  */
-export function updateFloatLabelState(value: string[] | number[] | boolean[] | object[], label: HTMLElement): void {
-    if (value && value.length > 0) {
+export function updateFloatLabelState(value: string[] | number[] | boolean[] | object[], label: HTMLElement,
+                                      floatlabeltype?: FloatLabelType): void {
+    const floatElement: Element = label.closest('.e-float-input');
+    const isFocused: boolean = floatElement &&
+        floatElement.classList.contains('e-input-focus');
+    if ((value && value.length > 0) || (isFocused && floatElement.closest('.e-multiselect') && floatlabeltype === 'Auto')) {
         addClass([label], LABELTOP);
         removeClass([label], LABELBOTTOM);
     } else {

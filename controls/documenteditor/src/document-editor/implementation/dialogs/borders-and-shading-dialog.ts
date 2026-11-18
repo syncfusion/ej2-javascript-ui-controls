@@ -1,13 +1,12 @@
-import { Dialog, DialogUtility } from '@syncfusion/ej2-popups';
-import { classList, createElement, initializeCSPTemplate, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
-import { ChangeEventArgs, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { Dialog, DialogUtility, OpenEventArgs } from '@syncfusion/ej2-popups';
+import { classList, createElement, initializeCSPTemplate, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { BeforeOpenCloseEventArgs, ChangeEventArgs, ColorPicker, ColorPickerEventArgs, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphFormat } from '../format/index';
 import { LineStyle } from '../../base/types';
 import { TablePropertiesDialog } from './table-properties-dialog';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from '../viewer/page';
+import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { TableCellWidget, TableRowWidget, TableWidget } from '../viewer/page';
 import { Editor } from '../index';
-import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper, SelectionBorders, SelectionBorder, UnsupportedBorderStyleClickEventArgs, unsupportedBorderStyleClick } from '../../index';
 import { BordersHelper } from '../../../document-editor-container/helper/borders-helper';
 
@@ -128,7 +127,7 @@ export class BordersAndShadingDialog {
     public initBordersAndShadingsDialog(localeValue: L10n, isRtl?: boolean): void {
         const isAngularModal: boolean = this.documentHelper.owner.isModalDialog;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const borderDiv: any = this;
+        const borderDiv: BordersAndShadingDialog = this;
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_table_border_shadings'
         });
@@ -520,7 +519,7 @@ export class BordersAndShadingDialog {
             enablePersistence: false, change : this.applyPreviewTableBorderWidth
         });
         this.borderWidth.appendTo(this.widthNumeric);
-        const empList: any = [
+        const empList: { Svg: string; LineStyle: string }[] = [
             { 'Svg': '<div class="e-de-svg-border-color"><svg class="e-de-border-style-svg" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round"/></svg></div>', 'LineStyle': 'Single' },
             { 'Svg': '<div class="e-de-svg-border-color"><svg class="e-de-border-style-svg" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round" stroke-dasharray="1 1"/></svg></div>', 'LineStyle': 'Dot' },
             { 'Svg': '<div class="e-de-svg-border-color"><svg class="e-de-border-style-svg" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_1347_1852)"><path d="M3.05176e-05 5.5H98" stroke-linejoin="round" stroke-dasharray="4 1"/></g><defs><clipPath id="clip0_1347_1852"><rect width="98" height="10" fill="white"/></clipPath></defs></svg></div>', 'LineStyle': 'DashSmallGap' },
@@ -548,7 +547,7 @@ export class BordersAndShadingDialog {
         ];
         this.widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
         const itemTemplate: string | Function = initializeCSPTemplate(
-            function (data: any): string { return `<div>${data.Svg}</div>`; }
+            function (data: { Svg: string; LineStyle: string }): string { return `<div>${data.Svg}</div>`; }
         );
         this.borderStyle = new DropDownList({
             popupHeight: '150px', dataSource: empList,
@@ -573,6 +572,7 @@ export class BordersAndShadingDialog {
         });
         this.ulelementShading.isAngular = this.documentHelper.owner.isModalDialog;
         this.ulelementShading.appendTo(ulelementShading);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher ,
             noColor , presetColors , showButtons } = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.borderColorPicker = new ColorPicker({
@@ -581,7 +581,7 @@ export class BordersAndShadingDialog {
             enableOpacity: false,
             mode: mode , modeSwitcher: modeSwitcher , showButtons: showButtons , columns: columns ,
             createPopupOnClick : createPopupOnClick, disabled : disabled ,
-            beforeOpen: function (this: ColorPicker, e: any): void {
+            beforeOpen: function (this: ColorPicker, e: BeforeOpenCloseEventArgs): void {
                 if (isAngularModal) {
                     const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
                     const colorPickerEl: HTMLElement = this.element as HTMLElement;
@@ -598,7 +598,7 @@ export class BordersAndShadingDialog {
             enableOpacity: false,
             mode: mode , modeSwitcher: modeSwitcher , showButtons: showButtons , columns: columns ,
             createPopupOnClick : createPopupOnClick, disabled : disabled ,
-            beforeOpen: function (this: ColorPicker, e: any): void {
+            beforeOpen: function (this: ColorPicker, e: BeforeOpenCloseEventArgs): void {
                 if (isAngularModal) {
                     const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
                     const colorPickerEl: HTMLElement = this.element as HTMLElement;
@@ -795,6 +795,7 @@ export class BordersAndShadingDialog {
 
     /**
      * Triggers the onUnsupportedBorderStyleClick event.
+     *
      * @returns {UnsupportedBorderStyleClickEventArgs} Returns UnsupportedBorderStyleClickEventArgs args.
      * @private
      */
@@ -821,7 +822,7 @@ export class BordersAndShadingDialog {
         DialogUtility.alert({
             title: localValue.getConstant('Information'),
             content: dialogContent,
-            open: (e: any) => {
+            open: (e: OpenEventArgs) => {
                 if (isAngularModal) {
                     this.documentHelper.owner.moveAlertToCdkOverlay(e);
                 }
@@ -832,7 +833,7 @@ export class BordersAndShadingDialog {
         }).enableRtl = this.documentHelper.owner.enableRtl;
     }
 
-    private borderStyleChange(args: any): void {
+    private borderStyleChange(args: DropDownChangeEventArgs): void {
         if (args.value !== 'Single' && args.value !== 'Dot' && args.value !== 'DashSmallGap' && args.value !== 'DashLargeGap') {
             const eventArgs: UnsupportedBorderStyleClickEventArgs = this.triggeronUnsupportedBorderStyleClickEvent();
             if (eventArgs && eventArgs.cancel) {
@@ -1271,7 +1272,7 @@ export class BordersAndShadingDialog {
         this.borderColorPicker.value = borderColor;
         this.applyPreviewTableBorderColor({
             currentValue: { hex: this.borderColorPicker.value }
-        } as any);
+        } as ColorPickerEventArgs);
         this.previewDivLeftDiagonal.style.display = 'none';
         this.previewDivDiagonalRight.style.display = 'none';
         this.borderWidth.value = borderWidth;

@@ -3,7 +3,7 @@ import { _PdfDictionary } from './../pdf-primitives';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
 import { _isNullOrUndefined } from '../utils';
-import { Rectangle } from './../pdf-type';
+import { Rectangle } from './../pdf-document-helper';
 import { PdfRotationAngle } from '../enumerator';
 import { PdfPage } from '../pdf-page';
 /**
@@ -147,6 +147,15 @@ export class PdfAppearance {
                 this._dictionary.set('N', this._templateNormal);
             }
         }
+    }
+    /**
+     * Indicates whether the normal appearance template is initialized.
+     *
+     * @private
+     * @returns {boolean} True when the normal appearance template exists.
+     */
+    get _hasNormalTemplate(): boolean {
+        return typeof this._templateNormal !== 'undefined';
     }
     /**
      * Initializes the appearance template for the annotation using its bounds and cross reference.

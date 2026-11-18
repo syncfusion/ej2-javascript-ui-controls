@@ -1,4 +1,4 @@
-import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';import { Complex, Property, Component, INotifyPropertyChanged, L10n, Event, EmitType } from '@syncfusion/ej2-base';import { ErrorCorrectionLevel, QRCodeVersion, RenderingMode, BarcodeEvent, BarcodeExportType } from '../barcode/enum/enum';import { DisplayTextModel } from '../barcode/primitives/displaytext-model';import { MarginModel } from '../barcode/primitives/margin-model';import { DisplayText } from '../barcode/primitives/displaytext';import { Margin } from '../barcode/primitives/margin';import { BarcodeRenderer } from '../barcode/rendering/renderer';import { QRCode } from './qr-code-util';import { ValidateEvent } from '../barcode';import { QRCodeLogo } from '../barcode/primitives/icon';import { QRCodeLogoModel } from '../barcode/primitives/icon-model';
+import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';import { Complex, Property, Component, INotifyPropertyChanged, L10n, Event, EmitType, ModuleDeclaration } from '@syncfusion/ej2-base';import { ErrorCorrectionLevel, QRCodeVersion, RenderingMode, BarcodeEvent, BarcodeExportType } from '../barcode/enum/enum';import { DisplayTextModel } from '../barcode/primitives/displaytext-model';import { MarginModel } from '../barcode/primitives/margin-model';import { DisplayText } from '../barcode/primitives/displaytext';import { Margin } from '../barcode/primitives/margin';import { BarcodeRenderer } from '../barcode/rendering/renderer';import { QRCode } from './qr-code-util';import { Gs1QRCode } from './gs1-qr-code';import { ValidateEvent } from '../barcode';import { QRCodeLogo } from '../barcode/primitives/icon';import { QRCodeLogoModel } from '../barcode/primitives/icon-model';import { WebMcpBarcode, WebMcpBarcodeSettings } from '../barcode/integrations/webmcp-adapter';import { WebMcpBarcodeSettingsModel } from '../barcode/integrations/webmcp-adapter-model';import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../barcode/rendering/canvas-interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -97,10 +97,44 @@ export interface QRCodeGeneratorModel extends ComponentModel{
     version?: QRCodeVersion;
 
     /**
+     * Specifies whether the value is encoded as a GS1 QR Code. When true, the value is
+     * GS1 data, bracketed or raw; it is validated and encoded with FNC1.
+     *
+     * @default false
+     */
+    enableGS1?: boolean;
+
+    /**
      * Defines the type of barcode to be rendered.
      *
      * @default undefined
      */
     value?: string;
+
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    enableWebMcp?: boolean;
+
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    webMcpSettings?: WebMcpBarcodeSettingsModel;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Set `args.cancel` to `true` to prevent the tool from running, or `args.showConfirmationDialog`
+     * to ask the user for confirmation first.
+     *
+     * @event
+     */
+    beforeWebMcpToolExecute?: EmitType<WebMcpToolExecuteEventArgs>;
 
 }

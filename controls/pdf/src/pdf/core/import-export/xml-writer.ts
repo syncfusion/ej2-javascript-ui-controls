@@ -1,6 +1,18 @@
 import { _stringToBytes } from './../utils';
+/**
+ * Represents the XML writer states used internally while writing XML content.
+ *
+ * @private
+ */
 export type _XmlWriteState = 'Initial' | 'StartDocument' | 'EndDocument' | 'StartElement' | 'EndElement' | 'ElementContent';
+
+/**
+ * Represents the namespace handling states used internally while writing XML namespaces.
+ *
+ * @private
+ */
 export type _NamespaceKind = 'Written' | 'NeedToWrite' | 'Implied' | 'Special';
+
 /**
  * Provides XML writing functionality for generating well formed XML documents with support for
  * namespaces, elements, attributes, and text content.

@@ -6,7 +6,6 @@ import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WListFormat } from '../../implementation/format/list-format';
 import { DocumentHelper } from '../viewer';
-import { HelperMethods } from '../editor/editor-helper';
 /**
  * The Bullets and Numbering dialog is used to apply list format for a paragraph style.
  */

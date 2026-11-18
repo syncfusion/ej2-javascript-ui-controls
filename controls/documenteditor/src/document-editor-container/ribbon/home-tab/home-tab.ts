@@ -15,11 +15,15 @@ export const HOME_TAB_TEXT: string = 'Home';
 /**
  * HomeTab class for Document Editor ribbon
  * Integrates all home tab component groups: History, Clipboard, Font, Paragraph, Find, and Styles
+ *
  * @private
  */
 export class HomeTab {
     private historyGroup: HistoryGroup;
-    private clipboardGroup: ClipboardGroup;
+    /**
+     * @private
+     */
+    public clipboardGroup: ClipboardGroup;
     private fontGroup: FontGroup;
     private paragraphGroup: HomeParagraphGroup;
     private findGroup: FindGroup;
@@ -44,6 +48,7 @@ export class HomeTab {
 
     /**
      * Get the Ribbon tab model for Home tab
+     *
      * @returns {RibbonTabModel} - The ribbon tab model for Home tab
      * @private
      */
@@ -66,6 +71,7 @@ export class HomeTab {
 
     /**
      * Update all groups based on document state
+     *
      * @returns {void}
      * @private
      */
@@ -78,12 +84,24 @@ export class HomeTab {
         this.findGroup.updateSelection();
         this.stylesGroup.updateStyleGallery();
     }
+    /**
+     * Wires the Format Painter double click (persistent mode) on the ribbon button.
+     *
+     * @returns {void}
+     * @private
+     */
+    public wireFormatPainterDoubleClick(): void {
+        if (this.clipboardGroup) {
+            this.clipboardGroup.wireFormatPainterDoubleClick();
+        }
+    }
     public updateContentChanged(): void {
         this.historyGroup.updateContentChanged();
 
     }
     /**
      * Update the style gallery with the document's current styles
+     *
      * @returns {void}
      * @private
      */
@@ -95,6 +113,7 @@ export class HomeTab {
 
     /**
      * Clean up resources when tab is destroyed
+     *
      * @returns {void}
      * @private
      */

@@ -178,7 +178,9 @@ export class _PdfLexicalOperator {
                 stringBuffer.push('(');
                 break;
             case 0x29:
-                if (--numParen === 0) {
+                if (numParen === 1 && this._isFalseStringTerminator()) {
+                    break;
+                } else if (--numParen === 0) {
                     this.nextChar();
                     done = true;
                 } else {
@@ -483,6 +485,53 @@ export class _PdfLexicalOperator {
                 break;
             }
             ch = this.nextChar();
+        }
+    }
+    /**
+     * Determines whether the current closing parenthesis (`)`) should be treated as
+     * part of a literal string rather than as the actual string terminator.
+     *
+     * @private
+     * @returns {boolean} `true` if the current closing parenthesis should be treated as literal string content; otherwise, `false`.
+     */
+    _isFalseStringTerminator(): boolean {
+        const stream: any = this.stream; // eslint-disable-line
+        if (!stream || typeof stream.position !== 'number' || typeof stream.getByte !== 'function') {
+            return false;
+        }
+        const savedPosition: number = stream.position;
+        try {
+            let foundCloser: boolean = false;
+            const maxScan: number = 64;
+            for (let i: number = 0; i < maxScan; i++) {
+                const ch: number = stream.getByte();
+                if (ch < 0) {
+                    break;
+                }
+                if (ch === 0x29) { // ')'
+                    foundCloser = true;
+                    break;
+                }
+                if (ch === 0x28 || ch === 0x3c || ch === 0x5b) { // '(' '<' '['
+                    return false;
+                }
+            }
+            if (!foundCloser) {
+                return false;
+            }
+            let ch: number = stream.getByte();
+            while (ch >= 0 && _isWhiteSpace(ch)) {
+                ch = stream.getByte();
+            }
+            if (ch === 0x2f) { // '/'
+                return true;
+            }
+            if (ch === 0x3e && typeof stream.peekByte === 'function') { // '>'
+                return stream.peekByte() === 0x3e;
+            }
+            return false;
+        } finally {
+            stream.position = savedPosition;
         }
     }
     /**

@@ -8,9 +8,13 @@ import { BeforeDialogCloseEventArgs, BeforeFileUploadEventArgs, FileUploadingEve
 import { EditorCommandName, ImageInsertCommand, ImageUpdateCommand } from '../../controller/interface';
 import { ImageEventArgs } from '../../base/renderer/toolbar-action-handler';
 import * as events from '../../common/constant';
-import { ToolbarItem } from '../model/toolbar.types';
+import { BaseToolbarItem } from '../model/toolbar.types';
+import { CLS_IMAGE_SELECTED } from '../../base/classes';
 
-// ImageModule — renders the Insert Image dialog and forwards the picked file to the headless editor's image extension.
+// eslint-disable-next-line jsdoc/require-param, valid-jsdoc
+/**
+ * @private
+ */
 export class ImageModule {
 
     /** The dialog sub component, lazily created on first `show()`. */
@@ -60,7 +64,7 @@ export class ImageModule {
     /** Image currently marked as selected for the Image quick toolbar. */
     private selectedImage: HTMLImageElement | null;
 
-    private selectedImageClass: string = 'e-rte-ui-image-selected';
+    private selectedImageClass: string = CLS_IMAGE_SELECTED;
 
     constructor(parent: RichTextEditorUI, locale: L10n) {
         this.parent = parent;
@@ -92,34 +96,20 @@ export class ImageModule {
     /**
      * Returns the configured image Quick Toolbar items.
      *
-     * @returns {ToolbarItem[]} Image Quick Toolbar items.
+     * @returns {BaseToolbarItem} Image Quick Toolbar items.
      */
-    public getQuickToolbarItems(): ToolbarItem[] {
-        const configured: ToolbarItem[] | null | undefined = this.parent.quickToolbarSettings.image;
+    public getQuickToolbarItems(): BaseToolbarItem {
+        const configured: BaseToolbarItem | null | undefined = this.parent.quickToolbarSettings.image;
         return configured || [];
     }
 
-    /**
-     * Executes an Image Quick Toolbar command and dispatches it through
-     * the `ImageFormats` plugin to the headless editor.
-     *
-     * @param {string} command - Image toolbar command name.
-     * @param {unknown} value - Optional command value.
-     * @returns {void}
-     */
     public executeQuickToolbarAction(command: string, value?: unknown): void {
         if (this.parent.isDestroyed) {
             return;
         }
         const execute: (name: EditorCommandName, payload?: unknown) => void =
             (name: EditorCommandName, payload?: unknown): void => {
-                const controller: { execute?: (cmd: EditorCommandName, val?: unknown) => void } =
-                    this.parent.editorController as unknown as {
-                        execute?: (cmd: EditorCommandName, val?: unknown) => void;
-                    };
-                if (controller && typeof controller.execute === 'function') {
-                    controller.execute(name, payload);
-                }
+                this.parent.editorController.process(this.parent, name, undefined, payload);
             };
         switch (command) {
         // ── Attribute update commands (headless `updateImage`) ──────
@@ -158,7 +148,7 @@ export class ImageModule {
         case 'removeImage':
             execute('removeImage');
             break;
-        // ── Caption command (reserved — no headless caption yet) ────
+        // ── Caption command (headless `toggleCaption` via ImageFormats) ─
         case 'caption':
             execute('caption');
             break;
@@ -181,7 +171,7 @@ export class ImageModule {
             return null;
         }
         const selectedNode: Element | null =
-            this.parent.inputElement.querySelector('.e-rte-ui-image-selected');
+            this.parent.inputElement.querySelector('.' + CLS_IMAGE_SELECTED);
         if (selectedNode && selectedNode.tagName === 'IMG') {
             return selectedNode as HTMLImageElement;
         }
@@ -209,43 +199,14 @@ export class ImageModule {
         }
     }
 
-    /**
-     * Commits the alt text from the AltText dialog through the editor
-     * controller. Routed by the `ImageFormats` plugin to the headless
-     * `updateImage` command.
-     *
-     * @param {string} alt - The alt text to apply.
-     * @returns {void}
-     */
     private commitAltText(alt: string): void {
         const payload: ImageUpdateCommand = { alt: alt };
-        const controller: { execute?: (cmd: EditorCommandName, val?: unknown) => void } =
-            this.parent.editorController as unknown as {
-                execute?: (cmd: EditorCommandName, val?: unknown) => void;
-            };
-        if (controller && typeof controller.execute === 'function') {
-            controller.execute('altText', payload);
-        }
+        this.parent.editorController.process(this.parent, 'altText', undefined, payload);
     }
 
-    /**
-     * Commits the dimensions from the Dimension dialog through the editor
-     * controller. Routed by the `ImageFormats` plugin to the headless
-     * `setImageDimension` command.
-     *
-     * @param {number | null} width - Width in pixels; `null` clears.
-     * @param {number | null} height - Height in pixels; `null` clears.
-     * @returns {void}
-     */
     private commitDimensions(width: number | null, height: number | null): void {
         const payload: { width?: number | null; height?: number | null } = { width: width, height: height };
-        const controller: { execute?: (cmd: EditorCommandName, val?: unknown) => void } =
-            this.parent.editorController as unknown as {
-                execute?: (cmd: EditorCommandName, val?: unknown) => void;
-            };
-        if (controller && typeof controller.execute === 'function') {
-            controller.execute('dimensionImage', payload);
-        }
+        this.parent.editorController.process(this.parent, 'dimensionImage', undefined, payload);
     }
 
     /**
@@ -262,9 +223,9 @@ export class ImageModule {
             return;
         }
         const selected: HTMLImageElement | null = this.getSelectedImage();
-        const removeArgs: { name: string; subType: string; src: string; cancel: boolean } = {
+        const removeArgs: { name: string; source: string; src: string; cancel: boolean } = {
             name: 'fileRemoving',
-            subType: 'Image',
+            source: 'Image',
             src: selected ? (selected.getAttribute('src') || '') : src,
             cancel: false
         };
@@ -273,13 +234,7 @@ export class ImageModule {
                 return;
             }
             const payload: ImageUpdateCommand = { src: src };
-            const controller: { execute?: (cmd: EditorCommandName, val?: unknown) => void } =
-                this.parent.editorController as unknown as {
-                    execute?: (cmd: EditorCommandName, val?: unknown) => void;
-                };
-            if (controller && typeof controller.execute === 'function') {
-                controller.execute('replaceImage', payload);
-            }
+            this.parent.editorController.process(this.parent, 'replaceImage', undefined, payload);
         });
     }
 
@@ -317,7 +272,7 @@ export class ImageModule {
             isModal: (Browser.isDevice as boolean),
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             cssClass: 'e-rte-ui-image-alt-dialog',
-            subType: 'Image',
+            source: 'Image',
             animationSettings: isTesting ? { effect: 'None', duration: 0 } : { effect: 'None' },
             buttons: [
                 {
@@ -346,7 +301,9 @@ export class ImageModule {
                     this.destroyDialog((ref: EditorDialog | null) => this.altTextDialog = ref, 'altTextDialog');
                     this.altTextDialog = null;
                 }
-                this.parent.inputElement.focus({ preventScroll: true });
+                if (this.parent.inputElement) {
+                    this.parent.inputElement.focus({ preventScroll: true });
+                }
             }
         };
         const target: HTMLElement = (Browser.isDevice) ? document.body : this.parent.element;
@@ -409,7 +366,7 @@ export class ImageModule {
             isModal: (Browser.isDevice as boolean),
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             cssClass: 'e-rte-ui-image-dimension-dialog',
-            subType: 'Image',
+            source: 'Image',
             animationSettings: isTesting ? { effect: 'None', duration: 0 } : { effect: 'None' },
             buttons: [
                 {
@@ -441,7 +398,9 @@ export class ImageModule {
                     this.destroyDialog((ref: EditorDialog | null) => this.dimensionDialog = ref, 'dimensionDialog');
                     this.dimensionDialog = null;
                 }
-                this.parent.inputElement.focus({ preventScroll: true });
+                if (this.parent.inputElement) {
+                    this.parent.inputElement.focus({ preventScroll: true });
+                }
             }
         };
         const target: HTMLElement = (Browser.isDevice) ? document.body : this.parent.element;
@@ -532,7 +491,7 @@ export class ImageModule {
             isModal: (Browser.isDevice as boolean),
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             cssClass: 'e-rte-ui-img-dialog e-rte-ui-image-replace-dialog',
-            subType: 'Image',
+            source: 'Image',
             animationSettings: isTesting ? { effect: 'None', duration: 0 } : { effect: 'None' },
             buttons: [
                 {
@@ -577,7 +536,9 @@ export class ImageModule {
                     this.destroyDialog((ref: EditorDialog | null) => this.replaceDialog = ref, 'replaceDialog');
                     this.replaceDialog = null;
                 }
-                this.parent.inputElement.focus({ preventScroll: true });
+                if (this.parent.inputElement) {
+                    this.parent.inputElement.focus({ preventScroll: true });
+                }
             }
         };
         const target: HTMLElement = (Browser.isDevice) ? document.body : this.parent.element;
@@ -666,6 +627,9 @@ export class ImageModule {
     public show(): void {
         if (this.parent.isDestroyed) {
             return;
+        }
+        if (this.parent.quickToolbarModule) {
+            this.parent.quickToolbarModule.hideQuickToolbars(true);
         }
         if (!this.dialog) {
             this.buildDialog();
@@ -769,7 +733,7 @@ export class ImageModule {
             isModal: (Browser.isDevice as boolean),
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             cssClass: 'e-rte-ui-img-dialog',
-            subType: 'Image',
+            source: 'Image',
             animationSettings: isTesting ? { effect: 'None', duration: 0 } : { effect: 'None' },
             buttons: [
                 {
@@ -908,7 +872,7 @@ export class ImageModule {
         if (!src) {
             this.parent.trigger('fileUploadFailed', {
                 name: 'fileUploadFailed',
-                subType: 'Image',
+                source: 'Image',
                 message: 'imageUrl is not configured for the uploaded image.'
             });
             return;
@@ -1028,7 +992,7 @@ export class ImageModule {
         const activeDialog: EditorDialog | null = this.dialog || this.replaceDialog;
         if (!activeDialog) { return; }
         const fromUrl: boolean = !!(this.urlInput && (this.urlInput.value || '').trim() !== '');
-        const ready: boolean = !!this.pending || fromUrl;
+        const ready: boolean = !!(this.pending && (this.pending.size <= this.parent.imageSettings.maxFileSize)) || fromUrl;
         // The underlying `Dialog` instance keeps the same `buttons` array;
         // mutate the first entry's `disabled` flag and surface to the
         // sub-component via `getButtons()` if available.
@@ -1110,35 +1074,9 @@ export class ImageModule {
         }
     }
 
-    /**
-     * Inserts an image through the typed headless command facade.
-     *
-     * @param {ImageInsertCommand} payload - Image insertion payload.
-     * @returns {void}
-     */
     private insertImagePayload(payload: ImageInsertCommand): void {
-        // Invoke the headless editor's image-insert facade directly.
-        // Do this via the same access pattern used by the editor's
-        const coreShape: { editor?: { commands?: { insertImage?: (payload: ImageInsertCommand) => boolean } } } =
-            this.parent as unknown as {
-                editor?: { commands?: { insertImage?: (payload: ImageInsertCommand) => boolean } };
-            };
-        // The core's `editor` is the same instance the parent reads
-        // through `baseEditorCore`. Alias through the same accessor
-        // path as `ImageFormats`.
-        const parentPeek: { baseEditorCore?: { editor?: { commands?: { insertImage?: (payload: ImageInsertCommand) => boolean } } } } =
-            this.parent as unknown as {
-                baseEditorCore?: { editor?: { commands?: { insertImage?: (payload: ImageInsertCommand) => boolean } } };
-            };
-        const commands: { insertImage?: (payload: ImageInsertCommand) => boolean } | undefined =
-            (coreShape.editor && coreShape.editor.commands)
-            || (parentPeek.baseEditorCore && parentPeek.baseEditorCore.editor && parentPeek.baseEditorCore.editor.commands);
-        const insertImage: ((payload: ImageInsertCommand) => boolean) | undefined =
-            commands && typeof commands.insertImage === 'function' ? commands.insertImage : undefined;
-        if (insertImage) {
-            insertImage(payload);
-            this.scheduleImageLoadActions(payload.src);
-        }
+        this.parent.editorController.process(this.parent, 'imageInsert', undefined, payload);
+        this.scheduleImageLoadActions(payload.src);
     }
 
     /**
@@ -1198,7 +1136,7 @@ export class ImageModule {
      *
      * @returns {void}
      */
-    protected destroyModule(): void {
+    public destroy(): void {
         this.clearSelectedImage();
         // Revoke any tracked object URLs.
         this.blobUrls.forEach((url: string): void => {

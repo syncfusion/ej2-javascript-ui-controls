@@ -1,11 +1,11 @@
-import { Component, INotifyPropertyChanged, Property, NotifyPropertyChanges, setStyleAttribute, formatUnit, L10n, Event, EmitType, removeClass, isNullOrUndefined as isNOU, addClass, Complex, print, ModuleDeclaration, EventHandler, isNullOrUndefined, closest, initializeTelemetry, debounce, select, Browser } from '@syncfusion/ej2-base';
-import { BlurredEventArgs, ChangeEventArgs, FocusedEventArgs, itemClickEventArgs, UpdatedToolbarStatusEventArgs } from './interface';
+import { Component, INotifyPropertyChanged, Property, NotifyPropertyChanges, setStyleAttribute, formatUnit, L10n, Event, EmitType, removeClass, isNullOrUndefined as isNOU, addClass, Complex, print, ModuleDeclaration, EventHandler, isNullOrUndefined, closest, initializeTelemetry, debounce, select, Browser, attributes } from '@syncfusion/ej2-base';
+import { BlurEventArgs, ChangeEventArgs, FocusEventArgs, UpdatedToolbarStatusEventArgs } from './interface';
 import { ToolbarSettings, FontSize, FontFamily, Format } from './model/toolbar-settings';
 import { ToolbarSettingsModel, FontSizeModel, FontFamilyModel, FormatModel } from './model/toolbar-settings-model';
 import { FontColorModel, BackgroundColorModel } from './model/color-picker-settings-model';
 import { FontColor, BackgroundColor } from './model/color-picker-settings';
 import { ToolbarItemUpdate, ToolbarItem, AddToolbarItem } from './model/toolbar.types';
-import { DocumentRoot, ExtensionDefinition, backgroundColorExtension, blockquoteExtension, horizontalRuleExtension, boldExtension, clearFormattingExtension, indentOutdentExtension, codeBlockExtension, fontColorExtension, fontFamilyExtension, fontSizeExtension, headingExtension, imageExtension, inlineCodeExtension, italicExtension, linkExtension, listExtension, paragraphExtension, strikethroughExtension, subscriptExtension, superscriptExtension, toLowerCaseExtension, toUpperCaseExtension, underlineExtension, undoRedoExtension, textAlignExtension, tableExtension, DOCUMENT_CHANGED, DocumentChangedPayload, placeholderExtension } from '@syncfusion/ej2-headless-editor';
+import { DocumentRoot, ExtensionDefinition, backgroundColorExtension, blockquoteExtension, horizontalRuleExtension, boldExtension, clearFormattingExtension, indentOutdentExtension, codeBlockExtension, fontColorExtension, fontFamilyExtension, fontSizeExtension, headingExtension, imageExtension, inlineCodeExtension, italicExtension, linkExtension, listExtension, taskListExtension, paragraphExtension, strikethroughExtension, subscriptExtension, superscriptExtension, toLowerCaseExtension, toUpperCaseExtension, underlineExtension, undoRedoExtension, textAlignExtension, tableExtension, DocumentChangedEventArgs, placeholderExtension, collapsibleExtension, calloutExtension, hardBreakExtension } from '@syncfusion/ej2-headless-editor';
 import { ListSettings } from './model/list-settings';
 import { ListSettingsModel } from './model/list-settings-model';
 import { ToolbarModule } from './module/toolbar';
@@ -18,7 +18,7 @@ import { EditorController } from '../controller/editor-controller';
 import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../controller/interface';
 import * as classes from '../common/classes';
 import * as constant from '../common/constant';
-import { BeforeDialogOpenEventArgs, BeforeDialogCloseEventArgs, BeforePopupOpenEventArgs, BeforePopupCloseEventArgs, BeforeFileUploadEventArgs, FileUploadingEventArgs, FileSelectedEventArgs, FileUploadSuccessEventArgs, FileUploadFailedEventArgs, FileRemovingEventArgs, BeforeFileDropEventArgs, ResizeEventArgs, SlashCommandItemSelectArgs } from '../common/interface';
+import { BeforeDialogOpenEventArgs, BeforeDialogCloseEventArgs, BeforePopupOpenEventArgs, BeforePopupCloseEventArgs, BeforeFileUploadEventArgs, FileUploadingEventArgs, FileSelectedEventArgs, FileUploadSuccessEventArgs, FileUploadFailedEventArgs, FileRemovingEventArgs, BeforeFileDropEventArgs, ResizeEventArgs } from '../common/interface';
 import { Locale } from '../base/service/locale';
 import { QuickToolbarSettings } from './model/quick-toolbar-settings';
 import { QuickToolbarSettingsModel } from './model/quick-toolbar-settings-model';
@@ -58,17 +58,6 @@ import { DialogType } from '../common/enum';
  * that enables users to create and format rich HTML content with an intuitive user interface.
  * It provides comprehensive text formatting, media insertion, table creation, and content management capabilities.
  *
- * The component includes:
- * * **Toolbar** - Customizable toolbar with formatting commands, font controls, and media insertion tools
- * * **Quick Toolbar** - Context-sensitive toolbar appearing on text selection for quick formatting
- * * **Formatting** - Support for text styles (bold, italic, underline), alignment, indentation, and block formatting
- * * **Media** - Image upload, resize, and manipulation with configurable storage options
- * * **Tables** - Table creation and management with resizable cells
- * * **Links** - Hyperlink creation with automatic protocol handling and validation
- * * **Undo/Redo** - Configurable undo and redo history
- * * **Localization** - Multi-language support for UI elements
- * * **RTL Support** - Full right-to-left language support
- *
  * ## Usage Examples
  *
  * ### Default Setup
@@ -88,7 +77,7 @@ import { DialogType } from '../common/enum';
  * <script>
  *   var editor = new RichTextEditorUI({
  *     toolbarSettings: {
- *       items: ['Bold', 'Italic', 'Underline', '|', 'FormatPainter', '|',
+ *       items: ['Bold', 'Italic', 'Underline', '|', 'Formats', '|',
  *               'NumberFormatList', 'BulletFormatList', '|', 'Link', 'Image', 'Table']
  *     }
  *   });
@@ -103,7 +92,7 @@ import { DialogType } from '../common/enum';
 export class RichTextEditorUI extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /**
-     * Enable or disable the Rich Text Editor component. When set to `false`, the editor becomes non-interactive
+     * Enable or disable the Rich Text Editor. When set to `false`, the editor becomes non-interactive
      * and all toolbar items are disabled. The editable area remains visible but input is prevented.
      *
      * @default true
@@ -158,7 +147,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public htmlAttributes: { [key: string]: string };
 
     /**
-     * Enables persistence for the component state. When set to `true`, the editor state (including content)
+     * Enables persistence for the Editor state. When set to `true`, the editor state (including content)
      * is persisted across page reloads using the browser's local storage.
      *
      * @default false
@@ -219,7 +208,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public saveInterval: number;
 
     /**
-     * Sets the locale (language and region) for the Rich Text Editor component. This affects the language of
+     * Sets the locale (language and region) for the Rich Text Editor. This affects the language of
      * toolbar tooltips, placeholder text, dialog labels, and error messages displayed in the editor.
      *
      * @default 'en-US'
@@ -238,7 +227,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
 
     /**
      * Specifies the maximum number of undo history steps stored in the editor. Each step corresponds to a user action
-     * or batch of compatible adjacent actions. Increasing this value allows more undo actions at the cost of increased memory.
+     * or batch of compatible adjacent actions. The history can temporarily contain more entries than the configured limit.
+     * Older entries are removed when the 20-entry overflow threshold is reached and the history is updated.
      *
      * @default 30
      */
@@ -260,10 +250,13 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * including the items displayed, their grouping, and visibility. Use this to customize toolbar appearance
      * and behavior based on your application's requirements.
      *
+     * {% codeBlock src='richtexteditor-ui/toolbar-settings/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
+     *   items: ['Bold', 'Italic', 'Underline', 'Strikethrough', '|', 'Formats', 'Alignment', 'BulletList', 'NumberedList', '|', 'Link', 'Image', 'Table', '|', 'Undo', 'Redo']
      *   enable: true,
-     *   type: 'Expanded',
+     *   type: 'Auto',
      *   position: 'Top',
      *   enableFloating: true,
      *   floatingOffset: 0
@@ -276,17 +269,19 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Defines the font size settings of the Rich Text Editor. Configures the font size dropdown items,
      * default font size selection, and the width of the font size dropdown in the toolbar.
      *
+     * {% codeBlock src='richtexteditor-ui/font-size/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
      *   items: [
-     *     { text: 'Default', value: { size: 'Default' } },
-     *     { text: '8', value: { size: '8px' } },
-     *     { text: '10', value: { size: '10px' } },
-     *     { text: '12', value: { size: '12px' } },
-     *     { text: '14', value: { size: '14px' } },
-     *     { text: '16', value: { size: '16px' } },
-     *     { text: '18', value: { size: '18px' } },
-     *     { text: '24', value: { size: '24px' } }
+     *     { text: 'Default', value: 'Default' },
+     *     { text: '8', value: '8px' },
+     *     { text: '10', value: '10px' },
+     *     { text: '12', value: '12px' },
+     *     { text: '14', value: '14px' },
+     *     { text: '16', value: '16px' },
+     *     { text: '18', value: '18px' },
+     *     { text: '24', value: '24px' }
      *   ]
      * }
      */
@@ -297,14 +292,16 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Defines the font family settings of the Rich Text Editor. Configures the font family dropdown items,
      * default font family selection, and the width of the font family dropdown in the toolbar.
      *
+     * {% codeBlock src='richtexteditor-ui/font-family/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
      *   items: [
-     *     { text: 'Default', value: { family: 'Default' } },
-     *     { text: 'Arial', value: { family: 'Arial' } },
-     *     { text: 'Helvetica', value: { family: 'Helvetica' } },
-     *     { text: 'Times New Roman', value: { family: 'Times New Roman' } },
-     *     { text: 'Courier New', value: { family: 'Courier New' } }
+     *     { text: 'Default', value:'Default' },
+     *     { text: 'Arial', value: 'Arial' },
+     *     { text: 'Helvetica', value: 'Helvetica' },
+     *     { text: 'Times New Roman', value: 'Times New Roman' },
+     *     { text: 'Courier New', value: 'Courier New' }
      *   ]
      * }
      */
@@ -312,8 +309,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public fontFamily: FontFamilyModel;
 
     /**
-     * Configures the font color picker. Controls the default color, color
-     * Defines the Quick Toolbar settings of the Editor.
+     * Defines the Quick Toolbar settings of the Rich Text Editor.
      *
      * The quick toolbar is a contextual popup toolbar that appears next to the
      * current text selection within the editable area, providing fast access to
@@ -324,15 +320,24 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * * Toggle the quick toolbar on or off via {@link QuickToolbarSettings.enable|enable}.
      * * Configure the items displayed on text selection via
      *   {@link QuickToolbarSettings.text|text}.
-     * * Control popup attachment via {@link QuickToolbarSettings.appendToBody|appendToBody}
+     * * Control popup attachment via {@link QuickToolbarSettings.enableAppendToBody|appendToBody}
      *   to avoid clipping inside narrow or scroll-constrained containers.
+     * * Configure the items displayed for selected images via
+     *   {@link QuickToolbarSettings.image|image}.
+     * * Configure the items displayed for selected links via
+     *   {@link QuickToolbarSettings.link|link}.
+     * * Configure the items displayed for selected tables via
+     *   {@link QuickToolbarSettings.table|table}.
+     *
+     * {% codeBlock src='richtexteditor-ui/quicktoolbar-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
      *   enable: true,
      *   text: null,
-     *   image: ['image-src', 'image-alt', 'image-title', 'image-height', 'image-width', '|', 'image-delete', '|', 'image-block', 'image-inline', '|', 'image-blob', 'image-base64', '|', 'image-align-left', 'image-align-center', 'image-align-right', '|', 'image-wrap-left', 'image-wrap-right'],
-     *   table: ['Row', 'Column', 'Header', 'CellBackgroundColor', 'VerticalAlign', 'Align', 'Delete']
+     *   image: ['AltText', 'Caption', '|', 'Align', 'Display', 'WrapText', '|', 'Dimension', 'Replace', 'Remove'],
+     *   table: ['Header', 'Remove', '|', 'Row', 'Column', '|', 'CellBackgroundColor', 'Align', 'VerticalAlign'],
+     *   link: ['Open', 'Copy', 'Edit', 'Remove']
      * }
      */
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
@@ -530,8 +535,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public imageSettings: ImageSettingsModel;
 
     /**
-     * Raised when the Rich Text Editor component has completed initialization and is ready for user interaction.
-     * At this point, all internal modules and subcomponents have been initialized and the editor is fully operational.
+     * Raised when the Rich Text Editor has completed initialization and is ready for user interaction.
+     * At this point, all internal modules have been initialized and the editor is fully operational.
      *
      * @event created
      */
@@ -539,8 +544,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public created: EmitType<Object>;
 
     /**
-     * Raised when the Rich Text Editor component has been destroyed. This event fires after all resources
-     * have been cleaned up and the component is no longer functional.
+     * Raised when the Rich Text Editor has been destroyed. This event fires after all resources
+     * have been cleaned up and the Rich Text Editor is no longer functional.
      *
      * @event destroyed
      */
@@ -549,21 +554,21 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
 
     /**
      * Raised when focus enters the Rich Text Editor shell (editable area or toolbar). This event allows
-     * applications to respond when the editor becomes the active component.
+     * applications to respond when the editor becomes the active element.
      *
-     * @event focused
+     * @event focus
      */
     @Event()
-    public focused: EmitType<FocusedEventArgs>;
+    public focus: EmitType<FocusEventArgs>;
 
     /**
      * Raised when focus leaves the Rich Text Editor shell. This event fires when the user moves focus away
-     * from the editor to another component.
+     * from the editor to another element.
      *
-     * @event blurred
+     * @event blur
      */
     @Event()
-    public blurred: EmitType<BlurredEventArgs>;
+    public blur: EmitType<BlurEventArgs>;
 
     /**
      * Raised before an action-driven mutation is executed. This event allows prevention of user actions
@@ -593,123 +598,90 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     public change: EmitType<ChangeEventArgs>;
 
     /**
-     * Raised when a toolbar item is clicked by the user. This event allows applications to track or
-     * intercept toolbar item interactions and perform custom logic.
+     * This event triggers before a dialog is opened.
      *
-     * @event itemClick
-     */
-    @Event()
-    public itemClick: EmitType<itemClickEventArgs>;
-
-    /**
-     * Raised after the toolbar item status (active states, dropdown values, color picker selections)
-     * has been synchronized with the current editor selection. This event fires after formatting states
-     * are updated to reflect the user's current cursor position or selection in the editor.
+     * Cancel this event to prevent the dialog from opening by setting the `cancel` argument to `true`.
+     * `source` identifies the editor feature that owns the dialog, such as `Link`, `Image`, or `Table`.
      *
-     * @event updatedToolbarStatus
-     */
-    @Event()
-    public updatedToolbarStatus: EmitType<UpdatedToolbarStatusEventArgs>;
-
-    /**
-     * Raised before a sub-component dialog opens.
-     *
-     * The event args ({@link BeforeDialogOpenEventArgs}) extend the ej2
-     * `BeforeOpenEventArgs` with a `subType` field — a plain string set when
-     * the sub-component is created identifying the editor feature the dialog
-     * belongs to (e.g. `'Link'`, `'Image'`, `'Table'`).
+     * @event beforeDialogOpen
      */
     @Event()
     public beforeDialogOpen: EmitType<BeforeDialogOpenEventArgs>;
 
     /**
-     * Raised before a sub-component dialog closes.
+     * This event triggers before a dialog is closed.
      *
-     * The event args ({@link BeforeDialogCloseEventArgs}) extend the ej2
-     * `BeforeCloseEventArgs` with a `subType` field identifying the editor
-     * feature the dialog belongs to (e.g. `'Link'`, `'Image'`, `'Table'`).
+     * Cancel this event to prevent the dialog from closing by setting the `cancel` argument to `true`.
+     * `source` identifies the editor feature that owns the dialog, such as `Link`, `Image`, or `Table`.
+     *
+     * @event beforeDialogClose
      */
     @Event()
     public beforeDialogClose: EmitType<BeforeDialogCloseEventArgs>;
 
     /**
-     * Raised before a sub-component popup opens.
+     * Triggers before a file is uploaded to the server.
      *
-     * The event args ({@link BeforePopupOpenEventArgs}) extend the ej2
-     * `PopupEventArgs` with a `subType` field identifying the feature (e.g.
-     * `'Link'`, `'Image'`, `'Table'`).
-     */
-    @Event()
-    public beforePopupOpen: EmitType<BeforePopupOpenEventArgs>;
-
-    /**
-     * Raised before a sub-component popup closes.
+     * Cancel this event to prevent the upload by setting the `cancel` argument to `true`.
+     * The `source` field identifies the feature that owns the upload, such as `Image`.
      *
-     * The event args ({@link BeforePopupCloseEventArgs}) extend the ej2
-     * `BeforeCloseEventArgs` with a `subType` field identifying the feature
-     * (e.g. `'Link'`, `'Image'`, `'Table'`).
-     */
-    @Event()
-    public beforePopupClose: EmitType<BeforePopupCloseEventArgs>;
-
-    /**
-     * Raised before a file is uploaded to the server.
+     * See {@link BeforeFileUploadEventArgs} for the complete list of event arguments.
      *
-     * The event args ({@link BeforeFileUploadEventArgs}) extend the ej2
-     * `BeforeUploadEventArgs` with a `subType` field identifying the feature
-     * the upload is for (e.g. `'Image'`).
+     * @event beforeFileUpload
      */
     @Event()
     public beforeFileUpload: EmitType<BeforeFileUploadEventArgs>;
 
     /**
-     * Raised while a file is being uploaded to the server.
+     * Triggers while a file is being uploaded to the server.
      *
-     * The event args ({@link FileUploadingEventArgs}) extend the ej2
-     * `UploadingEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadingEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploading
      */
     @Event()
     public fileUploading: EmitType<FileUploadingEventArgs>;
 
     /**
-     * Raised when files are selected for upload.
+     * Triggers when files are selected for upload.
      *
-     * The event args ({@link FileSelectedEventArgs}) extend the ej2
-     * `SelectedEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileSelectedEventArgs} for the complete list of event arguments.
+     *
+     * @event fileSelected
      */
     @Event()
     public fileSelected: EmitType<FileSelectedEventArgs>;
 
     /**
-     * Raised when an upload succeeds.
+     * This event triggers when file has been successfully uploaded to the server side.
      *
-     * The event args ({@link FileUploadSuccessEventArgs}) extend the ej2
-     * `SuccessEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadSuccessEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploadSuccess
      */
     @Event()
     public fileUploadSuccess: EmitType<FileUploadSuccessEventArgs>;
 
     /**
-     * Raised when an upload fails.
+     * This event triggers when there is an error during media upload.
      *
-     * The event args ({@link FileUploadFailedEventArgs}) extend the ej2
-     * `FailureEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadFailedEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploadFailed
      */
     @Event()
     public fileUploadFailed: EmitType<FileUploadFailedEventArgs>;
 
     /**
-     * Raised before a previously-uploaded image is removed (client-side
+     * Triggers before a previously-uploaded image is removed (client-side
      * `URL.revokeObjectURL` for `saveFormat: 'Blob'`, or before the
      * `removeUrl` POST is sent for server-side removal).
      *
      * Set `args.cancel = true` to keep the image in place; both the `Blob`
-     * revocation and the `removeUrl` POST will be skipped. The event args
-     * are {@link FileRemovingEventArgs}.
+     * revocation and the `removeUrl` POST will be skipped.
+     * The event args  are {@link FileRemovingEventArgs}.
+     *
+     * @event fileRemoving
      */
     @Event()
     public fileRemoving: EmitType<FileRemovingEventArgs>;
@@ -718,46 +690,17 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Raised before drop/paste-inserted files are routed through the typed
      * command pipeline. Set `args.cancel = true` to keep the document
      * untouched. The event args are {@link BeforeFileDropEventArgs}.
+     *
+     * @event beforeFileDrop
      */
     @Event()
     public beforeFileDrop: EmitType<BeforeFileDropEventArgs>;
 
-    /**
-     * Raised when an image resize gesture starts. Set `args.cancel = true`
-     * to prevent the gesture. The event args are {@link ResizeEventArgs}.
-     */
-    @Event()
-    public resize: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised continuously while an image is being resized. NOT cancellable.
-     * The event args are {@link ResizeEventArgs} with `name: 'resizing'`.
-     */
-    @Event()
-    public resizing: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised after an image resize gesture ends. NOT cancellable. The event
-     * args are {@link ResizeEventArgs} with `name: 'resizeStop'`.
-     */
-    @Event()
-    public resizeStop: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised when a slash command item is selected from the slash command popup.
-     *
-     * Set `args.cancel` to `true` inside the handler to prevent the default
-     * command execution. The event args are of type
-     * {@link SlashCommandItemSelectArgs}.
-     *
-     * @event slashCommanditemSelect
-     */
-    @Event()
-    public slashCommanditemSelect: EmitType<SlashCommandItemSelectArgs>;
-
-
     // Lifecycle state fields
     protected isInitialized: boolean = false;
+    /**
+     * @private
+     */
     public isDestroyed: boolean = false;
     protected hasCreatedEventBeenRaised: boolean = false;
     private isHeadlessEventsWired: boolean = false;
@@ -765,34 +708,75 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     private pendingChangeArgs: ChangeEventArgs | null = null;
     private autoSaveDebounced: Function = null;
     // Internal references
+    /**
+     * @private
+     */
     public baseEditorCore: EditorCore | null = null;
     /**
      * The editor controller - the sole mutation gateway between UI modules
      * and the headless {@link EditorCore}. Initialized in {@link render}
      * after `baseEditorCore` and destroyed in {@link destroy}.
+     *
+     * @private
      */
     public editorController: EditorController;
     protected editorHost: HTMLElement | null = null;
+    /**
+     * @private
+     */
     public inputElement: HTMLElement | null = null;
+    /**
+     * @private
+     */
     public localeObj: L10n | null = null;
+    /**
+     * @private
+     */
     public rootElement: HTMLElement | null = null;
     private linkModule: LinkModule = null;
+    /**
+     * @private
+     */
     public isBlur: boolean;
+    /**
+     * @private
+     */
     public serviceLocator: ServiceLocator;
+    /**
+     * @private
+     */
+    public isRTEFocused: boolean;
+    private isInternalFocusTransition: boolean = false;
 
     /**
      * Reference to the Toolbar module instance.
      * Set by the Toolbar module when it initializes.
      * Implements the IToolbar interface for toolbar operations.
+     *
+     * @private
      */
     public toolbar: IToolbar | null = null;
+    /**
+     * @private
+     */
     public toolbarModule: ToolbarModule | null;
+    /**
+     * @private
+     */
     public quickToolbarModule: QuickToolbarModule | null;
+    /**
+     * @private
+     */
     public slashCommandModule: SlashCommand;
+    /**
+     * @private
+     */
     public tableModule: TableModule;
     /**
      * Service for querying and caching the editor's formatting state.
      * Shared by toolbar and quick-toolbar modules to avoid duplicate queries.
+     *
+     * @private
      */
     public formattingStateService: FormattingStateService | null = null;
     private readonly documentSelectionChangeHandler: EventListener = this.notifyEditorSelectionChange.bind(this);
@@ -801,7 +785,9 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     private readonly windowResizeHandler: EventListener = this.handleWindowResize.bind(this);
     private resizeObserver: ResizeObserver | null = null;
     private resizeObserverHandler: ResizeObserverCallback | null = null;
-
+    /**
+     * @private
+     */
     public scrollParentElements: HTMLElement[]
     /**
      * Reference to the Image module instance.
@@ -811,15 +797,23 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * to call `RichTextEditorUI.Inject(ImageModule)` themselves; the module
      * is wired in unconditionally, mirroring `ToolbarModule` and
      * `QuickToolbarModule`.
+     *
+     * @private
+     *
      */
     public imageModule: ImageModule;
     /** Action selected by the headless keymap for the current native keydown. */
+    /**
+     * @private
+     */
     public keyboardShortcutAction: EditorKeyBindingAction | undefined;
     /**
      * Function pointer installed by {@link ImageModule} so the toolbar's
      * action handler can dispatch a click on the `Image` toolbar item into
      * the module's `show()` method without taking a direct dependency on
      * the module class. Cleared on destroy.
+     *
+     * @private
      */
     public openImageDialog: (() => void) | null | undefined;
 
@@ -838,6 +832,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         this.editorController = null;
         this.editorHost = null;
         this.localeObj = null;
+        this.isRTEFocused = false;
         this.hasCreatedEventBeenRaised = false;
         this.formattingStateService = new FormattingStateService();
         // Validate initial valueFormat per spec
@@ -851,6 +846,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         const editor = this;
         return [
             paragraphExtension,
+            collapsibleExtension,
             headingExtension,
             boldExtension.extend({
                 keyboardShortcuts(): Record<string, (event?: KeyboardEvent) => void> {
@@ -893,7 +889,9 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                 }
             }),
             blockquoteExtension,
+            calloutExtension,
             horizontalRuleExtension,
+            hardBreakExtension,
             codeBlockExtension.extend({
                 keyboardShortcuts(): Record<string, (event?: KeyboardEvent) => void> {
                     return KeyBindingRegistry.getKeyboardShortcutMap(editor, 'code-block');
@@ -924,7 +922,11 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                     return KeyBindingRegistry.getKeyboardShortcutMap(editor, 'ordered-list', 'unordered-list');
                 }
             }),
-            undoRedoExtension.extend({
+            taskListExtension,
+            undoRedoExtension.configure({
+                depth: editor.undoRedoSteps,
+                newGroupDelay: editor.undoRedoTimer
+            }).extend({
                 keyboardShortcuts(): Record<string, (event?: KeyboardEvent) => void> {
                     return KeyBindingRegistry.getKeyboardShortcutMap(editor, 'undo', 'redo');
                 }
@@ -942,6 +944,11 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
             linkExtension.extend({
                 keyboardShortcuts(): Record<string, (event?: KeyboardEvent) => void> {
                     return KeyBindingRegistry.getKeyboardShortcutMap(editor, 'link');
+                },
+                defineOptions(): { openOnClick: boolean } {
+                    return {
+                        openOnClick: false
+                    };
                 }
             }),
             placeholderExtension.configure({
@@ -1004,8 +1011,24 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (!this.isInitialized || this.isDestroyed) {
             return;
         }
+        let isValueFormatChanged: boolean = false;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
+            case 'enable':
+                if (!isNOU(newProp.enable)) {
+                    this.updateEnable(newProp.enable);
+                    this.updatReadOnlyState();
+                    this.notify(constant.modelChanged, { newProp: { enable: newProp.enable }, oldProp: { enable: oldProp.enable } });
+                    if (this.baseEditorCore) {
+                        this.baseEditorCore.observer.notify(constant.modelChanged,
+                                                            { newProperties: { readonly: !newProp.enable },
+                                                                oldProperties: { readonly: !oldProp.enable } });
+                    }
+                } else {
+                    // null keeps the current state; keep the model in step with it.
+                    this.setProperties({ enable: isNOU(oldProp.enable) ? true : oldProp.enable }, true);
+                }
+                break;
             case 'width':
                 if (newProp.width !== undefined) {
                     this.applyWidth(newProp.width);
@@ -1030,12 +1053,26 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                         const nextDocumentRoot: EditorDocument | null = nextValue as EditorDocument;
                         newProp.value = nextDocumentRoot;
                     }
+                    // The core layer resolves the payload format from the change-set, and a
+                    // `value`-only change-set does not carry `valueFormat`. Forward the
+                    // active format so the payload is parsed against the format the editor
+                    // is currently using. `this.valueFormat` already reflects an incoming
+                    // `valueFormat` change, because the property setter stores it before
+                    // this handler runs.
+                    if (isNOU(newProp.valueFormat)) {
+                        newProp.valueFormat = this.valueFormat;
+                    }
                     this.baseEditorCore.observer.notify(constant.modelChanged, { newProperties: newProp, oldProperties: oldProp });
                     this.value = nextValue;
                 }
                 break;
             case 'valueFormat':
                 assertValidValueFormat(newProp.valueFormat);
+                // Compare against `oldProp` — the property setter has already stored
+                // the new value, so `this.valueFormat` already equals the incoming one.
+                if (newProp.valueFormat !== oldProp?.valueFormat) {
+                    isValueFormatChanged = true;
+                }
                 this.valueFormat = newProp.valueFormat as ValueFormat;
                 break;
             case 'placeholder':
@@ -1157,6 +1194,17 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                 break;
             }
         }
+        // `valueFormat` may be reassigned together with the existing `value` in
+        // the same data-binding cycle. The `value` case above runs before the
+        // format is known (key order is not guaranteed), so the pushed payload is
+        // normalized to the previous format. Re-serialize from the live headless
+        // document once the loop has settled, so the getter immediately reflects
+        // the current `valueFormat` without waiting for a user edit.
+        if (isValueFormatChanged && this.baseEditorCore && this.baseEditorCore.editor) {
+            this.value = this.valueFormat === 'json'
+                ? this.baseEditorCore.editor.getDocument() as unknown as EditorDocument
+                : this.baseEditorCore.editor.getHtml();
+        }
     }
 
     /**
@@ -1210,6 +1258,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         this.editorHost = contentContainer;
         this.element.appendChild(editorContainer);
         this.rootElement = editorContainer;
+        attributes(this.element, { role: 'application', 'aria-label': 'Rich Text Editor' });
         this.applyHostConfiguration();
     }
 
@@ -1238,11 +1287,9 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                 placeholder: this.placeholder,
                 enableAutoFormat: this.interactionSettings ? this.interactionSettings.enableAutoFormat : true,
                 enableTabKeyIndent: this.interactionSettings ? this.interactionSettings.enableTabKeyIndent : true,
-                undoRedoSteps: this.undoRedoSteps,
-                undoRedoTimer: this.undoRedoTimer,
                 extensions: this.getEditorExtensions(),
                 documentRoot: initialDocumentRoot as DocumentRoot,
-                readonly: this.readonly
+                readonly: this.readonly || !this.enable
             };
             this.baseEditorCore = new EditorCore(editorCoreOptions);
             this.inputElement = this.baseEditorCore.getInputElement();
@@ -1252,7 +1299,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         this.applyRtlClass(this.enableRtl);
         this.updateEnable(this.enable);
         this.initializeModules();
-        this.updatReadOnlyState();
+        this.updatReadOnlyState(true);
         this.wireResizeObserver();
         this.notify(events.initialEnd, {});
         if (this.element.dataset.rteUnitTesting === 'true') {
@@ -1260,6 +1307,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         } else {
             this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
         }
+        this.renderComplete();
 
     }
     // Initializes and attaches a ResizeObserver to monitor element size changes.
@@ -1288,6 +1336,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Prints all the pages of the Editor by default.
      *
      * @returns {void}
+     * @private
      */
     public print(): void {
         let printWindow: Window | null = window.open('', '_blank', 'height=' + window.outerHeight + ',width=' + window.outerWidth);
@@ -1325,12 +1374,15 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     }
 
     /**
-     * Focuses the Editor component.
+     * Sets focus on the editor's editable element.
+     *
+     * Triggers the editor's focus-in handling after the editable element
+     * receives focus.
      *
      * @returns {void}
      * @public
      */
-    public focus(): void {
+    public focusIn(): void {
         if (this.inputElement && typeof this.inputElement.focus === 'function') {
             this.inputElement.focus();
             this.handleFocusIn({} as FocusEvent);
@@ -1338,12 +1390,15 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     }
 
     /**
-     * Blurs Editor component, removing focus.
+     * Removes focus from the editor's editable element.
+     *
+     * Triggers the editor's focus-out handling after the editable element
+     * loses focus.
      *
      * @returns {void}
      * @public
      */
-    public blur(): void {
+    public focusOut(): void {
         if (this.inputElement && typeof this.inputElement.blur === 'function') {
             this.inputElement.blur();
             this.handleFocusOut({} as FocusEvent);
@@ -1351,16 +1406,25 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     }
 
     /**
-     * Commits the current value and raises change
+     * Saves the current editor content programmatically to the `value` property.
+     *
+     * The content is saved as an editor document when `valueFormat` is `json`;
+     * otherwise, it is saved as an HTML string.
      *
      * @returns {void}
      * @public
      */
     public save(): void {
         if (this.valueFormat === 'json') {
-            this.setProperties({ value: this.baseEditorCore.editor.getDocument() }, true);
+            this.setProperties(
+                { value: this.baseEditorCore.editor.getDocument() },
+                true
+            );
         } else {
-            this.setProperties({ value: this.baseEditorCore.editor.getHtml() }, true);
+            this.setProperties(
+                { value: this.baseEditorCore.editor.getHtml() },
+                true
+            );
         }
     }
 
@@ -1388,6 +1452,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      *   (`image/png`).
      * @param {Blob} blobData - Binary data to upload.
      * @returns {void}
+     *
+     * @private
      */
     public uploadFile(fileType: string, blobData: Blob): void {
         const settings: ImageSettingsModel = this.imageSettings;
@@ -1398,7 +1464,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (settings.allowedTypes && settings.allowedTypes.indexOf(ext) === -1) {
             this.trigger('fileUploadFailed', {
                 name: 'fileUploadFailed',
-                subType: 'Image',
+                source: 'Image',
                 message: 'Image type not allowed: ' + ext
             });
             return;
@@ -1408,7 +1474,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
             blobData.size > settings.maxFileSize) {
             this.trigger('fileUploadFailed', {
                 name: 'fileUploadFailed',
-                subType: 'Image',
+                source: 'Image',
                 message: 'Image size exceeds ' + settings.maxFileSize + ' bytes.'
             });
             return;
@@ -1416,13 +1482,13 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (!settings.uploadUrl) {
             this.trigger('fileUploadFailed', {
                 name: 'fileUploadFailed',
-                subType: 'Image',
+                source: 'Image',
                 message: 'uploadUrl is not configured.'
             });
             return;
         }
         // Cancelable hook so app code can abort the network path.
-        this.trigger('beforeFileUpload', { name: 'beforeFileUpload', subType: 'Image' });
+        this.trigger('beforeFileUpload', { name: 'beforeFileUpload', source: 'Image' });
         // After exposing `beforeFileUpload` consumers can set args.cancel =
         // true on the args object; emulation is done by throwing a
         // `trigger` listener that returns false. Here we keep the simple
@@ -1455,6 +1521,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      *
      * @returns {EditorDocument | null} The public document, or `null` if the
      *   editor is not mounted.
+     * @public
+     *
      */
     public getDocument(): EditorDocument | null {
 
@@ -1471,6 +1539,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Delegates to the Headless Editor (`getHtml()`).
      *
      * @returns {string} The HTML representation, or '' if not mounted.
+     * @public
      */
     public getHtml(): string {
         if (!this.baseEditorCore.editor) {
@@ -1485,6 +1554,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Delegates to the Headless Editor (`getText()`).
      *
      * @returns {string} The plain text, or '' if not mounted.
+     * @public
      */
     public getText(): string {
         if (!this.baseEditorCore.editor) {
@@ -1498,8 +1568,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      *
      * @param {boolean} [isSpace] - Specifies whether to include a space before the CSS class.
      * @returns {string} The CSS class.
-     * @hidden
-     * @deprecated
+     * @private
      */
     public getCssClass(isSpace?: boolean): string {
         return (isNullOrUndefined(this.cssClass) ? '' : isSpace ? ' ' + this.cssClass : this.cssClass);
@@ -1528,6 +1597,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * `RichTextEditor.Inject(SlashCommand)`.
      *
      * @returns {ModuleDeclaration[]} - the module declarations to inject.
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
@@ -1641,7 +1711,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
     }
 
     private wireEvents(): void {
-        if (!this.inputElement || !this.element || this.readonly ||
+        if (!this.inputElement || !this.element || this.readonly || !this.enable ||
             !this.baseEditorCore || !this.baseEditorCore.observer || this.isUiEventsWired) {
             return;
         }
@@ -1882,21 +1952,34 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
             return;
         }
         // Forward the Headless Editor's contentChanged payload directly.
-        this.baseEditorCore.editor.on(DOCUMENT_CHANGED, (payload: DocumentChangedPayload) => {
-            if (this.quickToolbarModule) {
-                this.quickToolbarModule.hideQuickToolbars(true);
-            }
-            this.pendingChangeArgs = {
-                name: 'change',
-                document: payload.document as EditorDocument,
-                selection: payload.selection,
-                action: payload.action,
-                affectedNodeIds: payload.affectedNodeIds,
-                affectedNodes: payload.affectedNodes
-            };
-            this.scheduleAutoSave();
-        });
+        this.baseEditorCore.editor.on('documentChanged', this.documentChanged.bind(this));
         this.isHeadlessEventsWired = true;
+    }
+
+    private documentChanged(payload: DocumentChangedEventArgs): void {
+        // Triggered for both the command then keyboard exection.
+        const state: FormattingState = this.formattingStateService.refreshFormattingState(this.baseEditorCore);
+        this.triggerUpdatedToolbarStatus(state);
+        if (this.quickToolbarModule) {
+            this.quickToolbarModule.hideQuickToolbars(true);
+        }
+        this.pendingChangeArgs = {
+            name: 'change',
+            document: payload.document as EditorDocument,
+            selection: payload.selection,
+            action: payload.action,
+            affectedNodes: payload.affectedNodes
+        };
+        this.scheduleAutoSave();
+    }
+
+    private unwireHeadlessEditorEvents(): void {
+        if (!this.isHeadlessEventsWired || !this.baseEditorCore || !this.baseEditorCore.editor) {
+            return;
+        }
+        // Forward the Headless Editor's contentChanged payload directly.
+        this.baseEditorCore.editor.off('documentChanged', this.documentChanged);
+        this.isHeadlessEventsWired = false;
     }
 
     private unwireEvents(): void {
@@ -1969,13 +2052,55 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (!this.isInitialized || this.isDestroyed) {
             return;
         }
-        this.isBlur = false;
-        this.triggerFocusedEvent(event);
-        EventHandler.add(this.element.ownerDocument, 'click', this.onDocumentClick, this);
+        if (this.isInternalFocusTransition) {
+            return;
+        }
+        if (!this.isRTEFocused) {
+            const target: HTMLElement = event && event.target as HTMLElement;
+            this.isBlur = false;
+            this.updateFocusState(target);
+            this.handleInternalFocus(target);
+            this.triggerFocusedEvent(event);
+            EventHandler.add(this.element.ownerDocument, 'click', this.onDocumentClick, this);
+            this.isRTEFocused = true;
+        }
+    }
+    public beginInternalFocusTransition(): void {
+        this.isInternalFocusTransition = true;
+    }
+
+    public endInternalFocusTransition(): void {
+        this.isInternalFocusTransition = false;
+    }
+
+    private updateFocusState(target: HTMLElement): void {
+        if (target && target.nodeName !== '#text' && target.closest('.e-content')) {
+            this.isRTEFocused = true;
+        }
+        addClass([this.element], [classes.CLS_FOCUS]);
+    }
+
+    private handleInternalFocus(target: HTMLElement): void {
+        const active: Element = document.activeElement;
+        const toolbarElement: HTMLElement = this.getToolbarElement() as HTMLElement;
+        if (active === this.element || active === toolbarElement || active === this.inputElement ||
+             (!isNOU(toolbarElement) && closest(active, '.e-rte-ui-toolbar') === toolbarElement)) {
+            if (!isNOU(toolbarElement)) {
+                toolbarElement.setAttribute('tabindex', '-1');
+                const items: NodeList = toolbarElement.querySelectorAll('[tabindex="0"]');
+                for (let i: number = 0; i < items.length; i++) {
+                    (items[i as number] as HTMLElement).setAttribute('tabindex', '-1');
+                }
+            }
+        }
     }
 
     private handleFocusOut(event: FocusEvent): void {
         if (!this.isInitialized || this.isDestroyed) {
+            return;
+        }
+        if (this.isInternalFocusTransition) {
+            this.isBlur = false;
             return;
         }
         let target: Element = event && event.relatedTarget as Element;
@@ -1998,19 +2123,16 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (this.isBlur && isNOU(target)) {
             this.commitPendingChange();
             this.triggerBlurredEvent(event);
+            this.isRTEFocused = false;
             this.isBlur = false;
         }
         EventHandler.remove(this.element.ownerDocument, 'click', this.onDocumentClick);
     }
 
-    private raiseDestroyedEvent(): void {
-        this.trigger('destroyed', { name: 'destroyed' });
-    }
-
     private triggerFocusedEvent(e: FocusEvent): void {
         const eventSource: 'Event' | 'Method' = e instanceof FocusEvent ? 'Event' : 'Method';
-        const focusEventArgs: FocusedEventArgs = {
-            name: 'focused',
+        const focusEventArgs: FocusEventArgs = {
+            name: 'focus',
             isInteracted: false,
             event: e,
             source: eventSource
@@ -2020,8 +2142,8 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
 
     private triggerBlurredEvent(e: FocusEvent): void {
         const eventSource: 'Event' | 'Method' = e instanceof FocusEvent ? 'Event' : 'Method';
-        const blurEventArgs: BlurredEventArgs = {
-            name: 'blurred',
+        const blurEventArgs: BlurEventArgs = {
+            name: 'blur',
             isInteracted: false,
             event: e,
             source: eventSource
@@ -2081,11 +2203,11 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (this.isDestroyed) {
             return;
         }
-        this.raiseDestroyedEvent();
         this.removeHtmlAttributes();
         this.removeAttributes();
         this.notify(events.destroy, {});
         this.unwireEvents();
+        this.unwireHeadlessEditorEvents();
         // Destroy the controller before the core so the controller can
         // release its listeners and references first.
         if (this.editorController) {
@@ -2099,11 +2221,14 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
             this.baseEditorCore.destroy();
             this.baseEditorCore = null;
         }
+        this.imageModule.destroy();
+        this.tableModule.destroy();
         // Cancel any pending rAF and disconnect the observer in one step.
         this.unwireResizeObserver();
         this.clearAutoSaveTimer();
         // Clear host reference
         this.editorHost = null;
+        this.isRTEFocused = false;
         this.inputElement = null;
         this.localeObj = null;
         this.pendingChangeArgs = null;
@@ -2130,6 +2255,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      *
      * @param {ToolbarItemUpdate[]} updates - Array of discriminated-union update operations
      * @returns {void}
+     * @public
      */
     public updateToolbarItems(updates: ToolbarItemUpdate[]): void {
         if (this.toolbarModule) {
@@ -2199,14 +2325,17 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
      * Validates the type value before delegation to prevent invalid states.
      * Gracefully degrades on validation failure (no exception thrown).
      *
-     * Valid types: 'Expanded', 'MultiRow', 'Popup', 'Scrollable'
+     * Valid types: 'Auto', 'Expanded', 'MultiRow', 'Scrollable'
+     *
+     * Note: `Popup` is intentionally not supported by the Modern Rich Text Editor.
+     * `Auto` resolves to `Expanded` on desktop and `Scrollable` on device.
      *
      * @param {string} type - The toolbar type to apply
      * @returns {void}
      */
     private applyToolbarType(type: string): void {
         // Validate against allowed values
-        const validTypes: string[] = ['Expanded', 'MultiRow', 'Popup', 'Scrollable'];
+        const validTypes: string[] = ['Auto', 'Expanded', 'MultiRow', 'Scrollable'];
         if (validTypes.indexOf(type) === -1) {
             console.warn(`EditorBase.applyToolbarType: Invalid toolbar type "${type}". Valid types: ${validTypes.join(', ')}`);
             return;
@@ -2215,7 +2344,7 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         // Delegate to toolbar module
         if (this.toolbar) {
             try {
-                this.toolbar.updateType(type as 'Expanded' | 'MultiRow' | 'Scrollable');
+                this.toolbar.updateType(type as 'Auto' | 'Expanded' | 'MultiRow' | 'Scrollable');
             } catch (error) {
                 console.error(`EditorBase.applyToolbarType: Failed to apply toolbar type: ${error}`);
             }
@@ -2342,6 +2471,12 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         this.baseEditorCore.observer.notify(events.selectRange, { range: range });
     }
 
+    /**
+     *
+     * @param {FormattingState} state - Represesnts the state.
+     * @returns {void}
+     * @private
+     */
     public triggerUpdatedToolbarStatus(state: FormattingState): void {
         if (!this.toolbarModule) {
             return;
@@ -2367,7 +2502,13 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                 alignLeft: state.alignLeft,
                 alignCenter: state.alignCenter,
                 alignRight: state.alignRight,
-                alignJustify: state.alignJustify
+                alignJustify: state.alignJustify,
+                calloutInfo: state.calloutInfo,
+                calloutWarning: state.calloutWarning,
+                calloutError: state.calloutError,
+                calloutSuccess: state.calloutSuccess,
+                calloutNote: state.calloutNote,
+                checklist: state.checklist
             },
             styles: {
                 fontColor: state.fontColor,
@@ -2376,7 +2517,9 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
                 fontFamily: state.fontFamily
             }
         };
-        this.notify(events.updateTbItemsStatus, eventArgs);
+        if (this.toolbarSettings && this.toolbarSettings.updatedToolbarStatus) {
+            this.toolbarSettings.updatedToolbarStatus.call(this, eventArgs);
+        }
         this.toolbarModule.toolbarStatusUpdater.applyFormattingState(state);
         this.quickToolbarModule.applyFormattingState(state);
     }
@@ -2422,12 +2565,13 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         }
     }
 
-    private updatReadOnlyState(): void {
+    private updatReadOnlyState(initialLoad?: boolean): void {
         if (!this.isInitialized || this.isDestroyed || !this.baseEditorCore || !this.inputElement) {
             return;
         }
         if (this.readonly || !this.enable) {
             this.unwireEvents();
+            this.unwireHeadlessEditorEvents();
         } else {
             this.wireHeadlessEditorEvents();
             this.wireEvents();
@@ -2435,11 +2579,12 @@ export class RichTextEditorUI extends Component<HTMLElement> implements INotifyP
         if (!this.toolbarSettings || !this.toolbarSettings.enable || !this.toolbar) {
             return;
         }
-        if (this.readonly && this.toolbarSettings.enable && !isNOU(this.getToolbarElement())) {
+        if ((this.readonly || !this.enable) && this.toolbarSettings.enable && !isNOU(this.getToolbarElement())) {
             this.closeDialogDropdownandQuicktoolbars();
             this.toolbarModule.mainToolbar.getRenderer().enableToolbarItems(this.toolbarSettings.items as string[], false);
             this.toolbarModule.mainToolbar.getRenderer().ej2Toolbar.disable(true);
-        } else if (!this.readonly && this.toolbarSettings.enable && !isNOU(this.getToolbarElement())) {
+        } else if (this.isRendered && !initialLoad && !this.readonly && this.enable &&
+            this.toolbarSettings.enable && !isNOU(this.getToolbarElement())) {
             this.toolbarModule.mainToolbar.getRenderer().enableToolbarItems(this.toolbarSettings.items as string[], true);
             this.toolbarModule.mainToolbar.getRenderer().ej2Toolbar.disable(false);
         }

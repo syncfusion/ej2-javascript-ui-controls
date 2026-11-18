@@ -19,6 +19,7 @@ export const PICTURE_CONTENT_CONTROL_ID: string = '_picture_content_control';
 
 /**
  * ControlGroup module
+ *
  * @private
  */
 export class ControlGroup {
@@ -28,6 +29,7 @@ export class ControlGroup {
 
     /**
      * Constructor for ControlGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -37,6 +39,7 @@ export class ControlGroup {
 
     /**
      * Get the DocumentEditor instance
+     *
      * @returns {DocumentEditor} The DocumentEditor instance
      */
     private get documentEditor(): DocumentEditor {
@@ -45,6 +48,7 @@ export class ControlGroup {
 
     /**
      * Get the Control group model
+     *
      * @returns {RibbonGroupModel} The Control group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -70,6 +74,7 @@ export class ControlGroup {
 
     /**
      * Get the Content Control dropdown model
+     *
      * @returns {RibbonItemModel} The Content Control dropdown model
      */
     private getContentControlDropDownModel(): RibbonItemModel {
@@ -130,6 +135,7 @@ export class ControlGroup {
 
     /**
      * Handle content control dropdown selection
+     *
      * @param {MenuEventArgs} args - Menu event arguments
      * @returns {void}
      */
@@ -159,6 +165,7 @@ export class ControlGroup {
 
     /**
      * Update UI based on current selection
+     *
      * @returns {void}
      * @private
      */
@@ -181,6 +188,7 @@ export class ControlGroup {
 
     /**
      * Destroy the ControlGroup instance
+     *
      * @returns {void}
      */
     public destroy(): void {

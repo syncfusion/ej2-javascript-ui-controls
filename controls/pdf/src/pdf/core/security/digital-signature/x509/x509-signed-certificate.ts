@@ -97,6 +97,13 @@ export class _PdfSignedCertificate {
      * @type {_PdfX509Extensions|undefined}
      */
     _extensions?: _PdfX509Extensions;
+    /**
+     * Complete DER-encoded SubjectPublicKeyInfo data.
+     *
+     * @private
+     * @type {Uint8Array}
+     */
+    _publicKeyData: Uint8Array;
     constructor(sequenceElement: _PdfAbstractSyntaxElement) {
         this._sequence = sequenceElement._getSequence();
         let seqStart: number = 0;
@@ -113,9 +120,10 @@ export class _PdfSignedCertificate {
         this._startDate = new _PdfX509Time(dates[0]);
         this._endDate = new _PdfX509Time(dates[1]);
         this._subject = new _PdfX509Name(this._sequence[seqStart + 5]._getSequence());
-        this._publicKeyInformation = new _PdfPublicKeyInformation()._getPublicKeyInformation(
-            this._sequence[seqStart + 6]
-        );
+        const publicKeyElement: _PdfAbstractSyntaxElement = this._sequence[seqStart + 6];
+        this._publicKeyData = publicKeyElement && typeof publicKeyElement._toBytes === 'function'
+            ? publicKeyElement._toBytes() : new Uint8Array(0);
+        this._publicKeyInformation = new _PdfPublicKeyInformation()._getPublicKeyInformation(publicKeyElement);
         const base: number = seqStart + 6;
         for (let i: number = this._sequence.length - 1; i > base; i--) {
             const extra: _PdfAbstractSyntaxElement = this._sequence[<number>i];

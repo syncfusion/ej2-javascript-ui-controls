@@ -59,7 +59,7 @@ export class NumberFilterUI implements IFilterMUI {
         args.target.appendChild(this.multiSelectCheckBoxInstance);
         this.createNumericTextBox(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
     }
 
     public write(args: IFilterWrite): void {

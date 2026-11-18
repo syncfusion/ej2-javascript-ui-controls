@@ -1,9 +1,9 @@
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _PdfDictionary, _PdfReference, _PdfName } from './pdf-primitives';
-import { PdfDocument, PdfPageSettings } from './pdf-document';
+import { PdfDocument } from './pdf-document';
+import { PdfPageSettings, PdfDocumentTemplate } from './pdf-document-helper';
 import { PdfPage } from './pdf-page';
 import { _updatePageSettings, _updatePageCount } from './utils';
-import { PdfDocumentTemplate } from './pdf-type';
 /**
  * Represents a PDF section, a set of pages with similar page settings.
  * ```typescript

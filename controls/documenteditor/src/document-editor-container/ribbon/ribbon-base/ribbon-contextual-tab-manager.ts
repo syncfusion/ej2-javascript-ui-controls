@@ -11,6 +11,7 @@ import { PICTURE_FORMAT_TAB_ID } from '../picture-format-tab/picture-format-tab'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Manages contextual tabs in the ribbon
+ *
  * @private
  */
 export class RibbonContextualTabManager {
@@ -22,12 +23,14 @@ export class RibbonContextualTabManager {
     private ribbonDocumentEditor: Ribbon;
     /**
      * Flag to track if the current operation is content change
+     *
      * @private
      */
     private isContentChange: boolean = false;
 
     /**
      * Constructor for RibbonContextualTabManager
+     *
      * @param {DocumentEditorContainer} container - Document editor container
      */
     constructor(container: DocumentEditorContainer) {
@@ -36,6 +39,7 @@ export class RibbonContextualTabManager {
     }
     /**
      * Set content change flag
+     *
      * @param {boolean} value - Flag value
      * @returns {void}
      * @private
@@ -46,6 +50,7 @@ export class RibbonContextualTabManager {
 
     /**
      * Get contextual tabs configuration
+     *
      * @returns {any[]} Array of contextual tab configurations
      * @private
      */
@@ -71,6 +76,7 @@ export class RibbonContextualTabManager {
 
     /**
      * Update contextual tabs visibility based on selection
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @returns {void}
      * @private
@@ -149,6 +155,7 @@ export class RibbonContextualTabManager {
 
     /**
      * hide the contextual tab
+     *
      * @param {EJ2Ribbon} ribbon - ribbon instance
      * @returns {void}
      * @private

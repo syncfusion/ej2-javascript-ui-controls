@@ -17,22 +17,24 @@
  */
 
 import { ExtensionConfig, FlattenedExtension, InputRuleDefinition } from '../extensions/types';
-import { CommandRegistry } from '../commands/registry';
-import { Command } from '../commands/types';
-import { DiagnosticsService } from '../diagnostics';
+import { CommandRegistry } from '../core/commands/registry';
+import { Command } from '../core/commands/types';
+import { DiagnosticsService } from '../core/diagnostics';
 import { ExtensionManager } from '../extensions/extension-manager';
 import { PMPlugin, PMNode, PMMark, NodeSpec, MarkSpec, AttributeSpec, DOMOutputSpec, PMSchema} from '../pm/pm-guard';
-import { ContributorContext, ContributorPayload, DOMOutputDescriptor, ExtensionDOMSpecs, ExtensionScope, MarkDOMDescriptor, NodeDOMDescriptor, NodeViewConstructor, KeyboardShortcutHandler } from '../extensions/types';
+import { DOMOutputDescriptor, ExtensionDOMSpecs, ExtensionScope, MarkDOMDescriptor, NodeDOMDescriptor, NodeViewConstructor, KeyboardShortcutHandler } from '../extensions/types';
 import { NodeDOMSpec, MarkDOMSpec, DOMSpecRegistry, DefaultDOMSpecRegistry } from '../pm/dom/dom-spec-registry';
-import { MarkDefinition, NodeDefinition, SchemaDefinition } from '../schema/types';
+import { MarkDefinition, NodeDefinition, SchemaDefinition } from '../core/schema/types';
 import { PMSchemaAdapter } from '../pm/adapters';
 import { HeadlessEditor } from '../headless-editor';
-import { EditorConfig } from '../model';
+import { EditorConfig } from '../core/model';
 
 /**
  * DOM spec maps collected from extensions that declare the `'DOMSpecs'`
  * capability.  Returned by ExtensionCompiler.collectDOMSpecs() and merged
  * into the DefaultDOMSpecRegistry by EditorBuilder.
+ *
+ * @hidden
  */
 export interface CollectedDOMSpecs {
     readonly nodeDOMMap: ReadonlyMap<string, NodeDOMSpec>;
@@ -41,11 +43,12 @@ export interface CollectedDOMSpecs {
 
 /**
  * Result of extension compilation
+ *
+ * @hidden
  */
 export interface CompiledExtensionArtifacts {
     nodeSpecs: Record<string, NodeSpec>;
     markSpecs: Record<string, MarkSpec>;
-    globalAttributes: Record<string, AttributeSpec>;
     plugins: PMPlugin[];
     keyboardShortcuts: Record<string, KeyboardShortcutHandler[]>;
     inputRules: InputRuleDefinition[];
@@ -56,37 +59,34 @@ export interface CompiledExtensionArtifacts {
 
 /**
  * Compilation context passed to capability contributors
+ *
+ * @hidden
  */
 export interface ExtensionCompilationContext {
     extensionName: string;
     /** Partial schema available at compile time */
-    schema?: SchemaFragment;
+    schema?: Record<string, unknown>;
     /** For command compilation */
     commands?: CommandRegistry;
 }
-
-/**
- * Lightweight placeholder for partial schema available at compile time.
- * Concrete schema spec is produced after all extensions are compiled.
- */
-export type SchemaFragment = Record<string, unknown>;
 
 /**
  * Contributor function signature used by capability pipelines.
  */
 type Contributor<TPayload> = (
     this: ExtensionScope<object>,
-    ctx: ContributorContext
+    ctx: Record<string, unknown>
 ) => readonly TPayload[];
 
 /**
  * Extension compiler — collects and compiles capabilities from all extensions
+ *
+ * @hidden
  */
 export class ExtensionCompiler {
     private readonly diagnostics: DiagnosticsService;
     private nodeSpecs: Record<string, NodeSpec> = {};
     private markSpecs: Record<string, MarkSpec> = {};
-    private globalAttributes: Record<string, AttributeSpec> = {};
     private plugins: PMPlugin[] = [];
     private keyboardShortcuts: Record<string, KeyboardShortcutHandler[]> = {};
     private inputRules: InputRuleDefinition[] = [];
@@ -175,7 +175,6 @@ export class ExtensionCompiler {
             return {
                 nodeSpecs: this.nodeSpecs,
                 markSpecs: this.markSpecs,
-                globalAttributes: this.globalAttributes,
                 plugins: this.plugins,
                 keyboardShortcuts: this.keyboardShortcuts,
                 inputRules: this.inputRules,
@@ -242,62 +241,74 @@ export class ExtensionCompiler {
      * @returns {void}
      */
     private compileSchema(extensions: FlattenedExtension[]): void {
-        /** Tagged node definition carrying its source extension's priority. */
-        interface PrioritisedNode {
-            def: NodeDefinition;
+        /** Tagged schema definition carrying its source extension's priority. */
+        interface PrioritisedDefinition<T> {
+            def: T;
             priority: number;
-            /** Original collection index — preserves stable sort within a tier. */
+            /** Original collection index — preserves stable order within a priority tier. */
             index: number;
         }
-
-        const prioritisedNodes: PrioritisedNode[] = [];
-        const marks: MarkDefinition[] = [];
-
+        const prioritisedNodes: PrioritisedDefinition<NodeDefinition>[] = [];
+        const prioritisedMarks: PrioritisedDefinition<MarkDefinition>[] = [];
         for (const ext of extensions) {
             const config: ExtensionConfig<object> = ext.definition.config;
-            const priority: number = config.priority;
+            const priority: number = config.priority ?? 0;
             const scope: ExtensionScope<object> = {
                 name: config.name,
                 options: config.defineOptions?.() ?? {}
             };
-
             if (typeof config.nodes === 'function') {
                 const contributed: NodeDefinition[] = config.nodes.call(scope);
-                for (const nodeDef of contributed) {
+                for (const def of contributed) {
                     prioritisedNodes.push({
-                        def: nodeDef,
+                        def,
                         priority,
                         index: prioritisedNodes.length
                     });
                 }
             }
             if (typeof config.marks === 'function') {
-                marks.push(...config.marks.call(scope));
+                const contributed: MarkDefinition[] = config.marks.call(scope);
+
+                for (const def of contributed) {
+                    prioritisedMarks.push({
+                        def,
+                        priority,
+                        index: prioritisedMarks.length
+                    });
+                }
             }
         }
-
-        // ── Pin document and text to the front (PM framework requirements) ──
-        // These two nodes must always be the first entries in the schema node
-        // map. They are extracted from the sorted list and prepended manually.
+        const sortByPriority: <T>(a: PrioritisedDefinition<T>, b: PrioritisedDefinition<T>) => number =
+            <T>(a: PrioritisedDefinition<T>, b: PrioritisedDefinition<T>): number => {
+                const diff: number = b.priority - a.priority;
+                return diff !== 0 ? diff : a.index - b.index;
+            };
+        // Pin document and text to the front as required by ProseMirror.
         const pinnedNames: ReadonlySet<string> = new Set(['document', 'text']);
-        const pinned: PrioritisedNode[] = prioritisedNodes.filter((n: PrioritisedNode) => pinnedNames.has(n.def.name));
-        const sortable: PrioritisedNode[] = prioritisedNodes.filter((n: PrioritisedNode) => !pinnedNames.has(n.def.name));
-
-        // Stable descending sort: higher priority → earlier in schema.
-        // Stability is guaranteed by falling back to the original collection
-        // index when two nodes share the same priority.
-        sortable.sort((a: PrioritisedNode, b: PrioritisedNode): number => {
-            const diff: number = b.priority - a.priority;
-            return diff !== 0 ? diff : a.index - b.index;
-        });
-
+        const pinned: PrioritisedDefinition<NodeDefinition>[] =
+            prioritisedNodes.filter(
+                (item: PrioritisedDefinition<NodeDefinition>) => pinnedNames.has(item.def.name)
+            );
+        const sortable: PrioritisedDefinition<NodeDefinition>[] =
+            prioritisedNodes.filter(
+                (item: PrioritisedDefinition<NodeDefinition>) => !pinnedNames.has(item.def.name)
+            );
+        sortable.sort(sortByPriority);
         const nodes: NodeDefinition[] = [
-            ...pinned.map((n: PrioritisedNode) => n.def),
-            ...sortable.map((n: PrioritisedNode) => n.def)
+            ...pinned.map((item: PrioritisedDefinition<NodeDefinition>) => item.def),
+            ...sortable.map((item: PrioritisedDefinition<NodeDefinition>) => item.def)
         ];
-
+        // Higher-priority marks receive an earlier ProseMirror mark rank.
+        prioritisedMarks.sort(sortByPriority);
+        const marks: MarkDefinition[] = prioritisedMarks.map(
+            (item: PrioritisedDefinition<MarkDefinition>) => item.def
+        );
         this.schemaDefinition = { nodes, marks };
-        const adapter: PMSchemaAdapter = new PMSchemaAdapter(this.domRegistry, this.diagnostics);
+        const adapter: PMSchemaAdapter = new PMSchemaAdapter(
+            this.domRegistry,
+            this.diagnostics
+        );
         this.pmSchema = adapter.compile(this.schemaDefinition);
     }
 
@@ -604,7 +615,7 @@ export class ExtensionCompiler {
             };
             if (config.serializers) {
                 try {
-                    const serializerContributor: Contributor<ContributorPayload> = ext.definition.config.serializers;
+                    const serializerContributor: Contributor<unknown> = ext.definition.config.serializers;
                     const ctx: ExtensionCompilationContext = {
                         extensionName: name
                     };
@@ -722,7 +733,6 @@ export class ExtensionCompiler {
     reset(): void {
         this.nodeSpecs = {};
         this.markSpecs = {};
-        this.globalAttributes = {};
         this.plugins = [];
         this.keyboardShortcuts = {};
         this.inputRules = [];

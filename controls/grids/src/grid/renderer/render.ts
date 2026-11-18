@@ -305,11 +305,11 @@ export class Render {
                 && gObj.pageSettings.pageSizes && gObj.pagerModule && gObj.pagerModule.pagerObj && gObj.pagerModule.pagerObj.isAllPage) {
                 gObj.pagerModule.pagerObj.isAllPage = undefined;
             }
-            dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
+            dataManager = this.data.getData(args as NotifyArgs, this.parent.setRequiresCount(this.data.generateQuery()));
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             dataManager = dataManager.then((e: Object) => {
-                const query: Query = this.data.generateQuery().requiresCount();
+                const query: Query = this.parent.setRequiresCount(this.data.generateQuery());
                 if (this.emptyGrid) {
                     const def: Deferred = new Deferred();
                     def.resolve(<ReturnType>{ result: [], count: 0 });
@@ -378,7 +378,7 @@ export class Render {
         const promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
             (<{ original?: Object }>args).original);
-        const query: Query = this.data.generateQuery().requiresCount();
+        const query: Query = this.parent.setRequiresCount(this.data.generateQuery());
         if (this.data.dataManager.dataSource.offline) {
             this.refreshDataManager({ requestType: 'batchsave' });
             return;
@@ -432,6 +432,7 @@ export class Render {
         }
         if (gObj.emptyRecordTemplate) {
             const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const templateResult: any = gObj.getEmptyRecordTemplate()(
                 gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
                 undefined, undefined, undefined, this.parent['root']
@@ -550,7 +551,10 @@ export class Render {
                 td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
                                                              undefined, undefined, undefined, this.parent['root'])[0]);
             }
-            if (gObj.isReact) {
+            const isReactChild: boolean = this.parent.parentDetails &&
+                this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+            if (gObj.isReact || isReactChild) {
                 this.parent.renderTemplates();
             }
         } else {
@@ -778,14 +782,14 @@ export class Render {
                 const index: number = this.parent.allowPaging ? parseInt(i.toString(), 10) : startIndex + parseInt(i.toString(), 10);
                 const key: number = records[parseInt(i.toString(), 10)][`${primaryField}`];
                 if ((this.parent.isRowSelectable as Function)(records[parseInt(i.toString(), 10)], this.parent.columns)) {
-                    if (!this.selectableDataKey.hasOwnProperty(key)) {
+                    if (!Object.prototype.hasOwnProperty.call(this.selectableDataKey, key)) {
                         this.parent.partialSelectedRecords.push(records[parseInt(i.toString(), 10)]);
                         this.parent.partialSelectedIndexes.push(index);
                         this.selectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = true;
                     }
                 } else {
                     this.parent.selectionModule.isPartialSelection = true;
-                    if (!this.nonselectableDataKey.hasOwnProperty(key)) {
+                    if (!Object.prototype.hasOwnProperty.call(this.nonselectableDataKey, key)) {
                         this.parent.disableSelectedRecords.push(records[parseInt(i.toString(), 10)]);
                         this.nonselectableDataKey[records[parseInt(i.toString(), 10)][`${primaryField}`]] = false;
                     }
@@ -817,6 +821,16 @@ export class Render {
     private extendDataManagerSuccess(e: ReturnType, args?: NotifyArgs, len?: number, dataArgs?: ReturnType,
                                      isInfiniteDelete?: boolean): void {
         const gObj: IGrid = this.parent;
+        if (!len && gObj.enableInfiniteScrolling && args && args.requestType === 'infiniteScroll' &&
+            (isNullOrUndefined(e.count) || e.count <= 0) && gObj.infiniteScrollSettings &&
+            gObj.infiniteScrollSettings.enableCountLessMode === true) {
+            this.parent.isLastRecordLoaded = true;
+            gObj.removeMaskRow();
+            gObj.hideSpinner();
+            this.parent.trigger(events.dataBound, {});
+            this.parent.notify(events.infiniteScrollComplete, args);
+            return;
+        }
         if (this.isInfiniteEnd(args) && !len) {
             this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
             return;
@@ -881,7 +895,7 @@ export class Render {
             extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
                    args));
         if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
-            && (args && args.requestType !== 'filtering')) {
+            && (args && args.requestType !== 'filtering' && args.requestType !== 'sorting')) {
             this.headerRenderer.refreshUI();
         }
         if (len) {

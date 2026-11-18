@@ -727,7 +727,7 @@ export class Group implements IAction {
         if (gObj.contentModule) {
             args.virtualInfo = (<{ prevInfo?: object }>gObj.contentModule).prevInfo;
         }
-        dataManager = gObj.getDataModule().getData(args, query.requiresCount());
+        dataManager = gObj.getDataModule().getData(args, gObj.setRequiresCount(query));
         dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));
     }
 
@@ -1037,7 +1037,7 @@ export class Group implements IAction {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
                     className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
-                    attrs: { title: 'Drag', tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedDrag'), 'role': 'button' }
+                    attrs: { title: this.l10n.getConstant('GroupedDrag'), tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedDrag'), 'role': 'button' }
                 }));
         }
         childDiv.appendChild(this.parent.createElement('span', {

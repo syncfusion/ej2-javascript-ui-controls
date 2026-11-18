@@ -44,8 +44,9 @@ export class _PdfSignerUtilities {
         this._algorithms.set(identifiers._secureHash384WithRonCipherEncryption.id, 'SHA-384withRSA');
         this._algorithms.set('SHA-384WITHRSA', 'SHA-384withRSA');
         this._algorithms.set('SHA512WITHRSA', 'SHA-512withRSA');
-        this._algorithms.set('SHA-512WITHRSA', 'SHA-512withRSA');
+        this._algorithms.set('SHA512WITHRSAENCRYPTION', 'SHA-512withRSA');
         this._algorithms.set(identifiers._secureHash512WithRonCipherEncryption.id, 'SHA-512withRSA');
+        this._algorithms.set('SHA-512WITHRSA', 'SHA-512withRSA');
         this._algorithms.set('SHA1WITHRSAANDMGF1', 'SHA-1withRSAandMGF1');
         this._algorithms.set('SHA-1WITHRSAANDMGF1', 'SHA-1withRSAandMGF1');
         this._algorithms.set('SHA1WITHRSA/PSS', 'SHA-1withRSAandMGF1');
@@ -62,6 +63,11 @@ export class _PdfSignerUtilities {
         this._algorithms.set('SHA-512WITHRSAANDMGF1', 'SHA-512withRSAandMGF1');
         this._algorithms.set('SHA512WITHRSA/PSS', 'SHA-512withRSAandMGF1');
         this._algorithms.set('SHA-512WITHRSA/PSS', 'SHA-512withRSAandMGF1');
+        this._algorithms.set('SHA1WITHDSA', 'SHA-1withDSA');
+        this._algorithms.set('SHA-1WITHDSA', 'SHA-1withDSA');
+        this._algorithms.set('DSAWITHSHA1', 'SHA-1withDSA');
+        this._algorithms.set('DSAWITHSHA-1', 'SHA-1withDSA');
+        this._algorithms.set('1.2.840.10040.4.3', 'SHA-1withDSA');
         this._algorithms.set('DSAWITHSHA256', 'SHA-256withDSA');
         this._algorithms.set('DSAWITHSHA-256', 'SHA-256withDSA');
         this._algorithms.set('SHA256/DSA', 'SHA-256withDSA');
@@ -71,6 +77,7 @@ export class _PdfSignerUtilities {
         this._algorithms.set(algorithmIdentifiers._digitalSignatureWithSecureHash256AlgorithmIdentifier.id, 'SHA-256withDSA');
         this._algorithms.set('RIPEMD160WITHRSA', 'RIPEMD160withRSA');
         this._algorithms.set('RIPEMD160WITHRSAENCRYPTION', 'RIPEMD160withRSA');
+        this._algorithms.set('1.3.14.3.2.29', 'SHA-1withRSA');
         this._algorithms.set(algorithmIdentifiers._ronCipherWithRaceEvaluationAlgorithmIdentifier.id, 'RIPEMD160withRSA');
     }
     /**
@@ -121,6 +128,23 @@ export class _PdfSignerUtilities {
         } else {
             throw new Error(`Signer ${algorithm} not recognised.`);
         }
+    }
+    /**
+     * Gets the canonical name for an algorithm label or object identifier.
+     *
+     * @private
+     * @param {string} algorithm Algorithm label or object identifier.
+     * @returns {string} Canonical algorithm name or the original value.
+     */
+    _getCanonicalAlgorithmName(algorithm: string): string {
+        const value: string = algorithm ? algorithm.toLowerCase() : '';
+        let result: string = algorithm || '';
+        this._algorithms.forEach((name: string, key: string): void => {
+            if (key.toLowerCase() === value) {
+                result = name;
+            }
+        });
+        return result;
     }
     /**
      * Gets the algorithm name mapped to the given object identifier (OID).

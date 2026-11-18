@@ -1,5 +1,5 @@
-import { Browser, EventHandler, L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ContentControl, DocumentHelper } from '../viewer';
+import { Browser, EventHandler, L10n, createElement } from '@syncfusion/ej2-base';
+import { DocumentHelper } from '../viewer';
 import { DocumentEditorContainer } from '../../../document-editor-container';
 
 /**
@@ -90,7 +90,6 @@ export class PicContentControlDialog {
     private insertImage(data: string): void {
         this.image = document.createElement('img');
         const documentHelper: DocumentHelper = this.documentHelper;
-        const container: DocumentEditorContainer = this.container;
         this.image.addEventListener('load', function (): void {
             documentHelper.owner.editorModule.insertImageInternal(data, true, this.width, this.height, this.alt);
             //to upload an image newly = false, this condition applies and to replace the new image = true , this condition not applies

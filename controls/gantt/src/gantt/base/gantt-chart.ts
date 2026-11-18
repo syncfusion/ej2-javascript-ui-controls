@@ -5,6 +5,7 @@ import {
 } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
+import { isRemoteData } from './utils';
 import { ChartScroll } from '../actions/chart-scroll';
 import { IGanttData, IWorkTimelineRanges } from '../base/interface';
 import { click } from '@syncfusion/ej2-grids';
@@ -1465,8 +1466,11 @@ export class GanttChart {
     public onTabAction(e: KeyboardEventArgs): void {
         this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
         const toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
-        const isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
+        let isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
+        if (this.parent.element.querySelectorAll('.e-editedcell').length > 0 && isRemoteData(this.parent.dataSource)) {
+            isInEditedState = true;
+        }
         if (!isInEditedState && !this.parent.showActiveElement) {
             return;
         }

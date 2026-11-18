@@ -11,6 +11,7 @@
  */
 
 import type { PMMark, PMEditorState, PMNode } from '../pm-guard';
+import { wordRangeAround, WordRange } from '../../core/commands/builtins/formatting/toggle-mark';
 
 export class ActiveMarksResolver {
 
@@ -46,6 +47,18 @@ export class ActiveMarksResolver {
 
         if (isCollapsed) {
             // Cursor position: collect marks at cursor + stored marks
+            const word: WordRange | null = wordRangeAround(selection.$from);
+            if (word !== null) {
+                const from: number = selection.$from.pos - word.cursorOffset + word.start;
+                const to: number = selection.$from.pos - word.cursorOffset + word.end;
+                const wordMarks: Set<string> = this.resolveMarksInRange(pmState, from, to);
+                if (storedMarks) {
+                    storedMarks.forEach((mark: PMMark): void => {
+                        wordMarks.add(mark.type.name);
+                    });
+                }
+                return wordMarks;
+            }
             const cursorMarks: readonly PMMark[] = selection.$from.marks();
             const marksAtCursor: Set<string> = this._markSetToNameSet(cursorMarks);
 
@@ -59,11 +72,27 @@ export class ActiveMarksResolver {
             return marksAtCursor;
         }
 
-        // Step 2: Range selection - walk inline nodes and collect intersection
+        // Step 2: Range selection - delegate to the shared walker.
+        return this.resolveMarksInRange(pmState, selection.from, selection.to);
+    }
+
+    /**
+     * Returns the marks common to all text within the given range.
+     * Used by both cursor-based and range-based mark resolution.
+     *
+     * @param {PMEditorState} pmState Current editor state.
+     * @param {number} from Document start position (inclusive).
+     * @param {number} to Document end position (inclusive).
+     * @returns {Set<string>} Intersection of mark names in the range.
+     * @hidden
+     */
+    private resolveMarksInRange(pmState: PMEditorState, from: number, to: number): Set<string> {
         const nodeMarkSets: Set<string>[] = [];
 
+        // Step 2: Range selection - walk inline nodes and collect intersection
+
         // Use PM's efficient node iteration
-        doc.nodesBetween(selection.from, selection.to, (node: PMNode): void => {
+        pmState.doc.nodesBetween(from, to, (node: PMNode): void => {
             // Marks apply only to inline content — skip block wrappers.
             if (!node.isInline) {
                 return;

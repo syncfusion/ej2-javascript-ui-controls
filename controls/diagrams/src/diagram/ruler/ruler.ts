@@ -5,6 +5,9 @@ import { Ruler } from '../../ruler/index';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
 import { getFunction } from '../utility/base-util';
+import { getRulerUnitState, isPhysicalUnit, rulerLabelGap, axisInterval } from '../utility/measurement-util';
+import { MeasurementUnit } from '../enum/enum';
+import { Internationalization } from '@syncfusion/ej2-base';
 /**
  * defines the helper methods for the ruler
  */
@@ -53,6 +56,16 @@ export function renderRuler(diagram: Diagram, isHorizontal: boolean): void {
     const diagramRuler: DiagramRulerModel = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
     const ruler: Ruler = new Ruler(diagramRuler);
     ruler.orientation = isHorizontal ? 'Horizontal' : 'Vertical';
+    const unit: MeasurementUnit = getRulerUnitState(diagram).unit;
+    ruler.unit = unit;
+    if (isPhysicalUnit(unit)) {
+        // Draw the first frame at the real unit, interval, zoom and scroll offset (DIAGRAM-RULER-029); Pixel keeps its first render.
+        ruler.cultureName = getRulerCulture();
+        ruler.scale = diagram.scroller.currentZoom;
+        ruler.offset = isHorizontal ? -diagram.scroller.horizontalOffset : -diagram.scroller.verticalOffset;
+        ruler.minLabelGap = rulerLabelGap(diagram, unit);
+        ruler.tickCount = axisInterval(diagram, isHorizontal);
+    }
     ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + diagramRuler.segmentWidth;
     ruler.appendTo('#' + diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
     // eslint-disable-next-line
@@ -197,6 +210,13 @@ function updateRulerDimension(diagram: Diagram, ruler: Ruler, offset: number, is
     updateRulerSpace(diagram, rulerGeometry, isHorizontal);
     ruler.offset = offset;
     ruler.scale = diagram.scroller.currentZoom;
+    const unit: MeasurementUnit = getRulerUnitState(diagram).unit;
+    ruler.unit = unit;
+    if (isPhysicalUnit(unit)) {
+        ruler.minLabelGap = rulerLabelGap(diagram, unit);
+        ruler.cultureName = getRulerCulture();
+        ruler.tickCount = axisInterval(diagram, isHorizontal);
+    }
     ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + 100;
     ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
     ruler.dataBind();
@@ -247,4 +267,14 @@ function updateRulerDiv(diagram: Diagram, rulerGeometry: Size, isHorizontal: boo
             isHorizontal ? (div.style.height = ruler.thickness + 'px') : (div.style.width = ruler.thickness + 'px');
         }
     }
+}
+
+/**
+ * getRulerCulture method \
+ *
+ * @returns {string} The active culture name.
+ * @private
+ */
+function getRulerCulture(): string {
+    return new Internationalization().culture;
 }

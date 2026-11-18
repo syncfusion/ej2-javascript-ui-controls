@@ -1,7 +1,7 @@
 import { Browser, EventHandler, MouseEventArgs, createElement } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { remove, closest, select } from '@syncfusion/ej2-base';
-import { Query, DataManager } from '@syncfusion/ej2-data';
+import { DataManager } from '@syncfusion/ej2-data';
 import {
     IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, NotifyArgs, CellFocusArgs,
     BeforeAutoFillEventArgs, RowDeselectingEventArgs,
@@ -17,8 +17,6 @@ import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
-import { Data } from '../actions/data';
-import { ReturnType } from '../base/type';
 import { FocusStrategy } from '../services/focus-strategy';
 import { iterateExtend, setChecked, isComplexField , getObject } from '../base/util';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs, IAutoFill, IUndoRedoAction } from '../base/interface';
@@ -178,6 +176,7 @@ export class Selection implements IAction {
     private timer2: number;
     private isFocusLastCell: boolean = false;
     private serviceLocator: IValueFormatter;
+    private countLessTotalRecords: number = 0;
 
     /**
      * Constructor for the Grid selection module
@@ -883,8 +882,8 @@ export class Selection implements IAction {
             }
             if (this.parent.isFocusFirstCell || this.isFocusLastCell) {
                 this.parent.isFocusFirstCell = false;
-                const selector: string = this.isFocusLastCell ? 'last-child' : 'first-child';
-                target = selectedRow.querySelector('.e-selectionbackground.e-rowcell:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop, .e-gridchkbox):' + selector);
+                const cells: Element[] = [].slice.call(selectedRow.querySelectorAll('.e-selectionbackground.e-rowcell:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop, .e-gridchkbox)'));
+                target = this.isFocusLastCell ? cells[cells.length - 1] : cells[0];
                 this.isFocusLastCell = false;
             }
             if (!target || preventFocus || (this.parent.isCheckBoxSelection && this.isLazyLoadGroup() &&
@@ -3171,7 +3170,8 @@ export class Selection implements IAction {
                 const rowObj: Row<Column> = this.getRowObj(rows[parseInt(j.toString(), 10)]);
                 const pKey: string = rowObj ? rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null : null;
                 if (pKey === null) { return; }
-                if (this.isPartialSelection && !rowObj.isSelectable && !this.selectedRowState.hasOwnProperty(pKey)) { continue; }
+                if (this.isPartialSelection && !rowObj.isSelectable &&
+                    !Object.prototype.hasOwnProperty.call(this.selectedRowState, pKey)) { continue; }
                 let checkState: boolean;
                 const chkBox: HTMLInputElement = (rows[parseInt(j.toString(), 10)].querySelector('.e-checkselect') as HTMLInputElement);
                 if (this.selectedRowState[`${pKey}`] || (this.parent.checkAllRows === 'Check' && this.selectedRowState[`${pKey}`] &&
@@ -3209,6 +3209,11 @@ export class Selection implements IAction {
         if ((this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') &&
             this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();
+        }
+        if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCountLessMode &&
+            this.parent.isLastRecordLoaded && this.countLessTotalRecords === 0 &&
+            this.totalRecordsCount > 0) {
+            this.countLessTotalRecords = this.totalRecordsCount;
         }
     }
 
@@ -3663,6 +3668,12 @@ export class Selection implements IAction {
     }
 
     private isAllSelected(count?: number): boolean {
+        if (this.parent.getDataModule().isRemote() && this.parent.enableInfiniteScrolling &&
+            this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCountLessMode) {
+            return (this.parent.isLastRecordLoaded === true &&
+                this.getAvailableSelectedData(this.persistSelectedData).length ===
+                this.totalRecordsCount);
+        }
         if (this.parent.getDataModule().isRemote()
             || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) {
             return this.getAvailableSelectedData(this.persistSelectedData).length === (this.parent.enableVirtualization
@@ -3728,6 +3739,7 @@ export class Selection implements IAction {
         if (this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             let checkToSelectAll: boolean = false;
             let isFiltered: boolean = false;
+            let isSorted: boolean = false;
             let checkedLen: number = Object.keys(this.selectedRowState).length;
             if (this.parent.element.classList.contains('e-treelistgrid') && this.parent.isPersistSelection && !this.parent.enableVirtualization &&
                 !this.parent.getDataModule().isRemote() && Array.isArray(this.parent.dataSource) &&
@@ -3745,6 +3757,10 @@ export class Selection implements IAction {
                 && (this.parent.searchSettings.key.length || this.parent.filterSettings.columns.length)) {
                 isFiltered = true;
                 checkToSelectAll = this.isAllSelected(checkedLen);
+            }
+            if (this.parent.isPersistSelection && this.parent.getDataModule().isRemote() &&
+                this.parent.sortSettings.columns.length > 0) {
+                isSorted = true;
             }
             const input: HTMLInputElement = this.getCheckAllBox();
             if (input) {
@@ -3773,13 +3789,18 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
                         getRecord.length && checkedLen === getRecord.length) || ((this.parent.getDataModule().isRemote()
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
-                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || ((this.
+                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount &&
+                        !(this.isCountLessMode() && checkedLen === 0)) || ((this.
                         isSelectAllRowCount(checkedLen) || checkedLen === this.totalRecordsCount) &&
                         (!this.parent.isPersistSelection && !this.parent.isRemote())))) ||
                         (this.isPartialSelection && ((checkedLen > 0 && this.isHdrSelectAllClicked) ||
-                        this.isSelectAllRowCount(checkedLen))))) || (checkedLen === this.totalRecordsCount && this.totalRecordsCount &&
+                        this.isSelectAllRowCount(checkedLen))) || (this.parent.isPersistSelection && this.isCountLessMode()
+                        && this.parent.isLastRecordLoaded && checkedLen === this.totalRecordsCount &&
+                        this.parent.totalDataRecordsCount === 0))) ||
+                        (checkedLen === this.totalRecordsCount && this.totalRecordsCount &&
                         !this.isPartialSelection && !this.parent.allowPaging && !this.parent.enableVirtualization &&
-                        !this.parent.enableInfiniteScrolling)))) {
+                        !this.parent.enableInfiniteScrolling))) || (this.isCountLessMode() && (isFiltered || isSorted) &&
+                        this.parent.isPersistSelection && this.countLessTotalRecords === checkedLen && checkedLen !== 0)) {
                     addClass([spanEle], ['e-check']);
                     setChecked(input, true);
                     if (isInteraction) {
@@ -3792,7 +3813,8 @@ export class Selection implements IAction {
                         checkedLen === 0 && this.getCurrentBatchRecordChanges().length === 0) && !this.parent.allowPaging) ||
                         (this.parent.allowPaging && !this.isLazyLoadPersistSelection() &&
                         (checkedLen === 0 || (checkedLen && isFiltered && this.someDataSelected()))) ||
-                        (this.isLazyLoadPersistSelection() && this.persistSelectedRecordsCount === 0)) {
+                        (this.isLazyLoadPersistSelection() && this.persistSelectedRecordsCount === 0) ||
+                        (this.isCountLessMode() && checkedLen === 0)) {
                     addClass([spanEle], ['e-uncheck']);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, false, true);
@@ -3863,7 +3885,8 @@ export class Selection implements IAction {
             && (<{result: object[]}>this.parent.dataSource).result)) && (this.parent.enableVirtualization ||
             this.parent.enableInfiniteScrolling)) {
             const dataLen: number = this.parent.totalDataRecordsCount;
-            if (dataLen === rowObj.length) {
+            if ((this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCountLessMode &&
+                dataLen === 0) || dataLen === rowObj.length) {
                 rowCount = rowObj.filter((e: Row<Column>) => e.isSelectable).length;
                 return rowCount && count === rowCount;
             } else {
@@ -3875,9 +3898,11 @@ export class Selection implements IAction {
             const selectedRowCount: number = (this.parent.isPersistSelection || this.parent.isRemote()) ?
                 this.persistSelectedRecordsCount : this.partialSelectedRecordsCount;
             rowCount = this.disableSelectableRecordsCount + this.partialSelectableRecordsCount;
-            const recordCount: number = this.parent.isRemote() ? this.parent.totalDataRecordsCount : (this.parent.allowGrouping &&
-                'records' in this.getData()) ? this.getData()['records'].length :
-                this.getData() && this.getData().length;
+            const recordCount: number = this.parent.isRemote() ? (this.parent.infiniteScrollSettings &&
+                this.parent.infiniteScrollSettings.enableCountLessMode && this.parent.isLastRecordLoaded ?
+                this.totalRecordsCount : this.parent.totalDataRecordsCount) :
+                (this.parent.allowGrouping && 'records' in this.getData()) ? this.getData()['records'].length :
+                    this.getData() && this.getData().length;
             return rowCount === recordCount && selectedRowCount !== 0 && selectedRowCount === this.partialSelectableRecordsCount;
         } else {
             if ((this.parent.allowPaging || this.isPartialSelection) && this.parent.selectionSettings.persistSelection) {
@@ -4857,6 +4882,11 @@ export class Selection implements IAction {
         else {
             return this.getAvailableSelectedData(data).length;
         }
+    }
+
+    private isCountLessMode(): boolean {
+        return this.parent.isRemote() && this.parent.enableInfiniteScrolling &&
+            this.parent.infiniteScrollSettings.enableCountLessMode;
     }
 
     /**

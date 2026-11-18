@@ -137,20 +137,23 @@ export class _PdfSignatureDictionary {
         if (this._dictionary.has('Contents')) {
             const contents: string = this._dictionary.get('Contents');
             const bytes: Uint8Array = this._parsePdfContents(contents);
-            const isDeferredSigning: boolean = bytes && bytes.length > 0 && bytes.every((byte: number) => byte === 0);
+            const isDeferredSigning: boolean = bytes && bytes.length > 0 && bytes.every((byte: number): boolean => byte === 0);
             if (bytes && bytes.length > 0 && !isDeferredSigning) {
-                const parser: _PdfX509CertificateParser = new _PdfX509CertificateParser();
-                const certificateChain: _PdfX509Certificate = parser._readCertificate(bytes, true);
-                const certificate: _PdfCertificate = new _PdfCertificate(certificateChain);
-                this._certificate = certificate;
-                this._cmsSigner = new _PdfCryptographicMessageSyntaxSigner(bytes, this._dictionary.get('SubFilter').name);
-                if (this._cmsSigner._certificates && this._cmsSigner._certificates.length > 0) {
-                    this._certificate._chains = this._cmsSigner._certificates;
+                const subFilter: _PdfName = this._dictionary.get('SubFilter');
+                this._cmsSigner = new _PdfCryptographicMessageSyntaxSigner(bytes, subFilter ? subFilter.name : '');
+                let signingCertificate: _PdfX509Certificate = this._cmsSigner._getSignatureCertificate();
+                if (!signingCertificate) {
+                    const parser: _PdfX509CertificateParser = new _PdfX509CertificateParser();
+                    signingCertificate = parser._readCertificate(bytes, true);
                 }
-                if (this._cmsSigner._certificates && this._cmsSigner._certificates.length > 0) {
-                    this._certificate._chains = this._cmsSigner._certificates;
+                if (signingCertificate) {
+                    this._certificate = new _PdfCertificate(signingCertificate);
+                    if (this._cmsSigner._certificates &&
+                        this._cmsSigner._certificates.length > 0) {
+                        this._certificate._chains = this._cmsSigner._certificates.slice();
+                    }
                 }
-                if (this._cmsSigner && this._cmsSigner._hasTimeStamp && this._cmsSigner._timeStampTokenBytes &&
+                if (this._cmsSigner._hasTimeStamp && this._cmsSigner._timeStampTokenBytes &&
                     this._cmsSigner._timeStampTokenBytes.length > 0) {
                     this._signature._hasTimeStamp = this._cmsSigner._hasTimeStamp;
                     this._signature._timeStampTokenBytes = this._cmsSigner._timeStampTokenBytes;
@@ -159,7 +162,8 @@ export class _PdfSignatureDictionary {
             }
         }
         if (this._cmsSigner) {
-            const messageDigest: string = this._cmsSigner._getHashAlgorithm();
+            const messageDigest: string =
+                this._cmsSigner._getHashAlgorithm();
             switch (messageDigest) {
             case 'SHA512':
                 digest = DigestAlgorithm.sha512;

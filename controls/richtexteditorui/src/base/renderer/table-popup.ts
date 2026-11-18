@@ -61,6 +61,7 @@ export class TablePopup {
     private focusedCell: { row: number; col: number } = { row: 0, col: 0 };
     private isDestroyed: boolean = false;
     private popup: Popup | null = null;
+    private isInsertBtnFocused: boolean = false;
 
     constructor(parent: RichTextEditorUI, locale: L10n, anchor: HTMLElement | null, callbacks: TablePopupCallbacks) {
         this.parent = parent;
@@ -283,6 +284,7 @@ export class TablePopup {
 
     private keyDownHandler(e: KeyboardEvent): void {
         const key: string = e.key;
+        this.isInsertBtnFocused = key !== 'Enter' ? false : this.isInsertBtnFocused;
         if (key === 'ArrowRight' && this.focusedCell.col < TABLE_POPUP_COLS - 1) {
             this.focusedCell.col++;
         } else if (key === 'ArrowLeft' && this.focusedCell.col > 0) {
@@ -292,7 +294,13 @@ export class TablePopup {
         } else if (key === 'ArrowUp' && this.focusedCell.row > 0) {
             this.focusedCell.row--;
         } else if (key === 'Enter') {
-            this.commitInsert(this.focusedCell.row + 1, this.focusedCell.col + 1);
+            this.hide();
+            if (this.isInsertBtnFocused) {
+                this.callbacks.onOpenDialog();
+                this.isInsertBtnFocused = false;
+            } else {
+                this.commitInsert(this.focusedCell.row + 1, this.focusedCell.col + 1);
+            }
             return;
         } else if (key === 'Escape') {
             this.hide();
@@ -300,6 +308,7 @@ export class TablePopup {
         } else if (key === 'Tab') {
             if (this.insertBtnInstance && this.insertBtnInstance.element) {
                 this.insertBtnInstance.element.focus();
+                this.isInsertBtnFocused = true;
             }
             e.preventDefault();
             return;

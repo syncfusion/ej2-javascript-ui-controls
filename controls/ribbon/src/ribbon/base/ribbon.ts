@@ -310,6 +310,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private targetTabs: { [key: string]: number };
     private isUpdateItems: boolean;
     private resizeListener: Function;
+    private keytipListener: Function;
+    private mouseListener: Function;
     /** @hidden */
     public keysPress: string;
     /** @hidden */
@@ -467,10 +469,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private wireEvents(): void {
         this.resizeListener = this.resizeHandler.bind(this);
+        this.keytipListener = this.keytipActionHandler.bind(this);
+        this.mouseListener = this.mouseEventHandler.bind(this);
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeListener);
-        EventHandler.add(document.body, 'keydown', this.keytipActionHandler, this);
-        EventHandler.add(document, 'mousedown', this.mouseEventHandler, this);
-        EventHandler.add(document, 'scroll', this.mouseEventHandler, this);
+        EventHandler.add(document.body, 'keydown', this.keytipListener);
+        EventHandler.add(document, 'mousedown', this.mouseListener);
+        EventHandler.add(document, 'scroll', this.mouseListener);
     }
 
     private wireKeyboardEvent(): void {
@@ -4773,9 +4777,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private unwireEvents(): void {
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeListener);
-        EventHandler.remove(document.body, 'keydown', this.keytipActionHandler);
-        EventHandler.remove(document, 'mousedown', this.mouseEventHandler);
-        EventHandler.remove(document, 'scroll', this.mouseEventHandler);
+        EventHandler.remove(document.body, 'keydown', this.keytipListener);
+        EventHandler.remove(document, 'mousedown', this.mouseListener);
+        EventHandler.remove(document, 'scroll', this.mouseListener);
     }
 
     public destroy(): void {

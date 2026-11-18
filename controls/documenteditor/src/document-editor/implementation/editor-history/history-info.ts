@@ -360,13 +360,11 @@ export class HistoryInfo extends BaseHistoryInfo {
         case 'Accept All':
         case 'ReplaceAll':
         case 'Reject All': {
-            let isSkip: boolean = false;
             if (this.editorHistory.isUndoing) {
                 for (let i: number = this.modifiedActions.length - 1; i >= 0; i--) {
                     const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
                     if (!isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
                         operations.push(currentHistory.cellOperation[0]);
-                        isSkip = true;
                         currentHistory.cellOperation = [];
                     } else {
                         const operationsCollection: Operation[] = currentHistory.getActionInfo();
@@ -378,7 +376,6 @@ export class HistoryInfo extends BaseHistoryInfo {
                     const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
                     if (currentHistory.action === 'RemoveRowTrack' && !isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
                         operations.push(currentHistory.cellOperation[0]);
-                        isSkip = true;
                         currentHistory.cellOperation = [];
                     } else {
                         const operationsCollection: Operation[] = currentHistory.getActionInfo();
@@ -457,6 +454,17 @@ export class HistoryInfo extends BaseHistoryInfo {
             }
             break;
         }
+        case 'FormatPainter':
+            // Format Painter is a complex action of CharacterFormat and optional ParagraphFormat.
+            // Without this case, collaborative editing emits an empty operation list and remote
+            // clients never receive the painted formatting.
+            if (!isNullOrUndefined(this.modifiedActions)) {
+                for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                    const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                    operations.push(...currentHistory.getActionInfo(isInvertOperation));
+                }
+            }
+            break;
 
         case 'TableMarginsSelection':
             this.modifiedActions[this.modifiedActions.length - 1].createTableFormat(

@@ -34,6 +34,7 @@ const CHIP_CLOSE: string = 'e-chips-close';
 const CHIP_SELECTED: string = 'e-chip-selected';
 const SEARCHBOX_WRAPPER: string = 'e-searcher';
 const DELIMITER_VIEW_WRAPPER: string = 'e-delimiter';
+const NULL_CHIP: string = 'e-chip-null';
 const ZERO_SIZE: string = 'e-zero-size';
 const REMAIN_WRAPPER: string = 'e-remain';
 const CLOSEICON_CLASS: string = 'e-chips-close e-close-hooker';
@@ -930,7 +931,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private onPopupShown(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
-        this.sanitizeData();
         if (Browser.isDevice && (this.mode === 'CheckBox' && this.allowFiltering)) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
@@ -1210,16 +1210,23 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP);
-        const value: string = elements[elements.length - 1].getAttribute('data-value');
+        const lastElement: HTMLElement = elements[elements.length - 1] as HTMLElement;
+        const isNullChip: boolean = lastElement.classList.contains(NULL_CHIP);
+        let customValue: string | number | boolean | object = null;
         if (!isNullOrUndefined(this.value)) {
             this.tempValues = this.allowObjectBinding ? this.value.slice() : <string[]>this.value.slice();
         }
-        let customValue: string | number | boolean | object = this.allowObjectBinding ? this.enableVirtualization ?
-            this.getVirtualDataByValue(this.getFormattedValue(value)) :
-            this.getDataByValue(this.getFormattedValue(value)) : this.getFormattedValue(value);
-        if (this.allowCustomValue && (value !== 'false' && customValue === false || (!isNullOrUndefined(customValue) &&
-            customValue.toString() === 'NaN'))) {
-            customValue = value;
+        if (isNullChip) {
+            customValue = null;
+        } else {
+            const value: string = lastElement.getAttribute('data-value');
+            customValue = this.allowObjectBinding ? this.enableVirtualization ?
+                this.getVirtualDataByValue(this.getFormattedValue(value)) :
+                this.getDataByValue(this.getFormattedValue(value)) : this.getFormattedValue(value);
+            if (this.allowCustomValue && (value !== 'false' && customValue === false || (!isNullOrUndefined(customValue) &&
+                customValue.toString() === 'NaN'))) {
+                customValue = value;
+            }
         }
         this.removeValue(customValue, e);
         this.removeChipSelection();
@@ -1558,47 +1565,53 @@ export class MultiSelect extends DropDownBase implements IInput {
             HIDE_LIST :
             dropDownBaseClasses.selected;
         if (!isNullOrUndefined(this.value)) {
-            for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
-                value = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', this.value[index as number]) :
-                    this.value[index as number];
-                element = this.findListElement(this.list, 'li', 'data-value', value);
-                if (element) {
-                    addClass([element], className);
-                    if (this.hideSelectedItem && element.previousSibling
-                        && element.previousElementSibling.classList.contains(dropDownBaseClasses.group)
-                        && (!element.nextElementSibling ||
-                            element.nextElementSibling.classList.contains(dropDownBaseClasses.group))) {
-                        addClass([element.previousElementSibling], className);
+            const isOnlyNull: boolean = this.isValueOnlyNull();
+            if (!isOnlyNull) {
+                for (let index: number = 0; index < this.value.length; index++) {
+                    value = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', this.value[index as number]) :
+                        this.value[index as number];
+                    if (isNullOrUndefined(value)) {
+                        continue;
                     }
-                    if (this.hideSelectedItem && this.fields.groupBy && !element.previousElementSibling.classList.contains(HIDE_LIST)) {
-                        this.hideGroupItem(value);
-                    }
-                    if (this.hideSelectedItem && element.classList.contains(dropDownBaseClasses.focus)) {
-                        removeClass([element], dropDownBaseClasses.focus);
-                        const listEle: NodeListOf<Element> = element.parentElement.querySelectorAll('.' +
-                            dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')' + ':not(.' + DISABLED + ')');
-                        if (listEle.length > 0) {
-                            addClass([listEle[0]], dropDownBaseClasses.focus);
-                            this.updateAriaActiveDescendant();
-                        } else {
-                            //EJ2-57588 - for this task, we prevent the ul element cloning ( this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;)
-                            if (!(this.list && this.list.querySelectorAll('.' + dropDownBaseClasses.li).length > 0)) {
-                                this.l10nUpdate();
-                                addClass([this.list], dropDownBaseClasses.noData);
+                    element = this.findListElement(this.list, 'li', 'data-value', value);
+                    if (element) {
+                        addClass([element], className);
+                        if (this.hideSelectedItem && element.previousSibling
+                            && element.previousElementSibling.classList.contains(dropDownBaseClasses.group)
+                            && (!element.nextElementSibling ||
+                                element.nextElementSibling.classList.contains(dropDownBaseClasses.group))) {
+                            addClass([element.previousElementSibling], className);
+                        }
+                        if (this.hideSelectedItem && this.fields.groupBy && !element.previousElementSibling.classList.contains(HIDE_LIST)) {
+                            this.hideGroupItem(value);
+                        }
+                        if (this.hideSelectedItem && element.classList.contains(dropDownBaseClasses.focus)) {
+                            removeClass([element], dropDownBaseClasses.focus);
+                            const listEle: NodeListOf<Element> = element.parentElement.querySelectorAll('.' +
+                                dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')' + ':not(.' + DISABLED + ')');
+                            if (listEle.length > 0) {
+                                addClass([listEle[0]], dropDownBaseClasses.focus);
+                                this.updateAriaActiveDescendant();
+                            } else {
+                                //EJ2-57588 - for this task, we prevent the ul element cloning ( this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;)
+                                if (!(this.list && this.list.querySelectorAll('.' + dropDownBaseClasses.li).length > 0)) {
+                                    this.l10nUpdate();
+                                    addClass([this.list], dropDownBaseClasses.noData);
+                                }
                             }
                         }
-                    }
-                    element.setAttribute('aria-selected', 'true');
-                    if (this.mode === 'CheckBox' && element.classList.contains('e-active')) {
-                        const ariaValue: number = element.getElementsByClassName('e-check').length;
-                        if (ariaValue === 0) {
-                            const args: { [key: string]: Object | string } = {
-                                module: 'CheckBoxSelection',
-                                enable: this.mode === 'CheckBox',
-                                li: element,
-                                e: null
-                            };
-                            this.notify('updatelist', args);
+                        element.setAttribute('aria-selected', 'true');
+                        if (this.mode === 'CheckBox' && element.classList.contains('e-active')) {
+                            const ariaValue: number = element.getElementsByClassName('e-check').length;
+                            if (ariaValue === 0) {
+                                const args: { [key: string]: Object | string } = {
+                                    module: 'CheckBoxSelection',
+                                    enable: this.mode === 'CheckBox',
+                                    li: element,
+                                    e: null
+                                };
+                                this.notify('updatelist', args);
+                            }
                         }
                     }
                 }
@@ -2399,8 +2412,32 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updateAriaActiveDescendant(): void {
-        if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])) {
-            attributes(this.inputElement, { 'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id });
+        const activeItem: HTMLElement | null = !isNullOrUndefined(this.ulElement)
+            ? this.ulElement.getElementsByClassName('e-item-focus')[0] as HTMLElement
+            : null;
+
+        const filterInput: Element | null = this.allowFiltering && !isNullOrUndefined(this.popupWrapper)
+            ? this.popupWrapper.querySelector('.' + FILTERINPUT)
+            : null;
+
+        if (!isNullOrUndefined(activeItem) && this.isPopupOpen()) {
+            attributes(this.inputElement, {
+                'aria-activedescendant': activeItem.id
+            });
+
+            if (filterInput) {
+                attributes(filterInput, {
+                    'aria-activedescendant': activeItem.id
+                });
+            }
+        } else {
+            if (!isNullOrUndefined(this.inputElement)) {
+                this.inputElement.removeAttribute('aria-activedescendant');
+            }
+
+            if (filterInput) {
+                filterInput.removeAttribute('aria-activedescendant');
+            }
         }
     }
 
@@ -2556,6 +2593,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private showDelimWrapper(): void {
+        if (!this.value || !this.value.length) {
+            return;
+        }
         if (this.mode === 'CheckBox') {
             this.viewWrapper.style.display = '';
         } else {
@@ -3247,9 +3287,15 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.removeChipSelection();
                 this.addChipSelection(temp, e);
             }
-            const currentChip: string | number | boolean | object = this.allowObjectBinding ?
-                this.getDataByValue(this.getFormattedValue(selectedElem.getAttribute('data-value'))) :
-                selectedElem.getAttribute('data-value');
+            const isNullChip: boolean = selectedElem.classList.contains(NULL_CHIP);
+            let currentChip: string | number | boolean | object;
+            if (isNullChip) {
+                currentChip = null;
+            } else {
+                currentChip = this.allowObjectBinding ?
+                    this.getDataByValue(this.getFormattedValue(selectedElem.getAttribute('data-value'))) :
+                    selectedElem.getAttribute('data-value');
+            }
             this.removeValue(currentChip, e);
             this.updateDelimeter(this.delimiterChar, e);
             this.makeTextBoxEmpty();
@@ -3505,14 +3551,17 @@ export class MultiSelect extends DropDownBase implements IInput {
             const type: string = this.typeOfData(this.selectedListData).typeof as string;
             if (type === 'string' || type === 'number' || type === 'boolean') {
                 for (const item of this.selectedListData) {
-                    if (!isNullOrUndefined(item) && item === value as Object) {
+                    if (item === value || (isNullOrUndefined(item) && value === null)) {
                         return item;
                     }
                 }
             } else {
                 for (const item of this.selectedListData) {
-                    if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
-                        return item;
+                    if (item !== undefined) {
+                        const itemValue: any = getValue((this.fields.value ? this.fields.value : 'value'), item);
+                        if (itemValue === value || (isNullOrUndefined(itemValue) && value === null)) {
+                            return item;
+                        }
                     }
                 }
             }
@@ -3525,13 +3574,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.enabled && !this.readonly) {
             const element: HTMLElement = (<HTMLElement>e.target).parentElement;
-            const customVal: string | number | boolean = element.getAttribute('data-value');
-            let value: string | number | boolean | object = this.allowObjectBinding ? this.enableVirtualization ?
-                this.getVirtualDataByValue(this.getFormattedValue(customVal)) :
-                this.getDataByValue(this.getFormattedValue(customVal)) : this.getFormattedValue(customVal);
-            if (this.allowCustomValue && (( customVal !== 'false' && value === false ) ||
-            (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
-                value = customVal;
+            const isNullChip: boolean = element.classList.contains(NULL_CHIP);
+            let value: string | number | boolean | object;
+            if (isNullChip) {
+                value = null;
+            } else {
+                const customVal: string = element.getAttribute('data-value');
+                const formattedVal: string | number | boolean = this.getFormattedValue(customVal);
+                value = this.allowObjectBinding ? this.enableVirtualization ?
+                    this.getVirtualDataByValue(formattedVal) :
+                    this.getDataByValue(formattedVal) : formattedVal;
+                if (this.allowCustomValue && (( customVal !== 'false' && value === false ) ||
+                (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
+                    value = customVal;
+                }
             }
             if (this.isPopupOpen() && this.mode !== 'CheckBox') {
                 this.hidePopup(e);
@@ -3540,6 +3596,14 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.inputElement.focus();
             }
             this.removeValue(value, e);
+            if (!isNullChip) {
+                const findValue: string | number | boolean | object = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', value) : value;
+                if (isNullOrUndefined(this.findListElement(this.list, 'li', 'data-value', findValue as string)) &&
+                    this.mainList && this.listData) {
+                    const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
+                    this.onActionComplete(list, this.mainData);
+                }
+            }
             value = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', value) :  value;
             if (isNullOrUndefined(this.findListElement(this.list, 'li', 'data-value', value as string)) &&
                 this.mainList && this.listData) {
@@ -3622,8 +3686,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         eve: MouseEvent | KeyboardEventArgs,
         length?: number,
         isClearAll?: boolean): void {
-        let index: number = this.allowObjectBinding ? this.indexOfObjectInArray(value, this.value) :
-            (this.value as string[]).indexOf(this.getFormattedValue(<string>value) as string);
+        let index: number = -1;
+        if (value === null) {
+            index = (this.value as any[]).indexOf(null);
+        } else if (this.allowObjectBinding) {
+            index = this.indexOfObjectInArray(value, this.value);
+        } else {
+            const formattedValue: string | number | boolean = this.getFormattedValue(<string>value);
+            index = (this.value as string[]).indexOf(formattedValue as string);
+        }
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = this.allowObjectBinding ? this.indexOfObjectInArray(value, this.value) :
                 (this.value as string[]).indexOf(value.toString());
@@ -3691,14 +3762,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.selectedListData.splice(index, 1);
                     }
                     this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
-                    if (this.enableVirtualization) {
-                        const currentText: string = index === 0 && this.text.split(this.delimiterChar) &&
-                            this.text.split(this.delimiterChar).length === 1 ?
-                            this.text.replace(this.text.split(this.delimiterChar)[index as number], '') :
-                            index === 0 ? this.text.replace(this.text.split(this.delimiterChar)[index as number] +
-                                this.delimiterChar, '') :
-                                this.text.replace(this.delimiterChar + this.text.split(this.delimiterChar)[index as number], '');
-                        this.setProperties({ text: currentText.toString() }, true);
+                    if (this.enableVirtualization && !isNullOrUndefined(this.text)) {
+                        const textItems: string[] = this.text.split(this.delimiterChar);
+                        const currentText: string = index === 0 && textItems.length === 1
+                            ? this.text.replace(textItems[index as number], '') : index === 0 ? this.text.replace(textItems[index as number]
+                            + this.delimiterChar, '') : this.text.replace(this.delimiterChar + textItems[index as number], '');
+                        this.setProperties({ text: currentText }, true);
                     }
                     if (element !== null) {
                         const currentValue: string | number | boolean = this.allowObjectBinding ? getValue(((this.fields.value) ?
@@ -3809,7 +3878,12 @@ export class MultiSelect extends DropDownBase implements IInput {
     private removeChip(value: string | number | boolean, isClearAll? : boolean): void {
         if (this.chipCollectionWrapper) {
             if (!(this.enableVirtualization && isClearAll)) {
-                const element: HTMLElement = this.findListElement(this.chipCollectionWrapper, 'span', 'data-value', value);
+                let element: HTMLElement;
+                if (value === null) {
+                    element = this.chipCollectionWrapper.querySelector('span.' + NULL_CHIP) as HTMLElement;
+                } else {
+                    element = this.findListElement(this.chipCollectionWrapper, 'span', 'data-value', value);
+                }
                 if (element) {
                     remove(element);
                 }
@@ -3826,7 +3900,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updateChipStatus(): void {
-        if (this.value && this.value.length) {
+        const showChips: boolean = this.value && this.value.length && !this.isValueOnlyNull();
+        if (showChips) {
             if (!isNullOrUndefined(this.chipCollectionWrapper)) {
                 (this.chipCollectionWrapper.style.display = '');
             }
@@ -4060,10 +4135,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         data: string, value: string | number | boolean,
         e?: MouseEvent | KeyboardEventArgs): void {
         let itemData: { [key: string]: Object } | string | boolean | number = { text: value, value: value };
+        const isNullValue: boolean = value === null;
+        const chipAttrs: { [key: string]: string } = { 'title': data , 'role': 'option', 'aria-selected': 'true' };
+        if (isNullValue) {
+            chipAttrs['data-value'] = 'null';
+        } else {
+            chipAttrs['data-value'] = <string>value;
+        }
         const chip: HTMLElement = this.createElement('span', {
-            className: CHIP,
-            attrs: { 'data-value': <string>value, 'title': data , 'role': 'option', 'aria-selected': 'true' }
+            className: CHIP + (isNullValue ? ' ' + NULL_CHIP : ''),
+            attrs: chipAttrs
         });
+        if (isNullValue) {
+            addClass([chip], NULL_CHIP);
+        }
         let compiledString: Function;
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
         const chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE, attrs: { 'aria-hidden': 'true' } });
@@ -4091,7 +4176,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.renderReactTemplates();
         } else if (this.enableHtmlSanitizer) {
-            chipContent.innerText = data;
+            const displayText: string = (data === 'null' || data === 'undefined') ? 'null' : data;
+            chipContent.innerText = displayText;
         } else {
             chipContent.innerHTML = this.encodeHtmlEntities(data.toString());
         }
@@ -4682,6 +4768,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         });
         this.updatePopupHeightOnFilter();
+        this.updateAriaActiveDescendant();
     }
     protected search(e: KeyboardEventArgs): void {
         this.preventSetCurrentData = false;
@@ -4716,8 +4803,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.enableVirtualization) {
                     this.dataUpdater(this.dataSource, query, this.fields);
                 }
-                else{
-                    this.dataUpdater(this.mainData, query, this.fields);
+                else {
+                    const hasDataSource: boolean = this.dataSource instanceof DataManager ||
+                        ( Array.isArray(this.dataSource) && this.dataSource.length > 0 );
+                    this.dataUpdater( hasDataSource ? this.mainData : this.dataSource, query, this.fields);
                 }
                 this.UpdateSkeleton();
             } else {
@@ -4837,7 +4926,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.preventSetCurrentData = false;
         this.initializeData();
-        this.sanitizeData();
         this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
     }
@@ -4867,53 +4955,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             startIndex: 0,
             endIndex: this.itemCount
         };
-    }
-
-    private sanitizeData(): boolean {
-        if (this.enableVirtualization && this.mode === 'CheckBox') {
-            if (this.dataSource && Array.isArray(this.dataSource) && !(this.dataSource instanceof DataManager)) {
-                const cleanedDataSource: { [key: string]: Object }[] | string[] | number[] | boolean[] = [];
-                for (let i: number = 0; i < (this.dataSource as any[]).length; i++) {
-                    const item: any = (this.dataSource as any[])[i as number];
-                    if (item !== null && item !== undefined && item !== '') {
-                        if (typeof item === 'object') {
-                            const itemValue: any = getValue((this.fields.value ? this.fields.value : 'value'), item);
-                            if (this.fields.value !== null) {
-                                if (itemValue !== null && itemValue !== undefined && itemValue !== '') {
-                                    (cleanedDataSource as any[]).push(item);
-                                }
-                            } else{
-                                (cleanedDataSource as any[]).push(item);
-                            }
-                        } else if (typeof item === 'string') {
-                            if (item !== null && item !== undefined && item.trim() !== '') {
-                                (cleanedDataSource as any[]).push(item);
-                            }
-                        } else {
-                            (cleanedDataSource as any[]).push(item);
-                        }
-                    }
-                }
-                if (cleanedDataSource.length !== (this.dataSource as any[]).length) {
-                    this.setProperties({ dataSource: cleanedDataSource }, true);
-                }
-            }
-            if (this.value && Array.isArray(this.value) && this.value.length > 0) {
-                const cleanedValue: (string | number | boolean | object)[] = [];
-                for (let i: number = 0; i < this.value.length; i++) {
-                    const val: any = this.value[i as number];
-                    if (val !== null && val !== undefined && val !== '') {
-                        cleanedValue.push(val);
-                    }
-                }
-                if (cleanedValue.length !== this.value.length) {
-                    this.setProperties({ value: cleanedValue }, true);
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs, isInitialVirtualData?: boolean): void {
@@ -4963,7 +5004,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                             const value: string | number | boolean = this.allowObjectBinding ?
                                 getValue(((this.fields.value) ? this.fields.value : ''), this.value[this.value.length - 1]) :
                                 this.value[this.value.length - 1];
-                            if (this.isRemoveSelection) {
+                            if (value === null && this.value.length === 1) {
+                                break;
+                            }
+                            if (this.isRemoveSelection && this.text) {
                                 data = this.text.replace(/,/g, delimiterChar + ' ') + delimiterChar + ' ';
                                 text = this.text.split(delimiterChar);
                             } else {
@@ -5062,7 +5106,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
             isEmptyData = true;
         }
-        this.sanitizeData();
         super.render(null, isEmptyData);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
@@ -5097,6 +5140,18 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         return null;
     }
+    private isValueOnlyNull(): boolean {
+        if (!this.value || this.value.length === 0) {
+            return false;
+        }
+        return this.value.every((v: any) => v === null || v === undefined);
+    }
+    protected getTextByValue(value: string | number | boolean): string {
+        if (value === null || value === undefined) {
+            return 'null';
+        }
+        return super.getTextByValue(value);
+    }
     private initialValueUpdate(listItems?: any, isInitialVirtualData?: boolean, isInitialRender?: boolean): void {
         if (this.list) {
             let text: string;
@@ -5108,7 +5163,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.removeListSelection();
             const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
             if (!isNullOrUndefined(this.value)) {
-                for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
+                for (let index: number = 0; index < this.value.length; index++) {
+                    if (this.isValueOnlyNull()) {
+                        continue;
+                    }
                     value = this.allowObjectBinding ?
                         getValue(((this.fields.value) ? this.fields.value : ''), this.value[index as number]) :
                         this.value[index as number];
@@ -5166,9 +5224,14 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 (this.dataSource instanceof DataManager && isInitialVirtualData)
                             ) && (!this.isAngular || !isInitialRender ||
                             (isNullOrUndefined(formElement) && listItems && listItems.length > 0))
-                            && !(this.mode === 'CheckBox' && this.enableVirtualization && this.value.length > this.getSummaryTagThreshold())) {
+                            && !(this.mode === 'CheckBox' && this.enableVirtualization && this.value.length > this.getSummaryTagThreshold())
+                            && value !== null) {
                             this.value.splice(index, 1);
                             index -= 1;
+                        }
+                        if (value === null && isNullOrUndefined(text)) {
+                            text = this.getTextByValue(value);
+                            isCustomData = true;
                         }
                     }
                     else{
@@ -5180,21 +5243,24 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.listData = savedListData;
                         }
                     }
-                    if (((element && (element.getAttribute('aria-selected') !== 'true')) ||
+                    const shouldDisplayNull: boolean = (value === null && this.value.length > 1);
+                    const shouldProcessElement: boolean = ((element && (element.getAttribute('aria-selected') !== 'true')) ||
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
-                            (this.mode === 'Box' || this.mode === 'Default'))) ||
-                        (this.enableVirtualization && value != null && text != null && !isCustomData)) {
+                            (this.mode === 'Box' || this.mode === 'Default'))) || (this.enableVirtualization && (text != null ||
+                        shouldDisplayNull) && !isCustomData && (value != null || this.value.length > 1));
+                    if (shouldProcessElement) {
                         const currentText: string[] = [];
-                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' && index === 0 ? text : this.text != null && this.text !== '' && !(this.text as any).includes(text) ? this.text + this.delimiterChar + text : text;
+                        const displayText: string = value === null && (text === null || text === undefined) ? 'null' : text;
+                        const textValues: string = this.isDynamicRemoteVirtualData && displayText != null && displayText !== '' && index === 0 ? displayText : this.text != null && this.text !== '' && !(this.text as any).includes(displayText) ? this.text + this.delimiterChar + displayText : displayText;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
-                        this.addChip(text, value);
+                        this.addChip(displayText, value);
                         this.addListSelection(element);
                     } else if (
-                        (!this.enableVirtualization && value && this.allowCustomValue) ||
+                        (!this.enableVirtualization && (value || this.value.length > 1) && this.allowCustomValue) ||
                         (
                             this.enableVirtualization &&
-                            value &&
+                            (value || this.value.length > 1) &&
                             this.allowCustomValue &&
                             (
                                 (!(this.dataSource instanceof DataManager)) ||
@@ -5235,10 +5301,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.wireListEvents();
                         }
                         const currentText: string[] = [];
-                        const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
+                        const displayText: string = value === null && (text === null || text === undefined) ? 'null' : text;
+                        const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + displayText : displayText;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
-                        this.addChip(text, value);
+                        this.addChip(displayText, value);
                         this.addListSelection(element);
                     }
                 }
@@ -5309,11 +5376,13 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected updateListSelection(li: Element, e: MouseEvent | KeyboardEventArgs, length?: number): void {
         const customVal: string | number | boolean = li.getAttribute('data-value');
+        const actualVal: string | number | boolean | null = customVal === 'null' ? null : customVal;
         let value: string | number | boolean | object = this.allowObjectBinding ?
-            this.getDataByValue(this.getFormattedValue(customVal)) : this.getFormattedValue(customVal);
+            this.getDataByValue(this.getFormattedValue(actualVal as string))
+            : this.getFormattedValue(actualVal as string);
         if (this.allowCustomValue && ((customVal !== 'false' && value === false) ||
             (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
-            value = customVal;
+            value = actualVal;
         }
         this.removeHover();
         if (!this.value || ((!this.allowObjectBinding && (this.value as string[]).indexOf(value as string) === -1) ||
@@ -5948,7 +6017,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.checkClearIconWidth();
             if (!isNullOrUndefined(this.value) && (this.allowCustomValue || (this.listData && this.listData.length > 0))) {
-                for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
+                for (let index: number = 0; index < this.value.length; index++) {
+                    if (this.isValueOnlyNull()) {
+                        continue;
+                    }
                     const items: string[] = this.text && this.text.split(this.delimiterChar);
                     if (!this.enableVirtualization) {
                         data += (index === 0) ? '' : this.delimiterChar + ' ';
@@ -6343,7 +6415,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                                         : (this.fields.value ? obj[this.fields.value] : obj);
                                     const text: string = isPlainValue
                                         ? String(obj)
-                                        : (this.fields.text ? (obj[this.fields.text]).toString() : String(obj));
+                                        : (this.fields.text && obj[this.fields.text] != null ? (obj[this.fields.text]).toString()
+                                            : String(obj));
                                     if (this.value && value != null && Array.isArray(this.value) &&
                                         ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) ||
                                         (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
@@ -6995,7 +7068,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             switch (prop) {
             case 'query':
             case 'dataSource':
-                this.sanitizeData();
                 if (this.mode === 'CheckBox' && this.showSelectAll) {
                     if (!isNullOrUndefined(this.popupObj) && !this.isDimColumnWithCustomStyle()) {
                         this.popupObj.destroy();
@@ -7013,6 +7085,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.list.style.visibility = '';
                     }
                 }
+                this.updateAriaActiveDescendant();
                 break;
             case 'htmlAttributes': this.updateHTMLAttribute();
                 break;
@@ -7025,7 +7098,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.updateVal(this.value, this.value, 'text');
                 break;
             case 'value':
-                this.sanitizeData();
                 if (this.fields.disabled) {
                     this.removeDisabledItemsValue(this.value);
                 }
@@ -7464,8 +7536,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         const args: BeforeOpenEventArgs = { cancel: false };
-        const oldValue: any[] = extend([], this.value, [], true) as any[];
-        const oldData: any[] = extend([], this.dataSource, [], true) as any[];
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
             if (!args.cancel) {
                 if (!this.ulElement) {
@@ -7475,55 +7545,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     super.render(e);
                     if (this.inputElement && this.mode !== 'CheckBox') { this.focusIn(); }
-                    if (this.enableVirtualization && this.mode === 'CheckBox') {
-                        if (JSON.stringify(oldData) !== JSON.stringify(this.dataSource) && this.sanitizeData() && this.showSelectAll) {
-                            this.renderPopup();
-                        }
-                        if (!isNullOrUndefined(oldValue) && !isNullOrUndefined(this.value) &&
-                        JSON.stringify(oldValue) !== JSON.stringify(this.value) && this.sanitizeData()) {
-                            if (this.fields.disabled) {
-                                this.removeDisabledItemsValue(this.value);
-                            }
-                            if (!this.validateValues(this.value as string[] | number[] | boolean[] | object[], oldValue as string[]
-                            | number[] | boolean[] | object[])) {
-                                return;
-                            }
-                            if (this.isVue && !this.changeOnBlur && !this.validateValues(this.value as string[] | number[] | boolean[]
-                            | object[], oldValue as string[] | number[] | boolean[] | object[])) {
-                                return;
-                            }
-                            this.updateVal(this.value, oldValue, 'value', this.enableVirtualization);
-                            this.addValidInputClass();
-                            if (this.showSelectAll) {
-                                this.renderPopup();
-                                const totalCount: number = this.dataSource instanceof DataManager ? 0 :
-                                    (this.dataSource as object[]).length;
-                                const selectedCount: number = this.value ? this.value.length : 0;
-                                if (selectedCount === totalCount) {
-                                    let frame: Element = null;
-                                    if (this.popupObj) {
-                                        frame = this.popupObj.element.querySelector(
-                                            '.e-selectall-parent .e-frame'
-                                        );
-                                    }
-                                    if (frame) {
-                                        frame.classList.add('e-check');
-                                        frame.classList.remove('e-uncheck');
-                                        frame.classList.remove('e-stop');
-                                    }
-                                }
-                            }
-                            if (!this.closePopupOnSelect && this.isPopupOpen()) {
-                                this.refreshPopup();
-                            }
-                            if (this.isPopupOpen() && this.list && this.list.querySelector('.e-active.e-disable')) {
-                                const activeItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll(
-                                    'li.' + dropDownBaseClasses.li + '.e-active' + '.e-disable');
-                                removeClass(activeItems, 'e-disable');
-                            }
-                            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
-                        }
-                    }
                     return;
                 }
                 if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering && this.isDeviceFullScreen) {
@@ -7684,7 +7705,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line
             this.value = [...this.value as any];
         }
-        this.sanitizeData();
         this.setDynValue = this.initStatus = false;
         this.isSelectAll = false;
         this.selectAllEventEle = [];

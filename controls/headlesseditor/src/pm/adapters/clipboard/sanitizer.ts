@@ -1,281 +1,259 @@
 /**
- * Clipboard Sanitizer - Security-focused HTML sanitization for paste operations
+ * SanitizeHtmlHelper for sanitize the value.
  *
- * Removes dangerous markup while preserving extension-specific tags and attributes.
- * Uses a security-focused blocklist (not a feature whitelist) to maintain extensibility.
- *
- * @hidden
- * @internal
+ * Extracted from ej2-base/src/sanitize-helper.ts
  */
-export class ClipboardSanitizer {
-    /**
-     * Security-focused blocklist of dangerous tags that pose execution risks.
-     * All other tags are preserved to support extension-specific markup.
-     */
-    private readonly DANGEROUS_TAGS: string[] = [
-        'script',      // Executable code
-        'iframe',      // Sandboxed embedding / Frame injection
-        'embed',       // Plugin execution / Flash/plugin injection
-        'object',      // Plugin execution / Complex object injection
-        'link',        // Stylesheet injection / Resource loading manipulation
-        'meta',        // Metadata manipulation / Redirect injection
-        'base',        // Base URL hijacking / Navigation manipulation
-        'form',        // Form hijacking / CSRF attacks
-        'input',       // Form element injection / Credential capture
-        'button',      // Button hijacking / Click interception
-        'textarea',    // Form field injection
-        'select',      // Form field injection
-        'option',      // Form option injection
-        'datalist',    // Form data injection
-        'keygen',      // Deprecated but dangerous
-        'marquee',     // Deprecated but dangerous
-        'isindex',     // Deprecated but dangerous
-        'applet',      // Deprecated but dangerous
-        'noindex',     // SEO manipulation
-        'bgsound'     // Audio injection
-    ];
 
-    /**
-     * Security-focused blocklist of dangerous attributes (event handlers, protocols).
-     * These can execute code or trigger unwanted behaviors.
-     */
-    private readonly DANGEROUS_ATTRIBUTES: string[] = [
-        // Event handlers (execution vectors)
-        'onclick',
-        'onload',
-        'onerror',
-        'onmouseover',
-        'onmouseout',
-        'onmouseenter',
-        'onmouseleave',
-        'onmousedown',
-        'onmouseup',
-        'onkeydown',
-        'onkeyup',
-        'onkeypress',
-        'onchange',
-        'onsubmit',
-        'onfocus',
-        'onblur',
-        'ondblclick',
-        'onwheel',
-        'ontouchstart',
-        'ontouchend',
-        'ontouchmove',
-        'oncontextmenu',
-        'ondrag',
-        'ondrop',
-        'onpaste',
-        'oncopy',
-        'oncut',
-        'ontransitionend',
-        'onanimationend',
-        'onanimationstart',
-        'ontransitionstart',
-        // Data URI / Protocol handlers
-        'data',        // data: URIs in <object>
-        'archive',     // Archive in <applet>
-        'classid',     // Class ID in <object>
-        'codebase',    // Code base in <object> / <applet>
-        'code',        // Code in <applet>
-        'manifest'    // Manifest in <html>
-    ];
-
-    /**
-     * Patterns that detect dangerous attribute values (e.g., javascript: URIs).
-     */
-    private readonly DANGEROUS_PROTOCOLS: string[] = ['javascript:', 'data:', 'vbscript:'];
-
-    /**
-     * Sanitizes HTML by removing dangerous tags and attributes.
-     * Preserves extension-specific tags and attributes for compatibility.
+interface BeforeSanitizeHtml {
+    /** Illustrates whether the current action needs to be prevented or not. */
+    cancel?: boolean;
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
      *
-     * @param {string} html - The HTML content to sanitize
-     * @returns {string} Sanitized HTML safe for parsing
-     * @hidden
+     * @function
+     * @param {string} value - Returns the value.
+     * @returns {string}
      */
-    public sanitizeHTML(html: string): string {
-        if (!html || html.trim() === '') {
-            return html;
-        }
+    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+     *  Also possible to modify the block list in this event.
+     */
+    selectors?: SanitizeSelectors;
+}
 
-        // Parse HTML into DOM
-        const temp: HTMLElement = document.createElement('div');
-        temp.innerHTML = html;
+interface SanitizeSelectors {
+    /** Returns the tags. */
+    tags?: string[];
+    /** Returns the attributes. */
+    attributes?: SanitizeRemoveAttrs[];
+}
 
-        // Remove dangerous elements
-        this.removeDangerousElements(temp);
+interface SanitizeRemoveAttrs {
+    /** Defines the attribute name to sanitize */
+    attribute?: string;
+    /** Defines the selector that sanitize the specified attributes within the selector */
+    selector?: string;
+}
 
-        // Remove dangerous attributes from all elements
-        this.removeDangerousAttributes(temp);
+const removeTags: string[] = [
+    'script',
+    'style',
+    'iframe[src]',
+    'iframe[srcdoc]',
+    'link[href*="javascript:"]',
+    'object[type="text/x-scriptlet"]',
+    'object[data^="data:text/html;base64"]',
+    'img[src^="data:text/html;base64"]',
+    'img[src^="data:image/svg+xml"]',
+    '[src^="javascript:"]',
+    '[dynsrc^="javascript:"]',
+    '[lowsrc^="javascript:"]',
+    '[type^="application/x-shockwave-flash"]'
+];
 
-        // Remove dangerous attribute values (protocols)
-        this.removeDangerousAttributeValues(temp);
+const removeAttrs: SanitizeRemoveAttrs[] = [
+    { attribute: 'href', selector: '[href*="javascript:"]' },
+    { attribute: 'href', selector: 'a[href]' },
+    { attribute: 'background', selector: '[background^="javascript:"]' },
+    { attribute: 'style', selector: '[style*="javascript:"]' },
+    { attribute: 'style', selector: '[style*="expression("]' },
+    { attribute: 'href', selector: 'a[href^="data:text/html;base64"]' },
+    { attribute: 'src', selector: 'img[src^="data:image/svg+xml"]' }];
 
-        return temp.innerHTML;
+const jsEvents: string[] = ['onchange',
+    'onclick',
+    'onmouseover',
+    'onmouseout',
+    'onkeydown',
+    'onload',
+    'onerror',
+    'onblur',
+    'onfocus',
+    'onbeforeload',
+    'onbeforeunload',
+    'onkeyup',
+    'onsubmit',
+    'onafterprint',
+    'onbeforeonload',
+    'onbeforeprint',
+    'oncanplay',
+    'oncanplaythrough',
+    'oncontentvisibilityautostatechange',
+    'oncontextmenu',
+    'ondblclick',
+    'ondrag',
+    'ondragend',
+    'ondragenter',
+    'ondragleave',
+    'ondragover',
+    'ondragstart',
+    'ondrop',
+    'ondurationchange',
+    'onemptied',
+    'onended',
+    'onformchange',
+    'onforminput',
+    'onhaschange',
+    'oninput',
+    'oninvalid',
+    'onkeypress',
+    'onloadeddata',
+    'onloadedmetadata',
+    'onloadstart',
+    'onmessage',
+    'onmousedown',
+    'onmousemove',
+    'onmouseup',
+    'onmousewheel',
+    'onoffline',
+    'onoine',
+    'ononline',
+    'onpagehide',
+    'onpageshow',
+    'onpause',
+    'onplay',
+    'onplaying',
+    'onpopstate',
+    'onprogress',
+    'onratechange',
+    'onreadystatechange',
+    'onredo',
+    'onresize',
+    'onscroll',
+    'onseeked',
+    'onseeking',
+    'onselect',
+    'onstalled',
+    'onstorage',
+    'onsuspend',
+    'ontimeupdate',
+    'onundo',
+    'onunload',
+    'onvolumechange',
+    'onwaiting',
+    'onmouseenter',
+    'onmouseleave',
+    'onstart',
+    'onpropertychange',
+    'oncopy',
+    'ontoggle',
+    'onpointerout',
+    'onpointermove',
+    'onpointerleave',
+    'onpointerenter',
+    'onpointerrawupdate',
+    'onpointerover',
+    'onbeforecopy',
+    'onbeforecut',
+    'onbeforeinput'
+];
+export class SanitizeHtmlHelper {
+    public static removeAttrs: SanitizeRemoveAttrs[];
+    public static removeTags: string[];
+    public static wrapElement: HTMLElement;
+    public static beforeSanitize(): BeforeSanitizeHtml {
+        return {
+            selectors: {
+                tags: removeTags,
+                attributes: removeAttrs
+            }
+        };
+    }
+    public static sanitize(value: string): string {
+        if (!(value)) { return value; }
+        const item: BeforeSanitizeHtml = this.beforeSanitize();
+        const output: string = this.serializeValue(item, value);
+        return output;
     }
 
-    /**
-     * Removes elements that are known to be security threats.
-     * Preserves content inside (unwraps) unless the tag itself is being removed.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {void}
-     * @hidden
-     */
-    private removeDangerousElements(container: HTMLElement): void {
-        // Collect all dangerous elements
-        for (const tagName of this.DANGEROUS_TAGS) {
-            const elements: HTMLCollectionOf<Element> = container.getElementsByTagName(tagName);
+    public static serializeValue(item: BeforeSanitizeHtml, value: string): string {
+        this.removeAttrs = item.selectors.attributes;
+        this.removeTags = item.selectors.tags;
+        this.wrapElement = document.createElement('div');
+        this.wrapElement.innerHTML = value;
+        this.removeXssTags();
+        this.removeJsEvents();
+        this.removeXssAttrs();
+        const tempEleValue: string = this.wrapElement.innerHTML;
+        this.removeElement();
+        this.wrapElement = null;
+        return tempEleValue.replace(/&amp;/g, '&');
+    }
 
-            // Process in reverse to avoid index issues
-            for (let i: number = elements.length - 1; i >= 0; i--) {
-                // eslint-disable-next-line security/detect-object-injection
-                const element: Element = elements[i];
+    private static removeElement(): void {
+        // Removes an element's attibute to avoid html tag validation
+        const nodes: HTMLCollection = this.wrapElement.children;
+        for (let j: number = 0; j < nodes.length; j++) {
+            const attribute: NamedNodeMap = nodes[parseInt(j.toString(), 10)].attributes;
+            for (let i: number = 0; i < attribute.length; i++) {
+                this.wrapElement.children[parseInt(j.toString(), 10)].removeAttribute(attribute[parseInt(i.toString(), 10)].localName);
+            }
+        }
+    }
 
-                // For <link>, <meta>, <base>, <form> — remove entirely (no content to preserve)
-                if (['link', 'meta', 'base', 'form'].indexOf(tagName) > -1) {
-                    element.parentNode?.removeChild(element);
+    private static removeXssTags(): void {
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
+        if (elements.length > 0) {
+            elements.forEach((element: Element) => {
+                element.parentElement.removeChild(element);
+            });
+        } else {
+            return;
+        }
+    }
+
+    private static removeJsEvents(): void {
+        const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
+        if (elements.length > 0) {
+            elements.forEach((element: Element) => {
+                jsEvents.forEach((attr: string) => {
+                    if (element.hasAttribute(attr)) {
+                        element.removeAttribute(attr);
+                    }
+                });
+            });
+        } else {
+            return;
+        }
+    }
+
+    private static removeXssAttrs(): void {
+        this.removeAttrs.forEach((item: { [key: string]: string }) => {
+            const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
+            if (elements.length > 0) {
+                if (item.selector === 'a[href]') {
+                    elements.forEach((element: Element) => {
+                        if ((element.getAttribute(item.attribute)).replace(/\t|\s|&/, '').indexOf('javascript:alert') !== -1) {
+                            element.removeAttribute(item.attribute);
+                        }
+                    });
                 } else {
-                    // For <script>, <iframe>, <embed>, <object> — remove and unwrap content
-                    while (element.firstChild) {
-                        element.parentNode?.insertBefore(element.firstChild, element);
-                    }
-                    element.parentNode?.removeChild(element);
+                    elements.forEach((element: Element) => {
+                        element.removeAttribute(item.attribute);
+                    });
                 }
             }
-        }
+        });
     }
+}
 
-    /**
-     * Removes dangerous attributes from all elements in the container.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {void}
-     * @hidden
-     */
-    private removeDangerousAttributes(container: HTMLElement): void {
-        // Get all elements in the container (including container itself)
-        const allElements: HTMLCollectionOf<Element> = container.getElementsByTagName('*');
-
-        for (let i: number = 0; i < allElements.length; i++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const element: Element = allElements[i];
-
-            // Remove each dangerous attribute
-            for (const attrName of this.DANGEROUS_ATTRIBUTES) {
-                if (element.hasAttribute(attrName)) {
-                    element.removeAttribute(attrName);
-                }
-            }
-        }
+/**
+ * Sanitizes clipboard HTML before it is parsed by ProseMirror.
+ *
+ * This is the Headless security boundary — non-overridable, always-on.
+ * It runs as the first stage of the composed `transformPastedHTML` hook,
+ * ahead of any product-supplied `transformHTML`, so products cannot
+ * bypass it. It strips XSS vectors (script tags, event-handler
+ * attributes, `javascript:`/`vbscript:` URLs, `data:text/html`, and
+ * `data:image/svg+xml` which can execute script) while preserving
+ * semantic content and raster `data:image/*` URLs that image paste
+ * relies on.
+ *
+ * @param {string} html - Raw clipboard HTML.
+ * @returns {string} Sanitized HTML safe to feed into ProseMirror's parser.
+ * @hidden
+ */
+export function sanitizeClipboardHTML(html: string): string {
+    if (!html) {
+        return html;
     }
-
-    /**
-     * Removes dangerous protocol values from attributes (e.g., javascript: URIs).
-     * Checks href, src, and action attributes for dangerous protocols.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {void}
-     * @hidden
-     */
-    private removeDangerousAttributeValues(container: HTMLElement): void {
-        // Attributes that can contain dangerous protocols
-        const protocolAttributes: string[] = ['href', 'src', 'action', 'data', 'srcset', 'poster'];
-
-        const allElements: HTMLCollectionOf<Element> = container.getElementsByTagName('*');
-
-        for (let i: number = 0; i < allElements.length; i++) {
-            // eslint-disable-next-line security/detect-object-injection
-            const element: Element = allElements[i];
-
-            for (const attrName of protocolAttributes) {
-                if (element.hasAttribute(attrName)) {
-                    const attrValue: string = element.getAttribute(attrName) || '';
-
-                    // Check if attribute value contains dangerous protocol
-                    const hasDangerousProtocol: boolean = this.DANGEROUS_PROTOCOLS.some((protocol: string) =>
-                        attrValue.toLowerCase().startsWith(protocol)
-                    );
-
-                    if (hasDangerousProtocol) {
-                        element.removeAttribute(attrName);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes Apple-specific line break elements used in clipboard data.
-     * These are temporary formatting markers that should not persist in the document.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {HTMLElement} The processed container
-     * @hidden
-     */
-    public removeAppleInterchangeNewlines(container: HTMLElement): HTMLElement {
-        const appleElements: NodeListOf<HTMLElement> = container.querySelectorAll('br.Apple-interchange-newline');
-
-        for (let i: number = appleElements.length - 1; i >= 0; i--) {
-            // eslint-disable-next-line security/detect-object-injection
-            const element: HTMLElement = appleElements[i];
-            element.parentNode?.removeChild(element);
-        }
-
-        return container;
-    }
-
-    /**
-     * Removes comments from HTML.
-     * Comments can contain sensitive information or exploits.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {HTMLElement} The processed container
-     * @hidden
-     */
-    public removeComments(container: HTMLElement): HTMLElement {
-        const walker: TreeWalker = document.createTreeWalker(
-            container,
-            NodeFilter.SHOW_COMMENT,
-            null
-        );
-
-        const commentsToRemove: Node[] = [];
-        let node: Node | null;
-
-        // eslint-disable-next-line no-cond-assign
-        while ((node = walker.nextNode())) {
-            commentsToRemove.push(node);
-        }
-
-        // Remove collected comments
-        for (const comment of commentsToRemove) {
-            comment.parentNode?.removeChild(comment);
-        }
-
-        return container;
-    }
-
-    /**
-     * Cleans up empty meta tags from HTML content.
-     * Empty meta tags contribute to bloat without providing value.
-     *
-     * @param {HTMLElement} container - Container element to process
-     * @returns {HTMLElement} The processed container
-     * @hidden
-     */
-    public removeEmptyMetaTags(container: HTMLElement): HTMLElement {
-        const metaTags: NodeListOf<HTMLMetaElement> = container.querySelectorAll('meta');
-
-        for (let i: number = metaTags.length - 1; i >= 0; i--) {
-            // eslint-disable-next-line security/detect-object-injection
-            const metaTag: HTMLMetaElement = metaTags[i];
-            if (metaTag.textContent === '' && !metaTag.hasAttribute('name') && !metaTag.hasAttribute('property')) {
-                metaTag.parentNode?.removeChild(metaTag);
-            }
-        }
-
-        return container;
-    }
+    return SanitizeHtmlHelper.sanitize(html);
 }

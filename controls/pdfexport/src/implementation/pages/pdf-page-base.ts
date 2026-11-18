@@ -5,7 +5,6 @@ import { PdfArray } from './../primitives/pdf-array';
 import { PointF, SizeF } from './../drawing/pdf-drawing';
 import { PdfPageLayerCollection } from './pdf-page-layer-collection';
 import { PdfPageLayer } from './pdf-page-layer';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
 import { PdfResources } from './../graphics/pdf-resources';
 import { PdfSection } from './pdf-section';
@@ -43,12 +42,6 @@ export abstract class PdfPageBase implements IPdfWrapper {
      * @private
      */
     private resources : PdfResources;
-    /**
-     * Instance of `DictionaryProperties` class.
-     * @hidden
-     * @private
-     */
-    protected dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Specifies the current `section`.
      * @hidden
@@ -121,7 +114,7 @@ export abstract class PdfPageBase implements IPdfWrapper {
     public getResources() : PdfResources {
         if (this.resources == null) {
             this.resources = new PdfResources();
-            this.dictionary.items.setValue(this.dictionaryProperties.resources, this.resources);
+            this.dictionary.items.setValue('Resources', this.resources);
         }
         return this.resources;
     }
@@ -130,12 +123,12 @@ export abstract class PdfPageBase implements IPdfWrapper {
      * @private
      */
     public get contents(): PdfArray {
-        let obj : IPdfPrimitive = this.pageDictionary.items.getValue(this.dictionaryProperties.contents);
+        let obj : IPdfPrimitive = this.pageDictionary.items.getValue('Contents');
         let contents : PdfArray = obj as PdfArray;
         let rh : PdfReferenceHolder = obj as PdfReferenceHolder;
         if (contents == null) {
             contents = new PdfArray();
-            this.pageDictionary.items.setValue(this.dictionaryProperties.contents, contents);
+            this.pageDictionary.items.setValue('Contents', contents);
         }
         return contents;
     }
@@ -157,7 +150,7 @@ export abstract class PdfPageBase implements IPdfWrapper {
      */
     public setResources(res : PdfResources) : void {
         this.resources = res;
-        this.dictionary.items.setValue(this.dictionaryProperties.resources, this.resources);
+        this.dictionary.items.setValue('Resources', this.resources);
         this.modified = true;
     }
     /**

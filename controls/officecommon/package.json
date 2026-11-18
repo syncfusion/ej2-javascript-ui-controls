@@ -1,0 +1,47 @@
+{
+	"name": "@syncfusion/ej2-office-common",
+	"version": "35.1.37",
+	"description": "The EJ2 Office Common library provides shared OOXML codecs and domain models used across EJ2 Office JavaScript libraries.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-office-common.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-office-common.es5.js",
+	"typings": "index.d.ts",
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.15",
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-office-common",
+		"javascript",
+		"typescript",
+		"ooxml",
+		"document-processing"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/office-common"
+	}
+}

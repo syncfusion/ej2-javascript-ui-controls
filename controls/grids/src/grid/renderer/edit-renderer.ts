@@ -13,7 +13,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { IModelGenerator, ICellRenderer } from '../base/interface';
 import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
-import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn, padZero } from '../base/util';
+import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn, padZero, getParsedFieldID } from '../base/util';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
 import { VirtualContentRenderer } from './virtual-content-renderer';
@@ -92,7 +92,7 @@ export class EditRender {
             }
             // eslint-disable-next-line
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
-            cell = form.querySelector('[data-mappinguid=' + col.uid + ']') as HTMLElement;
+            cell = form.querySelector('[data-mappinguid=' + getParsedFieldID(col.uid) + ']') as HTMLElement;
             let temp: Function = col.edit.write as Function;
             if (!isNullOrUndefined(cell)) {
                 if (typeof temp === 'string') {

@@ -11,6 +11,10 @@ import { LinkSettingsModel } from '../model/link-settings-model';
 import { BaseQuickToolbar } from '../../base/renderer/base-quick-toolbar';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 
+// eslint-disable-next-line valid-jsdoc, jsdoc/require-param
+/**
+ * @private
+ */
 export class LinkModule {
 
     public serviceLocator: ServiceLocator;
@@ -282,6 +286,9 @@ export class LinkModule {
     }
 
     private renderLinkDialog(_args?: LinkEventArgs): void {
+        if (this.parent.quickToolbarModule) {
+            this.parent.quickToolbarModule.hideQuickToolbars(true);
+        }
         if (this.linkSettingsDirty) {
             this.linkSettings = this.getLinkSettingsOrDefaults();
             this.selectedProtocol = this.linkSettings.defaultProtocol;
@@ -293,12 +300,14 @@ export class LinkModule {
             this.destroyLinkDialog();
             return;
         }
+        const range: Range = this.parent.inputElement.ownerDocument.getSelection().getRangeAt(0);
+        const selectText: string = range.toString();
         this.isLinkDialogOpen = false;
         const linkElement: HTMLAnchorElement | null = this.selectedLinkElement(_args.selection);
         _args.element = linkElement;
         this.editingLinkElement = linkElement;
         const linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
-        const linkDisplayText: string = this.i10n.getConstant('linkText');
+        let linkDisplayText: string = this.i10n.getConstant('linkText');
         const linkTooltip: string = this.i10n.getConstant('linkTooltipLabel');
         const urlPlace: string = this.i10n.getConstant('linkurl');
         const textPlace: string = this.i10n.getConstant('textPlaceholder');
@@ -348,6 +357,10 @@ export class LinkModule {
                 buttonModel: { cssClass: 'e-flat' + this.parent.getCssClass(true), content: linkCancel }
             }]
         });
+        const textInput: HTMLInputElement = this.dialogModel.element.querySelector('.e-rte-ui-linkText') as HTMLInputElement;
+        if (range && !range.collapsed && selectText) {
+            textInput.value = selectText
+        }
         this.dialogModel.show();
         this.checkBoxObj = new CheckBox({
             label: linkOpenLabel, checked: false, enableRtl: this.parent.enableRtl,
@@ -561,7 +574,9 @@ export class LinkModule {
     private cancelDialog(e: LinkEventArgs): void {
         this.destroyLinkDialog();
         // Return focus to editor
-        (this.parent.inputElement as HTMLElement).focus();
+        if (this.parent.inputElement) {
+            this.parent.inputElement.focus({ preventScroll: true });
+        }
     }
 
     /**

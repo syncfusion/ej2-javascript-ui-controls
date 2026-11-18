@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### Diagram
+
+#### New Features
+
+- Provided support for physical ruler measurement units through the `rulerSettings.measurementUnit` property, grid and snap alignment to the ruler through `snapSettings.alignToRulerUnit`, and unit conversion through the `convertUnit` method.
+
+## 35.1.39 (2026-10-07)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#875480` - Fixed the invalid array length exception and diagram freeze during loading caused by a circular parent chain loop in line routing.
+
 ## 32.1.19 (2025-12-16)
 
 ### Diagram

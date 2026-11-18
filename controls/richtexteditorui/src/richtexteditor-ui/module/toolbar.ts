@@ -30,6 +30,8 @@ import { KeyBindingRegistry } from './keybindings';
  * Toolbar integration for RichTextEditor.
  *
  * Handles toolbar rendering, updates, and cleanup.
+ *
+ * @private
  */
 export class ToolbarModule extends BaseModule implements IToolbar {
     public getModuleName(): string {
@@ -83,7 +85,7 @@ export class ToolbarModule extends BaseModule implements IToolbar {
             element: toolbarEl,
             items: (this.parent.toolbarSettings && this.parent.toolbarSettings.items) ?
                 this.parent.toolbarSettings.items : DEFAULT_TOOLBAR_ITEMS as ToolbarItem[],
-            type: this.parent.toolbarSettings ? this.parent.toolbarSettings.type : 'Scrollable',
+            type: this.parent.toolbarSettings ? this.parent.toolbarSettings.type : 'Auto',
             controller: this.buildCommandExecutor(),
             rteInstance: this.parent,
             localeObj: this.parent.localeObj,

@@ -22,3 +22,7 @@ export const CLS_RTL: string = 'e-rtl';
  */
 export const CLS_RTE_UI: string = 'e-richtexteditor-ui';
 
+/**
+ * @hidden
+ */
+export const CLS_FOCUS: string = 'e-focused';

@@ -22,12 +22,12 @@ import { _PdfMergeHelper } from './pdf-merge';
 import { PdfPageImportOptions } from './pdf-page-import-options';
 import { PdfLayerCollection } from './layers/layer-collection';
 import { PdfSection } from './pdf-section';
-import { PdfDocumentInformation } from './pdf-document-information';
+import { PdfDocumentInformation, Rectangle, Size, PdfDocumentTemplate, PdfSecurityOptions, PdfAnnotationExportSettings, PdfFormFieldExportSettings, PdfPageSettings, PdfMargins, PdfDocumentSplitEventArgs } from './pdf-document-helper';
 import { _PdfFontMetrics } from './fonts/pdf-font-metrics';
 import { _UnicodeTrueTypeFont } from './fonts/unicode-true-type-font';
 import { _MD5 } from './security/encryptors/messageDigest5';
 import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
-import { Rectangle, Size, PdfDocumentTemplate, PdfSecurityOptions } from './pdf-type';
+import { PdfAttachmentCollection } from './attachments/pdf-attachment';
 import { initializeTelemetry, initializeTelemetryFeature, validateLicense } from '@syncfusion/ej2-base';
 import { PdfUriAnnotation } from './annotations/annotation';
 import { _LineInfo, _PdfStringLayouter, _PdfStringLayoutResult } from './fonts/string-layouter';
@@ -41,6 +41,7 @@ import { _PdfStreamWriter } from './graphics/pdf-stream-writer';
 import { PdfTemplate } from './graphics/pdf-template';
 import { _PdfDecryptStream } from './decrypt-stream';
 import { _PdfEncryptor } from './security/encryptor';
+import { PdfDocumentActions } from './actions/pdf-document-actions';
 /**
  * Represents a PDF document and can be used to parse an existing PDF document.
  * ```typescript
@@ -123,6 +124,10 @@ export class PdfDocument {
      * @private
      */
     _namedDestinationCollection: _PdfNamedDestinationCollection;
+    /**
+     * @private
+     */
+    private _attachments: PdfAttachmentCollection;
     /**
      * Indicates whether the source document is encrypted.
      *
@@ -291,6 +296,7 @@ export class PdfDocument {
      * @private
      */
     _allowDeepParsingFromPages: boolean = false;
+    private _actions: PdfDocumentActions;
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
@@ -542,6 +548,18 @@ export class PdfDocument {
         return startXRef;
     }
     /**
+     * Gets a lazy-initialized attachment collection for this document.
+     *
+     * @private
+     * @returns {PdfAttachmentCollection} The collection.
+     */
+    get _attachmentCollection(): PdfAttachmentCollection {
+        if (!this._attachments) {
+            this._attachments = new PdfAttachmentCollection(this._crossReference);
+        }
+        return this._attachments;
+    }
+    /**
      * Gets a value indicating whether the document is encrypted. (Read Only).
      *
      * @returns {boolean} A boolean value indicates whether the document is encrypted.
@@ -653,6 +671,25 @@ export class PdfDocument {
      */
     set flatten(value: boolean) {
         this._flatten = value;
+    }
+    /**
+     * Gets the collection of attachments embedded in the PDF document.
+     *
+     * @returns {PdfAttachmentCollection} The attachment collection of the document.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the attachments embedded in the document
+     * let attachments: PdfAttachmentCollection = document.attachments;
+     * // Get the attachment count
+     * let count: number = attachments.count;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get attachments(): PdfAttachmentCollection {
+        return this._attachmentCollection;
     }
     /**
      * Decompresses PDF stream bytes if they are compressed with a filter.
@@ -837,6 +874,32 @@ export class PdfDocument {
             this._template = {};
         }
         return this._template;
+    }
+    /**
+     * Gets the actions associated with the document events.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * document.addPage();
+     * document.addPage();
+     * // Get the document actions
+     * let actions: PdfDocumentActions = document.actions;
+     * // Create and assign an action to the document open event
+     * let action: PdfNamedAction = new PdfNamedAction(PdfActionDestination.LastPage);
+     * actions.afterOpen = action;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfDocumentActions} The actions associated with the document events.
+     */
+    public get actions(): PdfDocumentActions {
+        if (!this._actions) {
+            this._actions = new PdfDocumentActions(this._catalog);
+        }
+        return this._actions;
     }
     /**
      * Gets an array of revision numbers for the PDF document.
@@ -2842,6 +2905,9 @@ export class PdfDocument {
         this._doPostProcessOnAnnotations(isFlatten);
         this._addXmpMetadata();
         this._renderDocumentTemplates(PdfTemplateLayerMode.foreground);
+        if (this._attachments) {
+            this._attachments._serialize();
+        }
     }
     /**
      * Adds XMP metadata stream to the PDF document catalog.
@@ -4423,1037 +4489,34 @@ export class PdfDocument {
     get _hasTemplateContentValue(): boolean {
         return this._hasTemplateContent();
     }
-}
-/**
- * Represents annotation export settings.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Sets export data format as JSON type to annotation export settings
- * let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
- * // Set the data format defined in annotation export settings
- * settings.dataFormat = DataFormat.json;
- * // Export annotations to JSON format
- * let json: Uint8Array = document.exportAnnotations(settings);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class PdfAnnotationExportSettings {
-    /**
-     * @private
-     */
-    _format: DataFormat = DataFormat.xfdf;
-    _exportAppearance: boolean = false;
-    /**
-     * Gets the data format defined in annotation export settings.
-     *
-     * @returns {DataFormat} - Returns the data format.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Sets export data format as JSON type to annotation export settings
-     * let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
-     * // Export annotations to JSON format
-     * let json: Uint8Array = document.exportAnnotations(settings);
-     * // Get the data format defined in annotation export settings
-     * let dataFormat: DataFormat = settings.dataFormat;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get dataFormat(): DataFormat {
-        return this._format;
-    }
-    /**
-     * Sets the data format defined in annotation export settings.
-     *
-     * @param {DataFormat} format - Specifies the data format.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Sets export data format as JSON type to annotation export settings
-     * let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
-     * // Set the data format defined in annotation export settings
-     * settings.dataFormat = DataFormat.json;
-     * // Export annotations to JSON format
-     * let json: Uint8Array = document.exportAnnotations(settings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set dataFormat(format: DataFormat) {
-        this._format = format;
-    }
-    /**
-     * Gets the boolean value indicating whether the appearance of a particular object can be exported or not.
-     *
-     * @returns {boolean} - Returns the boolean value.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Sets the annotation export settings with enabled export appearance.
-     * let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
-     * // Export annotations to XFDF format
-     * let xfdf: Uint8Array = document.exportAnnotations(settings);
-     * // Get the boolean value indicating whether the appearance of a particular object can be exported or not
-     * let appearance: boolean = settings.exportAppearance;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get exportAppearance(): boolean {
-        return this._exportAppearance;
-    }
-    /**
-     * Sets the boolean value indicating whether the appearance of a particular object can be exported or not.
-     *
-     * @param {boolean} value - The boolean value.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Sets the annotation export settings with enabled export appearance.
-     * let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
-     * // Set the boolean value indicating whether the appearance of a particular object can be exported or not
-     * settings.exportAppearance = true;
-     * // Export annotations to XFDF format
-     * let xfdf: Uint8Array = document.exportAnnotations(settings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set exportAppearance(value: boolean) {
-        this._exportAppearance = value;
-    }
-}
-/**
- * Represents form fields export settings.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * // Sets the form field data export settings with output data format.
- * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
- * // Set the data format defined in form field export settings.
- * settings.dataFormat = DataFormat.json;
- * // Export form field to JSON format
- * let json: Uint8Array = document.exportFormData(settings);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class PdfFormFieldExportSettings {
-    /**
-     * @private
-     */
-    _format: DataFormat = DataFormat.xfdf;
-    /**
-     * @private
-     */
-    _exportName: string = '';
-    /**
-     * @private
-     */
-    _asPerSpecification: boolean = true;
-    /**
-     * Gets the data format defined in form field export settings.
-     *
-     * @returns {DataFormat} - Returns the data format.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the form field data export settings with output data format.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Get the data format defined in form field export settings
-     * let dataFormat: DataFormat = settings.dataFormat;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get dataFormat(): DataFormat {
-        return this._format;
-    }
-    /**
-     * Sets the data format defined in form field export settings.
-     *
-     * @param {DataFormat} format - Specifies the data format.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the form field data export settings with output data format.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Set the data format defined in form field export settings.
-     * settings.dataFormat = DataFormat.json;
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set dataFormat(format: DataFormat) {
-        this._format = format;
-    }
-    /**
-     * Gets the export name defined in form field export settings.
-     *
-     * @returns {string} - Returns the string value.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the form field data export settings with export name.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Get the export name defined in form field export settings
-     * let name: boolean = settings.exportName;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get exportName(): string {
-        return this._exportName;
-    }
-    /**
-     * Sets the export name defined in form field export settings.
-     *
-     * @param {string} name - Specifies the export name of the form.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the form field data export settings with export name.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Set the export name defined in form field export settings.
-     * settings.exportName = 'JobApplication'.
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set exportName(name: string) {
-        this._exportName = name;
-    }
-    /**
-     * Gets the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     *
-     * @returns {boolean} - Returns the boolean value.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Get the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     * let asPerSpecification: boolean = settings.asPerSpecification;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get asPerSpecification(): boolean {
-        return this._asPerSpecification;
-    }
-    /**
-     * Sets the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     *
-     * @param {boolean} value - The boolean value.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Sets the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
-     * // Set the boolean value indicating whether the data in a form field can be exported based on a certain specification.
-     * settings.asPerSpecification = true;
-     * // Export form field to JSON format
-     * let json: Uint8Array = document.exportFormData(settings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set asPerSpecification(value: boolean) {
-        this._asPerSpecification = value;
-    }
-}
-/**
- * The class provides various settings related to PDF pages.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Create a new PDF page settings instance
- * let pageSettings: PdfPageSettings = new PdfPageSettings();
- * // Sets the margins
- * pageSettings.margins = new PdfMargins(40);
- * // Sets the page size
- * pageSettings.size = {width: 595, height: 842};
- * // Sets the page orientation
- * pageSettings.orientation = PdfPageOrientation.landscape;
- * // Add a new PDF page with page settings
- * page = document.addPage(pageSettings);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class PdfPageSettings {
-    _orientation: PdfPageOrientation ;
-    /**
-     * @private
-     */
-    _size: Size = {width: 595, height: 842};
-    /**
-     * @private
-     */
-    _isOrientation: boolean = false;
-    /**
-     * @private
-     */
-    _margins: PdfMargins;
-    /**
-     * @private
-     */
-    _rotation: PdfRotationAngle;
-    /**
-     * Initializes a new instance of the `PdfPageSettings` class
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * pageSettings.margins = new PdfMargins(40);
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor()
-    /**
-     * Initializes a new instance of the `PdfPageSettings` class.
-     *
-     * @param {object} [options] Optional settings to initialize the page.
-     * @param {PdfPageOrientation} [options.orientation] Page orientation.
-     * @param {Size} [options.size] Page size.
-     * @param {PdfMargins} [options.margins] Page margins.
-     * @param {PdfRotationAngle} [options.rotation] Page rotation angle.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings with custom options
-     * let pageSettings = new PdfPageSettings({
-     *   orientation: PdfPageOrientation.landscape,
-     *   size: { width: 842, height: 595 },
-     *   margins: new PdfMargins(40),
-     *   rotation: PdfRotationAngle.angle90
-     * });
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor(options: {orientation?: PdfPageOrientation, size?: Size, margins?: PdfMargins, rotation?: PdfRotationAngle})
-    /**
-     * Initializes a new instance of the `PdfPageSettings` class.
-     *
-     * @param {object} [options] Optional settings to initialize the page.
-     * @param {PdfPageOrientation} [options.orientation] Page orientation.
-     * @param {Size} [options.size] Page size.
-     * @param {PdfMargins} [options.margins] Page margins.
-     * @param {PdfRotationAngle} [options.rotation] Page rotation angle.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings with custom options
-     * let pageSettings = new PdfPageSettings({
-     *   orientation: PdfPageOrientation.landscape,
-     *   size: { width: 842, height: 595 },
-     *   margins: new PdfMargins(40),
-     *   rotation: PdfRotationAngle.angle90
-     * });
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor(options?: {orientation?: PdfPageOrientation, size?: Size, margins?: PdfMargins, rotation?: PdfRotationAngle})
-    {
-        if (options && 'orientation' in options && options.orientation !== null && typeof options.orientation !== 'undefined') {
-            this.orientation = options.orientation;
-        } else {
-            this._orientation = PdfPageOrientation.portrait;
+    _copyInteractiveContent(sourcePage: PdfPage, destinationPage: PdfPage): void {
+        if (!sourcePage || !destinationPage) {
+            return;
         }
-        if (options && 'size' in options && options.size !== null && typeof options.size !== 'undefined') {
-            this.size = options.size;
-        } else {
-            this._size = {width: 595, height: 842};
+        const sourceDocument: PdfDocument = sourcePage._crossReference._document;
+        if (!sourceDocument || sourceDocument === this) {
+            return;
         }
-        if (options && 'margins' in options && options.margins !== null && typeof options.margins !== 'undefined') {
-            this.margins = options.margins;
-        } else {
-            this._margins = new PdfMargins();
+        if (!sourceDocument._uniqueID) {
+            sourceDocument._uniqueID = _getNewGuidString();
         }
-        if (options && 'rotation' in options && options.rotation !== null && typeof options.rotation !== 'undefined') {
-            this.rotation = options.rotation;
-        } else {
-            this._rotation = PdfRotationAngle.angle0;
+        const importKey: string = sourceDocument._uniqueID + '_' + sourcePage._pageIndex.toString();
+        if (destinationPage._importedInteractiveContent.has(importKey)) {
+            return;
         }
-    }
-    /**
-     * Gets the orientation of the page.
-     *
-     * @returns {PdfPageOrientation} The orientation.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the page size
-     * pageSettings.size = {width: 842, height: 595};
-     * // Gets the page orientation
-     * let orientation: PdfPageOrientation = pageSettings.orientation;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get orientation(): PdfPageOrientation {
-        return this._orientation;
-    }
-    /**
-     * Sets the orientation of the page.
-     *
-     * @param {PdfPageOrientation} value The orientation.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set orientation(value: PdfPageOrientation) {
-        this._isOrientation = true;
-        if (this._orientation !== value) {
-            this._orientation = value;
-            this._updateSize(value);
-        }
-    }
-    /**
-     * Gets the size of the page.
-     *
-     * @returns {Size} The width and height of the page as number array.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the width and height of the PDF page as number array
-     * let size: Size = page.size;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get size(): Size {
-        return this._size;
-    }
-    /**
-     * Sets the width and height of the page.
-     *
-     * @param {Size} value The width and height of the page as number array.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set size(value: Size) {
-        if (this._isOrientation) {
-            this._updateSize(value);
-        } else {
-            this._size = value;
-            this._updateOrientation();
-        }
-    }
-    /**
-     * Gets the margin value of the page.
-     *
-     * @returns {PdfMargins} PDF margins
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the margins
-     * let margins: PdfMargins = pageSettings.margins;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get margins(): PdfMargins {
-        return this._margins;
-    }
-    /**
-     * Sets the margin value of the page.
-     *
-     * @param {PdfMargins} value PDF margins
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * pageSettings.margins = new PdfMargins(40);
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set margins(value: PdfMargins) {
-        this._margins = value;
-    }
-    /**
-     * Gets the rotation angle of the PDF page.
-     *
-     * @returns {PdfRotationAngle} PDF rotation angle
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the rotation angle
-     * let rotation: PdfRotationAngle = pageSettings.rotation;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get rotation(): PdfRotationAngle {
-        return this._rotation;
-    }
-    /**
-     * Sets the rotation angle of the PDF page.
-     *
-     * @param {PdfRotationAngle} value PDF rotation angle
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the rotation angle
-     * pageSettings.rotation = PdfRotationAngle.angle90;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set rotation(value: PdfRotationAngle) {
-        this._rotation = value;
-        if (value >= 4) {
-            this._rotation = (value % 4) as PdfRotationAngle;
-        }
-    }
-    /**
-     * Updates the page size based on the specified dimensions while respecting the current orientation.
-     *
-     * @private
-     * @param {Size} size Page size with `width` and `height`.
-     * @returns {void} nothing.
-     */
-    _updateSize(size: Size): void
-    /**
-     * Updates the page size by applying the specified orientation to the current size.
-     *
-     * @private
-     * @param {PdfPageOrientation} orientation Page orientation to apply.
-     * @returns {void} nothing.
-     */
-    _updateSize(orientation: PdfPageOrientation): void
-    /**
-     * Updates the page size using either a `Size` object or a `PdfPageOrientation`, normalizing width/height accordingly.
-     *
-     * @private
-     * @param {Size | PdfPageOrientation} value The target size or orientation.
-     * @returns {void} nothing.
-     */
-    _updateSize(value: Size | PdfPageOrientation): void {
-        let pageOrientation: PdfPageOrientation;
-        let pageSize: Size;
-        if (typeof value !== 'number' && 'width' in value && 'height' in value && typeof value.width !== 'undefined' && typeof value.height !== 'undefined') {
-            pageOrientation = this.orientation;
-            pageSize = value;
-        } else {
-            pageOrientation = value as PdfPageOrientation;
-            pageSize = this._size;
-        }
-        if (pageOrientation === PdfPageOrientation.portrait) {
-            this._size = {width: Math.min(pageSize.width, pageSize.height), height: Math.max(pageSize.width, pageSize.height)};
-        } else {
-            this._size = {width: Math.max(pageSize.width, pageSize.height), height: Math.min(pageSize.width, pageSize.height)};
-        }
-    }
-    /**
-     * Recomputes the page orientation from the current size (portrait if height ≥ width; otherwise landscape).
-     *
-     * @private
-     * @returns {void} nothing.
-     */
-    _updateOrientation(): void {
-        this._orientation = (this._size.height >= this._size.width) ? PdfPageOrientation.portrait : PdfPageOrientation.landscape;
-    }
-    /**
-     * Computes the drawable content size by subtracting margins from the page size.
-     *
-     * @private
-     * @returns {number[]} A two-element array.
-     */
-    _getActualSize(): number[] {
-        const width: number = this._size.width - (this._margins._left + this._margins._right);
-        const height: number = this._size.height - (this._margins._top + this._margins._bottom);
-        return [width, height];
-    }
-}
-/**
- * A class representing PDF page margins.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Create a new PDF page settings instance
- * let pageSettings: PdfPageSettings = new PdfPageSettings();
- * // Sets the margins
- * pageSettings.margins = new PdfMargins(40);
- * // Sets the page size
- * pageSettings.size = {width: 595, height: 842};
- * // Sets the page orientation
- * pageSettings.orientation = PdfPageOrientation.landscape;
- * // Add a new PDF page with page settings
- * page = document.addPage(pageSettings);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class PdfMargins {
-    /**
-     * Left margin value in points.
-     *
-     * @private
-     */
-    _left: number;
-    /**
-     * Right margin value in points.
-     *
-     * @private
-     */
-    _right: number;
-    /**
-     * Top margin value in points.
-     *
-     * @private
-     */
-    _top: number;
-    /**
-     * Bottom margin value in points.
-     *
-     * @private
-     */
-    _bottom: number;
-    /**
-     * Initializes a new instance of the `PdfMargins` class.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * pageSettings.margins = new PdfMargins(40);
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor()
-    /**
-     * Initializes a new instance with specified margin values for each page side.
-     *
-     * @param {number} all The margin value for each side of the page.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * pageSettings.margins = new PdfMargins(40);
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor(all: number)
-    public constructor(all?: number) {
-        if (typeof all === 'undefined') {
-            this._left = this._right = this._top = this._bottom = 40;
-        } else {
-            this._left = this._right = this._top = this._bottom = all;
-        }
-    }
-    /**
-     * Gets the left margin value of the page.
-     *
-     * @returns {number} Left margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the left margin
-     * let left: number = pageSettings.margins.left;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get left(): number {
-        return this._left;
-    }
-    /**
-     * Sets the left margin value of the page.
-     *
-     * @param {number} value Left margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * let margins: PdfMargins = new PdfMargins();
-     * margins.left = 40;
-     * margins.right = 40;
-     * margins.top = 20;
-     * margins.bottom = 20;
-     * pageSettings.margins = margins;
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set left(value: number) {
-        this._left = value;
-    }
-    /**
-     * Gets the right margin value of the page.
-     *
-     * @returns {number} Right margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the right margin
-     * let right: number = pageSettings.margins.right;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get right(): number {
-        return this._right;
-    }
-    /**
-     * Sets the right margin value of the page.
-     *
-     * @param {number} value - Right margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * let margins: PdfMargins = new PdfMargins();
-     * margins.left = 40;
-     * margins.right = 40;
-     * margins.top = 20;
-     * margins.bottom = 20;
-     * pageSettings.margins = margins;
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set right(value: number) {
-        this._right = value;
-    }
-    /**
-     * Gets the top margin value of the page.
-     *
-     * @returns {number} Top margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the top margin
-     * let top: number = pageSettings.margins.top;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get top(): number {
-        return this._top;
-    }
-    /**
-     *Sets the top margin value of the page.
-     *
-     * @param {number} value Top margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * let margins: PdfMargins = new PdfMargins();
-     * margins.left = 40;
-     * margins.right = 40;
-     * margins.top = 20;
-     * margins.bottom = 20;
-     * pageSettings.margins = margins;
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set top(value: number) {
-        this._top = value;
-    }
-    /**
-     * Get the bottom margin value of the page.
-     *
-     * @returns {number} Bottom margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Gets the bottom margin
-     * let bottom: number = pageSettings.margins.bottom;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get bottom(): number {
-        return this._bottom;
-    }
-    /**
-     * Sets the bottom margin value of the page.
-     *
-     * @param {number} value Bottom margin.
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Create a new PDF page settings instance
-     * let pageSettings: PdfPageSettings = new PdfPageSettings();
-     * // Sets the margins
-     * let margins: PdfMargins = new PdfMargins();
-     * margins.left = 40;
-     * margins.right = 40;
-     * margins.top = 20;
-     * margins.bottom = 20;
-     * pageSettings.margins = margins;
-     * // Sets the page size
-     * pageSettings.size = {width: 595, height: 842};
-     * // Sets the page orientation
-     * pageSettings.orientation = PdfPageOrientation.landscape;
-     * // Add a new PDF page with page settings
-     * page = document.addPage(pageSettings);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    set bottom(value: number) {
-        this._bottom = value;
-    }
-}
-/**
- * Public class to provide data for the document split event, including the split index and PDF data.
- *
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * document.splitEvent = documentSplitEvent;
- * // Split PDF document by fixed number of pages
- * document.splitByFixedNumber(1);
- * // Event to invoke while splitting PDF document data
- * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
- *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
- * }
- * // Destroy the document
- * document.destroy();
- */
-export class PdfDocumentSplitEventArgs {
-    private _index: number;
-    private _pdfData: Uint8Array;
-    /*
-     * Initializes a new instance of the `PdfDocumentSplitEventArgs` class.
-     *
-     * @param {number} splitIndex The fixed number to split PDF document pages. The default value is 1.
-     * @param {Uint8Array} pdfData The byte array of the split PDF document data.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * document.splitEvent = documentSplitEvent;
-     * // Split PDF document by fixed number of pages
-     * document.splitByFixedNumber(1);
-     * // Event to invoke while splitting PDF document data
-     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
-     * }
-     * // Destroy the document
-     * document.destroy();
-     */
-    constructor(splitIndex: number, pdfData: Uint8Array) {
-        this._index = splitIndex;
-        this._pdfData = pdfData;
-    }
-    /*
-     * Gets the byte array of the PDF document data.
-     *
-     * @returns {Uint8Array} The byte array of the PDF document data.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * document.splitEvent = documentSplitEvent;
-     * // Split PDF document by fixed number of pages
-     * document.splitByFixedNumber(1);
-     * // Event to invoke while splitting PDF document data
-     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
-     * }
-     * // Destroy the document
-     * document.destroy();
-     */
-    get pdfData(): Uint8Array {
-        return this._pdfData;
-    }
-    /*
-     * Gets the split index of the PDF document.
-     *
-     * @returns {Uint8Array} The index that defines the number of event calls during the PDF document split.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * document.splitEvent = documentSplitEvent;
-     * // Split PDF document by fixed number of pages
-     * document.splitByFixedNumber(1);
-     * // Event to invoke while splitting PDF document data
-     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
-     * }
-     * // Destroy the document
-     * document.destroy();
-     */
-    get index(): number {
-        return this._index;
+        const pageReference: Map<_PdfDictionary, PdfPage> = new Map<_PdfDictionary, PdfPage>();
+        pageReference.set(sourcePage._pageDictionary, destinationPage);
+        const options: PdfPageImportOptions = new PdfPageImportOptions();
+        const helper: _PdfMergeHelper = new _PdfMergeHelper(
+            this._crossReference,
+            this,
+            sourceDocument,
+            pageReference,
+            options
+        );
+        helper._importInteractiveContent(sourcePage, destinationPage);
+        helper._fixDestinations(sourceDocument);
+        helper._objectDispose();
+        destinationPage._importedInteractiveContent.add(importKey);
     }
 }

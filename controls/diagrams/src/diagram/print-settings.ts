@@ -918,40 +918,49 @@ export class PrintAndExport {
             const oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
                 container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
             const bounds: Rect = this.getDiagramBounds('', {});
-            this.diagram.scroller.zoom((1 / oldZoom));
-            let scrollX: number = 0;
-            let scrollY: number = 0;
-            scrollX = bounds.x;
-            scrollY = bounds.y;
-            this.diagram.scroller.transform = {
-                tx: -scrollX,
-                ty: -scrollY,
-                scale: this.diagram.scroller.currentZoom
-            };
-            this.diagram.scroller.horizontalOffset = -scrollX;
-            this.diagram.scroller.verticalOffset = -scrollY;
-            this.diagram.scroller.setSize();
-            this.diagram.setSize(bounds.width, bounds.height);
-            const htmlData: string = this.getContent(styleSheets);
-            this.diagram.setSize(oldWidth, oldHeight);
-            this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
-            this.diagram.dataBind();
-            if (scrollerX || scrollerY) {
-                this.diagram.setOffset(scrollerX, scrollerY);
-            } else {
+            const wasViewportRestrictionBypassed: boolean = this.diagram.scroller.bypassViewportRestriction;
+            this.diagram.scroller.bypassViewportRestriction = true;
+            try {
+                this.diagram.scroller.zoom((1 / oldZoom));
+                let scrollX: number = 0;
+                let scrollY: number = 0;
+                scrollX = bounds.x;
+                scrollY = bounds.y;
                 this.diagram.scroller.transform = {
-                    tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
-                    ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                    tx: -scrollX,
+                    ty: -scrollY,
                     scale: this.diagram.scroller.currentZoom
                 };
-                this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
-                this.diagram.scroller.verticalOffset = oldVerticalOffset;
+                this.diagram.scroller.horizontalOffset = -scrollX;
+                this.diagram.scroller.verticalOffset = -scrollY;
+                this.diagram.scroller.setSize();
+                this.diagram.setSize(bounds.width, bounds.height);
+                const htmlData: string = this.getContent(styleSheets);
+                this.diagram.setSize(oldWidth, oldHeight);
+                this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
+                this.diagram.dataBind();
+                if (scrollerX || scrollerY) {
+                    this.diagram.setOffset(scrollerX, scrollerY);
+                } else {
+                    this.diagram.scroller.transform = {
+                        tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
+                        ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                        scale: this.diagram.scroller.currentZoom
+                    };
+                    this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
+                    this.diagram.scroller.verticalOffset = oldVerticalOffset;
+                }
+                this.diagram.renderSelector(false);
+                /* tslint:disable */
+                // eslint-disable-next-line quotes
+                return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+                /* tsdlint:enable */
+            } finally {
+                this.diagram.scroller.bypassViewportRestriction = wasViewportRestrictionBypassed;
+                if (this.diagram.scrollSettings.restrictNegativeAxis && !wasViewportRestrictionBypassed) {
+                    this.diagram.scroller.enforceViewportRestriction();
+                }
             }
-            this.diagram.renderSelector(false);
-            /* tslint:disable */
-            // eslint-disable-next-line quotes
-            return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
-            /* tslint:enable */
         }
     }
 

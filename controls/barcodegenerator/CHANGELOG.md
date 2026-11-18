@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 35.1.40 (2026-10-13)
+
+### Barcode
+
+#### Features
+
+- Added the `PDF417Generator` component for rendering PDF417 barcodes (ISO/IEC 15438), including Compact PDF417.
+    - Automatic Text, Numeric and Byte compaction, or a fixed mode through `compactionMode`. Non-ASCII values are encoded as UTF-8 with an ECI designator.
+    - Error correction levels 0-8 through `errorCorrectionLevel`, defaulting to the level recommended for the data length.
+    - Row height relative to the module width through `rowHeightRatio` (minimum 3, as required by ISO/IEC 15438).
+    - Rows (3-90) and columns (1-30) are calculated automatically to give the largest module size that fits the component, or can be set through `rows` and `columns`.
+    - SVG and Canvas rendering, `foreColor`, `backgroundColor`, `margin`, `displayText`, image export, localization and `role`/`aria-label` attributes.
+    - The `invalid` event reports invalid values, rows, columns, error correction levels, sizes and values that exceed the symbol capacity.
+
+### Barcode
+
+#### Bug Fixes
+
+- `#I877780` - Fixed QR code scanning failures caused by incorrect error correction codeword generation.
+
 ## 32.1.19 (2025-12-16)
 
 ### Barcode

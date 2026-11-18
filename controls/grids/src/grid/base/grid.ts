@@ -5,10 +5,10 @@ import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPro
 import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
 import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor, Predicate as DataPredicate } from '@syncfusion/ej2-data';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { createSpinner, hideSpinner, showSpinner, Tooltip, DialogModel } from '@syncfusion/ej2-popups';
+import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { RuleModel, QueryBuilderModel } from '@syncfusion/ej2-querybuilder';
 import { FormulaSettingsModel, GridModel, ResizeSettingsModel, GridWebMcpSettingsModel } from './grid-model';
-import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData, getScrollBarWidth, setEnableSeamlessScrolling } from './util';
+import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData, getScrollBarWidth, setEnableSeamlessScrolling, getParsedFieldID  } from './util';
 import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberFormat, getTransformValues } from './util';
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
@@ -29,6 +29,7 @@ import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEve
 import { DetailExpandCollapseArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
 import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';
+import { FindMatch, FindChangeEventArgs, FindNavigateEventArgs } from './interface';
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
@@ -60,6 +61,8 @@ import { Page } from '../actions/page';
 import { Selection } from '../actions/selection';
 import { Filter } from '../actions/filter';
 import { Search } from '../actions/search';
+import { Find } from '../actions/find';
+import { FindSettings, FindSettingsModel } from './find-settings';
 import { Resize } from '../actions/resize';
 import { Reorder } from '../actions/reorder';
 import { RowDD } from '../actions/row-reorder';
@@ -367,6 +370,14 @@ export class InfiniteScrollSettings extends ChildProperty<InfiniteScrollSettings
      */
     @Property(3)
     public initialBlocks: number;
+
+    /**
+     * Enables infinite scrolling without requiring a total record count from the server.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableCountLessMode: boolean;
 }
 
 /**
@@ -660,6 +671,22 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
  */
 export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
+     * Defines when toolbar search is performed. `Default` preserves explicit search actions;
+     * `Immediate` searches automatically after the user stops typing.
+     *
+     * @default 'Default'
+     */
+    @Property('Default')
+    public mode: 'Default' | 'Immediate';
+    /**
+     * Specifies the delay in milliseconds before searching in `Immediate` mode.
+     *
+     * @default 1500
+     */
+    @Property(1500)
+    public immediateModeDelay: number;
+
+    /**
      * Specifies the collection of fields included in search operation. By default, bounded columns of the Grid are included.
      *
      * @default []
@@ -772,6 +799,14 @@ export class ResizeSettings extends ChildProperty<ResizeSettings> {
      */
     @Property('Normal')
     public mode: ResizeMode;
+
+    /**
+     * Defines the number of pixels a column is resized by each time the `Alt + Left Arrow` or `Alt + Right Arrow` key is pressed.
+     *
+     * @default 2
+     */
+    @Property(2)
+    public resizeStep: number;
 }
 
 /**
@@ -1177,6 +1212,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property([])
     public currentViewData: Object[];
+    /**
+     * @hidden
+     */
+    public isLastRecordLoaded: boolean = false;
     /** @hidden */
     /**
      * Gets the parent Grid details.
@@ -1281,6 +1320,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isExportGrid: boolean = false;
     /** @hidden */
     public isWidgetsDestroyed: boolean = false;
+    /** @hidden */
+    public columnTemplateIDs: string[] = [];
 
     //Module Declarations
     /**
@@ -1348,6 +1389,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public searchModule: Search;
     /**
+     * The `findModule` locates and highlights cell text without filtering records.
+     */
+    public findModule: Find;
+    /**
      * The `scrollModule` is used to manipulate scrolling in the Grid.
      */
     public scrollModule: Scroll;
@@ -1408,6 +1453,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * The `editModule` is used to handle Grid content manipulation.
      */
     public editModule: Edit;
+
     /**
      * The `formulaModule` is used to manage formula parsing, evaluation, and caching in the Grid.
      *
@@ -1564,6 +1610,28 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public allowPaging: boolean;
 
     /**
+     * If `enableCache` is set to true with a custom-binding data source (`{ result, count }`),
+     * the Grid caches each resolved `dataStateChange` page. Revisiting the same skip, take,
+     * sort, filter, search, and group state resolves from the cache and does not raise
+     * `dataStateChange` again. The cache is cleared when sorting, filtering, searching, or
+     * grouping changes, and after add, edit, or delete.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableCache: boolean;
+
+    /**
+     * Defines the maximum number of cache objects (pages or blocks) stored when `enableCache` is enabled
+     * with a custom-binding data source. When the limit is exceeded, the oldest cached object is removed
+     * and the current one is added.
+     *
+     * @default 5
+     */
+    @Property(5)
+    public cacheLimit: number;
+
+    /**
      * Configures the pager in the Grid.
      * {% codeBlock src='grid/pageSettings/index.md' %}{% endcodeBlock %}
      *
@@ -1626,6 +1694,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
     public searchSettings: SearchSettingsModel;
+
+    /**
+     * Configures Find. Find highlights and navigates occurrences and does not filter records.
+     *
+     * @default { key: '', fields: [], caseSensitive: false, currentPageOnly: false }
+     */
+    @Complex<FindSettingsModel>({}, FindSettings)
+    public findSettings: FindSettingsModel;
 
     /**
      * If `allowSorting` is set to true, it allows sorting of grid records when column header is clicked.
@@ -1737,7 +1813,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @default true
      */
     @Property(true)
-    public allowSelection: boolean;
+    public allowSelection: boolean
+
+    /**
+     * If `allowTextSelection` is set to true, it allows selection of text in rendered data cells using native browser text selection.
+     * When enabled, users can select and copy text from cell content without triggering Grid row/cell selection.
+     * {% codeBlock src='grid/allowTextSelection/index.md' %}{% endcodeBlock %}
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowTextSelection: boolean;
 
     /**
      * The `selectedRowIndex` allows you to select a row at initial rendering.
@@ -2405,6 +2491,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Receives the row object and must return the height of that row in pixels.
      * Takes priority over the static `rowHeight` property, but is superseded by
      * `domVirtualizationSettings.autoRowHeight: true` (DOM measurement).
+     *
      * @default null
      * @example
      * const grid = new Grid({
@@ -2434,6 +2521,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
     /* eslint-disable */
+    /**
+     * Triggers when the Find query, active occurrence, or result count changes.
+     * The event is informational and is not a cancellable data-query event.
+     *
+     * @event findChange
+     */
+    @Event()
+    public findChange: EmitType<FindChangeEventArgs>;
+    /**
+     * Triggers after a successful Find navigation changes the active occurrence.
+     *
+     * @event findNavigate
+     */
+    @Event()
+    public findNavigate: EmitType<FindNavigateEventArgs>;
+
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
      * 
@@ -2768,6 +2871,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after expanding the detail row.
      * This event allows to perform customize actions after the detail row is expanded.
+     *
      * @event detailExpanded
      */
     @Event()
@@ -2776,6 +2880,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after collapsing the detail row.
      * This event allows to perform customize actions after the detail row is collapsed.
+     *
      * @event detailCollapsed
      */
     @Event()
@@ -3190,13 +3295,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['pageSettings', 'sortSettings',
-            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'scrollPosition'];
+            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'findSettings', 'selectedRowIndex', 'scrollPosition'];
         const ignoreOnPersist: { [x: string]: string[] } = {
             pageSettings: ['template', 'pageSizes', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent'],
             groupSettings: ['showDropArea', 'showToggleButton', 'showGroupedColumn', 'showUngroupButton',
                 'disablePageWiseAggregates', 'hideCaptionCount'],
             searchSettings: ['fields', 'operator', 'ignoreCase'],
+            findSettings: ['fields', 'caseSensitive', 'currentPageOnly'],
             sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         for (let i: number = 0; i < keyEntity.length; i++) {
@@ -3292,6 +3398,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 member: 'selection',
                 args: [this, this.selectionSettings, this.serviceLocator],
                 name: 'Selection'
+            });
+        }
+        if (this.ensureModuleInjected(Find)) {
+            modules.push({
+                member: 'find',
+                args: [this],
+                name: 'Find'
             });
         }
         if (this.resizeCheck()) {
@@ -3516,6 +3629,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             Wordexport: 'Word Export',
             Csvexport: 'CSV Export',
             Search: 'Search',
+            Find: 'Find',
+            FindNext: 'Next match',
+            FindPrevious: 'Previous match',
+            FindClear: 'Clear find',
             Columnchooser: 'Columns',
             Save: 'Save',
             Item: 'item',
@@ -3685,6 +3802,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             ctrlSpace: 'ctrl+space',
             ctrlLeftArrow: 'ctrl+leftarrow',
             ctrlRightArrow: 'ctrl+rightarrow',
+            altLeftArrow: 'alt+leftarrow',
+            altRightArrow: 'alt+rightarrow',
             ctrlPlusZ: 'ctrl+Z',
             ctrlPlusY: 'ctrl+Y',
             cmdPlusZ: 'cmd+Z',
@@ -3913,7 +4032,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.footerContentMaskTable = this.createMaskTable(footerContent, this.getContentMaskColumns(), axisDirection);
             }
         }
-        if (!(this.enableVirtualization && axisDirection)) {
+        if (!(this.enableVirtualization && axisDirection) || this.isRowDomVirtualization()) {
             EventHandler.add(gridContent, 'scroll', this.translateMaskRow, this);
         }
     }
@@ -4447,7 +4566,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.innerHTML = '';
         }
         const modules: string[] = ['renderModule', 'headerModule', 'contentModule', 'valueFormatterService',
-            'serviceLocator', 'ariaService', 'keyboardModule', 'widthService', 'searchModule', 'showHider',
+            'serviceLocator', 'ariaService', 'keyboardModule', 'widthService', 'searchModule', 'findModule', 'showHider',
             'scrollModule', 'printModule', 'clipboardModule', 'focusModule', 'editModule'];
         for (let i: number = 0; i < modules.length; i++) {
             if (this[modules[parseInt(i.toString(), 10)]]) {
@@ -4476,6 +4595,93 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     protected getModuleName(): string {
         return 'grid';
+    }
+
+    /**
+     * Highlights occurrences of the given text without filtering records.
+     * An empty string clears the query, highlights, and active occurrence.
+     *
+     * @param {string} searchString - Find text. Spaces are not trimmed and numeric text is not normalized.
+     * @returns {void}
+     */
+    public find(searchString: string): void {
+        if (this.findModule) {
+            this.findModule.find(searchString);
+        }
+    }
+
+    /**
+     * Moves to the next Find occurrence, wrapping from the last match to the first.
+     *
+     * @returns {void}
+     */
+    public findNext(): void {
+        if (this.findModule) {
+            this.findModule.findNext();
+        }
+    }
+
+    /**
+     * Moves to the previous Find occurrence, wrapping from the first match to the last.
+     *
+     * @returns {void}
+     */
+    public findPrevious(): void {
+        if (this.findModule) {
+            this.findModule.findPrevious();
+        }
+    }
+
+    /**
+     * Moves to a 1-based Find occurrence. Out-of-range values do not change the active occurrence.
+     *
+     * @param {number} matchNumber - 1-based occurrence index.
+     * @returns {void}
+     */
+    public goToMatch(matchNumber: number): void {
+        if (this.findModule) {
+            this.findModule.goToMatch(matchNumber);
+        }
+    }
+
+    /**
+     * Clears the active Find occurrence without clearing the query or highlights.
+     *
+     * @returns {void}
+     */
+    public clearActiveMatch(): void {
+        if (this.findModule) {
+            this.findModule.clearActiveMatch();
+        }
+    }
+
+    /**
+     * Clears the Find query, highlights, and active occurrence. Does not change Search or filters.
+     *
+     * @returns {void}
+     */
+    public clearFind(): void {
+        if (this.findModule) {
+            this.findModule.clearFind();
+        }
+    }
+
+    /**
+     * Returns the number of Find occurrences in the supported client-enumerable result set.
+     *
+     * @returns {number} occurrence count
+     */
+    public getTotalMatches(): number {
+        return this.findModule ? this.findModule.getTotalMatches() : 0;
+    }
+
+    /**
+     * Returns the active Find occurrence, or null when none is active.
+     *
+     * @returns {FindMatch} active occurrence
+     */
+    public getActiveMatch(): FindMatch {
+        return this.findModule ? this.findModule.getActiveMatch() : null;
     }
 
     private enableBoxSelection(): void {
@@ -4591,6 +4797,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.uiUpdate, { module: 'selection', enable: this.allowSelection });
                 this.renderModule.refresh();
                 break;
+            case 'allowTextSelection':
+                if (this.allowTextSelection) {
+                    this.element.classList.remove('e-disableuserselect');
+                } else {
+                    this.element.classList.add('e-disableuserselect');
+                }
+                break;
             case 'cssClass':
                 this.setCSSClass(oldProp.cssClass);
                 break;
@@ -4626,13 +4839,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             case 'enableInfiniteScrolling':
             case 'childGrid':
                 requireRefresh = true;
-                childGridParent = this.parentDetails ? document.querySelector(`#${this.parentDetails.parentID}`) : null;
+                childGridParent = this.parentDetails ? document.querySelector(`#${getParsedFieldID(this.parentDetails.parentID)}`) : null;
                 parentInstance = childGridParent ? (childGridParent as EJ2Intance).ej2_instances[0] : null;
                 if (this.childGrid  && parentInstance && isNullOrUndefined(parentInstance.childGrid.childGrid)) {
                     const childGridObject: GridModel = Object.assign({}, parentInstance.childGrid, { childGrid: newProp.childGrid });
                     parentInstance.setProperties({ childGrid: childGridObject }, true);
                     while (!isNullOrUndefined(parentInstance.parentDetails)) {
-                        const currentParent: Element = document.querySelector(`#${parentInstance.parentDetails.parentID}`);
+                        const currentParent: Element = document.querySelector(`#${getParsedFieldID(parentInstance.parentDetails.parentID)}`);
                         const currentParentInstance: IGrid = currentParent ? (currentParent as EJ2Intance).ej2_instances[0] : null;
                         if (currentParentInstance) {
                             const currentChildObject: GridModel = Object.assign({}, currentParentInstance.childGrid);
@@ -4788,6 +5001,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.notify(events.inBoundModelChanged, { module: 'filter', properties: newProp.filterSettings }); break;
         case 'searchSettings':
             this.notify(events.inBoundModelChanged, { module: 'search', properties: newProp.searchSettings }); break;
+        case 'findSettings':
+            this.notify(events.inBoundModelChanged, { module: 'find', properties: newProp.findSettings }); break;
         case 'sortSettings':
             this.notify(events.inBoundModelChanged, { module: 'sort' }); break;
         case 'selectionSettings':
@@ -4853,6 +5068,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         this.dataSource[props[parseInt(i.toString(), 10)]]);
                 }
             } else if (requestPendingState.isPending) {
+                const dataModule: Data = this.getDataModule();
+                dataModule.storePendingCustomBindingCache(this.dataSource);
                 let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
                 const names: string[] = (requestPendingState.group || []);
                 if (names.length && !this.groupSettings.enableLazyLoading && !((gResult as Object[]).length && gResult[0].field)) {
@@ -5247,7 +5464,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} - Returns the element
      */
     public getHeaderContent(): Element {
-        return this.headerModule.getPanel();
+        return this.headerModule ? this.headerModule.getPanel() : null;
     }
 
     /**
@@ -5258,6 +5475,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setGridHeaderContent(element: Element): void {
+        if (!this.headerModule) { return; }
         this.headerModule.setPanel(element);
     }
 
@@ -5267,7 +5485,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} - Returns the element
      */
     public getContentTable(): Element {
-        return this.contentModule.getTable();
+        return this.contentModule ? this.contentModule.getTable() : null;
     }
 
     /**
@@ -5278,6 +5496,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setGridContentTable(element: Element): void {
+        if (!this.contentModule) { return; }
         this.contentModule.setTable(element);
     }
 
@@ -5287,7 +5506,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} Returns the element
      */
     public getContent(): Element {
-        return this.contentModule.getPanel();
+        return this.contentModule ? this.contentModule.getPanel() : null;
     }
 
     /**
@@ -5298,6 +5517,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setGridContent(element: Element): void {
+        if (!this.contentModule) { return; }
         this.contentModule.setPanel(element);
     }
 
@@ -5307,7 +5527,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} returns the element
      */
     public getHeaderTable(): Element {
-        return this.headerModule.getTable();
+        return this.headerModule ? this.headerModule.getTable() : null;
     }
 
     /**
@@ -5318,6 +5538,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setGridHeaderTable(element: Element): void {
+        if (!this.headerModule) { return; }
         this.headerModule.setTable(element);
     }
 
@@ -5338,7 +5559,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getFooterContentTable(): Element {
         this.footerElement = this.element.getElementsByClassName(literals.gridFooter)[0];
-        return <Element>this.footerElement.firstChild.firstChild;
+        return this.footerElement ? <Element>this.footerElement.firstChild.firstChild : null;
     }
 
 
@@ -5373,7 +5594,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableVirtualization && this.groupSettings.enableLazyLoading) {
             return this.lazyLoadRender.getRowByIndex(index);
         } else {
-            return this.contentModule.getRowByIndex(index);
+            return this.contentModule ? this.contentModule.getRowByIndex(index) : null;
         }
     }
 
@@ -5386,7 +5607,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method has been marked as deprecated. It is recommended to utilize the `getRowByIndex()` method instead, and apply the `e-unfreeze` class to select the movable cell within the tr element.
      */
     public getMovableRowByIndex(index: number): Element {
-        return this.contentModule.getRowByIndex(index);
+        return this.contentModule ? this.contentModule.getRowByIndex(index) : null;
     }
 
     /**
@@ -5397,7 +5618,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method has been marked as deprecated. It is recommended to utilize the `getRowByIndex()` method instead, and apply the `e-leftfreeze` class to select the frozen cell within the tr element.
      */
     public getFrozenRowByIndex(index: number): Element {
-        return this.contentModule.getRowByIndex(index);
+        return this.contentModule ? this.contentModule.getRowByIndex(index) : null;
     }
 
     /**
@@ -5406,7 +5627,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element[]} returns the element
      */
     public getRows(): Element[] {
-        return this.contentModule.getRowElements();
+        return this.contentModule ? this.contentModule.getRowElements() : [];
     }
 
     /**
@@ -5417,7 +5638,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method has been marked as deprecated. It is recommended to utilize the `getRowByIndex()` method instead, and apply the `e-rightfreeze` class to select the frozen right cell within the tr element.
      */
     public getFrozenRightRowByIndex(index: number): Element {
-        return this.contentModule.getRowByIndex(index);
+        return this.contentModule ? this.contentModule.getRowByIndex(index) : null;
     }
 
     /**
@@ -5471,7 +5692,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method has been marked as deprecated. It is recommended to utilize the `getRows()` method instead, and apply the `e-unfreeze` class to select the movable cell within the tr element.
      */
     public getMovableRows(): Element[] {
-        return this.contentModule.getRowElements();
+        return this.contentModule ? this.contentModule.getRowElements() : [];
     }
 
     /**
@@ -5481,7 +5702,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method has been marked as deprecated. It is recommended to utilize the `getRows()` method instead, and apply the `e-rightfreeze` class to select the frozen right cell within the tr element.
      */
     public getFrozenRightRows(): Element[] {
-        return this.contentModule.getRowElements();
+        return this.contentModule ? this.contentModule.getRowElements() : [];
     }
 
     /**
@@ -5620,6 +5841,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setCellValue(key: string | number, field: string, value: string | number | boolean | Date | null): void {
+        if (!this.contentModule) { return; }
         const cells: string = 'cells';
         const rowData: string = 'data';
         const rowIdx: string = 'index';
@@ -5631,7 +5853,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const rowObjects: Object = this.contentModule.getRows();
         const selectedRow: Object = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0];
-        const tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + selectedRow[`${rowuID}`] + ']') : null;
+        const tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + getParsedFieldID(selectedRow[`${rowuID}`]) + ']') : null;
         if (!isNullOrUndefined(tr)) {
             if (typeof value === 'string') {
                 value = this.sanitize(value);
@@ -5651,7 +5873,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     fieldIdx++;
                 }
                 const sRow: Cell<Column> = selectedRow[`${cells}`][fieldIdx - Idx];
-                cell.refreshTD(td, sRow, selectedRow[`${rowData}`], { index: selectedRow[`${rowIdx}`] });
+                if (this.isAngular && col.template) {
+                    this.refreshCellTemplateById(td, sRow, selectedRow[`${rowData}`], selectedRow[`${rowIdx}`]);
+                } else {
+                    cell.refreshTD(td, sRow, selectedRow[`${rowData}`], { index: selectedRow[`${rowIdx}`] });
+                }
                 if (this.isReact) {
                     td = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
                         : this.getCellFromIndex(selectedRow[`${rowIdx}`], fieldIdx);
@@ -5672,12 +5898,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 });
                 if (this.isReact && td.getAttribute('tabindex') === '0' && td.classList.contains('e-focused')) {
                     (td as HTMLElement).focus();
-                }
-                if (this.isAngular) {
-                    const col: Column = this.getColumnByField(field);
-                    if (col.template) {
-                        this.refreshColumnTemplates();
-                    }
                 }
             }
         } else {
@@ -5778,33 +5998,47 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    /**
-     * @returns {void}
-     * @hidden
-     */
-    public refreshColumnTemplates(): void {
-        if (this.isAngular) {
-            this.refreshAngularColumnTemplates();
+    private refreshCellTemplate(td: Element, cell: Cell<Column>, rowData: Object, rowIndex: number): void {
+        if (!td || !cell || !cell.isTemplate) {
+            return;
+        }
+        const attrs: { [x: string]: Object } = {
+            'data-index': !isNullOrUndefined(rowIndex) ? rowIndex.toString() : ''
+        };
+        const cellRenderer: CellRenderer = new CellRenderer(this, this.serviceLocator);
+        cellRenderer.refreshTD(td, cell, rowData, attrs);
+    }
+
+    private refreshCellTemplateById(td: Element, cell: Cell<Column>, rowData: Object, rowIndex: number): void {
+        if (this.isAngular && td && cell && cell.isTemplate) {
+            const templateID: string = 'template_' + rowIndex + '_' + cell.column.uid;
+            const templateIDs: string[] = this.columnTemplateIDs.filter((id: string) => id === templateID);
+            this.columnTemplateIDs = this.columnTemplateIDs.filter((id: string) => id !== templateID);
+            this.clearTemplate(templateIDs ? templateIDs : ['template']);
+            this.refreshCellTemplate(td, cell, rowData, rowIndex);
         }
     }
 
-    private refreshAngularColumnTemplates(): void {
-        const registeredTemplate: any = (this as any).registeredTemplate;
-        if (registeredTemplate && registeredTemplate.template && registeredTemplate.template.length) {
-            this.clearTemplate(['template']);
-            const rows: Element[] = this.getDataRows();
+    /**
+     * @param {Element} row - Defines the row element
+     * @returns {void}
+     * @hidden
+     */
+    public refreshRowCellTemplates(row: Element): void {
+        if (this.isAngular && row) {
             const indent: number = this.getIndentCount();
-            for (let rowIndex: number = 0; rowIndex < rows.length; rowIndex++) {
-                const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[parseInt(rowIndex.toString(), 10)].getAttribute('data-uid'));
-                if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) &&
-                    !rows[parseInt(rowIndex.toString(), 10)].classList.contains('e-editedrow')) {
-                    for (let cellIndex: number = 0; cellIndex < rowsObj.cells.length; cellIndex++) {
-                        const cell: Cell<Column> = rowsObj.cells[parseInt(cellIndex.toString(), 10)];
-                        if (cell.isTemplate) {
-                            const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                            cellRenderer.refreshTD(this.getCellFromIndex(rowIndex, cellIndex - indent), cell,
-                                                   rowsObj.data, { index: rowsObj.index });
-                        }
+            const rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
+            const templateID: string = 'template_' + rowIndex + '_';
+            const templateIDs: string[] = row ? this.columnTemplateIDs.filter((id: string) => id.indexOf(templateID) === 0) : [];
+            this.columnTemplateIDs = row ? this.columnTemplateIDs.filter((id: string) => id.indexOf(templateID) !== 0) : [];
+            this.clearTemplate(templateIDs ? templateIDs : ['template']);
+            const rowsObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
+            if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) &&
+                !row.classList.contains('e-editedrow')) {
+                for (let cellIndex: number = 0; cellIndex < rowsObj.cells.length; cellIndex++) {
+                    const cell: Cell<Column> = rowsObj.cells[parseInt(cellIndex.toString(), 10)];
+                    if (cell.isTemplate) {
+                        this.refreshCellTemplate(this.getCellFromIndex(rowIndex, cellIndex - indent), cell, rowsObj.data, rowsObj.index);
                     }
                 }
             }
@@ -5816,6 +6050,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public refreshGroupCaptionFooterTemplate(): void {
+        if (!this.getContentTable()) { return; }
         const isChildGrid: boolean = this.childGrid && this.element.querySelectorAll('.e-childgrid').length ? true : false;
         const rows: NodeListOf<Element> = this.getContentTable().querySelectorAll('.e-groupcaptionrow, .e-groupfooterrow');
         for (let i: number = 0; i < rows.length; i++) {
@@ -5848,7 +6083,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const cell: Cell<Column> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
                 if (cell && cell.column.uid === columnUid) {
                     const headerCellRenderer: HeaderCellRenderer = new HeaderCellRenderer(this, this.serviceLocator);
-                    const td: Element = parentsUntil(this.element.querySelectorAll('[data-mappinguid=' + columnUid + ']')[0], 'e-templatecell');
+                    const td: Element = parentsUntil(this.element.querySelectorAll('[data-mappinguid=' + getParsedFieldID(columnUid) + ']')[0], 'e-templatecell');
                     headerCellRenderer.refresh(cell, td);
                     const cols: SortDescriptorModel[] = this.sortSettings.columns;
                     const columnIndex: number = cols.findIndex(function (col: SortDescriptorModel): boolean { return col.field === cell
@@ -5884,6 +6119,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public setRowData(key: string | number, rowData?: Object): void {
+        if (!this.contentModule) { return; }
         const rowuID: string = 'uid';
         let rowObjects: Object = this.contentModule.getRows();
         const pkName: string = this.getPrimaryKeyFieldNames()[0];
@@ -5893,7 +6129,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const selectedRow: Row<Column> = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0] as Row<Column>;
         const selectRowEle: Element[] = selectedRow ? [].slice.call(
-            this.element.querySelectorAll('[data-uid=' + selectedRow[`${rowuID}`] + ']')) : undefined;
+            this.element.querySelectorAll('[data-uid=' + getParsedFieldID(selectedRow[`${rowuID}`]) + ']')) : undefined;
         if (!isNullOrUndefined(selectedRow) && selectRowEle.length) {
             selectedRow.changes = rowData;
             if (this.frozenRows) {
@@ -6066,7 +6302,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return this.getCellFromIndex(rowIndex, columnIndex);
     }
 
-
     /**
      * Gets a column header by column index.
      *
@@ -6075,7 +6310,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} Returns the Element
      */
     public getColumnHeaderByIndex(index: number): Element {
-        return this.getHeaderTable().getElementsByClassName('e-headercell')[parseInt(index.toString(), 10)];
+        return this.getHeaderTable() ? this.getHeaderTable().getElementsByClassName('e-headercell')[parseInt(index.toString(), 10)] : null;
     }
 
     /**
@@ -6117,6 +6352,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public getRowObjectFromUID(uid: string): Row<Column> {
+        if (!this.contentModule) { return null; }
         const rows: Row<Column>[] = this.contentModule.getRows() as Row<Column>[];
         let row: Row<Column> = this.rowObject(rows, uid);
         if (isNullOrUndefined(row) && this.pinnedTopRowModels.length) {
@@ -6150,7 +6386,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Row<Column>[]} Returns the Row object
      */
     public getRowsObject(): Row<Column>[] {
-        return this.contentModule.getRows() as Row<Column>[];
+        return this.contentModule ? this.contentModule.getRows() as Row<Column>[] : [];
     }
 
     /**
@@ -6159,7 +6395,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated  This method is deprecated. Use `getRowsObject()` method instead.
      */
     public getMovableRowsObject(): Row<Column>[] {
-        return this.contentModule.getRows() as Row<Column>[];
+        return this.contentModule ? this.contentModule.getRows() as Row<Column>[] : [];
     }
 
     /**
@@ -6168,7 +6404,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @deprecated This method is deprecated. Use `getRowsObject()` method instead.
      */
     public getFrozenRightRowsObject(): Row<Column>[] {
-        return this.contentModule.getRows() as Row<Column>[];
+        return this.contentModule ? this.contentModule.getRows() as Row<Column>[] : [];
     }
 
     /**
@@ -6191,7 +6427,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} - Returns the element
      */
     public getColumnHeaderByUid(uid: string): Element {
-        const element: Element = this.getHeaderContent().querySelector('[data-mappinguid=' + uid + ']');
+        if (!this.getHeaderContent()) { return undefined; }
+        const element: Element = this.getHeaderContent().querySelector('[data-mappinguid=' + getParsedFieldID(uid) + ']');
         return element ? closest(element, 'th') : undefined;
     }
 
@@ -6565,7 +6802,25 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Data} The data module currently used by the grid.
      */
     public getDataModule(): Data {
+        if (!(this.renderModule && this.renderModule.data)) {
+            return null;
+        }
         return this.renderModule.data;
+    }
+
+    /**
+     * Determines whether the specified query requires the record count
+     *
+     * @param {Query} query - Specifies the query.
+     * @returns {Query} Returns the query with or without count.
+     * @hidden
+     */
+    public setRequiresCount(query: Query): Query {
+        if (this.enableInfiniteScrolling && this.infiniteScrollSettings &&
+            this.infiniteScrollSettings.enableCountLessMode) {
+            return query;
+        }
+        return query.requiresCount();
     }
 
     /**
@@ -8950,6 +9205,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowRowDragAndDrop && this.rowDropSettings.targetID && Browser.info.name === 'mozilla') {
             this.element.classList.add('e-disableuserselect');
         }
+        if (!this.allowTextSelection) {
+            this.element.classList.add('e-disableuserselect');
+        }
         if (this.editSettings.showAddNewRow && (this.enableVirtualization || this.enableInfiniteScrolling)) {
             this.editSettings.newRowPosition = 'Top';
         }
@@ -9317,7 +9575,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && (<{ records?: Object[] }>this.currentViewData).records) ? (this.currentViewData as Object[] & { records: Object[] }).records
             : this.currentViewData;
     }
-    	
+
     /**
      * Returns the WebMCP tool schemas for the given tool names.
      *
@@ -9583,6 +9841,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private keyActionHandler(e: KeyArg): void {
+        if (this.allowTextSelection && e.action === 'ctrlPlusC') {
+            const selectedText: string = window.getSelection().toString();
+            if (selectedText !== '') {
+                return;
+            }
+        }
         if (this.isChildGrid(e) ||
             (this.editModule && ((this.editModule.alertDObj && this.editModule.alertDObj.visible) ||
                 (this.editModule.dialogObj && this.editModule.dialogObj.visible))) ||

@@ -16,16 +16,14 @@ export interface QuickToolbarSettingsModel {
      * Specifies the toolbar items shown when text is selected.
      * If no items are configured, the text quick toolbar is not rendered.
      *
-     * @default []
+     * @default null
      */
     text?: ToolbarItem[];
 
     /**
      * Specifies the toolbar items shown when an image is selected.
      *
-     * @default ['AltText', 'Caption', 'Align',
-     * 'Display', 'WrapText',
-     * 'Dimension', 'Replace', 'Remove']
+     * @default ['AltText', 'Caption', '|', 'Align', 'Display', 'WrapText', '|', 'Dimension', 'Replace', 'Remove']
      */
     image?: ImageQuickToolbarItem[];
 
@@ -35,16 +33,14 @@ export interface QuickToolbarSettingsModel {
      *
      * Default order: Open, Copy, Edit, Remove
      *
-     * @default ['Open', 'Copy', 'Edit', 'Remove']
+     * @default [ 'OpenLink', 'CopyLink', 'EditLink', 'RemoveLink']
      */
     link?: LinkQuickToolbarItem[];
 
     /**
      * Items displayed in the Table Quick Toolbar.
      *
-     * @default ['Row', 'Column', 'Header',
-     * 'CellBackgroundColor', 'VerticalAlign',
-     * 'Align', 'Delete']
+     * @default ['Header', 'Remove', '|', 'Row', 'Column', '|', 'CellBackgroundColor', 'Align', 'VerticalAlign']]
      */
     table?: TableQuickToolbarItem[];
 
@@ -55,6 +51,6 @@ export interface QuickToolbarSettingsModel {
      *
      * @default false
      */
-    appendToBody?: boolean;
+    enableAppendToBody?: boolean;
 
 }

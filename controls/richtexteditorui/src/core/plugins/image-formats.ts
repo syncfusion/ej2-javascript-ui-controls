@@ -10,7 +10,7 @@ import { EditorCommandName, ImageInsertCommand, ImageUpdateCommand } from '../..
 interface ImageExecutionPayload {
     command: EditorCommandName;
     args?: unknown;
-    callBack?: Function
+    callback?: Function
 }
 
 // Typed headless image command payload shapes consumed by `translate`.
@@ -18,6 +18,9 @@ interface SetImageAlignPayload { align: 'left' | 'center' | 'right' | 'none'; }
 interface SetImageWrapPayload { wrap: 'left' | 'right' | 'none'; }
 interface SetImageDisplayPayload { mode: 'block' | 'inline'; }
 interface SetImageDimensionPayload { width?: number | null; height?: number | null; }
+
+/** Caption payload consumed by the headless `addCaption` / `toggleCaption` commands. */
+interface CaptionPayload { caption?: string; }
 
 /** Seam through which the headless `editor.commands` typed surface is read. */
 interface HeadlessImageCommands {
@@ -28,6 +31,9 @@ interface HeadlessImageCommands {
     setImageWrap?: (payload: SetImageWrapPayload) => boolean;
     setImageDisplay?: (payload: SetImageDisplayPayload) => boolean;
     setImageDimension?: (payload: SetImageDimensionPayload) => boolean;
+    addCaption?: (payload?: CaptionPayload) => boolean;
+    removeCaption?: () => boolean;
+    toggleCaption?: (payload?: CaptionPayload) => boolean;
 }
 
 /**
@@ -39,6 +45,7 @@ interface ImageActionValue {
     value?: unknown;
     src?: string;
     alt?: string;
+    caption?: string;
     width?: number | null;
     height?: number | null;
     mode?: 'block' | 'inline';
@@ -63,7 +70,7 @@ interface ImageActionValue {
  *  - `alignImage` / `setAlignImage` → `setImageAlign`
  *  - `wrapTextImage` / `setWrapTextImage` → `setImageWrap`
  *  - `displayImage` / `inlineImage` / `breakImage` → `setImageDisplay`
- *  - `caption`                → reserved (no headless caption node yet)
+ *  - `caption`                → `toggleCaption` (add/remove caption)
  *
  * @hidden
  */
@@ -77,10 +84,12 @@ export class ImageFormats {
 
     private addEventListener(): void {
         this.parent.observer.on(events.imageExecution, this.applyImageFormats, this);
+        this.parent.observer.on(events.destroyCore, this.destroy, this);
     }
 
     private removeEventListener(): void {
         this.parent.observer.off(events.imageExecution, this.applyImageFormats);
+        this.parent.observer.off(events.destroyCore, this.destroy);
     }
 
     /**
@@ -103,6 +112,7 @@ export class ImageFormats {
             ? args.command as EditorCommandName
             : '' as EditorCommandName;
         if (!this.parent.editor) {
+            this.invokeCallback(args.callback);
             return;
         }
         const commands: HeadlessImageCommands = this.getCommands();
@@ -189,20 +199,28 @@ export class ImageFormats {
             }
             break;
         }
-        case 'caption':
-            // The headless image extension does not yet model a caption
-            // node (`<figcaption>` story). Reserved so the toolbar command
-            // has a stable home once that lands — for now it is a no-op.
+        case 'caption': {
+            if (commands.toggleCaption) {
+                commands.toggleCaption();
+            }
+            else if (commands.addCaption) {
+                commands.addCaption();
+            }
             break;
+        }
         default:
             break;
         }
-        if (typeof args.callBack === 'function') {
-            args.callBack(this.parent.editor);
+        this.invokeCallback(args.callback);
+    }
+
+    private invokeCallback(callBack?: Function): void {
+        if (callBack) {
+            callBack(this.parent.editor);
         }
     }
 
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 }

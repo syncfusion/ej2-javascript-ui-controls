@@ -296,7 +296,7 @@ export class RowDD {
                         if (isByMethod) {
                             this.deleteDragRow();
                         }
-                        const recordIndex1: number = this.treeGridData.indexOf(droppedRecord);
+                        const recordIndex1: number = this.parent.flatData.indexOf(droppedRecord);
                         if (this.dropPosition === 'topSegment') {
                             this.dropAtTop(recordIndex1);
                         }
@@ -306,11 +306,13 @@ export class RowDD {
                                     if (this.parent.taskFields.parentID && this.ganttData.length > 0) {
                                         this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                                     }
-                                    this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                                    // Use insertRecord method instead of direct splice to maintain flatData synchronization
+                                    this.parent.insertRecord(this.draggedRecord, recordIndex1 + 1);
                                     this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                                     if (this.parent.viewType === 'ResourceView') {
                                         const taskId: string = 'T' + this.draggedRecord.ganttProperties.taskId;
                                         this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+                                        this.parent.invalidateTaskIdsCache();
                                     }
 
                                 } else {
@@ -318,12 +320,14 @@ export class RowDD {
                                     if (this.parent.taskFields.parentID && this.ganttData.length > 0) {
                                         this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
                                     }
-                                    this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                                    // Use insertRecord method instead of direct splice to maintain flatData synchronization
+                                    this.parent.insertRecord(this.draggedRecord, recordIndex1 + count + 1);
                                     /* eslint-disable-next-line */
                                     this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                                     if (this.parent.viewType === 'ResourceView') {
                                         const spliceId: string = 'R' + this.draggedRecord.ganttProperties.taskId;
                                         this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
+                                        this.parent.invalidateTaskIdsCache();
                                     }
                                 }
                                 this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1 as number].parentItem, draggedRecord);
@@ -349,12 +353,13 @@ export class RowDD {
                                 delete droppedRecord.taskData[this.parent.taskFields.segments];
                             }
                         }
-                        if (this.treeGridData.length !== 0) {
-                            for (let i: number = 0; i < this.treeGridData.length; i++) {
-                                this.treeGridData[parseInt(i.toString(), 10)].index = i;
-                                if (!isNullOrUndefined(this.treeGridData[parseInt(i.toString(), 10)].parentItem)) {
-                                    const updatedParent: ITreeData = getValue('uniqueIDCollection.' + this.treeGridData[parseInt(i.toString(), 10)].parentUniqueID, this.parent.treeGrid);
-                                    this.treeGridData[parseInt(i.toString(), 10)].parentItem.index = updatedParent.index;
+                        // Update indices using flatData instead of direct treeGridData manipulation
+                        if (gObj.flatData.length !== 0) {
+                            for (let i: number = 0; i < gObj.flatData.length; i++) {
+                                gObj.flatData[parseInt(i.toString(), 10)].index = i;
+                                if (!isNullOrUndefined(gObj.flatData[parseInt(i.toString(), 10)].parentItem)) {
+                                    const updatedParent: ITreeData = getValue('uniqueIDCollection.' + gObj.flatData[parseInt(i.toString(), 10)].parentUniqueID, this.parent.treeGrid);
+                                    gObj.flatData[parseInt(i.toString(), 10)].parentItem.index = updatedParent.index;
                                 }
                             }
                         }
@@ -729,11 +734,13 @@ export class RowDD {
             if (gObj.taskFields.parentID && this.ganttData.length > 0) {
                 this.ganttData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
-            this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            // Use insertRecord method instead of direct splice to maintain flatData synchronization
+            this.parent.insertRecord(this.draggedRecord, childRecordsLength);
             this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             if (this.parent.viewType === 'ResourceView') {
                 const recordId: string = 'T' + this.draggedRecord.ganttProperties.taskId;
                 this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+                this.parent.invalidateTaskIdsCache();
             }
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
@@ -837,7 +844,8 @@ export class RowDD {
             if (gObj.taskFields.parentID && this.ganttData.length > 0) {
                 this.ganttData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
-            this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
+            // Use insertRecord method instead of direct splice to maintain flatData synchronization
+            this.parent.insertRecord(this.draggedRecord, recordIndex1);
             this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             this.parent.setRecordValue('parentItem', this.droppedRecord.parentItem, this.draggedRecord);
             this.parent.setRecordValue('parentUniqueID', this.droppedRecord.parentUniqueID, this.draggedRecord);
@@ -845,6 +853,7 @@ export class RowDD {
             if (this.parent.viewType === 'ResourceView') {
                 const id: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
                 this.parent.getTaskIds().splice(recordIndex1, 0, id);
+                this.parent.invalidateTaskIdsCache();
             }
             if (this.draggedRecord.hasChildRecords) {
                 const level: number = 1;
@@ -904,6 +913,7 @@ export class RowDD {
             if (this.parent.viewType === 'ResourceView') {
                 const taskId: string  = ('T') + currentRecord.ganttProperties.taskId;
                 this.parent.getTaskIds().splice(count, 0, taskId);
+                this.parent.invalidateTaskIdsCache();
             }
             if (gObj.taskFields.parentID && (gObj.dataSource as IGanttData[]).length > 0) {
                 (this.ganttData as IGanttData[]).splice(count, 0, currentRecord.taskData);
@@ -975,26 +985,33 @@ export class RowDD {
                         }
                     }
                 }
-                if (idx !== -1) {
+                if (idx !== -1 && idx >= 0) {
                     if ((dataSource as IGanttData[]).length > 0) {
                         (dataSource as IGanttData[]).splice(idx, 1);
                     }
-                    const tempIndex: number = this.treeGridData.indexOf(deletedRow);
-                    this.treeGridData.splice(tempIndex, 1);
-                    this.parent.ids.splice(tempIndex, 1);
+                    // Use removeRecords method instead of direct splice to maintain flatData synchronization
+                    const tempIndex: number = this.parent.flatData.indexOf(deletedRow);
+                    if (tempIndex >= 0) {
+                        this.parent.removeRecords(tempIndex);
+                        this.parent.ids.splice(tempIndex, 1);
+                    }
                     if (this.parent.treeGrid.parentData.indexOf(deletedRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(deletedRow), 1);
                     }
                     if (this.parent.viewType === 'ResourceView') {
                         this.parent.getTaskIds().splice(idx, 1);
+                        this.parent.invalidateTaskIdsCache();
                     }
                 }
             }
-            const recordIndex: number = this.treeGridData.indexOf(deletedRow);
+            const recordIndex: number = this.parent.flatData.indexOf(deletedRow);
             if (!gObj.taskFields.parentID) {
                 const deletedRecordCount: number = this.parent.editModule.getChildCount(deletedRow, 0);
-                this.treeGridData.splice(recordIndex, deletedRecordCount + 1);
-                this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                // Use removeRecords method instead of direct splice to maintain flatData synchronization
+                if (recordIndex >= 0) {
+                    this.parent.removeRecords(recordIndex, deletedRecordCount + 1);
+                    this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                }
                 const parentIndex: number = this.ganttData.indexOf(deletedRow.taskData);
                 if (parentIndex !== -1) {
                     this.ganttData.splice(parentIndex, 1);
@@ -1002,6 +1019,7 @@ export class RowDD {
                 }
                 if (this.parent.viewType === 'ResourceView') {
                     this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+                    this.parent.invalidateTaskIdsCache();
                 }
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
@@ -1026,15 +1044,19 @@ export class RowDD {
                     idx = j;
                 }
             }
-            if (idx !== -1) {
+            if (idx !== -1 && idx >= 0) {
                 if ((ganttData as IGanttData[]).length > 0) {
                     (ganttData as IGanttData[]).splice(idx, 1);
                 }
-                const tempIndex: number = this.treeGridData.indexOf(currentRecord);
-                this.treeGridData.splice(tempIndex, 1);
-                this.parent.ids.splice(tempIndex, 1);
+                // Use removeRecords method instead of direct splice to maintain flatData synchronization
+                const tempIndex: number = this.parent.flatData.indexOf(currentRecord);
+                if (tempIndex >= 0) {
+                    this.parent.removeRecords(tempIndex);
+                    this.parent.ids.splice(tempIndex, 1);
+                }
                 if (this.parent.viewType === 'ResourceView') {
                     this.parent.getTaskIds().splice(idx, 1);
+                    this.parent.invalidateTaskIdsCache();
                 }
             }
             if (currentRecord.hasChildRecords) {

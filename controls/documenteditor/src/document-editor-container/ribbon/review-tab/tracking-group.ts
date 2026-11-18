@@ -1,7 +1,6 @@
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, Ribbon } from '@syncfusion/ej2-ribbon';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { L10n } from '@syncfusion/ej2-base';
 
 // Constants for UI element IDs
@@ -12,11 +11,13 @@ export const REJECT_ALL_ID: string = '_reject_all';
 
 /**
  * Represents the Tracking Group in Review tab
+ *
  * @private
  */
 export class TrackingGroup extends RibbonGroupBase {
     /**
      * Constructor for the TrackingGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -25,6 +26,7 @@ export class TrackingGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Tracking
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Tracking
      * @private
      */
@@ -88,6 +90,7 @@ export class TrackingGroup extends RibbonGroupBase {
 
     /**
      * Handle click on track changes button
+     *
      * @returns {void}
      */
     private trackChangesHandler(): void {
@@ -96,6 +99,7 @@ export class TrackingGroup extends RibbonGroupBase {
 
     /**
      * Handle click on accept all button
+     *
      * @returns {void}
      */
     private acceptAllHandler(): void {
@@ -104,6 +108,7 @@ export class TrackingGroup extends RibbonGroupBase {
 
     /**
      * Handle click on reject all button
+     *
      * @returns {void}
      */
     private rejectAllHandler(): void {
@@ -112,6 +117,7 @@ export class TrackingGroup extends RibbonGroupBase {
 
     /**
      * Update tracking controls based on document state
+     *
      * @returns {void}
      * @private
      */

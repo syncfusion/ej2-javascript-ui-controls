@@ -27,7 +27,7 @@ export class ExportHelper {
         }
     }
     public static getQuery(parent: IGrid, data: Data): Query {
-        const query: Query = data.generateQuery(true).requiresCount();
+        const query: Query = parent.setRequiresCount(data.generateQuery(true));
         if (data.isRemote()) {
             if (parent.groupSettings.enableLazyLoading && parent.groupSettings.columns.length) {
                 query.lazyLoad = [];

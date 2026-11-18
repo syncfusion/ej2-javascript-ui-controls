@@ -13,18 +13,12 @@ import { PdfSection } from './../pages/pdf-section';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
 import { PdfName } from './../primitives/pdf-name';
 import { PdfNumber } from './../primitives/pdf-number';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 /**
  * `PdfDestination` class represents an anchor in the document
  * where bookmarks or annotations can direct when clicked.
  */
 export class PdfDestination implements IPdfWrapper {
     // Fields
-    /**
-     * Internal variable for accessing fields from `DictionryProperties` class.
-     * @private
-     */
-    protected dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Type of the `destination`.
      * @private
@@ -149,13 +143,13 @@ export class PdfDestination implements IPdfWrapper {
                 let simplePage : PdfPage = this.pdfPage as PdfPage;
                 let point : PointF = new PointF();
                 point = this.pointToNativePdf(simplePage, this.destinationLocation);
-                this.array.add(new PdfName(this.dictionaryProperties.xyz));
+                this.array.add(new PdfName('XYZ'));
                 this.array.add(new PdfNumber(point.x));
                 this.array.add(new PdfNumber(point.y));
                 this.array.add(new PdfNumber(this.zoomFactor));
                 break;
             case PdfDestinationMode.FitToPage:
-                this.array.add(new PdfName(this.dictionaryProperties.fit));
+                this.array.add(new PdfName('Fit'));
                 break;
         }
     }

@@ -181,7 +181,9 @@ export class VirtualScroll {
                         this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
                     }
                     this.parent.updateVirtualReOrderList(true);
-                    if (this.parent.value.length < this.parent.itemCount && this.parent.value.length !== this.parent.totalItemCount) {
+                    const totalCount : number = this.parent.dataSource instanceof DataManager
+                        ? this.parent.totalItemCount : this.parent.dataSource.length;
+                    if (this.parent.value.length < this.parent.itemCount && this.parent.value.length !== totalCount) {
                         const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                         if (oldUlElement) {
                             this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);

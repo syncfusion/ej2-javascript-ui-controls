@@ -8,6 +8,7 @@ export const MERGE_CELLS_BUTTON_ID: string = '_merge_cells_button';
 
 /**
  * Represents the Cell Properties Group in Table Layout tab
+ *
  * @private
  */
 export class CellPropertiesGroup extends RibbonGroupBase {
@@ -15,6 +16,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Constructor for the CellPropertiesGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -24,6 +26,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Cell Properties
+     *
      * @returns {RibbonGroupModel} - Ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -45,6 +48,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Gets the Merge Cells button model
+     *
      * @returns {RibbonItemModel} - Ribbon item model for Merge Cells button
      */
     private getMergeCellsButton(): RibbonItemModel {
@@ -66,6 +70,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Merges the selected cells
+     *
      * @returns { void }
      */
     private mergeSelectedCells(): void {
@@ -74,6 +79,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Checks if cells can be merged
+     *
      * @returns {boolean} - True if cells can be merged, false otherwise
      */
     private canMergeCells(): boolean {
@@ -82,6 +88,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Updates the merge cells button state based on selection
+     *
      * @returns {void}
      */
     public updateSelection(): void {
@@ -90,6 +97,7 @@ export class CellPropertiesGroup extends RibbonGroupBase {
 
     /**
      * Updates the merge cells button enabled/disabled state
+     *
      * @returns {void}
      */
     private updateMergeCellsButtonState(): void {

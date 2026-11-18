@@ -501,7 +501,9 @@ export class ListBox extends DropDownBase {
             this.selectAllText = l10nSelect.getConstant('selectAllText');
             this.unSelectAllText = l10nSelect.getConstant('unSelectAllText');
             this.popupWrapper = this.list;
-            this.checkBoxSelectionModule.checkAllParent = null;
+            if (this.checkBoxSelectionModule) {
+                this.checkBoxSelectionModule.checkAllParent = null;
+            }
             if (this.filterParent) {
                 const parentNode: HTMLElement = this.filterParent.parentNode as HTMLElement;
                 if (parentNode) {
@@ -2656,7 +2658,9 @@ export class ListBox extends DropDownBase {
                 this.selectAllText = l10nShow.getConstant('selectAllText');
                 this.unSelectAllText = l10nShow.getConstant('unSelectAllText');
                 this.popupWrapper = this.list;
-                this.checkBoxSelectionModule.checkAllParent = null;
+                if (this.checkBoxSelectionModule) {
+                    this.checkBoxSelectionModule.checkAllParent = null;
+                }
                 this.notify('selectAll', {});
                 this.checkSelectAll();
             }
@@ -2666,7 +2670,10 @@ export class ListBox extends DropDownBase {
             }
             for (index; index < liCollLen; index++) {
                 if (liColl[index as number].classList.contains('e-list-item')) {
-                    liColl[index as number].removeChild(liColl[index as number].getElementsByClassName('e-checkbox-wrapper')[0]);
+                    const checkboxElem: Element = liColl[index as number].getElementsByClassName('e-checkbox-wrapper')[0];
+                    if (checkboxElem) {
+                        liColl[index as number].removeChild(checkboxElem);
+                    }
                 }
                 if (liColl[index as number].hasAttribute('aria-selected')) {
                     liColl[index as number].removeAttribute('aria-selected');
@@ -2849,7 +2856,13 @@ export class ListBox extends DropDownBase {
                     if (this.showSelectAll) {
                         const l10nSel: L10n = new L10n(
                             this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
-                        this.checkBoxSelectionModule.checkAllParent = null;
+                        const selectAllElem: Element | null = this.list.querySelector('.e-selectall-parent');
+                        if (this.checkBoxSelectionModule) {
+                            this.checkBoxSelectionModule.checkAllParent = null;
+                        }
+                        if (selectAllElem) {
+                            detach(selectAllElem);
+                        }
                         this.showSelectAll = true;
                         this.selectAllText = l10nSel.getConstant('selectAllText');
                         this.unSelectAllText = l10nSel.getConstant('selectAllText');

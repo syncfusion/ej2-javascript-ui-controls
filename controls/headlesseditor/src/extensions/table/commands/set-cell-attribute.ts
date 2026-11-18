@@ -3,7 +3,7 @@
  *
  * PM boundary: allowed inside src/extensions/table/commands/.
  */
-import { PMCommandInternal, PMCommandContext } from '../../../commands/internal/pm-command-context';
+import { PMCommandInternal, PMCommandContext } from '../../../core/commands/internal/pm-command-context';
 import { wrapTransaction } from '../../../pm/adapters/editor-state-adapter';
 import { setCellAttribute, isCursorInTable } from '../../../pm/adapters/table';
 import { PMEditorState, PMTransaction } from '../../../pm/pm-guard';
@@ -30,7 +30,7 @@ export interface SetCellAttributePayload {
  */
 export const setCellAttributeCommand: PMCommandInternal<SetCellAttributePayload> = {
     name: 'setCellAttribute',
-    meta: { label: 'Set Cell Attribute', category: 'table' },
+    meta: { label: 'Set Cell Attribute', category: 'table', focusAfterDispatch: true },
 
     canExecute(ctx: PMCommandContext, _payload: SetCellAttributePayload): boolean {
         return isCursorInTable(ctx.pmState);

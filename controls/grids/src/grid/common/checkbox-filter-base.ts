@@ -623,7 +623,9 @@ export class CheckBoxFilterBase {
             const searchValue: string = this.sInput ? this.sInput.value : '';
             if (selected === totalCount && searchValue === '') {
                 if (this.options.handler) {
-                    (this.parent as IGrid).filterModule!.maintainFocusOnFilterDialog = true;
+                    if ((this.parent as IGrid).filterModule) {
+                        (this.parent as IGrid).filterModule.maintainFocusOnFilterDialog = true;
+                    }
                     this.options.handler({
                         action: 'clear-filter',
                         field: this.options.field
@@ -880,8 +882,8 @@ export class CheckBoxFilterBase {
     private refreshCheckboxes(): void {
         const val: string = this.sInput.value;
         const column: Column = this.options.column as Column;
-        const query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
-        const foreignQuery: Query = this.options.query.clone();
+        let query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        let foreignQuery: Query = this.options.query.clone();
         const pred: QueryOptions = query.queries.filter((e : QueryOptions) => { return e && e.fn === 'onWhere'; })[0];
         query.queries = [];
         foreignQuery.queries = [];
@@ -1022,7 +1024,11 @@ export class CheckBoxFilterBase {
                     if (this.infiniteRenderMod) {
                         this.infiniteInitialLoad = isNullOrUndefined(this.fullData) ? true : false;
                         this.makeInfiniteScrollRequest(foreignQuery);
-                        foreignQuery.requiresCount();
+                        if ((this.parent as any).getModuleName() === 'grid') {
+                            foreignQuery = (this.parent as IGrid).setRequiresCount(foreignQuery);
+                        } else {
+                            foreignQuery.requiresCount();
+                        }
                     } else {
                         foreignQuery.take(filterargs.filterChoiceCount);
                     }
@@ -1032,7 +1038,11 @@ export class CheckBoxFilterBase {
                 if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
                     this.infiniteInitialLoad = isNullOrUndefined(this.fullData) ? true : false;
                     this.makeInfiniteScrollRequest(query);
-                    query.requiresCount();
+                    if ((this.parent as any).getModuleName() === 'grid') {
+                        query = (this.parent as IGrid).setRequiresCount(query);
+                    } else {
+                        query.requiresCount();
+                    }
                 } else {
                     query.take(filterargs.filterChoiceCount);
                 }
@@ -1078,10 +1088,14 @@ export class CheckBoxFilterBase {
 
     private getAllData(): void {
         this.customQuery = false;
-        const query: Query = this.getQuery();
+        let query: Query = this.getQuery();
         const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         if (!(!isNullOrUndefined((this.parent as IGrid).getDataModule) && moduleName && moduleName() === 'ODataV4Adaptor')) {
-            query.requiresCount(); //consider take query
+            if ((this.parent as any).getModuleName() === 'grid') {
+                query = (this.parent as IGrid).setRequiresCount(query);
+            } else {
+                query.requiresCount(); //consider take query
+            }
         }
         this.addDistinct(query);
         const args: FilterSearchBeginEventArgs = {
@@ -1495,6 +1509,17 @@ export class CheckBoxFilterBase {
     private dataSuccess(e: Object[]): void {
         if (!this.infiniteInitialLoad && this.infiniteDataCount && ((this.infiniteSkipCnt >= this.infiniteDataCount
             && !this.infiniteSearchValChange) || (e.length === 0))) {
+            return;
+        }
+        if (this.infiniteRenderMod &&
+            (this.parent as IGrid).infiniteScrollSettings &&
+            (this.parent as IGrid).infiniteScrollSettings.enableCountLessMode &&
+            e.length === 0) {
+            this.infiniteInitialLoad = false;
+            this.infiniteSearchValChange = false;
+            this.infiniteQueryExecutionPending = false;
+            this.removeMask();
+            hideSpinner(this.spinner);
             return;
         }
         this.fullData = e;
@@ -2199,6 +2224,7 @@ export class CheckBoxFilterBase {
             if (!(currentFilterValue in lookup)) {
                 const obj: Object = {};
                 if (column && column.allowFormula) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const primaryKeyField: string = (checkboxFilter.parent as any).getPrimaryKeyFieldNames()[0];
                     const primaryKeyValue: string | number = json[parseInt(len.toString(), 10)][`${primaryKeyField}`];
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2236,7 +2262,6 @@ export class CheckBoxFilterBase {
     private static generatePredicate(cols: PredicateModel[]): Predicate {
         const len: number = cols ? cols.length : 0;
         let predicate: Predicate;
-        const operate: string = 'or';
         const first: PredicateModel = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime' || first.type === 'dateonly') {

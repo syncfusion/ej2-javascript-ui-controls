@@ -8,7 +8,7 @@ import { WColumnFormat, WSectionFormat } from './../../implementation/format/ind
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
 import { HelperMethods } from '../editor/editor-helper';
-import { DialogUtility } from '@syncfusion/ej2-popups';
+import { DialogUtility, OpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * The Page setup dialog is used to modify formatting of selected sections.
@@ -538,7 +538,7 @@ export class PageSetupDialog {
             DialogUtility.alert({
                 title: localValue.getConstant('Information'),
                 content: localValue.getConstant('Left and right margins.'),
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }
@@ -550,7 +550,7 @@ export class PageSetupDialog {
             DialogUtility.alert({
                 title: localValue.getConstant('Information'),
                 content: localValue.getConstant('Column width cannot be less than 36 pt.'),
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }
@@ -562,7 +562,7 @@ export class PageSetupDialog {
             DialogUtility.alert({
                 title: localValue.getConstant('Information'),
                 content: localValue.getConstant('The top/bottom margins are too large for the page height in some sections.'),
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }

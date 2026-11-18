@@ -1,6 +1,6 @@
 import { PdfStringFormat } from '../../fonts';
 import { PdfFont } from '../../fonts/pdf-standard-font';
-import { _PdfTemplateValuePair, Point, Size, Rectangle } from '../../pdf-type';
+import { _PdfTemplateValuePair, Point, Size, Rectangle } from '../../pdf-document-helper';
 import { PdfGraphics, PdfBrush } from '../pdf-graphics';
 import { PdfTemplate } from '../pdf-template';
 import { PdfDynamicField } from './dynamic-field';

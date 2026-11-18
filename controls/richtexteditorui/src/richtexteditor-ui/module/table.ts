@@ -10,8 +10,11 @@ import { tableLocale } from '../model/default-locale';
 import * as events from '../../common/constant';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import * as constant from '../../common/constant';
+import { CLS_TABLE_WRAPPER } from '../../base/classes';
 
-// Manages table insertion, quick toolbar actions, and related UI.
+/**
+ * @private
+ */
 export class TableModule extends BaseModule {
     private tablePopup: TablePopup | null = null;
     public tableDialog: EditorDialog | null = null;
@@ -34,6 +37,7 @@ export class TableModule extends BaseModule {
     protected addEventListener(): void {
         EventHandler.add(document, 'keydown', this.onDocumentKeyDown, this);
         this.parent.on(events.insertTable, this.onTableClick, this);
+        this.parent.on(events.insertTableBySlash, this.tableInsertBySlash, this);
         this.parent.on(events.editorKeydown, this.onKeyboardShortcut, this);
         this.parent.on(events.editorMouseup, this.editorMouseUpHandler, this);
         this.parent.on(events.insertCompleted, this.insertCompletedHandler, this);
@@ -43,6 +47,7 @@ export class TableModule extends BaseModule {
     protected removeEventListener(): void {
         EventHandler.remove(document, 'keydown', this.onDocumentKeyDown);
         this.parent.off(events.insertTable, this.onTableClick);
+        this.parent.on(events.insertTableBySlash, this.tableInsertBySlash);
         this.parent.off(events.editorKeydown, this.onKeyboardShortcut);
         this.parent.off(events.editorMouseup, this.editorMouseUpHandler);
         this.parent.off(events.insertCompleted, this.insertCompletedHandler);
@@ -97,6 +102,9 @@ export class TableModule extends BaseModule {
      * @returns {void}
      */
     public onTableClick(args: { callBack?: () => void }): void {
+        if (this.parent.quickToolbarModule) {
+            this.parent.quickToolbarModule.hideQuickToolbars(true);
+        }
         if (this.tablePopup && this.tablePopup.isVisible()) {
             this.tablePopup.hide();
             return;
@@ -112,10 +120,14 @@ export class TableModule extends BaseModule {
         }
         this.tablePopup = new TablePopup(this.parent, this.locale, this.currentAnchor, {
             onInsert: (rows: number, cols: number) => this.commitInsert({ rows: rows, columns: cols }),
-            onOpenDialog: () => this.openInsertDialog(this.currentAnchor as HTMLElement),
+            onOpenDialog: () => this.openInsertDialog(),
             resolve: (key: string) => this.resolveKey(key)
         });
         this.tablePopup.show();
+    }
+
+    private tableInsertBySlash(): void {
+        this.openInsertDialog();
     }
 
     // Opens the Insert Table dialog from a keyboard shortcut.
@@ -147,7 +159,7 @@ export class TableModule extends BaseModule {
             );
         }
         this.currentAnchor = anchor;
-        this.openInsertDialog(anchor);
+        this.openInsertDialog();
     }
 
     /*
@@ -173,7 +185,7 @@ export class TableModule extends BaseModule {
      * @param {HTMLElement} anchor - The toolbar anchor element used for focus return.
      * @returns {void}
      */
-    private openInsertDialog(anchor: HTMLElement): void {
+    private openInsertDialog(): void {
         const id: string = getUniqueID(this.parent.element.id + '_InsertTableDialog');
         const dialogHeader: string = this.resolveKey('tabledialogHeader');
         const columnPlaceholder: string = this.resolveKey('columns');
@@ -191,7 +203,7 @@ export class TableModule extends BaseModule {
         const self: TableModule = this;
         const isTesting: boolean = this.parent.element && this.parent.element.dataset && this.parent.element.dataset.rteUnitTesting === 'true';
         const dialogModel: EditorDialogModel = {
-            subType: DialogType.InsertTable,
+            source: DialogType.InsertTable,
             header: dialogHeader,
             content: content,
             width: '290px',
@@ -327,6 +339,9 @@ export class TableModule extends BaseModule {
 
         this.columnTextBox = null;
         this.rowTextBox = null;
+        if (this.parent.inputElement) {
+            this.parent.inputElement.focus({ preventScroll: true });
+        }
     }
 
     /**
@@ -384,7 +399,7 @@ export class TableModule extends BaseModule {
             selectedBlock = selectedBlock.nextElementSibling as HTMLElement;
             this.isTableinsertion = false;
         }
-        const tableWrapper: HTMLElement | null = selectedBlock.classList?.contains('tableWrapper') ? selectedBlock : selectedBlock.closest('.tableWrapper');
+        const tableWrapper: HTMLElement | null = selectedBlock.classList?.contains(CLS_TABLE_WRAPPER) ? selectedBlock : selectedBlock.closest('.' + CLS_TABLE_WRAPPER);
         if (!tableWrapper) {
             return null;
         }

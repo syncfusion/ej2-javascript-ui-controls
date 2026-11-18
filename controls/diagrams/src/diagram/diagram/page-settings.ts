@@ -213,6 +213,15 @@ export class PageSettings extends ChildProperty<PageSettings> {
  */
 export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
+     * Restricts the viewport to the positive coordinate region.
+     * Objects with negative coordinates are retained but are not visible.
+     *
+     * @default false
+     */
+    @Property(false)
+    public restrictNegativeAxis: boolean;
+
+    /**
      * Defines horizontal offset of the scroller
      *
      * @default 0

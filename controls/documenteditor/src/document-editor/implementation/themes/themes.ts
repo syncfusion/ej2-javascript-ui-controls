@@ -14,6 +14,7 @@ export class Themes {
         this.fntScheme = value;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public constructor(node?: Object) {
         this.fntScheme = new FontScheme();
     }

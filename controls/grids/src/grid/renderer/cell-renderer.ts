@@ -10,6 +10,7 @@ import { foreignKeyData } from '../base/constant';
 import { CellType } from '../base/enum';
 import * as literals from '../base/string-literals';
 import { FormulaValue } from '../actions';
+import { Find } from '../actions/find';
 
 /**
  * CellRenderer class which responsible for building cell content.
@@ -68,7 +69,6 @@ export class CellRenderer implements ICellRenderer<Column> {
         return isNullOrUndefined(value) ? '' : String(value);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object,
                     isEdit?: boolean, rowNumber?: number): boolean {
         let result: Element[];
@@ -88,6 +88,11 @@ export class CellRenderer implements ICellRenderer<Column> {
             if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 cell.column.getColumnTemplate()(
                     extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[`${str}`], null, node);
+            } else if (this.parent.isAngular) {
+                const columnTemplateID: string = 'template_' + attributes[literals[0]] + '_' + cell.column.uid;
+                result = cell.column.getColumnTemplate()(
+                    extend(copied, dummyData), this.parent, columnTemplateID, templateID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
+                this.parent.columnTemplateIDs.push(columnTemplateID);
             } else {
                 result = cell.column.getColumnTemplate()(
                     extend(copied, dummyData), this.parent, 'template', templateID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
@@ -255,8 +260,9 @@ export class CellRenderer implements ICellRenderer<Column> {
         const fromFormatter: Object = this.invokeFormatter(column, value, data);
 
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
+        innerHtml = this.applyFindHighlight(column, innerHtml, parseInt(attributes && attributes['data-index'] as string, 10));
         if (this.evaluate(node, cell, data, attributes, fData, isEdit, rowNumber) && column.type !== 'checkbox') {
-            this.appendHtml(node, this.parent.sanitize(innerHtml), column.getDomSetter ? column.getDomSetter() : 'innerHTML');
+            this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
             node.classList.add(literals.gridChkBox);
             if (this.parent.selectionSettings.persistSelection) {
@@ -310,6 +316,41 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @param {string} property - specifies the element
      * @returns {Element} returns the element
      */
+    /**
+     * Wraps Find occurrences in standard renderer output.
+     * Templates bypass this path and own their highlight markup.
+     *
+     * @param {Column} column - cell column
+     * @param {string} innerHtml - sanitized display text
+     * @param {number} viewRowIndex - view row index
+     * @returns {string} display text, with match markup when Find is active
+     * @hidden
+     */
+    private applyFindHighlight(column: Column, innerHtml: string, viewRowIndex: number): string {
+        const findModule: Find = (this.parent as IGrid & { findModule?: Find }).findModule;
+        if (!findModule || !column || !column.field || !innerHtml || innerHtml.indexOf('<') !== -1 ||
+            (column.getDomSetter && column.getDomSetter() !== 'innerHTML')) {
+            return this.parent.sanitize(innerHtml);
+        }
+        const parts: { text: string, isMatch: boolean, isActive: boolean }[] =
+            findModule.getHighlightParts(innerHtml, column.field, 0, findModule.getAbsoluteRowIndex(viewRowIndex));
+        if (parts.length === 1 && !parts[0].isMatch) {
+            return this.parent.sanitize(innerHtml);
+        }
+        let html: string = '';
+        for (let i: number = 0; i < parts.length; i++) {
+            const part: { text: string, isMatch: boolean, isActive: boolean } = parts[i as number];
+            const text: string = this.parent.sanitize(part.text);
+            if (!part.isMatch) {
+                html += text;
+            } else {
+                const css: string = part.isActive ? 'e-find-match e-find-active-match' : 'e-find-match';
+                html += '<span class="' + css + '">' + text + '</span>';
+            }
+        }
+        return html;
+    }
+
     public appendHtml(node: Element, innerHtml: string | Element, property: string = 'innerHTML'): Element {
         node[`${property}`] = innerHtml as string;
         return node;

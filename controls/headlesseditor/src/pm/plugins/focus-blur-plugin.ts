@@ -1,6 +1,6 @@
 import { PMPlugin, PMEditorView } from '../pm-guard';
-import { EventBus } from '../../events/event-bus';
-import { FOCUS_ACQUIRED, FOCUS_LOST } from '../../events/event-names';
+import { EventBus } from '../../core/events/event-bus';
+import { FOCUS_ACQUIRED, FOCUS_LOST } from '../../core/events/event-names';
 
 /**
  * focusBlurPlugin — bridges DOM focus/blur events to the EventBus.

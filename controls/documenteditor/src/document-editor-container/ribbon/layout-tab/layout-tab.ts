@@ -1,6 +1,5 @@
 import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { DocumentEditor } from '../../../document-editor/document-editor';
 import { L10n } from '@syncfusion/ej2-base';
 import { PageSetupGroup } from './index';
 import { LayoutParagraphGroup } from './layout-paragraph-group';
@@ -10,6 +9,7 @@ export const LAYOUT_TAB_ID: string = '_layout_tab';
 
 /**
  * Represents the Layout Tab in the Ribbon
+ *
  * @private
  */
 export class LayoutTab {
@@ -25,6 +25,7 @@ export class LayoutTab {
 
     /**
      * Constructor for the LayoutTab
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -38,6 +39,7 @@ export class LayoutTab {
 
     /**
      * Creates the Layout tab for the ribbon
+     *
      * @returns {RibbonTabModel} - Ribbon tab model for Layout tab
      * @private
      */
@@ -56,6 +58,7 @@ export class LayoutTab {
 
     /**
      * Updates UI based on the current selection
+     *
      * @returns {void}
      * @private
      */
@@ -66,6 +69,7 @@ export class LayoutTab {
 
     /**
      * Initializes event handlers
+     *
      * @returns {void}
      * @private
      */
@@ -78,6 +82,7 @@ export class LayoutTab {
 
     /**
      * Disposes event handlers and resources
+     *
      * @returns {void}
      * @private
      */

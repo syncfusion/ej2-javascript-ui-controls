@@ -2,7 +2,7 @@ import { Browser, EventHandler } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
-import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
+import { getScrollBarWidth, getUpdateUsingRaf, getParsedFieldID } from '../base/util';
 import {
     scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler, closeFilterDialog
 } from '../base/constant';
@@ -599,7 +599,8 @@ export class Scroll implements IAction {
      */
     public makeStickyHeader(): Function {
         return () => {
-            if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent() && this.parentElement) {
+            if (!this.parent.isDestroyed && this.parent.enableStickyHeader && this.parent.element
+                && this.parent.getContent() && this.parentElement) {
                 const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
                 if (contentRect) {
                     const windowScale: number = window.devicePixelRatio;
@@ -611,7 +612,7 @@ export class Scroll implements IAction {
                     const parentTop: number = this.parentElement.getClientRects()[0].top;
                     let top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
                     const left: number = contentRect.left;
-                    const colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
+                    const colMenuEle: HTMLElement = document.body.querySelector('#' + getParsedFieldID(this.parent.element.id + '_columnmenu'));
                     if (windowScale !== 1) {
                         top = Math.ceil(top);
                     }

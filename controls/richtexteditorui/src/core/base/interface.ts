@@ -11,8 +11,6 @@ export interface IEditorCoreOptions {
     enableRtl?: boolean
     enableAutoFormat?: boolean
     enableTabKeyIndent?: boolean
-    undoRedoSteps?: number
-    undoRedoTimer?: number
     extensions?: ExtensionDefinition<Object>[]
     documentRoot?: DocumentRoot | null
     executeCommand?: Function

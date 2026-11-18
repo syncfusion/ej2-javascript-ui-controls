@@ -248,9 +248,9 @@ export class ColumnWidthService {
         }
         if (!column.width) { return null; }
         const width: number = parseInt(column.width.toString(), 10);
-        if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
+        if (!isNullOrUndefined(column.minWidth) && width < parseInt(column.minWidth.toString(), 10)) {
             return column.minWidth;
-        } else if (column.maxWidth && width > parseInt(column.maxWidth.toString(), 10)) {
+        } else if (!isNullOrUndefined(column.maxWidth) && width > parseInt(column.maxWidth.toString(), 10)) {
             return column.maxWidth;
         } else {
             return column.width;

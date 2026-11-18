@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl, GroupShapeElementBox, ServiceFailureArgs } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl, GroupShapeElementBox, ServiceFailureArgs, ParagraphDialog, FontDialog } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
@@ -399,6 +399,10 @@ export class CollaborativeEditingHandler {
                     let element: ElementBox;
                     if (markerData.type && markerData.type === 'Bookmark') {
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
+                            // A bookmark name must be unique. Replace the existing bookmark with the incoming one.
+                            if (this.documentEditor.documentHelper.bookmarks.containsKey(markerData.bookmarkName)) {
+                                this.removeExistingBookmark(markerData.bookmarkName);
+                            }
                             let bookmarks: BookmarkElementBox[] = this.documentEditor.editorModule.createBookmarkElements(markerData.bookmarkName);
                             element = bookmarks[0];
                             this.documentEditor.documentHelper.isBookmarkInserted = false;
@@ -408,6 +412,18 @@ export class CollaborativeEditingHandler {
                                 const bookmark: BookmarkElementBox = this.documentEditor.documentHelper.bookmarks.get(markerData.bookmarkName);
                                 if (bookmark) {
                                     element = bookmark.reference;
+                                    if (element.line) {
+                                        // The end marker of this bookmark is already in the document. Inserting the same element again
+                                        // makes the layout loop, so insert a new end marker and remove the previous one.
+                                        const previousEnd: BookmarkElementBox = bookmark.reference;
+                                        const previousLine: LineWidget = previousEnd.line;
+                                        const newEnd: BookmarkElementBox = this.documentEditor.editorModule.createBookmarkElements(markerData.bookmarkName)[1];
+                                        newEnd.reference = bookmark;
+                                        bookmark.reference = newEnd;
+                                        element = newEnd;
+                                        previousLine.children.splice(previousLine.children.indexOf(previousEnd), 1);
+                                        this.documentEditor.documentHelper.layout.reLayoutParagraph(previousLine.paragraph, 0, 0);
+                                    }
                                     this.documentEditor.documentHelper.isBookmarkInserted = true;
                                     this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
                                     this.documentEditor.selectionModule.selectBookmark(markerData.bookmarkName);
@@ -910,7 +926,60 @@ export class CollaborativeEditingHandler {
         return undefined;
     }
 
+    private removeExistingBookmark(name: string): void {
+        const existing: BookmarkElementBox = this.documentEditor.documentHelper.bookmarks.get(name);
+        const startLine: LineWidget = existing.line;
+        const endLine: LineWidget = existing.reference ? existing.reference.line : undefined;
+        this.documentEditor.editorModule.deleteBookmarkInternal(existing);
+        // Restore the selection-based layout state by relayouting the paragraphs that held the removed markers.
+        if (startLine) {
+            this.documentEditor.documentHelper.layout.reLayoutParagraph(startLine.paragraph, 0, 0);
+        }
+        if (endLine && (!startLine || endLine.paragraph !== startLine.paragraph)) {
+            this.documentEditor.documentHelper.layout.reLayoutParagraph(endLine.paragraph, 0, 0);
+        }
+    }
+
+    /**
+     * Adjusts a queued local Format operation against a remote Insert or Delete,
+     * so that the format is applied to the same content after the remote change.
+     */
+    private transformLocalFormat(format: Operation, remote: Operation): void {
+        const start: number = format.offset;
+        let length: number = isNullOrUndefined(format.length) ? 0 : format.length;
+        const remoteStart: number = remote.offset;
+        const remoteLength: number = isNullOrUndefined(remote.length) ? 0 : remote.length;
+        if (remote.action === 'Insert') {
+            if (remoteStart <= start) {
+                format.offset = start + remoteLength;
+            } else if (remoteStart < start + length) {
+                length += remoteLength;
+            }
+        } else {
+            const remoteEnd: number = remoteStart + remoteLength;
+            const end: number = start + length;
+            if (remoteEnd <= start) {
+                format.offset = start - remoteLength;
+            } else if (remoteStart < end) {
+                const overlap: number = Math.min(end, remoteEnd) - Math.max(start, remoteStart);
+                length -= overlap;
+                format.offset = Math.min(start, remoteStart);
+                if (length <= 0) {
+                    length = 0;
+                    format.skipOperation = true;
+                }
+            }
+        }
+        if (!isNullOrUndefined(format.length)) {
+            format.length = length;
+        }
+    }
+
     private transformOperation(operation1: Operation, operation2: Operation, action: Operation[]): Operation[] {
+        if (operation1.action === 'Format' && (operation2.action === 'Insert' || operation2.action === 'Delete')) {
+            this.transformLocalFormat(operation1, operation2);
+            return [operation1, operation2];
+        }
         if (operation1.action === 'Insert' && (operation2.action === 'Insert' || operation2.action === 'Format')) {
             if (operation1.offset < operation2.offset) {
                 operation2.offset = operation2.offset + operation1.length;
@@ -1041,7 +1110,7 @@ export class CollaborativeEditingHandler {
                 color = this.userMap[data.connectionId].color;
                 caret = this.userMap[data.connectionId].caret;
             } else {
-                color = this.getColorForMember(Math.random() * 100);
+                color = this.getColorForMember(data.currentUser);
                 caret = createElement('div', { className: 'e-de-blink-cursor', styles: ('position:absolute;border-left: 2px solid ' + color) });
                 this.userMap[data.connectionId] = new CaretInfo(color, caret, removeOffset, data.currentUser);
             }
@@ -1055,9 +1124,20 @@ export class CollaborativeEditingHandler {
             delete this.userMap[connectionId];
         }
     }
-    private getColorForMember(randonNumber: number) {
-        const colorValue = randonNumber % 20;
-        return `hsl(${(colorValue * 360 / 7) % 360}, 100%, 35%)`;
+    private getColorForMember(userName: string): string {
+        // Derive the colour from the normalized (trimmed, case-insensitive) user name so that every connection (tab) of the same user gets the same colour.
+        const name: string = (userName || '').trim().toLowerCase();
+        let hash: number = 0;
+        for (let i: number = 0; i < name.length; i++) {
+            hash = (hash * 31 + name.charCodeAt(i)) | 0;
+        }
+        hash ^= hash >>> 16;
+        hash = (Math as any).imul(hash, 0x21f0aaad);
+        hash ^= hash >>> 15;
+        hash = (Math as any).imul(hash, 0x735a2d97);
+        hash ^= hash >>> 15;
+        const hue: number = Math.round((Math.abs(hash) * 137.508) % 360);
+        return `hsl(${hue}, 100%, 35%)`;
     }
     private updateCaretPositionInteral(caret: HTMLElement, start: number): void {
         let zoomFactor: number = this.documentEditor.zoomFactor;
@@ -1586,7 +1666,10 @@ export class CollaborativeEditingHandler {
         let keys = Object.keys(characterFormat);
         this.documentEditor.documentHelper.owner.parser.parseCharacterFormat(0, characterFormat, format);
         if (keys.length > 1) {
-            this.documentEditor.documentHelper.owner.fontDialogModule.onCharacterFormat(this.documentEditor.selectionModule, format);
+            let fontDialog: FontDialog = this.documentEditor.documentHelper.owner.fontDialogModule;
+            if (!isNullOrUndefined(fontDialog)) {
+                fontDialog.onCharacterFormat(this.documentEditor.selectionModule, format);
+            }
             this.documentEditor.editorModule.onApplyCharacterFormat('CharacterFormat', format);
         } else if (keys.length === 1) {
             if (keys.indexOf('styleName') !== -1) {
@@ -1638,7 +1721,10 @@ export class CollaborativeEditingHandler {
                 }
             }
         } else {
-            this.documentEditor.documentHelper.owner.paragraphDialogModule.onParagraphFormat(format);
+            let paragraphDialog: ParagraphDialog = this.documentEditor.documentHelper.owner.paragraphDialogModule;
+            if (!isNullOrUndefined(paragraphDialog)) {
+                paragraphDialog.onParagraphFormat(format);
+            }
         }
     }
     private insertTableFormat(type: string, tableData: string, offset: number) {

@@ -550,7 +550,7 @@ export class Sort implements IAction {
         for (const col of this.sortedColumns) {
             if (fieldNames.indexOf(col) === -1) { continue; }
             const header: Element = this.parent.getColumnHeaderByField(col);
-            this.aria.setSort(<HTMLElement>header, this.getSortColumnFromField(col).direction);
+            this.aria.setSort(<HTMLElement>header, (this.getSortColumnFromField(col).direction).toLowerCase() as SortDirection);
         }
     }
 

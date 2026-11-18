@@ -28,6 +28,9 @@ export class EditorController {
      */
     public process(self: RichTextEditorUI, args?: ActionBeginEventArgs | EditorCommandName, event?: MouseEvent | KeyboardEvent,
                    value?: unknown): void {
+        if (!self || self.enable === false || self.readonly) {
+            return;
+        }
         const action: EditorCommandName = typeof args === 'string'
             ? args as EditorCommandName
             : (args ? (args as ActionBeginEventArgs).action : '' as EditorCommandName);
@@ -46,14 +49,14 @@ export class EditorController {
                 };
                 if (action === 'table') {
                     self.notify(events.insertTable, {
-                        callBack: this.onSuccess.bind(this, self, actionCompleteArgs)
+                        callBack: this.onSuccess.bind(this, self, actionCompleteArgs, event)
                     });
                     return;
                 }
                 this.editorCore.observer.notify(events.executeCommand, {
                     action: actionBeginArgs.action,
                     args: value !== undefined ? value : actionBeginArgs,
-                    callBack: this.onSuccess.bind(this, self, actionCompleteArgs)
+                    callBack: this.onSuccess.bind(this, self, actionCompleteArgs, event)
                 });
             }
         });
@@ -94,16 +97,16 @@ export class EditorController {
      * Queries the formatting state once and broadcasts it to toolbar modules.
      *
      * @param {RichTextEditorUI} self - specifies the self element.
-     * @param {ActionCompleteEventArgs} args  - Action complete args
+     * @param {ActionCompleteEventArgs} args  - Action complete args.
+     * @param {MouseEvent | KeyboardEvent} [event] - The originating DOM event, forwarded from `process`.
      * @returns {void}
      * @hidden
      */
-    public onSuccess(self?: RichTextEditorUI, args?: ActionCompleteEventArgs): void {
-        // Step 1: Query formatting state once via the centralized service
+    public onSuccess(self: RichTextEditorUI, args: ActionCompleteEventArgs, event?: MouseEvent | KeyboardEvent): void {
         const state: FormattingState = self.formattingStateService.refreshFormattingState(this.editorCore as unknown as any);
         self.triggerUpdatedToolbarStatus(state);
         self.trigger(events.actionComplete, args);
-        self.notify(events.insertCompleted, {args: args, value: args.action , event: event});
+        self.notify(events.insertCompleted, { args: args, value: args.action, event: event });
     }
     /**
      * Save the data for undo and redo action.
@@ -117,7 +120,7 @@ export class EditorController {
     }
 
     public getSelectedBlock(): { node: { type: string; attrs: Record<string, unknown> }; source: string } | null {
-        return this.editorCore.editor.getSelectedBlock();
+        return this.editorCore.editor.getSelectedBlocks()[0];
     }
 
     /**
@@ -210,7 +213,7 @@ export class EditorController {
     }
 
     public getSelectedBlockElem(): HTMLElement {
-        return this.editorCore.editor.getSelectedBlock().dom;
+        return this.editorCore.editor.getSelectedBlocks()[0].dom;
     }
 
     public getSelectedBlockElements(): HTMLElement[] {

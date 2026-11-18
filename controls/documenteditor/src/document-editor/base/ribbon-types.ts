@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /**
  * Supported ribbon tab types.
  */

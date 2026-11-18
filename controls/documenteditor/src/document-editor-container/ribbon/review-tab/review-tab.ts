@@ -1,6 +1,5 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
-import { DocumentEditor } from '../../../document-editor';
 import { ReviewCommentsGroup } from './review-comments-group';
 import { TrackingGroup } from './tracking-group';
 import { ProtectGroup } from './protect-group';
@@ -12,6 +11,7 @@ export const REVIEW_TAB_ID: string = '_review_tab';
 
 /**
  * ReviewTab module
+ *
  * @private
  */
 export class ReviewTab {
@@ -31,6 +31,7 @@ export class ReviewTab {
 
     /**
      * Constructor for ReviewTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -45,6 +46,7 @@ export class ReviewTab {
 
     /**
      * Get the Review tab configuration
+     *
      * @returns {RibbonTabModel} - Review tab configuration
      * @private
      */
@@ -63,6 +65,7 @@ export class ReviewTab {
 
     /**
      * Update UI when selection changes in the document
+     *
      * @returns {void}
      * @private
      */
@@ -75,6 +78,7 @@ export class ReviewTab {
 
     /**
      * Destroy the ReviewTab instance
+     *
      * @returns {void}
      * @private
      */

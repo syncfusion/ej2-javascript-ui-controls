@@ -2,7 +2,7 @@
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, TextSearch, HelperMethods } from '../index';
 import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
-import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget, FootnoteElementBox, BookmarkElementBox } from '../viewer/page';
+import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget, FootnoteElementBox, BookmarkElementBox, ImageElementBox} from '../viewer/page';
 import { isNullOrUndefined, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { BaselineAlignment, TextWrappingStyle } from '../../base/types';
 import { DocumentHelper } from '../viewer';
@@ -869,7 +869,7 @@ export class SpellChecker {
         let inlineObj: any = insertPosition.currentWidget.getInline(this.documentHelper.selection.start.offset, 0);
         let text: string;
         // If selection is in header/footer prefer header/footer error element
-        if (!isNullOrUndefined(insertPosition.currentWidget) && insertPosition.currentWidget.paragraph && insertPosition.currentWidget.paragraph.isInHeaderFooter) {
+        if (!isNullOrUndefined(inlineObj) && !isNullOrUndefined(inlineObj.element) && !isNullOrUndefined(insertPosition.currentWidget) && insertPosition.currentWidget.paragraph && insertPosition.currentWidget.paragraph.isInHeaderFooter && !(inlineObj.element instanceof ImageElementBox)) {
             const errorWords: Dictionary<string, ElementBox[]> = this.errorWordCollection;
             const currentWord: string = this.getErrorWordText((inlineObj.element as TextElementBox).text);
             const exactKey: string = this.manageSpecialCharacters(currentWord, undefined, true);
@@ -1321,6 +1321,9 @@ export class SpellChecker {
      * @private
      */
     public handleSplitWordSpellCheck(jsonObject: any, currentText: string, elementBox: TextElementBox, isSamePage: boolean, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean, combinedElements?: TextElementBox[]): void {
+        if (isNullOrUndefined(elementBox.line)) {
+            return;
+        }
         if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
             const textSearch: TextSearch = this.documentHelper.owner.searchModule.textSearch;
             let matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);

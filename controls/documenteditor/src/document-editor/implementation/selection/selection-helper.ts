@@ -11,7 +11,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection } from './selection';
 import { HyperlinkType } from '../../index';
 import { ShapeBase } from '../viewer';
-import { EditRangeEndElementBox } from '../viewer/page';
+import { EditRangeEndElementBox, EditRangeStartElementBox } from '../viewer/page';
 /* eslint-disable */
 /**
  * @private
@@ -660,7 +660,7 @@ export class TextPosition {
         const inlineObj: ElementInfo = this.currentWidget.getInline(this.offset, indexInInline);
         inline = inlineObj.element;
         indexInInline = inlineObj.index;
-        if (inline instanceof FieldElementBox && inline.fieldType === 0) {
+        if ((inline instanceof FieldElementBox && inline.fieldType === 0) || inline instanceof EditRangeStartElementBox) {
             this.offset++;
         }
     }
@@ -806,7 +806,7 @@ export class TextPosition {
         index = inlineInfo.index;
         const lineIndex: number = this.paragraph.childWidgets.indexOf(this.currentWidget);
         if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)
-            || inline instanceof BookmarkElementBox) {
+            || inline instanceof BookmarkElementBox || inline instanceof EditRangeStartElementBox) {
             this.movePreviousPositionInternal(inline as FieldElementBox);
         }
         this.updateOffsetToPrevPosition(index, false);
@@ -1027,7 +1027,7 @@ export class TextPosition {
             }
         }
         this.currentWidget = inline.line;
-        const index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox ? 0 : inline.length;
+        const index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox || inline instanceof EditRangeStartElementBox ? 0 : inline.length;
         this.offset = this.currentWidget.getOffset(inline, index);
     }
     /**

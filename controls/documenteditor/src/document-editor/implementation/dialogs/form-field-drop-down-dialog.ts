@@ -5,7 +5,6 @@ import { DocumentHelper } from '../viewer';
 import { FieldElementBox, ElementBox, DropDownFormField } from '../viewer/page';
 import { ListView } from '@syncfusion/ej2-lists';
 import { TextBox } from '@syncfusion/ej2-inputs';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 
 /**

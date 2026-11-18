@@ -2,7 +2,7 @@ import { DocumentHelper } from '../viewer';
 import { L10n, createElement } from '@syncfusion/ej2-base';
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DialogUtility } from '@syncfusion/ej2-popups';
+import { DialogUtility, OpenEventArgs } from '@syncfusion/ej2-popups';
 /**
  * @private
  */
@@ -146,7 +146,7 @@ export class AddUserDialog {
         } else {
             DialogUtility.alert({
                 content: 'Invalid user name',
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }

@@ -123,7 +123,7 @@ export class Link {
      *
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 }

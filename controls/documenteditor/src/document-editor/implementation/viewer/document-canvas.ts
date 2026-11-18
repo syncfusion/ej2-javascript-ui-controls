@@ -53,6 +53,7 @@ export class DocumentCanvasElement {
      * @private
      * @returns {CanvasRenderingContext2D} - Returns the canvas rendering context 2D.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getContext(contextId: '2d', options?: CanvasRenderingContext2DSettings): DocumentCanvasRenderingContext2D {
         return this.context;
     }
@@ -62,6 +63,7 @@ export class DocumentCanvasElement {
      * @private
      * @returns {string} - Returns the data URL containing a representation of the image in the format specified by the type parameter.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public toDataURL(type?: string, quality?: any): string {
         return this.context.renderedPath;
     }
@@ -128,9 +130,11 @@ export class DocumentCanvasRenderingContext2D {
     public beginPath(): void {
         this.renderedPath += (BEGIN_PATH + ';');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public clip(fillRule?: CanvasFillRule): void {
         this.renderedPath += (CLIP + ';');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public fill(fillRule?: CanvasFillRule): void {
         this.renderedPath += (FILL + ';');
     }
@@ -174,6 +178,7 @@ export class DocumentCanvasRenderingContext2D {
             this.renderedPath += (MAX_WIDTH + ':' + maxWidth + ';');
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public measureText(text: string): any {
         return { width: 30 };
     }

@@ -3,7 +3,7 @@ import { HelperMethods, HyperlinkTextInfo } from '../editor/editor-helper';
 import { FieldElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs, Button } from '@syncfusion/ej2-buttons';
+import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs } from '@syncfusion/ej2-buttons';
 import { DocumentHelper } from '../viewer';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';

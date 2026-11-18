@@ -34,7 +34,7 @@ export class TaskProcessor extends DateProcessor {
     private isHavingUnscheduledTaskOnLoad: boolean = false;
     private originalStartDate: Date | null = null;
     private originalEndDate: Date | null = null;
-
+    public calendarContextCache: Map<Object, CalendarContext> = new Map<Object, CalendarContext>();
     constructor(parent: Gantt) {
         super(parent);
         this.recordIndex = 0;
@@ -52,6 +52,8 @@ export class TaskProcessor extends DateProcessor {
      */
     public checkDataBinding(isChange?: boolean): void {
         if (isChange) {
+            this.endDateFromDurationCache.clear();
+            this.calendarContextCache.clear();
             this.parent.flatData = [];
             this.parent.currentViewData = [];
             this.parent.updatedRecords = [];
@@ -63,6 +65,12 @@ export class TaskProcessor extends DateProcessor {
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
             this.parent.taskIds = [];
+            if (this.parent.uniqueIDMap) {
+                this.parent.uniqueIDMap.clear();
+            }
+            if (this.parent.flatRecordMap) {
+                this.parent.flatRecordMap.clear();
+            }
         }
         if (isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];
@@ -87,6 +95,7 @@ export class TaskProcessor extends DateProcessor {
         this.parent.flatData.map((data: IGanttData) => {
             this.parent.chartRowsModule.updateSegment(data.ganttProperties.segments, data.ganttProperties.taskId);
         });
+        return;
     }
     private processTimeline(): void {
         this.parent.processTimeline();
@@ -149,7 +158,7 @@ export class TaskProcessor extends DateProcessor {
             const data: object[] = [];
             let tempDataArray: Object[];
             if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !this.parent.enableVirtualization) {
-                tempDataArray = JSON.parse(JSON.stringify(this.dataArray));
+                tempDataArray = this.dataArray.map((item: Object) => extend({}, {}, item, true));
             }
             for (let i: number = 0; i < this.dataArray.length; i++) {
                 const tempData: Object = this.dataArray[i as number];
@@ -258,6 +267,7 @@ export class TaskProcessor extends DateProcessor {
      */
     private prepareDataSource(data: Object[]): void {
         this.prepareRecordCollection(data, 0);
+        this.parent.initialLoadData = this.parent.flatData;
         this.parent.initialLoadData = extend({}, {}, this.parent.flatData, true);
         if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
             this.parent.taskFields.hasChildMapping)) {
@@ -315,6 +325,12 @@ export class TaskProcessor extends DateProcessor {
             if (isNullOrUndefined(ganttData.parentItem)) {
                 this.isHavingUnscheduledTaskOnLoad = true;
             }
+        }
+        if (this.parent.uniqueIDMap) {
+            this.parent.uniqueIDMap.set(ganttData.uniqueID, ganttData);
+        }
+        if (this.parent.flatRecordMap && ganttData.ganttProperties) {
+            this.parent.flatRecordMap.set(String(ganttData.ganttProperties.rowUniqueID), ganttData);
         }
         this.parent.flatData.push(ganttData);
     }
@@ -437,6 +453,20 @@ export class TaskProcessor extends DateProcessor {
     private getGanttUid (prefix: string): string {
         return `${prefix}${this.uid++}`;
     }
+    /**
+     * Returns a cached CalendarContext for the given calendar model.
+     *
+     * @param {Object} calendarModel - The calendar model for which to get (or build) the context.
+     * @returns {Calendar} The shared CalendarContext instance.
+     * @private
+     */
+    public getCachedCalendarContext(calendarModel: Object): CalendarContext {
+        if (!this.calendarContextCache.has(calendarModel)) {
+            this.calendarContextCache.set(
+                calendarModel, new CalendarContext(this.parent, calendarModel as ProjectCalendarModel));
+        }
+        return this.calendarContextCache.get(calendarModel);
+    }
 
     private processCustomColumns(data: Object): void {
         if (!this.parent.customColumns || this.parent.customColumns.length === 0) {
@@ -542,7 +572,7 @@ export class TaskProcessor extends DateProcessor {
         let unModifiedData: Object;
         if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && !this.parent.enableVirtualization) {
             ganttData = data;
-            unModifiedData = JSON.parse(JSON.stringify(data));
+            unModifiedData = extend({}, {}, data, true);
         } else {
             ganttData = {} as IGanttData;
         }
@@ -599,11 +629,11 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             const calendarModel: ProjectCalendarModel = this.parent.calendarModule.getCalendarById(calendarValue);
-            const context: CalendarContext = new CalendarContext(this.parent, calendarModel);
+            const context: CalendarContext = this.getCachedCalendarContext(calendarModel);
             this.parent.setRecordValue('calendarContext', context, ganttProperties, true);
         } else {
             const calendarModel: ProjectCalendarModel = this.parent.calendarSettings.projectCalendar;
-            const context: CalendarContext = new CalendarContext(this.parent, calendarModel);
+            const context: CalendarContext = this.getCachedCalendarContext(calendarModel);
             this.parent.setRecordValue('calendarContext', context, ganttProperties, true);
         }
         // eslint-disable-next-line
@@ -3338,6 +3368,8 @@ export class TaskProcessor extends DateProcessor {
             let data: ITaskData;
             let ganttData: IGanttData;
             this.parent.secondsPerDay = this.getSecondsPerDay();
+            this.calendarContextCache.clear();
+            this.endDateFromDurationCache.clear();
             for (let index: number = 0; index < this.parent.flatData.length; index++) {
                 data = this.parent.flatData[index as number].taskData;
                 ganttData = this.parent.flatData[index as number];
@@ -3347,7 +3379,7 @@ export class TaskProcessor extends DateProcessor {
                 const calendarModel: ProjectCalendarModel = this.parent.calendarModule.getCalendarById(
                     ganttData.ganttProperties.calendarId
                 );
-                const context: CalendarContext = new CalendarContext(this.parent, calendarModel);
+                const context: CalendarContext = this.getCachedCalendarContext(calendarModel);
                 this.parent.setRecordValue('calendarContext', context, ganttData.ganttProperties, true);
                 if (this.parent.isLoad) {
                     this.setStartDate(ganttData);

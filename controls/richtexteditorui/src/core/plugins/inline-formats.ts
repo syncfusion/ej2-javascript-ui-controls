@@ -81,20 +81,28 @@ export class InlineFormats {
             this.parent.editor.commands.toggleSuperscript();
             break;
         case 'fontColor':
-            this.parent.editor.commands.setColor({color: (args.args as ColorCommand).color});
+            if ((args.args as ColorCommand).color === '') {
+                this.parent.editor.commands.unsetColor();
+            } else {
+                this.parent.editor.commands.setColor({color: (args.args as ColorCommand).color});
+            }
             break;
         case 'backgroundColor':
-            this.parent.editor.commands.setHighlight( {color: (args.args as ColorCommand).color});
+            if ((args.args as ColorCommand).color === '') {
+                this.parent.editor.commands.unsetHighlight();
+            } else {
+                this.parent.editor.commands.setHighlight( {color: (args.args as ColorCommand).color});
+            }
             break;
         case 'setFontSize':
-            if (!(args.args as FontSizeCommand).size) {
+            if (!(args.args as FontSizeCommand).size || (args.args as FontSizeCommand).size === 'Default') {
                 this.parent.editor.commands.unsetFontSize();
             } else {
                 this.parent.editor.commands.setFontSize({ size: (args.args as FontSizeCommand).size });
             }
             break;
         case 'setFontFamily':
-            if (!(args.args as FontFamilyCommand).family) {
+            if (!(args.args as FontFamilyCommand).family || (args.args as FontFamilyCommand).family === 'Default') {
                 this.parent.editor.commands.unsetFontFamily();
             } else {
                 this.parent.editor.commands.setFontFamily({ family: (args.args as FontFamilyCommand).family });
@@ -119,7 +127,7 @@ export class InlineFormats {
      *
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 

@@ -1,11 +1,11 @@
-import { RibbonGroupModel, ItemOrientation, RibbonItemModel } from '@syncfusion/ej2-ribbon';
-import { DocumentEditor } from '../../../document-editor/document-editor';
+import { RibbonGroupModel, ItemOrientation } from '@syncfusion/ej2-ribbon';
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 
 /**
  * Table of Contents group implementation for Reference tab
+ *
  * @private
  */
 export class TableOfContentsGroup extends RibbonGroupBase {
@@ -15,6 +15,7 @@ export class TableOfContentsGroup extends RibbonGroupBase {
 
     /**
      * Constructor for TableOfContentsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -23,6 +24,7 @@ export class TableOfContentsGroup extends RibbonGroupBase {
 
     /**
      * Get the Ribbon items for Table of Contents group
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Table of Contents group
      * @private
      */
@@ -72,6 +74,7 @@ export class TableOfContentsGroup extends RibbonGroupBase {
 
     /**
      * Insert Table of Contents
+     *
      * @returns {void}
      */
     private insertTableOfContents(): void {
@@ -85,6 +88,7 @@ export class TableOfContentsGroup extends RibbonGroupBase {
 
     /**
      * Update Table of Contents handler
+     *
      * @returns {void}
      */
     private updateTocHandler(): void {
@@ -99,6 +103,7 @@ export class TableOfContentsGroup extends RibbonGroupBase {
 
     /**
      * Update UI based on selection state
+     *
      * @returns {void}
      * @private
      */

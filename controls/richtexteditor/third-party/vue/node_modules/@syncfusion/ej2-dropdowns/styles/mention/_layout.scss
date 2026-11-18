@@ -1,6 +1,0 @@
-@use 'variables' as *;
-@include export-module('mention-layout') {
-  .e-mention-placeholder {
-    display: block;
-  }
-}

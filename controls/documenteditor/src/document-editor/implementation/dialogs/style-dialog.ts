@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, attributes, updateCSSText } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, updateCSSText } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
@@ -812,6 +812,13 @@ export class StyleDialog {
         this.documentHelper.dialog2.close = this.closeStyleDialog;
         this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog2.show();
+    }
+    /**
+    * @returns {WCharacterStyle | WParagraphStyle} The style object
+    * @private
+    */
+    public getStyles(): WCharacterStyle | WParagraphStyle {
+        return this.style;
     }
     /**
      * @private

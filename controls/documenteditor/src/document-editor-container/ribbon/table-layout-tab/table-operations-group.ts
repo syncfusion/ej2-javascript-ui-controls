@@ -10,11 +10,13 @@ export const INSERT_DROPDOWN_ID: string = '_insert_dropdown';
 
 /**
  * Represents the Table Operations Group in Table Layout tab
+ *
  * @private
  */
 export class TableOperationsGroup extends RibbonGroupBase {
     /**
      * Constructor for the TableOperationsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -23,6 +25,7 @@ export class TableOperationsGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Table Operations
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -46,6 +49,7 @@ export class TableOperationsGroup extends RibbonGroupBase {
 
     /**
      * Gets the Select dropdown model
+     *
      * @returns {RibbonItemModel} The ribbon item model
      */
     private getSelectDropDown(): RibbonItemModel {
@@ -74,6 +78,7 @@ export class TableOperationsGroup extends RibbonGroupBase {
 
     /**
      * Gets the Delete dropdown model
+     *
      * @returns {RibbonItemModel} The ribbon item model
      */
     private getDeleteDropDown(): RibbonItemModel {
@@ -101,6 +106,7 @@ export class TableOperationsGroup extends RibbonGroupBase {
 
     /**
      * Gets the Insert dropdown model
+     *
      * @returns {RibbonItemModel} The ribbon item model
      */
     private getInsertDropDown(): RibbonItemModel {

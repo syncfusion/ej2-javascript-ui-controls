@@ -393,6 +393,12 @@ export class ContentRender implements IRenderer {
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
+        if (this.parent.isAngular && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache)
+            && registeredTemplates && this.parent.columnTemplateIDs && this.parent.columnTemplateIDs.length > 0
+            && !args.isFrozen && !isFrozenLeft) {
+            this.parent.destroyTemplate(this.parent.columnTemplateIDs);
+            this.parent.columnTemplateIDs = [];
+        }
         if ((this.parent.isReact || this.parent.isVue) && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && !args.isFrozen) {
             let templates: string[] = [
                 this.parent.isVue ? 'template' : 'columnTemplate', 'rowTemplate', 'detailTemplate',

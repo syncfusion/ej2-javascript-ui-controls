@@ -10,8 +10,13 @@ import { EditorCore } from '../../core/base/editor-core';
 import { FormattingState } from '../../common/services/formatting-state.service';
 import * as classes from '../../base/classes';
 import * as constant from '../../common/constant';
+import { BaseToolbarItem } from '../model/toolbar.types';
 
-/** Coordinates the base quick-toolbar instances for each RTE context. */
+/**
+ * Coordinates the base quick-toolbar instances for each RTE context.
+ *
+ * @private
+ **/
 export class QuickToolbarModule extends BaseModule {
     public quickToolbars: Record<QuickToolbarType, BaseQuickToolbar> = {
         Audio: undefined,
@@ -77,18 +82,19 @@ export class QuickToolbarModule extends BaseModule {
     private mouseUpHandler(args: { originalEvent?: MouseEvent }): void {
         const event: MouseEvent | undefined = args && args.originalEvent ? args.originalEvent : undefined;
         const selectedBlock: HTMLElement = this.parent.editorController.getSelectedBlockElem();
-        const target: HTMLElement | null = selectedBlock.querySelector('.is-selected');
-        if (target && target.querySelector('img') && this.canRenderImageToolbar(this.parent.quickToolbarSettings)) {
+        const imgElement: boolean = (event as any).originalEvent && (event as any).originalEvent.target.tagName.toUpperCase() === 'IMG';
+        if (imgElement && this.canRenderImageToolbar(this.parent.quickToolbarSettings)) {
+            const target: HTMLElement | null = (event as any).originalEvent.target;
             this.showImageQuickToolbar(target, event);
             const imageToolbar: BaseQuickToolbar | null = this.getToolbar('Image');
             if (imageToolbar && imageToolbar.isRendered) {
                 if (this.parent.imageModule) {
-                    this.parent.imageModule.setSelectedImage(target.querySelector('img') as HTMLImageElement);
+                    this.parent.imageModule.setSelectedImage(target as HTMLImageElement);
                 }
             }
             return;
         }
-        const tableWrapper: HTMLElement | null = selectedBlock.classList?.contains('tableWrapper') ? selectedBlock : selectedBlock.closest('.tableWrapper');
+        const tableWrapper: HTMLElement | null = selectedBlock.classList?.contains(classes.CLS_TABLE_WRAPPER) ? selectedBlock : selectedBlock.closest('.' + classes.CLS_TABLE_WRAPPER);
         if (tableWrapper) {
             return;
         }
@@ -97,8 +103,6 @@ export class QuickToolbarModule extends BaseModule {
             return;
         }
         this.showTextQuickToolbar(event);
-        const originalEvent: MouseEvent | undefined = args && args.originalEvent ? args.originalEvent : undefined;
-        this.showTextQuickToolbar(originalEvent);
     }
 
     public render(): void {
@@ -156,7 +160,7 @@ export class QuickToolbarModule extends BaseModule {
         this.removeEventListener();
     }
 
-    private createToolbar(type: QuickToolbarType, items: QuickToolbarSettings['text']): void {
+    private createToolbar(type: QuickToolbarType, items: BaseToolbarItem): void {
         const toolbar: BaseQuickToolbar = new BaseQuickToolbar(type, this.parent);
         const refresh: () => void = (): void => {
             this.updateQuickToolbarStatus(type);
@@ -337,18 +341,30 @@ export class QuickToolbarModule extends BaseModule {
         if (this.isToolbarElement(target) || this.isEditorSubComponentElement(target)) {
             this.isToolbarInteracting = true;
             this.skipBlurClose = true;
+            this.parent.beginInternalFocusTransition();
             return;
         }
         this.isToolbarInteracting = false;
-        this.skipBlurClose = true;
+        this.skipBlurClose = false;
         if (this.isAnyToolbarOpen() && !this.isEditorElement(target)) {
             this.hideQuickToolbars(false, 'OutsideInteraction', e);
         }
     }
 
     private documentMouseUpHandler(): void {
+        const activeElement: Element | null = this.parent.inputElement && this.parent.inputElement.ownerDocument
+            ? this.parent.inputElement.ownerDocument.activeElement as Element | null
+            : null;
+        const isInternalFocus: boolean = !!(activeElement && (this.isToolbarElement(activeElement) ||
+            this.isEditorElement(activeElement) || this.isEditorSubComponentElement(activeElement)));
+        if (isInternalFocus) {
+            this.isToolbarInteracting = true;
+            this.skipBlurClose = true;
+            return;
+        }
         this.isToolbarInteracting = false;
         this.skipBlurClose = false;
+        this.parent.endInternalFocusTransition();
     }
 
     private onQuickToolbarKeyUp(e: KeyboardEvent): void {
@@ -437,7 +453,7 @@ export class QuickToolbarModule extends BaseModule {
                 originalEvent: Event;
                 event: Event;
                 reason: string;
-                subType: string;
+                source: string;
             } = {
                 cancel: false,
                 element: toolbar.element,
@@ -445,7 +461,7 @@ export class QuickToolbarModule extends BaseModule {
                 originalEvent: originalEvent,
                 event: originalEvent,
                 reason: reason,
-                subType: type
+                source: type
             };
             this.parent.trigger('beforePopupClose', eventArgs as never, (closeArgs: { cancel?: boolean }): void => {
                 if (!closeArgs.cancel) {
@@ -494,13 +510,18 @@ export class QuickToolbarModule extends BaseModule {
         if (!this.isAnyToolbarOpen()) {
             return;
         }
-        if (this.skipBlurClose) {
-            this.skipBlurClose = false;
-            return;
-        }
         const focusEvent: FocusEvent = args && args.originalEvent ? args.originalEvent : undefined;
         const relatedTarget: Node = focusEvent && focusEvent.relatedTarget ? focusEvent.relatedTarget as Node : null;
-        if (this.isToolbarInteracting || this.isToolbarElement(relatedTarget) || this.isEditorElement(relatedTarget)) {
+        const activeElement: Element | null = this.parent.inputElement && this.parent.inputElement.ownerDocument
+            ? this.parent.inputElement.ownerDocument.activeElement as Element | null
+            : null;
+        const focusTarget: Node | null = relatedTarget || activeElement;
+        if (this.skipBlurClose || this.isToolbarInteracting || this.isToolbarElement(focusTarget) ||
+            this.isEditorElement(focusTarget) || this.isEditorSubComponentElement(focusTarget)) {
+            if (this.skipBlurClose) {
+                this.skipBlurClose = false;
+            }
+            this.isToolbarInteracting = true;
             return;
         }
         this.hideQuickToolbars(false, 'EditorBlur', focusEvent);

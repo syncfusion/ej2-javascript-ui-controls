@@ -25,6 +25,38 @@ export declare class ToggleCommandBuilder {
     protected executeCommand(command: string, args?: any): void;
 }
 /**
+ * Builder for collapsible command
+ */
+export declare class CollapsibleCommandBuilder extends ToggleCommandBuilder {
+    private collapsibleArgs;
+    /**
+     * Creates a collapsible command builder
+     *
+     * @param {any} editor - The editor instance
+     */
+    constructor(editor: any);
+    /**
+     * Set trigger type
+     *
+     * @param {'paragraph' | 'heading'} triggerType - Trigger type
+     * @returns {CollapsibleCommandBuilder} - Builder instance
+     */
+    triggerType(triggerType: 'paragraph' | 'heading'): this;
+    /**
+     * Set heading level
+     *
+     * @param {1 | 2 | 3 | 4} level - Heading level
+     * @returns {CollapsibleCommandBuilder} - Builder instance
+     */
+    level(level: 1 | 2 | 3 | 4): this;
+    /**
+     * Execute the collapsible command
+     *
+     * @returns {void}
+     */
+    apply(): void;
+}
+/**
  * Builder for link command with chainable URL/text options.
  *
  * Owns the link-command payload assembly and dispatch. The internal link module
@@ -260,6 +292,23 @@ export declare class ListStyleCommandBuilder extends ToggleCommandBuilder {
     apply(): void;
 }
 /**
+ * Builder for checklist command
+ */
+export declare class ChecklistCommandBuilder extends ToggleCommandBuilder {
+    /**
+     * Creates a checklist command builder
+     *
+     * @param {any} editor - The editor instance
+     */
+    constructor(editor: any);
+    /**
+     * Execute the checklist command
+     *
+     * @returns {void}
+     */
+    apply(): void;
+}
+/**
  * Builder for text alignment command
  */
 export declare class AlignmentCommandBuilder extends ToggleCommandBuilder {
@@ -280,6 +329,27 @@ export declare class AlignmentCommandBuilder extends ToggleCommandBuilder {
     /**
      * Execute the alignment command with set options
      *
+     * @returns {void}
+     */
+    apply(): void;
+}
+/**
+ * Builder for the callout command. Sets the callout variant (info | warning
+ * | error | success | note) before dispatching the toggle to the headless
+ * editor.
+ */
+export declare class CalloutCommandBuilder extends ToggleCommandBuilder {
+    private calloutArgs;
+    constructor(editor: any);
+    /**
+     * Set the callout variant.
+     *
+     * @param {CalloutCommand} variant - The variant to apply. Valid values:
+     *                                   `'info' | 'warning' | 'error' | 'success' | 'note'`.
+     * @returns {CalloutCommandBuilder} this builder, for chaining.
+     */
+    callout(variant: 'info' | 'warning' | 'error' | 'success' | 'note'): this;
+    /** Execute the callout command with set options.
      * @returns {void}
      */
     apply(): void;
@@ -392,6 +462,12 @@ export declare class CommandExecutor {
      */
     paragraph(): ToggleCommandBuilder;
     /**
+     * Get a builder for the collapsible command
+     *
+     * @returns {ToggleCommandBuilder} - The command builder
+     */
+    collapsible(): CollapsibleCommandBuilder;
+    /**
      * Get a builder for the blockQuote command
      *
      * @returns {ToggleCommandBuilder} - The command builder
@@ -482,9 +558,21 @@ export declare class CommandExecutor {
      */
     setListStyle(): ListStyleCommandBuilder;
     /**
+     * Get a builder for the toggleTaskList command
+     *
+     * @returns {ChecklistCommandBuilder} - The task list command builder
+     */
+    toggleTaskList(): ChecklistCommandBuilder;
+    /**
      * Get a builder for the setTextAlign command
      *
      * @returns {AlignmentCommandBuilder} - The alignment command builder
      */
     setTextAlign(): AlignmentCommandBuilder;
+    /**
+     * Get a builder for the callout command.
+     *
+     * @returns {CalloutCommandBuilder} the callout command builder.
+     */
+    callout(): CalloutCommandBuilder;
 }

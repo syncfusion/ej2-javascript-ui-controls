@@ -8,6 +8,7 @@ export const INSERT_ENDNOTE_BUTTON_ID: string = '_insert_endnote';
 
 /**
  * Footnotes group implementation for Reference tab
+ *
  * @private
  */
 export class FootnotesGroup extends RibbonGroupBase {
@@ -15,6 +16,7 @@ export class FootnotesGroup extends RibbonGroupBase {
 
     /**
      * Constructor for FootnotesGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -23,6 +25,7 @@ export class FootnotesGroup extends RibbonGroupBase {
 
     /**
      * Get the Ribbon items for Footnotes group
+     *
      * @returns {RibbonGroupModel} - Ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -70,6 +73,7 @@ export class FootnotesGroup extends RibbonGroupBase {
 
     /**
      * Insert Footnote handler
+     *
      * @returns {void}
      */
     private insertFootnoteHandler(): void {
@@ -78,6 +82,7 @@ export class FootnotesGroup extends RibbonGroupBase {
 
     /**
      * Insert Endnote handler
+     *
      * @returns {void}
      */
     private insertEndnoteHandler(): void {
@@ -86,6 +91,7 @@ export class FootnotesGroup extends RibbonGroupBase {
 
     /**
      * Update UI based on selection state
+     *
      * @returns {void}
      * @private
      */

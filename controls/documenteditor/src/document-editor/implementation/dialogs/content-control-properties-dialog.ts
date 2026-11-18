@@ -1,19 +1,11 @@
 import { ListView } from '@syncfusion/ej2-lists';
-import { Button, ChangeEventArgs, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
+import { Button, ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ContentControl, ContentControlListItems, ElementBox, TabStopListInfo, TextElementBox } from '../viewer/page';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { ColorPicker, ColorPickerEventArgs, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
-import { ElementInfo, HelperMethods, PositionInfo } from '../editor/editor-helper';
-import { TabJustification, TabLeader } from '../../base/types';
-import { WTabStop } from '../format/paragraph-format';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { SelectionCharacterFormat } from '../selection';
+import { ContentControl, ContentControlListItems, ElementBox } from '../viewer/page';
+import { ColorPicker, ColorPickerEventArgs, TextBox } from '@syncfusion/ej2-inputs';
 import { TextPosition } from '../selection/selection-helper';
 import { WCharacterFormat } from '../format';
 import { DocumentHelper } from '../viewer';
-import { ListBox } from '@syncfusion/ej2-dropdowns';
-import { ListViewModel } from './list-view-model';
 
 export class ContentControlPropertiesDialog {
     /**
@@ -100,6 +92,7 @@ export class ContentControlPropertiesDialog {
         }) as HTMLInputElement;
         return element;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public initContentControlPropertiesDialog(localeValue: L10n, enableRtl: boolean): void {
         this.target = createElement('div', { className: 'e-de-cont-cntr' });
         this.container = createElement('div');

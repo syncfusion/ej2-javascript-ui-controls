@@ -1,4 +1,4 @@
-import { Component, Property, L10n } from '@syncfusion/ej2-base';
+import { Component, Property, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';
 import { RenderingMode, BarcodeEvent, DataMatrixEncoding, DataMatrixSize, BarcodeExportType } from '../barcode/enum/enum';
 import { ValidateEvent } from '../barcode/rendering/canvas-interface';
@@ -9,7 +9,11 @@ import { Margin } from '../barcode/primitives/margin';
 import { BarcodeRenderer } from '../barcode/rendering/renderer';
 import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';
 import { DataMatrix } from './datamatrix-util';
+import { Gs1DataMatrix } from './gs1-datamatrix';
 import { DataMatrixGeneratorModel } from './datamatrix-model';
+import { WebMcpBarcode, WebMcpBarcodeSettings } from '../barcode/integrations/webmcp-adapter';
+import { WebMcpBarcodeSettingsModel } from '../barcode/integrations/webmcp-adapter-model';
+import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../barcode/rendering/canvas-interface';
 
 
 /**
@@ -112,6 +116,16 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
     @Property(1)
     public xDimension: number;
 
+    /**
+     * Specifies whether the value is encoded as a GS1 DataMatrix. When true, the value is
+     * GS1 data, bracketed or raw; it is validated and encoded with FNC1. Base256 encoding
+     * cannot be used.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableGS1: boolean;
+
 
 
     /** @private */
@@ -120,11 +134,101 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
     private barcodeCanvas: HTMLElement;
 
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    @Complex<WebMcpBarcodeSettingsModel>({}, WebMcpBarcodeSettings)
+    public webMcpSettings: WebMcpBarcodeSettingsModel;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Set `args.cancel` to `true` to prevent the tool from running, or `args.showConfirmationDialog`
+     * to ask the user for confirmation first.
+     *
+     * @event
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
+     * `webMcpBarcodeModule` is used for WebMCP tool integration
+     *
+     * @private
+     */
+    public webMcpBarcodeModule: WebMcpBarcode;
+
     /** @private */
     public localeObj: L10n;
     /** @private */
     // eslint-disable-next-line
     private defaultLocale: Object;
+
+    /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+
+    /**
+     * Registers WebMCP tools on document.modelContext for this component instance.
+     *
+     * @param {string} [prefix] - Optional: unique prefix for tool names. Defaults to the element `id`.
+     * @param {string[] | WebMcpTool[]} [tools] - Optional: allowlist of tool names or customized tool definitions.
+     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
+     * @returns {void}
+     */
+    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
+        this.notify('registerWebMcpTools', { prefix, tools, exposedTo });
+    }
+
+    private initWebMcp(): void {
+        if (this.webMcpBarcodeModule) {
+            this.webMcpBarcodeModule.init(this);
+            const settings: WebMcpBarcodeSettingsModel = this.webMcpSettings || {};
+            this.webMcpBarcodeModule.registerTools({
+                prefix: settings.name || this.element.id,
+                tools: settings.tools,
+                exposedTo: settings.exposedTo
+            });
+        }
+    }
+
+    /**
+     * To provide the array of modules needed for control rendering
+     *
+     * @returns {ModuleDeclaration[]} To provide the array of modules needed for control rendering
+     * @private
+     */
+    public requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        if (this.enableWebMcp) {
+            modules.push({
+                member: 'WebMcpBarcode',
+                args: [this]
+            });
+        }
+        return modules;
+    }
 
     /**
      * It is used to destroy the Barcode component.
@@ -143,7 +247,15 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
     private initializePrivateVariables(): void {
         this.defaultLocale = {
-
+            GS1InvalidFormat: 'The value must be GS1 data, in bracketed AI notation such as (01)09506000134376(10)ABC123, or raw.',
+            GS1UnsupportedAI: 'The Application Identifier is not supported.',
+            GS1InvalidLength: 'The value of an Application Identifier has an invalid length.',
+            GS1InvalidCharacter: 'The value of an Application Identifier contains characters outside the GS1 character set.',
+            GS1InvalidDate: 'The date of an Application Identifier is not a valid YYMMDD date.',
+            GS1InvalidCheckDigit: 'The check digit of the GTIN or SSCC is not valid.',
+            GS1DuplicateAI: 'An Application Identifier appears more than once.',
+            GS1MissingRequiredAI: 'The value requires a GTIN (01) for the Application Identifiers used.',
+            GS1InvalidEncoding: 'Base256 encoding cannot be used with GS1 DataMatrix.'
         };
     }
 
@@ -261,6 +373,27 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
+            case 'enableWebMcp':
+                if (newProp.enableWebMcp && !this.webMcpBarcodeModule) {
+                    // Enabling WebMCP at runtime: manually instantiate and initialize the module
+                    this.webMcpBarcodeModule = new WebMcpBarcode(this);
+                    this.initWebMcp();
+                } else if (!newProp.enableWebMcp && this.webMcpBarcodeModule) {
+                    // Disabling WebMCP at runtime: unregister tools and destroy the module
+                    this.webMcpBarcodeModule.unregisterTools();
+                    this.webMcpBarcodeModule.destroy();
+                    this.webMcpBarcodeModule = null;
+                }
+                break;
+            case 'webMcpSettings':
+                if (this.webMcpBarcodeModule) {
+                    this.webMcpBarcodeModule.registerTools({
+                        prefix: this.webMcpSettings.name || this.element.id,
+                        tools: this.webMcpSettings.tools,
+                        exposedTo: this.webMcpSettings.exposedTo
+                    });
+                }
+                break;
             case 'mode':
                 this.initialize();
                 break;
@@ -318,11 +451,26 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
 
     private renderElements(): void {
-        const dataMatrix: DataMatrix = new DataMatrix();
+        const dataMatrix: DataMatrix = this.enableGS1 ? new Gs1DataMatrix() : new DataMatrix();
         this.value = this.value || '';
+        if (this.enableGS1) {
+            const gs1DataMatrix: Gs1DataMatrix = dataMatrix as Gs1DataMatrix;
+            if (this.encoding === 'Base256') {
+                this.triggerEvent(BarcodeEvent.invalid, this.localeObj.getConstant('GS1InvalidEncoding'));
+                return;
+            }
+            gs1DataMatrix.locale = this.localeObj;
+            const gs1Message: string = gs1DataMatrix.validateGs1(this.value);
+            if (gs1Message !== undefined) {
+                this.triggerEvent(BarcodeEvent.invalid, gs1Message);
+                return;
+            }
+            dataMatrix.value = gs1DataMatrix.buildGs1Data();
+        } else {
+            dataMatrix.value = this.value;
+        }
         dataMatrix.encodingValue = this.encoding;
         dataMatrix.size = this.size;
-        dataMatrix.value = this.value;
         dataMatrix.width = this.barcodeCanvas.getAttribute('width');
         dataMatrix.height = this.barcodeCanvas.getAttribute('height');
         dataMatrix.XDimension = this.xDimension;
@@ -330,14 +478,25 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         dataMatrix.margin = this.margin;
         dataMatrix.displayText = this.displayText;
         dataMatrix.foreColor = this.foreColor;
+        let originalText: string;
+        if (this.enableGS1) {
+            // Show the human-readable GS1 text with the AIs in brackets.
+            originalText = this.displayText.text;
+            if (!originalText) {
+                this.displayText.text = (dataMatrix as Gs1DataMatrix).getHumanReadableText();
+            }
+        }
         const checkOtherLanguage: boolean = this.checkdata(this.value);
         const encoding: string | number[] = (dataMatrix.BuildDataMatrix());
         if (isNaN(encoding[0] as number)) {
             this.triggerEvent(BarcodeEvent.invalid, encoding as string);
-        } else if (!checkOtherLanguage) {
+        } else if (!checkOtherLanguage && !this.enableGS1) {
             this.triggerEvent(BarcodeEvent.invalid, 'Invalid input');
         } else {
             dataMatrix.draw(this.barcodeCanvas);
+        }
+        if (this.enableGS1) {
+            this.displayText.text = originalText;
         }
         if (this.mode === 'Canvas') {
             this.barcodeCanvas.style.transform = 'scale(' + (2 / 3) + ')';
@@ -361,6 +520,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.initWebMcp();
         this.renderComplete();
     }
 }

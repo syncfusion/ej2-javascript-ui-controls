@@ -12,28 +12,28 @@
  * from src/index.ts. It exists solely to keep Editor clean and focused
  * on its public API.
  */
-import { DocumentRoot } from '../model/editor-node';
-import { IdGenerator } from '../utils/id-generator';
+import { DocumentRoot } from '../core/model/editor-node';
 import { PMPlugin } from '../pm/pm-guard';
 import { IntegrationManager } from '../pm/integration/integration-manager';
-import { EditorConfig } from '../model/editor-config';
+import { EditorConfig } from '../core/model/editor-config';
 import { ExtensionManager } from '../extensions/extension-manager';
 import { ExtensionCompiler } from '../extensions/extension-compiler';
-import { EventBus } from '../events/event-bus';
-import { CommandRegistry } from '../commands/registry';
+import { EventBus } from '../core/events/event-bus';
+import { CommandRegistry } from '../core/commands/registry';
 import { HeadlessEditor } from './headless-editor';
-import { UploadStateRegistry } from '../services/upload-state-registry';
-import { DiagnosticsService } from '../diagnostics';
-import { CommandManager } from '../commands/manager';
+import { UploadStateRegistry } from '../core/services/upload-state-registry';
+import { DiagnosticsService } from '../core/diagnostics';
+import { CommandManager } from '../core/commands/manager';
 /**
  * EditorBuilderOptions — internal result object returned by EditorBuilder.
  * Contains all initialized dependencies needed to construct an Editor.
  *
  * Used internally by Editor.create() only.
+ *
+ * @hidden
  */
 export interface EditorBuilderOptions {
     integration: IntegrationManager;
-    idGen: IdGenerator;
     initialDoc: DocumentRoot;
     extensionManager?: ExtensionManager;
     extensionCompiler: ExtensionCompiler;
@@ -45,10 +45,11 @@ export interface EditorBuilderOptions {
  *
  * Instead of constructing an Editor directly, it returns EditorBuilderOptions
  * so Editor.create() can invoke the constructor itself.
+ *
+ * @hidden
  */
 export declare class EditorBuilder {
     private readonly config;
-    private idGen;
     private schemaManager;
     private initialDoc;
     private extensionManager;
@@ -91,13 +92,7 @@ export declare class EditorBuilder {
      */
     initiate(eventBus: EventBus, commandRegistry: CommandRegistry, diagnostics: DiagnosticsService): EditorBuilderOptions;
     /**
-     * Step 1: Resolve the ID generator (already done in constructor, but explicit here).
-     *
-     * @returns {void}
-     */
-    private _resolveIdGenerator;
-    /**
-     * Step 2: Load and validate the schema definition.
+     * Step 1: Load and validate the schema definition.
      * Delegates to SchemaManager for structural validation.
      *
      * @returns {void}
@@ -167,7 +162,7 @@ export declare class EditorBuilder {
      *   1. history()              — undo/redo stack (MUST come first to see all transactions)
      *   2. selectionSyncPlugin    — bridges PM selection changes to EventBus
      *   3. focusBlurPlugin        — bridges DOM focus/blur events to EventBus
-     *   4. buildKeymapPlugin      — maps keyboard shortcuts to CommandManager
+     *   4. specialNodeDeletionPlugin — two-beat selection/deletion for built-in special blocks
      *   5. compileInputRulesPlugin     — text-pattern → command dispatch (NEW)
      *   6. ...artifacts.plugins        — plugins contributed by extensions (last)
      *

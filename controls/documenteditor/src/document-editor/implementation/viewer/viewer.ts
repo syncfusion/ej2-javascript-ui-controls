@@ -49,6 +49,7 @@ import { Themes } from '../themes/themes';
 import { beforeAutoResize, internalAutoResize, internalStyleCollectionChange } from '../../base/constants';
 import { incrementalOps } from '../../base/index';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
+
 /**
  * @private
  */
@@ -57,6 +58,18 @@ export class DocumentHelper {
      * @private
      */
     public isCompleted: boolean = true;
+    /**
+     * Format Painter cursor for non-text areas: native arrow plus the theme glyph.
+     *
+     * @private
+     */
+    public formatPainterCursor: string = 'text';
+    /**
+     * Format Painter cursor over selectable text: native I-beam plus the theme glyph.
+     *
+     * @private
+     */
+    public formatPainterTextCursor: string = 'text';
     /**
      * @private
      * To set the copied content to the clipboard. Reserved for internal use.
@@ -789,6 +802,7 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.pageContainer)
             && this.containerCanvasIn.parentElement !== this.pageContainer) {
             this.pageContainer.appendChild(this.containerCanvasIn);
+            this.syncFormatPainterCursor(this.containerCanvasIn);
         }
         return this.containerCanvasIn;
     }
@@ -855,6 +869,8 @@ export class DocumentHelper {
             paragraph.containerWidget = bodyWidget;
             bodyWidget.childWidgets.push(paragraph);
         }
+        // Text files have no header/footer part; register empty ones so that header/footer region checks work.
+        this.headersFooters.push(this.owner.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined));
         if (this.owner.documentEditorSettings.openAsyncSettings.enable) {
             await this.owner.documentHelper.onDocumentChanged([bodyWidget], undefined, true);
         } else {
@@ -876,6 +892,7 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.pageContainer)
             && this.selectionCanvasIn.parentElement !== this.pageContainer) {
             this.pageContainer.appendChild(this.selectionCanvasIn);
+            this.syncFormatPainterCursor(this.selectionCanvasIn);
         }
         return this.selectionCanvasIn;
     }
@@ -1744,7 +1761,7 @@ export class DocumentHelper {
      * @param {string} author - Specifies author name.
      * @returns {string} - Return autor color.
      */
-    public getAuthorColor(author: string): string {
+     public getAuthorColor(author: string): string {
         if (this.authors.containsKey(author)) {
             return this.authors.get(author);
         }
@@ -2010,9 +2027,25 @@ export class DocumentHelper {
                 this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
                 return;
             }
+            // The menu may not have finished opening when the editable div blurs.
+            // A context-menu gesture must not cancel Format Painter.
+            const active: Element = document.activeElement;
+            if (!isNullOrUndefined(active) && !isNullOrUndefined((active as HTMLElement).closest)
+                && !isNullOrUndefined((active as HTMLElement).closest(
+                    '.e-de-contextmenu-wrapper, .e-contextmenu-wrapper, .e-menu-wrapper'))) {
+                return;
+            }
+            // Losing focus does not cancel Format Painter. Escape, typing, and an
+            // explicit cancel do. An outside click is not one of those.
             this.selection.hideCaret();
         }
     };
+    private isFormatPainterChromeTarget(target: HTMLElement): boolean {
+        if (isNullOrUndefined(target) || isNullOrUndefined(target.closest)) {
+            return false;
+        }
+        return !isNullOrUndefined(target.closest('.e-de-ctnr-toolbar, .e-toolbar, .e-ribbon, .e-de-statusbar, .e-de-ctnr-properties-pane, .e-dialog, .e-popup, .e-dropdown-popup, .e-de-contextmenu-wrapper, .e-contextmenu-wrapper, .e-menu-wrapper'));
+    }
     /**
      * Updates focus to editor area.
      *
@@ -2182,6 +2215,11 @@ export class DocumentHelper {
         }
         if (!isNullOrUndefined(this.owner.editorHistoryModule)) {
             this.owner.editorHistoryModule.destroy();
+        }
+        if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.formatPainterModule)) {
+            // A new document invalidates any copied Format Painter format and
+            // cancels an active painter; stored widgets no longer resolve.
+            this.selection.formatPainterModule.cancel();
         }
         this.owner.isDocumentLoaded = true;
         this.owner.isUpdateTrackChanges = false;
@@ -2358,11 +2396,25 @@ export class DocumentHelper {
         if (this.owner.vRuler) {
             this.markIndicator = this.owner.element.querySelector('#' + this.owner.element.id + ('_markIndicator'));
             if(this.markIndicator) {
-                this.markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
+                // Absolute chrome is viewport-fixed; keep tab-stop switch at the corner (not scrollLeft).
+                this.markIndicator.style.left = '0px';
+                this.markIndicator.style.position = 'absolute';
             }
         }
-        if(this.owner.rulerHelper && !isNullOrUndefined(this.owner.rulerHelper.vRulerBottom)) {
-            this.owner.rulerHelper.vRulerBottom.style.height = this.pageContainer.offsetHeight + 'px';
+        // Bug 1046959: vRuler chrome is parented under optionsPaneContainer (not clipped by
+        // viewer scroll). Keep track height at the visible viewer viewport — pageContainer
+        // height would stretch the ruler on every scroll/selection update.
+        if (this.owner.rulerHelper && !isNullOrUndefined(this.owner.rulerHelper.vRulerBottom)) {
+            const viewportHeight: number = this.viewerContainer
+                ? this.viewerContainer.clientHeight
+                : this.pageContainer.offsetHeight;
+            this.owner.rulerHelper.vRulerBottom.style.height = viewportHeight + 'px';
+        }
+        // Absolute rulers no longer inherit horizontal/vertical pan from sticky positioning.
+        // Re-apply scale margins from viewer scroll so the ruler tracks the page like before.
+        if (this.owner.rulerHelper && this.owner.documentEditorSettings
+            && this.owner.documentEditorSettings.showRuler) {
+            this.owner.rulerHelper.syncRulerScrollOffset(this.owner);
         }
         this.owner.viewer.updateScrollBars();
         const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
@@ -2431,11 +2483,12 @@ export class DocumentHelper {
      */
     public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
+            // Right-click does not select or paint. Drop the pointer gesture
+            // before mouse-up so Format Painter stays armed and applies nothing.
+            this.isMouseDown = false;
+            this.isSelectionChangedOnMouseMoved = false;
             if(this.isIosDevice) {
                 this.onMouseUpInternal(event);
-            }
-            if (this.isMouseDown) {
-                this.isMouseDown = false;
             }
             this.owner.contextMenuModule.onContextMenuInternal(event);
             this.updateFocus();
@@ -3171,10 +3224,21 @@ export class DocumentHelper {
             if(this.isMouseDown) {
                 this.updateFocus();
             }
+            // A click that started in the editor sets this flag. A click on an
+            // external control bubbles here too, but never set it. That click
+            // must not paint or consume the painter.
+            const startedInEditor: boolean = this.isMouseDown;
             this.isMouseDownInSelection = false;
             this.isMouseDown = false;
             this.isFootnoteWidget = false;
             this.isSelectionChangedOnMouseMoved = false;
+            // Left click and selection drag only. Right-click opens the context
+            // menu, and a content drag moves text; neither paints or cancels.
+            if (startedInEditor && this.isLeftButtonPressed(event) && !this.isDragStarted && !isNullOrUndefined(this.selection)
+                && !isNullOrUndefined(this.selection.formatPainterModule)
+                && this.selection.formatPainterModule.isActive) {
+                this.selection.formatPainterModule.onPointerSelectionEnd();
+            }
             this.isTouchInput = false;
             this.useTouchSelectionMark = true;
             this.isControlPressed = false;
@@ -3515,6 +3579,9 @@ export class DocumentHelper {
             this.selection.selectCurrentWord();
         }
         if (!isNullOrUndefined(this.owner.contextMenuModule) && this.owner.contextMenuModule.contextMenuInstance) {
+            // Long-press opens the menu. It is not a painter target.
+            this.isMouseDown = false;
+            this.isSelectionChangedOnMouseMoved = false;
             this.owner.contextMenuModule.onContextMenuInternal(event);
         }
     }
@@ -3622,6 +3689,11 @@ export class DocumentHelper {
                 this.touchDownOnSelectionMark = 0;
                 this.useTouchSelectionMark = true;
                 this.isSelectionChangedOnMouseMoved = false;
+                this.isTouchMoved = false;
+                if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.formatPainterModule)
+                    && this.selection.formatPainterModule.isActive) {
+                    this.selection.formatPainterModule.onPointerSelectionEnd();
+                }
             }
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing) {
                 this.owner.imageResizerModule.mouseUpInternal();
@@ -3830,6 +3902,14 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.selection)) {
             this.selection.updateCaretPosition();
         }
+        // Bug 1046959: absolute ruler chrome must follow viewerContainer when side panes change width.
+        if (this.owner && this.owner.rulerHelper && this.owner.documentEditorSettings
+            && this.owner.documentEditorSettings.showRuler) {
+            this.owner.rulerHelper.syncRulerChromeToViewer(this.owner);
+        }
+        if (this.owner && this.owner.editorModule) {
+            this.owner.editorModule.refreshLockedRegionAlertLayout();
+        }
         // if(!isNullOrUndefined(this.owner) && (!isNullOrUndefined(this.owner.hRuler && !isNullOrUndefined(this.owner.vRuler))))
         // {
         //      updateRuler(this.owner);
@@ -3922,6 +4002,9 @@ export class DocumentHelper {
             this.selectionCanvas.style.width = width + 'px';
             this.selectionCanvas.style.height = height + 'px';
             this.measureScrollbarWidth(element);
+            if (this.owner && this.owner.editorModule) {
+                this.owner.editorModule.refreshLockedRegionAlertLayout();
+            }
         }
     }
 
@@ -5001,6 +5084,9 @@ export class DocumentHelper {
             this.restrictEditingPane.destroy();
             this.restrictEditingPane = undefined;
         }
+        if (this.owner && this.owner.editorModule) {
+            this.owner.editorModule.destroyLockedRegionAlert();
+        }
         
         if (this.layout) {
             this.layout.destroy();
@@ -5155,6 +5241,60 @@ export class DocumentHelper {
         }
         this.viewerContainer.removeEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
     }
+    /**
+     * Copies the active Format Painter cursor onto a canvas attached after the mode starts.
+     *
+     * @param {HTMLElement} element - Canvas created after Format Painter was armed.
+     * @returns {void}
+     */
+    private syncFormatPainterCursor(element: HTMLElement): void {
+        if (isNullOrUndefined(element) || isNullOrUndefined(this.selection)
+            || isNullOrUndefined(this.selection.formatPainterModule)
+            || !this.selection.formatPainterModule.isActive) {
+            return;
+        }
+        element.style.cursor = this.viewerContainer && this.viewerContainer.style.cursor
+            ? this.viewerContainer.style.cursor : this.formatPainterCursor;
+    }
+    /**
+     * Applies the Format Painter cursor on the viewer and the page canvases.
+     * The canvas is the hit target, so a cursor set only on the viewer never shows.
+     *
+     * @param {boolean} overText - True when the pointer is over a text line.
+     * @returns {void}
+     * @private
+     */
+    public applyFormatPainterCursor(overText: boolean): void {
+        // The painter owns the glyph. Building it here would touch the DOM while
+        // this module loads, before document.body exists.
+        if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.formatPainterModule)) {
+            this.selection.formatPainterModule.ensureCursor();
+        }
+        const cursor: string = overText ? this.formatPainterTextCursor : this.formatPainterCursor;
+        const targets: HTMLElement[] = [this.viewerContainer, this.pageContainer, this.containerCanvasIn, this.selectionCanvasIn];
+        for (let i: number = 0; i < targets.length; i++) {
+            if (!isNullOrUndefined(targets[i])) {
+                targets[i].style.cursor = cursor;
+            }
+        }
+    }
+    /**
+     * Clears the Format Painter cursor from the viewer and the page canvases.
+     *
+     * @returns {void}
+     * @private
+     */
+    public clearFormatPainterCursor(): void {
+        if (!isNullOrUndefined(this.viewerContainer)) {
+            this.viewerContainer.style.cursor = 'text';
+        }
+        const canvases: HTMLElement[] = [this.pageContainer, this.containerCanvasIn, this.selectionCanvasIn];
+        for (let i: number = 0; i < canvases.length; i++) {
+            if (!isNullOrUndefined(canvases[i])) {
+                canvases[i].style.cursor = '';
+            }
+        }
+    }
     public updateCursor(event: MouseEvent): void {
         let hyperlinkField: FieldElementBox = undefined;
         let footnoteElement: FootnoteElementBox = undefined;
@@ -5164,7 +5304,7 @@ export class DocumentHelper {
         let widget: LineWidget = this.getLineWidget(touchPoint);
         let widgetInfo: TextPositionInfo;
         let left: number;
-        let top: number;
+        let top: number = 0;
         let editor: Editor = !this.owner.isReadOnlyMode ? this.owner.editorModule : undefined;
         let isRowResize: boolean = editor ? editor.tableResize.isInRowResizerArea(touchPoint) : false;
         let isCellResize: boolean = editor ? editor.tableResize.isInCellResizerArea(touchPoint) : false;
@@ -5239,6 +5379,17 @@ export class DocumentHelper {
             }
         }
         let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
+        // Format Painter stays active, but the cursor still follows the hit target:
+        // I-beam plus the theme glyph over a text line, arrow plus the glyph elsewhere.
+        // Apply even when no line widget is hit, otherwise the default cursor remains.
+        // The page canvas is the hit target and keeps its own cursor, so set both.
+        if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.formatPainterModule)
+            && this.selection.formatPainterModule.isActive) {
+            const overText: boolean = !isNullOrUndefined(widget)
+                && touchPoint.x >= lineLeft && touchPoint.y >= top && touchPoint.y <= top + widget.height;
+            this.applyFormatPainterCursor(overText);
+            return;
+        }
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
             if (!isNullOrUndefined(formField)) {
@@ -5981,6 +6132,10 @@ export abstract class LayoutViewer {
         this.clientActiveArea.height = this.clientActiveArea.height - diff;
     }
     private updateBoundsBasedOnTextWrapTable(bottom: number) {
+        if (bottom > this.clientArea.bottom) {
+            this.clientActiveArea = new Rect(this.clientArea.x, bottom, this.clientArea.width, this.clientArea.bottom - bottom);
+            return;
+        }
         let diff: number = bottom - this.clientArea.y;
         this.clientArea.y = bottom;
         this.clientArea.height = this.clientArea.height - diff;
@@ -7236,7 +7391,10 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateScrollBars();
     }
     public updateScrollBars(): void {
-        if(!isNullOrUndefined(this.owner.editor) && this.owner.editor.restrictLayout){
+        // editorModule, not the editor getter: a stale layout timer can call
+        // this after enableEditor is set false, and the getter throws
+        // "Inject Editor module" in that case.
+        if(!isNullOrUndefined(this.owner.editorModule) && this.owner.editorModule.restrictLayout){
             return;
         }
         let updatePositionObj: PageInfo;
@@ -7451,7 +7609,10 @@ export class WebLayoutViewer extends LayoutViewer {
         return width;
     }
     public updateScrollBars(): void {
-        if(!isNullOrUndefined(this.owner.editor) && this.owner.editor.restrictLayout){
+        // editorModule, not the editor getter: a stale layout timer can call
+        // this after enableEditor is set false, and the getter throws
+        // "Inject Editor module" in that case.
+        if(!isNullOrUndefined(this.owner.editorModule) && this.owner.editorModule.restrictLayout){
             return;
         }
         let updatePositionObj: PageInfo;

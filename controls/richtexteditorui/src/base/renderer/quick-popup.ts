@@ -35,9 +35,9 @@ export class QuickPopupRenderer {
 
     private createPopup(element: HTMLElement): Popup {
         const popup: Popup = new Popup(element, {
-            viewPortElement: this.parent.quickToolbarSettings.appendToBody ? null
+            viewPortElement: this.parent.quickToolbarSettings.enableAppendToBody ? null
                 : this.parent.inputElement,
-            zIndex: this.parent.quickToolbarSettings.appendToBody ? null : 9,
+            zIndex: this.parent.quickToolbarSettings.enableAppendToBody ? null : 9,
             collision: { X: 'fit', Y: 'flip' },
             position: { X: 'left', Y: 'top' },
             actionOnScroll: 'none',

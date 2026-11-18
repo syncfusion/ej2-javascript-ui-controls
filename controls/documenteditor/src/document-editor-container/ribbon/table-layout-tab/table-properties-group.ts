@@ -1,13 +1,13 @@
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
-import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 
 export const TABLE_PROPERTIES_GROUP_ID: string = '_table_properties_group';
 export const TABLE_PROPERTIES_BUTTON_ID: string = '_table_properties_button';
 
 /**
  * Represents the Table Properties Group in Table Layout tab
+ *
  * @private
  */
 export class TablePropertiesGroup extends RibbonGroupBase {

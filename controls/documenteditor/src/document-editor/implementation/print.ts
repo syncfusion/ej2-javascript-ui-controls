@@ -75,7 +75,6 @@ export class Print {
         window.addEventListener('beforeunload', this.closePrintWindow);
         const interval: number = Number(setInterval(
             () => {
-                // eslint-disable-next-line
                 if ((<{ ready: (Function) } & Window>printWindow).ready) {
                     printWindow.print();
                     printWindow.close();

@@ -24,7 +24,7 @@ export class Dependency {
     private validatedParentIds: string[] = [];
     public isValidatedParentTaskID: string;
     private storeId: string[] = [];
-    public isChildRecordValidated: (number | string)[] = [];
+    public isChildRecordValidated: Set<string | number> = new Set();
     private cumulativePredecessorChanges: IPredecessor[];
     private validatedOffsetIds: string[] = [];
     public predecessorsCollection: Map<string, IGanttData> = new Map();
@@ -1348,6 +1348,10 @@ export class Dependency {
             this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
                 this.parent.updatedRecords : this.parent.expandedRecords;
         }
+        this.parent.connectorLineModule.expandedRecordsSet.clear();
+        for (const record of this.parent.connectorLineModule.expandedRecords) {
+            this.parent.connectorLineModule.expandedRecordsSet.add(record);
+        }
         const flatData: IGanttData[] = this.parent.flatData;
         const flatDataCollection: Map<string, IGanttData> = isPdfExport ? null : new Map();
         if (!isPdfExport && !isNullOrUndefined(flatData))
@@ -1412,9 +1416,9 @@ export class Dependency {
                    !this.parent.allowTaskbarOverlap && this.parent.viewType === 'ProjectView') {
                     isValid = false;
                 }
-                if (isValid && this.parent.connectorLineModule.expandedRecords &&
-                     this.parent.connectorLineModule.expandedRecords.indexOf(parentGanttRecord) !== -1 &&
-                    this.parent.connectorLineModule.expandedRecords.indexOf(childGanttRecord) !== -1) {
+                if (isValid && this.parent.connectorLineModule.expandedRecordsSet &&
+                    this.parent.connectorLineModule.expandedRecordsSet.has(parentGanttRecord) &&
+                    this.parent.connectorLineModule.expandedRecordsSet.has(childGanttRecord)) {
                     this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor, rowHeight);
                 }
             }
@@ -1585,10 +1589,10 @@ export class Dependency {
             const currentChild: IGanttData = stack.pop()!;
             const ganttProp: ITaskData = currentChild.ganttProperties;
             // === YOUR ORIGINAL CHECK — PRESERVED 100% ===
-            if (this.isChildRecordValidated.indexOf(ganttProp.taskId) !== -1) {
+            if (this.isChildRecordValidated.has(ganttProp.taskId)) {
                 continue; // skip, already processed
             }
-            this.isChildRecordValidated.push(ganttProp.taskId);
+            this.isChildRecordValidated.add(ganttProp.taskId);
             // === YOUR ORIGINAL PREDECESSOR LOGIC — PRESERVED ===
             if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
                 for (let j: number = 0; j < ganttProp.predecessor.length; j++) {
@@ -1599,7 +1603,7 @@ export class Dependency {
                     } else {
                         linkedTaskId = pred.from;
                     }
-                    const childRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(linkedTaskId)];
+                    const childRec: IGanttData = this.parent.getRecordByID(linkedTaskId);
                     if (childRec) {
                         {
                             this.validatePredecessor(childRec, [], '');
@@ -1668,6 +1672,7 @@ export class Dependency {
         const updateParentSet: Set<string> = new Set(
             this.parent.editModule['updateParentRecords'].map((r: IGanttData) => r.uniqueID)
         );
+        const visitedPairs: Set<string> = new Set();
         let parentGanttRecord: IGanttData;
         let record: IGanttData;
         for (let i: number = 0; i < predecessors.length; i++) {
@@ -1694,7 +1699,14 @@ export class Dependency {
                 : childGanttRecord.ganttProperties.rowUniqueID;
             if ((id.toString() === predecessor.to || id.toString() === predecessor.from) &&
                 (!validationOn || validationOn === 'predecessor')) {
-                this.handleTaskUpdate(parentGanttRecord, record);
+                const parentId: string = parentGanttRecord && parentGanttRecord.ganttProperties ?
+                    String(parentGanttRecord.ganttProperties.taskId) : 'null';
+                const childId: string = record && record.ganttProperties ? String(record.ganttProperties.taskId) : 'null';
+                const pairKey: string = parentId + '_' + childId;
+                if (!visitedPairs.has(pairKey)) {
+                    visitedPairs.add(pairKey);
+                    this.handleTaskUpdate(parentGanttRecord, record);
+                }
                 if (editedRecord && editedRecord.hasChildRecords && !editedRecord.parentItem) {
                     this.isValidatedParentTaskID = record.ganttProperties.taskId;
                 }
@@ -1718,7 +1730,14 @@ export class Dependency {
             this.parent.isValidationEnabled =
                 this.parent.isInPredecessorValidation && (record.ganttProperties.isAutoSchedule);
             if (validationOn !== 'predecessor' && this.parent.isValidationEnabled) {
-                this.handleTaskUpdate(parentGanttRecord, record);
+                const parentId: string = parentGanttRecord && parentGanttRecord.ganttProperties ?
+                    String(parentGanttRecord.ganttProperties.taskId) : 'null';
+                const childId: string = record && record.ganttProperties ? String(record.ganttProperties.taskId) : 'null';
+                const pairKey: string = parentId + '_' + childId;
+                if (!visitedPairs.has(pairKey)) {
+                    visitedPairs.add(pairKey);
+                    this.handleTaskUpdate(parentGanttRecord, record);
+                }
                 if (editedRecord && record) {
                     const rootParent: IGanttData = parentGanttRecord.parentItem
                         ? this.getRootParent(parentGanttRecord)
@@ -1823,6 +1842,12 @@ export class Dependency {
      * @returns {void} .
      */
     private updateChildItems(ganttRecord: IGanttData): void {
+        // Guard: Skip unscheduled parent tasks (consistent with load-time validation)
+        if (isNullOrUndefined(ganttRecord.ganttProperties.startDate) &&
+            isNullOrUndefined(ganttRecord.ganttProperties.endDate)) {
+            return;
+        }
+
         const calendarContext: CalendarContext = ganttRecord.ganttProperties.calendarContext;
         if (ganttRecord.childRecords.length > 0 && this.validatedChildItems && this.validatedChildItems.length > 0) {
             let isPresent: boolean = true;

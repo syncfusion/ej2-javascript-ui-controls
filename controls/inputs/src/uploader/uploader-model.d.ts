@@ -229,7 +229,7 @@ export interface UploaderModel extends ComponentModel{
      * Specifies the drop target to handle the drag-and-drop upload.
      * By default, the component creates wrapper around file input that will act as drop target.
      *
-     * > For more information, refer to the [drag-and-drop](../../uploader/file-source/#drag-and-drop) section from the documentation.
+     * > For more information, refer to the [drag-and-drop](../../uploader/file-source#drag-and-drop) section from the documentation.
      *
      * @default null
      */

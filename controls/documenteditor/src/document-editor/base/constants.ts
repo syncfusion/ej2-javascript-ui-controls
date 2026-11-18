@@ -79,9 +79,12 @@ export const trackChanges: string = 'trackChanges';
 /** @hidden */
 export const internalOptionPaneChange: string = 'internalOptionPaneChange';
 /** @hidden */
+export const internalFormatPainterStateChange: string = 'internalFormatPainterStateChange';
+/** @hidden */
 export const documentLoadFailedEvent: string = 'documentLoadFailed';
 /**
  * File menu item click event
+ *
  * @hidden
  */
 export const fileMenuItemClickEvent: string = 'fileMenuItemClick';
@@ -93,6 +96,7 @@ export const fileMenuItemClickEvent: string = 'fileMenuItemClick';
 export const beforePaste: string = 'beforePaste';
 /**
  * Triggers when pages loads asynchronously in the document editor
+ *
  * @hidden
  */
 export const asyncPagesVisible: string = 'asyncPagesVisible';

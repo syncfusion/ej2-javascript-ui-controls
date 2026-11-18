@@ -14,9 +14,9 @@
  *   - tableRole resolved to 'header_cell' via NODE_PM_METADATA
  *   - isolating: true     via NODE_PM_METADATA
  */
-import type { NodeDefinition } from '../../../schema/types/node-definition';
-import type { AttributeDefinition } from '../../../schema/types/attribute-definition';
-import { NodeContent } from '../../../schema/types/content-expression';
+import type { NodeDefinition } from '../../../core/schema/types/node-definition';
+import type { AttributeDefinition } from '../../../core/schema/types/attribute-definition';
+import { NodeContent } from '../../../core/schema/types/content-expression';
 
 export const tableHeaderNodeDef: NodeDefinition = {
     name: 'tableHeader',

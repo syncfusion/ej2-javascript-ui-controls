@@ -1,5 +1,5 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';
-import { ISlashCommandItem } from '../../common/interface';
+import { ChildProperty, Property, Event, EmitType } from '@syncfusion/ej2-base';
+import { ISlashCommandItem, SlashCommandItemSelectArgs } from '../../common/interface';
 import { SlashCommandItems } from '../../common/types';
 
 /**
@@ -17,9 +17,9 @@ export class SlashCommandSettings extends ChildProperty<SlashCommandSettings> {
     /**
      * Defines the items to be displayed in the slash command popup.
      *
-     * @default ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Blockquote', 'Table', 'Link', 'Image']
+     * @default ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Checklist', 'Blockquote', 'Table', 'Link', 'Image', 'Collapsible Paragraph', 'Collapsible Heading 1', 'Collapsible Heading 2', 'Collapsible Heading 3', 'Collapsible Heading 4', 'Info', 'Warning', 'Error', 'Success', 'Note' ]
      */
-    @Property(['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Blockquote', 'Table', 'Link', 'Image' ])
+    @Property(['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Checklist', 'Blockquote', 'Table', 'Link', 'Image', 'Collapsible Paragraph', 'Collapsible Heading 1', 'Collapsible Heading 2', 'Collapsible Heading 3', 'Collapsible Heading 4', 'Info', 'Warning', 'Error', 'Success', 'Note' ])
     public items: (SlashCommandItems | ISlashCommandItem)[];
 
     /**
@@ -41,6 +41,18 @@ export class SlashCommandSettings extends ChildProperty<SlashCommandSettings> {
      */
     @Property('320px')
     public popupHeight: string | number;
+
+    /**
+     * Raised when a slash command item is selected from the slash command popup.
+     *
+     * Set `args.cancel` to `true` inside the handler to prevent the default
+     * command execution. The event args are of type
+     * {@link SlashCommandItemSelectArgs}.
+     *
+     * @event itemSelect
+     */
+    @Event()
+    public itemSelect: EmitType<SlashCommandItemSelectArgs>;
 }
 
 /**
@@ -63,7 +75,7 @@ export interface ISlashCommandModel {
 /**
  * Represents an injectable slash command item model tied to a module.
  */
-export interface IInjectableSlashCommandModel extends ISlashCommandModel {
+export interface IModuleSlashCommandModel extends ISlashCommandModel {
     module: string;
 }
 
@@ -91,13 +103,24 @@ export const defaultSlashCommandDataModel: ISlashCommandModel[] = [
     { command: 'Heading 4', subCommand: 'heading4', type: 'Basic Block', iconCss: 'e-icons e-heading-4' },
     { command: 'NumberedList', subCommand: 'numberedList', type: 'Basic Block', iconCss: 'e-icons e-list-ordered' },
     { command: 'BulletList', subCommand: 'bulletList', type: 'Basic Block', iconCss: 'e-icons e-list-unordered' },
-    { command: 'Blockquote', subCommand: 'blockQuote', type: 'Basic Block', iconCss: 'e-icons e-blockquote' }
+    { command: 'Blockquote', subCommand: 'blockQuote', type: 'Basic Block', iconCss: 'e-icons e-blockquote' },
+    { command: 'Checklist', subCommand: 'checklist', type: 'Basic Block', iconCss: 'e-icons e-checklist' },
+    { command: 'Info', subCommand: 'calloutInfo', type: 'Basic Block', iconCss: 'e-icons e-circle-info'},
+    { command: 'Warning', subCommand: 'calloutWarning', type: 'Basic Block', iconCss: 'e-icons e-warning'},
+    { command: 'Error', subCommand: 'calloutError', type: 'Basic Block', iconCss: 'e-icons e-circle-close'},
+    { command: 'Success', subCommand: 'calloutSuccess', type: 'Basic Block', iconCss: 'e-icons e-circle-check'},
+    { command: 'Note', subCommand: 'calloutNote', type: 'Basic Block', iconCss: 'e-icons e-notes'},
+    { command: 'Collapsible Paragraph', subCommand: 'collapsibleParagraph', type: 'Basic Block', iconCss: 'e-icons e-paragraph' },
+    { command: 'Collapsible Heading 1', subCommand: 'collapsibleHeading1', type: 'Basic Block', iconCss: 'e-icons e-heading-1' },
+    { command: 'Collapsible Heading 2', subCommand: 'collapsibleHeading2', type: 'Basic Block', iconCss: 'e-icons e-heading-2' },
+    { command: 'Collapsible Heading 3', subCommand: 'collapsibleHeading3', type: 'Basic Block', iconCss: 'e-icons e-heading-3' },
+    { command: 'Collapsible Heading 4', subCommand: 'collapsibleHeading4', type: 'Basic Block', iconCss: 'e-icons e-heading-4' }
 ];
 
 /**
  * The injectible slash command data model for media and insertion modules.
  */
-export const injectableSlashCommandDataModel: IInjectableSlashCommandModel[] = [
+export const injectableSlashCommandDataModel: IModuleSlashCommandModel[] = [
     { command: 'Link', subCommand: 'InsertLink', type: 'Inline', module: 'Link', iconCss: 'e-icons e-link' },
     { command: 'Image', subCommand: 'InsertImage', type: 'Media', module: 'Image', iconCss: 'e-icons e-image' },
     { command: 'Table', subCommand: 'InsertTable', type: 'Basic Block', module: 'Table', iconCss: 'e-icons e-table' }

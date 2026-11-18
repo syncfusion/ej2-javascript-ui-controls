@@ -17,6 +17,7 @@ export interface ListStyle { style: string; char: string; font: string }
  */
 export interface StyleInfo {
     StyleName: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }
 

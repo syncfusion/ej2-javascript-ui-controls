@@ -69,6 +69,10 @@ export class InfiniteScroll implements IAction {
     private addRowIndex: number;
     /** @hidden */
     public infiniteDetailDestroy: boolean = false;
+    /** @hidden */
+    private hasMoreData: boolean = true;
+    /** @hidden */
+    private isRequestPending: boolean = false;
 
     /**
      * Constructor for the Grid infinite scrolling.
@@ -733,9 +737,38 @@ export class InfiniteScroll implements IAction {
         this.resetInfiniteBlocks({ requestType: this.empty as Action }, true);
     }
 
+    private isCountLessMode(): boolean {
+        return this.parent.infiniteScrollSettings.enableCountLessMode === true;
+    }
+
+    private requestCount(e?: NotifyArgs): number {
+        const pageSize: number = this.parent.pageSettings.pageSize;
+        const initial: boolean = !e || e.requestType !== 'infiniteScroll';
+        return initial ? pageSize * this.parent.infiniteScrollSettings.initialBlocks : pageSize;
+    }
+
+    private resultLength(e: NotifyArgs): number {
+        const result: Object[] = e && ((e as unknown) as { result?: Object[] }).result as Object[];
+        return result && result.length ? result.length : 0;
+    }
+
+    private applyCountLessEndDetection(e: NotifyArgs): void {
+        if (!this.isCountLessMode() && !e) {
+            return;
+        }
+        const resultLength: number = this.resultLength(e);
+        const requestCount: number = this.requestCount(e);
+        this.hasMoreData = resultLength === requestCount;
+        this.parent.isLastRecordLoaded = !this.hasMoreData;
+        this.isRequestPending = false;
+    }
+
     private onDataReady(e: NotifyArgs): void {
         if (!isNullOrUndefined(e.count) && e.requestType !== 'infiniteScroll') {
             this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
+        }
+        if (this.isCountLessMode() && (isNullOrUndefined(e.count) || e.count <= 0)) {
+            this.applyCountLessEndDetection(e);
         }
     }
 
@@ -787,7 +820,9 @@ export class InfiniteScroll implements IAction {
             else if (targetHeight > floor) { targetHeight = targetHeight - 1; }
             const isBottom: boolean = (floor === targetHeight || round === targetHeight);
             if (!isNullOrUndefined(this.groupCaptionAction)) { return; }
-            if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
+            const isContinueScrolling: boolean = this.isCountLessMode()
+                && this.hasMoreData && !this.isRequestPending;
+            if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || isContinueScrolling)) {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isUpScroll = false;
                     this.isDownScroll = true;
@@ -805,6 +840,9 @@ export class InfiniteScroll implements IAction {
                     startIndex: index,
                     direction: 'down'
                 };
+                if (this.isCountLessMode()) {
+                    this.isRequestPending = true;
+                }
                 this.makeRequest(args);
             }
 
@@ -841,7 +879,8 @@ export class InfiniteScroll implements IAction {
     private makeRequest(args: InfiniteScrollArgs): void {
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
             const initBlocks: number = this.parent.infiniteScrollSettings.initialBlocks;
-            if (initBlocks < this.maxPage && this.parent.pageSettings.currentPage <= this.maxPage) {
+            if ((initBlocks < this.maxPage && this.parent.pageSettings.currentPage <= this.maxPage) ||
+                (this.isCountLessMode() && this.hasMoreData)) {
                 this.isInfiniteScroll = true;
                 if (isNullOrUndefined(this.infiniteCache[args.currentPage])) {
                     setTimeout(
@@ -1313,6 +1352,9 @@ export class InfiniteScroll implements IAction {
                 this.isRemove = false;
                 this.top = 0;
                 this.isInitialCollapse = false;
+                this.parent.isLastRecordLoaded = false;
+                this.hasMoreData = true;
+                this.isRequestPending = false;
                 (<{ isRemove?: boolean }>(this.parent as Grid).contentModule).isRemove = this.isRemove;
                 (<{ isAddRows?: boolean }>(this.parent as Grid).contentModule).isAddRows = this.isRemove;
                 (<{ visibleRows?: Row<Column>[] }>(this.parent as Grid).contentModule).visibleRows = [];

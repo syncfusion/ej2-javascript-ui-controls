@@ -1,7 +1,7 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, updateCSSText } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser, initializeTelemetry, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
-import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
+import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData, WebMcpTool, WebMcpToolExecuteEventArgs } from './index';
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';
@@ -27,15 +27,15 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog, NotesDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel, OpenAsyncSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel, OpenAsyncSettingsModel, CommentSettingsModel, DocumentEditorWebMcpSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo, CommentPane, CommentView } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo, CommentPane, CommentView } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
-import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';
+import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { CommentCharacterElementBox, CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
@@ -50,9 +50,9 @@ import { MentionModel } from '@syncfusion/ej2-dropdowns';
 import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
 import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
 import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
-import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs, UnsupportedBorderStyleClickEventArgs } from './base/events-helper';
-import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
+import { DialogUtility, hideSpinner, showSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';
+import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs, registerWebMcpTools, UnsupportedBorderStyleClickEventArgs } from './base/events-helper';
+import { TextBoxDialog } from './implementation/dialogs/text-box-dialog';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -74,9 +74,9 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property('#FFE97F')
     public searchHighlightColor: string;
 
-    /* eslint-disable */
     /**
      * Specifies the user preferred font family of Document Editor.
+     *
      * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Wingdings']
      */
     @Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Wingdings'])
@@ -92,7 +92,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets the revision settings.
      */
-    @Property({ customData: '', showCustomDataWithAuthor: false, revisionColors: ['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e'] })
+    @Property({ customData: '', showCustomDataWithAuthor: false, revisionColors: ['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e'], insertRevisionColor: 'byAuthor', deleteRevisionColor: 'byAuthor', insertedRowColor: 'byAuthor', deletedRowColor: 'byAuthor' })
     public revisionSettings: RevisionSettingsModel;
     /**
      * Specified the auto resize settings.
@@ -279,6 +279,19 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property('Tick')
     public defaultCheckBoxOption: CheckboxSymbolOptions;
+
+    /**
+     * Gets or sets the comment settings.
+     */
+    @Property({ highlightCommentsByAuthor: false })
+    public commentSettings: CommentSettingsModel;
+
+}
+
+/**
+ * Represents the comment settings.
+ */
+export class CommentSettings extends ChildProperty<CommentSettings> {
     /**
      * Gets or sets a value indicating whether comments from each author are highlighted using a color derived from the author's avatar.
      * These highlight colors are used only for visual identification within the editor and are not preserved when the document is exported.
@@ -288,9 +301,35 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(false)
     public highlightCommentsByAuthor: boolean;
-
 }
+/**
+ * Represents the WebMCP settings for tool registration and execution.
+ */
+export class DocumentEditorWebMcpSettings extends ChildProperty<DocumentEditorWebMcpSettings> {
+    /**
+     * Specifies the prefix name for WebMCP tool registration.
+     *
+     * @default null
+     */
+    @Property(null)
+    public name: string;
 
+    /**
+     * Specifies the list of tool names or WebMcpTool objects to register.
+     *
+     * @default null
+     */
+    @Property(null)
+    public tools: string[] | WebMcpTool[];
+
+    /**
+     * Specifies the list of origins to expose the tools to.
+     *
+     * @default null
+     */
+    @Property(null)
+    public exposedTo: string[];
+}
 /**
  * Represents the settings and properties of the document that is opened in Document editor component.
  */
@@ -335,6 +374,73 @@ export class RevisionSettings extends ChildProperty<RevisionSettings> {
      */
     @Property<string[]>(['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e'])
     public revisionColors: string[];
+    /**
+     * Gets or sets the color value used for insert revisions for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#0e76b1').
+     * If the value is 'byAuthor', insert revisions (Insertion/MoveTo) are highlighted using the author-specific color.
+     * Otherwise, insert revisions are highlighted using the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    @Property('byAuthor')
+    public insertRevisionColor: string;
+
+    /**
+     * Gets or sets the color value used for delete revisions for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#b5082e').
+     * If the value is 'byAuthor', delete revisions (Deletion/MoveFrom) are highlighted using the author-specific color.
+     * Otherwise, delete revisions are highlighted using the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    @Property('byAuthor')
+    public deleteRevisionColor: string;
+
+    /**
+     * Gets or sets the background color used for inserted table-row for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#0e76b1').
+     * If the value is 'byAuthor', inserted row revisions (Insertion/MoveTo) use the author-specific color.
+     * Otherwise, inserted row revisions use the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * > * The applied color is automatically tinted by 10% and used as the row background color to ensure visibility of inserted content within the row.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    @Property('byAuthor')
+    public insertedRowColor: string;
+
+    /**
+     * Gets or sets the background color used for deleted table-row for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#b5082e').
+     * If the value is 'byAuthor', deleted row revisions (Deletion/MoveFrom) use the author-specific color.
+     * Otherwise, deleted row revisions use the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * > * The applied color is automatically tinted by 10% and used as the row background color to ensure visibility of deleted content within the row.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    @Property('byAuthor')
+    public deletedRowColor: string;
 }
 
 
@@ -694,6 +800,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public textMeasureHelper: Regular | Optimized
     /**
      * Skip style update before document change
+     *
      * @private
      */
     public skipStyleUpdate: boolean;
@@ -1072,6 +1179,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(true)
     public enableLayout: boolean;
     /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}
@@ -1085,6 +1201,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<DocumentSettingsModel>({}, DocumentSettings)
     public documentSettings: DocumentSettingsModel;
+    /**
+     * Specifies the WebMCP integration settings for the DocumentEditor.
+     * Use `name`, `tools`, and `exposedTo` to customize registration.
+     *
+     * @default {}
+     */
+    @Complex<DocumentEditorWebMcpSettingsModel>({}, DocumentEditorWebMcpSettings)
+    public webMcpSettings: DocumentEditorWebMcpSettingsModel;
     /**
      * Defines the settings of the DocumentEditor services
      */
@@ -1275,7 +1399,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * This event is triggered before content is pasted in Document Editor.
      *
-     * @event
+     * @event beforePaste
      * @returns {void}
      */
     @Event()
@@ -1334,6 +1458,28 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public documentLoadFailed: EmitType<DocumentLoadFailedEventArgs>;
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Use this event to inspect, modify, or cancel the tool execution before it takes effect.
+     * ```html
+     * <div id='DocumentEditor'></div>
+     * ```
+     * ```typescript
+     * new DocumentEditor({
+     *     beforeWebMcpToolExecute: (args: WebMcpToolExecuteEventArgs) => {
+     *         // Cancel execution for restricted tools
+     *         if (args.toolName === 'deleteDocument' && args.cancel !== true) {
+     *             args.showConfirmationDialog = true;
+     *         }
+     *     }
+     *     ...
+     * }, '#DocumentEditor');
+     * ```
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
     /**
      * @private
      */
@@ -1395,8 +1541,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public isUpdateFocus: boolean = false;
+    private textBoxDialog: TextBoxDialog;
     /**
      * Gets or sets a value indicating whether xml toolbar is enabled or not.
+     *
      * @private
      *
      * @default false
@@ -1404,6 +1552,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public isXmlPaneTool: boolean = false;
     /**
      * Gets or sets a value indicating whether xml cc is enabled or not.
+     *
      * @private
      *
      * @default false
@@ -1430,7 +1579,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
         const commentCollection: CommentElementBox[] = this.documentHelper.comments;
         if (commentCollection.length > 0) {
-            let tempData: any = [];
+            let tempData: Comment[] = [];
             for (const comment of this.documentHelper.comments) {
                 tempData = [];
                 const commentProperties: CommentProperties = {
@@ -1469,7 +1618,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public regenerateCommentHighlights(): void {
         const helper: DocumentHelper = this.documentHelper;
         const commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = helper.render.commentMarkDictionary;
-        const highlightEnabled: boolean = this.documentEditorSettings.highlightCommentsByAuthor;
+        const highlightEnabled: boolean | undefined = this.documentEditorSettings.commentSettings &&
+        this.documentEditorSettings.commentSettings.highlightCommentsByAuthor;
 
         // Iterate through all comment marks and call renderCommentMark for re-render color logic
         for (const markElement of commentMarkDictionary.keys) {
@@ -1865,6 +2015,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.renderComplete();
         this.renderRulers();
         this.renderNavigationPane();
+        if (this.enableWebMcp) {
+            const settings: DocumentEditorWebMcpSettingsModel = this.webMcpSettings || {};
+            this.notify(registerWebMcpTools, { prefix: settings.name, tools: settings.tools, exposedTo: settings.exposedTo });
+        }
         this.createdTriggered = true;
     }
     private setIsModalDialogValue(): void {
@@ -1880,8 +2034,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         // if (this.documentEditorSettings.showRuler) {
         this.rulerHelper = new RulerHelper();
         this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
-        this.rulerHelper.renderRuler(this, true);
+        // Vertical wrapper first so vRulerWrapper precedes hRulerBottom in the DOM.
         this.rulerHelper.renderRuler(this, false);
+        this.rulerHelper.renderRuler(this, true);
         this.rulerHelper.renderRulerMarkerIndicatorElement(this);
         this.rulerHelper.createIndicatorLines(this);
         this.showHideRulers();
@@ -1950,6 +2105,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
                         this.rulerHelper.updateRuler(this, true);
                     }
+                    if (this.editorModule) {
+                        this.editorModule.refreshLockedRegionAlertLayout();
+                    }
                     if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule) {
                         this.collaborativeEditingHandlerModule.updateCaretPosition();
                     }
@@ -1988,8 +2146,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     break;
                 case 'locale':
                     this.localizeDialogs();
+                    if (this.editorModule) {
+                        this.editorModule.refreshLockedRegionAlertLocale();
+                    }
                     break;
                 case 'isReadOnly':
+                    if (!this.isReadOnly && this.editorModule) {
+                        this.editorModule.hideLockedRegionAlert();
+                    }
                     this.notify('isReadOnlyChanged', model);
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
@@ -2132,9 +2296,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (!isNullOrUndefined(model.documentEditorSettings.enableSpellCheckOnScroll)) {
                         this.documentEditorSettings.enableSpellCheckOnScroll = model.documentEditorSettings.enableSpellCheckOnScroll;
                     }
-                    if (!isNullOrUndefined(model.documentEditorSettings.highlightCommentsByAuthor)) {
-                        this.documentEditorSettings.highlightCommentsByAuthor = model.documentEditorSettings.highlightCommentsByAuthor;
-                        this.regenerateCommentHighlights();
+                    if (!isNullOrUndefined(model.documentEditorSettings.commentSettings)) {
+                        if (!isNullOrUndefined(model.documentEditorSettings.commentSettings.highlightCommentsByAuthor)) {
+                            this.documentEditorSettings.commentSettings.highlightCommentsByAuthor = model.documentEditorSettings.commentSettings.highlightCommentsByAuthor;
+                            this.regenerateCommentHighlights();
+                        }
                     }
                     if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings)) {
                         if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.customData)) {
@@ -2143,7 +2309,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor)) {
                             this.documentEditorSettings.revisionSettings.showCustomDataWithAuthor = model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor;
                         }
-                        this.documentEditorSettings.revisionSettings.revisionColors = model.documentEditorSettings.revisionSettings.revisionColors;
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.revisionColors)) {
+                            this.documentEditorSettings.revisionSettings.revisionColors = model.documentEditorSettings.revisionSettings.revisionColors;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.insertRevisionColor)) {
+                            this.documentEditorSettings.revisionSettings.insertRevisionColor = model.documentEditorSettings.revisionSettings.insertRevisionColor;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.deleteRevisionColor)) {
+                            this.documentEditorSettings.revisionSettings.deleteRevisionColor = model.documentEditorSettings.revisionSettings.deleteRevisionColor;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.insertedRowColor)) {
+                            this.documentEditorSettings.revisionSettings.insertedRowColor = model.documentEditorSettings.revisionSettings.insertedRowColor;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.deletedRowColor)) {
+                            this.documentEditorSettings.revisionSettings.deletedRowColor = model.documentEditorSettings.revisionSettings.deletedRowColor;
+                        }
                         //Clear the cached author colors so the new palette is applied, then relayout to repaint the canvas.
                         if (this.documentHelper) {
                             this.documentHelper.authors.clear();
@@ -2179,6 +2359,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 case 'enableLayout':
                     this.refreshLayout();
                     break;
+                case 'enableWebMcp':
+                case 'webMcpSettings':
+                    if (this.enableWebMcp) {
+                        this.notify(registerWebMcpTools, this.webMcpSettings || {});
+                    }
+                    break
             }
         }
     }
@@ -2345,6 +2531,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets the default character format for document editor
+     *
      * @returns Returns the default character format for document editor.
      */
     public getDefaultCharacterFormat(): CharacterFormatProperties {
@@ -2367,6 +2554,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets the default paragraph format for document editor
+     *
      * @returns Returns the default paragraph format for document editor.
      */
     public getDefaultParagraphFormat(): ParagraphFormatProperties {
@@ -2389,6 +2577,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
    /**
      * Gets the default section format for document editor
+     *
      * @returns Returns the default section format for document editor.
      */
     public getDefaultSectionFormat(): SectionFormatProperties {
@@ -2397,6 +2586,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Sets the default paragraph format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     *
      * @returns {void}
      */
     public setDocumentParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
@@ -2409,6 +2599,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets the default paragraph format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     *
      * @returns Returns the default paragraph format of the document loaded in Document editor.
      */
     public getDocumentParagraphFormat(): ParagraphFormatProperties {
@@ -2419,6 +2610,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Sets the document character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     *
      * @returns {void}
      */
     public setDocumentCharacterFormat(characterFormat: CharacterFormatProperties): void {
@@ -2430,6 +2622,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the document character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     *
      * @returns Returns the default character format of the document loaded in Document editor.
      */
     public getDocumentCharacterFormat(): CharacterFormatProperties {
@@ -2551,6 +2744,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         // if (this.createdTriggered) {
         if (!this.documentHelper.layout.isLayoutWhole) {
             this.trigger(selectionChangeEvent, eventArgs);
+        }
+        if (this.editorModule) {
+            if (!this.editorModule.isUserEditBlocked()) {
+                this.editorModule.hideLockedRegionAlert();
+            }
         }
         this.documentHelper.isSelectionCompleted = this.documentHelper.isCompleted;
         this.documentHelper.isCompleted = true;
@@ -3043,6 +3241,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
 
+        // Add WebMcpDocumentEditor module if enabled
+        if (this.enableWebMcp) {
+            modules.push({ member: 'WebMcpDocumentEditor', args: [this] });
+        }
+
         if(this.enableCollaborativeEditing) {
             modules.push({
                 member: 'CollaborativeEditingHandler', args: [this]
@@ -3382,6 +3585,49 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Cell Options': 'Cell Options',
         'Table Options': 'Table Options',
         'Insert Table': 'Insert Table',
+        'Insert Text Box': 'Insert Text Box',
+        'Text Box Name': 'Text Box Name',
+        'Text Content': 'Text Content',
+        'Enter text box content': 'Enter text box content',
+        'Text Box': 'Text Box',
+        'Horizontal': 'Horizontal',
+        'Vertical': 'Vertical',
+        'Absolute position': 'Absolute position',
+        'relative to': 'relative to',
+        'to the right of': 'to the right of',
+        'below': 'below',
+        'of': 'of',
+        'Centered': 'Centered',
+        'Inside': 'Inside',
+        'Outside': 'Outside',
+        'Column': 'Column',
+        'Page': 'Page',
+        'Character': 'Character',
+        'Left Margin': 'Left Margin',
+        'Right Margin': 'Right Margin',
+        'Inside Margin': 'Inside Margin',
+        'Outside Margin': 'Outside Margin',
+        'Top Margin': 'Top Margin',
+        'Bottom Margin': 'Bottom Margin',
+        'Line': 'Line',
+        'Paragraph': 'Paragraph',
+        'Text Wrapping': 'Text Wrapping',
+        'Wrapping style': 'Wrapping style',
+        'Wrap text': 'Wrap text',
+        'Distance from text': 'Distance from text',
+        'In line with text': 'In line with text',
+        'Inline': 'Inline',
+        'Square': 'Square',
+        'Top and bottom': 'Top and bottom',
+        'Behind text': 'Behind text',
+        'In front of text': 'In front of text',
+        'Both sides': 'Both sides',
+        'Left only': 'Left only',
+        'Right only': 'Right only',
+        'Largest only': 'Largest only',
+        'Absolute': 'Absolute',
+        'Scale': 'Scale',
+        'Lock aspect ratio': 'Lock aspect ratio',
         'Number of columns': 'Number of columns',
         'Number of rows': 'Number of rows',
         'Text to display': 'Text to display',
@@ -3448,6 +3694,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Cut': 'Cut',
         'Copy': 'Copy',
         'Paste': 'Paste',
+        'Close': 'Close',
+        'You can\'t make this change because the selection is locked': 'You can\'t make this change because the selection is locked',
         'Hyperlink': 'Hyperlink',
         'Remove Content Control': 'Remove Content Control',
         'Content Control Properties':'Content Control Properties',
@@ -3469,9 +3717,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Open Hyperlink': 'Open Hyperlink',
         'Copy Hyperlink': 'Copy Hyperlink',
         'Remove Hyperlink': 'Remove Hyperlink',
-        'Paragraph': 'Paragraph',
         'Linked Style': 'Linked(Paragraph and Character)',
-        'Character': 'Character',
         'Merge Cells': 'Merge Cells',
         'Insert Above': 'Insert Above',
         'Insert Below': 'Insert Below',
@@ -3493,7 +3739,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'No matches': 'No matches',
         'All Done': 'All Done',
         'Result': 'Result',
-        'of': 'of',
         'instances': 'instances',
         'with': 'with',
         'Click to follow link': 'Click to follow link',
@@ -3501,7 +3746,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Bookmark name': 'Bookmark name',
         'Tab': 'Tab',
         'Tab stop position': 'Tab stop position',
-        'Close': 'Close',
         'Restart At': 'Restart At',
         'Properties': 'Properties',
         'Name': 'Name',
@@ -3573,6 +3817,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Add Users': 'Add Users',
         'Enforcing Protection': 'Yes, Start Enforcing Protection',
         'Start Enforcing Protection': 'Start Enforcing Protection',
+        'Unprotect Document': 'Unprotect Document',
         'Enter User': 'Enter User',
         'Users': 'Users',
         'Enter new password': 'Enter new password',
@@ -3753,7 +3998,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Line between column': 'Line between column',
         'Width and Spacing': 'Width and Spacing',
         'Equal column width': 'Equal column width',
-        'Column': 'Column',
         'Paste Content Dialog': 'Due to browser’s security policy, paste from system clipboard is restricted. Alternatively use the keyboard shortcut',
         'Paste Content CheckBox': 'Don’t show again',
         'BookMarkList': 'List of bookmarks in the document',
@@ -3774,10 +4018,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Right Indent': 'Right Indent',
         'Hanging Indent': 'Hanging Indent',
         'First Line Indent': 'First Line Indent',
-        'Left Margin': 'Left Margin',
-        'Right Margin': 'Right Margin',
-        'Top Margin': 'Top Margin',
-        'Bottom Margin': 'Bottom Margin',
         'Left Tab': 'Left Tab',
         'Right Tab': 'Right Tab',
         'Center Tab': 'Center Tab',
@@ -3876,7 +4116,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     // Continue with the next steps after getting sfdt from URL
                     await this.processSfdt(sfdtText as string, isAsync);
                 })
-                .catch((error: any) => {
+                .catch((error: unknown) => {
                     // Handle error
                     console.error(error);
                 });
@@ -3887,7 +4127,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     // Continue with the next steps after getting sfdt from base64 string
                     await this.processSfdt(sfdtText as string, isAsync);
                 })
-                .catch((error: any) => {
+                .catch((error: unknown) => {
                     // Handle error
                     console.error(error);
                 });
@@ -3898,7 +4138,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     // Continue with the next steps after converting file to sfdt
                     await this.processSfdt(sfdtText as string, isAsync);
                 })
-                .catch((error: any) => {
+                .catch((error: unknown) => {
                     // Handle error
                     console.error(error);
                 });
@@ -3911,7 +4151,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         // Continue with the next steps after converting from sfdt blob
                         await this.processSfdt(sfdtText as string, isAsync);
                     })
-                    .catch((error: any) => {
+                    .catch((error: unknown) => {
                         // Handle error
                         console.error(error);
                     });
@@ -3922,7 +4162,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         // Continue with the next steps after converting from blob
                         await this.processSfdt(sfdtText as string, isAsync);
                     })
-                    .catch((error: any) => {
+                    .catch((error: unknown) => {
                         // Handle error
                         console.error(error);
                     });
@@ -3932,7 +4172,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 await this.processSfdt(sfdtText as string, false);
             }
             else {
-                return new Promise<void>((resolve: () => void, reject: (reason?: any) => void) => {
+                return new Promise<void>((resolve: () => void, reject: (reason?: unknown) => void) => {
                     setTimeout(async () => {
                         try {
                             await this.processSfdt(sfdtText as string, true);
@@ -3948,6 +4188,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     private async processSfdt(sfdtText: string, isAsync: boolean): Promise<void> {
         try {
             if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText)) {
+                if (!isNullOrUndefined(this.selectionModule) && !isNullOrUndefined(this.selectionModule.formatPainterModule)
+                    && this.selectionModule.formatPainterModule.isActive) {
+                    // Document replaced: discard stored Format Painter format.
+                    this.selectionModule.formatPainterModule.cancel();
+                }
                 this.clearPreservedCollectionsInViewer();
                 this.documentHelper.userCollection.push('Everyone');
                 this.documentHelper.lists = [];
@@ -4011,13 +4256,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     private async getSfdtFromUrl(value: string, fileName: string): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const documentEditor: DocumentEditor = this;
-        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason: any) => void) => {
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason?: unknown) => void) => {
             const xhr: XMLHttpRequest = new XMLHttpRequest();
             xhr.open('GET', value, true);
             xhr.responseType = 'blob';
             xhr.onload = async function (): Promise<void> {
                 if (xhr.status === 200) {
-                    const blob: any = xhr.response;
+                    const blob: Blob = xhr.response as Blob;
                     const formData: FormData = new FormData();
                     formData.append('file', blob, fileName);
                     const sfdt: string = await documentEditor.send(formData);
@@ -4092,10 +4337,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private send(formData: FormData): Promise<string> {
         const serviceUrl: string = this.serviceUrl + this.serverActionSettingsImport;
-        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason: any) => void) => {
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason?: unknown) => void) => {
             const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
             ajax.url = serviceUrl;
-            ajax.onSuccess = (result: any) => {
+            ajax.onSuccess = (result: { data: string }) => {
                 resolve(result.data);
             };
             ajax.onFailure = this.failureHandler.bind(this);
@@ -4212,6 +4457,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
             this.rulerHelper.updateRuler(this, false);
+        }
+        if (this.editorModule) {
+            this.editorModule.refreshLockedRegionAlertLayout();
         }
         if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule) {
             this.collaborativeEditingHandlerModule.updateCaretPosition();
@@ -4423,11 +4671,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Moves the dialog container element to the Angular CDK overlay pane.
      *
-     * @param {any} e - Event arguments containing the dialog element.
+     * @param {OpenEventArgs} e - Event arguments containing the dialog element.
      * @private
      * @returns {void}
      */
-    public moveAlertToCdkOverlay(e: any ): void {
+    public moveAlertToCdkOverlay(e: OpenEventArgs): void {
         const cdkPane: HTMLElement = document.querySelector('.cdk-overlay-pane') as HTMLElement;
         const dlgContainer: HTMLElement = e.element.parentElement as HTMLElement;
         if (dlgContainer && cdkPane) {
@@ -4830,6 +5078,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private getBase64StringFromBlob(blob: Blob): Promise<string> {
         return new Promise((resolve: (value: string | PromiseLike<string>) => void,
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             reject: (value: string | PromiseLike<string>) => void) => {
             const reader: FileReader = new FileReader();
             reader.readAsDataURL(blob);
@@ -4851,6 +5100,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         /* eslint-disable-next-line max-len */
         const hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
+            if (!isNullOrUndefined(this.selectionModule) && !isNullOrUndefined(this.selectionModule.formatPainterModule)
+                && this.selectionModule.formatPainterModule.isActive) {
+                this.selectionModule.formatPainterModule.cancel();
+            }
+            if (this.editorModule) {
+                this.editorModule.destroyLockedRegionAlert();
+            }
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
             this.documentHelper.cachedPages = [];
@@ -4973,6 +5229,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         case 'ContentControlProperties':
             this.showContentPropertiesDialog();
             break;
+        case 'TextBox':
+            this.showTextBoxDialog();
+            break;
             // case 'TabStop':
             //     this.showTabDialog();
             //     break;
@@ -4985,6 +5244,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public toggleShowHiddenMarksInternal(): void {
         this.documentEditorSettings.showHiddenMarks = !this.documentEditorSettings.showHiddenMarks;
         this.notify(internalDocumentEditorSettingsChange, this.documentEditorSettings);
+    }
+
+    /**
+     * Shows the insert text box
+     *
+     * @returns {void}
+     */
+    private showTextBoxDialog(): void {
+        if (this.isReadOnlyMode || isNullOrUndefined(this.documentHelper)) {
+            return;
+        }
+        if (isNullOrUndefined(this.textBoxDialog)) {
+            this.textBoxDialog = new TextBoxDialog(this.documentHelper);
+        }
+        this.textBoxDialog.show();
     }
     /**
      * Shows the options pane.
@@ -5051,6 +5325,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * Returns the WebMCP tool schemas for the given tool names.
+     * When `toolNames` is omitted, schemas for all available tools are returned.
+     *
+     * @param {string[]} toolNames - Optional: filter tool names. Omit to get all tools.
+     * @returns {WebMcpTool[]} - Array of tool schema objects matching the specified names
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
+        this.notify('getWebMcpTools', args);
+        return args.tools || [];
+    }
+    /**
      * Destroys all managed resources used by this object.
      *
      * @returns {void}
@@ -5080,6 +5366,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.parser) {
             this.parser.destroy();
             this.parser = undefined;
+        }
+        if (this.textBoxDialog) {
+            this.textBoxDialog.destroy();
+            this.textBoxDialog = undefined;
         }
         if (this.revisionsInternal) {
             this.revisionsInternal.destroy();
@@ -5163,7 +5453,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNullOrUndefined(name) && !isNullOrUndefined(this.documentHelper.owner.sfdtExportModule)) {
             const style: Object = this.documentHelper.styles.findByName(name);
             if (!isNullOrUndefined(style)) {
-                const styleObject: any = this.getStyleObject(style, listId);
+                const styleObject: Object = this.getStyleObject(style, listId);
                 if (!isNullOrUndefined(style) && this.enableCollaborativeEditing) {
                     operation = {
                         action: 'Update',
@@ -5226,14 +5516,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      * @param {Object} style - Specifies the style.
      * @param {number} listId - Specifies the list id.
-     * @returns {any} - Returns the style object.
+     * @returns {Object} - Returns the style object.
      */
-    public getStyleObject(style: Object, listId: number): any {
+    public getStyleObject(style: Object, listId: number): Object {
         if (!isNullOrUndefined(style)) {
             const keyIndex: number = this.documentHelper.owner.sfdtExportModule.keywordIndex;
             this.documentHelper.owner.sfdtExportModule.keywordIndex = 1;
-            const styleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
-            const styleObject: any = {
+            const styleData: Object = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle) as Object;
+            const styleObject: { optimizeSfdt: boolean; sty: Object[]; [key: string]: Object | boolean | Object[] } = {
                 'optimizeSfdt': true,
                 'sty': [styleData]
             };
@@ -5247,15 +5537,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.documentHelper.styles.push(charStyle);
                     linkedStyle = charStyle;
                 }
-                const linkedStyleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
+                const linkedStyleData: Object = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle) as Object;
                 styleObject.sty.push(linkedStyleData);
             }
             if (!isNullOrUndefined(listId) && listId > -1) {
                 const list: WList = this.documentHelper.getListById(listId);
                 styleObject[listsProperty[1]] = [];
-                styleObject[listsProperty[1]].push(this.sfdtExportModule.writeList(list));
+                (styleObject[listsProperty[1]] as Object[]).push(this.sfdtExportModule.writeList(list));
                 styleObject[abstractListsProperty[1]] = [];
-                styleObject[abstractListsProperty[1]].push(this.sfdtExportModule.writeAbstractList(list.abstractList));
+                (styleObject[abstractListsProperty[1]] as Object[]).push(this.sfdtExportModule.writeAbstractList(list.abstractList));
             }
             this.documentHelper.owner.sfdtExportModule.keywordIndex = keyIndex;
             return styleObject;
@@ -5556,6 +5846,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     @Property('GetPendingActions')
     public getPendingActions: string;
 }
+
 
 /**
  * Form field settings.

@@ -17,7 +17,9 @@ export class QRCode {
 
     private mVersion: QRCodeVersion = QRCodeVersion.Version01;
 
-    private mInputMode: QRInputMode = 'NumericMode';
+    protected mInputMode: QRInputMode = 'NumericMode';
+
+    protected mIsFnc1FirstPosition: boolean = false;
 
     private validInput: boolean = true;
     /**
@@ -120,7 +122,7 @@ export class QRCode {
             this.mIsUserMentionedVersion = true;
         }
     }
-    private mIsEci: boolean = false;
+    protected mIsEci: boolean = false;
 
     /** @private */
     public mIsUserMentionedErrorCorrectionLevel: boolean = false;
@@ -544,7 +546,7 @@ export class QRCode {
 
 
     /* tslint:disable */
-    private initialize(): void {
+    protected initialize(): void {
         if (!this.mIsUserMentionedMode) {
             this.chooseDefaultMode = true;
         }
@@ -1138,6 +1140,9 @@ export class QRCode {
     private encodeData(): boolean[] {
 
         let encodeData: boolean[] = [];
+        if (this.mIsFnc1FirstPosition) {
+            encodeData.push(false); encodeData.push(true); encodeData.push(false); encodeData.push(true);
+        }
         switch (this.mInputMode) {
         case 'NumericMode':
             encodeData.push(false); encodeData.push(false); encodeData.push(false); encodeData.push(true);
@@ -1248,8 +1253,8 @@ export class QRCode {
             const dataStringArray: string[] = this.text.split('');
             for (let i: number = 0; i < dataStringArray.length; i++) {
                 let number: number = 0;
-                if ((this.text.charCodeAt(i) >= 32 && this.text.charCodeAt(i) <= 126) || (this.text.charCodeAt(i) >= 161 &&
-                    this.text.charCodeAt(i) <= 255 || (this.text.charCodeAt(i) === 10 || this.text.charCodeAt(i) === 13))) {
+                // Every byte value 0x00-0xFF is valid in byte mode (raw binary, GS1 GS character, Latin-1).
+                if (this.text.charCodeAt(i) <= 255) {
                     number = dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0);
                 } else if (this.text.charCodeAt(i) >= 65377 && this.text.charCodeAt(i) <= 65439) {
                     number = dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0) - 65216;

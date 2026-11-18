@@ -1,7 +1,7 @@
 import { _XmlWriter } from '../import-export/xml-writer';
 import { PdfXmpSchema } from './pdf-xmp-schema';
 import { PdfXmpSchemaType } from '../enumerator';
-import { PdfXmpDimensionsStruct } from '../pdf-type';
+import { PdfXmpDimensionsStruct } from '../pdf-document-helper';
 import { PdfXmpMetadata } from './pdf-xmp-metadata';
 /**
  Represents metadata for paginated text structure in a PDF document.

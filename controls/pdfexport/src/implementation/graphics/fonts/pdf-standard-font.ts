@@ -7,7 +7,6 @@ import { PdfStandardFontMetricsFactory } from './pdf-standard-font-metrics-facto
 import { PdfStringFormat } from './pdf-string-format';
 import { PdfFontMetrics, WidthTable } from './pdf-font-metrics';
 import { PdfDictionary } from './../../primitives/pdf-dictionary';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { PdfName } from './../../primitives/pdf-name';
 /**
  * Represents one of the 14 standard fonts.
@@ -44,11 +43,6 @@ export class PdfStandardFont extends PdfFont {
      * @private
      */
     private pdfFontFamily : PdfFontFamily;
-    /**
-     * Gets `ascent` of the font.
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Gets `encodings` for internal class use.
      * @hidden
@@ -205,12 +199,12 @@ export class PdfStandardFont extends PdfFont {
      */
     private createInternals() : PdfDictionary {
         let dictionary : PdfDictionary = new PdfDictionary();
-        dictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.font));
-        dictionary.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.type1));
-        dictionary.items.setValue(this.dictionaryProperties.baseFont, new PdfName(this.metrics.postScriptName));
+        dictionary.items.setValue('Type', new PdfName('Font'));
+        dictionary.items.setValue('Subtype', new PdfName('Type1'));
+        dictionary.items.setValue('BaseFont', new PdfName(this.metrics.postScriptName));
         if (this.fontFamily !== PdfFontFamily.Symbol && this.fontFamily !== PdfFontFamily.ZapfDingbats) {
             let encoding : string = this.encodings[FontEncoding.WinAnsiEncoding];
-            dictionary.items.setValue(this.dictionaryProperties.encoding, new PdfName(encoding));
+            dictionary.items.setValue('Encoding', new PdfName(encoding));
         }
         return dictionary;
     }

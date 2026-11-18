@@ -1802,6 +1802,7 @@ export class ParagraphWidget extends BlockWidget {
     public splitLtrAndRtlText(lineIndex: number): void {
         let isPrevLTRText: LtrRtlTextInfo = { value: null };
         let isPrevLTRBidi: LtrRtlTextInfo = { value: null };
+        let isPrevHebrewText: LtrRtlTextInfo = { value: null };
         let iIncrementer: number = 1;
         let hasRTLCharacter: LtrRtlTextInfo = { value: null };
         let characterRangeTypes: CharacterRangeType[] = [];
@@ -1832,7 +1833,7 @@ export class ParagraphWidget extends BlockWidget {
                         isRTLLang = textHelper.isRightToLeftLanguage(elementBox.characterFormat.localeIdBidi);
                     }     
                     ////Split the text as consicutive LTR and RTL
-                    let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter, isPrevLTRBidi);
+                    let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter, isPrevLTRBidi, isPrevHebrewText);
 
                     if (splitedTextCollection.length > 1) {
                         for (let j = 0; j < splitedTextCollection.length; j++) {
@@ -2336,19 +2337,24 @@ export class TableWidget extends BlockWidget {
             for (let m: number = 0; m < rowWidget.childWidgets.length; m++) {
                 let cellWidget: TableCellWidget = (rowWidget.childWidgets[m] as TableCellWidget);
                 let cellWidth: number = cellWidget.width;
+                const isFirstPass: boolean = cellWidth === 0;
                 if (cellWidth === 0) {
                     cellWidth = cellWidget.cellFormat.cellWidth;
                     if (this.tableFormat.tableAlignment === 'Center' && !this.tableFormat.allowAutoFit && this.tableFormat.preferredWidthType !== 'Percent' &&
                         this.tableFormat.preferredWidth !== 0 && this.tableFormat.preferredWidth === cellWidth) {
                         width = HelperMethods.convertPointToPixel(this.tableFormat.preferredWidth);
                     }
-                    if (cellWidth > cellWidget.cellFormat.preferredWidth &&
+                    if (cellWidth > cellWidget.cellFormat.preferredWidth && this.tableFormat.preferredWidthType !== 'Percent' &&
                         cellWidget.cellFormat.preferredWidth !== 0 && cellWidget.cellFormat.preferredWidthType !== 'Percent') {
                         cellWidth = cellWidget.cellFormat.preferredWidth;
                     }
                     cellWidth = HelperMethods.convertPointToPixel(cellWidth - (cellWidget.margin.left + cellWidget.margin.right));
                 }
                 rowWidth += (cellWidth + cellWidget.margin.left + cellWidget.margin.right);
+                // Cell widths are not laid out yet; exclude the table right border like the relayout result does.
+                if (isFirstPass && m === rowWidget.childWidgets.length - 1 && this.tableFormat.tableAlignment === 'Center' && this.tableFormat.preferredWidthType === 'Percent') {
+                    rowWidth -= HelperMethods.convertPointToPixel(this.tableFormat.borders.right.getLineWidth());
+                }
             }
             if (width < rowWidth) {
                 width = rowWidth;
@@ -2647,6 +2653,41 @@ export class TableWidget extends BlockWidget {
         }
     }
     /**
+     * Assigns grid columnIndex for each cell from rowSpan/columnSpan occupancy.
+     * Needed when SFDT omits columnIndex (vertical merges leave gaps so cell index ≠ grid column).
+     * @private
+     */
+    public assignCellColumnIndexes(): void {
+        const rowSpannedCells: TableCellWidget[] = [];
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            const row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+            let columnSpan: number = row.rowFormat ? row.rowFormat.gridBefore : 0;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                // Advance past columns still occupied by vertical merges from previous rows.
+                for (let k: number = 0; k < rowSpannedCells.length; k++) {
+                    const spanned: TableCellWidget = rowSpannedCells[k];
+                    const spanEnd: number = spanned.columnIndex + spanned.cellFormat.columnSpan;
+                    if (spanned.columnIndex <= columnSpan && columnSpan < spanEnd) {
+                        columnSpan = spanEnd;
+                    }
+                }
+                cell.columnIndex = columnSpan;
+                if (cell.cellFormat.rowSpan > 1) {
+                    rowSpannedCells.push(cell);
+                }
+                columnSpan += cell.cellFormat.columnSpan > 0 ? cell.cellFormat.columnSpan : 1;
+            }
+            // Drop spans that end on this row.
+            for (let k: number = rowSpannedCells.length - 1; k >= 0; k--) {
+                const spanned: TableCellWidget = rowSpannedCells[k];
+                if (i - spanned.ownerRow.rowIndex >= spanned.cellFormat.rowSpan - 1) {
+                    rowSpannedCells.splice(k, 1);
+                }
+            }
+        }
+    }
+    /**
      * @private
      */
     public updateCellFormatPreferredWidth(): void {
@@ -2687,7 +2728,6 @@ export class TableWidget extends BlockWidget {
         let tableWidth: number = 0;
         let rowSpannedCells: TableCellWidget[] = [];
         let gridBeforeWidth: boolean = false;
-        /* eslint-disable-next-line max-len */
         let isAutoWidth: boolean = (this.tableFormat.preferredWidthType === 'Auto' || (this.tableFormat.preferredWidthType === "Point" && this.tableFormat.preferredWidth === 0));
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
         if (!isAutoFit && !isNullOrUndefined(this.bodyWidget.page) && this.bodyWidget.page.documentHelper && this.bodyWidget.page.documentHelper.owner
@@ -2857,8 +2897,7 @@ export class TableWidget extends BlockWidget {
                 //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
-                const lastCell: TableCellWidget = rw.lastChild as TableCellWidget;
-                let gridAfterStartIndex: number = lastCell.index + lastCell.cellFormat.columnSpan;
+                let gridAfterStartIndex: number = this.tableHolder.columns.length - rowFormat.gridAfter;
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(gridAfterStartIndex, rowFormat.gridAfter, tableWidth);
             }
         }
@@ -3043,6 +3082,7 @@ export class TableWidget extends BlockWidget {
         table.height = this.height;
         table.width = this.width;
         table.isBidiTable = this.isBidiTable;
+        table.isGridUpdated = this.isGridUpdated;
         table.containerWidget = this.containerWidget;
         if (this.contentControlProperties) {
             table.contentControlProperties = this.contentControlProperties;
@@ -4224,6 +4264,9 @@ export class TableCellWidget extends BlockWidget {
                 let size: WidthInfo = this.getMinimumAndMaximumWordWidth(0, 0);
                 this.sizeInfo.minimumWordWidth = size.minimumWordWidth + this.sizeInfo.minimumWidth;
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
+                if (this.cellFormat.preferredWidthType === 'Point' && this.cellFormat.preferredWidth > 0 && this.sizeInfo.minimumWordWidth > this.cellFormat.preferredWidth && this.childWidgets.some((block: Widget) => block instanceof TableWidget) && HelperMethods.round(size.minimumWordWidth + this.leftMargin + this.rightMargin, 2) === HelperMethods.round(this.cellFormat.preferredWidth, 2)) { 
+                    this.sizeInfo.minimumWordWidth -= this.getLeftBorderWidth() + this.getRightBorderWidth();
+                }
                 // if minimum and maximum width values are equal, set value as zero.
                 // later, preferred width value is considered for all width values.
                 // if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
@@ -4510,6 +4553,10 @@ export class TableCellWidget extends BlockWidget {
     }
     private getTopAdjacentCell(): TableCellWidget {
         let previousRow: TableRowWidget = this.ownerRow.previousWidget as TableRowWidget;
+        if (this.ownerTable.previousSplitWidget && this.ownerTable.bodyWidget && this.ownerTable.bodyWidget.page
+            && this.ownerTable.bodyWidget.page.repeatHeaderRowTableWidget && !this.ownerRow.previousWidget) {
+            previousRow = this.ownerTable.bodyWidget.page.documentHelper.layout.getHeader(this.ownerTable);
+        }
         let cell: TableCellWidget;
         if (!isNullOrUndefined(previousRow)) {
             cell = previousRow.getVerticalMergeStartCell(this.columnIndex, this.cellFormat.columnSpan);
@@ -6541,6 +6588,10 @@ export class FieldTextElementBox extends TextElementBox {
      */
     public fieldBegin: FieldElementBox;
     private fieldText: string = '';
+    /**
+     * @private
+     */
+    public isRtlPageNumber: boolean = false;
     get text(): string {
         return this.fieldText;
     }
@@ -6773,6 +6824,22 @@ export class ContentControl extends ElementBox {
      * @private
      */
     public reference: ContentControl;
+    /**
+     * @private
+     */
+    public isInsertRevision: boolean = false;
+    /**
+     * @private
+     */
+    public isDeleteRevision: boolean = false;
+    /**
+     * @private
+     */
+    public authorName: string = '';
+    /**
+     * @private
+     */
+    public revDateTime: string = '';
     /**
      * @private
      */
@@ -7414,6 +7481,7 @@ export class ShapeElementBox extends ShapeBase {
         shape.horizontalOrigin = this.horizontalOrigin;
         shape.horizontalRelativePercent = this.horizontalRelativePercent;
         shape.heightRelativePercent = this.heightRelativePercent;
+        shape.isHorizontalRule = this.isHorizontalRule;
         shape.widthRelativePercent = this.widthRelativePercent;
         shape.zOrderPosition = this.zOrderPosition;
         shape.allowOverlap = this.allowOverlap;
@@ -7899,6 +7967,10 @@ export class ImageElementBox extends ShapeBase {
         image.coordinateSize = this.coordinateSize;
         image.coordinateXOrigin = this.coordinateXOrigin;
         image.coordinateYOrigin = this.coordinateYOrigin;
+        image.distanceBottom = this.distanceBottom;
+        image.distanceLeft = this.distanceLeft;
+        image.distanceRight = this.distanceRight;
+        image.distanceTop = this.distanceTop;
         image.leftMargin = this.leftMargin;
         image.topMargin = this.topMargin;
         if (this.margin) {
@@ -9826,7 +9898,8 @@ export class CommentCharacterElementBox extends ElementBox {
             this.commentMarkSpan = span;
             this.commentMark.appendChild(span);
             
-            if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor) {
+            if (documentHelper.owner.documentEditorSettings.commentSettings &&
+                documentHelper.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                 const firstCommentInLine: CommentCharacterElementBox = this.getFirstCommentInLine();
                 const firstCommentAuthor: string = firstCommentInLine && firstCommentInLine.comment ? firstCommentInLine.comment.author : this.comment.author;
                 const firstAuthorColor: string = documentHelper.getAuthorColor(firstCommentAuthor);
@@ -9847,7 +9920,8 @@ export class CommentCharacterElementBox extends ElementBox {
         }
         
         // RE-RENDER: Update color when highlight is enabled (handles editing cases with overlapping)
-        if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor && this.commentType === 0 && this.commentMarkSpan && !isNullOrUndefined(this.commentMark)) {
+        if (documentHelper.owner.documentEditorSettings.commentSettings &&
+            documentHelper.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor && this.commentType === 0 && this.commentMarkSpan && !isNullOrUndefined(this.commentMark)) {
             this.refreshCommentMarkAppearance(documentHelper, commentMarkDictionary);
         }
         
@@ -9876,7 +9950,8 @@ export class CommentCharacterElementBox extends ElementBox {
             if(ifNotPresent){
                 commentMarkDictionary.get(overlapKey).push(this);
                 // Hide this new overlapping span (only first span should be visible)
-                if (documentHelper.owner.documentEditorSettings.highlightCommentsByAuthor && this.commentMarkSpan) {
+                if (documentHelper.owner.documentEditorSettings.commentSettings &&
+                    documentHelper.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor && this.commentMarkSpan) {
                     this.commentMarkSpan.style.color = 'transparent';
                     this.commentMarkSpan.style.textShadow = '';
                 }
@@ -10562,13 +10637,21 @@ export class WTableHolder {
         if (!(gridSpan > 1) && availableWidth < width) {
             this.columns[columnSpan - 1].preferredWidth += (width - availableWidth);
         }
+        let precedingMinWordWidth: number = 0;
+        let precedingMaxWordWidth: number = 0;
+        if (gridSpan > 1) {
+            for (let c: number = currentColumnIndex; c < columnSpan - 1; c++) {
+                precedingMinWordWidth += this.columns[c].minimumWordWidth;
+                precedingMaxWordWidth += this.columns[c].maximumWordWidth;
+            }
+        }
         // Sets minimum word width for cell with one span, because content from spanned cells are not consider as minimum word of the column
-        if (isSpannedCell && sizeInfo.minimumWordWidth > this.columns[columnSpan - 1].minimumWordWidth) {
-            this.columns[columnSpan - 1].minimumWordWidth = sizeInfo.minimumWordWidth;
+        if (isSpannedCell && (sizeInfo.minimumWordWidth - precedingMinWordWidth) > this.columns[columnSpan - 1].minimumWordWidth) {
+            this.columns[columnSpan - 1].minimumWordWidth = sizeInfo.minimumWordWidth - precedingMinWordWidth;
         }
         // Sets maximum word width for cell with one span, because content from spanned cells are not consider as maximum word of the column
-        if (isSpannedCell && sizeInfo.maximumWordWidth > this.columns[columnSpan - 1].maximumWordWidth) {
-            this.columns[columnSpan - 1].maximumWordWidth = sizeInfo.maximumWordWidth;
+        if (isSpannedCell && (sizeInfo.maximumWordWidth - precedingMaxWordWidth) > this.columns[columnSpan - 1].maximumWordWidth) {
+            this.columns[columnSpan - 1].maximumWordWidth = sizeInfo.maximumWordWidth - precedingMaxWordWidth;
         }
         if (sizeInfo.minimumWidth > this.columns[columnSpan - 1].minimumWidth) {
             this.columns[columnSpan - 1].minimumWidth = sizeInfo.minimumWidth;
@@ -10682,6 +10765,22 @@ export class WTableHolder {
                 columnIndexCollection.push(i);
             }
         }
+        // Bug 1059628: For a percent-width table whose columns all have auto width and an evenly split grid, the grid carries no
+        // width information. When the content occupies only a part of the table, Word distributes the table width
+        // in proportion to the maximum word width of each column.
+        // It is restricted to tables where one column holds at least half of the text, so evenly filled grids are left untouched.
+        if (isTableHasPercentWidth && !hasSpannedCells && !isNestedTable && this.columns.length > 1
+            && this.columns.every(column => column.widthType === 'Auto' && column.maximumWordWidth > 0
+                && HelperMethods.round(column.preferredWidth, 2) === HelperMethods.round(this.columns[0].preferredWidth, 2))
+            && this.columns.reduce((total, column) => total + column.maximumWordWidth, 0) <= preferredTableWidth * 0.85
+            && Math.max(...this.columns.map(column => column.maximumWordWidth)) >= this.columns.reduce((total, column) => total + column.maximumWordWidth, 0) * 0.5) {
+            for (let i: number = 0; i < this.columns.length; i++) {
+                this.columns[i].preferredWidth = this.columns[i].maximumWordWidth;
+            }
+            this.fitColumns(containerWidth, preferredTableWidth, isAuto, isAutoFit);
+            this.tableWidth = this.getTotalWidth(0);
+            return;
+        }
         // Try to fit maximum word width to match preferredTableWidth.
         if (maxTotal <= preferredTableWidth) {
             for (let i: number = 0; i < this.columns.length; i++) {
@@ -10741,6 +10840,10 @@ export class WTableHolder {
                 //let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
                 let considerMinAsTableWidth: boolean = preferredTableWidth < minTotal && minTotal + (isNullOrUndefined(indent) ? 0 : indent) < containerWidth;
+                if (considerMinAsTableWidth && hasSpannedCells && isAllColumnPointWidth && tablePreferredWidthType === 'Point'
+                    && HelperMethods.round(totalColumnsPreferredWidth, 2) === HelperMethods.round(preferredTableWidth, 2)) {
+                    considerMinAsTableWidth = false;
+                }
                 if (isTableHasPointWidth && considerMinAsTableWidth) {
                     if (minTotal > preferredTableWidth && minWidthExceedCellWidth > 0) {
                         if (preferredTableWidth > totalPreferredWidth) {

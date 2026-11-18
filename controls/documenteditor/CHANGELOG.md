@@ -2,6 +2,125 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I887226` - Resolved an issue where bookmark brackets became corrupted after inserting text within a bookmark.
+- `#I886714` - Fixed an issue where the footer page number was duplicated in the imported document.
+
+#### Features
+
+- `#I839717` - Implemented support for displaying an alert message when users attempt to edit a non-editable region.
+- `#I874419` - Added APIs to retrieve the position information of a table when the selection is placed inside it.
+- `#I250786`,`#I276932`,`#I300092`,`#I308678`,`#I312401`,`#I458868`,`#I619524`,`#I645690`,`#I659688`,`#I324728`,`#I321629`,`#I624637`,`#I710810`,`#I738616`,`#I756463`,`#I774379`,`#I786077`,`#I805092`,`#I824823`,`#I827379`,`#I831633`,`#I861705`,`#I866453`,`#I869043` - Implemented support for the Format Painter feature in Document Editor.
+
+## 35.1.46 (2026-11-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I883652` - Resolved an issue where header text became misaligned when opening a document.
+`#I885017` - Fixed an issue where numeric values containing separators were reordered incorrectly in RTL text rendering.
+`#I883344` - Resolved an issue where a new paragraph was positioned incorrectly after pressing Enter.
+`#I885150` - Fixed an issue where shape layout was altered while editing form field content.
+`#I881341` - Resolved a performance issue that caused delays when opening large image heavy documents.
+`#I885964` - Fixed an issue where pasting a table twice within the same bookmark threw an undefined length error.
+`#I884574` - Resolved an issue where the Document Editor Ribbon incorrectly applied the previous font size when opening a document immediately after creation.
+`#I881355` - Fixed an issue where floating table layout caused overlapping text and content overflow on the first page.
+`#I885958` - Resolved an issue where the bookmark end marker was not visible when a table spanned across multiple pages.
+
+## 35.1.43 (2026-11-03)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I880899` - Resolved an issue where SFDT content pasted into a bulleted list was inserted at an incorrect position in the Document Editor.
+`#I877408` - Fixed an issue where paragraph layout was rendered differently in the Document Editor compared to Microsoft Word.
+`#I884566` - Resolved an issue where table position shifted to the right during initial layout in the Document Editor.
+`#I880095` - Resolved an issue where an editable region was removed during a Backspace operation after deleting a bookmark and its content.
+`#I869896` - Fixed an issue where text inside a table was not preserved properly in the imported document and exported PDF.
+`#I883317` - Resolved an issue where the font family changed incorrectly in the exported document.
+`#I883647` - Fixed an issue where the Document Editor inserted text in an inconsistent order during rapid keyboard input automation.
+`#I879775` - Resolved an issue where text layout within a table differed from Microsoft Word.
+
+## 35.1.42 (2026-10-27)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I869873` - Resolved an issue where resizing a middle table column caused unexpected row expansion in the Document Editor.
+`#I882047` - Fixed an issue where paragraphs overlapped when pressing Enter and Backspace at the beginning of headings in the Document Editor.
+`#I879471` - Resolved an issue where the column width of a pasted table differed from Microsoft Word.
+`#I873723` - Fixed an issue where the page became unresponsive when importing a document.
+`#I881279` - Resolved an issue where deleting part of a comment and navigating to it caused an error.
+`#I880263` - Fixed an issue where inserting a remote bookmark with an existing bookmark name caused the editor to freeze during collaborative editing.
+`#I879822` - Resolved an issue where RTL paragraph alignment differed between the Document Editor and Microsoft Word.
+`#I879048` - Fixed an issue where the Insert Table dialog did not validate max Rows correctly and displayed an incorrect validation message in the Document Editor.
+`#I875001` - Resolved an issue where text in the header section could not be selected or navigated using the keyboard.
+`#I869629` - Fixed multiple document rendering and editing issues in SFDT documents.
+`#I877768` - Resolved an issue where the viewport became blank and the toolbar flickered during batch editing.
+
+## 35.1.41 (2026-10-20)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I864859` - Fixed an issue where tab spacing differed when compared to Microsoft Word.
+`#I880704` - Resolved an issue where the same user was assigned different cursor colours across multiple browser tabs during collaborative editing.
+
+#### Features
+
+`#I875993` - Implemented support for inserting text boxes with positioning and layout properties.
+
+## 35.1.40 (2026-10-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#873013` - Resolved an issue where the bookmark end was not moved to the previous paragraph when content modifications occurred around bookmarked sections.
+`#868675` - Fixed an issue where applying the Heading 1 style programmatically did not correctly apply the expected formatting.
+`#871842` - Resolved an issue where before-spacing was not properly maintained when editing list paragraphs.
+`#876205` - Fixed an issue where an error occurred when adding a bookmark to a table that was split across multiple pages.
+`#868085` - Resolved an issue where copy-paste operations caused duplication of Structured Document Tags.
+`#876494` - Fixed an XSS vulnerability that occurred when opening SFDT documents containing malicious comments in the Document Editor.
+`#876858` - Resolved an issue where the Document Editor incorrectly allowed insertion of merge fields inside existing merge fields, unlike Microsoft Word.
+`#872376` - Fixed an issue where bookmark selection returned an empty range for bookmarks applied to tables.
+
+## 35.1.39 (2026-10-07)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#844800` - Resolved an issue where the Compare operation failed for valid SFDT documents in Document Editor.
+`#869941` - Fixed an issue where list numbering was automatically applied in the exported PDF.
+`#866933` - Resolved a script error that occurred during PDF export.
+`#870996` - Fixed issues related to list formatting and copy/paste formatting in Document Editor.
+`#870391` - Resolved an issue where bookmarks were not restored correctly after undoing the deletion of a bookmark and its content.
+`#872722` - Fixed an exception that occurred when deleting content controls.
+`#867504` - Resolved an issue where `skipFormatRetrieval` was enabled during Backspace operations, preventing character format updates.
+`#869862` - Fixed an issue where endnotes were moved to the next page when a page field was present in the header or footer.
+`#875896` - Resolved an issue where footer sections were not displayed properly when opening documents in Document Editor.
+`#872049` - Fixed an issue where pasting or inserting a table immediately after a bookmark start created an unwanted initial paragraph.
+`#863796` - Resolved an issue where the before spacing of a paragraph containing a floating element was not updated correctly when pressing Enter.
+`#868531` - Fixed an issue where list indentation was preserved after deleting bookmarked content that contained lists.
+`#869207` - Resolved an issue where an extra paragraph was added and bullet alignment became incorrect after pasting selected HTML as SFDT.
+`#869632` - Fixed an issue where numbered lists automatically restarted at incorrect levels during editing.
+`#870833` - Resolved an issue where text following a hyperlink was exported as a field instruction instead of a normal text run.
+`#871452` - Updated the built-in password dialog when removing document protection.
+`#868085` - Fixed an issue where copy-paste operations caused SDT duplication.
+`#869433` - Resolved an issue where header dates wrapped into multiple lines when pasting a table.
+`#875915` - Fixed image rendering and table layout issues in Document Editor.
+`#872011` - Resolved an issue where heading style changes applied through `applyStyle()` were not retained after inserting a space adjacent to a bookmark.
+
 ## 34.2.6 (2026-09-01)
 
 ### DocumentEditor

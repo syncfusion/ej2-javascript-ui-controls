@@ -3,7 +3,7 @@
  *
  * PM boundary: allowed inside src/extensions/table/commands/.
  */
-import { PMCommandInternal, PMCommandContext } from '../../../commands/internal/pm-command-context';
+import { PMCommandInternal, PMCommandContext } from '../../../core/commands/internal/pm-command-context';
 import { wrapTransaction } from '../../../pm/adapters/editor-state-adapter';
 import { deleteTablePM, isCursorInTable } from '../../../pm/adapters/table';
 import { PMEditorState, PMTransaction } from '../../../pm/pm-guard';

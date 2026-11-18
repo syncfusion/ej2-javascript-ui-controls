@@ -404,6 +404,15 @@ export class _PdfCryptographicMessageSyntaxSigner {
             this._encryptionAlgorithm = this._mapEncryptionOidToName(this._encryptionAlgorithmObjectIdentifier);
         }
     }
+    /**
+     * Gets the certificate identified by the CMS signer information.
+     *
+     * @private
+     * @returns {_PdfX509Certificate} The signing certificate, if available.
+     */
+    _getSignatureCertificate(): _PdfX509Certificate {
+        return this._signatureCertificate;
+    }
     /* eslint-disable */
     /**
      * Extracts a signing-time timestamp token from signer info attributes if present.

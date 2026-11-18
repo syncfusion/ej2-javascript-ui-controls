@@ -56,6 +56,8 @@ import { SnapSettings } from './diagram/grid-lines';
 import { RulerSettings } from './diagram/ruler-settings';
 import { removeRulerElements, updateRuler, getRulerSize } from './ruler/ruler';
 import { renderRuler, renderOverlapElement } from './ruler/ruler';
+import { RulerUnitState, UnitGrid, getUnitGrid, convertMeasurement, currentRulerUnitState } from './utility/measurement-util';
+import { MeasurementUnit } from './enum/enum';
 import { RulerSettingsModel } from './diagram/ruler-settings-model';
 import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel, BasicShapeModel, FlowShapeModel, PathModel } from './objects/node-model';
@@ -98,7 +100,7 @@ import { ConnectorBridging } from './objects/connector-bridging';
 import { SpatialSearch } from './interaction/spatial-search/spatial-search';
 import { HistoryEntry, History } from './diagram/history';
 import { UndoRedo } from './objects/undo-redo';
-import { WebMcpAdapter } from './integrations/webmcp-adapter';
+import { WebMcpDiagram } from './integrations/webmcp-adapter';
 import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -109,6 +111,8 @@ import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './uti
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
+import { WebMcpDiagramSettings } from './integrations/webmcp-adapter';
+import { WebMcpDiagramSettingsModel } from './integrations/webmcp-adapter-model';
 import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';
 import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';
 import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit, canMultiSelect } from './utility/constraints-util';
@@ -307,12 +311,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public undoRedoModule: UndoRedo;
+
     /**
-     * `webMcpAdapterModule` is used for WebMCP tool integration
+     * `webMcpDiagramModule` is used for WebMCP tool integration
      *
      * @private
      */
-    public webMcpAdapterModule: WebMcpAdapter;
+    public webMcpDiagramModule: WebMcpDiagram;
     /**
      * `diagramCollaborationModule` is used to enable collaborative editing.
      *
@@ -402,6 +407,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property(false)
     public enableWebMcp: boolean;
+
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    @Complex<WebMcpDiagramSettingsModel>({}, WebMcpDiagramSettings)
+    public webMcpSettings: WebMcpDiagramSettingsModel;
 
     /**
      * Defines the diagram rendering mode.
@@ -1754,6 +1768,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private diagramLayerDiv: HTMLElement;
     private adornerLayer: SVGElement;
     private eventHandler: DiagramEventHandler;
+    /** @private */
+    public gestureUnitState: RulerUnitState = null;
     private preventOverviewRefresh: boolean = false;
     /** @private */
     public scroller: DiagramScroller;
@@ -2195,12 +2211,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         break;
                     case 'layers':
                         this.updateLayer(newProp); break;
-                    case 'scrollSettings':
+                    case 'scrollSettings': {
                         this.scrollActions |= ScrollActions.PropertyChange;
                         this.updateScrollSettings(newProp, oldProp);
                         this.scrollActions &= ~ScrollActions.PropertyChange;
-                        if (newProp.scrollSettings.scrollLimit) {
+                        const restrictNegativeAxisChanged: boolean = newProp.scrollSettings.restrictNegativeAxis !== undefined;
+                        if (restrictNegativeAxisChanged) {
+                            this.scroller.enforceViewportRestriction(false);
+                        }
+                        if (newProp.scrollSettings.scrollLimit ||
+                            restrictNegativeAxisChanged) {
                             this.scroller.checkScroll(undefined, true);
+                        }
+                        if (restrictNegativeAxisChanged) {
+                            this.scroller.refreshOverview();
                         }
                         // Bug 1046719: Diagram scroll drifts in Chromium browsers at browser zoom after node drag or pan
                         // To update scrollLeft and scrollTop based on scroll padding
@@ -2209,10 +2233,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.scroller.updateScrollOffsets();
                         }
                         break;
+                    }
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
                             // 927339: Diagram Layout Rendering correctly When Locale is Set by removing the line
                             super.refresh();
+                        }
+                        break;
+                    case 'webMcpSettings':
+                        // Auto-register tools when webMcpSettings is set or updated
+                        if (this.webMcpDiagramModule && this.webMcpSettings && this.webMcpSettings.tools) {
+                            this.webMcpDiagramModule.registerTools({
+                                prefix: this.webMcpSettings.name || this.element.id,
+                                tools: this.webMcpSettings.tools,
+                                exposedTo: this.webMcpSettings.exposedTo
+                            });
                         }
                         break;
                     case 'contextMenuSettings':
@@ -2411,6 +2446,49 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.setOffset(-this.scroller.horizontalOffset - pageBounds.x, -this.scroller.verticalOffset - pageBounds.y);
     }
     /* tslint:enable */
+    /**
+     * Converts a number between measurement units using the fixed 96 pixels per inch ratio.
+     *
+     * @returns { number } The converted value.
+     * @param {number} value - The value to convert.
+     * @param {MeasurementUnit} from - The unit of the value.
+     * @param {MeasurementUnit} to - The unit to convert to.
+     */
+    public convertUnit(value: number, from: MeasurementUnit, to: MeasurementUnit): number {
+        return convertMeasurement(value, from, to);
+    }
+
+    /**
+     * Ends the unit snapshot of a gesture and applies the live unit only when it differs from the snapshot.
+     *
+     * @returns {void}
+     * @private
+     */
+    public endUnitGesture(): void {
+        const snapshot: RulerUnitState = this.gestureUnitState;
+        if (!snapshot) {
+            return;
+        }
+        this.gestureUnitState = null;
+        if (!this.element || !this.scroller || !this.diagramRenderer) {
+            return;
+        }
+        const live: RulerUnitState = currentRulerUnitState(this);
+        if (live.unit === snapshot.unit) {
+            return;
+        }
+        if (this.rulerSettings.showRulers && this.hRuler && this.vRuler) {
+            updateRuler(this);
+        }
+        const gridSvg: SVGSVGElement = getGridLayerSvg(this.element.id);
+        if (gridSvg) {
+            this.diagramRenderer.updateGrid(
+                this.snapSettings, gridSvg, this.scroller.transform,
+                this.rulerSettings, this.hRuler, this.vRuler
+            );
+        }
+    }
+
     private updateSnapSettings(newProp: DiagramModel): void {
         if (newProp.snapSettings.constraints !== undefined || newProp.snapSettings.horizontalGridlines ||
             newProp.snapSettings.verticalGridlines || newProp.snapSettings.gridType) {
@@ -2509,8 +2587,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.renderRulers();
         } else if (newProp.rulerSettings.horizontalRuler !== undefined ||
             newProp.rulerSettings.verticalRuler !== undefined) {
-            if (newProp.rulerSettings.horizontalRuler.thickness !== undefined ||
-                newProp.rulerSettings.verticalRuler.thickness !== undefined) {
+            if ((newProp.rulerSettings.horizontalRuler && newProp.rulerSettings.horizontalRuler.thickness !== undefined) ||
+                (newProp.rulerSettings.verticalRuler && newProp.rulerSettings.verticalRuler.thickness !== undefined)) {
                 removeRulerElements(this);
                 this.intOffPageBackground();
                 this.scroller.setSize();
@@ -2714,6 +2792,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.initHistory();
         this.initWebMcp();
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), this.mode === 'SVG');
+        this.diagramRenderer.unitGrid = (): UnitGrid => getUnitGrid(this);
         this.initLayers();
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
@@ -3014,7 +3093,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.enableWebMcp) {
             modules.push({
-                member: 'WebMcpAdapter',
+                member: 'WebMcpDiagram',
                 args: [this]
             });
         }
@@ -3124,6 +3203,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {void} Destroys the diagram, freeing up its resources.
      */
     public destroy(): void {
+        this.gestureUnitState = null;
         clearInterval(this.renderTimer as number);
         this.renderTimer = null;
         if (this.hRuler && this.vRuler) {
@@ -4318,8 +4398,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     private initWebMcp(): void {
-        if (this.webMcpAdapterModule) {
-            this.webMcpAdapterModule.init(this);
+        if (this.webMcpDiagramModule) {
+            this.webMcpDiagramModule.init(this);
+            // Auto-register tools if webMcpSettings is configured
+            const settings: WebMcpDiagramSettingsModel = this.webMcpSettings || {};
+            this.webMcpDiagramModule.registerTools({
+                prefix: settings.name || this.element.id,
+                tools: settings.tools,
+                exposedTo: settings.exposedTo
+            });
         }
     }
 
@@ -5343,6 +5430,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (obj.visible === false) { this.updateElementVisibility(newObj.wrapper, newObj, obj.visible); }
                     this.updateEdges(newObj);
                     this.insertBlazorConnector(newObj);
+                    //1054046: Line routing is not applied when a connector is added dynamically using addConnector() despite DiagramConstraints.LineRouting being enabled
+                    if (this.lineRoutingModule && (this.constraints & DiagramConstraints.LineRouting) &&
+                        newObj.type === 'Orthogonal' && newObj.visible && !(this.diagramActions & DiagramAction.UndoRedo)) {
+                        this.lineRoutingModule.renderVirtualRegion(this, true);
+                        this.lineRoutingModule.refreshConnectorSegments(this, newObj, true);
+                    }
                 } else {
                     newObj = new Node(this, 'nodes', obj, true);
                     updateDefaultValues(newObj, obj, this.nodeDefaults);
@@ -6467,6 +6560,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
         connector.wrapper.arrange(connector.wrapper.desiredSize);
     }
+    /**
+     * Selects nodes without a parent or process owner for layout processing.
+     *
+     * @param {INode[]} nodes - The nodes to filter before layout calculation.
+     * @returns {INode[]} The nodes that can participate as top-level layout nodes.
+     * @private
+     */
     private removeChildrenFromLayout(nodes: INode[]): INode[] {
         const nodesCollection: INode[] = []; let node: INode;
         const parentId: string = 'parentId';
@@ -6479,6 +6579,41 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return nodesCollection;
     }
+
+    /**
+     * Shifts a completed layout into the positive coordinate region when restrictNegativeAxis is enabled.
+     * Applies one shared translation to all layout nodes, preserving their relative positions and leaving
+     * the layout calculation unchanged.
+     *
+     * @param {INode[]} nodes - The nodes positioned by the completed layout.
+     * @returns {void} This method does not return a value.
+     * @private
+     */
+    public translateLayoutToPositiveRegion(nodes: INode[]): void {
+        if (!this.scrollSettings.restrictNegativeAxis || !nodes || nodes.length === 0) {
+            return;
+        }
+        let minX: number = Infinity;
+        let minY: number = Infinity;
+        for (const node of nodes) {
+            const width: number = node.actualSize ? node.actualSize.width : 0;
+            const height: number = node.actualSize ? node.actualSize.height : 0;
+            const pivot: PointModel = node.pivot || { x: 0.5, y: 0.5 };
+            minX = Math.min(minX, node.offsetX - width * pivot.x);
+            minY = Math.min(minY, node.offsetY - height * pivot.y);
+        }
+        const deltaX: number = minX < 0 ? -minX : 0;
+        const deltaY: number = minY < 0 ? -minY : 0;
+        if (!isFinite(deltaX + deltaY) || (deltaX === 0 && deltaY === 0)) {
+            return;
+        }
+        for (const node of nodes) {
+            node.offsetX += deltaX;
+            node.offsetY += deltaY;
+        }
+    }
+
+
 
     /* tslint:disable */
     /**
@@ -6507,6 +6642,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 layout = this.organizationalChartModule.updateLayout(
                     nodes, this.nameTable, this.layout as Layout,
                     viewPort, this.dataSourceSettings.id, this.diagramActions);
+                this.translateLayoutToPositiveRegion(nodes);
                 update = true;
                 if (this.canDistribute(canEnableRouting, canDoOverlap)) {
                     this.lineDistributionModule.initLineDistribution(this.layout as Layout, this);
@@ -6523,6 +6659,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.mindMapChartModule.updateLayout(
                         nodes, this.nameTable, this.layout as Layout,
                         viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+                    this.translateLayoutToPositiveRegion(nodes);
                 }
                 update = true;
 
@@ -6530,6 +6667,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.radialTreeModule.updateLayout(
                     nodes, this.nameTable, this.layout as Layout,
                     viewPort);
+                this.translateLayoutToPositiveRegion(nodes);
                 update = true;
             } else if (this.symmetricalLayoutModule) {
                 this.symmetricalLayoutModule.maxIteration = this.layout.maxIteration;
@@ -6538,6 +6676,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.symmetricalLayoutModule.updateLayout(
                     nodes as IGraphObject[], this.connectors as IGraphObject[],
                     this.symmetricalLayoutModule, this.nameTable, this.layout as Layout, viewPort);
+                this.translateLayoutToPositiveRegion(nodes);
                 update = true;
             } else if (this.complexHierarchicalTreeModule) {
                 //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
@@ -6554,6 +6693,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (nodes.length > 0) {
                     // eslint-disable-next-line max-len
                     this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout as Layout, viewPort, this);
+                    this.translateLayoutToPositiveRegion(nodes);
                 }
                 update = true;
                 //initLineDistribution method call after doLayout.
@@ -6562,6 +6702,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else if (this.flowchartLayoutModule) {
                 this.flowchartLayoutModule.updateLayout(this.nodes, this);
+                this.translateLayoutToPositiveRegion(this.nodes as INode[]);
                 update = true;
             }
             else {
@@ -7761,12 +7902,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public removePhase(node: NodeModel, phase: PhaseModel): void {
         //959401-Remove phase - undo redo not working.
-        this.historyManager.startGroupAction();
+        // 1049650: use the public `startGroupAction`/`endGroupAction` methods (which internally
+        // guard against the UndoRedo module not being injected) instead of `this.historyManager`
+        // directly — `historyManager` is undefined when `Diagram.Inject(UndoRedo)` has not been
+        // called, which throws `Cannot read properties of undefined (reading 'startGroupAction')`.
+        this.startGroupAction();
         const id: string = phase.header.id;
         const phaseObj: NodeModel = this.nameTable[`${id}`];
         removePhase(this, phaseObj, node);
         this.updateDiagramElementQuad();
-        this.historyManager.endGroupAction();
+        this.endGroupAction();
     }
     //827745-support to edit Segment for Straight connector at runtime.
     /**

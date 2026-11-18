@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IEditCell } from '../base/interface';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
-import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 import { extend } from '@syncfusion/ej2-base';
 import { isEditable, addRemoveActiveClasses, createEditElement, getObject } from '../base/util';
 import * as literals from '../base/string-literals';
@@ -74,7 +74,7 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
         this.obj.removeEventListener(literals.change, this.cbChange);
     }
 
-    private checkBoxChange(args: ChangeEventArgs): void {
+    private checkBoxChange(): void {
         if (this.editRow && this.editType !== 'Dialog' && this.editRow.getAttribute('aria-rowindex')) {
             const idx: number = parseInt(this.editRow.getAttribute('aria-rowindex'), 10) - 1;
             this.parent.selectionModule.addRowsToSelection([idx]);

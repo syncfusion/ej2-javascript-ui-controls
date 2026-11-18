@@ -208,148 +208,51 @@ export class ErrorCorrectionCodewords {
         return toBinary;
     }
 
-
     /**
-     * Polynomial division.
+     * Computes the Reed-Solomon error correction codewords (remainder of
+     * data(x)·x^n divided by g(x)) over GF(256).
      *
-     * @returns {string[]}Polynomial division.
+     * @returns {number[]} Always exactly `eccw` codewords, highest degree first.
      * @private
      */
     private divide(): number[] {
-        let messagePolynom: { [key: number]: number } = {};
-        for (let i: number = 0; i < this.decimalValue.length; i++) {
-            messagePolynom[this.decimalValue.length - 1 - i] = this.decimalValue[parseInt(i.toString(), 10)];
+        const errorCorrectionCodewordCount: number = this.eccw;
+        const exponentTable: number[] = this.alpha;
+
+        // Logarithm table: logTable[exponentTable[i]] = i
+        const logTable: number[] = [];
+
+        for (let exponentIndex: number = 0; exponentIndex < 255; exponentIndex++) {
+            logTable[parseInt(exponentTable[parseInt(exponentIndex.toString(), 10)].toString(), 10)] = exponentIndex;
         }
 
-        let generatorPolynom: { [key: number]: number } = {};
-        for (let i: number = 0; i < this.gx.length; i++) {
-            generatorPolynom[this.gx.length - 1 - i] = this.findElement(this.gx[parseInt(i.toString(), 10)], this.alpha);
-        }
-        let tempMessagePolynom: { [key: number]: number } = {};
-        for (const poly of Object.keys(messagePolynom)) {
-            tempMessagePolynom[Number(poly) + this.eccw] = messagePolynom[`${poly}`];
-        }
-        messagePolynom = tempMessagePolynom;
+        const multiplyInGaloisField: (firstValue: number, secondValue: number) => number =
+            (firstValue: number, secondValue: number): number => (firstValue === 0 || secondValue === 0) ? 0 :
+                exponentTable[parseInt(((logTable[parseInt(firstValue.toString(), 10)] +
+                    logTable[parseInt(secondValue.toString(), 10)]) % 255).toString(), 10)];
 
-        const genLeadtermFactor: number = this.decimalValue.length + this.eccw - this.gx.length;
+        const errorCorrectionRemainder: number[] = new Array(errorCorrectionCodewordCount).fill(0);
 
-        tempMessagePolynom = {};
-        for (const poly of Object.keys(generatorPolynom)) {
-            tempMessagePolynom[Number(poly) + genLeadtermFactor] = generatorPolynom[`${poly}`];
-        }
-        generatorPolynom = tempMessagePolynom;
+        for (let dataCodewordIndex: number = 0; dataCodewordIndex < this.mDataCodeWord.length; dataCodewordIndex++) {
+            const dataCodeword: number = parseInt(this.mDataCodeWord[parseInt(dataCodewordIndex.toString(), 10)], 2);
 
-        let leadTermSource: { [key: number]: number } = messagePolynom;
-        for (let i: number = 0; i < Object.keys(messagePolynom).length; i++) {
-            const largestExponent: number = this.findLargestExponent(leadTermSource);
-            if (leadTermSource[parseInt(largestExponent.toString(), 10)] === 0) {
-                // First coefficient is already 0, simply remove it and continue
-                delete leadTermSource[parseInt(largestExponent.toString(), 10)];
-            } else {
-                const alphaNotation: { [key: number]: number } = this.convertToAlphaNotation(leadTermSource);
-                let resPoly: { [key: number]: number } = this.multiplyGeneratorPolynomByLeadterm(
-                    generatorPolynom, alphaNotation[this.findLargestExponent(alphaNotation)], i);
-                resPoly = this.convertToDecNotation(resPoly);
-                resPoly = this.xORPolynoms(leadTermSource, resPoly);
-                leadTermSource = resPoly;
+            const leadingCoefficient: number = dataCodeword ^ errorCorrectionRemainder[0];
+
+            errorCorrectionRemainder.shift();
+            errorCorrectionRemainder.push(0);
+
+            if (leadingCoefficient !== 0) {
+                // generatorPolynomial contains the generator polynomial coefficients. The first coefficient is 1 and is not required in this calculation.
+                for (let coefficientIndex: number = 0; coefficientIndex < errorCorrectionCodewordCount; coefficientIndex++) {
+                    const generatorCoefficient: number = this.gx[parseInt(coefficientIndex.toString(), 10) + 1];
+
+                    errorCorrectionRemainder[parseInt(coefficientIndex.toString(), 10)] ^=
+                        multiplyInGaloisField(generatorCoefficient, leadingCoefficient);
+                }
             }
         }
 
-        //Add the error correction word count according to polynomial values.
-        this.eccw = Object.keys(leadTermSource).length;
-        const returnValue: number[] = [];
-        for (const temp of Object.keys(leadTermSource)) {
-            returnValue.push(leadTermSource[`${temp}`]);
-        }
-        return returnValue.reverse();
-    }
-
-    private xORPolynoms(messagePolynom: { [key: number]: number }, resPolynom: { [key: number]: number }): { [key: number]: number } {
-        const resultPolynom: { [key: number]: number } = {};
-        let longPoly: { [key: number]: number } = {};
-        let shortPoly: { [key: number]: number } = {};
-
-        if (Object.keys(messagePolynom).length >= Object.keys(resPolynom).length) {
-            longPoly = messagePolynom;
-            shortPoly = resPolynom;
-        } else {
-            longPoly = resPolynom;
-            shortPoly = messagePolynom;
-        }
-        const messagePolyExponent: number = this.findLargestExponent(messagePolynom);
-
-        const shortPolyExponent: number = this.findLargestExponent(shortPoly);
-        let i: number = Object.keys(longPoly).length - 1;
-        for (const longPolySingle of Object.keys(longPoly)) {
-            resultPolynom[messagePolyExponent - i] = longPoly[`${longPolySingle}`] ^ (Object.keys(shortPoly).length > i ?
-                shortPoly[shortPolyExponent - i] : 0);
-            i--;
-        }
-        const resultPolyExponent: number = this.findLargestExponent(resultPolynom);
-        delete resultPolynom[parseInt(resultPolyExponent.toString(), 10)];
-        return resultPolynom;
-    }
-    private multiplyGeneratorPolynomByLeadterm(
-        genPolynom: { [key: number]: number }, leadTermCoefficient: number, lowerExponentBy: number): { [key: number]: number } {
-        const tempPolynom: { [key: number]: number } = {};
-
-        for (const treeNode of Object.keys(genPolynom)) {
-            tempPolynom[Number(treeNode) - lowerExponentBy] = (genPolynom[`${treeNode}`] + leadTermCoefficient) % 255;
-        }
-        return tempPolynom;
-    }
-
-    private convertToDecNotation(poly: { [key: number]: number }): { [key: number]: number } {
-        const tempPolynom: { [key: number]: number } = {};
-        for (const treeNode of Object.keys(poly)) {
-            tempPolynom[`${treeNode}`] = this.getIntValFromAlphaExp(poly[`${treeNode}`], this.alpha);
-        }
-        return tempPolynom;
-    }
-
-    private convertToAlphaNotation(polynom: { [key: number]: number }): { [key: number]: number } {
-        const tempPolynom: { [key: number]: number } = {};
-        for (const poly of Object.keys(polynom)) {
-            if (polynom[`${poly}`] !== 0) {
-                tempPolynom[`${poly}`] = this.findElement(polynom[`${poly}`], this.alpha);
-            }
-        }
-        return tempPolynom;
-    }
-
-    private findLargestExponent(polynom: { [key: number]: number }): number {
-        let largCo: number = 0;
-        for (const poly of Object.keys(polynom)) {
-            if (Number(poly) > largCo) {
-                largCo = Number(poly);
-            }
-        }
-        return largCo;
-    }
-
-    private getIntValFromAlphaExp(element: number, alpha: number[]): number {
-        if (element > 255) {
-            element = element - 255;
-        }
-        return alpha[parseInt(element.toString(), 10)];
-    }
-
-
-
-    /**
-     * Find the element in the alpha
-     *
-     * @returns {number}Find the element in the alpha.
-     * @param {QRCodeVersion} element - Provide the element for the Qr code
-     * @param {ErrorCorrectionLevel} alpha -provide the number
-     * @private
-     */
-    private findElement(element: number, alpha: number[]): number {
-        let j: number;
-        for (j = 0; j < alpha.length; j++) {
-            if (element === alpha[parseInt(j.toString(), 10)]) { break; }
-        }
-        return j;
+        return errorCorrectionRemainder;
     }
 
     /**

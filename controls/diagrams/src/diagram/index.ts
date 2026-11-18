@@ -123,3 +123,5 @@ export * from './load-utility/visio-import-export/visio-import-export';
 export * from './objects/er-objects';
 export * from './objects/er-objects-model';
 export * from './entity-relationship/index';
+
+export * from './integrations/webmcp-adapter';

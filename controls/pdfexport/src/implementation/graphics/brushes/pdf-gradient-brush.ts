@@ -9,7 +9,6 @@ import { PdfBrush } from './pdf-brush';
 import { IPdfWrapper } from '../../../interfaces/i-pdf-wrapper';
 import { PdfDictionary} from '../../primitives/pdf-dictionary';
 import { PdfTransformationMatrix } from './../pdf-transformation-matrix';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { PdfBoolean } from './../../primitives/pdf-boolean';
 import { PdfArray } from './../../primitives/pdf-array';
 import { PdfName } from '../../primitives/pdf-name';
@@ -60,11 +59,6 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
      * @private
      */
     private mfunction: PdfFunction = null;
-    /**
-     * Local variable to store the DictionaryProperties.
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     //Constructor
     /**
      * Initializes a new instance of the `PdfGradientBrush` class.
@@ -74,8 +68,8 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
     public constructor(shading: PdfDictionary) {
         super();
         this.mpatternDictionary = new PdfDictionary();
-        this.mpatternDictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.pattern));
-        this.mpatternDictionary.items.setValue(this.dictionaryProperties.patternType, new PdfNumber(2));
+        this.mpatternDictionary.items.setValue('Type', new PdfName('Pattern'));
+        this.mpatternDictionary.items.setValue('PatternType', new PdfNumber(2));
         this.shading = shading;
         this.colorSpace = PdfColorSpace.Rgb;
     }
@@ -91,9 +85,9 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
         this.mbackground = value;
         let sh: PdfDictionary = this.shading;
         if (value.isEmpty) {
-            sh.remove(this.dictionaryProperties.background);
+            sh.remove('Background');
         } else {
-            sh.items.setValue(this.dictionaryProperties.background, value.toArray(this.colorSpace));
+            sh.items.setValue('Background', value.toArray(this.colorSpace));
         }
     }
     /**
@@ -102,15 +96,15 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
      */
     public get antiAlias(): boolean {
         let sh: PdfDictionary = this.shading;
-        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue(this.dictionaryProperties.antiAlias)));
+        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue('AntiAlias')));
         return aa.value;
     }
     public set antiAlias(value: boolean)  {
         let sh: PdfDictionary = this.shading;
-        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue(this.dictionaryProperties.antiAlias)));
+        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue('AntiAlias')));
         if ((aa == null && typeof aa === 'undefined')) {
             aa = new PdfBoolean(value);
-            sh.items.setValue(this.dictionaryProperties.antiAlias, aa);
+            sh.items.setValue('AntiAlias', aa);
         } else {
             aa.value = value;
         }
@@ -125,9 +119,9 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
     protected set function(value: PdfFunction)  {
         this.mfunction = value;
         if (value != null && typeof value !== 'undefined') {
-            this.shading.items.setValue(this.dictionaryProperties.function, new PdfReferenceHolder(this.mfunction));
+            this.shading.items.setValue('Function', new PdfReferenceHolder(this.mfunction));
         } else {
-            this.shading.remove(this.dictionaryProperties.function);
+            this.shading.remove('Function');
         }
     }
     /**
@@ -136,15 +130,15 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
      */
     protected get bBox(): PdfArray {
         let sh: PdfDictionary = this.shading;
-        let box: PdfArray = (<PdfArray>(sh.items.getValue(this.dictionaryProperties.bBox)));
+        let box: PdfArray = (<PdfArray>(sh.items.getValue('BBox')));
         return box;
     }
     protected set bBox(value: PdfArray)  {
         let sh: PdfDictionary = this.shading;
         if (value == null && typeof value === 'undefined') {
-            sh.remove(this.dictionaryProperties.bBox);
+            sh.remove('BBox');
         } else {
-            sh.items.setValue(this.dictionaryProperties.bBox, value);
+            sh.items.setValue('BBox', value);
         }
     }
     /**
@@ -155,11 +149,11 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
         return this.mcolorSpace;
     }
     public set colorSpace(value: PdfColorSpace)  {
-        let colorSpace: IPdfPrimitive = this.shading.items.getValue(this.dictionaryProperties.colorSpace);
+        let colorSpace: IPdfPrimitive = this.shading.items.getValue('ColorSpace');
         if ((value !== this.mcolorSpace) || (colorSpace == null)) {
             this.mcolorSpace = value;
             let csValue: string = this.colorSpaceToDeviceName(value);
-            this.shading.items.setValue(this.dictionaryProperties.colorSpace, new PdfName(csValue));
+            this.shading.items.setValue('ColorSpace', new PdfName(csValue));
         }
     }
     /**
@@ -195,7 +189,7 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
         }
         if (value !== this.mshading) {
             this.mshading = value;
-            this.patternDictionary.items.setValue(this.dictionaryProperties.shading, new PdfReferenceHolder(this.mshading));
+            this.patternDictionary.items.setValue('Shading', new PdfReferenceHolder(this.mshading));
         }
     }
     /**
@@ -212,7 +206,7 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
         if (value !== this.mmatrix) {
             this.mmatrix = value.clone();
             let m: PdfArray = new PdfArray(this.mmatrix.matrix.elements);
-            this.mpatternDictionary.items.setValue(this.dictionaryProperties.matrix, m);
+            this.mpatternDictionary.items.setValue('Matrix', m);
         }
     }
     //Overrides
@@ -284,9 +278,9 @@ export abstract class PdfGradientBrush extends PdfBrush implements IPdfWrapper {
             throw new Error('ArgumentNullException : brush');
         }
         let sh: PdfDictionary = this.shading;
-        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue(this.dictionaryProperties.antiAlias)));
+        let aa: PdfBoolean = (<PdfBoolean>(sh.items.getValue('AntiAlias')));
         if ((aa != null)) {
-            brush.shading.items.setValue(this.dictionaryProperties.antiAlias, new PdfBoolean(aa.value));
+            brush.shading.items.setValue('AntiAlias', new PdfBoolean(aa.value));
         }
     }
     /**

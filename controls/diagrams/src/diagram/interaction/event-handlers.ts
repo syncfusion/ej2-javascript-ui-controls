@@ -1149,6 +1149,14 @@ export class DiagramEventHandler {
     /* tslint:disable */
     /** @private */
     public mouseUp(evt: PointerEvent): void {
+        try {
+            this.handleMouseUp(evt);
+        } finally {
+            this.diagram.endUnitGesture();
+        }
+    }
+
+    private handleMouseUp(evt: PointerEvent): void {
         clearTimeout(this.timeOutTapHold);
         //Bug 914365: Node is not resizable using touch interaction
         this.touchArgs = undefined;
@@ -1573,28 +1581,51 @@ export class DiagramEventHandler {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 orientation ? lane.height = actualShape.lanes[0].height : lane.width = actualShape.lanes[0].width;
                 if (shape.orientation === 'Horizontal') {
-                    value = (targetNode as Node).rowIndex ? (targetNode as Node).rowIndex :
-                        this.diagram.nameTable[(targetNode as Node).parentId].rowIndex;
+                    // Horizontal: lanes are addressed by rowIndex. Subtract the header/phase row
+                    // offset later via `value - index` to get the lane-array index expected by
+                    // `addLanes`. Use `|| 0` so a phase-less no-header swimlane whose target lane
+                    // sits at rowIndex 0 does not fall through to a wrong-axis parent lookup.
+                    value = (targetNode as Node).rowIndex || 0;
                     if (targetNode.wrapper.offsetY < this.currentPosition.y) { value += 1; }
                 } else {
-                    value = (targetNode as Node).columnIndex ? (targetNode as Node).columnIndex :
-                        this.diagram.nameTable[(targetNode as Node).parentId].columnIndex;
-                    if (this.currentPosition.x < targetNode.wrapper.bounds.center.x) { value -= 1; }
+                    // Vertical: lanes are addressed by columnIndex in the grid. Mirror
+                    // `findLaneIndex` (swim-lane-util.ts) and subtract the phase column offset
+                    // to get the lane-array index directly. The previous code fell back to
+                    // `nameTable[parentId].columnIndex` which is undefined for the swimlane
+                    // node itself, causing `Cannot read properties of undefined (reading
+                    // 'header')` when the target lane was at columnIndex 0 (the first lane of a
+                    // phase-less vertical swimlane). The `|| 0` also avoids the falsy-zero
+                    // trap where `columnIndex === 0` is a valid index.
+                    const phaseColOffset: number = (shape.phaseSize && shape.phases && shape.phases.length > 0) ? 1 : 0;
+                    const targetLaneIndex: number = ((targetNode as Node).columnIndex || 0) - phaseColOffset;
+                    // Map drop side to the splice insertion index for `shape.lanes[]`:
+                    //   left-of-center  -> insert BEFORE the target lane (targetLaneIndex)
+                    //   right-of-center -> insert AFTER the target lane  (targetLaneIndex + 1)
+                    // Clamp to the valid `shape.lanes` range so first-lane left drops and
+                    // last-lane right drops (or out-of-grid drops) cannot produce -1 or an
+                    // out-of-bounds index that crashes `laneCollection` downstream.
+                    value = (this.currentPosition.x < targetNode.wrapper.bounds.center.x)
+                        ? targetLaneIndex
+                        : targetLaneIndex + 1;
+                    value = Math.max(0, Math.min(value, shape.lanes.length));
                 }
-                if (shape.lanes.length > (value)) {
+                if (value >= 0 && value < shape.lanes.length) {
                     lane.header.width = shape.lanes[parseInt(value.toString(), 10)].header.width;
                     lane.header.height = shape.lanes[parseInt(value.toString(), 10)].header.height;
                 } else {
                     //EJ2-64457 - Not able to add lane in the existing vertical swimlane.
+                    // When `value` is out of bounds (e.g. drop before the first lane, or the
+                    // existing `value - index` math is negative), copy header dimensions from
+                    // the nearest valid lane so the new lane does not throw on a negative index.
                     let ind: number;
                     if (shape.orientation === 'Horizontal') {
-                        ind = targetNode.rowIndex < 3 ? 0 : value - index - 1;
+                        ind = targetNode.rowIndex < 3 ? 0 : Math.max(0, value - index - 1);
+                    } else {
+                        ind = Math.max(0, value - 1);
                     }
-                    else {
-                        ind = value - 1;
-                    }
-                    lane.header.width = shape.lanes[parseInt(ind.toString(), 10)].header.width;
-                    lane.header.height = shape.lanes[parseInt(ind.toString(), 10)].header.height;
+                    const safeInd: number = Math.min(ind, shape.lanes.length - 1);
+                    lane.header.width = shape.lanes[parseInt(safeInd.toString(), 10)].header.width;
+                    lane.header.height = shape.lanes[parseInt(safeInd.toString(), 10)].header.height;
                 }
                 //Bug 879093: Incorrect helperguide for vertical and horizontal swim lanes.
                 //With below code, we swap the height and width property of lane based on orientationSwap value.
@@ -1669,6 +1700,7 @@ export class DiagramEventHandler {
         //Define what has to happen on mouse leave
         if (this.tool && this.inAction) {
             this.tool.mouseLeave(this.eventArgs);
+            this.diagram.endUnitGesture();
         }
         if (this.diagram.selectedObject.helperObject) {
             this.updateContainerProperties();
@@ -1934,6 +1966,7 @@ export class DiagramEventHandler {
                                 }))) {
                                 evt.preventDefault();
                                 if (evt.key === 'Escape') {
+                                    this.diagram.endUnitGesture();
                                     if (this.checkEditBoxAsTarget(evt)) {
                                         document.getElementById(this.diagram.diagramCanvas.id).focus();
                                     } else if (this.diagram.currentSymbol) {
@@ -2648,6 +2681,7 @@ export class DiagramEventHandler {
 
     /** @private */
     public resetTool(): void {
+        this.diagram.endUnitGesture();
         this.action = 'Select';
         this.hoverElement = null;
         this.hoverNode = null;

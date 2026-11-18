@@ -4,3 +4,4 @@
 export * from './selection';
 export * from './selection-format';
 export * from './selection-helper';
+export * from './format-painter';

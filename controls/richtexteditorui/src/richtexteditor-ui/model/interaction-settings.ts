@@ -1,10 +1,7 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
 
 /**
- * Configures interaction behaviors of the RichTextEditor.
- *
- * Grouped under a child property so that interaction-specific flags
- * do not pollute the root editor API.
+ * Configures the Intereactions settings of the RichTextEditor.
  */
 export class InteractionSettings extends ChildProperty<InteractionSettings> {
     /**
@@ -20,15 +17,17 @@ export class InteractionSettings extends ChildProperty<InteractionSettings> {
     public enableAutoFormat: boolean;
 
     /**
-     * Specifies whether the `Tab` and `Shift+Tab` keys can be used
-     * to indent and outdent supported blocks.
+     * Specifies whether the `Tab` and `Shift+Tab` keys can be used for indentation.
      *
-     * When `true`, `Tab` indents the current supported block and
-     * `Shift+Tab` outdents it. The command is executed only when the
-     * current selection supports block indentation; otherwise normal
-     * browser focus navigation is preserved.
+     * When `true`:
+     * - `Tab` at the beginning of a supported block indents the block.
+     * - `Shift+Tab` at the beginning of a supported block outdents the block.
+     * - `Tab` in the middle of a block inserts tab spacing at the cursor position.
      *
-     * When `false`, `Tab` must not trigger editor block indentation.
+     * If the current selection does not support indentation or tab spacing,
+     * normal browser focus navigation is preserved.
+     *
+     * When `false`, `Tab` and `Shift+Tab` do not trigger editor indentation.
      *
      * @default true
      */

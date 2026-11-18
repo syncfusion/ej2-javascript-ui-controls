@@ -1,4 +1,4 @@
-import { Point, Rectangle } from '../pdf-type';
+import { Point, Rectangle } from '../pdf-document-helper';
 import { PdfGraphics, PdfGraphicsState } from './pdf-graphics';
 /**
  * Represents an abstract class for elements that can be rendered graphically.

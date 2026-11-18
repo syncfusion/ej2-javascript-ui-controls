@@ -1,20 +1,20 @@
-import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { DocumentEditor } from '../../../document-editor/document-editor';
-import { createElement, isNullOrUndefined, L10n, updateCSSText } from '@syncfusion/ej2-base';
+import { createElement, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
-import { ParagraphWidget, WAbstractList, WList, WListLevel } from '../../../document-editor/implementation';
-import { ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { RibbonItemModel, RibbonItemSize, RibbonSplitButtonSettingsModel } from '@syncfusion/ej2-ribbon';
 import { BulletListHelper } from '../../helper/bullet-list-helper';
 import { ListLevelPattern } from '../../../document-editor/base';
 import { ElementsMap } from '../../helper/ribbon-interfaces';
+import { Ribbon } from '../ribbon';
 
 // Numbering list constants
 export const NUMBER_LIST_ID: string = '_number_list';
 
 /**
  * NumberingGroup class for handling numbering list operations in Document Editor ribbon
+ *
  * @private
  */
 export class NumberingGroup {
@@ -47,6 +47,7 @@ export class NumberingGroup {
 
     /**
      * Constructor for NumberingGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -61,6 +62,7 @@ export class NumberingGroup {
 
     /**
      * Get the numbering list split button item configuration
+     *
      * @returns {RibbonItemModel} - Numbering list split button item configuration
      * @private
      */
@@ -170,6 +172,7 @@ export class NumberingGroup {
 
     /**
      * Apply the last used numbering style
+     *
      * @returns {void}
      * @private
      */
@@ -184,7 +187,7 @@ export class NumberingGroup {
         }
     }
 
-    private handleNumberingSelection(args: any): void {
+    private handleNumberingSelection(args: MenuEventArgs): void {
 
         switch (args.item.id) {
         case this.ribbonId + '_number-none':
@@ -245,7 +248,7 @@ export class NumberingGroup {
         }
     }
     private refreshHomeSelection(): void {
-        const ribbonModule: any = (this.container as any).ribbonModule;
+        const ribbonModule: Ribbon = this.container.ribbonModule;
         if (ribbonModule && ribbonModule.tabManager && ribbonModule.tabManager.homeTab) {
             ribbonModule.tabManager.homeTab.updateSelection();
         }

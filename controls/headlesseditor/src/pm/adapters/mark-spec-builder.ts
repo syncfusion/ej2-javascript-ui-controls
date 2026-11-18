@@ -1,5 +1,5 @@
 import { MarkSpec, AttributeSpec } from '../pm-guard';
-import { MarkDefinition } from '../../schema/types/mark-definition';
+import { MarkDefinition } from '../../core/schema/types/mark-definition';
 import { DOMSpecRegistry } from '../dom/dom-spec-registry';
 
 /**

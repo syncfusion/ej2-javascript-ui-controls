@@ -970,6 +970,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected getTextByValue(value: string | number | boolean): string {
+        if (this.getModuleName() === 'multiselect' && (value === null || value === undefined)) {
+            return 'null';
+        }
         const text: string = this.checkValueCase(value as string, false, false, true) as string;
         return text;
     }
@@ -1192,6 +1195,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         }
                         const query: Query = this.getQuery(eventArgs.query as Query);
                         (eventArgs.data as DataManager).executeQuery(query).then((e: Object) => {
+                            if (this.isAngular && this.isDestroyed) { return; }
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                             let isReOrder: boolean = true;
                             if (!this.virtualSelectAll) {
@@ -2731,7 +2735,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const type: string = this.typeOfData(this.listData).typeof as string;
             if (type === 'string' || type === 'number' || type === 'boolean') {
                 for (const item of this.listData) {
-                    if (!isNullOrUndefined(item) && item === value as Object) {
+                    if (((this.getModuleName() === 'multiselect') && item === value as Object) ||
+                        ((this.getModuleName() !== 'multiselect') && !isNullOrUndefined(item) && item === value as Object)) {
                         return item;
                     }
                 }

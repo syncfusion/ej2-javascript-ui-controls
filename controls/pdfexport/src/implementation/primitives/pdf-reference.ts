@@ -3,7 +3,6 @@
  */
 import { IPdfPrimitive } from './../../interfaces/i-pdf-primitives';
 import { ObjectStatus } from './../input-output/enum';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfDocument } from './../document/pdf-document';
 import { IPdfWrapper } from './../../interfaces/i-pdf-wrapper';
 import { IPdfWriter } from './../../interfaces/i-pdf-writer';
@@ -194,11 +193,6 @@ export class PdfReferenceHolder implements  IPdfPrimitive, IPdfWrapper {
      * @private
      */
     private objectIndex : number = -1;
-    /**
-     * @hidden
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     //Properties
     /**
      * Gets or sets the `Status` of the specified object.
@@ -381,7 +375,7 @@ export class PdfReferenceHolder implements  IPdfPrimitive, IPdfWrapper {
         */
         // if (Object instanceof PdfDictionary) {
         //     // Meaning the referenced page is not available for import.
-        //     let type : PdfName = new PdfName(this.dictionaryProperties.type);
+        //     let type : PdfName = new PdfName('Type');
         //     let dict : PdfDictionary = Object as PdfDictionary;
         //     if (dict.ContainsKey(type)) {
         //         let pageName : PdfName = dict.Items.getValue(type.Value) as PdfName;

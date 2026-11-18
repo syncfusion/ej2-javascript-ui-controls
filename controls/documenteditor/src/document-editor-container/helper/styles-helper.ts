@@ -6,6 +6,7 @@ import { StyleInfo } from './ribbon-interfaces';
 
 /**
  * Helper class for style operations in Document Editor
+ *
  * @private
  */
 export class StylesHelper {
@@ -16,7 +17,9 @@ export class StylesHelper {
     private static ensureStyleSheet(): CSSStyleSheet {
         if (!StylesHelper.dynamicStyleSheet) {
             StylesHelper.dynamicStyleSheet = new CSSStyleSheet();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (document as any).adoptedStyleSheets = [
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ...(document as any).adoptedStyleSheets,
                 StylesHelper.dynamicStyleSheet
             ];

@@ -227,198 +227,74 @@ export class PdfStandardFontMetricsFactory {
      * `Arial` widths table.
      * @private
      */
-    private static arialWidth : number[] =
-        [
-            278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333,
-            278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584,
-            584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833,
-            722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278,
-            469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
-            556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334,
-            584, 0, 556, 0, 222, 556, 333, 1000, 556, 556, 333, 1000, 667, 333, 1000, 0,
-            611, 0, 0, 222, 222, 333, 333, 350, 556, 1000, 333, 1000, 500, 333, 944, 0,
-            500, 667, 0, 333, 556, 556, 556, 556, 260, 556, 333, 737, 370, 556, 584, 0,
-            737, 333, 400, 584, 333, 333, 333, 556, 537, 278, 333, 333, 365, 556, 834, 834,
-            834, 611, 667, 667, 667, 667, 667, 667, 1000, 722, 667, 667, 667, 667, 278, 278,
-            278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667,
-            667, 611, 556, 556, 556, 556, 556, 556, 889, 500, 556, 556, 556, 556, 278, 278,
-            278, 278, 556, 556, 556, 556, 556, 556, 556, 584, 611, 556, 556, 556, 556, 500,
-            556, 500
-        ];
+    private static arialWidth : string = '\u0116\u0116\u0163\u022c\u022c\u0379\u029b\u00bf\u014d\u014d\u0185\u0248\u0116\u014d\u0116\u0116\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u0116\u0116\u0248\u0248\u0248\u022c\u03f7\u029b\u029b\u02d2\u02d2\u029b\u0263\u030a\u02d2\u0116\u01f4\u029b\u022c\u0341\u02d2\u030a\u029b\u030a\u02d2\u029b\u0263\u02d2\u029b\u03b0\u029b\u029b\u0263\u0116\u0116\u0116\u01d5\u022c\u014d\u022c\u022c\u01f4\u022c\u022c\u0116\u022c\u022c\u00de\u00de\u01f4\u00de\u0341\u022c\u022c\u022c\u022c\u014d\u01f4\u0116\u022c\u01f4\u02d2\u01f4\u01f4\u01f4\u014e\u0104\u014e\u0248\u0000\u022c\u0000\u00de\u022c\u014d\u03e8\u022c\u022c\u014d\u03e8\u029b\u014d\u03e8\u0000\u0263\u0000\u0000\u00de\u00de\u014d\u014d\u015e\u022c\u03e8\u014d\u03e8\u01f4\u014d\u03b0\u0000\u01f4\u029b\u0000\u014d\u022c\u022c\u022c\u022c\u0104\u022c\u014d\u02e1\u0172\u022c\u0248\u0000\u02e1\u014d\u0190\u0248\u014d\u014d\u014d\u022c\u0219\u0116\u014d\u014d\u016d\u022c\u0342\u0342\u0342\u0263\u029b\u029b\u029b\u029b\u029b\u029b\u03e8\u02d2\u029b\u029b\u029b\u029b\u0116\u0116\u0116\u0116\u02d2\u02d2\u030a\u030a\u030a\u030a\u030a\u0248\u030a\u02d2\u02d2\u02d2\u02d2\u029b\u029b\u0263\u022c\u022c\u022c\u022c\u022c\u022c\u0379\u01f4\u022c\u022c\u022c\u022c\u0116\u0116\u0116\u0116\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u0248\u0263\u022c\u022c\u022c\u022c\u01f4\u022c\u01f4';
     /**
      * `Arial bold` widths table.
      * @private
      */
-    private static arialBoldWidth : number[] =
-        [
-            278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333,
-            278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584,
-            584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833,
-            722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333,
-            584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889,
-            611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389,
-            584, 0, 556, 0, 278, 556, 500, 1000, 556, 556, 333, 1000, 667, 333, 1000, 0,
-            611, 0, 0, 278, 278, 500, 500, 350, 556, 1000, 333, 1000, 556, 333, 944, 0,
-            500, 667, 0, 333, 556, 556, 556, 556, 280, 556, 333, 737, 370, 556, 584, 0,
-            737, 333, 400, 584, 333, 333, 333, 611, 556, 278, 333, 333, 365, 556, 834, 834,
-            834, 611, 722, 722, 722, 722, 722, 722, 1000, 722, 667, 667, 667, 667, 278, 278,
-            278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667,
-            667, 611, 556, 556, 556, 556, 556, 556, 889, 556, 556, 556, 556, 556, 278, 278,
-            278, 278, 611, 611, 611, 611, 611, 611, 611, 584, 611, 611, 611, 611, 611, 556,
-            611, 556
-        ];
+    private static arialBoldWidth : string = '\u0116\u014d\u01da\u022c\u022c\u0379\u02d2\u00ee\u014d\u014d\u0185\u0248\u0116\u014d\u0116\u0116\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u022c\u014d\u014d\u0248\u0248\u0248\u0263\u03cf\u02d2\u02d2\u02d2\u02d2\u029b\u0263\u030a\u02d2\u0116\u022c\u02d2\u0263\u0341\u02d2\u030a\u029b\u030a\u02d2\u029b\u0263\u02d2\u029b\u03b0\u029b\u029b\u0263\u014d\u0116\u014d\u0248\u022c\u014d\u022c\u0263\u022c\u0263\u022c\u014d\u0263\u0263\u0116\u0116\u022c\u0116\u0379\u0263\u0263\u0263\u0263\u0185\u022c\u014d\u0263\u022c\u030a\u022c\u022c\u01f4\u0185\u0118\u0185\u0248\u0000\u022c\u0000\u0116\u022c\u01f4\u03e8\u022c\u022c\u014d\u03e8\u029b\u014d\u03e8\u0000\u0263\u0000\u0000\u0116\u0116\u01f4\u01f4\u015e\u022c\u03e8\u014d\u03e8\u022c\u014d\u03b0\u0000\u01f4\u029b\u0000\u014d\u022c\u022c\u022c\u022c\u0118\u022c\u014d\u02e1\u0172\u022c\u0248\u0000\u02e1\u014d\u0190\u0248\u014d\u014d\u014d\u0263\u022c\u0116\u014d\u014d\u016d\u022c\u0342\u0342\u0342\u0263\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u03e8\u02d2\u029b\u029b\u029b\u029b\u0116\u0116\u0116\u0116\u02d2\u02d2\u030a\u030a\u030a\u030a\u030a\u0248\u030a\u02d2\u02d2\u02d2\u02d2\u029b\u029b\u0263\u022c\u022c\u022c\u022c\u022c\u022c\u0379\u022c\u022c\u022c\u022c\u022c\u0116\u0116\u0116\u0116\u0263\u0263\u0263\u0263\u0263\u0263\u0263\u0248\u0263\u0263\u0263\u0263\u0263\u022c\u0263\u022c';
     /**
      * `Fixed` widths table.
      * @private
      */
-    private static fixedWidth : number[] =
-        [
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600
-        ];
+    /**
+     * `Fixed` widths table (every glyph is 600 units wide).
+     * @private
+     */
+    private static fixedWidth : number[] = PdfStandardFontMetricsFactory.createFixedWidth();
+
     /**
      * `Times` widths table.
      * @private
      */
-    private static timesRomanWidth : number[] =
-        [
-            250, 333, 408, 500, 500, 833, 778, 180, 333, 333, 500, 564, 250, 333,
-            250, 278, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 278, 278, 564, 564,
-            564, 444, 921, 722, 667, 667, 722, 611, 556, 722, 722, 333, 389, 722, 611, 889,
-            722, 722, 556, 722, 667, 556, 611, 722, 722, 944, 722, 722, 611, 333, 278, 333,
-            469, 500, 333, 444, 500, 444, 500, 444, 333, 500, 500, 278, 278, 500, 278, 778,
-            500, 500, 500, 500, 333, 389, 278, 500, 500, 722, 500, 500, 444, 480, 200, 480,
-            541, 0, 500, 0, 333, 500, 444, 1000, 500, 500, 333, 1000, 556, 333, 889, 0,
-            611, 0, 0, 333, 333, 444, 444, 350, 500, 1000, 333, 980, 389, 333, 722, 0,
-            444, 722, 0, 333, 500, 500, 500, 500, 200, 500, 333, 760, 276, 500, 564, 0,
-            760, 333, 400, 564, 300, 300, 333, 500, 453, 250, 333, 300, 310, 500, 750, 750,
-            750, 444, 722, 722, 722, 722, 722, 722, 889, 667, 611, 611, 611, 611, 333, 333,
-            333, 333, 722, 722, 722, 722, 722, 722, 722, 564, 722, 722, 722, 722, 722, 722,
-            556, 500, 444, 444, 444, 444, 444, 444, 667, 444, 444, 444, 444, 444, 278, 278,
-            278, 278, 500, 500, 500, 500, 500, 500, 500, 564, 500, 500, 500, 500, 500, 500,
-            500, 500
-        ];
+    private static timesRomanWidth : string = '\u00fa\u014d\u0198\u01f4\u01f4\u0341\u030a\u00b4\u014d\u014d\u01f4\u0234\u00fa\u014d\u00fa\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u0116\u0116\u0234\u0234\u0234\u01bc\u0399\u02d2\u029b\u029b\u02d2\u0263\u022c\u02d2\u02d2\u014d\u0185\u02d2\u0263\u0379\u02d2\u02d2\u022c\u02d2\u029b\u022c\u0263\u02d2\u02d2\u03b0\u02d2\u02d2\u0263\u014d\u0116\u014d\u01d5\u01f4\u014d\u01bc\u01f4\u01bc\u01f4\u01bc\u014d\u01f4\u01f4\u0116\u0116\u01f4\u0116\u030a\u01f4\u01f4\u01f4\u01f4\u014d\u0185\u0116\u01f4\u01f4\u02d2\u01f4\u01f4\u01bc\u01e0\u00c8\u01e0\u021d\u0000\u01f4\u0000\u014d\u01f4\u01bc\u03e8\u01f4\u01f4\u014d\u03e8\u022c\u014d\u0379\u0000\u0263\u0000\u0000\u014d\u014d\u01bc\u01bc\u015e\u01f4\u03e8\u014d\u03d4\u0185\u014d\u02d2\u0000\u01bc\u02d2\u0000\u014d\u01f4\u01f4\u01f4\u01f4\u00c8\u01f4\u014d\u02f8\u0114\u01f4\u0234\u0000\u02f8\u014d\u0190\u0234\u012c\u012c\u014d\u01f4\u01c5\u00fa\u014d\u012c\u0136\u01f4\u02ee\u02ee\u02ee\u01bc\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u0379\u029b\u0263\u0263\u0263\u0263\u014d\u014d\u014d\u014d\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u0234\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u022c\u01f4\u01bc\u01bc\u01bc\u01bc\u01bc\u01bc\u029b\u01bc\u01bc\u01bc\u01bc\u01bc\u0116\u0116\u0116\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u0234\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4';
     /**
      * `Times bold` widths table.
      * @private
      */
-    private static timesRomanBoldWidth : number[] =
-        [
-            250, 333, 555, 500, 500, 1000, 833, 278, 333, 333, 500, 570, 250, 333,
-            250, 278, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 333, 333, 570, 570,
-            570, 500, 930, 722, 667, 722, 722, 667, 611, 778, 778, 389, 500, 778, 667, 944,
-            722, 778, 611, 778, 722, 556, 667, 722, 722, 1000, 722, 722, 667, 333, 278, 333,
-            581, 500, 333, 500, 556, 444, 556, 444, 333, 500, 556, 278, 333, 556, 278, 833,
-            556, 500, 556, 556, 444, 389, 333, 556, 500, 722, 500, 500, 444, 394, 220, 394,
-            520, 0, 500, 0, 333, 500, 500, 1000, 500, 500, 333, 1000, 556, 333, 1000, 0,
-            667, 0, 0, 333, 333, 500, 500, 350, 500, 1000, 333, 1000, 389, 333, 722, 0,
-            444, 722, 0, 333, 500, 500, 500, 500, 220, 500, 333, 747, 300, 500, 570, 0,
-            747, 333, 400, 570, 300, 300, 333, 556, 540, 250, 333, 300, 330, 500, 750, 750,
-            750, 500, 722, 722, 722, 722, 722, 722, 1000, 722, 667, 667, 667, 667, 389, 389,
-            389, 389, 722, 722, 778, 778, 778, 778, 778, 570, 778, 722, 722, 722, 722, 722,
-            611, 556, 500, 500, 500, 500, 500, 500, 722, 444, 444, 444, 444, 444, 278, 278,
-            278, 278, 500, 556, 500, 500, 500, 500, 500, 570, 500, 556, 556, 556, 556, 500,
-            556, 500
-        ];
+    private static timesRomanBoldWidth : string = '\u00fa\u014d\u022b\u01f4\u01f4\u03e8\u0341\u0116\u014d\u014d\u01f4\u023a\u00fa\u014d\u00fa\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u014d\u014d\u023a\u023a\u023a\u01f4\u03a2\u02d2\u029b\u02d2\u02d2\u029b\u0263\u030a\u030a\u0185\u01f4\u030a\u029b\u03b0\u02d2\u030a\u0263\u030a\u02d2\u022c\u029b\u02d2\u02d2\u03e8\u02d2\u02d2\u029b\u014d\u0116\u014d\u0245\u01f4\u014d\u01f4\u022c\u01bc\u022c\u01bc\u014d\u01f4\u022c\u0116\u014d\u022c\u0116\u0341\u022c\u01f4\u022c\u022c\u01bc\u0185\u014d\u022c\u01f4\u02d2\u01f4\u01f4\u01bc\u018a\u00dc\u018a\u0208\u0000\u01f4\u0000\u014d\u01f4\u01f4\u03e8\u01f4\u01f4\u014d\u03e8\u022c\u014d\u03e8\u0000\u029b\u0000\u0000\u014d\u014d\u01f4\u01f4\u015e\u01f4\u03e8\u014d\u03e8\u0185\u014d\u02d2\u0000\u01bc\u02d2\u0000\u014d\u01f4\u01f4\u01f4\u01f4\u00dc\u01f4\u014d\u02eb\u012c\u01f4\u023a\u0000\u02eb\u014d\u0190\u023a\u012c\u012c\u014d\u022c\u021c\u00fa\u014d\u012c\u014a\u01f4\u02ee\u02ee\u02ee\u01f4\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u03e8\u02d2\u029b\u029b\u029b\u029b\u0185\u0185\u0185\u0185\u02d2\u02d2\u030a\u030a\u030a\u030a\u030a\u023a\u030a\u02d2\u02d2\u02d2\u02d2\u02d2\u0263\u022c\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u02d2\u01bc\u01bc\u01bc\u01bc\u01bc\u0116\u0116\u0116\u0116\u01f4\u022c\u01f4\u01f4\u01f4\u01f4\u01f4\u023a\u01f4\u022c\u022c\u022c\u022c\u01f4\u022c\u01f4';
     /**
      * `Times italic` widths table.
      * @private
      */
-    private static timesRomanItalicWidth : number[] =
-        [
-            250, 333, 420, 500, 500, 833, 778, 214, 333, 333, 500, 675, 250, 333,
-            250, 278, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 333, 333, 675, 675,
-            675, 500, 920, 611, 611, 667, 722, 611, 611, 722, 722, 333, 444, 667, 556, 833,
-            667, 722, 611, 722, 611, 500, 556, 722, 611, 833, 611, 556, 556, 389, 278, 389,
-            422, 500, 333, 500, 500, 444, 500, 444, 278, 500, 500, 278, 278, 444, 278, 722,
-            500, 500, 500, 500, 389, 389, 278, 500, 444, 667, 444, 444, 389, 400, 275, 400,
-            541, 0, 500, 0, 333, 500, 556, 889, 500, 500, 333, 1000, 500, 333, 944, 0,
-            556, 0, 0, 333, 333, 556, 556, 350, 500, 889, 333, 980, 389, 333, 667, 0,
-            389, 556, 0, 389, 500, 500, 500, 500, 275, 500, 333, 760, 276, 500, 675, 0,
-            760, 333, 400, 675, 300, 300, 333, 500, 523, 250, 333, 300, 310, 500, 750, 750,
-            750, 500, 611, 611, 611, 611, 611, 611, 889, 667, 611, 611, 611, 611, 333, 333,
-            333, 333, 722, 667, 722, 722, 722, 722, 722, 675, 722, 722, 722, 722, 722, 556,
-            611, 500, 500, 500, 500, 500, 500, 500, 667, 444, 444, 444, 444, 444, 278, 278,
-            278, 278, 500, 500, 500, 500, 500, 500, 500, 675, 500, 500, 500, 500, 500, 444,
-            500, 444
-        ];
+    private static timesRomanItalicWidth : string = '\u00fa\u014d\u01a4\u01f4\u01f4\u0341\u030a\u00d6\u014d\u014d\u01f4\u02a3\u00fa\u014d\u00fa\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u014d\u014d\u02a3\u02a3\u02a3\u01f4\u0398\u0263\u0263\u029b\u02d2\u0263\u0263\u02d2\u02d2\u014d\u01bc\u029b\u022c\u0341\u029b\u02d2\u0263\u02d2\u0263\u01f4\u022c\u02d2\u0263\u0341\u0263\u022c\u022c\u0185\u0116\u0185\u01a6\u01f4\u014d\u01f4\u01f4\u01bc\u01f4\u01bc\u0116\u01f4\u01f4\u0116\u0116\u01bc\u0116\u02d2\u01f4\u01f4\u01f4\u01f4\u0185\u0185\u0116\u01f4\u01bc\u029b\u01bc\u01bc\u0185\u0190\u0113\u0190\u021d\u0000\u01f4\u0000\u014d\u01f4\u022c\u0379\u01f4\u01f4\u014d\u03e8\u01f4\u014d\u03b0\u0000\u022c\u0000\u0000\u014d\u014d\u022c\u022c\u015e\u01f4\u0379\u014d\u03d4\u0185\u014d\u029b\u0000\u0185\u022c\u0000\u0185\u01f4\u01f4\u01f4\u01f4\u0113\u01f4\u014d\u02f8\u0114\u01f4\u02a3\u0000\u02f8\u014d\u0190\u02a3\u012c\u012c\u014d\u01f4\u020b\u00fa\u014d\u012c\u0136\u01f4\u02ee\u02ee\u02ee\u01f4\u0263\u0263\u0263\u0263\u0263\u0263\u0379\u029b\u0263\u0263\u0263\u0263\u014d\u014d\u014d\u014d\u02d2\u029b\u02d2\u02d2\u02d2\u02d2\u02d2\u02a3\u02d2\u02d2\u02d2\u02d2\u02d2\u022c\u0263\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u029b\u01bc\u01bc\u01bc\u01bc\u01bc\u0116\u0116\u0116\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u02a3\u01f4\u01f4\u01f4\u01f4\u01f4\u01bc\u01f4\u01bc';
     /**
      * `Times bold italic` widths table.
      * @private
      */
-    public static timesRomanBoldItalicWidths : number[] =
-        [
-            250, 389, 555, 500, 500, 833, 778, 278, 333, 333, 500, 570, 250, 333,
-            250, 278, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 333, 333, 570, 570,
-            570, 500, 832, 667, 667, 667, 722, 667, 667, 722, 778, 389, 500, 667, 611, 889,
-            722, 722, 611, 722, 667, 556, 611, 722, 667, 889, 667, 611, 611, 333, 278, 333,
-            570, 500, 333, 500, 500, 444, 500, 444, 333, 500, 556, 278, 278, 500, 278, 778,
-            556, 500, 500, 500, 389, 389, 278, 556, 444, 667, 500, 444, 389, 348, 220, 348,
-            570, 0, 500, 0, 333, 500, 500, 1000, 500, 500, 333, 1000, 556, 333, 944, 0,
-            611, 0, 0, 333, 333, 500, 500, 350, 500, 1000, 333, 1000, 389, 333, 722, 0,
-            389, 611, 0, 389, 500, 500, 500, 500, 220, 500, 333, 747, 266, 500, 606, 0,
-            747, 333, 400, 570, 300, 300, 333, 576, 500, 250, 333, 300, 300, 500, 750, 750,
-            750, 500, 667, 667, 667, 667, 667, 667, 944, 667, 667, 667, 667, 667, 389, 389,
-            389, 389, 722, 722, 722, 722, 722, 722, 722, 570, 722, 722, 722, 722, 722, 611,
-            611, 500, 500, 500, 500, 500, 500, 500, 722, 444, 444, 444, 444, 444, 278, 278,
-            278, 278, 500, 556, 500, 500, 500, 500, 500, 570, 500, 556, 556, 556, 556, 444,
-            500, 444
-        ];
+    private static timesRomanBoldItalicWidths : string = '\u00fa\u0185\u022b\u01f4\u01f4\u0341\u030a\u0116\u014d\u014d\u01f4\u023a\u00fa\u014d\u00fa\u0116\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u014d\u014d\u023a\u023a\u023a\u01f4\u0340\u029b\u029b\u029b\u02d2\u029b\u029b\u02d2\u030a\u0185\u01f4\u029b\u0263\u0379\u02d2\u02d2\u0263\u02d2\u029b\u022c\u0263\u02d2\u029b\u0379\u029b\u0263\u0263\u014d\u0116\u014d\u023a\u01f4\u014d\u01f4\u01f4\u01bc\u01f4\u01bc\u014d\u01f4\u022c\u0116\u0116\u01f4\u0116\u030a\u022c\u01f4\u01f4\u01f4\u0185\u0185\u0116\u022c\u01bc\u029b\u01f4\u01bc\u0185\u015c\u00dc\u015c\u023a\u0000\u01f4\u0000\u014d\u01f4\u01f4\u03e8\u01f4\u01f4\u014d\u03e8\u022c\u014d\u03b0\u0000\u0263\u0000\u0000\u014d\u014d\u01f4\u01f4\u015e\u01f4\u03e8\u014d\u03e8\u0185\u014d\u02d2\u0000\u0185\u0263\u0000\u0185\u01f4\u01f4\u01f4\u01f4\u00dc\u01f4\u014d\u02eb\u010a\u01f4\u025e\u0000\u02eb\u014d\u0190\u023a\u012c\u012c\u014d\u0240\u01f4\u00fa\u014d\u012c\u012c\u01f4\u02ee\u02ee\u02ee\u01f4\u029b\u029b\u029b\u029b\u029b\u029b\u03b0\u029b\u029b\u029b\u029b\u029b\u0185\u0185\u0185\u0185\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u02d2\u023a\u02d2\u02d2\u02d2\u02d2\u02d2\u0263\u0263\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u01f4\u02d2\u01bc\u01bc\u01bc\u01bc\u01bc\u0116\u0116\u0116\u0116\u01f4\u022c\u01f4\u01f4\u01f4\u01f4\u01f4\u023a\u01f4\u022c\u022c\u022c\u022c\u01bc\u01f4\u01bc';
     /**
      * `Symbol` widths table.
      * @private
      */
-    private static symbolWidth : number[] =
-        [
-            250, 333, 713, 500, 549, 833, 778, 439, 333, 333, 500, 549, 250, 549,
-            250, 278, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 278, 278,
-            549, 549, 549, 444, 549, 722, 667, 722, 612, 611, 763, 603, 722, 333,
-            631, 722, 686, 889, 722, 722, 768, 741, 556, 592, 611, 690, 439, 768,
-            645, 795, 611, 333, 863, 333, 658, 500, 500, 631, 549, 549, 494, 439,
-            521, 411, 603, 329, 603, 549, 549, 576, 521, 549, 549, 521, 549, 603,
-            439, 576, 713, 686, 493, 686, 494, 480, 200, 480, 549, 750, 620, 247,
-            549, 167, 713, 500, 753, 753, 753, 753, 1042, 987, 603, 987, 603, 400,
-            549, 411, 549, 549, 713, 494, 460, 549, 549, 549, 549, 1000, 603, 1000,
-            658, 823, 686, 795, 987, 768, 768, 823, 768, 768, 713, 713, 713, 713,
-            713, 713, 713, 768, 713, 790, 790, 890, 823, 549, 250, 713, 603, 603,
-            1042, 987, 603, 987, 603, 494, 329, 790, 790, 786, 713, 384, 384, 384,
-            384, 384, 384, 494, 494, 494, 494, 329, 274, 686, 686, 686, 384, 384,
-            384, 384, 384, 384, 494, 494, 494, -1
-        ];
+    private static symbolWidth : string = '\u00fb\u014e\u02ca\u01f5\u0226\u0342\u030b\u01b8\u014e\u014e\u01f5\u0226\u00fb\u0226\u00fb\u0117\u01f5\u01f5\u01f5\u01f5\u01f5\u01f5\u01f5\u01f5\u01f5\u01f5\u0117\u0117\u0226\u0226\u0226\u01bd\u0226\u02d3\u029c\u02d3\u0265\u0264\u02fc\u025c\u02d3\u014e\u0278\u02d3\u02af\u037a\u02d3\u02d3\u0301\u02e6\u022d\u0251\u0264\u02b3\u01b8\u0301\u0286\u031c\u0264\u014e\u0360\u014e\u0293\u01f5\u01f5\u0278\u0226\u0226\u01ef\u01b8\u020a\u019c\u025c\u014a\u025c\u0226\u0226\u0241\u020a\u0226\u0226\u020a\u0226\u025c\u01b8\u0241\u02ca\u02af\u01ee\u02af\u01ef\u01e1\u00c9\u01e1\u0226\u02ef\u026d\u00f8\u0226\u00a8\u02ca\u01f5\u02f2\u02f2\u02f2\u02f2\u0413\u03dc\u025c\u03dc\u025c\u0191\u0226\u019c\u0226\u0226\u02ca\u01ef\u01cd\u0226\u0226\u0226\u0226\u03e9\u025c\u03e9\u0293\u0338\u02af\u031c\u03dc\u0301\u0301\u0338\u0301\u0301\u02ca\u02ca\u02ca\u02ca\u02ca\u02ca\u02ca\u0301\u02ca\u0317\u0317\u037b\u0338\u0226\u00fb\u02ca\u025c\u025c\u0413\u03dc\u025c\u03dc\u025c\u01ef\u014a\u0317\u0317\u0313\u02ca\u0181\u0181\u0181\u0181\u0181\u0181\u01ef\u01ef\u01ef\u01ef\u014a\u0113\u02af\u02af\u02af\u0181\u0181\u0181\u0181\u0181\u0181\u01ef\u01ef\u01ef\u0000';
     /**
      * `Zip dingbats` widths table.
      * @private
      */
-    private static zapfDingbatsWidth : number[] =
-        [
-            278, 974, 961, 974, 980, 719, 789, 790, 791, 690, 960, 939, 549, 855,
-            911, 933, 911, 945, 974, 755, 846, 762, 761, 571, 677, 763, 760, 759,
-            754, 494, 552, 537, 577, 692, 786, 788, 788, 790, 793, 794, 816, 823,
-            789, 841, 823, 833, 816, 831, 923, 744, 723, 749, 790, 792, 695, 776,
-            768, 792, 759, 707, 708, 682, 701, 826, 815, 789, 789, 707, 687, 696,
-            689, 786, 787, 713, 791, 785, 791, 873, 761, 762, 762, 759, 759, 892,
-            892, 788, 784, 438, 138, 277, 415, 392, 392, 668, 668, 390, 390, 317,
-            317, 276, 276, 509, 509, 410, 410, 234, 234, 334, 334, 732, 544, 544,
-            910, 667, 760, 760, 776, 595, 694, 626, 788, 788, 788, 788, 788, 788,
-            788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788,
-            788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788,
-            788, 788, 788, 788, 788, 788, 894, 838, 1016, 458, 748, 924, 748, 918,
-            927, 928, 928, 834, 873, 828, 924, 924, 917, 930, 931, 463, 883, 836,
-            836, 867, 867, 696, 696, 874, 874, 760, 946, 771, 865, 771, 888, 967,
-            888, 831, 873, 927, 970, 918
-        ];
+    private static zapfDingbatsWidth : string = '\u0116\u03ce\u03c1\u03ce\u03d4\u02cf\u0315\u0316\u0317\u02b2\u03c0\u03ab\u0225\u0357\u038f\u03a5\u038f\u03b1\u03ce\u02f3\u034e\u02fa\u02f9\u023b\u02a5\u02fb\u02f8\u02f7\u02f2\u01ee\u0228\u0219\u0241\u02b4\u0312\u0314\u0314\u0316\u0319\u031a\u0330\u0337\u0315\u0349\u0337\u0341\u0330\u033f\u039b\u02e8\u02d3\u02ed\u0316\u0318\u02b7\u0308\u0300\u0318\u02f7\u02c3\u02c4\u02aa\u02bd\u033a\u032f\u0315\u0315\u02c3\u02af\u02b8\u02b1\u0312\u0313\u02c9\u0317\u0311\u0317\u0369\u02f9\u02fa\u02fa\u02f7\u02f7\u037c\u037c\u0314\u0310\u01b6\u008a\u0115\u019f\u0188\u0188\u029c\u029c\u0186\u0186\u013d\u013d\u0114\u0114\u01fd\u01fd\u019a\u019a\u00ea\u00ea\u014e\u014e\u02dc\u0220\u0220\u038e\u029b\u02f8\u02f8\u0308\u0253\u02b6\u0272\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u0314\u037e\u0346\u03f8\u01ca\u02ec\u039c\u02ec\u0396\u039f\u03a0\u03a0\u0342\u0369\u033c\u039c\u039c\u0395\u03a2\u03a3\u01cf\u0373\u0344\u0344\u0363\u0363\u02b8\u02b8\u036a\u036a\u02f8\u03b2\u0303\u0361\u0303\u0378\u03c7\u0378\u033f\u0369\u039f\u03ca\u0396';
+    /**
+     * Decodes a packed width table into a numeric array.
+     * @private
+     */
+    private static decodeWidths(packed : string, offset : number) : number[] {
+        let widths : number[] = [];
+        for (let i : number = 0; i < packed.length; i++) {
+            widths.push(packed.charCodeAt(i) - offset);
+        }
+        return widths;
+    }
+    /**
+     * Creates the fixed-width (Courier) table: every glyph is 600 units wide.
+     * @private
+     */
+    private static createFixedWidth() : number[] {
+        let widths : number[] = [];
+        for (let i : number = 0; i < 224; i++) {
+            widths.push(600);
+        }
+        return widths;
+    }
     /**
      * Returns `metrics` of the font.
      * @private
@@ -470,28 +346,28 @@ export class PdfStandardFontMetricsFactory {
             metrics.descent = this.helveticaBoldItalicDescent;
             metrics.postScriptName = this.helveticaBoldItalicName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.arialBoldWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.arialBoldWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else if ((fontStyle & PdfFontStyle.Bold) > 0) {
             metrics.ascent = this.helveticaBoldAscent;
             metrics.descent = this.helveticaBoldDescent;
             metrics.postScriptName = this.helveticaBoldName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.arialBoldWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.arialBoldWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else if ((fontStyle & PdfFontStyle.Italic) > 0) {
             metrics.ascent = this.helveticaItalicAscent;
             metrics.descent = this.helveticaItalicDescent;
             metrics.postScriptName = this.helveticaItalicName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.arialWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.arialWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else {
             metrics.ascent = this.helveticaAscent;
             metrics.descent = this.helveticaDescent;
             metrics.postScriptName = this.helveticaName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.arialWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.arialWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         }
 
@@ -547,28 +423,28 @@ export class PdfStandardFontMetricsFactory {
             metrics.descent = this.timesBoldItalicDescent;
             metrics.postScriptName = this.timesBoldItalicName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.timesRomanBoldItalicWidths);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.timesRomanBoldItalicWidths, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else if ((fontStyle & PdfFontStyle.Bold) > 0) {
             metrics.ascent = this.timesBoldAscent;
             metrics.descent = this.timesBoldDescent;
             metrics.postScriptName = this.timesBoldName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.timesRomanBoldWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.timesRomanBoldWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else if ((fontStyle & PdfFontStyle.Italic) > 0) {
             metrics.ascent = this.timesItalicAscent;
             metrics.descent = this.timesItalicDescent;
             metrics.postScriptName = this.timesItalicName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.timesRomanItalicWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.timesRomanItalicWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         } else {
             metrics.ascent = this.timesAscent;
             metrics.descent = this.timesDescent;
             metrics.postScriptName = this.timesName;
             metrics.size = size;
-            metrics.widthTable = new StandardWidthTable(this.timesRomanWidth);
+            metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.timesRomanWidth, 0));
             metrics.height = metrics.ascent - metrics.descent;
         }
         return metrics;
@@ -584,7 +460,7 @@ export class PdfStandardFontMetricsFactory {
         metrics.descent = this.symbolDescent;
         metrics.postScriptName = this.symbolName;
         metrics.size = size;
-        metrics.widthTable = new StandardWidthTable(this.symbolWidth);
+        metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.symbolWidth, 1));
         metrics.height = metrics.ascent - metrics.descent;
         return metrics;
     }
@@ -599,7 +475,7 @@ export class PdfStandardFontMetricsFactory {
         metrics.descent = this.zapfDingbatsDescent;
         metrics.postScriptName = this.zapfDingbatsName;
         metrics.size = size;
-        metrics.widthTable = new StandardWidthTable(this.zapfDingbatsWidth);
+        metrics.widthTable = new StandardWidthTable(this.decodeWidths(this.zapfDingbatsWidth, 0));
         metrics.height = metrics.ascent - metrics.descent;
         return metrics;
     }

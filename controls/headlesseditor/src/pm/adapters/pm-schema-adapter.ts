@@ -1,9 +1,10 @@
 import { MarkSpec, NodeSpec, PMSchema, SchemaSpec } from '../pm-guard';
-import { SchemaDefinition } from '../../schema/types/schema-definition';
+import { SchemaDefinition } from '../../core/schema/types/schema-definition';
+import { NodeDefinition } from '../../core/schema/types/node-definition';
 import { NodeSpecBuilder } from './node-spec-builder';
 import { MarkSpecBuilder } from './mark-spec-builder';
 import { DOMSpecRegistry } from '../dom/dom-spec-registry';
-import { DiagnosticsService } from '../../diagnostics/diagnostics-service';
+import { DiagnosticsService } from '../../core/diagnostics/diagnostics-service';
 import { MissingDOMSpecError } from '../dom/dom-spec-errors';
 
 /**
@@ -38,9 +39,13 @@ export class PMSchemaAdapter {
         const nodes: Record<string, NodeSpec> = {};
         const marks: Record<string, MarkSpec> = {};
 
+        // Every registered node name — used to degrade choice alternatives
+        // from unregistered extensions instead of failing the schema.
+        const availableNodes: ReadonlySet<string> = new Set<string>(def.nodes.map((n: NodeDefinition) => n.name));
+
         for (const nodeDef of def.nodes) {
             try {
-                nodes[nodeDef.name] = this._nodeBuilder.build(nodeDef);
+                nodes[nodeDef.name] = this._nodeBuilder.build(nodeDef, availableNodes);
             } catch (error) {
                 this._handleBuildError('node', nodeDef.name, error);
             }

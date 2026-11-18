@@ -1,10 +1,12 @@
-import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, createElement } from '@syncfusion/ej2-base';
 import { TextArea } from '@syncfusion/ej2-inputs';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { DocumentHelper } from '../../../document-editor/implementation';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
+// eslint-disable-next-line jsdoc/require-returns-check
 /**
  * Dialog class to manage alternative text input for images.
+ *
  * @returns {AltTextDialog} - Returns the AltTextDialog instance.
  * @private
  */
@@ -20,6 +22,7 @@ export class AltTextDialog {
 
     /**
      * Constructor for AltTextDialog class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -60,6 +63,7 @@ export class AltTextDialog {
 
     /**
      * Show the Alt Text Dialog
+     *
      * @returns {void}
      */
     public show = (): void => {
@@ -121,6 +125,7 @@ export class AltTextDialog {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      */
     public destroy(): void {

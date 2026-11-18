@@ -294,10 +294,16 @@ export class _PdfDictionary {
             if (prevValue !== value) {
                 this._map[key] = value;
                 this._updated = true;
+                if ((this as any)._parentDictionary) {
+                    (this as any)._parentDictionary._updated = true;
+                }
             }
         } else {
             this._map[key] = value;
             this._updated = true;
+            if ((this as any)._parentDictionary) {
+                (this as any)._parentDictionary._updated = true;
+            }
         }
     }
     static getEmpty(xref: _PdfCrossReference): _PdfDictionary {

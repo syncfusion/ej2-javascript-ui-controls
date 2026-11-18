@@ -7,11 +7,13 @@ export const PAGE_NUMBER_ID: string = '_page_number';
 
 /**
  * Header & Footer group implementation for Insert tab
+ *
  * @private
  */
 export class HeaderFooterGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Header & Footer group
+     *
      * @returns {RibbonGroupModel} - Ribbon items for Header & Footer group
      * @private
      */

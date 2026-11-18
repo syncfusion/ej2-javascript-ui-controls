@@ -7,7 +7,7 @@
 
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { L10n, Browser } from '@syncfusion/ej2-base';
-import { ToolbarItem, BuiltInToolbarItem, BuiltInToolbarItemConfig, CustomToolbarItem } from '../../richtexteditor-ui/model';
+import { ToolbarItem, BuiltInToolbarItem, BuiltInToolbarItemConfig, BaseToolbarItem } from '../../richtexteditor-ui/model';
 import { getLinkToolbarItemConfig, getTableToolbarItemConfig, getImageToolbarItemConfig, getToolbarItemConfig, LINK_TOOLBAR_ITEM_CONFIGS, LinkToolbarItem, TABLE_TOOLBAR_ITEM_CONFIGS, TableToolbarItem, IMAGE_TOOLBAR_ITEM_CONFIGS, ImageToolbarItem, ToolbarItemConfig, ToolbarSubItem } from './toolbar-item-config';
 import { CustomUserAgentData } from './../../common/user-agent';
 
@@ -60,7 +60,9 @@ export class ToolbarItemNormalizer {
      * @param position - Item position
      * @returns Normalized item model
      */
-    public create(item: ToolbarItem, position: number, shortcuts?: Readonly<Record<string, string>>): ToolbarItemModel {
+    public create(
+        item: ToolbarItem | string,
+        position: number, shortcuts?: Readonly<Record<string, string>>): ToolbarItemModel {
         // Separator
         if (item === '|') {
             return {
@@ -95,42 +97,11 @@ export class ToolbarItemNormalizer {
                 command: config.command,
                 shortcut: shortcut ? this.toAriaShortcut(shortcut) : undefined,
                 toolbarItem: toolbarItem,
-                renderMode: config.renderMode
+                renderMode: config.renderMode,
+                value: config.value
             };
         }
-
-        const customItem: CustomToolbarItem = item as CustomToolbarItem;
-
-        // Template custom item
-        if (customItem.template) {
-            return {
-                id: customItem.id as string,
-                source: item,
-                controlType: 'template',
-                toolbarItem: {
-                    id: customItem.id,
-                    template: customItem.template,
-                    type: 'Input'
-                }
-            };
-        }
-
-        // Existing custom button logic
-        const customTooltip: string = customItem.tooltipText ||
-            this.buildShortcutOnlyTooltip(customItem.windowsShortcutText, customItem.macShortcutText);
-        return {
-            id: customItem.id || customItem.actionId,
-            source: item,
-            controlType: 'button',
-            command: customItem.actionId,
-            toolbarItem: {
-                id: customItem.id || customItem.actionId,
-                text: customItem.text,
-                prefixIcon: customItem.prefixIcon,
-                tooltipText: customTooltip,
-                type: 'Button'
-            }
-        };
+        return item as unknown as ToolbarItemModel;
     }
 
     /*
@@ -143,7 +114,9 @@ export class ToolbarItemNormalizer {
      * @returns Normalized item models
      * @throws ToolbarInitializationError on duplicate IDs
      */
-    public createAll(items: ToolbarItem[], shortcuts?: Readonly<Record<string, string>>): ToolbarItemModel[] {
+    public createAll(
+        items: BaseToolbarItem,
+        shortcuts?: Readonly<Record<string, string>>): ToolbarItemModel[] {
         const normalized: ToolbarItemModel[] = [];
         for (let i: number = 0; i < items.length; i++) {
             normalized.push(this.create(items[i as number], i, shortcuts));
@@ -211,7 +184,12 @@ export class ToolbarItemNormalizer {
             'AlignLeft': 'alignLeft',
             'AlignCenter': 'alignCenter',
             'AlignRight': 'alignRight',
-            'AlignJustify': 'alignJustify'
+            'AlignJustify': 'alignJustify',
+            'CalloutInfo': 'calloutInfo',
+            'CalloutWarning': 'calloutWarning',
+            'CalloutError': 'calloutError',
+            'CalloutSuccess': 'calloutSuccess',
+            'CalloutNote': 'calloutNote'
         };
         return keys[id as string];
     }
@@ -310,7 +288,7 @@ interface ToolbarItemModel {
     /** Stable, unique item ID */
     id: string;
     /** Original source item before normalization */
-    source: ToolbarItem;
+    source: ToolbarItem | string;
     /** Control rendering type */
     controlType: 'button' | 'dropdown' | 'splitButton' | 'colorPicker' | 'template' | 'separator';
     /** Editor command name to execute on click */
@@ -323,6 +301,8 @@ interface ToolbarItemModel {
     shortcut?: string;
     /** Specify the rendering way for the dropdown button content */
     renderMode?: string;
+    /** Optional value to forward along with `command` when the item is clicked. */
+    value?: unknown;
 }
 
 export { ToolbarItemModel };

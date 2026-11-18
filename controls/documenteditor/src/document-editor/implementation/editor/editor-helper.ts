@@ -1,27 +1,12 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
-import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget, ListTextElementBox, ImageElementBox } from '../viewer/page';
+import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, TableRowWidget, TableCellWidget, TableWidget, ListTextElementBox, ImageElementBox } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox, CharacterFormatProperties, ParagraphFormatProperties } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment, FontHintType } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment, FontHintType } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary, MentionDataEditInfo } from '../..';
 import { WBorder, WBorders, WParagraphFormat } from '../format';
-import {
-    boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty, underlineColorProperty,
-    fontHintTypeProperty,
-    strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty,
-    styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty,
-    fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty,
-    characterSpacingProperty, scalingProperty, hiddenProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty,
-    bordersProperty, leftIndentProperty,
-    rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty,
-    afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty,
-    lineSpacingTypeProperty, outlineLevelProperty, listFormatProperty, tabsProperty,
-    keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
-    topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
-    colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
-    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, localeIdFarEastProperty, ligatureProperty
-} from '../../index';
+import { boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty, underlineColorProperty, fontHintTypeProperty, strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty, styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty, fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty, characterSpacingProperty, scalingProperty, hiddenProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty, afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, outlineLevelProperty, keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty, topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty, colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty, characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, localeIdFarEastProperty, ligatureProperty } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -72,11 +57,13 @@ export class HelperMethods {
         return text;
     }
     /**
-     * @returns {any} returns any type
-     * @param {string} text gets string as a input
+     * Returns spell check data collection.
+     *
+     * @param {string} text - Input text to split and normalize.
+     * @returns {Object[]} Spell check entries with Text and HasSpellError.
      * @public
      */
-    public static getSpellCheckData(text: string): any {
+    public static getSpellCheckData(text: string): { Text: string; HasSpellError: boolean }[] {
         text = text.replace('\r\n', ' ');
         text = text.replace('\n', ' ');
         text = text.replace('\r', ' ');
@@ -86,17 +73,19 @@ export class HelperMethods {
         text = text.replace(String.fromCharCode(160), ' ');
 
         const stringarr: string[] = text.split(' ');
-        const spellColl: any = [];
+        const spellColl: { Text: string; HasSpellError: boolean }[] = [];
         for (const str of stringarr) {
-            const spellInfo: any = {};
-            spellInfo.Text = this.replaceSpecialChars(str);
-            spellInfo.HasSpellError = false;
+            const spellInfo: { Text: string; HasSpellError: boolean } = {
+                Text: this.replaceSpecialChars(str),
+                HasSpellError: false
+            };
             spellColl.push(spellInfo);
         }
         return spellColl;
     }
     /**
      * Check if the line widget has image with underline
+     *
      * @private
      * @param {LineWidget} lineWidget input line widget to check if it has image with underline
      * @returns {boolean} weather line widget has image with underline or not
@@ -118,6 +107,7 @@ export class HelperMethods {
     }
     /**
      * Check given string is a valid either roman or arabic number
+     *
      * @private
      * @param {string} input input string value to check if it is a number
      * @returns {boolean} weather given string is a number or not
@@ -192,6 +182,7 @@ export class HelperMethods {
     }
     /**
      * Returns a legacy-style keyCode derived from KeyboardEvent using key, code, and location.
+     *
      * @private
      * @param event - Specifies keyboard event.
      * @returns Returns a legacy-style keyCode derived from KeyboardEvent.
@@ -415,6 +406,7 @@ export class HelperMethods {
     }
     /**
      * Convert ARGB to RGB
+     *
      * @private
      * @param {string} color accepts a color string
      * @returns {string} returns a string value
@@ -648,6 +640,7 @@ export class HelperMethods {
     }
     /**
      * Checks whether string ends with whitespace.
+     *
      * @private
      * @param {string} text - Specifies the text.
      * @returns {boolean} - Returns true if text ends with specified text.
@@ -1434,7 +1427,6 @@ export class HelperMethods {
         if (type === 'Titlecase') {
             const valArry: string[] = splitBy ? value.split(splitBy) : value.split(' ');
             for (let i: number = 0; i < valArry.length; i++) {
-                /* eslint-disable-next-line max-len */
                 text += splitBy ? valArry[parseInt(i.toString(), 10)].charAt(0).toUpperCase() + valArry[parseInt(i.toString(), 10)].slice(1, valArry[parseInt(i.toString(), 10)].length) : this.capitaliseFirstInternal(valArry[parseInt(i.toString(), 10)]);
                 if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
@@ -2310,6 +2302,7 @@ export interface FootNoteWidgetsInfo {
 export interface SelectedCommentInfo {
     commentStartInfo: CommentCharacterElementBox[]
     commentEndInfo: CommentCharacterElementBox[]
+    commentBothSelectedInfo: CommentCharacterElementBox[]
 }
 
 /**
@@ -2318,11 +2311,13 @@ export interface SelectedCommentInfo {
 export interface AbsolutePositionInfo {
     /**
      * Selection position.
+     *
      * @private
      */
     position?: number
     /**
      * Specifies whether the specfic element is reached or not.
+     *
      * @private
      */
     done: boolean
@@ -2334,6 +2329,7 @@ export interface AbsolutePositionInfo {
 export interface FieldResultInfo {
     /**
      * Specifies the field result length.
+     *
      * @private
      */
     length: number;
@@ -2345,11 +2341,13 @@ export interface FieldResultInfo {
 export interface ListCounterInfo {
     /**
      * Specifies the first counter
+     *
      * @private
      */
     first: number;
     /**
      * Specifies the second counter
+     *
      * @private
      */
     second: number;
@@ -2385,6 +2383,7 @@ export class WrapPosition {
 
 /**
  * Specifies the External font information.
+ *
  * @private
  */
 export interface ExternalFontInfo {
@@ -2403,12 +2402,36 @@ export interface ExternalFontInfo {
 export interface FieldStartInfo {
     /**
      * Reserved for internal use only.
+     *
      * @private
      */
     field: FieldElementBox;
 }
 /**
+ * Represents the position information of the table that contains the current selection.
+ *
+ * @typedef {Object} TableSelectionPosition
+ * @property {number} tableTopInCurrentPage - The top position of the table on the current page. Returns 0 when the selection is not inside a table.
+ * @property {number} tableRightInCurrentPage - The right position of the table on the current page. Returns 0 when the selection is not inside a table.
+ */
+export interface TableSelectionPosition {
+    /**
+     * Reserved for internal use only.
+     *
+     * @private
+     */
+    tableTopInCurrentPage: number;
+    /**
+     * Reserved for internal use only.
+     *
+     * @private
+     */
+    tableRightInCurrentPage: number;
+}
+
+/**
  * Represents a scroll position with horizontal and vertical offsets
+ *
  * @typedef {Object} ScrollPosition
  * @property {number} scrollTop- Vertical scroll offset in pixels
  * @property {number} scrollLeft- Horizontal scroll offset in pixels
@@ -2416,11 +2439,13 @@ export interface FieldStartInfo {
 export interface ScrollPosition  {
     /**
      * Reserved for internal use only.
+     *
      * @private
      */
     scrollTop: number;
     /**
      * Reserved for internal use only.
+     *
      * @private
      */
     scrollLeft: number;

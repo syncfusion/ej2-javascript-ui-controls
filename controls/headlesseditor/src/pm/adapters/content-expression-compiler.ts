@@ -1,4 +1,4 @@
-import { NodeContent, ExpressionTree } from '../../schema/types/content-expression';
+import { NodeContent, ExpressionTree } from '../../core/schema/types/content-expression';
 
 /**
  * ContentExpressionCompiler — compiles a NodeContent expression tree into a

@@ -27,6 +27,6 @@ export abstract class PdfLinkAnnotation extends PdfAnnotation {
      */
     protected initialize() : void {
         super.initialize();
-        this.dictionary.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.link));
+        this.dictionary.items.setValue('Subtype', new PdfName('Link'));
     }
 }

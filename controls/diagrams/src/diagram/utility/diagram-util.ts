@@ -1,3 +1,4 @@
+import { RulerSettings } from '../diagram/ruler-settings';
 import { Size } from './../primitives/size';
 import { PointModel } from './../primitives/point-model';
 import { Rect } from './../primitives/rect';
@@ -1274,6 +1275,7 @@ export function serialize(model: Diagram): string {
     if (model.serializationSettings.preventDefaults) {
         clonedObject = preventDefaults(clonedObject, model);
     }
+    stripRulerUnitDefaults(clonedObject as Diagram);
     // EJ2-913802 Sub process child won't get serialized when it is a child of a lane.
     model.nodes.forEach((node: Node) => {
         if (node.shape.type === 'SwimLane') {
@@ -1294,6 +1296,20 @@ export function serialize(model: Diagram): string {
     });
     removeUnnecessaryNodes(removeNodes, clonedObject as Diagram);
     return JSON.stringify(clonedObject);
+}
+
+/**
+ * Removes the ruler unit property when it holds its default, so reading them never changes saved documents.
+ *
+ * @param {Diagram} clonedObject - The cloned diagram model.
+ * @returns {void}
+ * @private
+ */
+function stripRulerUnitDefaults(clonedObject: Diagram): void {
+    const ruler: RulerSettings = clonedObject.rulerSettings as RulerSettings;
+    if (ruler && ruler.measurementUnit === 'Pixel') {
+        delete ruler.measurementUnit;
+    }
 }
 
 /**
@@ -1610,6 +1626,10 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     changeOldFlipDirectionType(diagram.connectors);
     diagram.rulerSettings = dataObj.rulerSettings || {};
     diagram.snapSettings = dataObj.snapSettings || {};
+    // Documents saved without these fields load as Pixel and disabled (DIAGRAM-RULERUNIT-014).
+    if (!dataObj.rulerSettings || dataObj.rulerSettings.measurementUnit === undefined) {
+        diagram.rulerSettings.measurementUnit = 'Pixel';
+    }
     diagram.width = dataObj.width || '100%';
     diagram.layout = dataObj.layout || {};
     if (dataObj.layout && dataObj.layout.type !== "None") {
@@ -1671,6 +1691,9 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
         diagram.protectPropertyChange(true);
         updateScrollSettingsOffset(diagram);
         diagram.protectPropertyChange(false);
+    }
+    if (diagram.scrollSettings.restrictNegativeAxis) {
+        diagram.scroller.enforceViewportRestriction();
     }
     return dataObj;
 }
@@ -3762,4 +3785,3 @@ export function containsBounds(bounds: any, point: PointModel, padding: number =
     return bounds.left - padding <= point.x && bounds.right + padding >= point.x
         && bounds.top - padding <= point.y && bounds.bottom + padding >= point.y;
 }
-

@@ -1,4 +1,4 @@
-import { BaseEventArgs, ChildProperty, EmitType, Event, Property } from '@syncfusion/ej2-base';import { ToolbarItem, ToolbarType, ToolbarPosition, DEFAULT_TOOLBAR_ITEMS, FontSizeItem, FontFamilyItem } from './toolbar.types';import { ToolbarSubItem } from '../../base/renderer/toolbar-item-config';import { ToolbarItemModel } from '../../base/renderer/toolbar-item-normalizer';
+import { BaseEventArgs, ChildProperty, EmitType, Event, Property } from '@syncfusion/ej2-base';import { ToolbarItem, ToolbarType, ToolbarPosition, FontSizeItem, FontFamilyItem } from './toolbar.types';import { ToolbarSubItem } from '../../base/renderer/toolbar-item-config';import { ToolbarItemModel } from '../../base/renderer/toolbar-item-normalizer';import { UpdatedToolbarStatusEventArgs } from '../interface';
 import {ToolbarItemClickedEventArgs} from "./toolbar-settings";
 
 /**
@@ -16,14 +16,14 @@ export interface ToolbarSettingsModel {
     /**
      * Defines the items displayed in the toolbar.
      *
-     * @default DEFAULT_TOOLBAR_ITEMS (cloned per instance)
+     * @default ['Bold', 'Italic', 'Underline', 'Strikethrough', '|', 'Formats', 'Alignment', 'BulletList', 'NumberedList', '|', 'Link', 'Image', 'Table', '|', 'Undo', 'Redo']
      */
     items?: ToolbarItem[];
 
     /**
      * Defines the toolbar overflow and layout behavior.
      *
-     * @default 'Expanded'
+     * @default 'Auto'
      */
     type?: ToolbarType;
 
@@ -54,6 +54,15 @@ export interface ToolbarSettingsModel {
      * @event itemClicked
      */
     itemClicked?: EmitType<ToolbarItemClickedEventArgs>;
+
+    /**
+     * Raised after the toolbar item status (active states, dropdown values, color picker selections)
+     * has been synchronized with the current editor selection. This event fires after formatting states
+     * are updated to reflect the user's current cursor position or selection in the editor.
+     *
+     * @event updatedToolbarStatus
+     */
+    updatedToolbarStatus?: EmitType<UpdatedToolbarStatusEventArgs>;
 
 }
 

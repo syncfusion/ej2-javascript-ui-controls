@@ -19,7 +19,7 @@ import { ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
  */
 export interface IToolbar {
     /**
-     * Updates the toolbar type (Expanded, MultiRow, Popup, Scrollable).
+     * Updates the toolbar type (Auto, Expanded, MultiRow, Scrollable).
      *
      * @param type - The new toolbar type
      * @throws Error if implementation fails

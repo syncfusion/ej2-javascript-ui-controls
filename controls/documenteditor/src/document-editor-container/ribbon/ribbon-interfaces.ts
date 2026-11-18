@@ -5,6 +5,7 @@ import { DocumentEditor } from '../../document-editor/document-editor';
 
 /**
  * Interface for ribbon group components
+ *
  * @private
  */
 export interface IRibbonGroup {
@@ -26,6 +27,7 @@ export interface IRibbonGroup {
 
 /**
  * Base class for ribbon groups with common functionality
+ *
  * @private
  */
 export abstract class RibbonGroupBase implements IRibbonGroup {
@@ -36,6 +38,7 @@ export abstract class RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Constructor for RibbonGroupBase
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -47,6 +50,7 @@ export abstract class RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Gets the DocumentEditor from container
+     *
      * @returns {DocumentEditor} - DocumentEditor instance
      */
     protected get documentEditor(): DocumentEditor {
@@ -60,6 +64,7 @@ export abstract class RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Default implementation for updating selection
+     *
      * @returns {void}
      * @private
      */
@@ -69,6 +74,7 @@ export abstract class RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Default implementation for wiring events
+     *
      * @returns {void}
      * @private
      */
@@ -78,6 +84,7 @@ export abstract class RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Default implementation for destroying event handlers
+     *
      * @returns {void}
      * @private
      */

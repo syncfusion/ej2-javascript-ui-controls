@@ -994,8 +994,15 @@ export class RevisionCollection {
                 currentChangeView.revision = revision;
             }
         }
-        if (revision.getRange().length > 0) {
-          if (!isNullOrUndefined(currentChangeView.singleInnerDiv)) {
+        const newRange: (ElementBox | WCharacterFormat | WRowFormat)[] = revision.getRange();
+        if (newRange.length > 0) {
+            // When the revision is appended at the end of the group, only its own text needs to be added to the view.
+            // Rebuilding the text of the entire group for every revision is quadratic and makes large pastes (for example big tables) unresponsive.
+            if (insertIndex === revisions.length - 1) {
+                currentChangeView.layoutElementText(revision, newRange, !isNullOrUndefined(currentChangeView.singleInnerDiv) ? currentChangeView.singleInnerDiv.querySelector("#textDiv") : undefined, true);
+                return;
+            }
+            if (!isNullOrUndefined(currentChangeView.singleInnerDiv)) {
                 this.clearChildren(currentChangeView.singleInnerDiv.querySelector("#textDiv"));
             }
             let ranges: (ElementBox | WCharacterFormat | WRowFormat)[] = [];
@@ -1334,7 +1341,7 @@ export class RevisionCollection {
         }
         this.isAcceptAllOrRejectAll = false;
         if (this.owner.editorHistoryModule) {
-            this.owner.editorHistoryModule.updateComplexHistory();
+            this.owner.editorHistoryModule.updateComplexHistory(true);
         }
         this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.owner.editorModule.reLayout(this.owner.selectionModule, false);

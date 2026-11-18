@@ -67,3 +67,13 @@ export const CLS_DROPDOWN_BTN: string = 'e-rte-ui-dropdown-btn';
  * @hidden
  */
 export const CLS_DROPDOWN_POPUP: string = 'e-rte-ui-dropdown-popup';
+
+/**
+ * @hidden
+ */
+export const CLS_IMAGE_SELECTED: string = 'e-rte-ui-image-selected';
+
+/**
+ * @hidden
+ */
+export const CLS_TABLE_WRAPPER: string = 'tableWrapper';

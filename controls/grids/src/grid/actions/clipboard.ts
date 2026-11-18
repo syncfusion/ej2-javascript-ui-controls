@@ -45,7 +45,8 @@ export class Clipboard implements IAction {
         this.parent.on(events.keyPressed, this.keyDownHandler, this);
         this.parent.on(events.click, this.clickHandler, this);
         this.parent.on(events.onEmpty, this.initialEnd, this);
-        EventHandler.add(this.parent.element, 'keydown', this.pasteHandler, this);
+        EventHandler.add(this.parent.element, 'keydown', this.macCopyHandler, this);
+        EventHandler.add(this.parent.element, 'paste', this.pasteHandler, this);
     }
 
     /**
@@ -58,7 +59,8 @@ export class Clipboard implements IAction {
         this.parent.off(events.contentReady, this.initialEnd);
         this.parent.off(events.click, this.clickHandler);
         this.parent.off(events.onEmpty, this.initialEnd);
-        EventHandler.remove(this.parent.element, 'keydown', this.pasteHandler);
+        EventHandler.remove(this.parent.element, 'keydown', this.macCopyHandler);
+        EventHandler.remove(this.parent.element, 'paste', this.pasteHandler);
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -67,44 +69,43 @@ export class Clipboard implements IAction {
         target = parentsUntil(target, 'e-rowcell') as HTMLElement;
     }
 
-    private pasteHandler(e: KeyboardEvent): void {
-        const grid: IGrid = this.parent;
+    private macCopyHandler(e: KeyboardEvent): void {
         const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
-        const selectedRowCellIndexes: ISelectedCell[] = this.parent.getSelectedRowCellIndexes();
-        if (!grid.isEdit && e.keyCode === 67 && isMacLike && e.metaKey) {
+        if (!this.parent.isEdit && e.keyCode === 67 && isMacLike && e.metaKey) {
             this.copy();
         }
-        if (selectedRowCellIndexes.length && e.keyCode === 86 && ((!isMacLike && e.ctrlKey) || (isMacLike && e.metaKey)) && !grid.isEdit) {
-            const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
-            if (!this.clipBoardTextArea || !target || !grid.editSettings.allowEditing || grid.editSettings.mode === 'Normal' ||
-                grid.editSettings.mode === 'Dialog' ||
-                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
-                return;
-            }
-            this.activeElement = document.activeElement;
-            const x: number = window.scrollX;
-            const y: number = window.scrollY;
-            this.clipBoardTextArea.focus();
-            setTimeout(
-                () => {
-                    (this.activeElement as HTMLInputElement).focus();
-                    window.scrollTo(x, y);
-                    this.paste(
-                        this.clipBoardTextArea.value,
-                        selectedRowCellIndexes[0].rowIndex,
-                        selectedRowCellIndexes[0].cellIndexes[0]
-                    );
-                },
-                isMacLike ? 100 : 10);
+    }
+
+    private pasteHandler(e: ClipboardEvent): void {
+        const grid: IGrid = this.parent;
+        const selectedRowCellIndexes: ISelectedCell[] = grid.getSelectedRowCellIndexes();
+        const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
+        if (!this.clipBoardTextArea || !selectedRowCellIndexes.length || grid.isEdit || !target ||
+            !grid.editSettings.allowEditing || grid.editSettings.mode === 'Normal' || grid.editSettings.mode === 'Dialog' ||
+            grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow' || !e.clipboardData) {
+            return;
+        }
+        const text: string = e.clipboardData.getData('text/plain');
+        if (text) {
+            e.preventDefault();
+            this.clipBoardTextArea.value = text;
+            const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+            const rowIndex: number = selectedRowCellIndexes[0].rowIndex;
+            const cellIndex: number = selectedRowCellIndexes[0].cellIndexes[0];
+            setTimeout(() => {
+                if (this.clipBoardTextArea && this.clipBoardTextArea.value) {
+                    this.paste(this.clipBoardTextArea.value, rowIndex, cellIndex);
+                }
+            }, isMacLike ? 100 : 0);
         }
     }
 
     /**
      * Paste data from clipboard to selected cells.
      *
-     * @param {boolean} data - Specifies the date for paste.
-     * @param {boolean} rowIndex - Specifies the row index.
-     * @param {boolean} colIndex - Specifies the column index.
+     * @param {string} data - Specifies the date for paste.
+     * @param {number} rowIndex - Specifies the row index.
+     * @param {number} colIndex - Specifies the column index.
      * @returns {void}
      */
     public paste(data: string, rowIndex: number, colIndex: number): void {
@@ -185,7 +186,7 @@ export class Clipboard implements IAction {
         if (!this.clipBoardTextArea) {
             this.clipBoardTextArea = this.parent.createElement('textarea', {
                 className: 'e-clipboard',
-                attrs: { id: this.parent.element.id + '_clipboard', tabindex: '-1', 'aria-label': this.l10n.getConstant('ClipBoard') }
+                attrs: { id: this.parent.element.id + '_clipboard', tabindex: '-1', 'aria-hidden': 'true' }
             }) as HTMLInputElement;
             this.clipBoardTextArea.style.opacity = '0';
             this.parent.element.appendChild(this.clipBoardTextArea);

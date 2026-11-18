@@ -15,6 +15,9 @@ export class Zoom {
         if (!isNullOrUndefined(this.documentHelper.owner.imageResizerModule)) {
             this.documentHelper.owner.imageResizerModule.updateImageResizerPosition();
         }
+        if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+            this.documentHelper.owner.editorModule.refreshLockedRegionAlertLayout();
+        }
         this.documentHelper.owner.fireZoomFactorChange();
     }
 

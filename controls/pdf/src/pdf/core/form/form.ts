@@ -1,16 +1,17 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfField, PdfTextBoxField, PdfButtonField, PdfCheckBoxField, PdfRadioButtonListField, PdfComboBoxField, PdfListBoxField, PdfSignatureField } from './field';
+import { PdfBarcodeField } from './pdf-barcode-field';
 import { _getInheritableProperty, _getPageIndex, _isNullOrUndefined } from './../utils';
 import { PdfFormFieldsTabOrder, PdfRotationAngle, _FieldFlag, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
-import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation } from './../annotations/annotation';
+import { PdfButtonFieldItem, PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation } from './../annotations/annotation';
 import { PdfDocument } from '../pdf-document';
 import { _PdfCatalog } from '../pdf-catalog';
 import { PdfFont } from './../fonts/pdf-standard-font';
 import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
-import { PdfSignatureValidationOptions, PdfSignatureValidationResult } from './../pdf-type';
+import { PdfSignatureValidationOptions, PdfSignatureValidationResult } from './../pdf-document-helper';
 /**
  * Represents a PDF form.
  * ```typescript
@@ -532,6 +533,31 @@ export class PdfForm {
         return field;
     }
     /**
+     * Determines whether a text field dictionary describes a barcode field, i.e. it or one of its kids
+     * has a `PMD` entry, or it has a `DataPrep` entry.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The field dictionary.
+     * @returns {boolean} `true` for a barcode field.
+     */
+    _isBarcodeDictionary(dictionary: _PdfDictionary): boolean {
+        if (_getInheritableProperty(dictionary, 'PMD', false, true, 'Parent') !== undefined ||
+            _getInheritableProperty(dictionary, 'DataPrep', false, true, 'Parent') !== undefined) {
+            return true;
+        }
+        const kids: any = dictionary.has('Kids') ? dictionary.get('Kids') : undefined; // eslint-disable-line
+        if (Array.isArray(kids)) {
+            for (let i: number = 0; i < kids.length; i++) {
+                const entry: any = kids[<number>i]; // eslint-disable-line
+                const kid: _PdfDictionary = entry instanceof _PdfReference ? this._crossReference._fetch(entry) : entry;
+                if (kid instanceof _PdfDictionary && kid.has('PMD')) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
      * Parses a terminal form field from its dictionary and reference, instantiating the appropriate
      * field type based on `FT` and `Ff` (e.g., text, button, choice, signature).
      *
@@ -552,7 +578,11 @@ export class PdfForm {
             if (key) {
                 switch (key.name.toLowerCase()) {
                 case 'tx':
-                    field = PdfTextBoxField._load(this, dictionary, this._crossReference, reference);
+                    if (this._isBarcodeDictionary(dictionary)) {
+                        field = PdfBarcodeField._load(this, dictionary, this._crossReference, reference);
+                    } else {
+                        field = PdfTextBoxField._load(this, dictionary, this._crossReference, reference);
+                    }
                     break;
                 case 'btn':
                     if ((fieldFlags & _FieldFlag.pushButton) !== 0) {
@@ -631,6 +661,9 @@ export class PdfForm {
             this._dictionary.update('Fields', this._fields);
             this._parsedFields.set(this._fields.length - 1, field);
             field._form = this;
+            if (field instanceof PdfBarcodeField) {
+                field._onAddedToForm();
+            }
             this._crossReference._root._updated = true;
             if (field instanceof PdfSignatureField) {
                 field._form._signatureFlag = _SignatureFlag.signatureExists | _SignatureFlag.appendOnly;
@@ -711,7 +744,13 @@ export class PdfForm {
                 }
                 return this._fields.length - 1;
             }
-            if ((field instanceof PdfButtonField && oldField instanceof PdfButtonField)) {
+            if (field instanceof PdfButtonField && oldField instanceof PdfButtonField) {
+                const sourceWidget: PdfButtonFieldItem = field.itemAt(field._defaultIndex);
+                const appendedIndex: number = oldField._kidsCount - 1;
+                const destinationWidget: PdfButtonFieldItem = oldField.itemAt(appendedIndex);
+                if (sourceWidget && destinationWidget && sourceWidget._hasAppearance) {
+                    destinationWidget.appearance = sourceWidget.appearance;
+                }
                 if (!oldField._setAppearance) {
                     oldField._setAppearance = true;
                 }
@@ -2346,7 +2385,8 @@ export class PdfForm {
      * @returns {boolean} Returns `true` if the field types are compatible; otherwise, `false`.
      */
     _checkType(field1: PdfField, field2: PdfField): boolean {
-        return (field1 instanceof PdfTextBoxField && field2 instanceof PdfTextBoxField) ||
+        return (field1 instanceof PdfBarcodeField && field2 instanceof PdfBarcodeField) ||
+            (field1 instanceof PdfTextBoxField && field2 instanceof PdfTextBoxField) ||
             (field1 instanceof PdfButtonField && field2 instanceof PdfButtonField) ||
             (field1 instanceof PdfCheckBoxField && field2 instanceof PdfCheckBoxField) ||
             (field1 instanceof PdfComboBoxField && field2 instanceof PdfComboBoxField) ||

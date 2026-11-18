@@ -32,6 +32,18 @@ export class Data implements IDataProcessor {
     protected serviceLocator: ServiceLocator;
     protected dataState: PendingState = { isPending: false, resolver: null, group: [] };
     public foreignKeyDataState: PendingState = { isPending: false, resolver: null };
+    /** @hidden Cached custom-binding records keyed by page number, e.g. `{ 1: [...], 2: [...] }`. */
+    public customBindingCache: { [page: number]: Object[] } = {};
+    /** @hidden Total record count and aggregates that belong to the cached pages. */
+    public customBindingMeta: { count?: number, aggregates?: Object } = {};
+    /** @hidden Responses that do not map to one page (lazy group expand, misaligned blocks), keyed by query state. */
+    public customBindingBlocks: { [key: string]: Object } = {};
+    /** @hidden Insertion order of cached entries (`p:<page>` or `b:<key>`); the first item is evicted when the cache limit is exceeded. */
+    public customBindingOrder: string[] = [];
+    /** @hidden Page number of the custom-binding request currently awaiting a response. */
+    public pendingCachePage: number;
+    /** @hidden State signature of the non-page request currently awaiting a response. */
+    public pendingCacheKey: string;
 
     /**
      * Constructor for data module.
@@ -326,6 +338,7 @@ export class Data implements IDataProcessor {
         return query;
     }
 
+
     protected filterQuery(query: Query, column?: PredicateModel[], skipFoerign?: boolean): Query {
         const gObj: IGrid = this.parent;
         let predicateList: Predicate[] = [];
@@ -447,7 +460,9 @@ export class Data implements IDataProcessor {
                         changedRecords: []
                     };
                     changes.deletedRecords = <Object[]>args.data;
-                    crud = this.dataManager.saveChanges(changes, key, query.fromTable, query.requiresCount()) as Promise<Object>;
+                    const saveChanges: Object | Promise<Object> = this.dataManager.saveChanges(
+                        changes, key, query.fromTable, this.parent.setRequiresCount(query));
+                    crud = saveChanges as Promise<Object>;
                 }
                 break;
             case 'save':
@@ -537,7 +552,7 @@ export class Data implements IDataProcessor {
      * @hidden
      */
     public saveChanges(changes: Object, key: string, original: Object, query: Query = this.generateQuery()): Promise<Object> {
-        query.requiresCount();
+        query = this.parent.setRequiresCount(query);
         if ('result' in this.parent.dataSource) {
             const deff: Deferred = new Deferred();
             const args: DataSourceChangedEventArgs = {
@@ -572,6 +587,7 @@ export class Data implements IDataProcessor {
 
     /**
      * clears the cache
+     *
      * @returns {void}
      * @hidden
      */
@@ -579,6 +595,16 @@ export class Data implements IDataProcessor {
         if (this.isRemote()) {
             (this.parent.dataSource as DataManager).clearCache();
         }
+        this.resetCustomBindingCache();
+    }
+
+    private resetCustomBindingCache(): void {
+        this.customBindingCache = {};
+        this.customBindingMeta = {};
+        this.customBindingBlocks = {};
+        this.pendingCachePage = null;
+        this.customBindingOrder = [];
+        this.pendingCacheKey = null;
     }
 
     private addRows(e: { toIndex: number, records: Object[] }): void {
@@ -650,9 +676,34 @@ export class Data implements IDataProcessor {
         const state: DataStateChangeEventArgs = this.getStateEventArgument(query);
         const def: Deferred = new Deferred();
         const deff: Deferred = new Deferred();
+        const cacheEnabled: boolean = this.isCustomBindingCacheEnabled();
+        if (cacheEnabled) {
+            this.seedInitialCustomBindingCache();
+        }
+        if (cacheEnabled && this.shouldInvalidateCustomBindingCache(args.requestType)) {
+            this.resetCustomBindingCache();
+        }
+        // Menu, checkbox, and excel choice requests resolve through state.dataSource.
+        // They must not enter the page cache or the pending dataSource resolver.
+        if (this.isFilterChoiceRequest(args.requestType)) {
+            state.action = <{}>args;
+            state.dataSource = def.resolve;
+            this.parent.trigger(events.dataStateChange, state);
+            return def;
+        }
         if ((args.requestType !== undefined || (this.parent.groupSettings.disablePageWiseAggregates && query.queries.some((query: { fn: string; }) => query.fn === 'onGroup')))
          && this.dataState.isDataChanged !== false) {
             state.action = <{}>args;
+            if (cacheEnabled) {
+                const cached: Object = this.getCustomBindingCache(state);
+                if (cached) {
+                    this.setState({});
+                    def.resolve(cached);
+                    return def;
+                }
+                this.pendingCachePage = this.getCustomBindingPage(state);
+                this.pendingCacheKey = this.pendingCachePage ? null : this.getCustomBindingCacheKey(state);
+            }
             if (args.requestType === 'save' || args.requestType === 'delete' || args.requestType === 'batchsave') {
                 const editArgs: DataSourceChangedEventArgs = args;
                 editArgs.key = key;
@@ -703,4 +754,147 @@ export class Data implements IDataProcessor {
             refreshFilteredColsUid(this.parent, this.parent.filterSettings.columns);
         }
     }
+
+    /**
+     * Whether custom-binding page cache is enabled.
+     *
+     * @returns {boolean} returns true when page cache is enabled for a custom data source
+     * @hidden
+     */
+    public isCustomBindingCacheEnabled(): boolean {
+        return !!(this.parent.enableCache && this.parent.dataSource && 'result' in this.parent.dataSource);
+    }
+
+    private getCustomBindingCacheKey(state: DataStateChangeEventArgs): string {
+        const signature: Object = {
+            skip: state.skip, take: state.take, sorted: state.sorted, where: state.where,
+            search: state.search, group: state.group, select: state.select, table: state.table,
+            aggregates: state.aggregates, requiresCounts: state.requiresCounts,
+            isLazyLoad: state.isLazyLoad, onDemandGroupInfo: state.onDemandGroupInfo
+        };
+        return JSON.stringify(signature);
+    }
+
+    /**
+     * Stores a resolved custom-binding page. The initially bound page never raises
+     * dataStateChange, so it is seeded here before the first paging request.
+     *
+     * @param {DataStateChangeEventArgs} state - Query state the page belongs to
+     * @param {Object} data - Resolved `{ result, count }` page
+     * @returns {void}
+     * @hidden
+     */
+    public storeCustomBindingCache(state: DataStateChangeEventArgs, data: Object): void {
+        if (!this.isCustomBindingCacheEnabled() || isNullOrUndefined(data) || !('result' in data)) {
+            return;
+        }
+        const page: number = this.getCustomBindingPage(state);
+        this.saveCustomBindingResponse(page, page ? null : this.getCustomBindingCacheKey(state), data);
+    }
+
+    /**
+     * Stores the response the application assigned for the pending request.
+     *
+     * @param {Object} data - Resolved `{ result, count }` page
+     * @returns {void}
+     * @hidden
+     */
+    public storePendingCustomBindingCache(data: Object): void {
+        if (!this.isCustomBindingCacheEnabled() || isNullOrUndefined(data) || !('result' in data)
+            || (!this.pendingCachePage && !this.pendingCacheKey)) {
+            return;
+        }
+        this.saveCustomBindingResponse(this.pendingCachePage, this.pendingCacheKey, data);
+        this.pendingCachePage = null;
+        this.pendingCacheKey = null;
+    }
+
+    private saveCustomBindingResponse(page: number, key: string, data: Object): void {
+        const response: { result: Object[], count: number, aggregates?: Object } =
+            data as { result: Object[], count: number, aggregates?: Object };
+        if (page) {
+            this.registerCacheEntry(`p:${page}`);
+            this.customBindingCache[`${page}`] = response.result;
+            this.customBindingMeta = { count: response.count, aggregates: response.aggregates };
+        } else if (key) {
+            this.registerCacheEntry(`b:${key}`);
+            this.customBindingBlocks[`${key}`] = {
+                result: response.result, count: response.count, aggregates: response.aggregates
+            };
+        }
+    }
+
+    private getCustomBindingCache(state: DataStateChangeEventArgs): Object {
+        const page: number = this.getCustomBindingPage(state);
+        if (page) {
+            const records: Object[] = this.customBindingCache[`${page}`];
+            return records ? { result: records, count: this.customBindingMeta.count, aggregates: this.customBindingMeta.aggregates } : null;
+        }
+        return this.customBindingBlocks[this.getCustomBindingCacheKey(state)] || null;
+    }
+
+    /**
+     * Page number for a plain page request: no lazy group info and `skip` is a whole multiple of `take`.
+     * Sorting, filtering, searching and grouping clear the cache, so a page number is unique per query state.
+     *
+     * @param {DataStateChangeEventArgs} state - Query state
+     * @returns {number} 1-based page number, or 0 when the request does not map to one page
+     */
+    private getCustomBindingPage(state: DataStateChangeEventArgs): number {
+        if (state.isLazyLoad || state.onDemandGroupInfo || !state.take || (state.skip || 0) % state.take !== 0
+            || (state.group && state.group.length)) {
+            return 0;
+        }
+        return (state.skip || 0) / state.take + 1;
+    }
+
+    private seedInitialCustomBindingCache(): void {
+        if (!this.isCustomBindingCacheEnabled() || Object.keys(this.customBindingCache).length
+            || Object.keys(this.customBindingBlocks).length) {
+            return;
+        }
+        const query: Query = this.generateQuery().requiresCount();
+        this.storeCustomBindingCache(this.getStateEventArgument(query) as DataStateChangeEventArgs, this.parent.dataSource);
+    }
+
+    private isFilterChoiceRequest(requestType?: string): boolean {
+        return requestType === 'filterchoicerequest' || requestType === 'filterSearchBegin'
+            || requestType === 'stringfilterrequest' || requestType === 'booleanfilterrequest';
+    }
+
+    private shouldInvalidateCustomBindingCache(requestType?: string): boolean {
+        // Filter choice/search requests share dataStateChange but must not drop stored pages.
+        return requestType === 'sorting' || requestType === 'filtering' || requestType === 'searching'
+            || requestType === 'grouping' || requestType === 'ungrouping' || requestType === 'reorder'
+            || requestType === 'save' || requestType === 'delete' || requestType === 'batchsave'
+            || requestType === 'refresh' || requestType === 'cancel';
+    }
+
+    private registerCacheEntry(id: string): void {
+        const existing: number = this.customBindingOrder.indexOf(id);
+        if (existing > -1) {
+            this.customBindingOrder.splice(existing, 1);
+        }
+        this.customBindingOrder.push(id);
+        this.trimCache();
+    }
+
+    /**
+     * Removes the oldest cache objects until the count is within `cacheLimit`.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public trimCache(): void {
+        const limit: number = Math.max(1, this.parent.cacheLimit);
+        while (this.customBindingOrder.length > limit) {
+            const oldest: string = this.customBindingOrder.shift();
+            if (oldest.indexOf('p:') === 0) {
+                delete this.customBindingCache[oldest.substring(2)];
+            } else {
+                delete this.customBindingBlocks[oldest.substring(2)];
+            }
+        }
+    }
+
 }

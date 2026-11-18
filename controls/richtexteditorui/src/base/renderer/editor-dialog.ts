@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, Browser } from '@syncfusion/ej2-base';
 import { Dialog, AnimationSettingsModel } from '@syncfusion/ej2-popups';
 import { RichTextEditorUI } from '../../richtexteditor-ui';
 import {
@@ -46,11 +46,11 @@ export interface EditorDialogModel {
     /**
      * Editor feature the dialog belongs to (e.g. `'Link'`, `'Image'`,
      * `'Table'`). Surfaced on every `beforeDialogOpen` /
-     * `beforeDialogClose` event as `subType` so a single handler can branch
+     * `beforeDialogClose` event as `source` so a single handler can branch
      * on the feature. Omitted for generic dialogs that are not tied to a
      * specific feature.
      */
-    subType?: string;
+    source?: string;
     /** Raised when the dialog is created. */
     created?: () => void;
     /** Raised when the dialog is opened. */
@@ -111,20 +111,30 @@ export class EditorDialog {
             className: 'e-editor-dialog-root'
         });
         this.target.appendChild(dialogRoot);
+        let dialogPosition: { X: string | number; Y: string | number; } = this.model.position;
+
+        if (!Browser.isDevice && this.parent?.element && this.target !== document.body &&
+            (!dialogPosition || dialogPosition.Y === 'top')) {
+            dialogPosition = {
+                X: 'center',
+                Y: this.getDialogPosition()
+            };
+        }
+
         this.dialog = new Dialog({
             target: this.target,
             header: this.model.header,
             content: this.model.content,
             width: this.model.width,
             height: this.model.height ? this.model.height : 'auto',
-            position: this.model.position,
+            position: dialogPosition,
             visible: false,
             showCloseIcon: true,
             isModal: this.model.isModal,
             allowDragging: this.model.allowDragging,
             buttons: this.model.buttons,
             animationSettings: this.model.animationSettings,
-            cssClass: this.model.cssClass,
+            cssClass: 'e-rte-ui-elements ' + this.model.cssClass,
             enableRtl: this.parent.enableRtl,
             created: this.model.created,
             beforeOpen: this.beforeDialogOpen.bind(this),
@@ -140,6 +150,26 @@ export class EditorDialog {
         if (this.parent && this.parent.inputElement) {
             this.parent.inputElement.ownerDocument.addEventListener('mousedown', this.clickHandler);
         }
+    }
+
+    private getDialogPosition(): string {
+        let distanceFromVisibleTop: number =
+            this.parent.element.getBoundingClientRect().top;
+        if (distanceFromVisibleTop < 0) {
+            let topHeight: number = 0;
+            let parentElement: HTMLElement | null = this.parent.element;
+            while (parentElement && parentElement.nodeName !== 'BODY') {
+                const top: number = parentElement.getBoundingClientRect().top;
+                if (top > 0) {
+                    topHeight = top;
+                }
+                parentElement = parentElement.parentElement;
+            }
+            distanceFromVisibleTop =
+                Math.abs(distanceFromVisibleTop) + topHeight;
+            return distanceFromVisibleTop.toString();
+        }
+        return 'top';
     }
 
     /**
@@ -198,7 +228,7 @@ export class EditorDialog {
         if (this.parent && this.parent.baseEditorCore) {
             this.saveSelection = this.parent.baseEditorCore.saveSelection();
         }
-        args.subType = this.model.subType;
+        args.source = this.model.source;
         if (typeof this.model.beforeDialogOpen === 'function') {
             this.model.beforeDialogOpen(args);
         }
@@ -213,11 +243,16 @@ export class EditorDialog {
      * @returns {void}
      */
     private beforeDialogClose(args: BeforeDialogCloseEventArgs): void {
-        // Stamp the same subType as the open event so close handlers can
+        // Stamp the same source as the open event so close handlers can
         // branch identically.
-        (args as { subType?: string }).subType = this.model.subType;
+        this.parent.beginInternalFocusTransition();
+        (args as { source?: string }).source = this.model.source;
         if (typeof this.model.beforeDialogClose === 'function') {
             this.model.beforeDialogClose(args);
+        }
+        this.parent.endInternalFocusTransition();
+        if (!args.cancel && this.parent && this.parent.inputElement) {
+            this.parent.inputElement.focus({ preventScroll: true });
         }
         this.destroy();
         if (this.parent && this.parent.baseEditorCore) {
@@ -251,7 +286,9 @@ export class EditorDialog {
             return;
         }
         if (this.clickHandler) {
-            this.parent.inputElement.ownerDocument.removeEventListener('mousedown', this.clickHandler);
+            if (this.parent.inputElement) {
+                this.parent.inputElement.ownerDocument.removeEventListener('mousedown', this.clickHandler);
+            }
             this.clickHandler = null;
         }
         if (this.dialog && !this.dialog.isDestroyed) {
@@ -265,7 +302,6 @@ export class EditorDialog {
             root.parentNode.removeChild(root);
         }
         this.dialog = null;
-        this.parent = null;
         this.target = null;
         this.model = null;
         this.isDestroyed = true;

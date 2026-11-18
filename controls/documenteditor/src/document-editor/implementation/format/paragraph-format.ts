@@ -5,7 +5,7 @@ import { LineSpacingType, TextAlignment, OutlineLevel, TabJustification, TabLead
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WListFormat } from './list-format';
-import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer, TextFrame } from '../viewer/page';
+import { ParagraphWidget, TableCellWidget, BlockContainer, TextFrame } from '../viewer/page';
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 import { DocumentHelper } from '../viewer';
@@ -640,6 +640,12 @@ export class WParagraphFormat {
             format.listFormat.ownerBase = format;
         }
         format.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
+        if (!isNullOrUndefined(this.tabs) && this.tabs.length > 0) {
+            format.tabs = [];
+            for (let i: number = 0; i < this.tabs.length; i++) {
+                format.tabs.push(this.tabs[i].clone());
+            }
+        }
         return format;
     }
     /**

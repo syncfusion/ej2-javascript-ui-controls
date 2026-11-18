@@ -135,10 +135,10 @@ export class PdfPage extends PdfPageBase {
     public get annotations() : PdfAnnotationCollection {
         if (this.annotationCollection == null) {
             this.annotationCollection = new PdfAnnotationCollection(this);
-            // if (!this.Dictionary.ContainsKey(this.dictionaryProperties.annots)) {
-            this.dictionary.items.setValue(this.dictionaryProperties.annots, (this.annotationCollection as IPdfWrapper).element);
+            // if (!this.Dictionary.ContainsKey('Annots')) {
+            this.dictionary.items.setValue('Annots', (this.annotationCollection as IPdfWrapper).element);
             // }
-            this.annotationCollection.annotations = this.dictionary.items.getValue(this.dictionaryProperties.annots) as PdfArray;
+            this.annotationCollection.annotations = this.dictionary.items.getValue('Annots') as PdfArray;
         }
         return this.annotationCollection;
     }
@@ -148,7 +148,7 @@ export class PdfPage extends PdfPageBase {
      * @private
      */
     private initialize() : void {
-        this.dictionary.items.setValue(this.dictionaryProperties.type, new PdfName('Page'));
+        this.dictionary.items.setValue('Type', new PdfName('Page'));
         this.dictionary.pageBeginDrawTemplate = new SaveTemplateEventHandler(this);
     }
     /**
@@ -157,7 +157,7 @@ export class PdfPage extends PdfPageBase {
      */
     public setSection(section : PdfSection) : void {
         this.section = section;
-        this.dictionary.items.setValue(this.dictionaryProperties.parent, new PdfReferenceHolder(section));
+        this.dictionary.items.setValue('Parent', new PdfReferenceHolder(section));
     }
     /**
      * `Resets the progress`.

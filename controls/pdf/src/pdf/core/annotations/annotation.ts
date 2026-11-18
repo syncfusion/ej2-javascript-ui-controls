@@ -1,16 +1,18 @@
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination, _PdfDestinationHelper } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace, DataFormat} from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, _obtainFontDetails, _areArrayEqual, _arePointsNotEqual, _convertToPoints, _isPointArray, _convertPointsToNumberArrays, _convertNumberToPointArrays, _convertNumberArraysToPoints, _convertPointToNumberArray, _pad2, _getPageIndex, _stringToBytes } from './../utils';
+import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment, PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace, DataFormat, PdfAttachmentRelationship, Pdf3DAnnotationType, Pdf3DActivationMode, Pdf3DDeactivationMode, Pdf3DProjectionType, Pdf3DRenderStyle, Pdf3DLightingStyle, Pdf3DAnimationType, PdfMoviePlayMode, PdfPrinterMarkOrientation, PdfPrinterMarkTargetBox, PdfPrinterMarkType, PdfRichMediaContentType, PdfRichMediaPresentationStyle, PdfRichMediaDeactivationMode, PdfRichMediaActivationMode, PdfScreenAnnotationTrigger, PdfScreenAnnotationHighlightMode, PdfSoundIcon, PdfSoundEncoding, PdfSoundChannels } from './../enumerator';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, _obtainFontDetails, _areArrayEqual, _arePointsNotEqual, _convertToPoints, _isPointArray, _convertPointsToNumberArrays, _convertNumberToPointArrays, _convertNumberArraysToPoints, _convertPointToNumberArray, _getPageIndex, _stringToBytes, _stringToDate, _dateToString, _relationshipToString, _decodeEmbeddedStream, _padStart } from './../utils';
+import { PdfAttachment } from './../attachments/pdf-attachment';
 import { PdfField, PdfTextBoxField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
 import { PdfPath } from './../graphics/pdf-path';
 import { PdfFontFamily, PdfStandardFont, PdfFont, PdfFontStyle, PdfTrueTypeFont, PdfCjkStandardFont } from './../fonts/pdf-standard-font';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
-import { _PdfBaseStream, _PdfStream } from './../base-stream';
-import { PdfDocument, PdfMargins } from './../pdf-document';
+import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream';
+import { PdfDocument } from './../pdf-document';
+import { PdfMargins, Rectangle, Point, PdfColor, Size, PdfPrinterMarkColorBarOptions, PdfPrinterMarkPageInformationOptions, PdfPrinterMarkFoldOptions, PdfMovieTime, Pdf3DRenderMode, Pdf3DView, Pdf3DActivation, Pdf3DAnimation } from './../pdf-document-helper';
 import { PdfAppearance } from './pdf-appearance';
 import { PdfPopupAnnotationCollection } from './annotation-collection';
 import { _PdfPaddings } from './pdf-paddings';
@@ -18,12 +20,13 @@ import { PdfForm } from '../form/form';
 import { PdfLayer } from '../layers/layer';
 import { PdfLayerCollection } from '../layers/layer-collection';
 import { _ContentParser, _PdfRecord } from '../content-parser';
-import { Rectangle, Point, PdfColor, Size } from './../pdf-type';
 import { _XfdfDocument } from './../import-export/xfdf-document';
 import { _JsonDocument } from './../import-export/json-document';
 import { _XmlWriter } from './../import-export/xml-writer';
 import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { _CloudBorderEffect } from './border-effect';
+import { PdfAnnotationActions } from '../actions/pdf-annotation-actions';
+import { _PdfFlateStream } from '../flate-stream';
 /**
  * Represents the base class for annotation objects.
  * ```typescript
@@ -40,6 +43,7 @@ import { _CloudBorderEffect } from './border-effect';
  * ```
  */
 export abstract class PdfAnnotation {
+    private _actions: PdfAnnotationActions;
     /**
      * Indicates whether this annotation was imported from an existing document.
      *
@@ -192,6 +196,7 @@ export abstract class PdfAnnotation {
     private _modifiedDate: Date;
     private _name: string;
     private _subject: string;
+    _hasCustomPoster: boolean = false;
     /**
      * Identifies whether the annotation is a widget (form field) annotation.
      *
@@ -386,7 +391,7 @@ export abstract class PdfAnnotation {
      */
     get border(): PdfAnnotationBorder {
         if (typeof this._border === 'undefined') {
-            const value: PdfAnnotationBorder = new PdfAnnotationBorder({width: 1, style: PdfBorderStyle.solid});
+            const value: PdfAnnotationBorder = new PdfAnnotationBorder({ width: 1, style: PdfBorderStyle.solid });
             value._dictionary = this._dictionary;
             if (this._dictionary && this._dictionary.has('Border')) {
                 const border: Array<number> = this._dictionary.getArray('Border');
@@ -687,7 +692,7 @@ export abstract class PdfAnnotation {
         if ((typeof this._creationDate === 'undefined' || this._creationDate === null) && this._dictionary.has('CreationDate')) {
             const value: any = this._dictionary.get('CreationDate'); // eslint-disable-line
             if (value !== null && typeof value === 'string') {
-                this._creationDate = this._stringToDate(value);
+                this._creationDate = _stringToDate(value);
             }
         }
         return this._creationDate;
@@ -711,7 +716,7 @@ export abstract class PdfAnnotation {
      */
     set creationDate(value: Date) {
         this._creationDate = value;
-        this._dictionary.update('CreationDate', this._dateToString(value));
+        this._dictionary.update('CreationDate', _dateToString(value));
     }
     /**
      * Gets the modification date of the annotation.
@@ -739,7 +744,7 @@ export abstract class PdfAnnotation {
                 value = this._dictionary.get('M');
             }
             if (value !== null && typeof value === 'string') {
-                this._modifiedDate = this._stringToDate(value);
+                this._modifiedDate = _stringToDate(value);
             }
         }
         return this._modifiedDate;
@@ -763,7 +768,7 @@ export abstract class PdfAnnotation {
      */
     set modifiedDate(value: Date) {
         this._modifiedDate = value;
-        this._dictionary.update('M', this._dateToString(value));
+        this._dictionary.update('M', _dateToString(value));
     }
     /**
      * Gets the bounds of the annotation.
@@ -815,7 +820,11 @@ export abstract class PdfAnnotation {
                     if (size) {
                         const y: number = size.height - (value.y + value.height);
                         const height: number = y + value.height;
-                        this._dictionary.update('Rect', [value.x, y, value.x + value.width, height]);
+                        const rect: number[] = [value.x, y, value.x + value.width, height];
+                        this._dictionary.update('Rect', rect);
+                        if (this instanceof PdfFreeTextAnnotation) {
+                            this._outerRectanglePdf = rect.slice();
+                        }
                         this._bounds = value;
                         this._isChanged = true;
                     }
@@ -1349,6 +1358,35 @@ export abstract class PdfAnnotation {
                 delete this._dictionary._map['OC'];
             }
         }
+    }
+    /**
+     * Gets the actions associated with the annotation events.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * let page: PdfPage = document.addPage();
+     * // Create a rectangle annotation
+     * let annotation: PdfRectangleAnnotation = new PdfRectangleAnnotation(
+     *     { x: 20, y: 20, width: 150, height: 60 }
+     * );
+     * // Get the annotation actions and assign an action
+     * let actions: PdfAnnotationActions = annotation.actions;
+     * actions.mouseEnter = new PdfJavaScriptAction('app.alert("Mouse entered");');
+     * // Add the annotation to the page
+     * page.annotations.add(annotation);
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfAnnotationActions} The actions associated with the annotation events.
+     */
+    public get actions(): PdfAnnotationActions {
+        if (!this._actions) {
+            this._actions = new PdfAnnotationActions(this);
+        }
+        return this._actions;
     }
     /**
      * Set the boolean flag to create a new appearance stream for annotations.
@@ -2560,7 +2598,7 @@ export abstract class PdfAnnotation {
      */
     _drawCircleAppearance(rectangle: number[], borderWidth: number, graphics: PdfGraphics, parameter: _PaintParameter): void {
         let radius: number = 0;
-        if (this._dictionary.has('RD')) {
+        if (this._isCloudBorder() && this._dictionary.has('RD')) {
             const array: number[] = this._dictionary.getArray('RD');
             if (array && array.length > 0) {
                 radius = array[0];
@@ -3766,98 +3804,6 @@ export abstract class PdfAnnotation {
         return (color.r / 255).toFixed(3) + ' ' + (color.g / 255).toFixed(3) + ' ' + (color.b / 255).toFixed(3) + ' rg ';
     }
     /**
-     * Converts a JavaScript Date to a PDF date string (D:YYYYMMDDHHmmSSOHH'mm') including the local timezone offset.
-     *
-     * @private
-     * @param {Date} dateTime Input date.
-     * @returns {string} pdfDate PDF date string.
-     */
-    _dateToString(dateTime: Date): string {
-        const year: number = dateTime.getFullYear();
-        const month: string = _pad2(dateTime.getMonth() + 1);
-        const day: string = _pad2(dateTime.getDate());
-        const hours: string = _pad2(dateTime.getHours());
-        const mins: string = _pad2(dateTime.getMinutes());
-        const secs: string = _pad2(dateTime.getSeconds());
-        const utcOffsetMinutes: number = -dateTime.getTimezoneOffset();
-        const sign: any = utcOffsetMinutes >= 0 ? '+' : '-'; // eslint-disable-line
-        const absMin: number = Math.abs(utcOffsetMinutes);
-        const offH: string = _pad2(Math.floor(absMin / 60));
-        const offM: string = _pad2(absMin % 60);
-        return `D:${year}${month}${day}${hours}${mins}${secs}${sign}${offH}'${offM}'`;
-    }
-    /**
-     * Parses a PDF or common date string into a JavaScript Date, handling D: format, slashed dates, and timezone offsets.
-     *
-     * @private
-     * @param {string} date Date string.
-     * @returns {Date} parsedDate.
-     */
-    _stringToDate(date: string): Date {
-        if (!date || typeof date !== 'string') {
-            return new Date(date as any); // eslint-disable-line
-        }
-        if (date.indexOf('/') !== -1) {
-            const list: string[] = date.split('/');
-            const year: number = parseInt(list[2].split(' ')[0], 10);
-            const month: number = parseInt(list[0], 10) - 1;
-            const day: number = parseInt(list[1], 10);
-            const timePart: string[] = (list[2].split(' ')[1] || '00:00:00').split(':');
-            const hour: number = parseInt(timePart[0] || '0', 10);
-            const minute: number = parseInt(timePart[1] || '0', 10);
-            const second: number = parseInt(timePart[2] || '0', 10);
-            return new Date(year, month, day, hour, minute, second);
-        }
-        if (date.startsWith('D:')) {
-            date = date.substring(2);
-        }
-        const raw: string = date.replace(/'/g, '').trim();
-        const y: number = parseInt(raw.slice(0, 4), 10);
-        const haveM: boolean = raw.length >= 6;
-        const haveD: boolean = raw.length >= 8;
-        const haveH: boolean = raw.length >= 10;
-        const havem: boolean = raw.length >= 12;
-        const haves: boolean = raw.length >= 14;
-        const m: number = haveM ? parseInt(raw.slice(4, 6), 10) : 1;
-        const d: number = haveD ? parseInt(raw.slice(6, 8), 10) : 1;
-        const h: number = haveH ? parseInt(raw.slice(8, 10), 10) : 0;
-        const min: number = havem ? parseInt(raw.slice(10, 12), 10) : 0;
-        const s: number = haves ? parseInt(raw.slice(12, 14), 10) : 0;
-        let tzTail: string = raw.slice(14);
-        if (/^[+-]\d{2}:\d{2}$/.test(tzTail)) {
-            tzTail = tzTail.replace(':', '');
-        }
-        let hasTz: boolean = false;
-        let tzSign: number = 0;
-        let tzH: number = 0;
-        let tzM: number = 0;
-        if (tzTail) {
-            if (/^[Zz]$/.test(tzTail)) {
-                hasTz = true;
-                tzSign = +1;
-                tzH = 0;
-                tzM = 0;
-            } else if (/^[+-]\d{2}\d{2}$/.test(tzTail)) {
-                hasTz = true;
-                tzSign = tzTail[0] === '+' ? +1 : -1;
-                tzH = parseInt(tzTail.slice(1, 3), 10);
-                tzM = parseInt(tzTail.slice(3, 5), 10);
-            } else if (/^[+-]\d{2}$/.test(tzTail)) {
-                hasTz = true;
-                tzSign = tzTail[0] === '+' ? +1 : -1;
-                tzH = parseInt(tzTail.slice(1, 3), 10);
-                tzM = 0;
-            }
-        }
-        if (hasTz) {
-            const localUTCms: number = Date.UTC(y, m - 1, d, h, min, s);
-            const offsetMinutes: number = tzSign * (tzH * 60 + tzM);
-            return new Date(localUTCms - offsetMinutes * 60 * 1000);
-        } else {
-            return new Date(y, m - 1, d, h, min, s);
-        }
-    }
-    /**
      * Computes the native PDF rectangle array [x, y, right, top] from annotation bounds,
      * adjusting for page size and Crop/MediaBox offsets.
      *
@@ -4271,6 +4217,42 @@ export abstract class PdfAnnotation {
         }
     }
     /**
+     * Writes a template directly as the annotation normal appearance (AP/N).
+     *
+     * @private
+     * @param {PdfTemplate} template The template to serialize as AP/N.
+     * @returns {void} nothing.
+     */
+    _writeNormalAppearance(template: PdfTemplate): void {
+        if (!template || !this._dictionary) {
+            return;
+        }
+        if (template._isExported || template._isResourceExport) {
+            if (this._crossReference) {
+                template._crossReference = this._crossReference;
+                template._importStream(true, template._isResourceExport);
+            } else {
+                template._importStream(false, template._isResourceExport);
+            }
+        }
+        let appearance: _PdfDictionary;
+        const current: unknown = this._dictionary.has('AP') ? this._dictionary.get('AP') : undefined;
+        if (current instanceof _PdfDictionary) {
+            appearance = current;
+        }
+        if (!appearance) {
+            appearance = new _PdfDictionary(this._crossReference);
+            this._dictionary.update('AP', appearance);
+        }
+        _removeDuplicateReference(appearance, this._crossReference, 'N');
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        template._content.reference = reference;
+        template._content.dictionary._updated = true;
+        this._crossReference._cacheMap.set(reference, template._content);
+        appearance.update('N', reference);
+        this._dictionary._updated = true;
+    }
+    /**
      * Writes all custom templates into the appearance dictionary, allocating new references and updating the cross reference cache.
      *
      * @private
@@ -4396,6 +4378,22 @@ export abstract class PdfAnnotation {
             }
             pen._dashPattern = dashPattern;
         }
+    }
+    /**
+     * Checks whether the annotation uses a cloud border effect.
+     *
+     * @private
+     * @returns {boolean} Returns true if the annotation has a cloud border; otherwise, false.
+     */
+    _isCloudBorder(): boolean {
+        let isCloudBorder: boolean = false;
+        if (this._dictionary.has('BE')) {
+            const borderEffect: _PdfDictionary = this._dictionary.get('BE');
+            if (borderEffect && borderEffect.has('S') && borderEffect.get('S').name === 'C') {
+                isCloudBorder = true;
+            }
+        }
+        return isCloudBorder;
     }
 }
 /**
@@ -6391,6 +6389,13 @@ export class PdfCircleAnnotation extends PdfComment {
         const fontsize: Size = font.measureString(str, {width: 0, height: 0}, format, 0, 0);
         const color: PdfColor = this.color ? this.color : {r: 0, g: 0, b: 0};
         const borderPen: PdfPen = new PdfPen(color, borderWidth);
+        if (this.border.style === PdfBorderStyle.dashed) {
+            borderPen._dashStyle = PdfDashStyle.dash;
+            borderPen._dashPattern = [3, 1];
+        } else if (this.border.style === PdfBorderStyle.dot) {
+            borderPen._dashStyle = PdfDashStyle.dot;
+            borderPen._dashPattern = [1, 1];
+        }
         const nativeRectangle: number[] = [this.bounds.x,
             (this.bounds.y + this.bounds.height),
             this.bounds.width,
@@ -6420,7 +6425,7 @@ export class PdfCircleAnnotation extends PdfComment {
                 y: rect[1] + width,
                 width: rect[2] - borderWidth,
                 height: rect[3] - borderWidth},
-                                 new PdfPen(color, this.border.width));
+                                 parameter.borderPen);
             if (this._measureType === PdfCircleMeasurementType.diameter) {
                 graphics.save();
                 graphics.translateTransform({x: nativeRectangle[0], y: -nativeRectangle[1]});
@@ -8149,6 +8154,7 @@ export class PdfPolygonAnnotation extends PdfComment {
             }
         } else {
             this._postProcess(isFlatten);
+            this._updateCloudIntent();
             if (!this._appearanceTemplate && isFlatten) {
                 if (this._dictionary.has('AP')) {
                     const dictionary: _PdfDictionary = this._dictionary.get('AP');
@@ -8404,6 +8410,24 @@ export class PdfPolygonAnnotation extends PdfComment {
         }
         const polygonPointArray: Point[] = _convertNumberArraysToPoints(polygonPoints);
         return polygonPointArray;
+    }
+    /**
+     * Synchronizes the intent (`/IT`) entry with the current border effect style:
+     *
+     * @private
+     * @returns {void} void No return value.
+     */
+    _updateCloudIntent(): void {
+        const effect: PdfBorderEffect = this.borderEffect;
+        if (effect && effect.style === PdfBorderEffectStyle.cloudy) {
+            this._dictionary.update('IT', new _PdfName('PolygonCloud'));
+        } else if (this._dictionary.has('IT')) {
+            const intent: _PdfName = this._dictionary.get('IT');
+            if (intent && intent.name === 'PolygonCloud') {
+                delete this._dictionary._map['IT'];
+                this._dictionary._updated = true;
+            }
+        }
     }
 }
 /**
@@ -10278,6 +10302,19 @@ export class PdfInkAnnotation extends PdfComment {
         }
     }
     /**
+     * Determines whether the annotation carries the Freehand Highlight intent (/IT /InkHighlight).
+     *
+     * @private
+     * @returns {boolean} true if the intent is InkHighlight.
+     */
+    _isInkHighlight(): boolean {
+        if (this._dictionary && this._dictionary.has('IT')) {
+            const intent: _PdfName = this._dictionary.get('IT');
+            return intent instanceof _PdfName && intent.name === 'InkHighlight';
+        }
+        return false;
+    }
+    /**
      * Renders the ink strokes into the provided template, handling dots/lines/bezier paths, opacity, and pen settings (e.g., round caps when loaded).
      *
      * @private
@@ -10374,9 +10411,12 @@ export class PdfInkAnnotation extends PdfComment {
                     if (this._isLoaded) {
                         borderPen._lineCap = PdfLineCap.round;
                     }
-                    if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    const isHighlight: boolean = this._isInkHighlight();
+                    const hasOpacity: boolean = typeof this.opacity !== 'undefined' && this._opacity < 1;
+                    if (hasOpacity || isHighlight) {
                         const state: PdfGraphicsState = graphics.save();
-                        graphics.setTransparency(this._opacity);
+                        const alpha: number = hasOpacity ? this._opacity : 1;
+                        graphics.setTransparency(alpha, alpha, isHighlight ? PdfBlendMode.multiply : PdfBlendMode.normal);
                         graphics.drawPath(path2, borderPen);
                         graphics.restore(state);
                     } else {
@@ -12757,8 +12797,11 @@ export class PdfTextWebLinkAnnotation extends PdfAnnotation {
  * let document: PdfDocument = new PdfDocument(data, password);
  * // Get the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
- * // Create a new attachment annotation
- * const annotation: PdfAttachmentAnnotation = new PdfAttachmentAnnotation({x: 300, y: 200, width: 30, height: 30}, 'Nature.jpg', imageData);
+ * // Create attachment
+ * let attachment: PdfAttachment = new PdfAttachment(imageData, 'Nature.jpg');
+ * // Create a new attachment annotation from PdfAttachment
+ * const annotation: PdfAttachmentAnnotation = new PdfAttachmentAnnotation(
+ *     {x: 300, y: 200, width: 30, height: 30}, attachment);
  * // Add annotation to the page
  * page.annotations.add(annotation);
  * // Save the document
@@ -12778,24 +12821,26 @@ export class PdfAttachmentAnnotation extends PdfComment {
     private _fileName: string;
     private _iconString: string = '';
     /**
-     * Initializes a new instance of the `PdfAttachmentAnnotation` class.
+     * Optional `PdfAttachment` used when creating the annotation from an attachment object.
      *
      * @private
      */
-    constructor()
+    private _attachment: PdfAttachment;
     /**
      * Initializes a new instance of the `PdfAttachmentAnnotation` class.
      *
-     * @param {Rectangle} bounds Bounds.
-     * @param {string} fileName FileName.
-     * @param {string} data Data as base64 string.
+     * @param {Rectangle} bounds The bounds of the attachment annotation.
+     * @param {PdfAttachment} attachment The attachment associated with the annotation.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new attachment annotation
-     * const annotation: PdfAttachmentAnnotation =  new PdfAttachmentAnnotation({x: 300, y: 200, width: 30, height: 30}, 'Nature.jpg', 'imageData');
+     * // Create attachment
+     * let attachment: PdfAttachment = new PdfAttachment(imageData, 'Nature.jpg');
+     * // Create a new attachment annotation from PdfAttachment
+     * const annotation: PdfAttachmentAnnotation = new PdfAttachmentAnnotation(
+     *     {x: 300, y: 200, width: 30, height: 30}, attachment);
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Save the document
@@ -12804,35 +12849,12 @@ export class PdfAttachmentAnnotation extends PdfComment {
      * document.destroy();
      * ```
      */
-    public constructor(bounds: Rectangle, fileName: string, data: string)
+    public constructor(bounds: Rectangle, attachment: PdfAttachment)
     /**
-     * Initializes a new instance of the `PdfAttachmentAnnotation` class.
-     *
-     * @param {Rectangle} bounds Bounds.
-     * @param {string} fileName FileName
-     * @param {Uint8Array} data Data as byte array
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Get the first page
-     * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new attachment annotation
-     * const annotation: PdfAttachmentAnnotation =  new PdfAttachmentAnnotation({x: 300, y: 200, width: 30, height: 30}, 'Nature.jpg', imageData);
-     * // Add annotation to the page
-     * page.annotations.add(annotation);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    public constructor(bounds: Rectangle, fileName: string, data: Uint8Array)
-    /**
-     * Initializes a new instance of the `PdfAttachmentAnnotation` class with bounds, file and data, and optional properties.
+     * Initializes a new instance of the `PdfAttachmentAnnotation` class with a `PdfAttachment` and optional properties.
      *
      * @param {Rectangle} bounds Annotation bounds.
-     * @param {string} fileName Attachment file name.
-     * @param {Uint8Array} data File data (bytes).
+     * @param {PdfAttachment} attachment Attachment object with data and metadata.
      * @param {object} [properties] Optional customization properties.
      * @param {string} [properties.text] Content text.
      * @param {PdfAttachmentIcon} [properties.icon] Attachment icon style.
@@ -12841,30 +12863,14 @@ export class PdfAttachmentAnnotation extends PdfComment {
      * @param {PdfColor} [properties.color] Icon accent color.
      * @param {number} [properties.opacity] Opacity 0–1.
      * @param {PdfAnnotationBorder} [properties.border] Border configuration.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * const document = new PdfDocument(data, password);
-     * // Get the first page
-     * const page = document.getPage(0);
-     * // Create new attachment annotation
-     * const attach = new PdfAttachmentAnnotation(
-     *   { x: 300, y: 200, width: 30, height: 30 },
-     *   'Nature.jpg',
-     *   imageData,
-     *   { text: 'Attachment', icon: PdfAttachmentIcon.pushPin, color: { r: 255, g: 0, b: 0 }, opacity: 1,
-     * border: new PdfAnnotationBorder({width: 1, hRadius: 0, vRadius: 0, style: PdfBorderStyle.solid})}
-     * );
-     * // Add annotation to the page
-     * page.addAnnotation(attach);
-     * // Destroy the document
-     * document.destroy();
-     * ```
      */
-    public constructor(bounds: Rectangle, fileName: string, data: Uint8Array,
+    public constructor(bounds: Rectangle, attachment: PdfAttachment,
         properties: {text?: string, icon?: PdfAttachmentIcon, author?: string,
             subject?: string, color?: PdfColor, opacity?: number, border?: PdfAnnotationBorder})
-    public constructor(bounds?: Rectangle, fileName?: string, data?: string | Uint8Array,
+    public constructor(bounds?: Rectangle,
+                       fileNameOrAttachment?: string | PdfAttachment,
+                       dataOrProperties?: string | Uint8Array | {text?: string, icon?: PdfAttachmentIcon, author?: string,
+                           subject?: string, color?: PdfColor, opacity?: number, border?: PdfAnnotationBorder},
                        properties?: {text?: string, icon?: PdfAttachmentIcon, author?: string,
                            subject?: string, color?: PdfColor, opacity?: number, border?: PdfAnnotationBorder}) {
         super();
@@ -12874,32 +12880,47 @@ export class PdfAttachmentAnnotation extends PdfComment {
         if (bounds) {
             this.bounds = bounds;
         }
-        if (typeof fileName !== 'undefined') {
-            this._fileName = fileName;
+        let resolvedProperties: {text?: string, icon?: PdfAttachmentIcon, author?: string,
+            subject?: string, color?: PdfColor, opacity?: number, border?: PdfAnnotationBorder};
+        if (fileNameOrAttachment instanceof PdfAttachment) {
+            this._attachment = fileNameOrAttachment;
+            this._fileName = fileNameOrAttachment.fileName;
+            this._stream = new _PdfStream(fileNameOrAttachment._decodeData());
+            resolvedProperties = dataOrProperties as {text?: string, icon?: PdfAttachmentIcon, author?: string,
+                subject?: string, color?: PdfColor, opacity?: number, border?: PdfAnnotationBorder};
+        } else {
+            if (typeof fileNameOrAttachment !== 'undefined') {
+                this._fileName = fileNameOrAttachment;
+            }
+            if (typeof dataOrProperties !== 'undefined' &&
+                (typeof dataOrProperties === 'string' || dataOrProperties instanceof Uint8Array)) {
+                this._stream = new _PdfStream(typeof dataOrProperties === 'string' ?
+                    _decode(dataOrProperties) : dataOrProperties);
+            }
+            resolvedProperties = properties;
         }
-        this._stream = new _PdfStream(typeof data === 'string' ? _decode(data) : data);
         this._type = _PdfAnnotationType.fileAttachmentAnnotation;
-        if (properties) {
-            if ('icon' in properties && _isNullOrUndefined(properties.icon)) {
-                this.icon = properties.icon;
+        if (resolvedProperties) {
+            if ('icon' in resolvedProperties && _isNullOrUndefined(resolvedProperties.icon)) {
+                this.icon = resolvedProperties.icon;
             }
-            if ('text' in properties && _isNullOrUndefined(properties.text)) {
-                this.text = properties.text;
+            if ('text' in resolvedProperties && _isNullOrUndefined(resolvedProperties.text)) {
+                this.text = resolvedProperties.text;
             }
-            if ('author' in properties && _isNullOrUndefined(properties.author)) {
-                this.author = properties.author;
+            if ('author' in resolvedProperties && _isNullOrUndefined(resolvedProperties.author)) {
+                this.author = resolvedProperties.author;
             }
-            if ('subject' in properties && _isNullOrUndefined(properties.subject)) {
-                this.subject = properties.subject;
+            if ('subject' in resolvedProperties && _isNullOrUndefined(resolvedProperties.subject)) {
+                this.subject = resolvedProperties.subject;
             }
-            if ('color' in properties && _isNullOrUndefined(properties.color)) {
-                this.color = properties.color;
+            if ('color' in resolvedProperties && _isNullOrUndefined(resolvedProperties.color)) {
+                this.color = resolvedProperties.color;
             }
-            if ('opacity' in properties && _isNullOrUndefined(properties.opacity)) {
-                this.opacity = properties.opacity;
+            if ('opacity' in resolvedProperties && _isNullOrUndefined(resolvedProperties.opacity)) {
+                this.opacity = resolvedProperties.opacity;
             }
-            if ('border' in properties && _isNullOrUndefined(properties.border)) {
-                this.border = properties.border;
+            if ('border' in resolvedProperties && _isNullOrUndefined(resolvedProperties.border)) {
+                this.border = resolvedProperties.border;
             }
         }
     }
@@ -12960,7 +12981,7 @@ export class PdfAttachmentAnnotation extends PdfComment {
      * @returns {PdfAttachmentAnnotation} annot The loaded attachment annotation instance.
      */
     static _load(page: PdfPage, dictionary: _PdfDictionary): PdfAttachmentAnnotation {
-        const annot: PdfAttachmentAnnotation = new PdfAttachmentAnnotation();
+        const annot: PdfAttachmentAnnotation = new (PdfAttachmentAnnotation as any)(); // eslint-disable-line
         annot._isLoaded = true;
         annot._initialize(page, dictionary);
         return annot;
@@ -13006,18 +13027,49 @@ export class PdfAttachmentAnnotation extends PdfComment {
             }
             _removeDuplicateReference(this._dictionary, this._crossReference, 'FS');
         }
+        const attachment: PdfAttachment = this._attachment;
+        let fileName: string = this._fileName;
+        if (attachment && (!fileName || fileName === '') && attachment.fileName) {
+            fileName = attachment.fileName;
+            this._fileName = fileName;
+        }
         const fileSpectDictionary: _PdfDictionary = new _PdfDictionary();
         fileSpectDictionary.set('Type', _PdfName.get('Filespec'));
-        fileSpectDictionary.set('Desc', this._fileName);
-        fileSpectDictionary.set('F', this._fileName);
-        fileSpectDictionary.set('UF', this._fileName);
+        fileSpectDictionary.set('F', fileName);
+        fileSpectDictionary.set('UF', fileName);
+        if (attachment) {
+            if (attachment.description) {
+                fileSpectDictionary.set('Desc', attachment.description);
+            } else if (fileName) {
+                fileSpectDictionary.set('Desc', fileName);
+            }
+            if (attachment.relationship !== PdfAttachmentRelationship.Unspecified) {
+                fileSpectDictionary.set('AFRelationship', _PdfName.get(_relationshipToString(attachment.relationship)));
+            }
+        } else {
+            fileSpectDictionary.set('Desc', fileName);
+        }
         const fileDictionary: _PdfDictionary = new _PdfDictionary();
         fileDictionary.set('Type', _PdfName.get('EmbeddedFile'));
+        if (attachment && attachment.mimeType) {
+            const encodedMime: string = attachment.mimeType.replace('/', '#2F');
+            fileDictionary.set('Subtype', _PdfName.get(encodedMime));
+        }
         const paramsDictionary: _PdfDictionary = new _PdfDictionary();
-        const dateTime: Date = new Date();
-        paramsDictionary.set('CreationDate', dateTime.toTimeString());
-        paramsDictionary.set('ModDate', new Date().toTimeString());
-        paramsDictionary.set('Size', this._stream.length);
+        if (attachment) {
+            paramsDictionary.set('Size', this._stream.length);
+            if (attachment.creationDate) {
+                paramsDictionary.set('CreationDate', _dateToString(attachment.creationDate));
+            }
+            if (attachment.modificationDate) {
+                paramsDictionary.set('ModDate', _dateToString(attachment.modificationDate));
+            }
+        } else {
+            const dateTime: Date = new Date();
+            paramsDictionary.set('CreationDate', dateTime.toTimeString());
+            paramsDictionary.set('ModDate', new Date().toTimeString());
+            paramsDictionary.set('Size', this._stream.length);
+        }
         fileDictionary.set('Params', paramsDictionary);
         this._stream.dictionary = new _PdfDictionary();
         this._stream.dictionary = fileDictionary;
@@ -13036,6 +13088,68 @@ export class PdfAttachmentAnnotation extends PdfComment {
         this._crossReference._cacheMap.set(fsReference, fileSpectDictionary);
         fileSpectDictionary._updated = true;
         this._dictionary.update('FS', fsReference);
+    }
+    /**
+     * Gets the raw byte content of this annotation's attached file.
+     *
+     * @returns {Uint8Array} The decoded bytes of the embedded file.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation
+     * let annotation: PdfAttachmentAnnotation = page.annotations.at(0) as PdfAttachmentAnnotation;
+     * // Get attachment bytes
+     * let bytes: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        if (!this._isLoaded) {
+            if (!this._stream) {
+                return undefined;
+            }
+            return new Uint8Array(this._stream.bytes as Uint8Array);
+        }
+        if (!this._dictionary.has('FS')) {
+            return undefined;
+        }
+        const fsRaw: any = this._dictionary.getRaw('FS'); // eslint-disable-line
+        let fileSpecDict: _PdfDictionary;
+        if (fsRaw instanceof _PdfReference) {
+            fileSpecDict = this._crossReference._fetch(fsRaw) as _PdfDictionary;
+        } else {
+            fileSpecDict = fsRaw as _PdfDictionary;
+        }
+        if (!fileSpecDict || !fileSpecDict.has('EF')) {
+            return undefined;
+        }
+        const efDict: _PdfDictionary = fileSpecDict.get('EF') as _PdfDictionary;
+        if (!efDict) {
+            return undefined;
+        }
+        let streamRef: _PdfReference | null = null;
+        const ufRaw: any = efDict.getRaw('UF'); // eslint-disable-line
+        if (ufRaw instanceof _PdfReference) {
+            streamRef = ufRaw;
+        } else {
+            const fRaw: any = efDict.getRaw('F'); // eslint-disable-line
+            if (fRaw instanceof _PdfReference) {
+                streamRef = fRaw;
+            }
+        }
+        if (!streamRef) {
+            return undefined;
+        }
+        const stream: any = this._crossReference._fetch(streamRef); // eslint-disable-line
+        if (!stream) {
+            return undefined;
+        }
+        const result: Uint8Array = _decodeEmbeddedStream(stream);
+        return result;
     }
     /**
      * Performs post processing after loading or during flattening by importing or generating the appearance stream and flattening or removing the annotation when needed.
@@ -13092,86 +13206,6 @@ export class PdfAttachmentAnnotation extends PdfComment {
             break;
         }
         return this._iconString;
-    }
-}
-/**
- * `Pdf3DAnnotation` class represents the 3D annotation objects.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Access the annotation at index 0
- * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class Pdf3DAnnotation extends PdfAnnotation {
-    /**
-     * Initializes a new instance of the `Pdf3DAnnotation` class.
-     *
-     * @private
-     */
-    public constructor() {
-        super();
-        this._type = _PdfAnnotationType.movieAnnotation;
-    }
-    /**
-     * Loads a 3D annotation from the given page and dictionary, marks it as loaded, and initializes internal state.
-     *
-     * @private
-     * @param {PdfPage} page The page that contains the annotation.
-     * @param {_PdfDictionary} dictionary The source annotation dictionary to load.
-     * @returns {Pdf3DAnnotation} annot The loaded 3D annotation instance.
-     */
-    static _load(page: PdfPage, dictionary: _PdfDictionary): Pdf3DAnnotation {
-        const annot: Pdf3DAnnotation = new Pdf3DAnnotation();
-        annot._isLoaded = true;
-        annot._initialize(page, dictionary);
-        return annot;
-    }
-    /**
-     * Initializes the 3D annotation for the specified page and optional source dictionary by delegating to the base initializer.
-     *
-     * @private
-     * @param {PdfPage} page The page to associate with the annotation.
-     * @param {_PdfDictionary} [dictionary] Optional source dictionary for loading.
-     * @returns {void} void No return value.
-     */
-    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
-        super._initialize(page, dictionary);
-    }
-    /**
-     * Performs post processing during flattening by importing the appearance stream when available or removing the annotation when none exists.
-     *
-     * @private
-     * @param {boolean} [isFlatten=false] Whether to flatten the annotation to page content.
-     * @returns {void} void No return value.
-     */
-    _doPostProcess(isFlatten: boolean = false): void {
-        if (isFlatten) {
-            let appearanceStream: _PdfBaseStream;
-            if (this._dictionary.has('AP')) {
-                const dictionary: _PdfDictionary = this._dictionary.get('AP');
-                if (dictionary && dictionary.has('N')) {
-                    appearanceStream = dictionary.get('N');
-                    const reference: _PdfReference = dictionary.getRaw('N');
-                    if (reference && appearanceStream) {
-                        appearanceStream.reference = reference;
-                    }
-                }
-            }
-            if (appearanceStream) {
-                const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
-                const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
-                this._flattenAnnotationTemplate(template, isNormalMatrix);
-            } else {
-                this._removeAnnotation(this._page, this);
-            }
-        }
     }
 }
 /**
@@ -13790,7 +13824,8 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                     this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
                 }
             }
-            if (isNormalMatrix && typeof this._page.rotation !== 'undefined' && this._page.rotation !== PdfRotationAngle.angle0) {
+            if (isNormalMatrix && typeof this._page.rotation !== 'undefined' &&
+                this._page.rotation !== PdfRotationAngle.angle0) {
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
             } else if (isNormalMatrix && this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary,
                                                                       this._appearanceTemplate)) {
@@ -13812,7 +13847,7 @@ export class PdfTextMarkupAnnotation extends PdfComment {
     _createMarkupAppearance(): PdfTemplate {
         let width: number = 0;
         let height: number = 0;
-        let rectangle: {x: number, y: number, width: number, height: number};
+        let rectangle: { x: number, y: number, width: number, height: number };
         if (this.boundsCollection.length > 1) {
             const pdfPath: PdfPath = new PdfPath();
             for (let i: number = 0; i < this.boundsCollection.length; i++) {
@@ -13821,10 +13856,10 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                 bounds[1] = this.boundsCollection[<number>i].y;
                 bounds[2] = this.boundsCollection[<number>i].width;
                 bounds[3] = this.boundsCollection[<number>i].height;
-                pdfPath.addRectangle({x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]});
+                pdfPath.addRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
             }
             const rect: number[] = pdfPath._getBounds();
-            rectangle = {x: rect[0], y: rect[1], width: rect[2], height: rect[3]};
+            rectangle = { x: rect[0], y: rect[1], width: rect[2], height: rect[3] };
             this.bounds = rectangle;
             width = rectangle.width;
             height = rectangle.height;
@@ -13854,7 +13889,7 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                             x = Math.floor(quadPoints[6 + (i * 8)]) - Math.floor(quadPoints[4 + (i * 8)]);
                             y = Math.floor(quadPoints[7 + (i * 8)]) - Math.floor(quadPoints[5 + (i * 8)]);
                             width = Math.sqrt((x * x) + (y * y));
-                            this.bounds = {x: this.bounds.x, y: this.bounds.y, width: width, height: height};
+                            this.bounds = { x: this.bounds.x, y: this.bounds.y, width: width, height: height };
                         }
                     }
                 }
@@ -13882,36 +13917,38 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                     bounds[2] = this.boundsCollection[<number>i].width;
                     bounds[3] = this.boundsCollection[<number>i].height;
                     if (this.textMarkupType === PdfTextMarkupAnnotationType.highlight) {
-                        graphics.drawRectangle({x: bounds[0] - rectangle.x, y: bounds[1] - rectangle.y,
-                            width: bounds[2], height: bounds[3]}, brush);
+                        graphics.drawRectangle({
+                            x: bounds[0] - rectangle.x, y: bounds[1] - rectangle.y,
+                            width: bounds[2], height: bounds[3]
+                        }, brush);
                     } else if (this.textMarkupType === PdfTextMarkupAnnotationType.underline) {
                         x1 = bounds[0] - rectangle.x;
                         y1 = (bounds[1] - rectangle.y) + (bounds[3] - ((bounds[3] / 2) / 3));
                         w1 = bounds[2] + (bounds[0] - rectangle.x);
                         h1 = (bounds[1] - rectangle.y) + (bounds[3] - ((bounds[3] / 2) / 3));
-                        graphics.drawLine(pdfPen, {x: x1, y: y1}, {x: w1, y: h1});
+                        graphics.drawLine(pdfPen, { x: x1, y: y1 }, { x: w1, y: h1 });
                     } else if (this.textMarkupType === PdfTextMarkupAnnotationType.strikeOut) {
                         x1 = bounds[0] - rectangle.x;
                         y1 = (bounds[1] - rectangle.y) + (bounds[3] - (bounds[3] / 2));
                         w1 = bounds[2] + (bounds[0] - rectangle.x);
                         h1 = (bounds[1] - rectangle.y) + (bounds[3] - (bounds[3] / 2));
-                        graphics.drawLine(pdfPen, {x: x1, y: y1}, {x: w1, y: h1});
+                        graphics.drawLine(pdfPen, { x: x1, y: y1 }, { x: w1, y: h1 });
                     } else if (this.textMarkupType === PdfTextMarkupAnnotationType.squiggly) {
                         pdfPen._width = bounds[3] * 0.02;
                         graphics.save();
-                        graphics.translateTransform({x: bounds[0] - rectangle.x, y: (bounds[1] - rectangle.y)});
-                        graphics.setClip({x: 0, y: 0, width: bounds[2], height: bounds[3]});
+                        graphics.translateTransform({ x: bounds[0] - rectangle.x, y: (bounds[1] - rectangle.y) });
+                        graphics.setClip({ x: 0, y: 0, width: bounds[2], height: bounds[3] });
                         graphics.drawPath(this._drawSquiggly(bounds[2], bounds[3]), pdfPen);
                         graphics.restore();
                     }
                 }
             } else {
                 if (this.textMarkupType === PdfTextMarkupAnnotationType.highlight) {
-                    graphics.drawRectangle({x: 0, y: 0, width: width, height: height}, brush);
+                    graphics.drawRectangle({ x: 0, y: 0, width: width, height: height }, brush);
                 } else if (this.textMarkupType === PdfTextMarkupAnnotationType.underline) {
-                    graphics.drawLine(pdfPen, {x: 0, y: height - ((height / 2) / 3)}, {x: width, y: height - ((height / 2) / 3)});
+                    graphics.drawLine(pdfPen, { x: 0, y: height - ((height / 2) / 3) }, { x: width, y: height - ((height / 2) / 3) });
                 } else if (this.textMarkupType === PdfTextMarkupAnnotationType.strikeOut) {
-                    graphics.drawLine(pdfPen, {x: 0, y: height / 2}, {x: width, y: height / 2});
+                    graphics.drawLine(pdfPen, { x: 0, y: height / 2 }, { x: width, y: height / 2 });
                 } else if (this.textMarkupType === PdfTextMarkupAnnotationType.squiggly) {
                     pdfPen._width = height * 0.02;
                     graphics.drawPath(this._drawSquiggly(Math.round(width), Math.round(height)), pdfPen);
@@ -14051,8 +14088,10 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
         author?: string, subject?: string, color?: PdfColor,
         innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder
     })
-    public constructor(text?: string, bounds?: Rectangle, properties?: {author?: string, subject?: string, color?: PdfColor,
-        innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder}) {
+    public constructor(text?: string, bounds?: Rectangle, properties?: {
+        author?: string, subject?: string, color?: PdfColor,
+        innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder
+    }) {
         super();
         if (text !== null && typeof text !== 'undefined' && bounds) {
             initializeTelemetryFeature('Watermark', 'PDFLibrary');
@@ -14136,7 +14175,7 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
             borderWidth = 1;
         }
         if (typeof this.color === 'undefined') {
-            this.color = {r: 0, g: 0, b: 0};
+            this.color = { r: 0, g: 0, b: 0 };
         }
         this._appearanceTemplate = this._createWatermarkAppearance();
         this._dictionary.update('Rect', _updateBounds(this));
@@ -14158,9 +14197,9 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
             this.bounds = this._getRotatedBounds(this.bounds, this._rotateAngle);
         }
         const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-        const appearance: PdfAppearance = new PdfAppearance({x: 0, y: 0, width: this.bounds.width, height: this.bounds.height}, this);
+        const appearance: PdfAppearance = new PdfAppearance({ x: 0, y: 0, width: this.bounds.width, height: this.bounds.height }, this);
         appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
-        const template: PdfTemplate =  appearance.normal;
+        const template: PdfTemplate = appearance.normal;
         _setMatrix(template, this._rotateAngle);
         const graphics: PdfGraphics = appearance.normal.graphics;
         const width: number = this.border.width / 2;
@@ -14179,7 +14218,7 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
             this._dictionary.update('Contents', this._watermarkText);
         }
         if (typeof this._watermarkText !== 'undefined') {
-            graphics.drawString(this._watermarkText, font, {x: 0, y: 0, width: 0, height: 0}, borderPen, backBrush, format);
+            graphics.drawString(this._watermarkText, font, { x: 0, y: 0, width: 0, height: 0 }, borderPen, backBrush, format);
         }
         if (this._dictionary.has('AP')) {
             const dictionary: any = this._dictionary.get('AP'); // eslint-disable-line
@@ -14359,10 +14398,14 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * document.destroy();
      * ```
      */
-    public constructor(bounds: Rectangle, properties: {icon?: PdfRubberStampAnnotationIcon, text?: string, author?: string,
-        subject?: string, color?: PdfColor, innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder})
-    public constructor(bounds?: Rectangle, properties?: {icon?: PdfRubberStampAnnotationIcon, text?: string, author?: string,
-        subject?: string, color?: PdfColor, innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder}) {
+    public constructor(bounds: Rectangle, properties: {
+        icon?: PdfRubberStampAnnotationIcon, text?: string, author?: string,
+        subject?: string, color?: PdfColor, innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder
+    })
+    public constructor(bounds?: Rectangle, properties?: {
+        icon?: PdfRubberStampAnnotationIcon, text?: string, author?: string,
+        subject?: string, color?: PdfColor, innerColor?: PdfColor, opacity?: number, border?: PdfAnnotationBorder
+    }) {
         super();
         this._dictionary = new _PdfDictionary();
         this._dictionary.update('Type', _PdfName.get('Annot'));
@@ -14478,7 +14521,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             return null;
         }
         if (typeof this._appearance === 'undefined') {
-            const nativeRectangle: Rectangle = {x: 0, y: 0, width: this.bounds.width, height: this.bounds.height};
+            const nativeRectangle: Rectangle = { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height };
             this._appearance = new PdfAppearance(nativeRectangle, this);
             this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }
@@ -14517,8 +14560,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * @private
      * @returns {{x: number, y: number, width: number, height: number}} The inner appearance rectangle.
      */
-    get _innerTemplateBounds(): {x: number, y: number, width: number, height: number} {
-        let innerBounds: {x: number, y: number, width: number, height: number};
+    get _innerTemplateBounds(): { x: number, y: number, width: number, height: number } {
+        let innerBounds: { x: number, y: number, width: number, height: number };
         if (this._isLoaded) {
             innerBounds = this._obtainInnerBounds();
             innerBounds.x = this.bounds.x;
@@ -14663,10 +14706,10 @@ export class PdfRubberStampAnnotation extends PdfComment {
                     let rect: { x: number, y: number, width: number, height: number };
                     if (appearanceStream) {
                         isRotated = (this._page.rotation === PdfRotationAngle.angle0 &&
-                                    this.rotationAngle === PdfRotationAngle.angle0);
+                            this.rotationAngle === PdfRotationAngle.angle0);
                         if (!isRotated) {
                             isRotated = (this._page.rotation !== PdfRotationAngle.angle0 &&
-                                    this.rotationAngle === PdfRotationAngle.angle0);
+                                this.rotationAngle === PdfRotationAngle.angle0);
                         }
                     }
                     this._appearanceTemplate = new PdfTemplate(appearanceStream, this._crossReference);
@@ -14681,7 +14724,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
                                 rect = _toRectangle(bounds);
                                 const rectangle: number[] = this._transformBBox(rect, mMatrix);
                                 size = [rectangle[2], rectangle[3]];
-                                this._appearanceTemplate._size = {width: size[0], height: size[1]};
+                                this._appearanceTemplate._size = { width: size[0], height: size[1] };
                             } else {
                                 size = [rect.width, rect.height];
                             }
@@ -14704,7 +14747,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * @returns {PdfTemplate} The generated appearance template.
      */
     _createRubberStampAppearance(): PdfTemplate {
-        const nativeRectangle: Rectangle = {x: 0, y: 0, width: this.bounds.width, height: this.bounds.height};
+        const nativeRectangle: Rectangle = { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height };
         let appearance: PdfAppearance;
         if (this._appearance) {
             appearance = this._appearance;
@@ -14717,7 +14760,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             appearance = new PdfAppearance(nativeRectangle, this);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }
-        const template: PdfTemplate =  appearance.normal;
+        const template: PdfTemplate = appearance.normal;
         if (this._alterRotateBounds && typeof this._rotate !== 'undefined' && (this._rotate !== PdfRotationAngle.angle0 || this._getRotationAngle() !== 0)) {
             this.rotateAngle = this._getRotationAngle();
             if (this.rotateAngle === 0) {
@@ -14880,19 +14923,19 @@ export class PdfRubberStampAnnotation extends PdfComment {
             red = 251;
             green = 222;
             blue = 221;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         } else if (this._icon === PdfRubberStampAnnotationIcon.approved ||
             this._icon === PdfRubberStampAnnotationIcon.final ||
             this._icon === PdfRubberStampAnnotationIcon.completed) {
             red = 229;
             green = 238;
             blue = 222;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         } else {
             red = 219;
             green = 227;
             blue = 240;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         }
         return color;
     }
@@ -14912,19 +14955,19 @@ export class PdfRubberStampAnnotation extends PdfComment {
             red = 151;
             green = 23;
             blue = 15;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         } else if (this._icon === PdfRubberStampAnnotationIcon.approved ||
-                    this._icon === PdfRubberStampAnnotationIcon.final ||
-                    this._icon === PdfRubberStampAnnotationIcon.completed) {
+            this._icon === PdfRubberStampAnnotationIcon.final ||
+            this._icon === PdfRubberStampAnnotationIcon.completed) {
             red = 73;
             green = 110;
             blue = 38;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         } else {
             red = 24;
             green = 37;
             blue = 100;
-            color = {r: red, g: green, b: blue};
+            color = { r: red, g: green, b: blue };
         }
         return color;
     }
@@ -14940,7 +14983,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * @returns {void} No return value.
      */
     _drawRubberStamp(graphics: PdfGraphics, pen: PdfPen, brush: PdfBrush, font: PdfStandardFont, format: PdfStringFormat): void {
-        const bounds: Rectangle = {x: 2, y: 1, width: this._stampWidth, height: 26};
+        const bounds: Rectangle = { x: 2, y: 1, width: this._stampWidth, height: 26 };
         graphics.drawRoundedRectangle(bounds, 3, pen, brush);
         const pdfBrush: PdfBrush = new PdfBrush(this._obtainBorderColor());
         graphics.drawString(this._iconString.toUpperCase(), font, bounds, null, pdfBrush, format);
@@ -14951,8 +14994,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * @private
      * @returns {{x: number, y: number, width: number, height: number}} The inner bounds rectangle, or zeros when unavailable.
      */
-    _obtainInnerBounds(): {x: number, y: number, width: number, height: number} {
-        let bounds: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
+    _obtainInnerBounds(): { x: number, y: number, width: number, height: number } {
+        let bounds: { x: number, y: number, width: number, height: number } = { x: 0, y: 0, width: 0, height: 0 };
         if (this._dictionary && this._dictionary.has('AP')) {
             const appearanceDictionary: _PdfDictionary = this._dictionary.get('AP');
             if (appearanceDictionary && appearanceDictionary.has('N')) {
@@ -14969,86 +15012,6 @@ export class PdfRubberStampAnnotation extends PdfComment {
             }
         }
         return bounds;
-    }
-}
-/**
- * `PdfSoundAnnotation` class represents the sound annotation objects.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Access the annotation at index 0
- * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export class PdfSoundAnnotation extends PdfComment {
-    /**
-     * Initializes a new instance of the `PdfSoundAnnotation` class.
-     *
-     * @private
-     */
-    constructor() {
-        super();
-        this._type = _PdfAnnotationType.soundAnnotation;
-    }
-    /**
-     * Loads a sound annotation from the given page and dictionary and initializes it as a loaded instance.
-     *
-     * @private
-     * @param {PdfPage} page The page that contains the annotation.
-     * @param {_PdfDictionary} dictionary The source annotation dictionary.
-     * @returns {PdfSoundAnnotation} The loaded sound annotation instance.
-     */
-    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfSoundAnnotation {
-        const annot: PdfSoundAnnotation = new PdfSoundAnnotation();
-        annot._isLoaded = true;
-        annot._initialize(page, dictionary);
-        return annot;
-    }
-    /**
-     * Loads a sound annotation from the given page and dictionary and initializes it as a loaded instance.
-     *
-     * @private
-     * @param {PdfPage} page The page that contains the annotation.
-     * @param {_PdfDictionary} dictionary The source annotation dictionary.
-     * @returns {void} nothing.
-     */
-    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
-        super._initialize(page, dictionary);
-    }
-    /**
-     * Performs flattening for sound annotations by importing the appearance stream when available or removing the annotation if none exists.
-     *
-     * @private
-     * @param {boolean} [isFlatten=false] When true, attempts to flatten the annotation into the page; otherwise, no action.
-     * @returns {void} No return value.
-     */
-    _doPostProcess(isFlatten: boolean = false): void {
-        if (isFlatten) {
-            let appearanceStream: _PdfBaseStream;
-            if (this._dictionary.has('AP')) {
-                const dictionary: _PdfDictionary = this._dictionary.get('AP');
-                if (dictionary && dictionary.has('N')) {
-                    appearanceStream = dictionary.get('N');
-                    const reference: _PdfReference = dictionary.getRaw('N');
-                    if (reference && appearanceStream) {
-                        appearanceStream.reference = reference;
-                    }
-                }
-            }
-            if (appearanceStream) {
-                const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
-                const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
-                this._flattenAnnotationTemplate(template, isNormalMatrix);
-            } else {
-                this._removeAnnotation(this._page, this);
-            }
-        }
     }
 }
 /**
@@ -15127,6 +15090,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
      * @private
      */
     _markUpFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 7, PdfFontStyle.regular);
+    _outerRectanglePdf:  number[];
     private _annotationIntent: PdfAnnotationIntent;
     private _lineEndingStyle: PdfLineEndingStyle;
     private _textAlignment: PdfTextAlignment = PdfTextAlignment.left;
@@ -15135,6 +15099,30 @@ export class PdfFreeTextAnnotation extends PdfComment {
     private _paddings: _PdfPaddings;
     private _parsedXMLData: any[]; // eslint-disable-line
     private _innerTextBoxBounds: {x: number, y: number, width: number, height: number};
+    /**
+     * Stores the raw RD (Rectangle Difference) array from the PDF dictionary [left, bottom, right, top] offsets.
+     *
+     * @private
+     */
+    private _rectangleDifference: number[];
+    /**
+     * Indicates whether the annotation dictionary contained a valid RD entry when loaded.
+     *
+     * @private
+     */
+    private _rectDifference: boolean = false;
+    /**
+     * Indicates whether the textBoxBounds property was explicitly modified by the caller.
+     *
+     * @private
+     */
+    private _isTextBoxBoundsModified: boolean = false;
+    /**
+     * Indicates whether the callout line geometry was explicitly modified.
+     *
+     * @private
+     */
+    private _isCalloutGeometryModified: boolean = false;
     /**
      * Initializes a new instance of the `PdfFreeTextAnnotation` class.
      *
@@ -15314,35 +15302,54 @@ export class PdfFreeTextAnnotation extends PdfComment {
      * ```
      */
     set calloutLines(value: Array<Point>) {
+        const normalized: Point[] = Array.isArray(value)
+            ? value.map((point: Point) => ({x: point.x, y: point.y}))
+            : [];
+        const validCount: boolean = normalized.length === 0 || normalized.length === 2 || normalized.length === 3;
+        const validPoints: boolean = normalized.every((point: Point) => point &&
+            Number.isFinite(point.x) && Number.isFinite(point.y));
+        if (!validCount || !validPoints) {
+            throw new Error('Callout lines must contain zero, two, or three finite points.');
+        }
         if (!this._isLoaded) {
-            this._calloutLines = value;
+            this._calloutLines = normalized;
             return;
         }
-        let isChanged: boolean = false;
-        if (this._isLoaded && value.length >= 2) {
-            if (this._calloutLines.length === value.length) {
-                for (let i: number = 0; i < value.length; i++) {
-                    const newPoint: Point = value[<number>i];
-                    const oldPoint: Point = this._calloutLines[<number>i];
-                    if (newPoint.x !== oldPoint.x || newPoint.y !== oldPoint.y) {
-                        isChanged = true;
-                        break;
-                    }
-                }
-            } else {
-                isChanged = true;
-            }
+        const current: Point[] = this._calloutLines || this._getCalloutLinePoints() || [];
+        const changed: boolean = current.length !== normalized.length || normalized.some((point: Point, index: number) =>
+            !current[<number>index] || point.x !== current[<number>index].x || point.y !== current[<number>index].y);
+        if (!changed) {
+            return;
         }
-        if (isChanged) {
-            const pageHeight: number = this._page.size.height;
-            const lines: number[] = [];
-            for (let i: number = 0; i < value.length; i++) {
-                lines.push(value[<number>i].x + this._cropBoxValueX);
-                lines.push((pageHeight + this._cropBoxValueY) - value[<number>i].y);
-            }
-            this._calloutLines = value;
-            this._dictionary.update('CL', lines);
+        const textBounds: Rectangle = this._textBoxBounds;
+        this._calloutLines = normalized;
+        this._isCalloutGeometryModified = true;
+        if (normalized.length >= 2) {
+            const updatedBounds: Rectangle = this._calculateAnnotationBounds(textBounds, normalized);
+            const outerPdf: number[] = this._pageRectToPdfRect(updatedBounds);
+            const innerPdf: number[] = this._pageRectToPdfRect(textBounds);
+            const rectangleDifference: number[] = this._encodeRectangleDifference(outerPdf, innerPdf);
+            this.bounds = updatedBounds;
+            this._outerRectanglePdf = outerPdf.slice();
+            this._rectangleDifference = rectangleDifference.slice();
+            this._rectDifference = true;
+            this._innerTextBoxBounds = {x: textBounds.x, y: textBounds.y,
+                width: textBounds.width, height: textBounds.height};
+            this._dictionary.update('Rect', outerPdf.slice());
+            this._dictionary.update('RD', rectangleDifference.slice());
+        } else {
+            this.bounds = {x: textBounds.x, y: textBounds.y, width: textBounds.width, height: textBounds.height};
+            this._outerRectanglePdf = this._pageRectToPdfRect(this.bounds);
+            this._rectangleDifference = [0, 0, 0, 0];
+            this._rectDifference = false;
+            this._dictionary.update('Rect', this._outerRectanglePdf.slice());
+            this._dictionary.update('RD', [0, 0, 0, 0]);
         }
+        const lines: number[] = [];
+        for (let i: number = 0; i < normalized.length; i++) {
+            lines.push(...this._pagePointToPdfPoint(normalized[<number>i]));
+        }
+        this._dictionary.update('CL', lines);
     }
     /**
      * Gets the line ending style of the annotation.
@@ -15686,79 +15693,6 @@ export class PdfFreeTextAnnotation extends PdfComment {
         }
     }
     /**
-     * Returns the annotations MK appearance characteristics dictionary if present.
-     *
-     * @private
-     * @returns {_PdfDictionary} The MK dictionary or undefined when absent.
-     */
-    get _mkDictionary(): _PdfDictionary {
-        let value: _PdfDictionary;
-        if (this._dictionary.has('MK')) {
-            value = this._dictionary.get('MK');
-        }
-        return value;
-    }
-    /**
-     * Computes and returns the inner text box bounds, aligning to the annotations position and honoring callout lines.
-     *
-     * @private
-     * @returns {{x: number, y: number, width: number, height: number}} The inner text box rectangle.
-     */
-    get _innerBounds(): Rectangle {
-        const borderWidth: number = this.border.width / 2;
-        const nativeRectangle: number[] = this._obtainAppearanceBounds();
-        const parameter: _PaintParameter = new _PaintParameter();
-        const borderColor: PdfColor = this._obtainColor();
-        const borderPen: PdfPen = new PdfPen(borderColor, this.border.width);
-        if (this.border.width > 0) {
-            parameter.borderPen = borderPen;
-        }
-        const rectangle: number[] = this._obtainStyle(borderPen, nativeRectangle, borderWidth, parameter);
-        if (this.calloutLines && this._calloutLines.length > 0) {
-            this._innerTextBoxBounds = { x: rectangle[0], y: this._page.size.height - (rectangle[1] + rectangle[3]),
-                width: rectangle[2], height: rectangle[3] };
-        }
-        return this._innerTextBoxBounds;
-    }
-    /**
-     * Loads a free text annotation from the given page and dictionary, marks it as loaded, parses RC if present, and initializes internal state.
-     *
-     * @private
-     * @param {PdfPage} page The page that contains the annotation.
-     * @param {_PdfDictionary} dictionary The source annotation dictionary.
-     * @returns {PdfFreeTextAnnotation} The loaded free text annotation instance.
-     */
-    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfFreeTextAnnotation {
-        const annot: PdfFreeTextAnnotation = new PdfFreeTextAnnotation();
-        annot._isLoaded = true;
-        annot._initialize(page, dictionary);
-        if (dictionary.has('RC')) {
-            annot._parsedXMLData = annot._parseMarkupLanguageData(dictionary.get('RC'));
-        }
-        return annot;
-    }
-    /**
-     * Sets the free text internal padding values used to insert text within the annotation rectangle.
-     *
-     * @private
-     * @param {_PdfPaddings} paddings The paddings to apply (left/top/right/bottom).
-     * @returns {void} No return value.
-     */
-    _setPaddings(paddings: _PdfPaddings): void {
-        this._paddings = paddings;
-    }
-    /**
-     * Initializes the free text annotation for the specified page and optional source dictionary.
-     *
-     * @private
-     * @param {PdfPage} page The page to associate with this annotation.
-     * @param {_PdfDictionary} [dictionary] Optional source dictionary to import from.
-     * @returns {void} No return value.
-     */
-    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
-        super._initialize(page, dictionary);
-    }
-    /**
      * Gets the border effect of the free text annotation.
      *
      * @returns {PdfBorderEffect} Border effect.
@@ -15817,6 +15751,228 @@ export class PdfFreeTextAnnotation extends PdfComment {
         }
     }
     /**
+     * Gets the inner text box bounds of the FreeText annotation.
+     *
+     * For a loaded callout annotation containing a valid RD entry,
+     * the text box bounds are calculated from the annotation bounds and the RD values.
+     *
+     * @private
+     * @returns {Rectangle} The inner text box bounds in page coordinates.
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page.
+     * const page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the FreeText callout annotation.
+     * const annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Get only the callout text box bounds.
+     * const textBoxBounds: Rectangle = annotation._textBoxBounds;
+     * document.destroy();
+     * ```
+     */
+    get _textBoxBounds(): Rectangle {
+        const annotationBounds: Rectangle = this.bounds;
+        if (!annotationBounds) {
+            return undefined;
+        }
+        if (this._isTextBoxBoundsModified &&
+            this._innerTextBoxBounds) {
+            return {
+                x: this._innerTextBoxBounds.x,
+                y: this._innerTextBoxBounds.y,
+                width: this._innerTextBoxBounds.width,
+                height: this._innerTextBoxBounds.height
+            };
+        }
+        if (this._dictionary && this._dictionary.has('RD')) {
+            const rectangleDifference: number[] = this._dictionary.getArray('RD');
+            if (this._isValidRectangleDifference(rectangleDifference)) {
+                const innerBounds: Rectangle = {
+                    x: annotationBounds.x + rectangleDifference[0],
+                    y: annotationBounds.y + rectangleDifference[3],
+                    width: annotationBounds.width - rectangleDifference[0] - rectangleDifference[2],
+                    height: annotationBounds.height - rectangleDifference[1] - rectangleDifference[3]
+                };
+                if (
+                    Number.isFinite(innerBounds.x) &&
+                    Number.isFinite(innerBounds.y) &&
+                    Number.isFinite(innerBounds.width) &&
+                    Number.isFinite(innerBounds.height) &&
+                    innerBounds.width >= 0 &&
+                    innerBounds.height >= 0
+                ) {
+                    this._rectangleDifference = rectangleDifference.slice();
+                    this._rectDifference = true;
+                    this._innerTextBoxBounds = {x: innerBounds.x, y: innerBounds.y,
+                        width: innerBounds.width, height: innerBounds.height};
+                    return {x: innerBounds.x, y: innerBounds.y, width: innerBounds.width, height: innerBounds.height};
+                }
+            }
+        }
+        this._rectDifference = false;
+        return {x: annotationBounds.x, y: annotationBounds.y, width: annotationBounds.width, height: annotationBounds.height};
+    }
+    /**
+     * Sets the inner text box bounds of the FreeText callout annotation.
+     *
+     * This operation updates the RD entry while preserving the complete
+     * annotation Rect and the callout line points stored in CL.
+     *
+     * @private
+     * @param {Rectangle} value The text box bounds in page coordinates.
+     * ```typescript
+     * // Load an existing PDF document.
+     * const document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page.
+     * const page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the FreeText callout annotation.
+     * const annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Set the callout text box bounds.
+     * annotation._textBoxBounds = {x: 20, y: 20, width: 150, height: 50};
+     * document.destroy();
+     */
+    set _textBoxBounds(value: Rectangle) {
+        if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) ||
+            !Number.isFinite(value.width) || !Number.isFinite(value.height)) {
+            throw new Error('Text box bounds must contain finite numeric values.');
+        }
+        if (value.width <= 0 || value.height <= 0) {
+            throw new Error('Text box width and height must be greater than zero.');
+        }
+        if (!this.bounds) {
+            throw new Error('Annotation bounds cannot be null or undefined.');
+        }
+        if (!this._page) {
+            throw new Error('The annotation must be associated with a page before setting text box bounds.');
+        }
+        const textBounds: Rectangle = {x: value.x, y: value.y, width: value.width, height: value.height};
+        const calloutLines: Point[] = this.calloutLines && this.calloutLines.length >= 2
+            ? this.calloutLines.map((point: Point) => ({x: point.x, y: point.y}))
+            : [];
+        const updatedBounds: Rectangle = calloutLines.length >= 2
+            ? this._calculateAnnotationBounds(textBounds, calloutLines)
+            : textBounds;
+        const outerPdf: number[] = this._pageRectToPdfRect(updatedBounds);
+        const innerPdf: number[] = this._pageRectToPdfRect(textBounds);
+        const rectangleDifference: number[] = calloutLines.length >= 2
+            ? this._encodeRectangleDifference(outerPdf, innerPdf)
+            : [0, 0, 0, 0];
+        this.bounds = {x: updatedBounds.x, y: updatedBounds.y,
+            width: updatedBounds.width, height: updatedBounds.height};
+        this._outerRectanglePdf = outerPdf.slice();
+        this._rectangleDifference = rectangleDifference.slice();
+        this._rectDifference = calloutLines.length >= 2;
+        this._innerTextBoxBounds = {x: textBounds.x, y: textBounds.y,
+            width: textBounds.width, height: textBounds.height};
+        this._isTextBoxBoundsModified = true;
+        this._dictionary.update('Rect', outerPdf.slice());
+        this._dictionary.update('RD', rectangleDifference.slice());
+    }
+    /**
+     * Returns true when the annotation dictionary contained or currently contains a valid RD entry.
+     *
+     * @private
+     * @returns {boolean} True when an RD rectangle difference is present.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Check whether the loaded annotation has an RD entry.
+     * let hasRD: boolean = annotation._hasRectangleDifference;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get _hasRectangleDifference(): boolean {
+        return this._rectDifference || this._dictionary.has('RD');
+    }
+    /**
+     * Returns the annotations MK appearance characteristics dictionary if present.
+     *
+     * @private
+     * @returns {_PdfDictionary} The MK dictionary or undefined when absent.
+     */
+    get _mkDictionary(): _PdfDictionary {
+        let value: _PdfDictionary;
+        if (this._dictionary.has('MK')) {
+            value = this._dictionary.get('MK');
+        }
+        return value;
+    }
+    /**
+     * Computes and returns the inner text box bounds, aligning to the annotations position and honoring callout lines.
+     *
+     * @private
+     * @returns {{x: number, y: number, width: number, height: number}} The inner text box rectangle.
+     */
+    get _innerBounds(): Rectangle {
+        if (this._isLoaded && this._rectDifference) {
+            return this._textBoxBounds;
+        }
+        const borderWidth: number = this.border.width / 2;
+        const nativeRectangle: number[] = this._obtainAppearanceBounds();
+        const parameter: _PaintParameter = new _PaintParameter();
+        const borderColor: PdfColor = this._obtainColor();
+        const borderPen: PdfPen = new PdfPen(borderColor, this.border.width);
+        if (this.border.width > 0) {
+            parameter.borderPen = borderPen;
+        }
+        const rectangle: number[] = this._obtainStyle(borderPen, nativeRectangle, borderWidth, parameter);
+        if (this.calloutLines && this._calloutLines.length > 0) {
+            this._innerTextBoxBounds = { x: rectangle[0], y: this._page.size.height - (rectangle[1] + rectangle[3]),
+                width: rectangle[2], height: rectangle[3] };
+        }
+        return this._innerTextBoxBounds;
+    }
+    /**
+     * Loads a free text annotation from the given page and dictionary, marks it as loaded, parses RC if present, and initializes internal state.
+     *
+     * @private
+     * @param {PdfPage} page The page that contains the annotation.
+     * @param {_PdfDictionary} dictionary The source annotation dictionary.
+     * @returns {PdfFreeTextAnnotation} The loaded free text annotation instance.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfFreeTextAnnotation {
+        const annot: PdfFreeTextAnnotation = new PdfFreeTextAnnotation();
+        annot._isLoaded = true;
+        annot._initialize(page, dictionary);
+        const cropOrMediaBox: number[] = annot._getCropOrMediaBox();
+        if (cropOrMediaBox && cropOrMediaBox.length > 3 &&
+            typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number') {
+            annot._cropBoxValueX = cropOrMediaBox[0];
+            annot._cropBoxValueY = cropOrMediaBox[1];
+        }
+        annot._initializeCalloutGeometry();
+        if (dictionary.has('RC')) {
+            annot._parsedXMLData = annot._parseMarkupLanguageData(dictionary.get('RC'));
+        }
+        return annot;
+    }
+    /**
+     * Sets the free text internal padding values used to insert text within the annotation rectangle.
+     *
+     * @private
+     * @param {_PdfPaddings} paddings The paddings to apply (left/top/right/bottom).
+     * @returns {void} No return value.
+     */
+    _setPaddings(paddings: _PdfPaddings): void {
+        this._paddings = paddings;
+    }
+    /**
+     * Initializes the free text annotation for the specified page and optional source dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The page to associate with this annotation.
+     * @param {_PdfDictionary} [dictionary] Optional source dictionary to import from.
+     * @returns {void} No return value.
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        super._initialize(page, dictionary);
+    }
+    /**
      * Finalizes setup: validates bounds, ensures BS/color defaults, captures Crop/MediaBox offsets, creates appearance when needed, and persists the dictionary for non flattened cases.
      *
      * @private
@@ -15862,6 +16018,58 @@ export class PdfFreeTextAnnotation extends PdfComment {
         }
     }
     /**
+     * Determines whether two PDF rectangle arrays represent the same bounds by
+     * comparing each coordinate using a tolerance-based floating-point comparison.
+     *
+     * @private
+     * @param {number[]} first The first PDF rectangle in the format [x, y, right, top].
+     * @param {number[]} second The second PDF rectangle in the format [x, y, right, top].
+     * @returns {boolean} Returns `true` if both rectangles are valid and all four
+     * coordinate values are nearly equal; otherwise, returns `false`.
+     */
+    _arePdfRectanglesEqual(first: number[], second: number[]): boolean {
+        if (!first || !second || first.length !== 4 || second.length !== 4) {
+            return false;
+        }
+        for (let i: number = 0; i < 4; i++) {
+            if (!this._nearlyEqual(first[<number>i], second[<number>i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * Calculates the outer annotation bounds required to contain both the
+     * specified text box bounds and all callout line points.
+     *
+     * @private
+     * @param {Rectangle} textBounds The inner text box bounds in page coordinates.
+     * @param {Point[]} calloutLines The callout line points associated with the annotation.
+     * @returns {Rectangle} A rectangle that fully encloses the text box and all callout line points.
+     */
+    _calculateAnnotationBounds(textBounds: Rectangle, calloutLines: Point[]): Rectangle {
+        // Strokes are centred on their path, so half of the border width falls outside the geometry.
+        // The first callout point also carries the line ending (arrow head), which extends further.
+        const borderWidth: number = this.border ? this.border.width : 1;
+        const strokePad: number = borderWidth / 2;
+        const hasLineEnding: boolean = this.lineEndingStyle !== PdfLineEndingStyle.none &&
+            typeof this.lineEndingStyle !== 'undefined';
+        const endingPad: number = hasLineEnding ? Math.max(borderWidth * 11, strokePad) : strokePad;
+        let minX: number = textBounds.x - strokePad;
+        let minY: number = textBounds.y - strokePad;
+        let maxX: number = textBounds.x + textBounds.width + strokePad;
+        let maxY: number = textBounds.y + textBounds.height + strokePad;
+        for (let i: number = 0; i < calloutLines.length; i++) {
+            const point: Point = calloutLines[<number>i];
+            const pad: number = i === 0 ? endingPad : strokePad;
+            minX = Math.min(minX, point.x - pad);
+            minY = Math.min(minY, point.y - pad);
+            maxX = Math.max(maxX, point.x + pad);
+            maxY = Math.max(maxY, point.y + pad);
+        }
+        return {x: minX, y: minY, width: maxX - minX, height: maxY - minY};
+    }
+    /**
      * Expands the native PDF rectangle outward by a cloud radius derived from intensity and
      * half the border width, producing the enlarged `Rect` needed to contain the cloud bumps.
      *
@@ -15889,7 +16097,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
      */
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
-            if (this._setAppearance || this._customTemplate.size > 0 || (isFlatten && !this._dictionary.has('AP'))) {
+            const mustCreateAppearance: boolean = this._setAppearance || this._customTemplate.size > 0 || this._isTextBoxBoundsModified ||
+                this._isCalloutGeometryModified || (isFlatten && !this._dictionary.has('AP'));
+            if (mustCreateAppearance) {
                 this._appearanceTemplate = this._createAppearance();
             }
             if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
@@ -15955,7 +16165,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (this._dictionary.has('RC') && this._isContentUpdated) {
             this._updateStyle(this.font, this._textMarkUpColor, this.textAlignment);
         }
-        if (!isFlatten && (this._setAppearance || this._customTemplate.size > 0)) {
+        if (!isFlatten && this._appearanceTemplate &&
+            (this._setAppearance || this._customTemplate.size > 0 ||
+             this._isTextBoxBoundsModified || this._isCalloutGeometryModified)) {
             let appearance: _PdfDictionary;
             const crossReference: _PdfCrossReference = this._crossReference;
             if (this._dictionary.has('AP')) {
@@ -16090,6 +16302,10 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const textColor: PdfColor = this.textMarkUpColor ? this._textMarkUpColor : { r: 0, g: 0, b: 0 };
             parameter.backBrush = new PdfBrush(textColor);
             parameter.borderWidth = this.border.width;
+            if (this.opacity && this._opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this._opacity);
+            }
             if (this.calloutLines && this._calloutLines.length >= 2) {
                 this._drawCallOuts(graphics, borderPen);
                 if (this._isLoaded && typeof this._lineEndingStyle === 'undefined') {
@@ -16117,12 +16333,17 @@ export class PdfFreeTextAnnotation extends PdfComment {
                         -((this._page.size.height - (this.bounds.y + this.bounds.height + (margins ? margins.top : 0)))),
                         this.bounds.width,
                         -this.bounds.height];
+                    // Built from page coordinates, so the Crop/MediaBox origin still has to be applied.
+                    rectangle[0] = rectangle[0] + this._cropBoxValueX;
+                    rectangle[1] = rectangle[1] - this._cropBoxValueY;
                 } else {
+                    // `rectangle` comes from `_obtainAppearanceBounds()`, which already contains the Crop/MediaBox
+                    // origin. Adding it again shifts the text box by the crop offset on pages whose origin is not (0, 0).
                     rectangle = [rectangle[0], -rectangle[1], rectangle[2], -rectangle[3]];
                 }
-                rectangle[0] = rectangle[0] + this._cropBoxValueX;
-                rectangle[1] = rectangle[1] - this._cropBoxValueY;
-                this._calculateRectangle(rectangle);
+                if (!this._isTextBoxBoundsModified && !this._isCalloutGeometryModified) {
+                    this._calculateRectangle(rectangle);
+                }
                 parameter.bounds = {x: rectangle[0], y: rectangle[1], width: rectangle[2], height: rectangle[3]};
             } else {
                 rectangle = [rectangle[0], -rectangle[1], rectangle[2], -rectangle[3]];
@@ -16130,28 +16351,42 @@ export class PdfFreeTextAnnotation extends PdfComment {
             }
             const outerRectangle: number[] = this._obtainAppearanceBounds();
             const value: number[] = [rectangle[0] - outerRectangle[0],
-                (-(rectangle[1])) - outerRectangle[1], rectangle[2] - outerRectangle[2],
+                (-(rectangle[1])) - outerRectangle[1], (outerRectangle[0] + outerRectangle[2]) - (rectangle[0] + rectangle[2]),
                 (((-rectangle[1]) - outerRectangle[1]) + (-rectangle[3])) - outerRectangle[3]];
             for (let i: number = 0; i < value.length; i++) {
                 if (value[<number>i] < 0) {
                     value[<number>i] = -value[<number>i];
                 }
             }
-            if (!(borderEffect &&
-                borderEffect.style === PdfBorderEffectStyle.cloudy)) {
-                this._dictionary.update('RD', value);
-            }
-
-            if (this.opacity && this._opacity < 1) {
-                graphics.save();
-                graphics.setTransparency(this._opacity);
+            const shouldWriteRD: boolean = !this._isLoaded || this._isTextBoxBoundsModified ||
+                this._isCalloutGeometryModified || !this._rectDifference;
+            if (shouldWriteRD && !(borderEffect && borderEffect.style === PdfBorderEffectStyle.cloudy)) {
+                if ((this._isTextBoxBoundsModified || this._isCalloutGeometryModified) &&
+                    this._rectangleDifference) {
+                    this._dictionary.update('RD', this._rectangleDifference.slice());
+                } else {
+                    this._dictionary.update('RD', value);
+                }
             }
             if (this.rotationAngle && this._rotate !== PdfRotationAngle.angle0) {
                 graphics.save();
             }
-            this._drawFreeTextRectangle(graphics, parameter, rectangle, alignment);
+            let drawRectangle: number[] = rectangle;
+            if (this._isLoaded && (this._isTextBoxBoundsModified || this._isCalloutGeometryModified) &&
+                this._innerTextBoxBounds) {
+                const textBounds: Rectangle = this._innerTextBoxBounds;
+                drawRectangle = [textBounds.x + this._cropBoxValueX,
+                    -((
+                        this._page.size.height + this._cropBoxValueY
+                    ) - (
+                        textBounds.y + textBounds.height
+                    )), textBounds.width, -textBounds.height
+                ];
+                parameter.bounds = { x: drawRectangle[0], y: drawRectangle[1], width: drawRectangle[2], height: drawRectangle[3] };
+            }
+            this._drawFreeTextRectangle(graphics, parameter, drawRectangle, alignment);
             if (text) {
-                this._drawFreeMarkUpText(graphics, parameter, rectangle, text, alignment);
+                this._drawFreeMarkUpText(graphics, parameter, drawRectangle, text, alignment);
             }
             if (this.opacity && this._opacity < 1) {
                 graphics.restore();
@@ -16163,16 +16398,20 @@ export class PdfFreeTextAnnotation extends PdfComment {
         const bounds: number[] = this._obtainAppearanceBounds();
         if (this.flatten) {
             this._bounds = {
-                x: bounds[0] - (margins ? margins.left : 0), y: (this._page.size.height - (bounds[1] + bounds[3]) -
-                    (margins ? margins.top : 0)), width: bounds[2], height: bounds[3]
+                x: bounds[0] - (margins ? margins.left : 0),
+                y: (this._page.size.height - (bounds[1] + bounds[3]) - (margins ? margins.top : 0)),
+                width: bounds[2], height: bounds[3]
             };
         }
-        this._dictionary.set('Rect', [
-            bounds[0],
-            bounds[1],
-            bounds[0] + bounds[2],
-            bounds[1] + bounds[3]
-        ]);
+        if ((this._isTextBoxBoundsModified || this._isCalloutGeometryModified) &&
+            this._rectangleDifference && this._rectangleDifference.length === 4) {
+            const currentOuterPdf: number[] = this._pageRectToPdfRect(this.bounds);
+            this._outerRectanglePdf = currentOuterPdf.slice();
+            this._dictionary.set('Rect', currentOuterPdf.slice());
+            this._dictionary.set('RD', this._rectangleDifference.slice());
+        } else {
+            this._dictionary.set('Rect', [bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3]]);
+        }
         return template;
     }
     /**
@@ -16184,12 +16423,23 @@ export class PdfFreeTextAnnotation extends PdfComment {
      */
     _calculateRectangle(innerRectangle: number[]): void {
         const outerRectangle: number[] = this._obtainAppearanceBounds();
-        const value: number[] = [innerRectangle[0] - outerRectangle[0],
-            (-(innerRectangle[1])) - outerRectangle[1], innerRectangle[2] - outerRectangle[2],
-            (((-innerRectangle[1]) - outerRectangle[1]) + (-innerRectangle[3])) - outerRectangle[3] ];
+        const outerLeft: number = outerRectangle[0];
+        const outerBottom: number = outerRectangle[1];
+        const outerRight: number = outerLeft + outerRectangle[2];
+        const outerTop: number = outerBottom + outerRectangle[3];
+        const innerLeft: number = innerRectangle[0];
+        const innerBottom: number = -innerRectangle[1];
+        const innerRight: number = innerLeft + innerRectangle[2];
+        const innerTop: number = innerBottom + (-innerRectangle[3]);
+        const value: number[] = [
+            innerLeft - outerLeft,
+            innerBottom - outerBottom,
+            outerRight - innerRight,
+            outerTop - innerTop
+        ];
         for (let i: number = 0; i < 4; i++) {
-            if (value[<number>i] < 0) {
-                value[<number>i] = -value[<number>i];
+            if (!Number.isFinite(value[<number>i]) || value[<number>i] < 0) {
+                value[<number>i] = 0;
             }
         }
         this._dictionary.set('RD', value);
@@ -16445,7 +16695,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
      */
     _drawFreeTextRectangle(graphics: PdfGraphics, parameter: _PaintParameter, rectangle: number[], alignment: PdfTextAlignment): void {
         const isRotation: boolean = false;
-        if (this._dictionary.has('BE')) {
+        if (this._isCloudBorder()) {
             for (let i: number = 0; i < rectangle.length; i++) {
                 if (rectangle[<number>i] < 0) {
                     rectangle[<number>i] = -rectangle[<number>i];
@@ -16562,7 +16812,10 @@ export class PdfFreeTextAnnotation extends PdfComment {
             if (calloutLinepoints) {
                 this._calloutLines = [];
                 for (let i: number = 0; i < calloutLinepoints.length; i += 2) {
-                    const point: Point = {x: calloutLinepoints[<number>i], y: this._page.size.height - calloutLinepoints[i + 1]};
+                    const point: Point = {
+                        x: calloutLinepoints[<number>i] - this._cropBoxValueX,
+                        y: (this._page.size.height + this._cropBoxValueY) - calloutLinepoints[i + 1]
+                    };
                     this._calloutLines.push(point);
                 }
             }
@@ -16577,6 +16830,17 @@ export class PdfFreeTextAnnotation extends PdfComment {
      */
     _obtainAppearanceBounds(): number[] {
         let bounds: number[] = [0, 0, 0, 0];
+        if (this._isLoaded && (this._isTextBoxBoundsModified || this._isCalloutGeometryModified) &&
+            this.calloutLines && this._calloutLines.length >= 2) {
+            // After a geometry edit, Rect is the exact union of text box and callout points.
+            // The appearance BBox must equal Rect, otherwise viewers rescale/shift the drawing
+            // and it no longer lines up with CL/RD.
+            const outer: Rectangle = this.bounds;
+            return [outer.x + this._cropBoxValueX,
+                (this._page.size.height + this._cropBoxValueY) - (outer.y + outer.height),
+                outer.width,
+                outer.height];
+        }
         if (this.calloutLines && this._calloutLines.length > 0) {
             const path: PdfPath = new PdfPath();
             const pointArray: Point[] = [];
@@ -16906,6 +17170,13 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const rect: number[] = this._obtainAppearanceBounds();
             this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
         }
+        if (this._isTextBoxBoundsModified || this._isCalloutGeometryModified) {
+            if (this._rectDifference &&
+                this._rectangleDifference &&
+                this._rectangleDifference.length === 4) {
+                this._dictionary.update('RD', this._rectangleDifference.slice());
+            }
+        }
     }
     /**
      * Escapes XML sensitive characters (&, <, >) in the provided markup text for RC storage.
@@ -16919,6 +17190,144 @@ export class PdfFreeTextAnnotation extends PdfComment {
         markupText = markupText.replace('<', '&lt;');
         markupText = markupText.replace('>', '&gt;');
         return markupText;
+    }
+    /**
+     * Parses the raw Rect and RD entries from the dictionary and caches the derived inner text box bounds.
+     * Called from _load after the annotation is initialized.
+     *
+     * @private
+     * @returns {void} No return value.
+     */
+    _initializeCalloutGeometry(): void {
+        if (!this._dictionary) {
+            return;
+        }
+        if (this._dictionary.has('Rect')) {
+            const rect: number[] = this._dictionary.getArray('Rect');
+            if (rect && rect.length === 4 && rect.every((v: number) => typeof v === 'number' && isFinite(v))) {
+                this._outerRectanglePdf = rect.slice();
+            }
+        }
+        if (this._dictionary.has('RD') && this._outerRectanglePdf) {
+            const rd: number[] = this._dictionary.getArray('RD');
+            if (this._isValidRectangleDifference(rd)) {
+                this._rectangleDifference = rd.slice();
+                this._rectDifference = true;
+                const innerPdf: number[] = this._decodeInnerRectangle(this._outerRectanglePdf, rd);
+                if (this._isValidPdfRectangle(innerPdf)) {
+                    this._innerTextBoxBounds = this._pdfRectToPageRect(innerPdf);
+                }
+            }
+        }
+    }
+    /**
+     * Decodes the inner text box rectangle from a raw Rect and RD.
+     *
+     * @private
+     * @param {number[]} outer Raw PDF Rect [left, bottom, right, top].
+     * @param {number[]} rd   Raw RD array [leftOffset, bottomOffset, rightOffset, topOffset].
+     * @returns {number[]} Inner rectangle [left, bottom, right, top] in PDF space.
+     */
+    _decodeInnerRectangle(outer: number[], rd: number[]): number[] {
+        return [outer[0] + rd[0], outer[1] + rd[1], outer[2] - rd[2], outer[3] - rd[3]];
+    }
+    /**
+     * Encodes an RD array from outer and inner rectangles in PDF space.
+     * rd[0] = inner[0]-outer[0], rd[1] = inner[1]-outer[1],
+     * rd[2] = outer[2]-inner[2], rd[3] = outer[3]-inner[3].
+     *
+     * @private
+     * @param {number[]} outer Raw PDF Rect [left, bottom, right, top].
+     * @param {number[]} inner Inner rectangle [left, bottom, right, top] in PDF space.
+     * @returns {number[]} RD array [leftOffset, bottomOffset, rightOffset, topOffset].
+     */
+    _encodeRectangleDifference(outer: number[], inner: number[]): number[] {
+        return [inner[0] - outer[0], inner[1] - outer[1],
+            outer[2] - inner[2], outer[3] - inner[3]];
+    }
+    /**
+     * Returns true when the given array is a valid four-element non-negative RD array.
+     *
+     * @private
+     * @param {number[]} value The candidate RD array.
+     * @returns {boolean} True when valid.
+     */
+    _isValidRectangleDifference(value: number[]): boolean {
+        return Array.isArray(value) &&
+            value.length === 4 &&
+            value.every((item: number) => typeof item === 'number' && isFinite(item) && item >= 0);
+    }
+    /**
+     * Returns true when the given four-element array forms a valid PDF rectangle (right >= left, top >= bottom).
+     *
+     * @private
+     * @param {number[]} value The candidate rectangle [left, bottom, right, top].
+     * @returns {boolean} True when valid.
+     */
+    _isValidPdfRectangle(value: number[]): boolean {
+        return Array.isArray(value) &&
+            value.length === 4 &&
+            value.every((item: number) => typeof item === 'number' && isFinite(item)) &&
+            value[2] >= value[0] &&
+            value[3] >= value[1];
+    }
+    /**
+     * Converts a PDF-space rectangle [left, bottom, right, top] to page-space Rectangle {x, y, width, height}.
+     * Accounts for page height so that y increases downward.
+     *
+     * @private
+     * @param {number[]} pdfRect PDF rectangle [left, bottom, right, top].
+     * @returns {Rectangle} Page-space rectangle.
+     */
+    _pdfRectToPageRect(pdfRect: number[]): Rectangle {
+        const pageHeight: number = this._page ? this._page.size.height : 0;
+        const left: number = pdfRect[0] - this._cropBoxValueX;
+        const bottom: number = pdfRect[1] - this._cropBoxValueY;
+        const right: number = pdfRect[2] - this._cropBoxValueX;
+        const top: number = pdfRect[3] - this._cropBoxValueY;
+        return {x: left, y: pageHeight - top, width: right - left, height: top - bottom};
+    }
+    /**
+     * Converts a page-space Rectangle {x, y, width, height} to PDF-space [left, bottom, right, top].
+     * Accounts for page height and crop box offsets.
+     *
+     * @private
+     * @param {Rectangle} rect Page-space rectangle.
+     * @returns {number[]} PDF rectangle [left, bottom, right, top].
+     */
+    _pageRectToPdfRect(rect: Rectangle): number[] {
+        const pageHeight: number = this._page ? this._page.size.height : 0;
+        const left: number = rect.x + this._cropBoxValueX;
+        const top: number = pageHeight - rect.y + this._cropBoxValueY;
+        const right: number = rect.x + rect.width + this._cropBoxValueX;
+        const bottom: number = pageHeight - (rect.y + rect.height) + this._cropBoxValueY;
+        return [left, bottom, right, top];
+    }
+    /**
+     * Converts a page-space Point to a flat [x, y] pair in PDF space.
+     *
+     * @private
+     * @param {Point} pt Page-space point.
+     * @returns {number[]} [pdfX, pdfY].
+     */
+    _pagePointToPdfPoint(pt: Point): number[] {
+        const pageHeight: number = this._page ? this._page.size.height : 0;
+        return [
+            pt.x + this._cropBoxValueX,
+            (pageHeight + this._cropBoxValueY) - pt.y
+        ];
+    }
+    /**
+     * Compares two numbers within a small floating-point tolerance.
+     *
+     * @private
+     * @param {number} first First number.
+     * @param {number} second Second number.
+     * @param {number} [tolerance=0.001] Maximum acceptable difference.
+     * @returns {boolean} True when the values are within tolerance.
+     */
+    _nearlyEqual(first: number, second: number, tolerance: number = 0.001): boolean {
+        return Math.abs(first - second) <= tolerance;
     }
     /**
      * Parses RC XHTML content to extract style directives, resolve fonts/brushes/alignment, and populate the parsed XML font collection.
@@ -17584,6 +17993,16 @@ export class PdfRedactionAnnotation extends PdfComment {
      * ```
      */
     get textColor(): PdfColor {
+        if (typeof this._textColor === 'undefined' && this._isLoaded && this._dictionary.has('DA')) {
+            const entry: number[] | string = this._dictionary.get('DA');
+            let daColor: PdfColor;
+            if (Array.isArray(entry) && entry.length > 0) {
+                daColor = _parseColor(entry);
+            } else if (typeof entry === 'string' && entry !== '' && /(^|\s)(rg|g|k)(\s|$)/.test(entry)) {
+                daColor = new _PdfDefaultAppearance(entry).color;
+            }
+            this._textColor = daColor;
+        }
         if (typeof this._textColor === 'undefined' && this._dictionary.has('C')) {
             this._textColor = _parseColor(this._dictionary.getArray('C'));
         }
@@ -18475,14 +18894,4734 @@ export class PdfRedactionAnnotation extends PdfComment {
     }
 }
 /**
- * `PdfRichMediaAnnotation` class represents the rich media annotation objects.
+ * `Pdf3DAnnotation` class represents the 3D annotation objects.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D/PRC data and properties
+ * let annotation: Pdf3DAnnotation = new Pdf3DAnnotation(
+ *     { x: 40, y: 60, width: 320, height: 180 },
+ *     {
+ *         data: modelData,
+ *         type: Pdf3DAnnotationType.U3D,
+ *         views: [{ name: 'Near View', centerOfOrbit: 131.695 }],
+ *         defaultView: 0,
+ *         activation: {
+ *             mode: Pdf3DActivationMode.ExplicitActivation,
+ *             deactivationMode: Pdf3DDeactivationMode.ExplicitDeactivation,
+ *             showToolbar: true
+ *         }
+ *     }
+ * );
+ * // Add annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class Pdf3DAnnotation extends PdfAnnotation {
+    /**
+     * Specifies the embedded U3D or PRC bytes.
+     *
+     * @private
+     */
+    private _data: Uint8Array;
+    /**
+     * Specifies the embedded 3D data type.
+     *
+     * @private
+     */
+    private _annotationType: Pdf3DAnnotationType = Pdf3DAnnotationType.U3D;
+    /**
+     * Specifies the embedded 3D stream object.
+     *
+     * @private
+     */
+    private _stream: _PdfBaseStream | _PdfFlateStream;
+    /**
+     * Specifies the collection of 3D views.
+     *
+     * @private
+     */
+    private _views: Pdf3DView[] = [];
+    /**
+     * Specifies the activation settings.
+     *
+     * @private
+     */
+    private _activation: Pdf3DActivation = {};
+    /**
+     * Specifies the animation settings.
+     *
+     * @private
+     */
+    private _animation: Pdf3DAnimation = {};
+    /**
+     * Specifies the OnInstantiate script text.
+     *
+     * @private
+     */
+    private _onInstantiateScript: string = '';
+    /**
+     * Specifies the default view index.
+     *
+     * @private
+     */
+    private _defaultViewValue: number;
+    /**
+     * Specifies whether the 3D data was modified.
+     *
+     * @private
+     */
+    private _hasStreamDataChanged: boolean = false;
+    /**
+     * Specifies whether the 3D data type was modified.
+     *
+     * @private
+     */
+    private _isAnnotationTypeChanged: boolean = false;
+    /**
+     * Specifies whether the activation settings were modified.
+     *
+     * @private
+     */
+    private _isActivationChanged: boolean = false;
+    /**
+     * Specifies whether the animation settings were modified.
+     *
+     * @private
+     */
+    private _isAnimationChanged: boolean = false;
+    /**
+     * Specifies whether the views collection was modified.
+     *
+     * @private
+     */
+    private _isViewsChanged: boolean = false;
+    /**
+     * Specifies whether the default view was modified.
+     *
+     * @private
+     */
+    private _isDefaultViewChanged: boolean = false;
+    /**
+     * Specifies whether the OnInstantiate script was modified.
+     *
+     * @private
+     */
+    private _isOnInstantiateChanged: boolean = false;
+    /**
+     * Initializes a new instance of the `Pdf3DAnnotation` class.
+     *
+     * @private
+     */
+    constructor()
+    /**
+     * Initializes a new instance of the `Pdf3DAnnotation` class with bounds.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a 3D annotation with bounds
+     * let annotation: Pdf3DAnnotation = new Pdf3DAnnotation({ x: 40, y: 60, width: 320, height: 180 });
+     * // Set the 3D model data
+     * annotation.data = modelData;
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle)
+    /**
+     * Initializes a new instance of the `Pdf3DAnnotation` class with bounds and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {object} [options] The 3D annotation properties.
+     * @param {Uint8Array} [options.data] The U3D or PRC model data.
+     * @param {Pdf3DAnnotationType} [options.type] The 3D data type (`u3d` or `prc`).
+     * @param {number} [options.defaultView] The default view index.
+     * @param {ReadonlyArray<Pdf3DView>} [options.views] The initial 3D views.
+     * @param {Pdf3DActivation} [options.activation] The activation settings.
+     * @param {Pdf3DAnimation} [options.animation] The animation settings.
+     * @param {string} [options.onInstantiate] The script run when the artwork is instantiated.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a 3D annotation with bounds and options
+     * let annotation: Pdf3DAnnotation = new Pdf3DAnnotation(
+     *     { x: 40, y: 60, width: 320, height: 180 },
+     *     {
+     *         data: modelData,
+     *         type: Pdf3DAnnotationType.U3D,
+     *         views: [{ name: 'Near View', centerOfOrbit: 131.695 }],
+     *         defaultView: 0,
+     *         activation: {
+     *             mode: Pdf3DActivationMode.ExplicitActivation,
+     *             deactivationMode: Pdf3DDeactivationMode.ExplicitDeactivation,
+     *             showToolbar: true,
+     *             showNavigationPane: true
+     *         },
+     *         animation: {
+     *             type: Pdf3DAnimationType.Linear,
+     *             playCount: 10,
+     *             timeMultiplier: 3
+     *         },
+     *         onInstantiate: 'runtime.setCurrentTool('Rotate');'
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, options?: {
+        data?: Uint8Array;
+        type?: Pdf3DAnnotationType;
+        defaultView?: number;
+        views?: ReadonlyArray<Pdf3DView>;
+        activation?: Pdf3DActivation;
+        animation?: Pdf3DAnimation;
+        onInstantiate?: string;
+    })
+    public constructor(bounds?: Rectangle, options?: {
+        data?: Uint8Array;
+        type?: Pdf3DAnnotationType;
+        defaultView?: number;
+        views?: ReadonlyArray<Pdf3DView>;
+        activation?: Pdf3DActivation;
+        animation?: Pdf3DAnimation;
+        onInstantiate?: string;
+    }) {
+        super();
+        this._type = _PdfAnnotationType.threeDAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('3D'));
+            this.bounds = bounds;
+        }
+        if (options) {
+            if (typeof options.data !== 'undefined') {
+                this.data = options.data;
+            }
+            if (typeof options.type !== 'undefined') {
+                this.annotationType = options.type;
+            }
+            if (Array.isArray(options.views)) {
+                this._views = options.views.map((view: Pdf3DView): Pdf3DView => this._cloneView(view));
+                this._isViewsChanged = true;
+            }
+            if (typeof options.defaultView !== 'undefined') {
+                this.defaultView = options.defaultView;
+            }
+            if (options.activation) {
+                this._activation = { ...options.activation };
+                this._isActivationChanged = true;
+            }
+            if (options.animation) {
+                this._animation = { ...options.animation };
+                this._isAnimationChanged = true;
+            }
+            if (typeof options.onInstantiate === 'string') {
+                this._onInstantiateScript = options.onInstantiate;
+                this._isOnInstantiateChanged = true;
+            }
+        }
+    }
+    /**
+     * Loads a 3D annotation from the page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The parent page.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {Pdf3DAnnotation} The loaded 3D annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): Pdf3DAnnotation {
+        const annotation: Pdf3DAnnotation = new Pdf3DAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Gets the embedded U3D or PRC data.
+     *
+     * @returns {Uint8Array} A copy of the 3D model bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the embedded 3D data
+     * let modelData: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        return this._data ? new Uint8Array(this._data) : undefined;
+    }
+    /**
+     * Sets the embedded U3D or PRC data.
+     *
+     * @param {Uint8Array} value The 3D model bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Sets the embedded 3D data
+     * annotation.data = modelData;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set data(value: Uint8Array) {
+        this._setData(value);
+        this._hasStreamDataChanged = true;
+    }
+    /**
+     * Gets the embedded 3D data type.
+     *
+     * @returns {Pdf3DAnnotationType} The 3D data type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the 3D data type
+     * let annotationType: Pdf3DAnnotationType = annotation.annotationType;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get annotationType(): Pdf3DAnnotationType {
+        return this._annotationType;
+    }
+    /**
+     * Sets the embedded 3D data type.
+     *
+     * @param {Pdf3DAnnotationType} value The 3D data type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a 3D annotation without data type locked to existing bytes
+     * let annotation: Pdf3DAnnotation = new Pdf3DAnnotation({ x: 40, y: 60, width: 320, height: 180 });
+     * // Sets the 3D data type before assigning model data
+     * annotation.annotationType = Pdf3DAnnotationType.U3D;
+     * annotation.data = modelData;
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set annotationType(value: Pdf3DAnnotationType) {
+        this._validateType(value);
+        if (this._annotationType === value) {
+            return;
+        }
+        this._annotationType = value;
+        this._isAnnotationTypeChanged = true;
+    }
+    /**
+     * Gets the activation settings of the 3D annotation.
+     *
+     * @returns {Pdf3DActivation} The activation settings.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the activation settings
+     * let activation: Pdf3DActivation = annotation.activation;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get activation(): Pdf3DActivation {
+        return { ...this._activation };
+    }
+    /**
+     * Sets the activation settings of the 3D annotation.
+     *
+     * @param {Pdf3DActivation} value The activation settings.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Sets the activation settings
+     * annotation.activation = {
+     *     mode: Pdf3DActivationMode.PageOpen,
+     *     deactivationMode: Pdf3DDeactivationMode.PageClose,
+     *     showToolbar: true,
+     *     showNavigationPane: false
+     * };
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set activation(value: Pdf3DActivation) {
+        this._activation = value ? { ...value } : {};
+        this._isActivationChanged = true;
+    }
+    /**
+     * Gets the animation settings of the 3D annotation.
+     *
+     * @returns {Pdf3DAnimation} The animation settings.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the animation settings
+     * let animation: Pdf3DAnimation = annotation.animation;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get animation(): Pdf3DAnimation {
+        return { ...this._animation };
+    }
+    /**
+     * Sets the animation settings of the 3D annotation.
+     *
+     * @param {Pdf3DAnimation} value The animation settings.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Sets the animation settings
+     * annotation.animation = {
+     *     type: Pdf3DAnimationType.Linear,
+     *     playCount: 10,
+     *     timeMultiplier: 3
+     * };
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set animation(value: Pdf3DAnimation) {
+        this._animation = value ? { ...value } : {};
+        this._isAnimationChanged = true;
+        if (Object.keys(this._animation).length === 0) {
+            this._removeStreamEntry('AN');
+        }
+    }
+    /**
+     * Gets the script executed when the 3D artwork is instantiated.
+     *
+     * @returns {string} The OnInstantiate script.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the OnInstantiate script
+     * let onInstantiate: string = annotation.onInstantiate;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get onInstantiate(): string {
+        return this._onInstantiateScript;
+    }
+    /**
+     * Sets the script executed when the 3D artwork is instantiated.
+     *
+     * @param {string} value The OnInstantiate script.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Sets the OnInstantiate script
+     * annotation.onInstantiate = 'runtime.setCurrentTool('Rotate');';
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set onInstantiate(value: string) {
+        this._onInstantiateScript = value || '';
+        this._isOnInstantiateChanged = true;
+        if (this._onInstantiateScript.length === 0) {
+            this._removeStreamEntry('OnInstantiate');
+        }
+    }
+    /**
+     * Gets the available 3D views.
+     *
+     * @returns {ReadonlyArray<Pdf3DView>} A cloned collection of 3D views.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the 3D views
+     * let views: ReadonlyArray<Pdf3DView> = annotation.views;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get views(): ReadonlyArray<Pdf3DView> {
+        return this._views.map((view: Pdf3DView): Pdf3DView => this._cloneView(view));
+    }
+    /**
+     * Replaces all 3D views.
+     *
+     * @param {Pdf3DView[]} views The new view collection.
+     * @returns {void}
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Replace all 3D views
+     * annotation.replaceViews([
+     *     { name: 'Near View', internalName: 'nearView', centerOfOrbit: 131.695 },
+     *     { name: 'Far View', internalName: 'farView', centerOfOrbit: 250 }
+     * ]);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    replaceViews(views: Pdf3DView[]): void {
+        if (!Array.isArray(views)) {
+            throw new Error('Views must be an array.');
+        }
+        this._views = views.map((view: Pdf3DView): Pdf3DView => this._cloneView(view));
+        this._isViewsChanged = true;
+        if (views.length === 0) {
+            this._removeStreamEntry('VA');
+        }
+    }
+    /**
+     * Adds a 3D view and returns its index.
+     *
+     * @param {Pdf3DView} view The view to add.
+     * @returns {number} The index of the added view.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Adds a 3D view
+     * let index: number = annotation.addView({
+     *     name: 'Near View',
+     *     internalName: 'nearView',
+     *     centerOfOrbit: 131.695,
+     *     projection: Pdf3DProjectionType.Orthographic,
+     *     lightingStyle: Pdf3DLightingStyle.Night
+     * });
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    addView(view: Pdf3DView): number {
+        if (!view) {
+            throw new Error('View cannot be null or undefined.');
+        }
+        this._views.push(this._cloneView(view));
+        this._isViewsChanged = true;
+        return this._views.length - 1;
+    }
+    /**
+     * Updates the 3D view at the specified index.
+     *
+     * @param {number} index The view index.
+     * @param {Pdf3DView} view The updated view.
+     * @returns {void}
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Updates the first 3D view
+     * annotation.updateView(0, {
+     *     name: 'Updated View',
+     *     internalName: 'updatedView',
+     *     centerOfOrbit: 150,
+     *     projection: Pdf3DProjectionType.Perspective
+     * });
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    updateView(index: number, view: Pdf3DView): void {
+        this._validateViewIndex(index);
+        if (!view) {
+            throw new Error('View cannot be null or undefined.');
+        }
+        this._views[<number>index] = this._cloneView(view);
+        this._isViewsChanged = true;
+    }
+    /**
+     * Removes a 3D view and updates the numeric default view when needed.
+     *
+     * @param {number} index The view index.
+     * @returns {void}
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Removes the first 3D view
+     * annotation.removeView(0);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    removeView(index: number): void {
+        this._validateViewIndex(index);
+        this._views.splice(index, 1);
+        this._isViewsChanged = true;
+        if (typeof this._defaultViewValue !== 'number') {
+            return;
+        }
+        if (this._defaultViewValue === index) {
+            this._defaultViewValue = undefined;
+            this._isDefaultViewChanged = true;
+            this._removeStreamEntry('DV');
+        } else if (this._defaultViewValue > index) {
+            this._defaultViewValue--;
+            this._isDefaultViewChanged = true;
+        }
+    }
+    /**
+     * Gets the default view index.
+     *
+     * @returns {number} The default view index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Gets the default view index
+     * let defaultView: number = annotation.defaultView;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get defaultView(): number {
+        return this._defaultViewValue;
+    }
+    /**
+     * Sets the default view index.
+     *
+     * @param {number} value The default view index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: Pdf3DAnnotation = page.annotations.at(0) as Pdf3DAnnotation;
+     * // Sets the default view index
+     * annotation.defaultView = 0;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set defaultView(value: number) {
+        if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+            throw new Error('Default view index must be a non-negative integer.');
+        }
+        this._defaultViewValue = value;
+        this._isDefaultViewChanged = true;
+    }
+    /**
+     * Initializes the loaded 3D annotation.
+     *
+     * @private
+     * @param {PdfPage} page The parent page.
+     * @param {_PdfDictionary} [dictionary] The annotation dictionary.
+     * @returns {void}
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        if (!this._dictionary && !dictionary) {
+            this._page = page;
+            return;
+        }
+        super._initialize(page, dictionary);
+        const stream: _PdfBaseStream = this._getStream();
+        if (stream) {
+            this._stream = stream;
+            this._loadAnnotationType(stream.dictionary);
+            this._data = new Uint8Array(stream.getBytes());
+        }
+        const activation: any = this._dictionary.has('3DA') // eslint-disable-line
+            ? this._dictionary.get('3DA') : undefined;
+        if (activation instanceof _PdfDictionary) {
+            this._loadActivationDictionary(activation);
+        }
+        this._loadViews();
+        this._loadDefaultView();
+        this._loadAnimation();
+        this._loadOnInstantiate();
+        this._resetChangeFlags();
+    }
+    /**
+     * Processes pending changes and optionally flattens the annotation.
+     *
+     * @private
+     * @param {boolean} [isFlatten=false] Indicates whether to flatten the annotation.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('3D annotation is not initialized.');
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (this._hasStreamDataChanged || (!this._isLoaded && !this._dictionary.has('3DD'))) {
+            this._createOrUpdateStream();
+        }
+        if (this._isAnnotationTypeChanged) {
+            this._updateStreamType();
+        }
+        if (this._isActivationChanged || (!this._isLoaded && Object.keys(this._activation).length > 0)) {
+            this._updateActivationDictionary();
+        }
+        if (this._isViewsChanged || this._isDefaultViewChanged || this._isAnimationChanged ||
+            this._isOnInstantiateChanged || !this._isLoaded) {
+            this._validateDefaultView();
+            this._updateStreamMetadata();
+        }
+        if (!isFlatten) {
+            this._resetChangeFlags();
+            return;
+        }
+        const appearance: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearance) {
+            this._removeAnnotation(this._page, this);
+            this._resetChangeFlags();
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearance, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._resetChangeFlags();
+    }
+    /**
+     * Validates and copies the U3D or PRC model bytes.
+     *
+     * @private
+     * @param {Uint8Array} data The U3D or PRC data.
+     * @returns {void}
+     */
+    private _setData(data: Uint8Array): void {
+        if (!(data instanceof Uint8Array) || data.length === 0) {
+            throw new Error('3D data cannot be empty.');
+        }
+        this._data = new Uint8Array(data);
+    }
+    /**
+     * Validates that the 3D data type is U3D or PRC.
+     *
+     * @private
+     * @param {Pdf3DAnnotationType} value The 3D data type.
+     * @returns {void}
+     */
+    private _validateType(value: Pdf3DAnnotationType): void {
+        if (value !== Pdf3DAnnotationType.U3D && value !== Pdf3DAnnotationType.PRC) {
+            throw new Error('Only U3D and PRC data are supported.');
+        }
+    }
+    /**
+     * Validates required values for a newly created 3D annotation.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('3D annotation bounds must be finite and positive.');
+        }
+        if (!this._data || this._data.length === 0) {
+            throw new Error('3D data cannot be empty.');
+        }
+        this._validateType(this._annotationType);
+    }
+    /**
+     * Gets the embedded 3D stream from the annotation dictionary.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The 3D stream, if present.
+     */
+    private _getStream(): _PdfBaseStream {
+        if (this._stream) {
+            return this._stream;
+        }
+        if (!this._dictionary || !this._dictionary.has('3DD')) {
+            return undefined;
+        }
+        const stream: any = this._dictionary.get('3DD'); // eslint-disable-line
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: any = this._dictionary.getRaw('3DD'); // eslint-disable-line
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        this._stream = stream;
+        return stream;
+    }
+    /**
+     * Creates or replaces the embedded 3D stream.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _createOrUpdateStream(): void {
+        if (!this._data || this._data.length === 0) {
+            throw new Error('3D data cannot be empty.');
+        }
+        const existing: _PdfBaseStream = this._getStream();
+        const dictionary: _PdfDictionary = existing
+            ? existing.dictionary
+            : new _PdfDictionary(this._crossReference);
+        dictionary.update('Type', _PdfName.get('3D'));
+        dictionary.update('Subtype', _PdfName.get(
+            this._annotationType === Pdf3DAnnotationType.PRC ? 'PRC' : 'U3D'));
+        const stream: _PdfStream = new _PdfStream(this._data, dictionary);
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        stream.reference = reference;
+        this._crossReference._cacheMap.set(reference, stream);
+        this._dictionary.update('3DD', reference);
+        this._stream = stream;
+    }
+    /**
+     * Loads the embedded 3D subtype from the stream dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The 3D stream dictionary.
+     * @returns {void}
+     */
+    private _loadAnnotationType(dictionary: _PdfDictionary): void {
+        const subtype: any = dictionary.has('Subtype') ? dictionary.get('Subtype') : undefined; // eslint-disable-line
+        if (subtype instanceof _PdfName) {
+            if (subtype.name === 'U3D') {
+                this._annotationType = Pdf3DAnnotationType.U3D;
+            }
+            if (subtype.name === 'PRC') {
+                this._annotationType = Pdf3DAnnotationType.PRC;
+            }
+        }
+    }
+    /**
+     * Updates the embedded 3D subtype on the stream dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateStreamType(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        if (stream) {
+            stream.dictionary.update('Subtype', _PdfName.get(
+                this._annotationType === Pdf3DAnnotationType.PRC ? 'PRC' : 'U3D'));
+        }
+    }
+    /**
+     * Loads activation settings from the annotation dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The activation dictionary.
+     * @returns {void}
+     */
+    private _loadActivationDictionary(dictionary: _PdfDictionary): void {
+        const activation: Pdf3DActivation = {};
+        const mode: any = dictionary.has('A') ? dictionary.get('A') : undefined; // eslint-disable-line
+        const deactivation: any = dictionary.has('D') ? dictionary.get('D') : undefined; // eslint-disable-line
+        const toolbar: any = dictionary.has('TB') ? dictionary.get('TB') : undefined; // eslint-disable-line
+        const navigation: any = dictionary.has('NP') ? dictionary.get('NP') : undefined; // eslint-disable-line
+        if (mode instanceof _PdfName) {
+            activation.mode = this._parseActivationMode(mode.name);
+        }
+        if (deactivation instanceof _PdfName) {
+            activation.deactivationMode = this._parseDeactivationMode(deactivation.name);
+        }
+        if (typeof toolbar === 'boolean') {
+            activation.showToolbar = toolbar;
+        }
+        if (typeof navigation === 'boolean') {
+            activation.showNavigationPane = navigation;
+        }
+        this._activation = activation;
+    }
+    /**
+     * Writes activation settings into the annotation dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateActivationDictionary(): void {
+        if (Object.keys(this._activation).length === 0) {
+            delete this._dictionary._map['3DA'];
+            this._dictionary._updated = true;
+            return;
+        }
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        if (typeof this._activation.mode !== 'undefined') {
+            dictionary.update('A', _PdfName.get(this._mapActivationMode(this._activation.mode)));
+        }
+        if (typeof this._activation.deactivationMode !== 'undefined') {
+            dictionary.update('D', _PdfName.get(
+                this._mapDeactivationMode(this._activation.deactivationMode)));
+        }
+        if (typeof this._activation.showToolbar === 'boolean') {
+            dictionary.update('TB', this._activation.showToolbar);
+        }
+        if (typeof this._activation.showNavigationPane === 'boolean') {
+            dictionary.update('NP', this._activation.showNavigationPane);
+        }
+        this._dictionary.update('3DA', dictionary);
+    }
+    /**
+     * Maps an activation mode to its PDF name.
+     *
+     * @private
+     * @param {Pdf3DActivationMode} value The activation mode.
+     * @returns {string} The PDF activation-mode name.
+     */
+    private _mapActivationMode(value: Pdf3DActivationMode): string {
+        switch (value) {
+        case Pdf3DActivationMode.ExplicitActivation:
+            return 'XA';
+        case Pdf3DActivationMode.PageOpen:
+            return 'PO';
+        case Pdf3DActivationMode.PageVisible:
+            return 'PV';
+        default:
+            throw new Error('Unsupported 3D activation mode.');
+        }
+    }
+    /**
+     * Parses a PDF activation-mode name.
+     *
+     * @private
+     * @param {string} value The PDF activation-mode name.
+     * @returns {Pdf3DActivationMode} The activation mode.
+     */
+    private _parseActivationMode(value: string): Pdf3DActivationMode {
+        switch (value) {
+        case 'XA':
+            return Pdf3DActivationMode.ExplicitActivation;
+        case 'PO':
+            return Pdf3DActivationMode.PageOpen;
+        case 'PV':
+            return Pdf3DActivationMode.PageVisible;
+        default:
+            throw new Error('Unsupported 3D activation mode.');
+        }
+    }
+    /**
+     * Maps a deactivation mode to its PDF name.
+     *
+     * @private
+     * @param {Pdf3DDeactivationMode} value The deactivation mode.
+     * @returns {string} The PDF deactivation-mode name.
+     */
+    private _mapDeactivationMode(value: Pdf3DDeactivationMode): string {
+        switch (value) {
+        case Pdf3DDeactivationMode.ExplicitDeactivation:
+            return 'XD';
+        case Pdf3DDeactivationMode.PageClose:
+            return 'PC';
+        case Pdf3DDeactivationMode.PageInvisible:
+            return 'PI';
+        default:
+            throw new Error('Unsupported 3D deactivation mode.');
+        }
+    }
+    /**
+     * Parses a PDF deactivation-mode name.
+     *
+     * @private
+     * @param {string} value The PDF deactivation-mode name.
+     * @returns {Pdf3DDeactivationMode} The deactivation mode.
+     */
+    private _parseDeactivationMode(value: string): Pdf3DDeactivationMode {
+        switch (value) {
+        case 'XD': return Pdf3DDeactivationMode.ExplicitDeactivation;
+        case 'PC': return Pdf3DDeactivationMode.PageClose;
+        case 'PI': return Pdf3DDeactivationMode.PageInvisible;
+        default: throw new Error('Unsupported 3D deactivation mode.');
+        }
+    }
+    /**
+     * Loads all 3D views from the stream dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadViews(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        const value: any = stream && stream.dictionary.has('VA') // eslint-disable-line
+            ? stream.dictionary.get('VA') : undefined;
+        if (Array.isArray(value)) {
+            this._views = value.map((item: any): Pdf3DView => // eslint-disable-line
+                item instanceof _PdfDictionary ? this._loadViewDictionary(item) : item as Pdf3DView);
+        }
+    }
+    /**
+     * Loads one 3D view from a dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The view dictionary.
+     * @returns {Pdf3DView} The loaded view.
+     */
+    private _loadViewDictionary(dictionary: _PdfDictionary): Pdf3DView {
+        const view: Pdf3DView = {};
+        const name: any = dictionary.has('XN') ? dictionary.get('XN') : undefined; // eslint-disable-line
+        const internalName: any = dictionary.has('IN') ? dictionary.get('IN') : undefined; // eslint-disable-line
+        const matrix: any = dictionary.has('C2W') ? dictionary.get('C2W') : undefined; // eslint-disable-line
+        const orbit: any = dictionary.has('CO') ? dictionary.get('CO') : undefined; // eslint-disable-line
+        const background: any = dictionary.has('BG') ? dictionary.get('BG') : undefined; // eslint-disable-line
+        const projection: any = dictionary.has('P') ? dictionary.get('P') : undefined; // eslint-disable-line
+        const renderMode: any = dictionary.has('RM') ? dictionary.get('RM') : undefined; // eslint-disable-line
+        const lighting: any = dictionary.has('LS') ? dictionary.get('LS') : undefined; // eslint-disable-line
+        if (typeof name === 'string') {
+            view.name = name;
+        }
+        if (typeof internalName === 'string') {
+            view.internalName = internalName;
+        }
+        if (Array.isArray(matrix)) {
+            view.cameraToWorld = matrix.slice();
+        }
+        if (typeof orbit === 'number') {
+            view.centerOfOrbit = orbit;
+        }
+        if (background instanceof _PdfDictionary) {
+            view.background = this._loadBackgroundDictionary(background);
+        }
+        if (projection instanceof _PdfDictionary) {
+            view.projection = this._loadProjectionDictionary(projection);
+        }
+        if (renderMode instanceof _PdfDictionary) {
+            view.renderMode = this._loadRenderModeDictionary(renderMode);
+        }
+        if (lighting instanceof _PdfDictionary) {
+            view.lightingStyle = this._loadLightingDictionary(lighting);
+        }
+        return view;
+    }
+    /**
+     * Creates one 3D view dictionary.
+     *
+     * @private
+     * @param {Pdf3DView} view The view settings.
+     * @returns {_PdfDictionary} The view dictionary.
+     */
+    private _createViewDictionary(view: Pdf3DView): _PdfDictionary {
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        dictionary.update('Type', _PdfName.get('3DView'));
+        if (view.name) {
+            dictionary.update('XN', view.name);
+        }
+        if (view.internalName) {
+            dictionary.update('IN', view.internalName);
+        }
+        if (view.cameraToWorld) {
+            if (view.cameraToWorld.length !== 12 || view.cameraToWorld.some(
+                (value: number): boolean => !Number.isFinite(value))) {
+                throw new Error('The camera-to-world matrix must contain 12 finite numbers.');
+            }
+            dictionary.update('C2W', view.cameraToWorld.slice());
+        }
+        if (typeof view.centerOfOrbit === 'number') {
+            if (!Number.isFinite(view.centerOfOrbit)) {
+                throw new Error('The center of orbit must be finite.');
+            }
+            dictionary.update('CO', view.centerOfOrbit);
+        }
+        if (view.background) {
+            dictionary.update('BG', this._createBackgroundDictionary(view.background));
+        }
+        if (typeof view.projection !== 'undefined') {
+            dictionary.update('P', this._createProjectionDictionary(view.projection));
+        }
+        if (view.renderMode) {
+            dictionary.update('RM', this._createRenderModeDictionary(view.renderMode));
+        }
+        if (typeof view.lightingStyle !== 'undefined') {
+            dictionary.update('LS', this._createLightingDictionary(view.lightingStyle));
+        }
+        return dictionary;
+    }
+    /**
+     * Creates a 3D background dictionary.
+     *
+     * @private
+     * @param {PdfColor} color The background color.
+     * @returns {_PdfDictionary} The background dictionary.
+     */
+    private _createBackgroundDictionary(color: PdfColor): _PdfDictionary {
+        this._validateColor(color);
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        dictionary.update('Type', _PdfName.get('3DBG'));
+        dictionary.update('Subtype', _PdfName.get('SC'));
+        dictionary.update('CS', _PdfName.get('DeviceRGB'));
+        dictionary.update('C', this._normalizeColor(color));
+        return dictionary;
+    }
+    /**
+     * Loads a 3D background dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The background dictionary.
+     * @returns {PdfColor} The loaded background color.
+     */
+    private _loadBackgroundDictionary(dictionary: _PdfDictionary): PdfColor {
+        const value: any = dictionary.has('C') ? dictionary.get('C') : undefined; // eslint-disable-line
+        if (!Array.isArray(value) || value.length < 3) {
+            return undefined;
+        }
+        return this._denormalizeColor(value, 0);
+    }
+    /**
+     * Creates a 3D projection dictionary.
+     *
+     * @private
+     * @param {Pdf3DProjectionType} value The projection type.
+     * @returns {_PdfDictionary} The projection dictionary.
+     */
+    private _createProjectionDictionary(value: Pdf3DProjectionType): _PdfDictionary {
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        switch (value) {
+        case Pdf3DProjectionType.Orthographic:
+            dictionary.update('Subtype', _PdfName.get('O'));
+            break;
+        case Pdf3DProjectionType.Perspective:
+            dictionary.update('Subtype', _PdfName.get('P'));
+            break;
+        default:
+            throw new Error('Unsupported 3D projection type.');
+        }
+        return dictionary;
+    }
+    /**
+     * Loads a projection dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The projection dictionary.
+     * @returns {Pdf3DProjectionType} The projection type.
+     */
+    private _loadProjectionDictionary(dictionary: _PdfDictionary): Pdf3DProjectionType {
+        const value: any = dictionary.get('Subtype'); // eslint-disable-line
+        if (value instanceof _PdfName && value.name === 'O') {
+            return Pdf3DProjectionType.Orthographic;
+        }
+        if (value instanceof _PdfName && value.name === 'P') {
+            return Pdf3DProjectionType.Perspective;
+        }
+        throw new Error('Unsupported 3D projection subtype.');
+    }
+    /**
+     * Creates a 3D render-mode dictionary.
+     *
+     * @private
+     * @param {Pdf3DRenderMode} value The render-mode settings.
+     * @returns {_PdfDictionary} The render-mode dictionary.
+     */
+    private _createRenderModeDictionary(value: Pdf3DRenderMode): _PdfDictionary {
+        if (!value || typeof value.style === 'undefined') {
+            throw new Error('The 3D render style is required.');
+        }
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        dictionary.update('Type', _PdfName.get('3DRenderMode'));
+        dictionary.update('Subtype', _PdfName.get(this._mapRenderStyle(value.style)));
+        if (value.auxiliaryColor) {
+            dictionary.update('AC', this._createRenderColorArray(value.auxiliaryColor));
+        }
+        if (value.faceColor) {
+            dictionary.update('FC', this._createRenderColorArray(value.faceColor));
+        }
+        if (typeof value.opacity === 'number') {
+            if (!Number.isFinite(value.opacity) || value.opacity < 0 || value.opacity > 100) {
+                throw new Error('The 3D render opacity must be between 0 and 100.');
+            }
+            dictionary.update('O', value.opacity);
+        }
+        if (typeof value.creaseValue === 'number') {
+            if (!Number.isFinite(value.creaseValue) || value.creaseValue < 0 || value.creaseValue > 360) {
+                throw new Error('The 3D render crease value must be between 0 and 360.');
+            }
+            dictionary.update('CV', value.creaseValue);
+        }
+        return dictionary;
+    }
+    /**
+     * Loads a render-mode dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The render-mode dictionary.
+     * @returns {Pdf3DRenderMode} The render-mode settings.
+     */
+    private _loadRenderModeDictionary(dictionary: _PdfDictionary): Pdf3DRenderMode {
+        const subtype: any = dictionary.get('Subtype'); // eslint-disable-line
+        if (!(subtype instanceof _PdfName)) {
+            throw new Error('The 3D render-mode subtype is invalid.');
+        }
+        const value: Pdf3DRenderMode = { style: this._parseRenderStyle(subtype.name) };
+        const auxiliary: any = dictionary.has('AC') ? dictionary.get('AC') : undefined; // eslint-disable-line
+        const face: any = dictionary.has('FC') ? dictionary.get('FC') : undefined; // eslint-disable-line
+        const opacity: any = dictionary.has('O') ? dictionary.get('O') : undefined; // eslint-disable-line
+        const crease: any = dictionary.has('CV') ? dictionary.get('CV') : undefined; // eslint-disable-line
+        if (Array.isArray(auxiliary)) {
+            value.auxiliaryColor = this._loadRenderColor(auxiliary);
+        }
+        if (Array.isArray(face)) {
+            value.faceColor = this._loadRenderColor(face);
+        }
+        if (typeof opacity === 'number') {
+            value.opacity = opacity;
+        }
+        if (typeof crease === 'number') {
+            value.creaseValue = crease;
+        }
+        return value;
+    }
+    /**
+     * Creates a render color array in DeviceRGB form.
+     *
+     * @private
+     * @param {PdfColor} color The color value.
+     * @returns {any[]} The PDF color array.
+     */
+    private _createRenderColorArray(color: PdfColor): any[] { // eslint-disable-line
+        this._validateColor(color);
+        return [_PdfName.get('DeviceRGB') as _PdfName, ...this._normalizeColor(color)];
+    }
+    /**
+     * Loads a render color array.
+     *
+     * @private
+     * @param {any[]} value The PDF color array.
+     * @returns {PdfColor} The loaded color.
+     */
+    private _loadRenderColor(value: any[]): PdfColor { // eslint-disable-line
+        const first: any = value[0]; // eslint-disable-line
+        if (value.length < 4 || !(first instanceof _PdfName) || (first as _PdfName).name !== 'DeviceRGB') {
+            throw new Error('The 3D render color is invalid.');
+        }
+        return this._denormalizeColor(value, 1);
+    }
+    /**
+     * Maps a 3D render style to its PDF name.
+     *
+     * @private
+     * @param {Pdf3DRenderStyle} value The render style.
+     * @returns {string} The PDF render-style name.
+     */
+    private _mapRenderStyle(value: Pdf3DRenderStyle): string {
+        switch (value) {
+        case Pdf3DRenderStyle.Solid:
+            return 'Solid';
+        case Pdf3DRenderStyle.SolidWireframe:
+            return 'SolidWireframe';
+        case Pdf3DRenderStyle.Transparent:
+            return 'Transparent';
+        case Pdf3DRenderStyle.TransparentWireframe:
+            return 'TransparentWireframe';
+        case Pdf3DRenderStyle.BoundingBox:
+            return 'BoundingBox';
+        case Pdf3DRenderStyle.TransparentBoundingBox:
+            return 'TransparentBoundingBox';
+        case Pdf3DRenderStyle.TransparentBoundingBoxOutline:
+            return 'TransparentBoundingBoxOutline';
+        case Pdf3DRenderStyle.Wireframe:
+            return 'Wireframe';
+        case Pdf3DRenderStyle.ShadedWireframe:
+            return 'ShadedWireframe';
+        case Pdf3DRenderStyle.HiddenWireframe:
+            return 'HiddenWireframe';
+        case Pdf3DRenderStyle.Vertices:
+            return 'Vertices';
+        case Pdf3DRenderStyle.ShadedVertices:
+            return 'ShadedVertices';
+        case Pdf3DRenderStyle.Illustration:
+            return 'Illustration';
+        case Pdf3DRenderStyle.SolidOutline:
+            return 'SolidOutline';
+        case Pdf3DRenderStyle.ShadedIllustration:
+            return 'ShadedIllustration';
+        default:
+            throw new Error('Unsupported 3D render style.');
+        }
+    }
+    /**
+     * Parses a PDF 3D render-style name.
+     *
+     * @private
+     * @param {string} value The PDF render-style name.
+     * @returns {Pdf3DRenderStyle} The render style.
+     */
+    private _parseRenderStyle(value: string): Pdf3DRenderStyle {
+        switch (value) {
+        case 'Solid':
+            return Pdf3DRenderStyle.Solid;
+        case 'SolidWireframe':
+            return Pdf3DRenderStyle.SolidWireframe;
+        case 'Transparent':
+            return Pdf3DRenderStyle.Transparent;
+        case 'TransparentWireframe':
+            return Pdf3DRenderStyle.TransparentWireframe;
+        case 'BoundingBox':
+            return Pdf3DRenderStyle.BoundingBox;
+        case 'TransparentBoundingBox':
+            return Pdf3DRenderStyle.TransparentBoundingBox;
+        case 'TransparentBoundingBoxOutline':
+            return Pdf3DRenderStyle.TransparentBoundingBoxOutline;
+        case 'Wireframe':
+            return Pdf3DRenderStyle.Wireframe;
+        case 'ShadedWireframe':
+            return Pdf3DRenderStyle.ShadedWireframe;
+        case 'HiddenWireframe':
+            return Pdf3DRenderStyle.HiddenWireframe;
+        case 'Vertices':
+            return Pdf3DRenderStyle.Vertices;
+        case 'ShadedVertices':
+            return Pdf3DRenderStyle.ShadedVertices;
+        case 'Illustration':
+            return Pdf3DRenderStyle.Illustration;
+        case 'SolidOutline':
+            return Pdf3DRenderStyle.SolidOutline;
+        case 'ShadedIllustration':
+            return Pdf3DRenderStyle.ShadedIllustration;
+        default:
+            throw new Error('Unsupported 3D render-style subtype.');
+        }
+    }
+    /**
+     * Creates a 3D lighting-scheme dictionary.
+     *
+     * @private
+     * @param {Pdf3DLightingStyle} value The lighting style.
+     * @returns {_PdfDictionary} The lighting dictionary.
+     */
+    private _createLightingDictionary(value: Pdf3DLightingStyle): _PdfDictionary {
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        dictionary.update('Type', _PdfName.get('3DLightingScheme'));
+        dictionary.update('Subtype', _PdfName.get(this._mapLightingStyle(value)));
+        return dictionary;
+    }
+    /**
+     * Loads a 3D lighting style from a lighting-scheme dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The lighting dictionary.
+     * @returns {Pdf3DLightingStyle} The lighting style.
+     */
+    private _loadLightingDictionary(dictionary: _PdfDictionary): Pdf3DLightingStyle {
+        const value: any = dictionary.get('Subtype'); // eslint-disable-line
+        if (!(value instanceof _PdfName)) {
+            throw new Error('The 3D lighting subtype is invalid.');
+        }
+        return this._parseLightingStyle(value.name);
+    }
+    /**
+     * Maps a 3D lighting style to its PDF name.
+     *
+     * @private
+     * @param {Pdf3DLightingStyle} value The lighting style.
+     * @returns {string} The PDF lighting-style name.
+     */
+    private _mapLightingStyle(value: Pdf3DLightingStyle): string {
+        switch (value) {
+        case Pdf3DLightingStyle.Artwork:
+            return 'Artwork';
+        case Pdf3DLightingStyle.None:
+            return 'None';
+        case Pdf3DLightingStyle.White:
+            return 'White';
+        case Pdf3DLightingStyle.Day:
+            return 'Day';
+        case Pdf3DLightingStyle.Night:
+            return 'Night';
+        case Pdf3DLightingStyle.Hard:
+            return 'Hard';
+        case Pdf3DLightingStyle.Primary:
+            return 'Primary';
+        case Pdf3DLightingStyle.Blue:
+            return 'Blue';
+        case Pdf3DLightingStyle.Red:
+            return 'Red';
+        case Pdf3DLightingStyle.Cube:
+            return 'Cube';
+        case Pdf3DLightingStyle.CAD:
+            return 'CAD';
+        case Pdf3DLightingStyle.Headlamp:
+            return 'Headlamp';
+        default:
+            throw new Error('Unsupported 3D lighting style.');
+        }
+    }
+    /**
+     * Parses a PDF 3D lighting-style name.
+     *
+     * @private
+     * @param {string} value The PDF lighting-style name.
+     * @returns {Pdf3DLightingStyle} The lighting style.
+     */
+    private _parseLightingStyle(value: string): Pdf3DLightingStyle {
+        switch (value) {
+        case 'Artwork':
+            return Pdf3DLightingStyle.Artwork;
+        case 'None':
+            return Pdf3DLightingStyle.None;
+        case 'White':
+            return Pdf3DLightingStyle.White;
+        case 'Day':
+            return Pdf3DLightingStyle.Day;
+        case 'Night':
+            return Pdf3DLightingStyle.Night;
+        case 'Hard':
+            return Pdf3DLightingStyle.Hard;
+        case 'Primary':
+            return Pdf3DLightingStyle.Primary;
+        case 'Blue':
+            return Pdf3DLightingStyle.Blue;
+        case 'Red':
+            return Pdf3DLightingStyle.Red;
+        case 'Cube':
+            return Pdf3DLightingStyle.Cube;
+        case 'CAD':
+            return Pdf3DLightingStyle.CAD;
+        case 'Headlamp':
+            return Pdf3DLightingStyle.Headlamp;
+        default:
+            throw new Error('Unsupported 3D lighting subtype.');
+        }
+    }
+    /**
+     * Loads the default view (`DV`) from the 3D stream dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadDefaultView(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        const value: any = stream && stream.dictionary.has('DV') // eslint-disable-line
+            ? stream.dictionary.get('DV') : undefined;
+        if (typeof value === 'number') {
+            this._defaultViewValue = value;
+        }
+    }
+    /**
+     * Loads animation settings (`AN`) from the 3D stream dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadAnimation(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        const dictionary: any = stream && stream.dictionary.has('AN') // eslint-disable-line
+            ? stream.dictionary.get('AN') : undefined;
+        if (!(dictionary instanceof _PdfDictionary)) {
+            return;
+        }
+        const animation: Pdf3DAnimation = {};
+        const subtype: any = dictionary.has('Subtype') ? dictionary.get('Subtype') : undefined; // eslint-disable-line
+        const playCount: any = dictionary.has('PC') ? dictionary.get('PC') : undefined; // eslint-disable-line
+        const multiplier: any = dictionary.has('TM') ? dictionary.get('TM') : undefined; // eslint-disable-line
+        if (subtype instanceof _PdfName) {
+            animation.type = this._parseAnimationType(subtype.name);
+        }
+        if (typeof playCount === 'number') {
+            animation.playCount = playCount;
+        }
+        if (typeof multiplier === 'number') {
+            animation.timeMultiplier = multiplier;
+        }
+        this._animation = animation;
+    }
+    /**
+     * Creates a 3D animation dictionary from the current animation settings.
+     *
+     * @private
+     * @returns {_PdfDictionary} The animation dictionary.
+     */
+    private _createAnimationDictionary(): _PdfDictionary {
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        if (typeof this._animation.type !== 'undefined') {
+            dictionary.update('Subtype', _PdfName.get(this._mapAnimationType(this._animation.type)));
+        }
+        if (typeof this._animation.playCount === 'number') {
+            if (!Number.isFinite(this._animation.playCount) || this._animation.playCount < 0) {
+                throw new Error('The 3D animation play count must be non-negative.');
+            }
+            dictionary.update('PC', this._animation.playCount);
+        }
+        if (typeof this._animation.timeMultiplier === 'number') {
+            if (!Number.isFinite(this._animation.timeMultiplier)) {
+                throw new Error('The 3D animation time multiplier must be finite.');
+            }
+            dictionary.update('TM', this._animation.timeMultiplier);
+        }
+        return dictionary;
+    }
+    /**
+     * Maps a 3D animation type to its PDF name.
+     *
+     * @private
+     * @param {Pdf3DAnimationType} value The animation type.
+     * @returns {string} The PDF animation subtype name.
+     */
+    private _mapAnimationType(value: Pdf3DAnimationType): string {
+        switch (value) {
+        case Pdf3DAnimationType.None:
+            return 'None';
+        case Pdf3DAnimationType.Linear:
+            return 'Linear';
+        case Pdf3DAnimationType.Oscillating:
+            return 'Oscillating';
+        default:
+            throw new Error('Unsupported 3D animation type.');
+        }
+    }
+    /**
+     * Parses a PDF 3D animation subtype name.
+     *
+     * @private
+     * @param {string} value The PDF animation subtype name.
+     * @returns {Pdf3DAnimationType} The animation type.
+     */
+    private _parseAnimationType(value: string): Pdf3DAnimationType {
+        switch (value) {
+        case 'None':
+            return Pdf3DAnimationType.None;
+        case 'Linear':
+            return Pdf3DAnimationType.Linear;
+        case 'Oscillating':
+            return Pdf3DAnimationType.Oscillating;
+        default:
+            throw new Error('Unsupported 3D animation subtype.');
+        }
+    }
+    /**
+     * Loads the instantiation script (`OnInstantiate`) from the 3D stream dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadOnInstantiate(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        const value: any = stream && stream.dictionary.has('OnInstantiate') // eslint-disable-line
+            ? stream.dictionary.get('OnInstantiate') : undefined;
+        if (typeof value === 'string') {
+            this._onInstantiateScript = value;
+        }
+    }
+    /**
+     * Writes pending views, default view, animation, and script metadata to the 3D stream.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateStreamMetadata(): void {
+        const stream: _PdfBaseStream = this._getStream();
+        if (!stream) {
+            return;
+        }
+        const dictionary: _PdfDictionary = stream.dictionary;
+        if (this._isViewsChanged || (!this._isLoaded && this._views.length > 0)) {
+            if (this._views.length === 0) {
+                delete dictionary._map['VA'];
+                dictionary._updated = true;
+            } else {
+                dictionary.update('VA', this._views.map(
+                    (view: Pdf3DView): _PdfDictionary => this._createViewDictionary(view)));
+            }
+        }
+        if (this._isDefaultViewChanged || (!this._isLoaded &&
+            typeof this._defaultViewValue !== 'undefined')) {
+            if (typeof this._defaultViewValue === 'undefined') {
+                delete dictionary._map['DV'];
+                dictionary._updated = true;
+            } else {
+                dictionary.update('DV', this._defaultViewValue);
+            }
+        }
+        if (this._isAnimationChanged || (!this._isLoaded &&
+            Object.keys(this._animation).length > 0)) {
+            if (Object.keys(this._animation).length === 0) {
+                delete dictionary._map['AN'];
+                dictionary._updated = true;
+            } else {
+                dictionary.update('AN', this._createAnimationDictionary());
+            }
+        }
+        if (this._isOnInstantiateChanged || (!this._isLoaded &&
+            this._onInstantiateScript.length > 0)) {
+            if (this._onInstantiateScript.length === 0) {
+                delete dictionary._map['OnInstantiate'];
+                dictionary._updated = true;
+            } else {
+                dictionary.update('OnInstantiate', this._onInstantiateScript);
+            }
+        }
+    }
+    /**
+     * Ensures the default view index is within the current view collection.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateDefaultView(): void {
+        if (typeof this._defaultViewValue === 'number' &&
+            this._defaultViewValue >= this._views.length) {
+            throw new Error('The default view index is outside the view collection.');
+        }
+    }
+    /**
+     * Ensures a view index is a valid index into the view collection.
+     *
+     * @private
+     * @param {number} index The view index to validate.
+     * @returns {void}
+     */
+    private _validateViewIndex(index: number): void {
+        if (!Number.isInteger(index) || index < 0 || index >= this._views.length) {
+            throw new Error('View index is out of range.');
+        }
+    }
+    /**
+     * Clones a 3D view.
+     *
+     * @private
+     * @param {Pdf3DView} view The view to clone.
+     * @returns {Pdf3DView} The cloned view.
+     */
+    private _cloneView(view: Pdf3DView): Pdf3DView {
+        return {
+            ...view,
+            cameraToWorld: view.cameraToWorld
+                ? view.cameraToWorld.slice()
+                : undefined,
+            background: view.background
+                ? { ...view.background }
+                : undefined,
+            renderMode: view.renderMode
+                ? {
+                    ...view.renderMode,
+                    auxiliaryColor: view.renderMode.auxiliaryColor
+                        ? { ...view.renderMode.auxiliaryColor }
+                        : undefined,
+                    faceColor: view.renderMode.faceColor
+                        ? { ...view.renderMode.faceColor }
+                        : undefined
+                }
+                : undefined
+        };
+    }
+    /**
+     * Validates that RGB color components are finite values in the 0–255 range.
+     *
+     * @private
+     * @param {PdfColor} color The color to validate.
+     * @returns {void}
+     */
+    private _validateColor(color: PdfColor): void {
+        const values: number[] = [color.r, color.g, color.b];
+        if (values.some((value: number): boolean =>
+            !Number.isFinite(value) || value < 0 || value > 255)) {
+            throw new Error('Color components must be between 0 and 255.');
+        }
+    }
+    /**
+     * Converts an RGB color from the 0–255 range to the 0–1 PDF range.
+     *
+     * @private
+     * @param {PdfColor} color The color to normalize.
+     * @returns {number[]} The normalized RGB components.
+     */
+    private _normalizeColor(color: PdfColor): number[] {
+        return [color.r / 255, color.g / 255, color.b / 255];
+    }
+    /**
+     * Converts PDF 0–1 RGB components starting at an offset into a `PdfColor`.
+     *
+     * @private
+     * @param {any[]} value The array that contains color components.
+     * @param {number} offset The index of the first RGB component.
+     * @returns {PdfColor} The denormalized color.
+     */
+    private _denormalizeColor(value: any[], offset: number): PdfColor { // eslint-disable-line
+        const components: any[] = value.slice(offset, offset + 3); // eslint-disable-line
+        if (components.length < 3 || components.some(
+            (item: any): boolean => typeof item !== 'number' || !Number.isFinite(item))) { // eslint-disable-line
+            throw new Error('The 3D color components are invalid.');
+        }
+        return {
+            r: Math.round((components[0] as number) * 255),
+            g: Math.round((components[1] as number) * 255),
+            b: Math.round((components[2] as number) * 255)
+        };
+    }
+    /**
+     * Removes a key from the 3D stream dictionary when present.
+     *
+     * @private
+     * @param {string} key The dictionary key to remove.
+     * @returns {void}
+     */
+    private _removeStreamEntry(key: string): void {
+        const stream: _PdfBaseStream = this._getStream();
+        if (stream && stream.dictionary.has(key)) {
+            delete stream.dictionary._map[<string>key];
+            stream.dictionary._updated = true;
+            if (this._dictionary) {
+                this._dictionary._updated = true;
+            }
+        }
+    }
+    /**
+     * Resolves the normal appearance stream from the annotation appearance dictionary.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream, if available.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: any = this._dictionary.get('AP'); // eslint-disable-line
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: any = appearance.get('N'); // eslint-disable-line
+        const raw: any = appearance.getRaw('N'); // eslint-disable-line
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the appearance stream selected by the annotation appearance state (`AS`).
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance-state dictionary.
+     * @returns {_PdfBaseStream} The selected appearance stream, if available.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: any = this._dictionary.get('AS'); // eslint-disable-line
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: any = dictionary.get(state.name); // eslint-disable-line
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: any = dictionary.getRaw(state.name); // eslint-disable-line
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Clears all 3D-related dirty flags after post-processing.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _resetChangeFlags(): void {
+        this._hasStreamDataChanged = false;
+        this._isAnnotationTypeChanged = false;
+        this._isActivationChanged = false;
+        this._isAnimationChanged = false;
+        this._isViewsChanged = false;
+        this._isDefaultViewChanged = false;
+        this._isOnInstantiateChanged = false;
+    }
+}
+/**
+ * `PdfMovieAnnotation` class represents the movie annotation.
+ *
  * ```typescript
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data, password);
  * // Access first page
  * let page: PdfPage = document.getPage(0);
  * // Access the annotation at index 0
- * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+ * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfMovieAnnotation extends PdfComment {
+    /**
+     * Specifies the embedded movie bytes.
+     *
+     * @private
+     */
+    private _data: Uint8Array;
+    /**
+     * Specifies the movie file name.
+     *
+     * @private
+     */
+    private _fileName: string;
+    /**
+     * Specifies the movie MIME type.
+     *
+     * @private
+     */
+    private _mimeType: string;
+    /**
+     * Specifies the movie aspect dimensions.
+     *
+     * @private
+     */
+    private _aspect: Size;
+    /**
+     * Specifies the clockwise movie rotation in degrees.
+     *
+     * @private
+     */
+    private _rotation: number = 0;
+    /**
+     * Specifies whether a poster is displayed.
+     *
+     * @private
+     */
+    private _showPoster: boolean = true;
+    /**
+     * Specifies whether movie activation is enabled.
+     *
+     * @private
+     */
+    private _activationEnabled: boolean = true;
+    /**
+     * Specifies the playback start time.
+     *
+     * @private
+     */
+    private _start: PdfMovieTime;
+    /**
+     * Specifies the playback duration.
+     *
+     * @private
+     */
+    private _duration: PdfMovieTime;
+    /**
+     * Specifies the playback rate.
+     *
+     * @private
+     */
+    private _rate: number = 1;
+    /**
+     * Specifies the playback volume from -1 to 1.
+     *
+     * @private
+     */
+    private _volume: number = 1;
+    /**
+     * Specifies whether playback controls are displayed.
+     *
+     * @private
+     */
+    private _showControls: boolean = false;
+    /**
+     * Specifies the playback mode.
+     *
+     * @private
+     */
+    private _playMode: PdfMoviePlayMode = PdfMoviePlayMode.Once;
+    /**
+     * Specifies whether playback is synchronous.
+     *
+     * @private
+     */
+    private _synchronous: boolean = false;
+    /**
+     * Specifies the floating-window scale.
+     *
+     * @private
+     */
+    private _floatingWindowScale: { numerator: number; denominator: number };
+    /**
+     * Specifies the floating-window position.
+     *
+     * @private
+     */
+    private _floatingWindowPosition: { horizontal: number; vertical: number };
+    /**
+     * Specifies whether the movie dictionary was modified.
+     *
+     * @private
+     */
+    private _isContentChanged: boolean = false;
+    /**
+     * Specifies whether activation settings were modified.
+     *
+     * @private
+     */
+    private _isActivationChanged: boolean = false;
+    /**
+     * Initializes a new instance of the `PdfMovieAnnotation` class.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a new instance of the `PdfMovieAnnotation` class with bounds, movie bytes and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {Uint8Array} data The embedded movie bytes. Cannot be null, undefined, or empty.
+     * @param {object} [properties] The movie annotation properties.
+     * @param {string} [properties.fileName] The movie file name. Required for embedded movie bytes.
+     * @param {string} [properties.mimeType] The movie MIME type (e.g. 'video/mp4').
+     * @param {Size} [properties.aspect] The movie aspect dimensions.
+     * @param {number} [properties.rotation] The clockwise movie rotation in degrees.
+     * @param {boolean} [properties.showPoster] Whether a poster is displayed.
+     * @param {boolean} [properties.activationEnabled] Whether movie activation is enabled.
+     * @param {PdfMovieTime} [properties.start] The playback start time.
+     * @param {PdfMovieTime} [properties.duration] The playback duration.
+     * @param {number} [properties.rate] The playback rate.
+     * @param {number} [properties.volume] The playback volume from -1 to 1.
+     * @param {boolean} [properties.showControls] Whether playback controls are displayed.
+     * @param {PdfMoviePlayMode} [properties.playMode] The playback mode.
+     * @param {boolean} [properties.synchronous] Whether playback is synchronous.
+     * @param {{ numerator: number, denominator: number }} [properties.floatingWindowScale] The floating-window scale.
+     * @param {{ horizontal: number, vertical: number }} [properties.floatingWindowPosition] The floating-window position.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a movie annotation with bounds, movie bytes, and properties
+     * let annotation: PdfMovieAnnotation = new PdfMovieAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     movieBytes,
+     *     {
+     *         fileName: 'sample.mp4',
+     *         mimeType: 'video/mp4',
+     *         playMode: PdfMoviePlayMode.Once,
+     *         showControls: true,
+     *         volume: 1
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, data: Uint8Array, properties?: {
+        fileName?: string,
+        mimeType?: string,
+        aspect?: Size,
+        rotation?: number,
+        showPoster?: boolean,
+        activationEnabled?: boolean,
+        start?: PdfMovieTime,
+        duration?: PdfMovieTime,
+        rate?: number,
+        volume?: number,
+        showControls?: boolean,
+        playMode?: PdfMoviePlayMode,
+        synchronous?: boolean,
+        floatingWindowScale?: { numerator: number, denominator: number },
+        floatingWindowPosition?: { horizontal: number, vertical: number }
+    })
+    /**
+     * Initializes a new instance of the `PdfMovieAnnotation` class with bounds, file name and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {string} fileName The movie file name (e.g. 'sample.mp4'). Cannot be null, undefined, or empty.
+     * @param {object} [properties] The movie annotation properties.
+     * @param {string} [properties.fileName] The movie file name.
+     * @param {string} [properties.mimeType] The movie MIME type (e.g. 'video/mp4').
+     * @param {Size} [properties.aspect] The movie aspect dimensions.
+     * @param {number} [properties.rotation] The clockwise movie rotation in degrees.
+     * @param {boolean} [properties.showPoster] Whether a poster is displayed.
+     * @param {boolean} [properties.activationEnabled] Whether movie activation is enabled.
+     * @param {PdfMovieTime} [properties.start] The playback start time.
+     * @param {PdfMovieTime} [properties.duration] The playback duration.
+     * @param {number} [properties.rate] The playback rate.
+     * @param {number} [properties.volume] The playback volume from -1 to 1.
+     * @param {boolean} [properties.showControls] Whether playback controls are displayed.
+     * @param {PdfMoviePlayMode} [properties.playMode] The playback mode.
+     * @param {boolean} [properties.synchronous] Whether playback is synchronous.
+     * @param {{ numerator: number, denominator: number }} [properties.floatingWindowScale] The floating-window scale.
+     * @param {{ horizontal: number, vertical: number }} [properties.floatingWindowPosition] The floating-window position.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a movie annotation with bounds, a file name, and properties
+     * let annotation: PdfMovieAnnotation = new PdfMovieAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     'sample.mp4',
+     *     {
+     *         mimeType: 'video/mp4',
+     *         playMode: PdfMoviePlayMode.Once,
+     *         showControls: true,
+     *         volume: 1
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, fileName: string, properties?: {
+        fileName?: string,
+        mimeType?: string,
+        aspect?: Size,
+        rotation?: number,
+        showPoster?: boolean,
+        activationEnabled?: boolean,
+        start?: PdfMovieTime,
+        duration?: PdfMovieTime,
+        rate?: number,
+        volume?: number,
+        showControls?: boolean,
+        playMode?: PdfMoviePlayMode,
+        synchronous?: boolean,
+        floatingWindowScale?: { numerator: number, denominator: number },
+        floatingWindowPosition?: { horizontal: number, vertical: number }
+    })
+    public constructor(bounds?: Rectangle, dataOrFileName?: Uint8Array | string, properties?: {
+        fileName?: string,
+        mimeType?: string,
+        aspect?: Size,
+        rotation?: number,
+        showPoster?: boolean,
+        activationEnabled?: boolean,
+        start?: PdfMovieTime,
+        duration?: PdfMovieTime,
+        rate?: number,
+        volume?: number,
+        showControls?: boolean,
+        playMode?: PdfMoviePlayMode,
+        synchronous?: boolean,
+        floatingWindowScale?: { numerator: number, denominator: number },
+        floatingWindowPosition?: { horizontal: number, vertical: number }
+    }) {
+        super();
+        this._type = _PdfAnnotationType.movieAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('Movie'));
+            this.bounds = bounds;
+        }
+        if (dataOrFileName instanceof Uint8Array) {
+            this.data = dataOrFileName;
+        } else if (typeof dataOrFileName === 'string') {
+            this._validateFileName(dataOrFileName);
+            this._fileName = dataOrFileName.trim();
+        }
+        if (properties) {
+            if (typeof properties.fileName !== 'undefined') {
+                this.fileName = properties.fileName;
+            }
+            if (typeof properties.mimeType !== 'undefined') {
+                this.mimeType = properties.mimeType;
+            }
+            if (typeof properties.aspect !== 'undefined') {
+                this.aspect = properties.aspect;
+            }
+            if (typeof properties.rotation !== 'undefined') {
+                this.rotation = properties.rotation;
+            }
+            if (typeof properties.showPoster !== 'undefined') {
+                this.showPoster = properties.showPoster;
+            }
+            if (typeof properties.activationEnabled !== 'undefined') {
+                this.activationEnabled = properties.activationEnabled;
+            }
+            if (typeof properties.start !== 'undefined') {
+                this.start = properties.start;
+            }
+            if (typeof properties.duration !== 'undefined') {
+                this.duration = properties.duration;
+            }
+            if (typeof properties.rate !== 'undefined') {
+                this.rate = properties.rate;
+            }
+            if (typeof properties.volume !== 'undefined') {
+                this.volume = properties.volume;
+            }
+            if (typeof properties.showControls !== 'undefined') {
+                this.showControls = properties.showControls;
+            }
+            if (typeof properties.playMode !== 'undefined') {
+                this.playMode = properties.playMode;
+            }
+            if (typeof properties.synchronous !== 'undefined') {
+                this.synchronous = properties.synchronous;
+            }
+            if (typeof properties.floatingWindowScale !== 'undefined') {
+                this.floatingWindowScale = properties.floatingWindowScale;
+            }
+            if (typeof properties.floatingWindowPosition !== 'undefined') {
+                this.floatingWindowPosition = properties.floatingWindowPosition;
+            }
+        }
+        if (dataOrFileName instanceof Uint8Array && !this._fileName) {
+            throw new Error('Movie file name is required when embedding movie bytes.');
+        }
+        if (this._fileName) {
+            this._isContentChanged = true;
+        }
+    }
+    /**
+     * Loads a movie annotation from the page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The parent page.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfMovieAnnotation} The loaded movie annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfMovieAnnotation {
+        const annotation: PdfMovieAnnotation = new PdfMovieAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Gets the embedded movie bytes.
+     *
+     * @returns {Uint8Array} A copy of the movie bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the embedded movie bytes
+     * let data: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        return this._data ? new Uint8Array(this._data) : undefined;
+    }
+    /**
+     * Sets the embedded movie bytes. The separately assigned file name and MIME type are preserved.
+     *
+     * @param {Uint8Array} value The movie bytes. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the embedded movie bytes
+     * annotation.data = movieBytes;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set data(value: Uint8Array) {
+        if (!(value instanceof Uint8Array) || value.length === 0) {
+            throw new Error('Movie data cannot be empty.');
+        }
+        this._data = new Uint8Array(value);
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the movie file name.
+     *
+     * @returns {string} The movie file name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the movie file name
+     * let fileName: string = annotation.fileName;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fileName(): string {
+        return this._fileName;
+    }
+    /**
+     * Sets the movie file name.
+     *
+     * @param {string} value The movie file name. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the movie file name
+     * annotation.fileName = 'sample.mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set fileName(value: string) {
+        this._validateFileName(value);
+        this._fileName = value.trim();
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the movie MIME type.
+     *
+     * @returns {string} The movie MIME type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the movie MIME type
+     * let mimeType: string = annotation.mimeType;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get mimeType(): string {
+        return this._mimeType;
+    }
+    /**
+     * Sets the movie MIME type.
+     *
+     * @param {string} value The movie MIME type (e.g. 'video/mp4'). Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the movie MIME type
+     * annotation.mimeType = 'video/mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set mimeType(value: string) {
+        this._validateMimeType(value);
+        this._mimeType = value.trim();
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the movie aspect dimensions.
+     *
+     * @returns {Size} A copy of the aspect dimensions.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the movie aspect dimensions
+     * let aspect: Size = annotation.aspect;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get aspect(): Size {
+        return this._aspect ? { ...this._aspect } : undefined;
+    }
+    /**
+     * Sets the movie aspect dimensions.
+     *
+     * @param {Size} value The aspect width and height. Must be positive when set.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the movie aspect dimensions
+     * annotation.aspect = { width: 320, height: 240 };
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set aspect(value: Size) {
+        if (value) {
+            this._validateAspect(value);
+            this._aspect = { ...value };
+        } else {
+            this._aspect = undefined;
+        }
+        this._markDataChanged();
+    }
+    /**
+     * Gets the clockwise movie rotation in degrees.
+     *
+     * @returns {number} The rotation angle in degrees.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the movie rotation
+     * let rotation: number = annotation.rotation;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get rotation(): number {
+        return this._rotation;
+    }
+    /**
+     * Sets the clockwise movie rotation in degrees.
+     *
+     * @param {number} value The rotation angle. Must be an integer multiple of 90 degrees.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the movie rotation
+     * annotation.rotation = 90;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set rotation(value: number) {
+        this._rotation = this._normalizeRotation(value);
+        this._markDataChanged();
+    }
+    /**
+     * Gets whether a poster is displayed for the movie.
+     *
+     * @returns {boolean} `true` when a poster is displayed; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets whether a poster is displayed
+     * let showPoster: boolean = annotation.showPoster;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get showPoster(): boolean {
+        return this._showPoster;
+    }
+    /**
+     * Sets whether a poster is displayed for the movie.
+     *
+     * @param {boolean} value `true` to display a poster; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets whether a poster is displayed
+     * annotation.showPoster = false;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set showPoster(value: boolean) {
+        this._showPoster = Boolean(value);
+        this._markDataChanged();
+    }
+    /**
+     * Gets whether movie activation is enabled.
+     *
+     * @returns {boolean} `true` when activation is enabled; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets whether movie activation is enabled
+     * let activationEnabled: boolean = annotation.activationEnabled;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get activationEnabled(): boolean {
+        return this._activationEnabled;
+    }
+    /**
+     * Sets whether movie activation is enabled.
+     *
+     * @param {boolean} value `true` to enable activation; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets whether movie activation is enabled
+     * annotation.activationEnabled = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set activationEnabled(value: boolean) {
+        this._activationEnabled = Boolean(value);
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the playback start time.
+     *
+     * @returns {PdfMovieTime} A copy of the start time.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the playback start time
+     * let start: PdfMovieTime = annotation.start;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get start(): PdfMovieTime {
+        return this._start ? { ...this._start } : undefined;
+    }
+    /**
+     * Sets the playback start time.
+     *
+     * @param {PdfMovieTime} value The start time value and optional time scale.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the playback start time
+     * annotation.start = { value: 0, timeScale: 1 };
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set start(value: PdfMovieTime) {
+        this._start = value ? this._validateAndCopyTime(value, 'Start') : undefined;
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the playback duration.
+     *
+     * @returns {PdfMovieTime} A copy of the duration.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the playback duration
+     * let duration: PdfMovieTime = annotation.duration;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get duration(): PdfMovieTime {
+        return this._duration ? { ...this._duration } : undefined;
+    }
+    /**
+     * Sets the playback duration.
+     *
+     * @param {PdfMovieTime} value The duration value and optional time scale.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the playback duration
+     * annotation.duration = { value: 100, timeScale: 1 };
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set duration(value: PdfMovieTime) {
+        this._duration = value ? this._validateAndCopyTime(value, 'Duration') : undefined;
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the playback rate of the movie.
+     *
+     * @returns {number} The playback rate.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the playback rate
+     * let rate: number = annotation.rate;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get rate(): number {
+        return this._rate;
+    }
+    /**
+     * Sets the playback rate of the movie.
+     *
+     * @param {number} value The playback rate. Must be finite and non-zero.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the playback rate
+     * annotation.rate = 1.5;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set rate(value: number) {
+        this._validateRate(value);
+        this._rate = value;
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the playback volume of the movie.
+     *
+     * @returns {number} The volume from -1 to 1.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the playback volume
+     * let volume: number = annotation.volume;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get volume(): number {
+        return this._volume;
+    }
+    /**
+     * Sets the playback volume of the movie.
+     *
+     * @param {number} value The volume. Must be between -1 and 1.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the playback volume
+     * annotation.volume = 0.75;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set volume(value: number) {
+        this._validateVolume(value);
+        this._volume = value;
+        this._markActivationChanged();
+    }
+    /**
+     * Gets whether playback controls are displayed.
+     *
+     * @returns {boolean} `true` when controls are shown; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets whether playback controls are displayed
+     * let showControls: boolean = annotation.showControls;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get showControls(): boolean {
+        return this._showControls;
+    }
+    /**
+     * Sets whether playback controls are displayed.
+     *
+     * @param {boolean} value `true` to show controls; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets whether playback controls are displayed
+     * annotation.showControls = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set showControls(value: boolean) {
+        this._showControls = Boolean(value);
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the playback mode of the movie.
+     *
+     * @returns {PdfMoviePlayMode} The play mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the playback mode
+     * let playMode: PdfMoviePlayMode = annotation.playMode;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get playMode(): PdfMoviePlayMode {
+        return this._playMode;
+    }
+    /**
+     * Sets the playback mode of the movie.
+     *
+     * @param {PdfMoviePlayMode} value The play mode (`once`, `open`, `repeat`, or `palindrome`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the playback mode
+     * annotation.playMode = PdfMoviePlayMode.Repeat;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set playMode(value: PdfMoviePlayMode) {
+        this._validatePlayMode(value);
+        this._playMode = value;
+        this._markActivationChanged();
+    }
+    /**
+     * Gets whether playback is synchronous.
+     *
+     * @returns {boolean} `true` when playback is synchronous; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets whether playback is synchronous
+     * let synchronous: boolean = annotation.synchronous;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get synchronous(): boolean {
+        return this._synchronous;
+    }
+    /**
+     * Sets whether playback is synchronous.
+     *
+     * @param {boolean} value `true` for synchronous playback; otherwise, `false`.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets whether playback is synchronous
+     * annotation.synchronous = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set synchronous(value: boolean) {
+        this._synchronous = Boolean(value);
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the floating-window scale.
+     *
+     * @returns {any} A copy of the scale.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the floating-window scale
+     * let scale: { numerator: number; denominator: number } = annotation.floatingWindowScale;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get floatingWindowScale(): { numerator: number; denominator: number } {
+        return this._floatingWindowScale ? { ...this._floatingWindowScale } : undefined;
+    }
+    /**
+     * Sets the floating-window scale.
+     *
+     * @param {any} value The scale numerator and denominator. Must be positive integers when set.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the floating-window scale
+     * annotation.floatingWindowScale = { numerator: 1, denominator: 1 };
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set floatingWindowScale(value: { numerator: number; denominator: number }) {
+        if (value) {
+            this._validateFloatingScale(value);
+            this._floatingWindowScale = { ...value };
+        } else {
+            this._floatingWindowScale = undefined;
+        }
+        this._markActivationChanged();
+    }
+    /**
+     * Gets the floating-window position.
+     *
+     * @returns {any} A copy of the position.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Gets the floating-window position
+     * let position: { horizontal: number; vertical: number } = annotation.floatingWindowPosition;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get floatingWindowPosition(): { horizontal: number; vertical: number } {
+        return this._floatingWindowPosition ? { ...this._floatingWindowPosition } : undefined;
+    }
+    /**
+     * Sets the floating-window position.
+     *
+     * @param {any} value The horizontal and vertical position from 0 to 1.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfMovieAnnotation = page.annotations.at(0) as PdfMovieAnnotation;
+     * // Sets the floating-window position
+     * annotation.floatingWindowPosition = { horizontal: 0.5, vertical: 0.5 };
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set floatingWindowPosition(value: { horizontal: number; vertical: number }) {
+        if (value) {
+            this._validateFloatingPosition(value);
+            this._floatingWindowPosition = { ...value };
+        } else {
+            this._floatingWindowPosition = undefined;
+        }
+        this._markActivationChanged();
+    }
+    /**
+     * Initializes the movie annotation on the page.
+     *
+     * @private
+     * @param {PdfPage} page The annotation page.
+     * @param {_PdfDictionary} [dictionary] The annotation dictionary.
+     * @returns {void}
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        super._initialize(page, dictionary);
+        if (this._isLoaded) {
+            this._loadDictionary();
+            this._loadActivationDictionary();
+        }
+        this._resetChangeFlags();
+    }
+    /**
+     * Processes the annotation and optionally flattens it.
+     *
+     * @private
+     * @param {boolean} [isFlatten=false] Indicates whether to flatten the annotation.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Movie annotation is not initialized.');
+        }
+        if (isFlatten && typeof this.flattenPopups !== 'undefined' && this.flattenPopups) {
+            this._flattenPopUp();
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (!this._hasNormalAppearance() && (!this._isLoaded || isFlatten)) {
+            this._createDefaultAppearance();
+        }
+        if (this._isContentChanged || (!this._isLoaded && !this._dictionary.has('Movie'))) {
+            this._updateMovieDictionary();
+        }
+        if (this._isActivationChanged || !this._isLoaded) {
+            this._updateActivationDictionary();
+        }
+        if (!isFlatten) {
+            this._resetChangeFlags();
+            return;
+        }
+        const appearance: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearance) {
+            this._removeAnnotation(this._page, this);
+            this._resetChangeFlags();
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearance, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._resetChangeFlags();
+    }
+    /**
+     * Validates the movie file name.
+     *
+     * @private
+     * @param {string} value The movie file name.
+     * @returns {void}
+     */
+    private _validateFileName(value: string): void {
+        if (value === null || typeof value === 'undefined') {
+            throw new Error('Movie file name cannot be null or undefined.');
+        }
+        if (typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Movie file name cannot be empty.');
+        }
+    }
+    /**
+     * Validates the movie MIME type.
+     *
+     * @private
+     * @param {string} value The movie MIME type.
+     * @returns {void}
+     */
+    private _validateMimeType(value: string): void {
+        if (value === null || typeof value === 'undefined') {
+            throw new Error('Movie MIME type cannot be null or undefined.');
+        }
+        if (typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Movie MIME type cannot be empty.');
+        }
+    }
+    /**
+     * Validates aspect dimensions.
+     *
+     * @private
+     * @param {Size} value The aspect dimensions.
+     * @returns {void}
+     */
+    private _validateAspect(value: Size): void {
+        if (!Number.isFinite(value.width) || !Number.isFinite(value.height) ||
+            value.width <= 0 || value.height <= 0) {
+            throw new Error('Movie aspect width and height must be positive.');
+        }
+    }
+    /**
+     * Normalizes and validates movie rotation.
+     *
+     * @private
+     * @param {number} value The rotation angle in degrees.
+     * @returns {number} The normalized rotation in the range 0–359.
+     */
+    private _normalizeRotation(value: number): number {
+        if (!Number.isInteger(value) || value % 90 !== 0) {
+            throw new Error('Movie rotation must be an integer multiple of 90 degrees.');
+        }
+        return ((value % 360) + 360) % 360;
+    }
+    /**
+     * Validates and copies a movie time value.
+     *
+     * @private
+     * @param {PdfMovieTime} value The movie time to validate.
+     * @param {string} name The property name used in error messages.
+     * @returns {PdfMovieTime} A copy of the validated time.
+     */
+    private _validateAndCopyTime(value: PdfMovieTime, name: string): PdfMovieTime {
+        if (!Number.isSafeInteger(value.value) || value.value < 0) {
+            throw new Error(`${name} value must be a non-negative safe integer.`);
+        }
+        if (typeof value.timeScale !== 'undefined' &&
+            (!Number.isSafeInteger(value.timeScale) || value.timeScale <= 0)) {
+            throw new Error(`${name} time scale must be a positive safe integer.`);
+        }
+        return {
+            ...value
+        };
+    }
+    /**
+     * Validates the playback rate.
+     *
+     * @private
+     * @param {number} value The playback rate.
+     * @returns {void}
+     */
+    private _validateRate(value: number): void {
+        if (!Number.isFinite(value) || value === 0) {
+            throw new Error('Movie playback rate must be finite and non-zero.');
+        }
+    }
+    /**
+     * Validates the playback volume.
+     *
+     * @private
+     * @param {number} value The playback volume.
+     * @returns {void}
+     */
+    private _validateVolume(value: number): void {
+        if (!Number.isFinite(value) || value < -1 || value > 1) {
+            throw new Error('Movie volume must be between -1 and 1.');
+        }
+    }
+    /**
+     * Validates the movie play mode.
+     *
+     * @private
+     * @param {PdfMoviePlayMode} value The play mode.
+     * @returns {void}
+     */
+    private _validatePlayMode(value: PdfMoviePlayMode): void {
+        if (value !== PdfMoviePlayMode.Once && value !== PdfMoviePlayMode.Open &&
+            value !== PdfMoviePlayMode.Repeat && value !== PdfMoviePlayMode.Palindrome) {
+            throw new Error('Unsupported movie play mode.');
+        }
+    }
+    /**
+     * Validates the floating-window scale.
+     *
+     * @private
+     * @param {any} value The scale values.
+     * @param {number} value.numerator The scale numerator.
+     * @param {number} value.denominator The scale denominator.
+     * @returns {void}
+     */
+    private _validateFloatingScale(value: { numerator: number; denominator: number }): void {
+        if (!Number.isInteger(value.numerator) || value.numerator <= 0 ||
+            !Number.isInteger(value.denominator) || value.denominator <= 0) {
+            throw new Error('Floating-window scale values must be positive integers.');
+        }
+    }
+    /**
+     * Validates the floating-window position.
+     *
+     * @private
+     * @param {any} value The position values.
+     * @param {number} value.horizontal The horizontal position value.
+     * @param {number} value.vertical The vertical position value.
+     * @returns {void}
+     */
+    private _validateFloatingPosition(value: { horizontal: number; vertical: number }): void {
+        if (!Number.isFinite(value.horizontal) || !Number.isFinite(value.vertical) ||
+            value.horizontal < 0 || value.horizontal > 1 || value.vertical < 0 || value.vertical > 1) {
+            throw new Error('Floating-window position values must be between 0 and 1.');
+        }
+    }
+    /**
+     * Validates a newly created movie annotation before save.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('Movie annotation bounds must be finite and positive.');
+        }
+        if (!this._data && !this._fileName) {
+            throw new Error('Movie bytes or a movie file name must be assigned before saving.');
+        }
+    }
+    /**
+     * Updates the movie dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateMovieDictionary(): void {
+        if (!this._data && !this._fileName) {
+            delete this._dictionary._map['Movie'];
+            delete this._dictionary._map['A'];
+            this._dictionary._updated = true;
+            return;
+        }
+        if (!this._data) {
+            this._updateExternalMovieFile();
+            return;
+        }
+        const streamDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        streamDictionary.update('Type', _PdfName.get('EmbeddedFile'));
+        if (this._mimeType) {
+            streamDictionary.update('Subtype', _PdfName.get(this._mimeType.replace(/\//g, '#2F')));
+        }
+        const stream: _PdfStream = new _PdfStream(this._data, streamDictionary);
+        const streamReference: _PdfReference = this._registerIndirectObject(stream);
+        const embeddedFiles: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        embeddedFiles.update('F', streamReference);
+        embeddedFiles.update('UF', streamReference);
+        const fileSpecification: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        fileSpecification.update('Type', _PdfName.get('Filespec'));
+        fileSpecification.update('F', this._fileName);
+        fileSpecification.update('UF', this._fileName);
+        fileSpecification.update('EF', embeddedFiles);
+        fileSpecification.update('Desc', this._fileName);
+        const fileReference: _PdfReference = this._registerIndirectObject(fileSpecification);
+        let movie: _PdfDictionary;
+        const currentMovie: unknown = this._dictionary.has('Movie') ? this._dictionary.get('Movie') : undefined;
+        if (currentMovie instanceof _PdfDictionary) {
+            movie = currentMovie;
+        }
+        if (!movie) {
+            movie = new _PdfDictionary(this._crossReference);
+        }
+        movie.update('F', fileReference);
+        this._setOrDelete(movie, 'Aspect', this._aspect ? [this._aspect.width, this._aspect.height] : undefined);
+        this._setOrDelete(movie, 'Rotate', this._rotation !== 0 ? this._rotation : undefined);
+        this._setOrDelete(movie, 'Poster', this._showPoster && !this._hasNormalAppearance() ? true : undefined);
+        this._dictionary.update('Movie', movie);
+    }
+    /**
+     * Updates the movie dictionary with an external file specification when only a file name is assigned.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateExternalMovieFile(): void {
+        const fileSpecification: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        fileSpecification.update('Type', _PdfName.get('Filespec'));
+        fileSpecification.update('F', this._fileName);
+        fileSpecification.update('UF', this._fileName);
+        fileSpecification.update('Desc', this._fileName);
+        const fileReference: _PdfReference = this._registerIndirectObject(fileSpecification);
+        let movie: _PdfDictionary;
+        const currentMovie: unknown = this._dictionary.has('Movie') ? this._dictionary.get('Movie') : undefined;
+        if (currentMovie instanceof _PdfDictionary) {
+            movie = currentMovie;
+        }
+        if (!movie) {
+            movie = new _PdfDictionary(this._crossReference);
+        }
+        movie.update('F', fileReference);
+        this._setOrDelete(movie, 'Aspect', this._aspect ? [this._aspect.width, this._aspect.height] : undefined);
+        this._setOrDelete(movie, 'Rotate', this._rotation !== 0 ? this._rotation : undefined);
+        this._setOrDelete(movie, 'Poster', this._showPoster && !this._hasNormalAppearance() ? true : undefined);
+        this._dictionary.update('Movie', movie);
+    }
+    /**
+     * Updates movie activation settings.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateActivationDictionary(): void {
+        if (!this._activationEnabled) {
+            this._dictionary.update('A', false);
+            return;
+        }
+        let activation: _PdfDictionary;
+        const current: unknown = this._dictionary.has('A') ? this._dictionary.get('A') : undefined;
+        if (current instanceof _PdfDictionary) {
+            activation = current;
+        }
+        if (!activation) {
+            activation = new _PdfDictionary(this._crossReference);
+        }
+        this._updateOptionalTime(activation, 'Start', this._start);
+        this._updateOptionalTime(activation, 'Duration', this._duration);
+        activation.update('Rate', this._rate);
+        activation.update('Volume', this._volume);
+        activation.update('ShowControls', this._showControls);
+        activation.update('Mode', _PdfName.get(this._mapPlayMode(this._playMode)));
+        activation.update('Synchronous', this._synchronous);
+        this._setOrDelete(
+            activation,
+            'FWScale',
+            this._floatingWindowScale
+                ? [this._floatingWindowScale.numerator, this._floatingWindowScale.denominator]
+                : undefined
+        );
+        this._setOrDelete(
+            activation,
+            'FWPosition',
+            this._floatingWindowPosition
+                ? [this._floatingWindowPosition.horizontal, this._floatingWindowPosition.vertical]
+                : undefined
+        );
+        this._dictionary.update('A', activation);
+    }
+    /**
+     * Updates an optional movie time entry.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The activation dictionary.
+     * @param {string} key The dictionary key.
+     * @param {PdfMovieTime} value The movie time value.
+     * @returns {void}
+     */
+    private _updateOptionalTime(dictionary: _PdfDictionary, key: string, value: PdfMovieTime): void {
+        if (!value) {
+            delete dictionary._map[`${key}`];
+            dictionary._updated = true;
+            return;
+        }
+        if (typeof value.timeScale === 'number') {
+            dictionary.update(key, [value.value, value.timeScale]);
+        } else {
+            dictionary.update(key, value.value);
+        }
+    }
+    /**
+     * Sets or removes a dictionary entry.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The target dictionary.
+     * @param {string} key The dictionary key.
+     * @param {any} value The value to set.
+     * @returns {void}
+     */
+    private _setOrDelete(dictionary: _PdfDictionary, key: string, value: unknown): void {
+        if (typeof value === 'undefined') {
+            delete dictionary._map[`${key}`];
+            dictionary._updated = true;
+        } else {
+            dictionary.update(key, value);
+        }
+    }
+    /**
+     * Maps a play mode to its PDF name.
+     *
+     * @private
+     * @param {PdfMoviePlayMode} value The play mode.
+     * @returns {string} The PDF play-mode name.
+     */
+    private _mapPlayMode(value: PdfMoviePlayMode): string {
+        switch (value) {
+        case PdfMoviePlayMode.Once:
+            return 'Once';
+        case PdfMoviePlayMode.Open:
+            return 'Open';
+        case PdfMoviePlayMode.Repeat:
+            return 'Repeat';
+        case PdfMoviePlayMode.Palindrome:
+            return 'Palindrome';
+        default:
+            throw new Error('Unsupported movie play mode.');
+        }
+    }
+    /**
+     * Parses a PDF play-mode name.
+     *
+     * @private
+     * @param {string} value The PDF play-mode name.
+     * @returns {PdfMoviePlayMode} The play mode.
+     */
+    private _parsePlayMode(value: string): PdfMoviePlayMode {
+        switch (value) {
+        case 'Once':
+            return PdfMoviePlayMode.Once;
+        case 'Open':
+            return PdfMoviePlayMode.Open;
+        case 'Repeat':
+            return PdfMoviePlayMode.Repeat;
+        case 'Palindrome':
+            return PdfMoviePlayMode.Palindrome;
+        default:
+            throw new Error('Unsupported PDF movie play mode.');
+        }
+    }
+    /**
+     * Loads the movie dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadDictionary(): void {
+        const movie: unknown = this._dictionary.has('Movie') ? this._dictionary.get('Movie') : undefined;
+        if (!(movie instanceof _PdfDictionary)) {
+            return;
+        }
+        const aspect: unknown = movie.has('Aspect') ? movie.get('Aspect') : undefined;
+        if (Array.isArray(aspect) && aspect.length >= 2 &&
+            typeof aspect[0] === 'number' && typeof aspect[1] === 'number') {
+            const value: Size = {
+                width: aspect[0],
+                height: aspect[1]
+            };
+            this._validateAspect(value);
+            this._aspect = value;
+        }
+        const rotation: unknown = movie.has('Rotate') ? movie.get('Rotate') : undefined;
+        if (typeof rotation === 'number') {
+            this._rotation = this._normalizeRotation(rotation);
+        }
+        const poster: unknown = movie.has('Poster') ? movie.get('Poster') : undefined;
+        if (typeof poster === 'boolean') {
+            this._showPoster = poster;
+        } else if (poster instanceof _PdfBaseStream) {
+            this._showPoster = true;
+        }
+        const file: unknown = movie.has('F') ? movie.get('F') : undefined;
+        if (!(file instanceof _PdfDictionary) || !file.has('EF')) {
+            return;
+        }
+        const fileName: unknown = file.has('UF') ? file.get('UF') : file.get('F');
+        if (typeof fileName !== 'string') {
+            return;
+        }
+        const embeddedFiles: unknown = file.get('EF');
+        if (!(embeddedFiles instanceof _PdfDictionary)) {
+            return;
+        }
+        let stream: unknown;
+        if (embeddedFiles.has('UF')) {
+            stream = embeddedFiles.get('UF');
+        } else if (embeddedFiles.has('F')) {
+            stream = embeddedFiles.get('F');
+        }
+        if (!(stream instanceof _PdfBaseStream)) {
+            return;
+        }
+        let mimeType: string;
+        const subtype: unknown = stream.dictionary.has('Subtype') ? stream.dictionary.get('Subtype') : undefined;
+        if (subtype instanceof _PdfName) {
+            mimeType = subtype.name.replace(/#2F/gi, '/');
+        }
+        this._data = new Uint8Array(stream.getBytes());
+        this._fileName = fileName;
+        this._mimeType = mimeType;
+    }
+    /**
+     * Loads movie activation settings.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadActivationDictionary(): void {
+        if (!this._dictionary.has('A')) {
+            this._activationEnabled = true;
+            return;
+        }
+        const activation: unknown = this._dictionary.get('A');
+        if (typeof activation === 'boolean') {
+            this._activationEnabled = activation;
+            return;
+        }
+        if (!(activation instanceof _PdfDictionary)) {
+            return;
+        }
+        this._activationEnabled = true;
+        this._start = this._parseTime(activation, 'Start');
+        this._duration = this._parseTime(activation, 'Duration');
+        const rate: unknown = activation.has('Rate') ? activation.get('Rate') : undefined;
+        if (typeof rate === 'number') {
+            this._validateRate(rate);
+            this._rate = rate;
+        }
+        const volume: unknown = activation.has('Volume') ? activation.get('Volume') : undefined;
+        if (typeof volume === 'number') {
+            this._validateVolume(volume);
+            this._volume = volume;
+        }
+        const controls: unknown = activation.has('ShowControls')
+            ? activation.get('ShowControls') : undefined;
+        if (typeof controls === 'boolean') {
+            this._showControls = controls;
+        }
+        const mode: unknown = activation.has('Mode') ? activation.get('Mode') : undefined;
+        if (mode instanceof _PdfName) {
+            this._playMode = this._parsePlayMode(mode.name);
+        }
+        const synchronous: unknown = activation.has('Synchronous')
+            ? activation.get('Synchronous') : undefined;
+        if (typeof synchronous === 'boolean') {
+            this._synchronous = synchronous;
+        }
+        const scale: unknown = activation.has('FWScale') ? activation.get('FWScale') : undefined;
+        if (Array.isArray(scale) && scale.length >= 2 &&
+            typeof scale[0] === 'number' && typeof scale[1] === 'number') {
+            const value: { numerator: number; denominator: number } = {
+                numerator: scale[0],
+                denominator: scale[1]
+            };
+            this._validateFloatingScale(value);
+            this._floatingWindowScale = value;
+        }
+        const position: unknown = activation.has('FWPosition')
+            ? activation.get('FWPosition') : undefined;
+        if (Array.isArray(position) && position.length >= 2 &&
+            typeof position[0] === 'number' && typeof position[1] === 'number') {
+            const value: { horizontal: number; vertical: number } = {
+                horizontal: position[0],
+                vertical: position[1]
+            };
+            this._validateFloatingPosition(value);
+            this._floatingWindowPosition = value;
+        }
+    }
+    /**
+     * Parses a movie time entry.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The activation dictionary.
+     * @param {string} key The dictionary key.
+     * @returns {PdfMovieTime} The parsed movie time.
+     */
+    private _parseTime(dictionary: _PdfDictionary, key: string): PdfMovieTime {
+        if (!dictionary.has(key)) {
+            return undefined;
+        }
+        const value: unknown = dictionary.get(key);
+        if (typeof value === 'number') {
+            return this._validateAndCopyTime({ value }, key);
+        }
+        if (Array.isArray(value) && value.length >= 2 &&
+            typeof value[0] === 'number' && typeof value[1] === 'number') {
+            return this._validateAndCopyTime({
+                value: value[0],
+                timeScale: value[1]
+            }, key);
+        }
+        throw new Error(`Invalid movie ${key.toLowerCase()} value.`);
+    }
+    /**
+     * Registers an indirect PDF object.
+     *
+     * @private
+     * @param {_PdfDictionary | _PdfBaseStream} value The object to register.
+     * @returns {_PdfReference} The object reference.
+     */
+    private _registerIndirectObject(value: _PdfDictionary | _PdfBaseStream): _PdfReference {
+        if (value instanceof _PdfDictionary && value._reference) {
+            return value._reference;
+        }
+        if (value instanceof _PdfBaseStream && value.reference) {
+            return value.reference;
+        }
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        if (value instanceof _PdfBaseStream) {
+            value.reference = reference;
+        } else {
+            value._reference = reference;
+        }
+        this._crossReference._cacheMap.set(reference, value);
+        return reference;
+    }
+    /**
+     * Creates the default movie appearance.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _createDefaultAppearance(): void {
+        if (this._hasNormalAppearance() || !this._bounds) {
+            return;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        template.graphics.drawRectangle(
+            { x: 0, y: 0, width, height },
+            new PdfBrush({ r: 30, g: 30, b: 30 })
+        );
+        const cx: number = width / 2;
+        const cy: number = height / 2;
+        const size: number = Math.min(width, height) * 0.45;
+        const points: Point[] = [
+            { x: cx - size * 0.35, y: cy - size * 0.5 },
+            { x: cx - size * 0.35, y: cy + size * 0.5 },
+            { x: cx + size * 0.55, y: cy }
+        ];
+        template.graphics.drawPolygon(points, new PdfBrush({ r: 255, g: 255, b: 255 }));
+        this._writeNormalAppearance(template);
+    }
+    /**
+     * Checks whether a normal appearance exists.
+     *
+     * @private
+     * @returns {boolean} `true` when a normal appearance is present; otherwise, `false`.
+     */
+    private _hasNormalAppearance(): boolean {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return false;
+        }
+        const value: unknown = this._dictionary.get('AP');
+        return value instanceof _PdfDictionary && value.has('N');
+    }
+    /**
+     * Resolves the normal appearance stream.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the selected appearance state stream.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance-state dictionary.
+     * @returns {_PdfBaseStream} The appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = dictionary.getRaw(state.name);
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Marks movie dictionary data as changed.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markDataChanged(): void {
+        this._isContentChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Marks activation dictionary data as changed.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markActivationChanged(): void {
+        this._isActivationChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Resets change flags.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _resetChangeFlags(): void {
+        this._isContentChanged = false;
+        this._isActivationChanged = false;
+    }
+}
+/**
+ * Represents a PDF printer-mark annotation used for production marks.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a crop-mark printer-mark annotation
+ * const annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+ *     { x: 0, y: 0, width: page.size.width, height: page.size.height },
+ *     {
+ *         type: PdfPrinterMarkType.Crop,
+ *         targetBox: PdfPrinterMarkTargetBox.TrimBox,
+ *         color: { r: 0, g: 0, b: 0 },
+ *         lineWidth: 0.5,
+ *         lineLength: 12,
+ *         offset: 4
+ *     }
+ * );
+ * // Generate appearance before saving
+ * annotation.setAppearance(true);
+ * // Add annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfPrinterMarkAnnotation extends PdfAnnotation {
+    /**
+     * Specifies the printer-mark settings supplied during construction.
+     *
+     * @private
+     */
+    private _options: any; // eslint-disable-line
+    /**
+     * Specifies the appearance of the printer-mark annotation.
+     *
+     * @private
+     */
+    private _appearance: PdfAppearance;
+    /**
+     * Get the appearance of the printer-mark annotation. (Read only)
+     *
+     * @returns {PdfAppearance} Returns the appearance of the annotation.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a crop-mark printer-mark annotation
+     * const annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+     *     { x: 0, y: 0, width: page.size.width, height: page.size.height },
+     *     { type: PdfPrinterMarkType.Crop, color: { r: 0, g: 0, b: 0 }, lineWidth: 0.5 }
+     * );
+     * // Get the appearance of the annotation
+     * let appearance: PdfAppearance = annotation.appearance;
+     * // Access the normal template of the appearance
+     * let template: PdfTemplate = appearance.normal;
+     * // Draw custom printer-mark artwork on the template
+     * template.graphics.drawRectangle(
+     *     { x: 0, y: 0, width: 100, height: 100 },
+     *     new PdfPen({ r: 0, g: 0, b: 0 }, 0.5)
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearance(): PdfAppearance {
+        if (this._isLoaded) {
+            return null;
+        }
+        if (typeof this._appearance === 'undefined') {
+            const nativeRectangle: Rectangle = { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height };
+            this._appearance = new PdfAppearance(nativeRectangle, this);
+            this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+        }
+        return this._appearance;
+    }
+    /**
+     * Initializes an empty printer-mark annotation for internal loading.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a new printer-mark annotation with the specified bounds and settings.
+     *
+     * @param {Rectangle} bounds The annotation bounds on the page.
+     * @param {object} properties The printer-mark settings.
+     * @param {PdfPrinterMarkType} properties.type The printer-mark type.
+     * @param {PdfPrinterMarkTargetBox} [properties.targetBox] The target page box for the mark.
+     * @param {PdfColor} [properties.color] The mark color.
+     * @param {number} [properties.offset] The mark offset from the target box.
+     * @param {number} [properties.lineLength] The mark line length.
+     * @param {number} [properties.lineWidth] The mark line width.
+     * @param {PdfPrinterMarkColorBarOptions} [properties.colorBar] The color-bar settings.
+     * @param {PdfPrinterMarkFoldOptions} [properties.fold] The fold-mark settings.
+     * @param {PdfPrinterMarkPageInformationOptions} [properties.pageInformation] The page-information settings.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a registration-target printer-mark annotation
+     * let annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+     *     { x: 40, y: 40, width: 36, height: 36 },
+     *     {
+     *         type: PdfPrinterMarkType.Registration,
+     *         color: { r: 0, g: 0, b: 0 },
+     *         lineWidth: 0.5,
+     *         lineLength: 18
+     *     }
+     * );
+     * annotation.setAppearance(true);
+     * page.annotations.add(annotation);
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, properties: {
+        type: PdfPrinterMarkType,
+        targetBox?: PdfPrinterMarkTargetBox,
+        color?: PdfColor,
+        offset?: number,
+        lineLength?: number,
+        lineWidth?: number,
+        colorBar?: PdfPrinterMarkColorBarOptions,
+        fold?: PdfPrinterMarkFoldOptions,
+        pageInformation?: PdfPrinterMarkPageInformationOptions
+    });
+    public constructor(bounds?: Rectangle, properties?: {
+        type: PdfPrinterMarkType,
+        targetBox?: PdfPrinterMarkTargetBox,
+        color?: PdfColor,
+        offset?: number,
+        lineLength?: number,
+        lineWidth?: number,
+        colorBar?: PdfPrinterMarkColorBarOptions,
+        fold?: PdfPrinterMarkFoldOptions,
+        pageInformation?: PdfPrinterMarkPageInformationOptions
+    }) {
+        super();
+        this._type = _PdfAnnotationType.printerMarkAnnotation;
+        this._options = properties ? {
+            type: properties.type,
+            targetBox: properties.targetBox,
+            color: properties.color ? { ...properties.color } : undefined,
+            offset: properties.offset,
+            lineLength: properties.lineLength,
+            lineWidth: properties.lineWidth,
+            colorBar: properties.colorBar ? {
+                patchWidth: properties.colorBar.patchWidth,
+                patchHeight: properties.colorBar.patchHeight,
+                includeProcessColors: properties.colorBar.includeProcessColors,
+                includeGrayScale: properties.colorBar.includeGrayScale,
+                graySteps: properties.colorBar.graySteps ? [...properties.colorBar.graySteps] : undefined,
+                orientation: properties.colorBar.orientation
+            } : undefined,
+            fold: properties.fold ? {
+                positions: properties.fold.positions ? [...properties.fold.positions] : undefined,
+                orientation: properties.fold.orientation,
+                lineLength: properties.fold.lineLength,
+                dashed: properties.fold.dashed
+            } : undefined,
+            pageInformation: properties.pageInformation ? {
+                text: properties.pageInformation.text,
+                includePageNumber: properties.pageInformation.includePageNumber,
+                includeDate: properties.pageInformation.includeDate,
+                fontSize: properties.pageInformation.fontSize,
+                color: properties.pageInformation.color ? { ...properties.pageInformation.color } : undefined
+            } : undefined
+        } : undefined;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('PrinterMark'));
+            this.bounds = bounds;
+        }
+    }
+    /**
+     * Loads a printer-mark annotation from an existing page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The page that owns the annotation.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfPrinterMarkAnnotation} The loaded printer-mark annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfPrinterMarkAnnotation {
+        const annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Serializes printer-mark settings and optionally flattens the annotation appearance.
+     *
+     * @private
+     * @param {boolean} [isFlatten=false] Indicates whether to flatten the annotation.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Printer-mark annotation is not initialized.');
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+            this._updatePrinterMarkName();
+        }
+        if (this._setAppearance && !this._hasUsableNormalAppearance()) {
+            const template: PdfTemplate = this._createPrinterMarkAppearance();
+            if (template) {
+                this._writeNormalAppearance(template);
+            }
+        }
+        this._serializeAppearance();
+        if (!isFlatten) {
+            return;
+        }
+        const appearance: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearance) {
+            this._removeAnnotation(this._page, this);
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(
+            appearance,
+            this._crossReference
+        );
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(
+            template._content.dictionary
+        );
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+    }
+    /**
+     * Validates bounds and options for a newly created printer-mark annotation.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('Printer-mark annotation bounds must be finite and positive.');
+        }
+        if (!this._options || typeof this._options.type === 'undefined') {
+            throw new Error('Printer-mark type must be assigned before saving.');
+        }
+        this._validatePrinterMarkType(this._options.type);
+        if (typeof this._options.targetBox !== 'undefined') {
+            this._validateTargetBox(this._options.targetBox);
+        }
+        if (this._options.color) {
+            this._validateColor(this._options.color);
+        }
+        this._validatePositiveNumber(this._options.offset, 'Printer-mark offset', true);
+        this._validatePositiveNumber(this._options.lineLength, 'Printer-mark line length');
+        this._validatePositiveNumber(this._options.lineWidth, 'Printer-mark line width');
+        this._validateNestedOptions();
+    }
+    /**
+     * Validates nested color-bar, fold, and page-information options.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNestedOptions(): void {
+        const colorBar: PdfPrinterMarkColorBarOptions = this._options.colorBar;
+        if (colorBar) {
+            this._validatePositiveNumber(colorBar.patchWidth, 'Color-bar patch width');
+            this._validatePositiveNumber(colorBar.patchHeight, 'Color-bar patch height');
+            if (typeof colorBar.orientation !== 'undefined') {
+                this._validateOrientation(colorBar.orientation);
+            }
+            if (colorBar.graySteps) {
+                colorBar.graySteps.forEach((step: number): void => {
+                    if (!Number.isFinite(step) || step < 0 || step > 100) {
+                        throw new Error('Color-bar gray steps must be between 0 and 100.');
+                    }
+                });
+            }
+        }
+        const fold: PdfPrinterMarkFoldOptions = this._options.fold;
+        if (fold) {
+            if (typeof fold.orientation !== 'undefined') {
+                this._validateOrientation(fold.orientation);
+            }
+            this._validatePositiveNumber(fold.lineLength, 'Fold-mark line length');
+            if (fold.positions) {
+                fold.positions.forEach((position: number): void => {
+                    if (!Number.isFinite(position) || position < 0 || position > 1) {
+                        throw new Error('Fold-mark positions must be between 0 and 1.');
+                    }
+                });
+            }
+        }
+        const pageInformation: PdfPrinterMarkPageInformationOptions = this._options.pageInformation;
+        if (pageInformation) {
+            this._validatePositiveNumber(pageInformation.fontSize, 'Page-information font size');
+            if (pageInformation.color) {
+                this._validateColor(pageInformation.color);
+            }
+        }
+    }
+    /**
+     * Validates a printer-mark type value.
+     *
+     * @private
+     * @param {PdfPrinterMarkType} value The printer-mark type.
+     * @returns {void}
+     */
+    private _validatePrinterMarkType(value: PdfPrinterMarkType): void {
+        if (value !== PdfPrinterMarkType.Crop && value !== PdfPrinterMarkType.Bleed &&
+            value !== PdfPrinterMarkType.Registration && value !== PdfPrinterMarkType.ColorBar &&
+            value !== PdfPrinterMarkType.Fold && value !== PdfPrinterMarkType.PageInformation) {
+            throw new Error('Unsupported printer-mark type.');
+        }
+    }
+    /**
+     * Validates a target page-box value.
+     *
+     * @private
+     * @param {PdfPrinterMarkTargetBox} value The target page box.
+     * @returns {void}
+     */
+    private _validateTargetBox(value: PdfPrinterMarkTargetBox): void {
+        if (value !== PdfPrinterMarkTargetBox.MediaBox && value !== PdfPrinterMarkTargetBox.CropBox &&
+            value !== PdfPrinterMarkTargetBox.TrimBox && value !== PdfPrinterMarkTargetBox.BleedBox &&
+            value !== PdfPrinterMarkTargetBox.ArtBox) {
+            throw new Error('Unsupported printer-mark target box.');
+        }
+    }
+    /**
+     * Validates a printer-mark orientation value.
+     *
+     * @private
+     * @param {PdfPrinterMarkOrientation} value The orientation value.
+     * @returns {void}
+     */
+    private _validateOrientation(value: PdfPrinterMarkOrientation): void {
+        if (value !== PdfPrinterMarkOrientation.Horizontal &&
+            value !== PdfPrinterMarkOrientation.Vertical) {
+            throw new Error('Unsupported printer-mark orientation.');
+        }
+    }
+    /**
+     * Validates an RGB printer-mark color.
+     *
+     * @private
+     * @param {PdfColor} value The color value.
+     * @returns {void}
+     */
+    private _validateColor(value: PdfColor): void {
+        const components: number[] = [value.r, value.g, value.b];
+        if (components.some((component: number): boolean =>
+            !Number.isFinite(component) || component < 0 || component > 255)) {
+            throw new Error('Printer-mark color components must be between 0 and 255.');
+        }
+    }
+    /**
+     * Validates an optional positive (or non-negative) numeric option.
+     *
+     * @private
+     * @param {number} value The numeric value to validate.
+     * @param {string} name The option display name used in error messages.
+     * @param {boolean} [allowZero=false] Indicates whether zero is allowed.
+     * @returns {void}
+     */
+    private _validatePositiveNumber(value: number, name: string, allowZero: boolean = false): void {
+        if (typeof value === 'undefined') {
+            return;
+        }
+        if (!Number.isFinite(value) || (allowZero ? value < 0 : value <= 0)) {
+            throw new Error(`${name} must be ${allowZero ? 'non-negative' : 'positive'}.`);
+        }
+    }
+    /**
+     * Writes the printer-mark name (`MN`) entry for the configured mark type.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updatePrinterMarkName(): void {
+        this._dictionary.update('MN', _PdfName.get(this._mapPrinterMarkName(this._options.type)));
+    }
+    /**
+     * Maps a printer-mark type enum value to its PDF name.
+     *
+     * @private
+     * @param {PdfPrinterMarkType} value The printer-mark type.
+     * @returns {string} The PDF printer-mark name.
+     */
+    private _mapPrinterMarkName(value: PdfPrinterMarkType): string {
+        switch (value) {
+        case PdfPrinterMarkType.Crop:
+            return 'CropMark';
+        case PdfPrinterMarkType.Bleed:
+            return 'BleedMark';
+        case PdfPrinterMarkType.Registration:
+            return 'RegistrationTarget';
+        case PdfPrinterMarkType.ColorBar:
+            return 'ColorBar';
+        case PdfPrinterMarkType.Fold:
+            return 'FoldMark';
+        case PdfPrinterMarkType.PageInformation:
+            return 'PageInformation';
+        default:
+            throw new Error('Unsupported printer-mark type.');
+        }
+    }
+    /**
+     * Determines whether a usable normal appearance stream already exists.
+     *
+     * @private
+     * @returns {boolean} `true` when a normal appearance is available; otherwise, `false`.
+     */
+    private _hasUsableNormalAppearance(): boolean {
+        return typeof this._resolveNormalAppearance() !== 'undefined';
+    }
+    /**
+     * Creates the appearance template for the configured printer-mark type.
+     *
+     * @private
+     * @returns {PdfTemplate} The generated appearance template.
+     */
+    private _createPrinterMarkAppearance(): PdfTemplate {
+        if (!this._options || typeof this._options.type === 'undefined') {
+            return undefined;
+        }
+        switch (this._options.type) {
+        case PdfPrinterMarkType.Crop:
+            return this._createCropMarkAppearance();
+        case PdfPrinterMarkType.Bleed:
+            return this._createBleedMarkAppearance();
+        case PdfPrinterMarkType.Registration:
+            return this._createRegistrationAppearance();
+        case PdfPrinterMarkType.ColorBar:
+            return this._createColorBarAppearance();
+        case PdfPrinterMarkType.Fold:
+            return this._createFoldMarkAppearance();
+        case PdfPrinterMarkType.PageInformation:
+            return this._createPageInformationAppearance();
+        default:
+            throw new Error('Unsupported printer-mark type.');
+        }
+    }
+    /**
+     * Gets a page-box rectangle converted to page coordinates.
+     *
+     * @private
+     * @param {PdfPrinterMarkTargetBox} targetBox The target page box.
+     * @returns {Rectangle} The resolved rectangle.
+     */
+    private _getTargetBox(targetBox: PdfPrinterMarkTargetBox): Rectangle {
+        this._validateTargetBox(targetBox);
+        if (!this._page || !this._page._pageDictionary) {
+            return undefined;
+        }
+        let key: string;
+        switch (targetBox) {
+        case PdfPrinterMarkTargetBox.MediaBox:
+            key = 'MediaBox';
+            break;
+        case PdfPrinterMarkTargetBox.CropBox:
+            key = 'CropBox';
+            break;
+        case PdfPrinterMarkTargetBox.TrimBox:
+            key = 'TrimBox';
+            break;
+        case PdfPrinterMarkTargetBox.BleedBox:
+            key = 'BleedBox';
+            break;
+        case PdfPrinterMarkTargetBox.ArtBox:
+            key = 'ArtBox';
+            break;
+        default:
+            throw new Error('Unsupported printer-mark target box.');
+        }
+        let box: number[];
+        if (this._page._pageDictionary.has(key)) {
+            box = this._page._pageDictionary.getArray(key);
+        }
+        if (!box && key !== 'MediaBox' && this._page._pageDictionary.has('MediaBox')) {
+            box = this._page._pageDictionary.getArray('MediaBox');
+        }
+        if (!box) {
+            const size: Size = this._page.size;
+            if (!size || !Number.isFinite(size.width) || !Number.isFinite(size.height) ||
+                size.width <= 0 || size.height <= 0) {
+                return undefined;
+            }
+            return { x: 0, y: 0, width: size.width, height: size.height };
+        }
+        if (box.length !== 4 || box.some((item: number): boolean => !Number.isFinite(item))) {
+            return undefined;
+        }
+        const left: number = Math.min(box[0], box[2]);
+        const bottom: number = Math.min(box[1], box[3]);
+        const right: number = Math.max(box[0], box[2]);
+        const top: number = Math.max(box[1], box[3]);
+        if (right <= left || top <= bottom) {
+            return undefined;
+        }
+        return {
+            x: left,
+            y: this._page.size.height - top,
+            width: right - left,
+            height: top - bottom
+        };
+    }
+    /**
+     * Resolves the target page box used when drawing crop or bleed marks.
+     *
+     * @private
+     * @returns {Rectangle} The resolved target rectangle.
+     */
+    private _resolvePrinterMarkTargetBox(): Rectangle {
+        if (!this._options) {
+            return undefined;
+        }
+        const targetBox: PdfPrinterMarkTargetBox = typeof this._options.targetBox === 'number'
+            ? this._options.targetBox
+            : this._options.type === PdfPrinterMarkType.Bleed
+                ? PdfPrinterMarkTargetBox.BleedBox
+                : PdfPrinterMarkTargetBox.TrimBox;
+        this._validateTargetBox(targetBox);
+        return this._getTargetBox(targetBox);
+    }
+    /**
+     * Creates a crop-mark appearance relative to the resolved target box.
+     *
+     * @private
+     * @returns {PdfTemplate} The crop-mark appearance template.
+     */
+    private _createCropMarkAppearance(): PdfTemplate {
+        const targetBox: Rectangle = this._resolvePrinterMarkTargetBox();
+        return targetBox ? this._createBoxMarkAppearance(targetBox) : undefined;
+    }
+    /**
+     * Creates a bleed-mark appearance relative to the resolved target box.
+     *
+     * @private
+     * @returns {PdfTemplate} The bleed-mark appearance template.
+     */
+    private _createBleedMarkAppearance(): PdfTemplate {
+        const targetBox: Rectangle = this._resolvePrinterMarkTargetBox();
+        return targetBox ? this._createBoxMarkAppearance(targetBox) : undefined;
+    }
+    /**
+     * Creates crop-style corner marks around the specified target box.
+     *
+     * @private
+     * @param {Rectangle} targetBox The target box in page coordinates.
+     * @returns {PdfTemplate} The box-mark appearance template.
+     */
+    private _createBoxMarkAppearance(targetBox: Rectangle): PdfTemplate {
+        if (!this._bounds || !targetBox) {
+            return undefined;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return undefined;
+        }
+        const color: PdfColor = this._options.color || { r: 0, g: 0, b: 0 };
+        const lineWidth: number = typeof this._options.lineWidth === 'number' ? this._options.lineWidth : 0.5;
+        const lineLength: number = typeof this._options.lineLength === 'number' ? this._options.lineLength : 12;
+        const offset: number = typeof this._options.offset === 'number' ? this._options.offset : 4;
+        const left: number = targetBox.x - this._bounds.x;
+        const top: number = targetBox.y - this._bounds.y;
+        const right: number = left + targetBox.width;
+        const bottom: number = top + targetBox.height;
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        const graphics: PdfGraphics = template.graphics;
+        const pen: PdfPen = new PdfPen(color, lineWidth);
+        graphics.drawLine(pen, { x: left - offset - lineLength, y: top }, { x: left - offset, y: top });
+        graphics.drawLine(pen, { x: left, y: top - offset - lineLength }, { x: left, y: top - offset });
+        graphics.drawLine(pen, { x: right + offset, y: top }, { x: right + offset + lineLength, y: top });
+        graphics.drawLine(pen, { x: right, y: top - offset - lineLength }, { x: right, y: top - offset });
+        graphics.drawLine(pen, { x: left - offset - lineLength, y: bottom }, { x: left - offset, y: bottom });
+        graphics.drawLine(pen, { x: left, y: bottom + offset }, { x: left, y: bottom + offset + lineLength });
+        graphics.drawLine(pen, { x: right + offset, y: bottom }, { x: right + offset + lineLength, y: bottom });
+        graphics.drawLine(pen, { x: right, y: bottom + offset }, { x: right, y: bottom + offset + lineLength });
+        return template;
+    }
+    /**
+     * Creates a registration-target appearance (crosshairs with a circular target).
+     *
+     * @private
+     * @returns {PdfTemplate} The registration appearance template.
+     */
+    private _createRegistrationAppearance(): PdfTemplate {
+        if (!this._bounds || this._bounds.width <= 0 || this._bounds.height <= 0) {
+            return undefined;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        const color: PdfColor = this._options.color || { r: 0, g: 0, b: 0 };
+        const lineWidth: number = typeof this._options.lineWidth === 'number' ? this._options.lineWidth : 0.5;
+        const maximumLength: number = Math.min(width, height) / 2;
+        const crossLength: number = typeof this._options.lineLength === 'number'
+            ? Math.min(this._options.lineLength, maximumLength)
+            : maximumLength;
+        const centerX: number = width / 2;
+        const centerY: number = height / 2;
+        const radius: number = Math.min(crossLength / 3, width / 4, height / 4);
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        const pen: PdfPen = new PdfPen(color, lineWidth);
+        template.graphics.drawLine(
+            pen,
+            { x: centerX - crossLength, y: centerY },
+            { x: centerX + crossLength, y: centerY }
+        );
+        template.graphics.drawLine(
+            pen,
+            { x: centerX, y: centerY - crossLength },
+            { x: centerX, y: centerY + crossLength }
+        );
+        template.graphics.drawEllipse(
+            { x: centerX - radius, y: centerY - radius, width: radius * 2, height: radius * 2 },
+            pen
+        );
+        return template;
+    }
+    /**
+     * Creates a color-bar appearance using process and/or grayscale patches.
+     *
+     * @private
+     * @returns {PdfTemplate} The color-bar appearance template.
+     */
+    private _createColorBarAppearance(): PdfTemplate {
+        if (!this._bounds || this._bounds.width <= 0 || this._bounds.height <= 0) {
+            return undefined;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        const options: PdfPrinterMarkColorBarOptions = this._options.colorBar || {};
+        const patchWidth: number = typeof options.patchWidth === 'number' ? options.patchWidth : 18;
+        const patchHeight: number = typeof options.patchHeight === 'number' ? options.patchHeight : 14;
+        const orientation: PdfPrinterMarkOrientation = typeof options.orientation === 'number'
+            ? options.orientation
+            : PdfPrinterMarkOrientation.Horizontal;
+        this._validateOrientation(orientation);
+        const colors: PdfColor[] = [];
+        if (typeof options.includeProcessColors !== 'boolean' || options.includeProcessColors) {
+            colors.push(
+                { r: 0, g: 255, b: 255 },
+                { r: 255, g: 0, b: 255 },
+                { r: 255, g: 255, b: 0 },
+                { r: 0, g: 0, b: 0 }
+            );
+        }
+        if (typeof options.includeGrayScale !== 'boolean' || options.includeGrayScale) {
+            const steps: ReadonlyArray<number> = options.graySteps && options.graySteps.length > 0
+                ? options.graySteps
+                : [0, 25, 50, 75, 100];
+            steps.forEach((step: number): void => {
+                const component: number = Math.round(255 * (1 - step / 100));
+                colors.push({ r: component, g: component, b: component });
+            });
+        }
+        if (colors.length === 0) {
+            return undefined;
+        }
+        const requiredWidth: number = orientation === PdfPrinterMarkOrientation.Horizontal
+            ? patchWidth * colors.length
+            : patchWidth;
+        const requiredHeight: number = orientation === PdfPrinterMarkOrientation.Horizontal
+            ? patchHeight
+            : patchHeight * colors.length;
+        if (requiredWidth > width || requiredHeight > height) {
+            return undefined;
+        }
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        const startX: number = (width - requiredWidth) / 2;
+        const startY: number = (height - requiredHeight) / 2;
+        colors.forEach((color: PdfColor, index: number): void => {
+            const x: number = orientation === PdfPrinterMarkOrientation.Horizontal
+                ? startX + index * patchWidth
+                : startX;
+            const y: number = orientation === PdfPrinterMarkOrientation.Horizontal
+                ? startY
+                : startY + index * patchHeight;
+            template.graphics.drawRectangle(
+                { x, y, width: patchWidth, height: patchHeight },
+                null,
+                new PdfBrush(color)
+            );
+        });
+        return template;
+    }
+    /**
+     * Creates fold-mark appearance lines at the configured relative positions.
+     *
+     * @private
+     * @returns {PdfTemplate} The fold-mark appearance template.
+     */
+    private _createFoldMarkAppearance(): PdfTemplate {
+        if (!this._bounds || this._bounds.width <= 0 || this._bounds.height <= 0) {
+            return undefined;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        const options: PdfPrinterMarkFoldOptions = this._options.fold || {};
+        const orientation: PdfPrinterMarkOrientation = typeof options.orientation === 'number'
+            ? options.orientation
+            : PdfPrinterMarkOrientation.Vertical;
+        this._validateOrientation(orientation);
+        const positions: ReadonlyArray<number> = options.positions && options.positions.length > 0
+            ? options.positions
+            : [0.5];
+        const requestedLength: number = typeof options.lineLength === 'number' ? options.lineLength : 12;
+        const maximumLength: number = orientation === PdfPrinterMarkOrientation.Vertical
+            ? width / 2
+            : height / 2;
+        const lineLength: number = Math.min(requestedLength, maximumLength);
+        const lineWidth: number = typeof this._options.lineWidth === 'number' ? this._options.lineWidth : 0.5;
+        const color: PdfColor = this._options.color || { r: 0, g: 0, b: 0 };
+        const pen: PdfPen = new PdfPen(color, lineWidth);
+        if (options.dashed) {
+            pen._dashStyle = PdfDashStyle.dash;
+            pen._dashPattern = [3, 2];
+        }
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        positions.forEach((position: number): void => {
+            if (orientation === PdfPrinterMarkOrientation.Vertical) {
+                const y: number = position * height;
+                template.graphics.drawLine(pen, { x: 0, y }, { x: lineLength, y });
+                template.graphics.drawLine(pen, { x: width - lineLength, y }, { x: width, y });
+            } else {
+                const x: number = position * width;
+                template.graphics.drawLine(pen, { x, y: 0 }, { x, y: lineLength });
+                template.graphics.drawLine(pen, { x, y: height - lineLength }, { x, y: height });
+            }
+        });
+        return template;
+    }
+    /**
+     * Creates a page-information text appearance.
+     *
+     * @private
+     * @returns {PdfTemplate} The page-information appearance template.
+     */
+    private _createPageInformationAppearance(): PdfTemplate {
+        if (!this._bounds || this._bounds.width <= 0 || this._bounds.height <= 0) {
+            return undefined;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        const options: PdfPrinterMarkPageInformationOptions = this._options.pageInformation || {};
+        const parts: string[] = [];
+        if (typeof options.text === 'string' && options.text.length > 0) {
+            parts.push(options.text);
+        }
+        if (options.includePageNumber && this._page) {
+            parts.push(`Page ${this._page._pageIndex + 1}`);
+        }
+        if (options.includeDate) {
+            const date: Date = new Date();
+            parts.push(
+                `${date.getFullYear()}-${_padStart((date.getMonth() + 1).toString(), 2, '0')}-` +
+                _padStart(date.getDate().toString(), 2, '0')
+            );
+        }
+        if (parts.length === 0) {
+            return undefined;
+        }
+        const fontSize: number = typeof options.fontSize === 'number' ? options.fontSize : 8;
+        const color: PdfColor = options.color || this._options.color || { r: 0, g: 0, b: 0 };
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        const font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, fontSize);
+        const format: PdfStringFormat = new PdfStringFormat(
+            PdfTextAlignment.center,
+            PdfVerticalAlignment.middle
+        );
+        template.graphics.drawString(
+            parts.join(' | '),
+            font,
+            { x: 0, y: 0, width, height },
+            null,
+            new PdfBrush(color),
+            format
+        );
+        return template;
+    }
+    /**
+     * Serializes the custom normal appearance template into the `AP` dictionary when present.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _serializeAppearance(): void {
+        if (!this._dictionary || !this._appearance || !this._appearance._hasNormalTemplate) {
+            return;
+        }
+        this._writeNormalAppearance(this._appearance.normal);
+    }
+    /**
+     * Resolves the normal appearance stream used for flattening.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: any = this._dictionary.get('AP'); // eslint-disable-line
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: any = appearance.get('N'); // eslint-disable-line
+        const raw: any = appearance.getRaw('N'); // eslint-disable-line
+        if (normal instanceof _PdfBaseStream) {
+            this._assignAppearanceReference(normal, raw);
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the appearance stream selected by the annotation appearance state.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance-state dictionary.
+     * @returns {_PdfBaseStream} The selected appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: any = this._dictionary.get('AS'); // eslint-disable-line
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: any = dictionary.get(state.name); // eslint-disable-line
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        this._assignAppearanceReference(stream, dictionary.getRaw(state.name));
+        return stream;
+    }
+    /**
+     * Assigns an indirect reference to an appearance stream when available.
+     *
+     * @private
+     * @param {_PdfBaseStream} stream The appearance stream.
+     * @param {any} rawValue The raw dictionary value that may contain a reference.
+     * @returns {void}
+     */
+    private _assignAppearanceReference(stream: _PdfBaseStream, rawValue: any): void { // eslint-disable-line
+        if (rawValue instanceof _PdfReference) {
+            stream.reference = rawValue;
+        }
+    }
+}
+/**
+ * Represents a projection annotation used for variable-data printing.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a projection annotation with bounds
+ * const annotation: PdfProjectionAnnotation = new PdfProjectionAnnotation({
+ *     x: 50, y: 100, width: 200, height: 100
+ * });
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfProjectionAnnotation extends PdfComment {
+    /**
+     * Initializes an empty projection annotation for internal loading.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a projection annotation with bounds.
+     *
+     * @param {Rectangle} bounds The annotation bounds (x, y, width, height).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a projection annotation with bounds
+     * const annotation: PdfProjectionAnnotation = new PdfProjectionAnnotation({
+     *     x: 50, y: 100, width: 200, height: 100
+     * });
+     * // Add the annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle);
+    public constructor(bounds?: Rectangle) {
+        super();
+        this._type = _PdfAnnotationType.projectionAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('Projection'));
+            this.bounds = bounds;
+        }
+    }
+    /**
+     * Loads a projection annotation from a PDF dictionary.
+     *
+     * @param {PdfPage} page The page containing the annotation.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfProjectionAnnotation} The loaded projection annotation instance.
+     *
+     * @private
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfProjectionAnnotation {
+        const annotation: PdfProjectionAnnotation = new PdfProjectionAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Processes and optionally flattens the projection annotation.
+     *
+     * @param {boolean} [isFlatten=false] Whether to flatten the annotation into the page.
+     * @returns {void} Nothing.
+     * @private
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Projection annotation is not initialized.');
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (isFlatten && this.flattenPopups) {
+            this._flattenPopUp();
+        }
+        if (!isFlatten) {
+            return;
+        }
+        const appearance: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearance) {
+            this._removeAnnotation(this._page, this);
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearance, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+    }
+    /**
+     * Validates a new projection annotation's bounds.
+     *
+     * @throws {Error} If bounds are invalid or have negative dimensions.
+     * @returns {void} Nothing.
+     * @private
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) ||
+            !Number.isFinite(this._bounds.y) || !Number.isFinite(this._bounds.width) ||
+            !Number.isFinite(this._bounds.height) || this._bounds.width < 0 ||
+            this._bounds.height < 0) {
+            throw new Error(
+                'Projection annotation bounds must be finite and cannot have negative dimensions.'
+            );
+        }
+    }
+    /**
+     * Resolves the normal appearance stream.
+     *
+     * @returns {_PdfBaseStream} The normal appearance stream, or undefined if not found.
+     * @private
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            this._assignAppearanceReference(normal, raw);
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the selected appearance state.
+     *
+     * @param {_PdfDictionary} dictionary The appearance state dictionary containing state-keyed streams.
+     * @returns {_PdfBaseStream} The resolved appearance stream for the current state, or undefined if not found.
+     *
+     * @private
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        this._assignAppearanceReference(stream, dictionary.getRaw(state.name));
+        return stream;
+    }
+    /**
+     * Assigns an appearance stream reference.
+     *
+     * @param {_PdfBaseStream} stream The appearance stream to update.
+     * @param {*} rawValue The raw value that may be a PDF reference.
+     *
+     * @private
+     * @returns {void} Nothing.
+     */
+    private _assignAppearanceReference(stream: _PdfBaseStream, rawValue: unknown): void {
+        if (rawValue instanceof _PdfReference) {
+            stream.reference = rawValue;
+        }
+    }
+}
+/**
+ * `PdfRichMediaAnnotation` class represents a rich-media annotation that embeds video or audio content.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a rich-media annotation
+ * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+ *     { x: 50, y: 100, width: 200, height: 150 },
+ *     mediaBytes,
+ *     {
+ *         fileName: 'sample.mp4',
+ *         mimeType: 'video/mp4',
+ *         contentType: PdfRichMediaContentType.Video,
+ *         activationMode: PdfRichMediaActivationMode.ExplicitActivation,
+ *         deactivationMode: PdfRichMediaDeactivationMode.ExplicitDeactivation,
+ *         presentationStyle: PdfRichMediaPresentationStyle.Embedded
+ *     }
+ * );
+ * // Add annotation to the page
+ * page.annotations.add(annotation);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -18491,69 +23630,4329 @@ export class PdfRedactionAnnotation extends PdfComment {
  */
 export class PdfRichMediaAnnotation extends PdfAnnotation {
     /**
+     * Specifies the embedded rich-media bytes.
+     *
+     * @private
+     */
+    private _data: Uint8Array;
+    /**
+     * Specifies the rich-media file name.
+     *
+     * @private
+     */
+    private _fileName: string;
+    /**
+     * Specifies the rich-media MIME type.
+     *
+     * @private
+     */
+    private _mimeType: string;
+    /**
+     * Specifies the rich-media content type.
+     *
+     * @private
+     */
+    private _contentType: PdfRichMediaContentType;
+    /**
+     * Specifies when the rich-media content is activated.
+     *
+     * @private
+     */
+    private _activationMode: PdfRichMediaActivationMode = PdfRichMediaActivationMode.ExplicitActivation;
+    /**
+     * Specifies when the rich-media content is deactivated.
+     *
+     * @private
+     */
+    private _deactivationMode: PdfRichMediaDeactivationMode = PdfRichMediaDeactivationMode.ExplicitDeactivation;
+    /**
+     * Specifies how the rich-media content is presented.
+     *
+     * @private
+     */
+    private _presentationStyle: PdfRichMediaPresentationStyle = PdfRichMediaPresentationStyle.Embedded;
+    /**
+     * Specifies whether the embedded content was modified.
+     *
+     * @private
+     */
+    private _isContentChanged: boolean = false;
+    /**
+     * Specifies whether activation or presentation settings were modified.
+     *
+     * @private
+     */
+    private _isSettingsChanged: boolean = false;
+    /**
+     * Specifies the appearance of the rich-media annotation.
+     *
+     * @private
+     */
+    private _appearance: PdfAppearance;
+    /**
+     * Get the appearance of the rich-media annotation. (Read only)
+     *
+     * @returns {PdfAppearance} Returns the appearance of the annotation.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new rich-media annotation
+     * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     mediaBytes,
+     *     { fileName: 'sample.mp4', mimeType: 'video/mp4', contentType: PdfRichMediaContentType.Video }
+     * );
+     * // Get the appearance of the annotation
+     * let appearance: PdfAppearance = annotation.appearance;
+     * // Access the normal template of the appearance
+     * let template: PdfTemplate = appearance.normal;
+     * // Draw custom rich-media content on the template
+     * template.graphics.drawRectangle(
+     *     { x: 0, y: 0, width: 200, height: 150 },
+     *     new PdfPen({ r: 0, g: 80, b: 180 }, 2),
+     *     new PdfBrush({ r: 220, g: 235, b: 255 })
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearance(): PdfAppearance {
+        if (this._isLoaded) {
+            return null;
+        }
+        if (typeof this._appearance === 'undefined') {
+            const nativeRectangle: Rectangle = { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height };
+            this._appearance = new PdfAppearance(nativeRectangle, this);
+            this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+        }
+        return this._appearance;
+    }
+    /**
      * Initializes a new instance of the `PdfRichMediaAnnotation` class.
      *
      * @private
      */
-    constructor() {
+    constructor();
+    /**
+     * Initializes a new instance of the `PdfRichMediaAnnotation` class with bounds, media bytes, and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {Uint8Array} data The embedded media bytes.
+     * @param {object} properties The rich-media properties.
+     * @param {string} properties.fileName The embedded media file name.
+     * @param {string} properties.mimeType The embedded media MIME type.
+     * @param {PdfRichMediaContentType} properties.contentType The embedded media content type.
+     * @param {PdfRichMediaActivationMode} [properties.activationMode] When the media is activated.
+     * @param {PdfRichMediaDeactivationMode} [properties.deactivationMode] When the media is deactivated.
+     * @param {PdfRichMediaPresentationStyle} [properties.presentationStyle] How the media is presented.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a rich-media annotation with bounds, media bytes, and properties
+     * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     mediaBytes,
+     *     {
+     *         fileName: 'sample.mp4',
+     *         mimeType: 'video/mp4',
+     *         contentType: PdfRichMediaContentType.Video,
+     *         activationMode: PdfRichMediaActivationMode.PageOpen,
+     *         deactivationMode: PdfRichMediaDeactivationMode.PageClose,
+     *         presentationStyle: PdfRichMediaPresentationStyle.Embedded
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, data: Uint8Array, properties: {
+        fileName: string,
+        mimeType: string,
+        contentType: PdfRichMediaContentType,
+        activationMode?: PdfRichMediaActivationMode,
+        deactivationMode?: PdfRichMediaDeactivationMode,
+        presentationStyle?: PdfRichMediaPresentationStyle
+    });
+    public constructor(bounds?: Rectangle, data?: Uint8Array, properties?: {
+        fileName: string,
+        mimeType: string,
+        contentType: PdfRichMediaContentType,
+        activationMode?: PdfRichMediaActivationMode,
+        deactivationMode?: PdfRichMediaDeactivationMode,
+        presentationStyle?: PdfRichMediaPresentationStyle
+    }) {
         super();
         this._type = _PdfAnnotationType.richMediaAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('RichMedia'));
+            this.bounds = bounds;
+        }
+        if (bounds || data || properties) {
+            if (typeof data !== 'undefined') {
+                this.data = data;
+            }
+            if (properties) {
+                if (typeof properties.activationMode !== 'undefined') {
+                    this.activationMode = properties.activationMode;
+                }
+                if (typeof properties.deactivationMode !== 'undefined') {
+                    this.deactivationMode = properties.deactivationMode;
+                }
+                if (typeof properties.presentationStyle !== 'undefined') {
+                    this.presentationStyle = properties.presentationStyle;
+                }
+                if (typeof properties.fileName !== 'undefined') {
+                    this.fileName = properties.fileName;
+                }
+                if (typeof properties.mimeType !== 'undefined') {
+                    this.mimeType = properties.mimeType;
+                }
+                if (typeof properties.contentType !== 'undefined') {
+                    this.contentType = properties.contentType;
+                }
+            }
+        }
     }
     /**
-     * Creates a rich media annotation from the given page and dictionary and marks it as loaded.
+     * Loads a rich-media annotation from the page dictionary.
      *
      * @private
-     * @param {PdfPage} page The page that contains the annotation.
-     * @param {_PdfDictionary} dictionary The source annotation dictionary.
-     * @returns {PdfRichMediaAnnotation} The loaded rich media annotation instance.
+     * @param {PdfPage} page The annotation page.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfRichMediaAnnotation} The loaded annotation.
      */
     static _load(page: PdfPage, dictionary: _PdfDictionary): PdfRichMediaAnnotation {
-        const annot: PdfRichMediaAnnotation = new PdfRichMediaAnnotation();
-        annot._isLoaded = true;
-        annot._initialize(page, dictionary);
-        return annot;
+        const annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
     }
     /**
-     * Initializes the annotation using the page and optional dictionary by invoking base initialization.
+     * Gets the embedded rich-media bytes.
+     *
+     * @returns {Uint8Array} A copy of the embedded media bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the embedded media bytes
+     * let data: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        return this._data ? new Uint8Array(this._data) : undefined;
+    }
+    /**
+     * Sets the embedded rich-media bytes.
+     *
+     * @param {Uint8Array} value The embedded media bytes. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the embedded media bytes
+     * annotation.data = mediaBytes;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set data(value: Uint8Array) {
+        if (!(value instanceof Uint8Array) || value.length === 0) {
+            throw new Error('Rich-media data cannot be empty.');
+        }
+        this._data = new Uint8Array(value);
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the rich-media file name.
+     *
+     * @returns {string} The media file name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the media file name
+     * let fileName: string = annotation.fileName;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fileName(): string {
+        return this._fileName;
+    }
+    /**
+     * Sets the rich-media file name.
+     *
+     * @param {string} value The media file name. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the media file name
+     * annotation.fileName = 'sample.mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set fileName(value: string) {
+        if (value === null || typeof value === 'undefined' ||
+            typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Rich-media file name cannot be empty.');
+        }
+        this._fileName = value.trim();
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the rich-media MIME type.
+     *
+     * @returns {string} The media MIME type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the media MIME type
+     * let mimeType: string = annotation.mimeType;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get mimeType(): string {
+        return this._mimeType;
+    }
+    /**
+     * Sets the rich-media MIME type.
+     *
+     * @param {string} value The media MIME type. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the media MIME type
+     * annotation.mimeType = 'video/mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set mimeType(value: string) {
+        if (value === null || typeof value === 'undefined' ||
+            typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Rich-media MIME type cannot be empty.');
+        }
+        this._mimeType = value.trim();
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the rich-media content type.
+     *
+     * @returns {PdfRichMediaContentType} The media content type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the media content type
+     * let contentType: PdfRichMediaContentType = annotation.contentType;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get contentType(): PdfRichMediaContentType {
+        return this._contentType;
+    }
+    /**
+     * Sets the rich-media content type.
+     *
+     * @param {PdfRichMediaContentType} value The media content type (`video` or `audio`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the media content type
+     * annotation.contentType = PdfRichMediaContentType.Video;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set contentType(value: PdfRichMediaContentType) {
+        this._validateContentType(value);
+        this._contentType = value;
+        this._isContentChanged = true;
+    }
+    /**
+     * Gets the activation mode of the rich-media annotation.
+     *
+     * @returns {PdfRichMediaActivationMode} The activation mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the activation mode of the rich-media annotation
+     * let mode: PdfRichMediaActivationMode = annotation.activationMode;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get activationMode(): PdfRichMediaActivationMode {
+        return this._activationMode;
+    }
+    /**
+     * Sets the activation mode of the rich-media annotation.
+     *
+     * @param {PdfRichMediaActivationMode} value The activation mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the activation mode of the rich-media annotation
+     * annotation.activationMode = PdfRichMediaActivationMode.PageVisible;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set activationMode(value: PdfRichMediaActivationMode) {
+        this._validateActivationMode(value);
+        this._activationMode = value;
+        this._isSettingsChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Gets the deactivation mode of the rich-media annotation.
+     *
+     * @returns {PdfRichMediaDeactivationMode} The deactivation mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the deactivation mode of the rich-media annotation
+     * let mode: PdfRichMediaDeactivationMode = annotation.deactivationMode;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get deactivationMode(): PdfRichMediaDeactivationMode {
+        return this._deactivationMode;
+    }
+    /**
+     * Sets the deactivation mode of the rich-media annotation.
+     *
+     * @param {PdfRichMediaDeactivationMode} value The deactivation mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the deactivation mode of the rich-media annotation
+     * annotation.deactivationMode = PdfRichMediaDeactivationMode.PageInvisible;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set deactivationMode(value: PdfRichMediaDeactivationMode) {
+        this._validateDeactivationMode(value);
+        this._deactivationMode = value;
+        this._isSettingsChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Gets the presentation style of the rich-media annotation.
+     *
+     * @returns {PdfRichMediaPresentationStyle} The presentation style.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Gets the presentation style of the rich-media annotation
+     * let style: PdfRichMediaPresentationStyle = annotation.presentationStyle;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get presentationStyle(): PdfRichMediaPresentationStyle {
+        return this._presentationStyle;
+    }
+    /**
+     * Sets the presentation style of the rich-media annotation.
+     *
+     * @param {PdfRichMediaPresentationStyle} value The presentation style.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRichMediaAnnotation = page.annotations.at(0) as PdfRichMediaAnnotation;
+     * // Sets the presentation style of the rich-media annotation
+     * annotation.presentationStyle = PdfRichMediaPresentationStyle.Windowed;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set presentationStyle(value: PdfRichMediaPresentationStyle) {
+        this._validatePresentationStyle(value);
+        this._presentationStyle = value;
+        this._isSettingsChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Initializes the rich-media annotation on the page.
      *
      * @private
-     * @param {PdfPage} page The page to associate with this annotation.
-     * @param {_PdfDictionary} [dictionary] Optional source dictionary to import from.
-     * @returns {void} No return value.
+     * @param {PdfPage} page The annotation page.
+     * @param {_PdfDictionary} [dictionary] The annotation dictionary.
+     * @returns {void}
      */
     _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
         super._initialize(page, dictionary);
+        if (this._isLoaded) {
+            this._loadContent();
+            this._loadSettings();
+        }
+        this._resetChangeFlags();
     }
     /**
-     * Performs post processing including flattening popups and appearance and removes the annotation if appearance is unavailable during flattening.
+     * Processes the annotation and optionally flattens it.
      *
      * @private
-     * @param {boolean} [isFlatten=false] When true, flattens the annotation using its appearance stream if present; otherwise removes it.
-     * @returns {void} No return value.
+     * @param {boolean} [isFlatten=false] Indicates whether to flatten the annotation.
+     * @returns {void}
      */
     _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Rich-media annotation is not initialized.');
+        }
         if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups) {
             this._flattenPopUp();
         }
-        if (isFlatten) {
-            let appearanceStream: _PdfBaseStream;
-            if (this._dictionary.has('AP')) {
-                const dictionary: _PdfDictionary = this._dictionary.get('AP');
-                if (dictionary && dictionary.has('N')) {
-                    appearanceStream = dictionary.get('N');
-                    const reference: _PdfReference = dictionary.getRaw('N');
-                    if (reference && appearanceStream) {
-                        appearanceStream.reference = reference;
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (this._fileName && (!this.text || this.text.length === 0)) {
+            this.text = this._fileName;
+        }
+        if (this._isContentChanged || (!this._isLoaded && !this._dictionary.has('RichMediaContent'))) {
+            this._updateRichMediaContent();
+        }
+        if (this._isSettingsChanged || !this._isLoaded) {
+            this._updateRichMediaSettings();
+        }
+        this._serializeAppearance();
+        if (!isFlatten) {
+            this._resetChangeFlags();
+            return;
+        }
+        const appearanceStream: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearanceStream) {
+            this._removeAnnotation(this._page, this);
+            this._resetChangeFlags();
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._resetChangeFlags();
+    }
+    /**
+     * Validates a newly created annotation before save.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('Rich-media annotation bounds must be finite and positive.');
+        }
+        if (!this._data || this._data.length === 0) {
+            throw new Error('Rich-media data must be assigned before saving.');
+        }
+        if (!this._fileName || this._fileName.length === 0) {
+            throw new Error('Rich-media file name must be assigned before saving.');
+        }
+        if (!this._mimeType || this._mimeType.length === 0) {
+            throw new Error('Rich-media MIME type must be assigned before saving.');
+        }
+        if (typeof this._contentType === 'undefined') {
+            throw new Error('Rich-media content type must be assigned before saving.');
+        }
+        this._validateContentType(this._contentType);
+    }
+    /**
+     * Validates the rich-media content type.
+     *
+     * @private
+     * @param {PdfRichMediaContentType} value The content type.
+     * @returns {void}
+     */
+    private _validateContentType(value: PdfRichMediaContentType): void {
+        if (value !== PdfRichMediaContentType.Video && value !== PdfRichMediaContentType.Audio) {
+            throw new Error('Only video and sound content is supported.');
+        }
+    }
+    /**
+     * Validates the activation mode.
+     *
+     * @private
+     * @param {PdfRichMediaActivationMode} value The activation mode.
+     * @returns {void}
+     */
+    private _validateActivationMode(value: PdfRichMediaActivationMode): void {
+        if (value !== PdfRichMediaActivationMode.ExplicitActivation &&
+            value !== PdfRichMediaActivationMode.PageOpen &&
+            value !== PdfRichMediaActivationMode.PageVisible) {
+            throw new Error('Unsupported rich-media activation mode.');
+        }
+    }
+    /**
+     * Validates the deactivation mode.
+     *
+     * @private
+     * @param {PdfRichMediaDeactivationMode} value The deactivation mode.
+     * @returns {void}
+     */
+    private _validateDeactivationMode(value: PdfRichMediaDeactivationMode): void {
+        if (value !== PdfRichMediaDeactivationMode.ExplicitDeactivation &&
+            value !== PdfRichMediaDeactivationMode.PageClose &&
+            value !== PdfRichMediaDeactivationMode.PageInvisible) {
+            throw new Error('Unsupported rich-media deactivation mode.');
+        }
+    }
+    /**
+     * Validates the presentation style.
+     *
+     * @private
+     * @param {PdfRichMediaPresentationStyle} value The presentation style.
+     * @returns {void}
+     */
+    private _validatePresentationStyle(value: PdfRichMediaPresentationStyle): void {
+        if (value !== PdfRichMediaPresentationStyle.Embedded &&
+            value !== PdfRichMediaPresentationStyle.Windowed) {
+            throw new Error('Unsupported rich-media presentation style.');
+        }
+    }
+    /**
+     * Maps a content type to its PDF name.
+     *
+     * @private
+     * @param {PdfRichMediaContentType} value The content type.
+     * @returns {string} The PDF content type name.
+     */
+    private _mapContentType(value: PdfRichMediaContentType): string {
+        switch (value) {
+        case PdfRichMediaContentType.Video:
+            return 'Video';
+        case PdfRichMediaContentType.Audio:
+            return 'Sound';
+        default:
+            throw new Error('Unsupported rich-media content type.');
+        }
+    }
+    /**
+     * Maps an activation mode to its PDF name.
+     *
+     * @private
+     * @param {PdfRichMediaActivationMode} value The activation mode.
+     * @returns {string} The PDF activation mode name.
+     */
+    private _mapActivationMode(value: PdfRichMediaActivationMode): string {
+        switch (value) {
+        case PdfRichMediaActivationMode.ExplicitActivation:
+            return 'XA';
+        case PdfRichMediaActivationMode.PageOpen:
+            return 'PO';
+        case PdfRichMediaActivationMode.PageVisible:
+            return 'PV';
+        default:
+            throw new Error('Unsupported rich-media activation mode.');
+        }
+    }
+    /**
+     * Maps a deactivation mode to its PDF name.
+     *
+     * @private
+     * @param {PdfRichMediaDeactivationMode} value The deactivation mode.
+     * @returns {string} The PDF deactivation mode name.
+     */
+    private _mapDeactivationMode(value: PdfRichMediaDeactivationMode): string {
+        switch (value) {
+        case PdfRichMediaDeactivationMode.ExplicitDeactivation:
+            return 'XD';
+        case PdfRichMediaDeactivationMode.PageClose:
+            return 'PC';
+        case PdfRichMediaDeactivationMode.PageInvisible:
+            return 'PI';
+        default:
+            throw new Error('Unsupported rich-media deactivation mode.');
+        }
+    }
+    /**
+     * Maps a presentation style to its PDF name.
+     *
+     * @private
+     * @param {PdfRichMediaPresentationStyle} value The presentation style.
+     * @returns {string} The PDF presentation style name.
+     */
+    private _mapPresentationStyle(value: PdfRichMediaPresentationStyle): string {
+        switch (value) {
+        case PdfRichMediaPresentationStyle.Embedded:
+            return 'Embedded';
+        case PdfRichMediaPresentationStyle.Windowed:
+            return 'Windowed';
+        default:
+            throw new Error('Unsupported rich-media presentation style.');
+        }
+    }
+    /**
+     * Parses a PDF activation-mode name.
+     *
+     * @private
+     * @param {string} value The PDF activation condition name.
+     * @returns {PdfRichMediaActivationMode} The activation mode.
+     */
+    private _parseActivationMode(value: string): PdfRichMediaActivationMode {
+        switch (value) {
+        case 'XA':
+            return PdfRichMediaActivationMode.ExplicitActivation;
+        case 'PO':
+            return PdfRichMediaActivationMode.PageOpen;
+        case 'PV':
+            return PdfRichMediaActivationMode.PageVisible;
+        default:
+            throw new Error('Unsupported PDF rich-media activation mode.');
+        }
+    }
+    /**
+     * Parses a PDF deactivation-mode name.
+     *
+     * @private
+     * @param {string} value The PDF deactivation condition name.
+     * @returns {PdfRichMediaDeactivationMode} The deactivation mode.
+     */
+    private _parseDeactivationMode(value: string): PdfRichMediaDeactivationMode {
+        switch (value) {
+        case 'XD':
+            return PdfRichMediaDeactivationMode.ExplicitDeactivation;
+        case 'PC':
+            return PdfRichMediaDeactivationMode.PageClose;
+        case 'PI':
+            return PdfRichMediaDeactivationMode.PageInvisible;
+        default:
+            throw new Error('Unsupported PDF rich-media deactivation mode.');
+        }
+    }
+    /**
+     * Parses a PDF presentation-style name.
+     *
+     * @private
+     * @param {string} value The PDF presentation style name.
+     * @returns {PdfRichMediaPresentationStyle} The presentation style.
+     */
+    private _parsePresentationStyle(value: string): PdfRichMediaPresentationStyle {
+        switch (value) {
+        case 'Embedded':
+            return PdfRichMediaPresentationStyle.Embedded;
+        case 'Windowed':
+            return PdfRichMediaPresentationStyle.Windowed;
+        default:
+            throw new Error('Unsupported PDF rich-media presentation style.');
+        }
+    }
+    /**
+     * Updates the rich-media content dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateRichMediaContent(): void {
+        if (!this._data || !this._fileName || !this._mimeType ||
+            typeof this._contentType === 'undefined') {
+            delete this._dictionary._map['RichMediaContent'];
+            this._dictionary._updated = true;
+            return;
+        }
+        const contentType: string = this._mapContentType(this._contentType);
+        const fileDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        fileDictionary.update('Type', _PdfName.get('EmbeddedFile'));
+        fileDictionary.update('Subtype', _PdfName.get(this._mimeType.replace(/\//g, '#2F')));
+        const fileStream: _PdfStream = new _PdfStream(this._data, fileDictionary);
+        const fileReference: _PdfReference = this._registerIndirectObject(fileStream);
+        const embeddedFiles: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        embeddedFiles.update('F', fileReference);
+        const fileSpecification: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        fileSpecification.update('Type', _PdfName.get('Filespec'));
+        fileSpecification.update('F', this._fileName);
+        fileSpecification.update('UF', this._fileName);
+        fileSpecification.update('EF', embeddedFiles);
+        const specificationReference: _PdfReference = this._registerIndirectObject(fileSpecification);
+        const assets: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        assets.update('Names', [this._fileName, specificationReference]);
+        const instance: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        instance.update('Type', _PdfName.get('RichMediaInstance'));
+        instance.update('Subtype', _PdfName.get(contentType));
+        instance.update('Asset', specificationReference);
+        const instanceReference: _PdfReference = this._registerIndirectObject(instance);
+        const configuration: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        configuration.update('Type', _PdfName.get('RichMediaConfiguration'));
+        configuration.update('Subtype', _PdfName.get(contentType));
+        configuration.update('Instances', [instanceReference]);
+        const configurationReference: _PdfReference = this._registerIndirectObject(configuration);
+        let contentDictionary: _PdfDictionary;
+        if (this._dictionary.has('RichMediaContent')) {
+            const existing: unknown = this._dictionary.get('RichMediaContent');
+            if (existing instanceof _PdfDictionary) {
+                contentDictionary = existing;
+            }
+        }
+        if (!contentDictionary) {
+            contentDictionary = new _PdfDictionary(this._crossReference);
+        }
+        contentDictionary.update('Assets', assets);
+        contentDictionary.update('Configurations', [configurationReference]);
+        this._dictionary.update('RichMediaContent', contentDictionary);
+    }
+    /**
+     * Updates the rich-media settings dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateRichMediaSettings(): void {
+        let settings: _PdfDictionary;
+        const currentSettings: unknown = this._dictionary.has('RichMediaSettings')
+            ? this._dictionary.get('RichMediaSettings')
+            : undefined;
+        if (currentSettings instanceof _PdfDictionary) {
+            settings = currentSettings;
+        }
+        if (!settings) {
+            settings = new _PdfDictionary(this._crossReference);
+        }
+        let activation: _PdfDictionary;
+        const currentActivation: unknown = settings.has('Activation')
+            ? settings.get('Activation') : undefined;
+        if (currentActivation instanceof _PdfDictionary) {
+            activation = currentActivation;
+        }
+        if (!activation) {
+            activation = new _PdfDictionary(this._crossReference);
+        }
+        activation.update('Condition', _PdfName.get(this._mapActivationMode(this._activationMode)));
+        let presentation: _PdfDictionary;
+        const currentPresentation: unknown = activation.has('Presentation')
+            ? activation.get('Presentation') : undefined;
+        if (currentPresentation instanceof _PdfDictionary) {
+            presentation = currentPresentation;
+        }
+        if (!presentation) {
+            presentation = new _PdfDictionary(this._crossReference);
+        }
+        presentation.update('Style', _PdfName.get(this._mapPresentationStyle(this._presentationStyle)));
+        activation.update('Presentation', presentation);
+        let deactivation: _PdfDictionary;
+        const currentDeactivation: unknown = settings.has('Deactivation')
+            ? settings.get('Deactivation') : undefined;
+        if (currentDeactivation instanceof _PdfDictionary) {
+            deactivation = currentDeactivation;
+        }
+        if (!deactivation) {
+            deactivation = new _PdfDictionary(this._crossReference);
+        }
+        deactivation.update('Condition', _PdfName.get(this._mapDeactivationMode(this._deactivationMode)));
+        settings.update('Activation', activation);
+        settings.update('Deactivation', deactivation);
+        this._dictionary.update('RichMediaSettings', settings);
+    }
+    /**
+     * Loads embedded rich-media content from the annotation dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadContent(): void {
+        const richMediaContent: unknown = this._dictionary.has('RichMediaContent')
+            ? this._dictionary.get('RichMediaContent') : undefined;
+        if (!(richMediaContent instanceof _PdfDictionary) || !richMediaContent.has('Assets')) {
+            return;
+        }
+        const assets: unknown = richMediaContent.get('Assets');
+        if (!(assets instanceof _PdfDictionary) || !assets.has('Names')) {
+            return;
+        }
+        const names: unknown = assets.get('Names');
+        if (!Array.isArray(names) || names.length < 2 || typeof names[0] !== 'string') {
+            return;
+        }
+        let type: PdfRichMediaContentType = PdfRichMediaContentType.Video;
+        const configurations: unknown = richMediaContent.has('Configurations')
+            ? richMediaContent.get('Configurations') : undefined;
+        if (Array.isArray(configurations) && configurations.length > 0) {
+            let configuration: unknown = configurations[0];
+            if (configuration instanceof _PdfReference) {
+                configuration = this._crossReference._fetch(configuration);
+            }
+            if (configuration instanceof _PdfDictionary) {
+                const configurationSubtype: unknown =
+                    configuration.has('Subtype') ? configuration.get('Subtype') : undefined;
+                if (configurationSubtype instanceof _PdfName) {
+                    if (configurationSubtype.name === 'Sound') {
+                        type = PdfRichMediaContentType.Audio;
+                    } else if (configurationSubtype.name === 'Video') {
+                        type = PdfRichMediaContentType.Video;
+                    } else {
+                        return;
                     }
                 }
             }
-            if (appearanceStream) {
-                const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
-                const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
-                this._flattenAnnotationTemplate(template, isNormalMatrix);
-            } else {
-                this._removeAnnotation(this._page, this);
+        }
+        let fileSpecification: unknown = names[1];
+        if (fileSpecification instanceof _PdfReference) {
+            fileSpecification = this._crossReference._fetch(
+                fileSpecification
+            );
+        }
+        if (!(fileSpecification instanceof _PdfDictionary) ||
+            !fileSpecification.has('EF')) {
+            return;
+        }
+        const embeddedFiles: unknown = fileSpecification.get('EF');
+        if (!(embeddedFiles instanceof _PdfDictionary) ||
+            !embeddedFiles.has('F')) {
+            return;
+        }
+        const embeddedFile: unknown = embeddedFiles.get('F');
+        if (!(embeddedFile instanceof _PdfBaseStream)) {
+            return;
+        }
+        let mimeType: string = 'application/octet-stream';
+        const subtype: unknown = embeddedFile.dictionary.has('Subtype')
+            ? embeddedFile.dictionary.get('Subtype')
+            : undefined;
+        if (subtype instanceof _PdfName) {
+            mimeType = subtype.name.replace(/#2F/gi, '/');
+        }
+        this._fileName = names[0];
+        this._data = new Uint8Array(embeddedFile.getBytes());
+        this._contentType = type;
+        this._mimeType = mimeType;
+    }
+    /**
+     * Loads rich-media activation and presentation settings.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadSettings(): void {
+        const settings: unknown = this._dictionary.has('RichMediaSettings')
+            ? this._dictionary.get('RichMediaSettings') : undefined;
+        if (!(settings instanceof _PdfDictionary)) {
+            return;
+        }
+        const activation: unknown = settings.has('Activation')
+            ? settings.get('Activation') : undefined;
+        if (activation instanceof _PdfDictionary) {
+            const condition: unknown = activation.has('Condition')
+                ? activation.get('Condition')
+                : undefined;
+            if (condition instanceof _PdfName) {
+                this._activationMode = this._parseActivationMode(condition.name);
             }
+            const presentation: unknown = activation.has('Presentation')
+                ? activation.get('Presentation') : undefined;
+            if (presentation instanceof _PdfDictionary && presentation.has('Style')) {
+                const style: unknown = presentation.get('Style');
+                if (style instanceof _PdfName) {
+                    this._presentationStyle = this._parsePresentationStyle(style.name);
+                }
+            }
+        }
+        const deactivation: unknown = settings.has('Deactivation')
+            ? settings.get('Deactivation')
+            : undefined;
+        if (deactivation instanceof _PdfDictionary && deactivation.has('Condition')) {
+            const condition: unknown = deactivation.get('Condition');
+            if (condition instanceof _PdfName) {
+                this._deactivationMode = this._parseDeactivationMode(condition.name);
+            }
+        }
+    }
+    /**
+     * Registers an indirect PDF object in the cross-reference table.
+     *
+     * @private
+     * @param {_PdfDictionary|_PdfBaseStream} value The object to register.
+     * @returns {_PdfReference} The assigned object reference.
+     */
+    private _registerIndirectObject(value: _PdfDictionary | _PdfBaseStream): _PdfReference {
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        if (value instanceof _PdfBaseStream) {
+            value.reference = reference;
+        }
+        this._crossReference._cacheMap.set(reference, value);
+        return reference;
+    }
+    /**
+     * Serializes the custom normal appearance template into the `AP` dictionary when present.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _serializeAppearance(): void {
+        if (!this._dictionary || !this._appearance || !this._appearance._hasNormalTemplate) {
+            return;
+        }
+        this._writeNormalAppearance(this._appearance.normal);
+    }
+    /**
+     * Resolves the normal appearance stream from the appearance dictionary.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves a selected appearance state stream from an appearance subdictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance state dictionary.
+     * @returns {_PdfBaseStream} The selected appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = dictionary.getRaw(state.name);
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Resets content and settings change flags after processing.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _resetChangeFlags(): void {
+        this._isContentChanged = false;
+        this._isSettingsChanged = false;
+    }
+}
+/**
+ * Represents a PDF screen annotation used to embed and play media through rendition actions.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a screen annotation
+ * const annotation: PdfScreenAnnotation = new PdfScreenAnnotation(
+ *     { x: 50, y: 100, width: 200, height: 150 },
+ *     {
+ *         data: {
+ *             fileName: 'sample.mp4',
+ *             data: mediaBytes,
+ *             mimeType: 'video/mp4'
+ *         },
+ *         highlightMode: PdfScreenAnnotationHighlightMode.Invert,
+ *         activationTrigger: PdfScreenAnnotationTrigger.MouseUp,
+ *         deactivationTrigger: PdfScreenAnnotationTrigger.MouseExit
+ *     }
+ * );
+ * // Add annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfScreenAnnotation extends PdfComment {
+    /**
+     * Specifies the embedded screen media bytes.
+     *
+     * @private
+     */
+    private _data: Uint8Array;
+    /**
+     * Specifies the screen media file name.
+     *
+     * @private
+     */
+    private _fileName: string;
+    /**
+     * Specifies the screen media MIME type.
+     *
+     * @private
+     */
+    private _mimeType: string;
+    /**
+     * Specifies the annotation highlight mode.
+     *
+     * @private
+     */
+    private _highlightMode: PdfScreenAnnotationHighlightMode = PdfScreenAnnotationHighlightMode.None;
+    /**
+     * Specifies the media activation trigger.
+     *
+     * @private
+     */
+    private _activationTrigger: PdfScreenAnnotationTrigger = PdfScreenAnnotationTrigger.MouseUp;
+    /**
+     * Specifies the media deactivation trigger.
+     *
+     * @private
+     */
+    private _deactivationTrigger: PdfScreenAnnotationTrigger = PdfScreenAnnotationTrigger.MouseExit;
+    /**
+     * Specifies whether the media data was modified.
+     *
+     * @private
+     */
+    private _isMediaChanged: boolean = false;
+    /**
+     * Specifies whether appearance settings were modified.
+     *
+     * @private
+     */
+    private _isSettingsChanged: boolean = false;
+    /**
+     * Specifies whether rendition triggers were modified.
+     *
+     * @private
+     */
+    private _isTriggerChanged: boolean = false;
+    /**
+     * Specifies the appearance of the screen annotation.
+     *
+     * @private
+     */
+    private _appearance: PdfAppearance;
+    /**
+     * Get the appearance of the screen annotation. (Read only)
+     *
+     * @returns {PdfAppearance} Returns the appearance of the annotation.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new screen annotation
+     * const annotation: PdfScreenAnnotation = new PdfScreenAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     { data: { fileName: 'sample.mp4', data: mediaBytes, mimeType: 'video/mp4' } }
+     * );
+     * // Get the appearance of the annotation
+     * let appearance: PdfAppearance = annotation.appearance;
+     * // Access the normal template of the appearance
+     * let template: PdfTemplate = appearance.normal;
+     * // Draw the inactive media appearance on the template
+     * template.graphics.drawRectangle(
+     *     { x: 0, y: 0, width: 200, height: 150 },
+     *     new PdfPen({ r: 0, g: 80, b: 180 }, 2),
+     *     new PdfBrush({ r: 220, g: 235, b: 255 })
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearance(): PdfAppearance {
+        if (this._isLoaded) {
+            return null;
+        }
+        if (typeof this._appearance === 'undefined') {
+            const nativeRectangle: Rectangle = { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height };
+            this._appearance = new PdfAppearance(nativeRectangle, this);
+            this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+        }
+        return this._appearance;
+    }
+    /**
+     * Initializes a new instance of the `PdfScreenAnnotation` class.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a new instance of the `PdfScreenAnnotation` class with bounds, media bytes,
+     * and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {Uint8Array} data The embedded screen media bytes.
+     * @param {object} properties The screen annotation properties.
+     * @param {string} properties.fileName The media file name.
+     * @param {string} properties.mimeType The media MIME type.
+     * @param {PdfScreenAnnotationHighlightMode} [properties.highlightMode] The annotation highlight mode.
+     * @param {PdfScreenAnnotationTrigger} [properties.activationTrigger] The media activation trigger.
+     * @param {PdfScreenAnnotationTrigger} [properties.deactivationTrigger] The media deactivation trigger.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a screen annotation with bounds, media bytes, and properties
+     * let annotation: PdfScreenAnnotation = new PdfScreenAnnotation(
+     *     { x: 50, y: 100, width: 200, height: 150 },
+     *     mediaBytes,
+     *     {
+     *         fileName: 'sample.mp4',
+     *         mimeType: 'video/mp4',
+     *         highlightMode: PdfScreenAnnotationHighlightMode.Push,
+     *         activationTrigger: PdfScreenAnnotationTrigger.MouseUp,
+     *         deactivationTrigger: PdfScreenAnnotationTrigger.MouseExit
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, data: Uint8Array, properties: {
+        fileName: string,
+        mimeType: string,
+        highlightMode?: PdfScreenAnnotationHighlightMode,
+        activationTrigger?: PdfScreenAnnotationTrigger,
+        deactivationTrigger?: PdfScreenAnnotationTrigger
+    });
+    public constructor(bounds?: Rectangle, data?: Uint8Array, properties?: {
+        fileName?: string,
+        mimeType?: string,
+        highlightMode?: PdfScreenAnnotationHighlightMode,
+        activationTrigger?: PdfScreenAnnotationTrigger,
+        deactivationTrigger?: PdfScreenAnnotationTrigger
+    }) {
+        super();
+        this._type = _PdfAnnotationType.screenAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('Screen'));
+            this.bounds = bounds;
+        }
+        if (typeof data !== 'undefined') {
+            this.data = data;
+        }
+        if (properties) {
+            if (typeof properties.fileName !== 'undefined') {
+                this.fileName = properties.fileName;
+            }
+            if (typeof properties.mimeType !== 'undefined') {
+                this.mimeType = properties.mimeType;
+            }
+            if (typeof properties.highlightMode !== 'undefined') {
+                this.highlightMode = properties.highlightMode;
+            }
+            if (typeof properties.activationTrigger !== 'undefined') {
+                this.activationTrigger = properties.activationTrigger;
+            }
+            if (typeof properties.deactivationTrigger !== 'undefined') {
+                this.deactivationTrigger = properties.deactivationTrigger;
+            }
+        }
+    }
+    /**
+     * Loads an existing screen annotation from the page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The page that owns the annotation.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfScreenAnnotation} The loaded screen annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfScreenAnnotation {
+        const annotation: PdfScreenAnnotation = new PdfScreenAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Gets the embedded screen media bytes.
+     *
+     * @returns {Uint8Array} A copy of the media bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the embedded screen media bytes
+     * let data: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        if (!this._data && this._isLoaded) {
+            this._loadMediaData();
+        }
+        return this._data ? new Uint8Array(this._data) : undefined;
+    }
+    /**
+     * Sets the embedded screen media bytes.
+     *
+     * @param {Uint8Array} value The screen media bytes. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the embedded screen media bytes
+     * annotation.data = mediaBytes;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set data(value: Uint8Array) {
+        if (!(value instanceof Uint8Array) || value.length === 0) {
+            throw new Error('Screen annotation media data cannot be empty.');
+        }
+        this._data = new Uint8Array(value);
+        this._markMediaChanged();
+    }
+    /**
+     * Gets the media file name.
+     *
+     * @returns {string} The media file name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the media file name
+     * let fileName: string = annotation.fileName;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fileName(): string {
+        if (!this._fileName && this._isLoaded) {
+            this._loadMediaData();
+        }
+        return this._fileName;
+    }
+    /**
+     * Sets the media file name.
+     *
+     * @param {string} value The media file name. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the media file name
+     * annotation.fileName = 'sample.mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set fileName(value: string) {
+        if (value === null || typeof value === 'undefined') {
+            throw new Error('Screen annotation media file name cannot be null or undefined.');
+        }
+        if (typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Screen annotation media file name cannot be empty.');
+        }
+        this._fileName = value.trim();
+        this._markMediaChanged();
+    }
+    /**
+     * Gets the media MIME type.
+     *
+     * @returns {string} The media MIME type.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the media MIME type
+     * let mimeType: string = annotation.mimeType;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get mimeType(): string {
+        if (!this._mimeType && this._isLoaded) {
+            this._loadMediaData();
+        }
+        return this._mimeType;
+    }
+    /**
+     * Sets the media MIME type.
+     *
+     * @param {string} value The media MIME type. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the media MIME type
+     * annotation.mimeType = 'video/mp4';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set mimeType(value: string) {
+        if (value === null || typeof value === 'undefined') {
+            throw new Error('Screen annotation media MIME type cannot be null or undefined.');
+        }
+        if (typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('Screen annotation media MIME type cannot be empty.');
+        }
+        this._mimeType = value.trim();
+        this._markMediaChanged();
+    }
+    /**
+     * Gets the annotation highlight mode.
+     *
+     * @returns {PdfScreenAnnotationHighlightMode} The current highlight mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the annotation highlight mode
+     * let highlightMode: PdfScreenAnnotationHighlightMode = annotation.highlightMode;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get highlightMode(): PdfScreenAnnotationHighlightMode {
+        return this._highlightMode;
+    }
+    /**
+     * Sets the annotation highlight mode.
+     *
+     * @param {PdfScreenAnnotationHighlightMode} value The highlight mode to set.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the annotation highlight mode
+     * annotation.highlightMode = PdfScreenAnnotationHighlightMode.Invert;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set highlightMode(value: PdfScreenAnnotationHighlightMode) {
+        this._validateHighlightMode(value);
+        if (this._highlightMode === value) {
+            return;
+        }
+        this._highlightMode = value;
+        this._markSettingsChanged();
+    }
+    /**
+     * Gets the media activation trigger.
+     *
+     * @returns {PdfScreenAnnotationTrigger} The current activation trigger.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the media activation trigger
+     * let activationTrigger: PdfScreenAnnotationTrigger = annotation.activationTrigger;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get activationTrigger(): PdfScreenAnnotationTrigger {
+        return this._activationTrigger;
+    }
+    /**
+     * Sets the media activation trigger.
+     *
+     * @param {PdfScreenAnnotationTrigger} value The activation trigger to set.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the media activation trigger
+     * annotation.activationTrigger = PdfScreenAnnotationTrigger.MouseEnter;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set activationTrigger(value: PdfScreenAnnotationTrigger) {
+        this._validateTrigger(value);
+        if (this._activationTrigger === value) {
+            return;
+        }
+        this._activationTrigger = value;
+        this._markTriggerChanged();
+    }
+    /**
+     * Gets the media deactivation trigger.
+     *
+     * @returns {PdfScreenAnnotationTrigger} The current deactivation trigger.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Get the media deactivation trigger
+     * let deactivationTrigger: PdfScreenAnnotationTrigger = annotation.deactivationTrigger;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get deactivationTrigger(): PdfScreenAnnotationTrigger {
+        return this._deactivationTrigger;
+    }
+    /**
+     * Sets the media deactivation trigger.
+     *
+     * @param {PdfScreenAnnotationTrigger} value The deactivation trigger to set.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first screen annotation
+     * let annotation: PdfScreenAnnotation = page.annotations.at(0) as PdfScreenAnnotation;
+     * // Set the media deactivation trigger
+     * annotation.deactivationTrigger = PdfScreenAnnotationTrigger.MouseExit;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set deactivationTrigger(value: PdfScreenAnnotationTrigger) {
+        this._validateTrigger(value);
+        if (this._deactivationTrigger === value) {
+            return;
+        }
+        this._deactivationTrigger = value;
+        this._markTriggerChanged();
+    }
+    /**
+     * Initializes the screen annotation with the associated page and dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The page that owns the annotation.
+     * @param {_PdfDictionary} [dictionary] The annotation dictionary.
+     * @returns {void}
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        super._initialize(page, dictionary);
+        if (this._isLoaded) {
+            this._loadMediaData();
+            this._loadSettings();
+        }
+        this._resetChangeFlags();
+    }
+    /**
+     * Processes the screen annotation before save and optionally flattens it.
+     *
+     * @private
+     * @param {boolean} [isFlatten=false] Indicates whether the annotation should be flattened.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Screen annotation is not initialized.');
+        }
+        this._updateRenditionAnnotationReferences();
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (isFlatten && this.flattenPopups) {
+            this._flattenPopUp();
+        }
+        this._validateTriggers();
+        const hasRenditionAction: boolean = Boolean(this._findRenditionAction());
+        if (this._isMediaChanged || (!this._isLoaded && this._data && !hasRenditionAction)) {
+            this._updateRenditionAction();
+        } else if (this._isTriggerChanged) {
+            this._updateRenditionTriggers();
+        }
+        if (this._isSettingsChanged || !this._isLoaded) {
+            this._updateAppearanceCharacteristics();
+        }
+        if (this._setAppearance && !this._hasNormalAppearance() && !this._hasCustomNormalAppearance()) {
+            this._createDefaultAppearance();
+        }
+        this._serializeAppearance();
+        if (!isFlatten) {
+            this._resetChangeFlags();
+            return;
+        }
+        const appearanceStream: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearanceStream) {
+            this._removeAnnotation(this._page, this);
+            this._resetChangeFlags();
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._resetChangeFlags();
+    }
+    /**
+     * Validates required state for a newly created screen annotation.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('Screen annotation bounds must be finite and have positive dimensions.');
+        }
+        if (!this._data || this._data.length === 0) {
+            throw new Error('Screen annotation media data must be assigned before saving.');
+        }
+        if (!this._fileName || this._fileName.length === 0) {
+            throw new Error('Screen annotation media file name must be assigned before saving.');
+        }
+        if (!this._mimeType || this._mimeType.length === 0) {
+            throw new Error('Screen annotation media MIME type must be assigned before saving.');
+        }
+    }
+    /**
+     * Validates the highlight mode value.
+     *
+     * @private
+     * @param {PdfScreenAnnotationHighlightMode} value The highlight mode to validate.
+     * @returns {void}
+     */
+    private _validateHighlightMode(value: PdfScreenAnnotationHighlightMode): void {
+        if (value !== PdfScreenAnnotationHighlightMode.None &&
+            value !== PdfScreenAnnotationHighlightMode.Invert &&
+            value !== PdfScreenAnnotationHighlightMode.Outline &&
+            value !== PdfScreenAnnotationHighlightMode.Push) {
+            throw new Error('Unsupported screen annotation highlight mode.');
+        }
+    }
+    /**
+     * Validates a single annotation trigger value.
+     *
+     * @private
+     * @param {PdfScreenAnnotationTrigger} value The trigger value to validate.
+     * @returns {void}
+     */
+    private _validateTrigger(value: PdfScreenAnnotationTrigger): void {
+        if (value !== PdfScreenAnnotationTrigger.MouseDown &&
+            value !== PdfScreenAnnotationTrigger.MouseUp &&
+            value !== PdfScreenAnnotationTrigger.MouseEnter &&
+            value !== PdfScreenAnnotationTrigger.MouseExit) {
+            throw new Error('Unsupported screen annotation trigger value.');
+        }
+    }
+    /**
+     * Validates that activation and deactivation triggers are different.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateTriggers(): void {
+        if (this._activationTrigger === this._deactivationTrigger) {
+            throw new Error('Screen annotation activation and deactivation triggers must be different.');
+        }
+    }
+    /**
+     * Updates annotation references (`AN`) on existing rendition actions.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateRenditionAnnotationReferences(): void {
+        if (!(this._ref instanceof _PdfReference)) {
+            return;
+        }
+        if (this._dictionary.has('A')) {
+            this._updateRenditionAnnotationReference(this._dictionary.get('A'));
+        }
+        const actions: unknown = this._dictionary.has('AA') ? this._dictionary.get('AA') : undefined;
+        if (!(actions instanceof _PdfDictionary)) {
+            return;
+        }
+        for (const key of ['U', 'D', 'E', 'X']) {
+            if (actions.has(key)) {
+                this._updateRenditionAnnotationReference(actions.get(`${key}`));
+            }
+        }
+    }
+    /**
+     * Updates the annotation reference on a single rendition action dictionary.
+     *
+     * @private
+     * @param {any} value The candidate action dictionary.
+     * @returns {void}
+     */
+    private _updateRenditionAnnotationReference(value: unknown): void {
+        if (!(value instanceof _PdfDictionary) || !(this._ref instanceof _PdfReference) ||
+            !value.has('S')) {
+            return;
+        }
+        const subtype: unknown = value.get('S');
+        if (subtype instanceof _PdfName && subtype.name === 'Rendition') {
+            value.update('AN', this._ref);
+        }
+    }
+    /**
+     * Gets the indirect reference of the current annotation.
+     *
+     * @private
+     * @returns {_PdfReference} The annotation reference.
+     */
+    private _getAnnotationReference(): _PdfReference {
+        if (this._ref instanceof _PdfReference) {
+            return this._ref;
+        }
+        throw new Error('The Screen annotation must be added to a page before its rendition action is serialized.');
+    }
+    /**
+     * Registers a dictionary or stream as an indirect object and returns its reference.
+     *
+     * @private
+     * @param {_PdfDictionary | _PdfBaseStream} value The object to register.
+     * @returns {_PdfReference} The object reference.
+     */
+    private _registerIndirectObject(value: _PdfDictionary | _PdfBaseStream): _PdfReference {
+        if (value instanceof _PdfDictionary && value._reference) {
+            return value._reference;
+        }
+        if (value instanceof _PdfBaseStream && value.reference) {
+            return value.reference;
+        }
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        if (value instanceof _PdfBaseStream) {
+            value.reference = reference;
+        } else {
+            value._reference = reference;
+        }
+        this._crossReference._cacheMap.set(reference, value);
+        return reference;
+    }
+    /**
+     * Creates a rendition action dictionary.
+     *
+     * @private
+     * @param {_PdfReference} renditionReference The rendition object reference.
+     * @param {_PdfReference} annotationReference The screen annotation reference.
+     * @param {number} operation The rendition operation (`0` play, `1` stop).
+     * @returns {_PdfDictionary} The created action dictionary.
+     */
+    private _createRenditionAction(renditionReference: _PdfReference,
+                                   annotationReference: _PdfReference, operation: number): _PdfDictionary {
+        const action: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        action.update('Type', _PdfName.get('Action'));
+        action.update('S', _PdfName.get('Rendition'));
+        action.update('R', renditionReference);
+        action.update('OP', operation);
+        action.update('AN', annotationReference);
+        return action;
+    }
+    /**
+     * Builds or replaces the embedded media and associated rendition actions.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateRenditionAction(): void {
+        if (!this._data) {
+            this._removeRenditionActions();
+            return;
+        }
+        this._validateTriggers();
+        const annotationReference: _PdfReference = this._getAnnotationReference();
+        const streamDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        streamDictionary.update('Type', _PdfName.get('EmbeddedFile'));
+        const mimeSubtype: string = this._mimeType.replace(/\//g, '#2F');
+        streamDictionary.update('Subtype', _PdfName.get(mimeSubtype));
+        const embeddedStream: _PdfStream = new _PdfStream(
+            new Uint8Array(this._data),
+            streamDictionary
+        );
+        const embeddedReference: _PdfReference = this._registerIndirectObject(embeddedStream);
+        const embeddedFiles: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        embeddedFiles.update('F', embeddedReference);
+        embeddedFiles.update('UF', embeddedReference);
+        const fileSpecification: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        fileSpecification.update('Type', _PdfName.get('Filespec'));
+        fileSpecification.update('F', this._fileName);
+        fileSpecification.update('UF', this._fileName);
+        fileSpecification.update('EF', embeddedFiles);
+        fileSpecification.update('Desc', this._fileName);
+        const fileReference: _PdfReference = this._registerIndirectObject(fileSpecification);
+        const permissions: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        permissions.update('Type', _PdfName.get('MediaPermissions'));
+        permissions.update('TF', 'TEMPACCESS');
+        const mediaClip: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        mediaClip.update('Type', _PdfName.get('MediaClip'));
+        mediaClip.update('S', _PdfName.get('MCD'));
+        mediaClip.update('N', this._fileName);
+        mediaClip.update('D', fileReference);
+        mediaClip.update('CT', this._mimeType);
+        mediaClip.update('P', permissions);
+        const bestEffort: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        bestEffort.update('C', true);
+        const playParameters: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        playParameters.update('Type', _PdfName.get('MediaPlayParams'));
+        playParameters.update('BE', bestEffort);
+        const rendition: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        rendition.update('Type', _PdfName.get('Rendition'));
+        rendition.update('S', _PdfName.get('MR'));
+        rendition.update('N', this._fileName);
+        rendition.update('C', mediaClip);
+        rendition.update('P', playParameters);
+        const renditionReference: _PdfReference = this._registerIndirectObject(rendition);
+        this._writeRenditionTriggers(renditionReference, annotationReference);
+    }
+    /**
+     * Updates only the play/stop trigger wiring for an existing rendition.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateRenditionTriggers(): void {
+        this._validateTriggers();
+        const action: _PdfDictionary = this._findRenditionAction();
+        if (!action || !action.has('R')) {
+            this._updateRenditionAction();
+            return;
+        }
+        const rawRendition: unknown = action.getRaw('R');
+        let renditionReference: _PdfReference;
+        if (rawRendition instanceof _PdfReference) {
+            renditionReference = rawRendition;
+        } else {
+            const rendition: unknown = action.get('R');
+            if (!(rendition instanceof _PdfDictionary)) {
+                this._updateRenditionAction();
+                return;
+            }
+            renditionReference = this._registerIndirectObject(rendition);
+        }
+        this._writeRenditionTriggers(renditionReference, this._getAnnotationReference());
+    }
+    /**
+     * Writes play and stop rendition actions for the configured triggers.
+     *
+     * @private
+     * @param {_PdfReference} renditionReference The rendition object reference.
+     * @param {_PdfReference} annotationReference The screen annotation reference.
+     * @returns {void}
+     */
+    private _writeRenditionTriggers(renditionReference: _PdfReference,
+                                    annotationReference: _PdfReference): void {
+        const playAction: _PdfDictionary = this._createRenditionAction(
+            renditionReference,
+            annotationReference,
+            0
+        );
+        const playReference: _PdfReference = this._registerIndirectObject(playAction);
+        if (this._activationTrigger === PdfScreenAnnotationTrigger.MouseUp) {
+            this._dictionary.update('A', playReference);
+        } else {
+            delete this._dictionary._map['A'];
+            this._dictionary._updated = true;
+        }
+        let actions: _PdfDictionary;
+        const currentActions: unknown = this._dictionary.has('AA') ? this._dictionary.get('AA') : undefined;
+        if (currentActions instanceof _PdfDictionary) {
+            actions = currentActions;
+        }
+        if (!actions) {
+            actions = new _PdfDictionary(this._crossReference);
+        }
+        this._removeMouseTriggerActions(actions);
+        if (this._activationTrigger !== PdfScreenAnnotationTrigger.MouseUp) {
+            actions.update(this._mapTrigger(this._activationTrigger), playReference);
+        }
+        const stopAction: _PdfDictionary = this._createRenditionAction(
+            renditionReference,
+            annotationReference,
+            1
+        );
+        const stopReference: _PdfReference = this._registerIndirectObject(stopAction);
+        actions.update(this._mapTrigger(this._deactivationTrigger), stopReference);
+        this._dictionary.update('AA', actions);
+    }
+    /**
+     * Removes primary and additional action rendition entries.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _removeRenditionActions(): void {
+        delete this._dictionary._map['A'];
+        const actions: unknown = this._dictionary.has('AA') ? this._dictionary.get('AA') : undefined;
+        if (actions instanceof _PdfDictionary) {
+            this._removeMouseTriggerActions(actions);
+            if (Object.keys(actions._map).length === 0) {
+                delete this._dictionary._map['AA'];
+            }
+        }
+        this._dictionary._updated = true;
+    }
+    /**
+     * Clears mouse-trigger keys from an additional-actions dictionary.
+     *
+     * @private
+     * @param {_PdfDictionary} actions The additional-actions dictionary.
+     * @returns {void}
+     */
+    private _removeMouseTriggerActions(actions: _PdfDictionary): void {
+        delete actions._map['U'];
+        delete actions._map['D'];
+        delete actions._map['E'];
+        delete actions._map['X'];
+        actions._updated = true;
+    }
+    /**
+     * Writes appearance characteristics such as the highlight mode.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateAppearanceCharacteristics(): void {
+        this._dictionary.update('H', _PdfName.get(this._mapHighlightMode(this._highlightMode)));
+    }
+    /**
+     * Maps a highlight mode enum value to its PDF name.
+     *
+     * @private
+     * @param {PdfScreenAnnotationHighlightMode} value The highlight mode.
+     * @returns {string} The PDF highlight-mode name.
+     */
+    private _mapHighlightMode(value: PdfScreenAnnotationHighlightMode): string {
+        switch (value) {
+        case PdfScreenAnnotationHighlightMode.None:
+            return 'N';
+        case PdfScreenAnnotationHighlightMode.Invert:
+            return 'I';
+        case PdfScreenAnnotationHighlightMode.Outline:
+            return 'O';
+        case PdfScreenAnnotationHighlightMode.Push:
+            return 'P';
+        default:
+            throw new Error('Unsupported screen annotation highlight mode.');
+        }
+    }
+    /**
+     * Parses a PDF highlight-mode name into the corresponding enum value.
+     *
+     * @private
+     * @param {string} value The PDF highlight-mode name.
+     * @returns {PdfScreenAnnotationHighlightMode} The mapped highlight mode.
+     */
+    private _parseHighlightMode(value: string): PdfScreenAnnotationHighlightMode {
+        switch (value) {
+        case 'N':
+            return PdfScreenAnnotationHighlightMode.None;
+        case 'I':
+            return PdfScreenAnnotationHighlightMode.Invert;
+        case 'O':
+            return PdfScreenAnnotationHighlightMode.Outline;
+        case 'P':
+            return PdfScreenAnnotationHighlightMode.Push;
+        default:
+            throw new Error('Unsupported PDF screen annotation highlight mode.');
+        }
+    }
+    /**
+     * Maps an annotation trigger enum value to its additional-actions key.
+     *
+     * @private
+     * @param {PdfScreenAnnotationTrigger} value The trigger value.
+     * @returns {string} The PDF additional-actions key.
+     */
+    private _mapTrigger(value: PdfScreenAnnotationTrigger): string {
+        switch (value) {
+        case PdfScreenAnnotationTrigger.MouseUp:
+            return 'U';
+        case PdfScreenAnnotationTrigger.MouseDown:
+            return 'D';
+        case PdfScreenAnnotationTrigger.MouseEnter:
+            return 'E';
+        case PdfScreenAnnotationTrigger.MouseExit:
+            return 'X';
+        default:
+            throw new Error('Unsupported screen annotation trigger.');
+        }
+    }
+    /**
+     * Parses a PDF additional-actions key into a trigger enum value.
+     *
+     * @private
+     * @param {string} value The additional-actions key.
+     * @returns {PdfScreenAnnotationTrigger} The mapped trigger value.
+     */
+    private _parseTrigger(value: string): PdfScreenAnnotationTrigger {
+        switch (value) {
+        case 'U':
+            return PdfScreenAnnotationTrigger.MouseUp;
+        case 'D':
+            return PdfScreenAnnotationTrigger.MouseDown;
+        case 'E':
+            return PdfScreenAnnotationTrigger.MouseEnter;
+        case 'X':
+            return PdfScreenAnnotationTrigger.MouseExit;
+        default:
+            throw new Error('Unsupported PDF screen annotation trigger.');
+        }
+    }
+    /**
+     * Determines whether a dictionary represents a rendition action.
+     *
+     * @private
+     * @param {any} value The candidate action dictionary.
+     * @returns {boolean} `true` when the value is a rendition action; otherwise, `false`.
+     */
+    private _isRenditionAction(value: unknown): boolean {
+        if (!(value instanceof _PdfDictionary) || !value.has('S')) {
+            return false;
+        }
+        const subtype: unknown = value.get('S');
+        return subtype instanceof _PdfName && subtype.name === 'Rendition';
+    }
+    /**
+     * Finds the play (`OP` 0) rendition action for this annotation.
+     *
+     * @private
+     * @returns {_PdfDictionary} The play rendition action.
+     */
+    private _findRenditionAction(): _PdfDictionary {
+        if (!this._dictionary) {
+            return undefined;
+        }
+        const primary: unknown = this._dictionary.has('A') ? this._dictionary.get('A') : undefined;
+        if (this._isRenditionAction(primary)) {
+            return primary as _PdfDictionary;
+        }
+        const actions: unknown = this._dictionary.has('AA') ? this._dictionary.get('AA') : undefined;
+        if (!(actions instanceof _PdfDictionary)) {
+            return undefined;
+        }
+        for (const key of ['U', 'D', 'E', 'X']) {
+            if (!actions.has(key)) {
+                continue;
+            }
+            const action: unknown = actions.get(key);
+            if (!this._isRenditionAction(action)) {
+                continue;
+            }
+            const operation: unknown = (action as _PdfDictionary).has('OP')
+                ? (action as _PdfDictionary).get('OP') : undefined;
+            if (typeof operation === 'undefined' || operation === 0) {
+                return action as _PdfDictionary;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Resolves a direct object or fetches an indirect reference.
+     *
+     * @private
+     * @param {any} value The candidate direct object or reference.
+     * @returns {any} The resolved object.
+     */
+    private _resolveScreenObject(value: any): any { // eslint-disable-line
+        if (value instanceof _PdfReference && this._crossReference) {
+            return this._crossReference._fetch(value);
+        }
+        return value;
+    }
+    /**
+     * Loads embedded screen media data from the existing rendition structure.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadMediaData(): void {
+        this._data = undefined;
+        const action: _PdfDictionary = this._findRenditionAction();
+        if (!action || !action.has('R')) {
+            return;
+        }
+        const rendition: unknown = this._resolveScreenObject(action.getRaw('R'));
+        if (!(rendition instanceof _PdfDictionary) || !rendition.has('C')) {
+            return;
+        }
+        const clip: unknown = this._resolveScreenObject(rendition.getRaw('C'));
+        if (!(clip instanceof _PdfDictionary) || !clip.has('D')) {
+            return;
+        }
+        const file: unknown = this._resolveScreenObject(clip.getRaw('D'));
+        if (!(file instanceof _PdfDictionary)) {
+            return;
+        }
+        const fileNameValue: unknown = file.has('UF')
+            ? this._resolveScreenObject(file.getRaw('UF'))
+            : file.has('F') ? this._resolveScreenObject(file.getRaw('F')) : undefined;
+        if (typeof fileNameValue !== 'string' || !file.has('EF')) {
+            return;
+        }
+        const mimeValue: unknown = clip.has('CT') ? this._resolveScreenObject(clip.getRaw('CT')) : undefined;
+        const mimeType: string = typeof mimeValue === 'string' ? mimeValue : 'application/octet-stream';
+        const embeddedFiles: unknown = this._resolveScreenObject(file.getRaw('EF'));
+        if (!(embeddedFiles instanceof _PdfDictionary)) {
+            return;
+        }
+        const streamValue: unknown = embeddedFiles.has('UF')
+            ? this._resolveScreenObject(embeddedFiles.getRaw('UF'))
+            : embeddedFiles.has('F') ? this._resolveScreenObject(embeddedFiles.getRaw('F')) : undefined;
+        if (!(streamValue instanceof _PdfBaseStream)) {
+            return;
+        }
+        const data: Uint8Array = streamValue instanceof _PdfContentStream
+            ? new Uint8Array(streamValue._bytes)
+            : new Uint8Array(streamValue.getBytes());
+        if (fileNameValue.trim().length === 0 || mimeType.trim().length === 0 || data.length === 0) {
+            return;
+        }
+        this._data = data;
+        this._fileName = fileNameValue.trim();
+        this._mimeType = mimeType.trim();
+    }
+    /**
+     * Loads highlight mode and trigger settings from the annotation dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadSettings(): void {
+        this._highlightMode = PdfScreenAnnotationHighlightMode.None;
+        this._activationTrigger = PdfScreenAnnotationTrigger.MouseUp;
+        this._deactivationTrigger = PdfScreenAnnotationTrigger.MouseExit;
+        const highlight: unknown = this._dictionary.has('H') ? this._dictionary.get('H') : undefined;
+        if (highlight instanceof _PdfName) {
+            this._highlightMode = this._parseHighlightMode(highlight.name);
+        }
+        const primary: unknown = this._dictionary.has('A') ? this._dictionary.get('A') : undefined;
+        if (primary instanceof _PdfDictionary && this._isRenditionAction(primary)) {
+            const operation: unknown = primary.has('OP') ? primary.get('OP') : undefined;
+            if (typeof operation === 'undefined' || operation === 0) {
+                this._activationTrigger = PdfScreenAnnotationTrigger.MouseUp;
+            }
+        }
+        const actions: unknown = this._dictionary.has('AA') ? this._dictionary.get('AA') : undefined;
+        if (!(actions instanceof _PdfDictionary)) {
+            return;
+        }
+        for (const key of ['U', 'D', 'E', 'X']) {
+            if (!actions.has(key)) {
+                continue;
+            }
+            const action: unknown = actions.get(key);
+            if (!(action instanceof _PdfDictionary) || !this._isRenditionAction(action)) {
+                continue;
+            }
+            const operation: unknown = action.has('OP') ? action.get('OP') : undefined;
+            if (typeof operation === 'undefined' || operation === 0) {
+                this._activationTrigger = this._parseTrigger(key);
+            } else if (operation === 1) {
+                this._deactivationTrigger = this._parseTrigger(key);
+            }
+        }
+    }
+    /**
+     * Creates a simple default screen appearance when none is present.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _createDefaultAppearance(): void {
+        if (this._hasNormalAppearance() || !this._bounds) {
+            return;
+        }
+        const width: number = this._bounds.width;
+        const height: number = this._bounds.height;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        template.graphics.drawRectangle(
+            { x: 0, y: 0, width, height },
+            new PdfBrush({ r: 20, g: 20, b: 20 })
+        );
+        const centerX: number = width / 2;
+        const centerY: number = height / 2;
+        const size: number = Math.min(width, height) * 0.5;
+        const points: Point[] = [
+            { x: centerX - size * 0.35, y: centerY - size * 0.5 },
+            { x: centerX - size * 0.35, y: centerY + size * 0.5 },
+            { x: centerX + size * 0.55, y: centerY }
+        ];
+        template.graphics.drawPolygon(points, new PdfBrush({ r: 255, g: 255, b: 255 }));
+        this._writeNormalAppearance(template);
+    }
+    /**
+     * Determines whether a normal appearance entry already exists.
+     *
+     * @private
+     * @returns {boolean} `true` when a normal appearance is present; otherwise, `false`.
+     */
+    private _hasNormalAppearance(): boolean {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return false;
+        }
+        const value: unknown = this._dictionary.get('AP');
+        return value instanceof _PdfDictionary && value.has('N');
+    }
+    /**
+     * Determines whether a caller-supplied custom normal appearance template exists.
+     *
+     * @private
+     * @returns {boolean} `true` when a custom `appearance.normal` template is assigned.
+     */
+    private _hasCustomNormalAppearance(): boolean {
+        return typeof this._appearance !== 'undefined' &&
+            this._appearance._hasNormalTemplate;
+    }
+    /**
+     * Serializes the custom normal appearance template into the `AP` dictionary when present.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _serializeAppearance(): void {
+        if (!this._dictionary || !this._appearance || !this._appearance._hasNormalTemplate) {
+            return;
+        }
+        this._writeNormalAppearance(this._appearance.normal);
+    }
+    /**
+     * Resolves the normal appearance stream used for flattening.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the appearance stream selected by the annotation appearance state.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance-state dictionary.
+     * @returns {_PdfBaseStream} The selected appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = dictionary.getRaw(state.name);
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Marks media data as changed.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markMediaChanged(): void {
+        this._isMediaChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Marks appearance settings as changed.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markSettingsChanged(): void {
+        this._isSettingsChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Marks rendition triggers as changed.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markTriggerChanged(): void {
+        this._isTriggerChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Resets all screen annotation change flags.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _resetChangeFlags(): void {
+        this._isMediaChanged = false;
+        this._isSettingsChanged = false;
+        this._isTriggerChanged = false;
+    }
+}
+/**
+ * `PdfSoundAnnotation` class represents the sound annotation objects.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Access the annotation at index 0
+ * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfSoundAnnotation extends PdfComment {
+    /**
+     * Specifies the raw sample bytes of the sound.
+     *
+     * @private
+     */
+    private _data: Uint8Array;
+    /**
+     * Specifies the sampling rate in samples per second.
+     *
+     * @private
+     */
+    private _rate: number = 22050;
+    /**
+     * Specifies the channel configuration of the sound.
+     *
+     * @private
+     */
+    private _channels: PdfSoundChannels = PdfSoundChannels.Mono;
+    /**
+     * Specifies the bits per sample.
+     *
+     * @private
+     */
+    private _bits: number = 8;
+    /**
+     * Specifies the sound sample encoding.
+     *
+     * @private
+     */
+    private _encoding: PdfSoundEncoding = PdfSoundEncoding.Raw;
+    /**
+     * Specifies the original sound file name.
+     *
+     * @private
+     */
+    private _fileName: string;
+    /**
+     * Specifies the sound annotation icon.
+     *
+     * @private
+     */
+    private _icon: PdfSoundIcon = PdfSoundIcon.Speaker;
+    /**
+     * Specifies whether the sound stream was modified.
+     *
+     * @private
+     */
+    private _isSoundChanged: boolean = false;
+    /**
+     * Specifies whether the icon was modified.
+     *
+     * @private
+     */
+    private _isIconChanged: boolean = false;
+    /**
+     * Initializes a new instance of the `PdfSoundAnnotation` class.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a new instance of the `PdfSoundAnnotation` class with bounds and properties.
+     *
+     * @param {Rectangle} bounds The annotation bounds.
+     * @param {object} [properties] The sound annotation properties.
+     * @param {Uint8Array} [properties.data] The complete WAV sound bytes.
+     * @param {number} [properties.rate] The sampling rate in samples per second.
+     * @param {PdfSoundChannels} [properties.channels] The sound channels (`mono` or `stereo`).
+     * @param {number} [properties.bits] The bits per sample.
+     * @param {PdfSoundEncoding} [properties.encoding] The sound sample encoding.
+     * @param {string} [properties.fileName] The original sound file name.
+     * @param {PdfSoundIcon} [properties.icon] The annotation icon (`speaker` or `microphone`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a sound annotation with bounds and properties
+     * let annotation: PdfSoundAnnotation = new PdfSoundAnnotation(
+     *     { x: 50, y: 100, width: 24, height: 24 },
+     *     {
+     *         data: sampleBytes,
+     *         rate: 22050,
+     *         channels: PdfSoundChannels.Mono,
+     *         bits: 8,
+     *         encoding: PdfSoundEncoding.Raw,
+     *         fileName: 'sample.wav',
+     *         icon: PdfSoundIcon.Speaker
+     *     }
+     * );
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle, properties?: {
+        data?: Uint8Array,
+        rate?: number,
+        channels?: PdfSoundChannels,
+        bits?: number,
+        encoding?: PdfSoundEncoding,
+        fileName?: string,
+        icon?: PdfSoundIcon
+    })
+    public constructor(bounds?: Rectangle, properties?: {
+        data?: Uint8Array,
+        rate?: number,
+        channels?: PdfSoundChannels,
+        bits?: number,
+        encoding?: PdfSoundEncoding,
+        fileName?: string,
+        icon?: PdfSoundIcon
+    }) {
+        super();
+        this._type = _PdfAnnotationType.soundAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('Sound'));
+            this.bounds = bounds;
+        }
+        if (properties) {
+            if (typeof properties.data !== 'undefined') {
+                this.data = properties.data;
+            }
+            if (typeof properties.rate !== 'undefined') {
+                this.rate = properties.rate;
+            }
+            if (typeof properties.channels !== 'undefined') {
+                this.channels = properties.channels;
+            }
+            if (typeof properties.bits !== 'undefined') {
+                this.bits = properties.bits;
+            }
+            if (typeof properties.encoding !== 'undefined') {
+                this.encoding = properties.encoding;
+            }
+            if (typeof properties.fileName !== 'undefined') {
+                this.fileName = properties.fileName;
+            }
+            if (typeof properties.icon !== 'undefined') {
+                this.icon = properties.icon;
+            }
+        }
+    }
+    /**
+     * Loads a sound annotation from the page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The parent page.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfSoundAnnotation} The loaded sound annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfSoundAnnotation {
+        const annotation: PdfSoundAnnotation = new PdfSoundAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Gets the sound sample data.
+     *
+     * @returns {Uint8Array} A copy of the sound bytes.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the sound sample data
+     * let data: Uint8Array = annotation.data;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get data(): Uint8Array {
+        return this._data ? new Uint8Array(this._data) : undefined;
+    }
+    /**
+     * Sets the sound sample data.
+     *
+     * @param {Uint8Array} value The complete WAV sound bytes. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the sound sample data
+     * annotation.data = sampleBytes;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set data(value: Uint8Array) {
+        if (!(value instanceof Uint8Array) || value.length === 0) {
+            throw new Error('Sound data cannot be empty.');
+        }
+        this._data = new Uint8Array(value);
+        this._isSoundChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Gets the sampling rate of the sound in samples per second.
+     *
+     * @returns {number} The sampling rate.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the sampling rate of the sound annotation
+     * let rate: number = annotation.rate;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get rate(): number {
+        return this._rate;
+    }
+    /**
+     * Sets the sampling rate of the sound in samples per second.
+     *
+     * @param {number} value The sampling rate. Must be greater than zero.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the sampling rate of the sound annotation
+     * annotation.rate = 44100;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set rate(value: number) {
+        this._validateRate(value);
+        this._rate = value;
+        this._isSoundChanged = true;
+    }
+    /**
+     * Gets the channel configuration of the sound.
+     *
+     * @returns {PdfSoundChannels} The sound channels.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the channels of the sound annotation
+     * let channels: PdfSoundChannels = annotation.channels;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get channels(): PdfSoundChannels {
+        return this._channels;
+    }
+    /**
+     * Sets the channel configuration of the sound.
+     *
+     * @param {PdfSoundChannels} value The sound channels (`mono` or `stereo`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the channels of the sound annotation
+     * annotation.channels = PdfSoundChannels.Stereo;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set channels(value: PdfSoundChannels) {
+        this._validateChannels(value);
+        this._channels = value;
+        this._isSoundChanged = true;
+    }
+    /**
+     * Gets the bits per sample of the sound.
+     *
+     * @returns {number} The bits per sample.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the bits per sample of the sound annotation
+     * let bits: number = annotation.bits;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get bits(): number {
+        return this._bits;
+    }
+    /**
+     * Sets the bits per sample of the sound.
+     *
+     * @param {number} value The bits per sample. Must be greater than zero.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the bits per sample of the sound annotation
+     * annotation.bits = 16;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set bits(value: number) {
+        this._validateBits(value);
+        this._bits = value;
+        this._isSoundChanged = true;
+    }
+    /**
+     * Gets the encoding of the sound samples.
+     *
+     * @returns {PdfSoundEncoding} The sound encoding.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the encoding of the sound annotation
+     * let encoding: PdfSoundEncoding = annotation.encoding;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get encoding(): PdfSoundEncoding {
+        return this._encoding;
+    }
+    /**
+     * Sets the encoding of the sound samples.
+     *
+     * @param {PdfSoundEncoding} value The sound encoding (`raw`, `signed`, `muLaw`, or `aLaw`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the encoding of the sound annotation
+     * annotation.encoding = PdfSoundEncoding.Signed;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set encoding(value: PdfSoundEncoding) {
+        this._validateEncoding(value);
+        this._encoding = value;
+        this._isSoundChanged = true;
+    }
+    /**
+     * Gets the original file name associated with the sound.
+     *
+     * @returns {string} The sound file name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the file name of the sound annotation
+     * let fileName: string = annotation.fileName;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fileName(): string {
+        return this._fileName;
+    }
+    /**
+     * Sets the original file name associated with the sound.
+     *
+     * @param {string} value The sound file name. Cannot be null, undefined, or empty.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the file name of the sound annotation
+     * annotation.fileName = 'Startup.wav';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set fileName(value: string) {
+        if (value === null || typeof value === 'undefined') {
+            throw new Error('Sound file name cannot be null or undefined.');
+        }
+        const fileName: string = value.trim();
+        if (fileName.length === 0) {
+            throw new Error('Sound file name cannot be empty.');
+        }
+        this._fileName = fileName;
+        this._isSoundChanged = true;
+    }
+    /**
+     * Gets the icon of the sound annotation.
+     *
+     * @returns {PdfSoundIcon} The sound icon.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Gets the icon of the sound annotation
+     * let icon: PdfSoundIcon = annotation.icon;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get icon(): PdfSoundIcon {
+        return this._icon;
+    }
+    /**
+     * Sets the icon of the sound annotation.
+     *
+     * @param {PdfSoundIcon} value The sound icon (`speaker` or `microphone`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfSoundAnnotation = page.annotations.at(0) as PdfSoundAnnotation;
+     * // Sets the icon of the sound annotation
+     * annotation.icon = PdfSoundIcon.Microphone;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set icon(value: PdfSoundIcon) {
+        this._validateIcon(value);
+        if (this._icon === value) {
+            return;
+        }
+        this._icon = value;
+        this._isIconChanged = true;
+        if (this._dictionary) {
+            this._updateIcon();
+        }
+    }
+    /**
+     * Initializes the sound annotation.
+     *
+     * @private
+     * @param {PdfPage} page The annotation page.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {void}
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        super._initialize(page, dictionary);
+        if (this._isLoaded) {
+            this._loadSound();
+            this._loadIcon();
+        }
+        this._resetChangeFlags();
+    }
+    /**
+     * Processes and optionally flattens the sound annotation.
+     *
+     * @private
+     * @param {boolean} isFlatten Indicates whether to flatten the annotation.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('Sound annotation is not initialized.');
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        if (isFlatten && typeof this.flattenPopups !== 'undefined' && this.flattenPopups) {
+            this._flattenPopUp();
+        }
+        if (this._isSoundChanged || (!this._isLoaded && !this._dictionary.has('Sound'))) {
+            this._updateSoundStream();
+        }
+        if (this._isIconChanged || !this._isLoaded || !this._dictionary.has('Name')) {
+            this._updateIcon();
+        }
+        if (!this._isLoaded || this._isIconChanged || !this._hasNormalAppearance()) {
+            if (this._bounds && Number.isFinite(this._bounds.width) && Number.isFinite(this._bounds.height) &&
+                this._bounds.width > 0 && this._bounds.height > 0) {
+                this._createDefaultAppearance(this._isIconChanged);
+            }
+        }
+        if (!isFlatten) {
+            this._resetChangeFlags();
+            return;
+        }
+        const appearanceStream: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearanceStream) {
+            this._removeAnnotation(this._page, this);
+            this._resetChangeFlags();
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearanceStream, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._resetChangeFlags();
+    }
+    /**
+     * Loads and parses WAV sound data.
+     *
+     * @private
+     * @param {Uint8Array} value The WAV sound data.
+     * @returns {void}
+     */
+    private _loadWaveData(value: Uint8Array): void {
+        if (value.length < 44) {
+            throw new Error('The WAV data is incomplete.');
+        }
+        const view: DataView = new DataView(value.buffer, value.byteOffset, value.byteLength);
+        if (this._readAscii(value, 0, 4) !== 'RIFF' ||
+            this._readAscii(value, 8, 4) !== 'WAVE') {
+            throw new Error('The supplied sound data is not a WAV file.');
+        }
+        let offset: number = 12;
+        let formatFound: boolean = false;
+        let dataFound: boolean = false;
+        let audioFormat: number = 0;
+        let channels: number = 0;
+        let sampleRate: number = 0;
+        let bitsPerSample: number = 0;
+        let sampleData: Uint8Array;
+        while (offset + 8 <= value.length) {
+            const chunkId: string = this._readAscii(value, offset, 4);
+            const chunkSize: number = view.getUint32(offset + 4, true);
+            const chunkStart: number = offset + 8;
+            const chunkEnd: number = chunkStart + chunkSize;
+            if (chunkEnd > value.length) {
+                throw new Error('The WAV chunk length is invalid.');
+            }
+            if (chunkId === 'fmt ') {
+                if (chunkSize < 16) {
+                    throw new Error('The WAV format chunk is invalid.');
+                }
+                audioFormat = view.getUint16(chunkStart, true);
+                channels = view.getUint16(chunkStart + 2, true);
+                sampleRate = view.getUint32(chunkStart + 4, true);
+                bitsPerSample = view.getUint16(chunkStart + 14, true);
+                formatFound = true;
+            } else if (chunkId === 'data') {
+                sampleData = new Uint8Array(
+                    value.buffer,
+                    value.byteOffset + chunkStart,
+                    chunkSize
+                );
+                dataFound = true;
+            }
+            offset = chunkEnd + (chunkSize % 2);
+        }
+        if (!formatFound || !dataFound || !sampleData) {
+            throw new Error('The WAV format or data chunk is missing.');
+        }
+        if (channels !== 1 && channels !== 2) {
+            throw new Error('Only mono and stereo WAV files are supported.');
+        }
+        let encoding: PdfSoundEncoding;
+        switch (audioFormat) {
+        case 1:
+            encoding = bitsPerSample === 8
+                ? PdfSoundEncoding.Raw
+                : PdfSoundEncoding.Signed;
+            break;
+        case 6:
+            encoding = PdfSoundEncoding.ALaw;
+            break;
+        case 7:
+            encoding = PdfSoundEncoding.MuLaw;
+            break;
+        default:
+            throw new Error('Only PCM, A-law and mu-law WAV encoding is supported.');
+        }
+        this._validateRate(sampleRate);
+        this._validateBits(bitsPerSample);
+        this._data = new Uint8Array(sampleData);
+        this._rate = sampleRate;
+        this._channels = channels === 2
+            ? PdfSoundChannels.Stereo
+            : PdfSoundChannels.Mono;
+        this._bits = bitsPerSample;
+        this._encoding = encoding;
+    }
+    /**
+     * Reads an ASCII string from the byte array.
+     *
+     * @private
+     * @param {Uint8Array} value The byte array.
+     * @param {number} offset The starting offset.
+     * @param {number} length The number of bytes.
+     * @returns {string} The ASCII string.
+     */
+    private _readAscii(value: Uint8Array, offset: number, length: number): string {
+        let result: string = '';
+        for (let index: number = 0; index < length; index++) {
+            result += String.fromCharCode(value[offset + index]);
+        }
+        return result;
+    }
+    /**
+     * Validates the new sound annotation.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) ||
+            !Number.isFinite(this._bounds.y) || !Number.isFinite(this._bounds.width) ||
+            !Number.isFinite(this._bounds.height) || this._bounds.width <= 0 ||
+            this._bounds.height <= 0) {
+            throw new Error('Sound annotation bounds must be finite and positive.');
+        }
+        if (!this._data || this._data.length === 0) {
+            throw new Error('Sound data must be assigned before saving.');
+        }
+    }
+    /**
+     * Validates the sound sampling rate.
+     *
+     * @private
+     * @param {number} value The sampling rate.
+     * @returns {void}
+     */
+    private _validateRate(value: number): void {
+        if (!Number.isFinite(value) || value <= 0) {
+            throw new Error('Sound sampling rate must be positive.');
+        }
+    }
+    /**
+     * Validates the sound channel configuration.
+     *
+     * @private
+     * @param {PdfSoundChannels} value The sound channels.
+     * @returns {void}
+     */
+    private _validateChannels(value: PdfSoundChannels): void {
+        if (value !== PdfSoundChannels.Mono && value !== PdfSoundChannels.Stereo) {
+            throw new Error('Only mono and stereo sound is supported.');
+        }
+    }
+    /**
+     * Validates the bits per sample.
+     *
+     * @private
+     * @param {number} value The bits per sample.
+     * @returns {void}
+     */
+    private _validateBits(value: number): void {
+        if (!Number.isInteger(value) || value <= 0) {
+            throw new Error('Bits per sample must be a positive integer.');
+        }
+    }
+    /**
+     * Validates the sound encoding.
+     *
+     * @private
+     * @param {PdfSoundEncoding} value The sound encoding.
+     * @returns {void}
+     */
+    private _validateEncoding(value: PdfSoundEncoding): void {
+        if (value !== PdfSoundEncoding.Raw &&
+            value !== PdfSoundEncoding.Signed &&
+            value !== PdfSoundEncoding.MuLaw &&
+            value !== PdfSoundEncoding.ALaw) {
+            throw new Error('Unsupported sound encoding.');
+        }
+    }
+    /**
+     * Validates the sound annotation icon.
+     *
+     * @private
+     * @param {PdfSoundIcon} value The sound icon.
+     * @returns {void}
+     */
+    private _validateIcon(value: PdfSoundIcon): void {
+        if (value !== PdfSoundIcon.Speaker && value !== PdfSoundIcon.Microphone) {
+            throw new Error('Unsupported sound annotation icon.');
+        }
+    }
+    /**
+     * Updates the sound stream.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateSoundStream(): void {
+        if (!this._data || this._data.length === 0) {
+            throw new Error('Sound data cannot be empty.');
+        }
+        const existingStream: _PdfBaseStream = this._getSoundStream();
+        const dictionary: _PdfDictionary = existingStream
+            ? existingStream.dictionary
+            : new _PdfDictionary(this._crossReference);
+        delete dictionary._map['Length'];
+        delete dictionary._map['Filter'];
+        delete dictionary._map['DecodeParms'];
+        dictionary.update('R', this._rate);
+        dictionary.update('C', this._channels);
+        dictionary.update('B', this._bits);
+        dictionary.update('E', _PdfName.get(this._mapEncodingName(this._encoding)));
+        if (this._fileName) {
+            dictionary.update('T', this._fileName.trim());
+        } else {
+            delete dictionary._map['T'];
+        }
+        const stream: _PdfStream = new _PdfStream(this._data, dictionary);
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        stream.reference = reference;
+        this._crossReference._cacheMap.set(reference, stream);
+        this._dictionary.update('Sound', reference);
+    }
+    /**
+     * Gets the sound stream.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The sound stream.
+     */
+    private _getSoundStream(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('Sound')) {
+            return undefined;
+        }
+        const stream: unknown = this._dictionary.get('Sound');
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = this._dictionary.getRaw('Sound');
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Loads the sound stream data.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadSound(): void {
+        const stream: _PdfBaseStream = this._getSoundStream();
+        if (!stream) {
+            return;
+        }
+        const dictionary: _PdfDictionary = stream.dictionary;
+        const rate: unknown = dictionary.has('R') ? dictionary.get('R') : undefined;
+        const channels: unknown = dictionary.has('C') ? dictionary.get('C') : PdfSoundChannels.Mono;
+        const bits: unknown = dictionary.has('B') ? dictionary.get('B') : 8;
+        const encoding: unknown = dictionary.has('E') ? dictionary.get('E') : undefined;
+        const fileName: unknown = dictionary.has('T') ? dictionary.get('T') : undefined;
+        if (typeof rate === 'number') {
+            this._validateRate(rate);
+            this._rate = rate;
+        }
+        if (typeof channels === 'number') {
+            this._validateChannels(channels as PdfSoundChannels);
+            this._channels = channels as PdfSoundChannels;
+        }
+        if (typeof bits === 'number') {
+            this._validateBits(bits);
+            this._bits = bits;
+        }
+        if (encoding instanceof _PdfName) {
+            this._encoding = this._parseEncodingName(encoding.name);
+        }
+        if (typeof fileName === 'string' && fileName.length > 0) {
+            this._fileName = fileName;
+        }
+        this._data = new Uint8Array(stream.getBytes());
+    }
+    /**
+     * Maps a sound encoding to its PDF name.
+     *
+     * @private
+     * @param {PdfSoundEncoding} value The sound encoding.
+     * @returns {string} The PDF encoding name.
+     */
+    private _mapEncodingName(value: PdfSoundEncoding): string {
+        switch (value) {
+        case PdfSoundEncoding.Raw:
+            return 'Raw';
+        case PdfSoundEncoding.Signed:
+            return 'Signed';
+        case PdfSoundEncoding.MuLaw:
+            return 'muLaw';
+        case PdfSoundEncoding.ALaw:
+            return 'ALaw';
+        default:
+            throw new Error('Unsupported sound encoding.');
+        }
+    }
+    /**
+     * Parses a PDF sound encoding name.
+     *
+     * @private
+     * @param {string} value The PDF encoding name.
+     * @returns {PdfSoundEncoding} The sound encoding.
+     */
+    private _parseEncodingName(value: string): PdfSoundEncoding {
+        switch (value) {
+        case 'Raw':
+            return PdfSoundEncoding.Raw;
+        case 'Signed':
+            return PdfSoundEncoding.Signed;
+        case 'muLaw':
+        case 'MuLaw':
+            return PdfSoundEncoding.MuLaw;
+        case 'ALaw':
+            return PdfSoundEncoding.ALaw;
+        default:
+            throw new Error('Unsupported PDF sound encoding.');
+        }
+    }
+    /**
+     * Updates the sound annotation icon.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateIcon(): void {
+        if (!this._dictionary) {
+            return;
+        }
+        let iconName: string;
+        switch (this._icon) {
+        case PdfSoundIcon.Microphone:
+            iconName = 'Mic';
+            break;
+        case PdfSoundIcon.Speaker:
+            iconName = 'Speaker';
+            break;
+        default:
+            throw new Error('Unsupported sound annotation icon.');
+        }
+        this._dictionary.update('Name', _PdfName.get(iconName));
+    }
+    /**
+     * Loads the sound annotation icon.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadIcon(): void {
+        if (!this._dictionary || !this._dictionary.has('Name')) {
+            this._icon = PdfSoundIcon.Speaker;
+            return;
+        }
+        const value: unknown = this._dictionary.get('Name');
+        if (!(value instanceof _PdfName)) {
+            this._icon = PdfSoundIcon.Speaker;
+            return;
+        }
+        switch (value.name) {
+        case 'Mic':
+            this._icon = PdfSoundIcon.Microphone;
+            break;
+        case 'Speaker':
+        default:
+            this._icon = PdfSoundIcon.Speaker;
+            break;
+        }
+    }
+    /**
+     * Creates the default sound appearance.
+     *
+     * @private
+     * @param {boolean} forceRecreate Indicates whether to recreate the appearance.
+     * @returns {void}
+     */
+    private _createDefaultAppearance(forceRecreate: boolean = false): void {
+        if (!forceRecreate && this._hasNormalAppearance()) {
+            return;
+        }
+        const iconValue: unknown = this._dictionary.has('Name') ? this._dictionary.get('Name') : undefined;
+        let icon: PdfSoundIcon = this._icon;
+        if (iconValue instanceof _PdfName) {
+            switch (iconValue.name) {
+            case 'Mic':
+                icon = PdfSoundIcon.Microphone;
+                break;
+            case 'Speaker':
+                icon = PdfSoundIcon.Speaker;
+                break;
+            }
+        }
+        const boundsValue: {x: number, y: number, width: number, height: number} =
+            this._bounds ? this._bounds : this.bounds;
+        const width: number = boundsValue.width;
+        const height: number = boundsValue.height;
+        if (!Number.isFinite(width) || !Number.isFinite(height) ||
+            width <= 0 || height <= 0) {
+            return;
+        }
+        if (forceRecreate) {
+            delete this._dictionary._map['AP'];
+        }
+        const template: PdfTemplate = new PdfTemplate(
+            [0, 0, width, height],
+            this._crossReference
+        );
+        switch (icon) {
+        case PdfSoundIcon.Microphone:
+            this._drawMicrophoneAppearance(template, width, height);
+            break;
+        case PdfSoundIcon.Speaker:
+            this._drawSpeakerAppearance(template, width, height);
+            break;
+        default:
+            throw new Error('Unsupported sound annotation icon.');
+        }
+        this._writeNormalAppearance(template);
+    }
+    /**
+     * Checks for a normal appearance.
+     *
+     * @private
+     * @returns {boolean} True if a normal appearance exists.
+     */
+    private _hasNormalAppearance(): boolean {
+        if (!this._dictionary) {
+            return false;
+        }
+        if (!this._dictionary.has('AP')) {
+            return false;
+        }
+        const value: unknown = this._dictionary.get('AP');
+        return value instanceof _PdfDictionary && value.has('N');
+    }
+    /**
+     * Draws the speaker appearance.
+     *
+     * @private
+     * @param {PdfTemplate} template The appearance template.
+     * @param {number} width The template width.
+     * @param {number} height The template height.
+     * @returns {void}
+     */
+    private _drawSpeakerAppearance(template: PdfTemplate, width: number, height: number): void {
+        const lineWidth: number = Math.max(0.75, Math.min(width, height) * 0.025);
+        const black: PdfPen = new PdfPen({ r: 0, g: 0, b: 0 }, lineWidth);
+        const red: PdfPen = new PdfPen({ r: 230, g: 35, b: 35 }, lineWidth);
+        const brush: PdfBrush = new PdfBrush({ r: 230, g: 35, b: 35 });
+        const x: number = width * 0.16;
+        const y: number = height * 0.38;
+        const bodyWidth: number = width * 0.18;
+        const bodyHeight: number = height * 0.24;
+        const left: number = x + bodyWidth;
+        const right: number = width * 0.53;
+        template.graphics.drawRectangle({x, y, width: bodyWidth, height: bodyHeight},
+                                        black, brush);
+        template.graphics.drawLine(red, {x: left, y},
+                                   {x: right, y: height * 0.24});
+        template.graphics.drawLine(red,
+                                   {x: right, y: height * 0.24},
+                                   {x: right, y: height * 0.76}
+        );
+        template.graphics.drawLine(
+            red, {x: right, y: height * 0.76},
+            {x: left, y: y + bodyHeight}
+        );
+        this._drawWave(template, black,
+                       width * 0.61, width * 0.67, height * 0.38, height * 0.62,
+                       height);
+        this._drawWave(template, black, width * 0.69,
+                       width * 0.77, height * 0.29, height * 0.71, height);
+        this._drawWave(template, black, width * 0.78, width * 0.89,
+                       height * 0.20, height * 0.80, height);
+    }
+    /**
+     * Draws a sound wave.
+     *
+     * @private
+     * @param {PdfTemplate} template The appearance template.
+     * @param {PdfPen} pen The drawing pen.
+     * @param {number} outerX The outer x-coordinate.
+     * @param {number} centerX The center x-coordinate.
+     * @param {number} topY The top y-coordinate.
+     * @param {number} bottomY The bottom y-coordinate.
+     * @param {number} height The template height.
+     * @returns {void}
+     */
+    private _drawWave(template: PdfTemplate, pen: PdfPen, outerX: number, centerX: number,
+                      topY: number, bottomY: number, height: number): void {
+        template.graphics.drawLine(
+            pen,
+            { x: outerX, y: topY },
+            { x: centerX, y: height * 0.5 }
+        );
+        template.graphics.drawLine(
+            pen,
+            { x: centerX, y: height * 0.5 },
+            { x: outerX, y: bottomY }
+        );
+    }
+    /**
+     * Draws the microphone appearance.
+     *
+     * @private
+     * @param {PdfTemplate} template The appearance template.
+     * @param {number} width The template width.
+     * @param {number} height The template height.
+     * @returns {void}
+     */
+    private _drawMicrophoneAppearance(template: PdfTemplate, width: number, height: number): void {
+        const lineWidth: number = Math.max(0.75, Math.min(width, height) * 0.03);
+        const black: PdfPen = new PdfPen({ r: 0, g: 0, b: 0 }, lineWidth);
+        const red: PdfPen = new PdfPen({ r: 230, g: 35, b: 35 }, lineWidth);
+        const brush: PdfBrush = new PdfBrush({ r: 230, g: 35, b: 35 });
+        template.graphics.drawRectangle(
+            {x: width * 0.35, y: height * 0.15, width: width * 0.30, height: height * 0.46},
+            black,
+            brush
+        );
+        template.graphics.drawLine(
+            black,
+            { x: width * 0.25, y: height * 0.43 },
+            { x: width * 0.25, y: height * 0.60 }
+        );
+        template.graphics.drawLine(
+            black,
+            { x: width * 0.25, y: height * 0.60 },
+            { x: width * 0.50, y: height * 0.72 }
+        );
+        template.graphics.drawLine(
+            black,
+            { x: width * 0.50, y: height * 0.72 },
+            { x: width * 0.75, y: height * 0.60 }
+        );
+        template.graphics.drawLine(
+            black,
+            { x: width * 0.75, y: height * 0.60 },
+            { x: width * 0.75, y: height * 0.43 }
+        );
+        template.graphics.drawLine(
+            red,
+            { x: width * 0.50, y: height * 0.72 },
+            { x: width * 0.50, y: height * 0.86 }
+        );
+        template.graphics.drawLine(
+            red,
+            { x: width * 0.35, y: height * 0.86 },
+            { x: width * 0.65, y: height * 0.86 }
+        );
+    }
+    /**
+     * Resolves the normal appearance stream.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary) {
+            return undefined;
+        }
+        if (!this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the selected appearance state.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance state dictionary.
+     * @returns {_PdfBaseStream} The selected appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary) {
+            return undefined;
+        }
+        if (!this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = dictionary.getRaw(state.name);
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Resets the change flags.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _resetChangeFlags(): void {
+        this._isSoundChanged = false;
+        this._isIconChanged = false;
+    }
+}
+/**
+ * Represents a PDF trap-network annotation (`TrapNet`) used to preserve prepress trapping
+ * information for a page.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a trap-network annotation covering the page
+ * const annotation: PdfTrapNetAnnotation = new PdfTrapNetAnnotation({
+ *     x: 0,
+ *     y: 0,
+ *     width: page.size.width,
+ *     height: page.size.height
+ * });
+ * // Record when the trap network was last generated (PDF date string)
+ * annotation.lastModified = 'D:20240101120000Z';
+ * // Optional: select the appearance state name
+ * annotation.appearanceState = 'Normal';
+ * // Add annotation to the page (must be last; only one TrapNet per page)
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfTrapNetAnnotation extends PdfAnnotation {
+    /**
+     * Stores the PDF date string written to the `LastModified` entry.
+     *
+     * @private
+     */
+    private _lastModified: string;
+    /**
+     * Stores indirect references of page-description objects used to build the trap network (`Version`).
+     *
+     * @private
+     */
+    private _version: _PdfReference[];
+    /**
+     * Stores appearance-state names (or `null`) for other page annotations (`AnnotStates`).
+     *
+     * @private
+     */
+    private _annotStates: Array<string | null>;
+    /**
+     * Stores indirect references of fonts that were fauxed while generating the trap network (`FontFauxing`).
+     *
+     * @private
+     */
+    private _fontFauxing: _PdfReference[];
+    /**
+     * Stores the active appearance-state name written to the `AS` entry.
+     *
+     * @private
+     */
+    private _appearanceState: string = 'Normal';
+    /**
+     * Indicates whether trap-network properties changed and must be revalidated or rewritten on save.
+     *
+     * @private
+     */
+    private _isTrapNetChanged: boolean = false;
+    /**
+     * Initializes an empty trap-network annotation for internal loading.
+     *
+     * @private
+     */
+    constructor();
+    /**
+     * Initializes a new trap-network annotation with the specified bounds.
+     *
+     * @param {Rectangle} bounds The annotation bounds on the page.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a trap-network annotation
+     * const annotation: PdfTrapNetAnnotation = new PdfTrapNetAnnotation({
+     *     x: 0,
+     *     y: 0,
+     *     width: page.size.width,
+     *     height: page.size.height
+     * });
+     * annotation.lastModified = 'D:20240101120000Z';
+     * annotation.appearanceState = 'Normal';
+     * page.annotations.add(annotation);
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     */
+    public constructor(bounds: Rectangle);
+    public constructor(bounds?: Rectangle) {
+        super();
+        this._type = _PdfAnnotationType.trapNetworkAnnotation;
+        if (bounds) {
+            this._dictionary = new _PdfDictionary();
+            this._dictionary.update('Type', _PdfName.get('Annot'));
+            this._dictionary.update('Subtype', _PdfName.get('TrapNet'));
+            this._dictionary.update('F', 68);
+            this.bounds = bounds;
+        }
+    }
+    /**
+     * Gets the trap-network modification date as a PDF date string.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Access a trap-network annotation
+     * let annotation: PdfTrapNetAnnotation = page.annotations.at(0) as PdfTrapNetAnnotation;
+     * // Get last modified
+     * const lastModified: string = annotation.lastModified;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {string} The PDF date string.
+     */
+    get lastModified(): string {
+        return this._lastModified;
+    }
+    /**
+     * Sets the trap-network modification date as a PDF date string.
+     *
+     * @param {string} value A non-empty PDF date string (for example `D:20240101120000Z`).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create or access a trap-network annotation
+     * let annotation: PdfTrapNetAnnotation = new PdfTrapNetAnnotation({
+     *     x: 0, y: 0, width: page.size.width, height: page.size.height
+     * });
+     * // Set last modified
+     * annotation.lastModified = 'D:20240101120000Z';
+     * // Add the annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set lastModified(value: string) {
+        if (typeof value !== 'undefined') {
+            const date: string = value.trim();
+            if (date.length === 0) {
+                throw new Error('TrapNet last modified value cannot be empty.');
+            }
+            this._validatePdfDate(date);
+            this._lastModified = date;
+            this._version = undefined;
+            this._annotStates = undefined;
+        } else {
+            this._lastModified = undefined;
+        }
+        this._markTrapNetChanged();
+    }
+    /**
+     * Gets appearance-state names for other page annotations in page annotation order.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Access a trap-network annotation
+     * let annotation: PdfTrapNetAnnotation = page.annotations.at(0) as PdfTrapNetAnnotation;
+     * // Get annotation states
+     * const annotationStates: Array<string | null> = annotation.annotationStates;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {Array<string | null>} The appearance-state list.
+     */
+    get annotationStates(): Array<string | null> {
+        return this._annotStates ? [...this._annotStates] : undefined;
+    }
+    /**
+     * Sets appearance-state names for other page annotations.
+     *
+     * @param {Array<string | null>} value The state names aligned with the other page annotations.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create the related annotations
+     * let first: PdfRectangleAnnotation = new PdfRectangleAnnotation({
+     *     x: 20, y: 20, width: 50, height: 50
+     * });
+     * let second: PdfRectangleAnnotation = new PdfRectangleAnnotation({
+     *     x: 90, y: 20, width: 50, height: 50
+     * });
+     * page.annotations.add(first);
+     * page.annotations.add(second);
+     * // Create the TrapNet annotation
+     * let annotation: PdfTrapNetAnnotation = new PdfTrapNetAnnotation({
+     *     x: 50, y: 100, width: 200, height: 100
+     * });
+     * // Set states matching the existing page annotations
+     * annotation.annotationStates = ['Accepted', 'Rejected'];
+     * // Add the TrapNet annotation last
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set annotationStates(value: Array<string | null>) {
+        if (value && value.length === 0) {
+            throw new Error('TrapNet annotation states cannot be empty.');
+        }
+        if (value) {
+            this._annotStates = value.map((state: string | null): string | null => {
+                if (state === null) {
+                    return null;
+                }
+                if (typeof state !== 'string' || state.trim().length === 0) {
+                    throw new Error('TrapNet annotation states must contain names or null values.');
+                }
+                return state.trim();
+            });
+            this._lastModified = undefined;
+        } else {
+            this._annotStates = undefined;
+        }
+        this._markTrapNetChanged();
+    }
+    /**
+     * Gets the active appearance-state name (`AS`) used to select the normal appearance stream.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Access a trap-network annotation
+     * let annotation: PdfTrapNetAnnotation = page.annotations.at(0) as PdfTrapNetAnnotation;
+     * // Get appearance state
+     * const appearanceState: string = annotation.appearanceState;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {string} The appearance-state name.
+     */
+    get appearanceState(): string {
+        return this._appearanceState;
+    }
+    /**
+     * Sets the active appearance-state name (`AS`) used to select the normal appearance stream.
+     *
+     * @param {string} value A non-empty appearance-state name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Access a trap-network annotation
+     * let annotation: PdfTrapNetAnnotation = page.annotations.at(0) as PdfTrapNetAnnotation;
+     * // Set appearance state
+     * annotation.appearanceState = 'Normal';
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set appearanceState(value: string) {
+        if (typeof value !== 'string' || value.trim().length === 0) {
+            throw new Error('TrapNet appearance state cannot be empty.');
+        }
+        this._appearanceState = value.trim();
+        this._markTrapNetChanged();
+    }
+    /**
+     * Loads a trap-network annotation from an existing page dictionary.
+     *
+     * @private
+     * @param {PdfPage} page The page that owns the annotation.
+     * @param {_PdfDictionary} dictionary The annotation dictionary.
+     * @returns {PdfTrapNetAnnotation} The loaded trap-network annotation.
+     */
+    static _load(page: PdfPage, dictionary: _PdfDictionary): PdfTrapNetAnnotation {
+        const annotation: PdfTrapNetAnnotation = new PdfTrapNetAnnotation();
+        annotation._isLoaded = true;
+        annotation._initialize(page, dictionary);
+        return annotation;
+    }
+    /**
+     * Initializes the trap-network annotation and loads trap-network entries when the annotation
+     * is already present in the document.
+     *
+     * @private
+     * @param {PdfPage} page The page that owns the annotation.
+     * @param {_PdfDictionary} [dictionary] Optional annotation dictionary for loaded annotations.
+     * @returns {void}
+     */
+    _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
+        super._initialize(page, dictionary);
+        if (this._isLoaded) {
+            this._loadTrapNetEntries();
+        }
+        this._isTrapNetChanged = false;
+    }
+    /**
+     * Validates the Version and AnnotStates entry counts.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateAnnotationStates(): void {
+        if (!this._annotStates || !this._version) {
+            return;
+        }
+        if (this._annotStates.length !== this._version.length) {
+            throw new Error(
+                'TrapNet annotation states must match the page annotation count.'
+            );
+        }
+    }
+    /**
+     * Serializes trap-network settings and optionally flattens the annotation appearance.
+     *
+     * @private
+     * @param {boolean} [isFlatten=false] Indicates whether to flatten the annotation into page content.
+     * @returns {void}
+     */
+    _doPostProcess(isFlatten: boolean = false): void {
+        if (!this._dictionary) {
+            throw new Error('TrapNet annotation is not initialized.');
+        }
+        if (!this._isLoaded) {
+            this._validateNewAnnotation();
+            this._dictionary.update('Rect', _updateBounds(this));
+        }
+        this._dictionary.update('F', 68);
+        if (!this._isLoaded && !this._hasUsableNormalAppearance()) {
+            this._createDefaultAppearance();
+        }
+        if (!this._isLoaded) {
+            this._validateTrapNetEntries();
+        }
+        if (this._isTrapNetChanged || !this._isLoaded) {
+            this._updateTrapNetEntries();
+        }
+        if (!isFlatten) {
+            this._isTrapNetChanged = false;
+            return;
+        }
+        const appearance: _PdfBaseStream = this._resolveNormalAppearance();
+        if (!appearance) {
+            this._removeAnnotation(this._page, this);
+            this._isTrapNetChanged = false;
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate(appearance, this._crossReference);
+        const isNormalMatrix: boolean = this._validateTemplateMatrix(template._content.dictionary);
+        this._flattenAnnotationTemplate(template, isNormalMatrix);
+        this._isTrapNetChanged = false;
+    }
+    /**
+     * Validates bounds for a newly created annotation. Trap-network entries are validated
+     * after the internal normal appearance has been created.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateNewAnnotation(): void {
+        if (!this._bounds || !Number.isFinite(this._bounds.x) || !Number.isFinite(this._bounds.y) ||
+            !Number.isFinite(this._bounds.width) || !Number.isFinite(this._bounds.height) ||
+            this._bounds.width <= 0 || this._bounds.height <= 0) {
+            throw new Error('TrapNet annotation bounds must be finite and positive.');
+        }
+    }
+    /**
+     * Validates the TrapNet entries.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateTrapNetEntries(): void {
+        this._buildVersionEntries();
+        const hasLastModified: boolean = Boolean(this._lastModified);
+        const hasVersion: boolean = Boolean(this._version);
+        const hasStates: boolean = Boolean(this._annotStates);
+        if (hasLastModified && (hasVersion || hasStates)) {
+            throw new Error(
+                'TrapNet LastModified cannot be combined with Version or AnnotStates.'
+            );
+        }
+        if (!hasLastModified && (!hasVersion || !hasStates)) {
+            throw new Error(
+                'TrapNet requires LastModified or both Version and AnnotStates.'
+            );
+        }
+        if (hasVersion !== hasStates) {
+            throw new Error(
+                'TrapNet Version and AnnotStates must be assigned together.'
+            );
+        }
+        if (!this._hasUsableNormalAppearance()) {
+            throw new Error('TrapNet annotation requires a normal appearance.');
+        }
+        if (!this._appearanceState || this._appearanceState.trim().length === 0) {
+            throw new Error(
+                'TrapNet annotation requires an active appearance state.'
+            );
+        }
+        this._validateAnnotationStates();
+        this._validateFontFauxing();
+    }
+    /**
+     * Validates that a value is a PDF date string suitable for `LastModified`.
+     *
+     * @private
+     * @param {string} value The candidate date string.
+     * @returns {void}
+     */
+    private _validatePdfDate(value: string): void {
+        // eslint-disable-next-line security/detect-unsafe-regex
+        const pattern: RegExp = /^D:\d{4}(?:\d{2}){0,5}(?:Z|[+-]\d{2}'\d{2}')?$/;
+        if (!pattern.test(value)) {
+            throw new Error('TrapNet last modified value must be a valid PDF date string.');
+        }
+    }
+    /**
+     * Validates that fauxed-font references resolve to font dictionaries.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _validateFontFauxing(): void {
+        if (!this._fontFauxing) {
+            return;
+        }
+        this._fontFauxing.forEach((reference: _PdfReference): void => {
+            const value: unknown = this._crossReference._fetch(reference);
+            if (!(value instanceof _PdfDictionary)) {
+                throw new Error('TrapNet font fauxing references must resolve to font dictionaries.');
+            }
+            const type: unknown = value.has('Type') ? value.get('Type') : undefined;
+            if (type instanceof _PdfName && type.name !== 'Font') {
+                throw new Error('TrapNet font fauxing references must resolve to font dictionaries.');
+            }
+        });
+    }
+    /**
+     * Loads trap-network dictionary entries into instance fields.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _loadTrapNetEntries(): void {
+        this._lastModified = undefined;
+        this._version = undefined;
+        this._annotStates = undefined;
+        this._fontFauxing = undefined;
+        this._appearanceState = 'Normal';
+        const lastModified: unknown = this._dictionary.has('LastModified')
+            ? this._dictionary.get('LastModified')
+            : undefined;
+        if (typeof lastModified === 'string' && lastModified.trim().length > 0) {
+            this._lastModified = lastModified.trim();
+        }
+        const rawVersion: unknown = this._dictionary.has('Version')
+            ? this._dictionary.getRaw('Version')
+            : undefined;
+        if (Array.isArray(rawVersion) && rawVersion.every(
+            (item: unknown): boolean => item instanceof _PdfReference)) {
+            this._version = [...rawVersion] as _PdfReference[];
+        }
+        const states: unknown = this._dictionary.has('AnnotStates')
+            ? this._dictionary.get('AnnotStates')
+            : undefined;
+        if (Array.isArray(states)) {
+            const parsed: Array<string | null> = [];
+            let isValid: boolean = true;
+            states.forEach((state: unknown): void => {
+                if (state === null) {
+                    parsed.push(null);
+                } else if (state instanceof _PdfName && state.name.trim().length > 0) {
+                    parsed.push(state.name.trim());
+                } else {
+                    isValid = false;
+                }
+            });
+            if (isValid) {
+                this._annotStates = parsed;
+            }
+        }
+        const rawFonts: unknown = this._dictionary.has('FontFauxing')
+            ? this._dictionary.getRaw('FontFauxing')
+            : undefined;
+        if (Array.isArray(rawFonts) && rawFonts.every(
+            (item: unknown): boolean => item instanceof _PdfReference)) {
+            this._fontFauxing = [...rawFonts] as _PdfReference[];
+        }
+        const state: unknown = this._dictionary.has('AS') ? this._dictionary.get('AS') : undefined;
+        if (state instanceof _PdfName && state.name.trim().length > 0) {
+            this._appearanceState = state.name.trim();
+        }
+    }
+    /**
+     * Writes trap-network fields to the annotation dictionary.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _updateTrapNetEntries(): void {
+        if (this._lastModified) {
+            this._dictionary.update('LastModified', this._lastModified);
+            delete this._dictionary._map['Version'];
+            delete this._dictionary._map['AnnotStates'];
+        } else {
+            this._dictionary.update('Version', [...this._version]);
+            this._dictionary.update(
+                'AnnotStates',
+                this._annotStates.map((state: string | null): _PdfName | null =>
+                    typeof state === 'string' ? _PdfName.get(state) : null)
+            );
+            delete this._dictionary._map['LastModified'];
+        }
+        if (this._fontFauxing && this._fontFauxing.length > 0) {
+            this._dictionary.update('FontFauxing', [...this._fontFauxing]);
+        } else {
+            delete this._dictionary._map['FontFauxing'];
+        }
+        this._dictionary.update('AS', _PdfName.get(this._appearanceState));
+        this._dictionary.update('F', 68);
+        this._dictionary._updated = true;
+    }
+    /**
+     * Indicates whether a normal appearance is available from a custom template or dictionary.
+     *
+     * @private
+     * @returns {boolean} `true` when a usable normal appearance exists; otherwise `false`.
+     */
+    private _hasUsableNormalAppearance(): boolean {
+        return Boolean(this._resolveNormalAppearance());
+    }
+    /**
+     * Creates a minimal internal normal appearance for a new trap-network annotation.
+     *
+     * The generated `AP/N` stream intentionally carries no trapping artwork: a trap network
+     * describes trapping metadata, and inventing trap artwork is not part of this contract.
+     * The empty appearance exists only to satisfy the `AP/N` requirement for new annotations.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _createDefaultAppearance(): void {
+        const boundsValue: {x: number, y: number, width: number, height: number} =
+            this._bounds ? this._bounds : this.bounds;
+        const width: number = boundsValue ? boundsValue.width : 0;
+        const height: number = boundsValue ? boundsValue.height : 0;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return;
+        }
+        const template: PdfTemplate = new PdfTemplate([0, 0, width, height], this._crossReference);
+        this._writeNormalAppearance(template);
+    }
+    /**
+     * Resolves the normal appearance stream from the `AP` dictionary.
+     *
+     * @private
+     * @returns {_PdfBaseStream} The normal appearance stream.
+     */
+    private _resolveNormalAppearance(): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AP')) {
+            return undefined;
+        }
+        const appearance: unknown = this._dictionary.get('AP');
+        if (!(appearance instanceof _PdfDictionary) || !appearance.has('N')) {
+            return undefined;
+        }
+        const normal: unknown = appearance.get('N');
+        const raw: unknown = appearance.getRaw('N');
+        if (normal instanceof _PdfBaseStream) {
+            if (raw instanceof _PdfReference) {
+                normal.reference = raw;
+            }
+            return normal;
+        }
+        if (normal instanceof _PdfDictionary) {
+            return this._resolveAppearanceState(normal);
+        }
+        return undefined;
+    }
+    /**
+     * Resolves the appearance stream selected by the annotation appearance state (`AS`).
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The appearance-state dictionary under `AP.N`.
+     * @returns {_PdfBaseStream} The selected appearance stream.
+     */
+    private _resolveAppearanceState(dictionary: _PdfDictionary): _PdfBaseStream {
+        if (!this._dictionary || !this._dictionary.has('AS')) {
+            return undefined;
+        }
+        const state: unknown = this._dictionary.get('AS');
+        if (!(state instanceof _PdfName) || !dictionary.has(state.name)) {
+            return undefined;
+        }
+        const stream: unknown = dictionary.get(state.name);
+        if (!(stream instanceof _PdfBaseStream)) {
+            return undefined;
+        }
+        const raw: unknown = dictionary.getRaw(state.name);
+        if (raw instanceof _PdfReference) {
+            stream.reference = raw;
+        }
+        return stream;
+    }
+    /**
+     * Marks trap-network data as changed so entries are revalidated and rewritten on save.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _markTrapNetChanged(): void {
+        this._isTrapNetChanged = true;
+        if (this._dictionary) {
+            this._dictionary._updated = true;
+        }
+    }
+    /**
+     * Builds the Version entries from the existing page annotations.
+     *
+     * @private
+     * @returns {void}
+     */
+    private _buildVersionEntries(): void {
+        if (!this._annotStates || this._version) {
+            return;
+        }
+        if (!this._page || !this._page._pageDictionary.has('Annots')) {
+            return;
+        }
+        const annotations: unknown = this._page._pageDictionary.getRaw('Annots');
+        if (!Array.isArray(annotations)) {
+            return;
+        }
+        const references: _PdfReference[] = annotations.filter(
+            (value: unknown): value is _PdfReference => {
+                if (!(value instanceof _PdfReference)) {
+                    return false;
+                }
+                return !(this._ref instanceof _PdfReference) ||
+                    value.objectNumber !== this._ref.objectNumber ||
+                    value.generationNumber !== this._ref.generationNumber;
+            }
+        );
+        if (references.length > 0) {
+            this._version = [...references];
         }
     }
 }
@@ -19649,6 +29048,124 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
     }
 }
 /**
+ * `PdfButtonFieldItem` class represents an item of a button field.
+ *
+ * @example
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the button field
+ * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+ * // Access the first button field item
+ * let item: PdfButtonFieldItem = field.itemAt(0);
+ * // Get the bounds of the button field item
+ * let bounds: Rectangle = item.bounds;
+ * // Get the appearance of the button field item
+ * let appearance: PdfAppearance = item.appearance;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfButtonFieldItem extends PdfWidgetAnnotation {
+    /**
+     * Stores the appearance associated with the button field item.
+     *
+     * @private
+     */
+    private _buttonAppearance: PdfAppearance;
+    /**
+     * Loads an existing button field item.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary The widget dictionary.
+     * @param {_PdfCrossReference} crossReference The cross-reference object.
+     * @returns {PdfButtonFieldItem} The loaded button field item.
+     */
+    static _load(dictionary: _PdfDictionary, crossReference: _PdfCrossReference): PdfButtonFieldItem {
+        const item: PdfButtonFieldItem = new PdfButtonFieldItem();
+        item._isLoaded = true;
+        item._dictionary = dictionary;
+        item._crossReference = crossReference;
+        return item;
+    }
+    /**
+     * Gets the appearance of the button field item.
+     *
+     * @returns {PdfAppearance} The appearance of the button field item.
+     *
+     * @example
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access a button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Access the first button field item
+     * let item: PdfButtonFieldItem = field.itemAt(0);
+     * // Create an image
+     * let image: PdfBitmap = new PdfBitmap(imageData);
+     * // Draw the image in the normal appearance of the item
+     * item.appearance.normal.graphics.drawImage(image, {x: 0, y: 0, width: item.bounds.width, height: item.bounds.height});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearance(): PdfAppearance {
+        if (typeof this._buttonAppearance === 'undefined') {
+            let width: number = this.bounds.width;
+            let height: number = this.bounds.height;
+            const rotation: number = this.rotate;
+            if (rotation === 90 || rotation === 270) {
+                width = this.bounds.height;
+                height = this.bounds.width;
+            }
+            const bounds: Rectangle = {x: 0, y: 0, width: width, height: height};
+            this._buttonAppearance = new PdfAppearance(bounds, this);
+        }
+        return this._buttonAppearance;
+    }
+    /**
+     * Sets the appearance of the button field item.
+     *
+     * @param {PdfAppearance} value The appearance to assign to the button field item.
+     *
+     * @example
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access a button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Access two button field items
+     * let sourceItem: PdfButtonFieldItem = field.itemAt(0);
+     * let targetItem: PdfButtonFieldItem = field.itemAt(1);
+     * // Assign the source item appearance to the target item
+     * targetItem.appearance = sourceItem.appearance;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set appearance(value: PdfAppearance) {
+        if (value && this._buttonAppearance !== value) {
+            this._buttonAppearance = value;
+            if (this._dictionary) {
+                this._dictionary._updated = true;
+            }
+        }
+    }
+    /**
+     * Indicates whether the internal appearance is initialized.
+     *
+     * @private
+     * @returns {boolean} True when the appearance exists.
+     */
+    get _hasAppearance(): boolean {
+        return typeof this._buttonAppearance !== 'undefined';
+    }
+}
+/**
  * `PdfStateItem` class represents the check box field item objects.
  * ```typescript
  * // Load an existing PDF document
@@ -20330,7 +29847,7 @@ export class PdfRadioButtonListItem extends PdfStateItem {
      * @param {PdfField} [field] Optional field to register as parent.
      * @returns {void} No return value.
      */
-    _initializeItem(value: string, bounds: {x: number, y: number, width: number, height: number}, page: PdfPage, field?: PdfField): void {
+    _initializeItem(value: string, bounds: { x: number, y: number, width: number, height: number }, page: PdfPage, field?: PdfField): void {
         this._optionValue = value;
         this._page = page;
         this._create(this._page, bounds, this._field);
@@ -21386,8 +30903,8 @@ export class PdfAnnotationBorder extends PdfInteractiveBorder {
      * document.destroy();
      * ```
      */
-    public constructor(options: { width?: number, hRadius?: number, vRadius?: number, style?: PdfBorderStyle, dash?: Array<number>})
-    public constructor(options?: { width?: number, hRadius?: number, vRadius?: number, style?: PdfBorderStyle, dash?: Array<number>}) {
+    public constructor(options: { width?: number, hRadius?: number, vRadius?: number, style?: PdfBorderStyle, dash?: Array<number> })
+    public constructor(options?: { width?: number, hRadius?: number, vRadius?: number, style?: PdfBorderStyle, dash?: Array<number> }) {
         super(options);
         if (options !== null && typeof options !== 'undefined') {
             if (options && 'hRadius' in options && options.hRadius !== null && typeof options.hRadius !== 'undefined') {
@@ -21750,7 +31267,7 @@ export class PdfBorderEffect {
             if (this._dictionary) {
                 const bs: _PdfDictionary = this._dictionary.has('BE') ? this._dictionary.get('BE') : new _PdfDictionary(this._crossReference);
                 bs.update('I', this._intensity);
-                bs.update('S', this._styleToEffect(this._style));
+                bs.update('S', _PdfName.get(this._styleToEffect(this._style)));
                 this._dictionary.update('BE', bs);
                 this._dictionary._updated = true;
             }
@@ -21810,7 +31327,7 @@ export class PdfBorderEffect {
                     this._dictionary.get('BE') :
                     new _PdfDictionary(this._crossReference);
                 bs.update('I', this._intensity);
-                bs.update('S', this._styleToEffect(this._style));
+                bs.update('S', _PdfName.get(this._styleToEffect(this._style)));
                 this._dictionary.update('BE', bs);
                 this._dictionary._updated = true;
             }
@@ -21837,7 +31354,7 @@ export class PdfBorderEffect {
      * @param {PdfBorderEffectStyle} value The border effect style to convert.
      * @returns {string} The string representation for use in the annotation dictionary.
      */
-    _styleToEffect(value: PdfBorderEffectStyle ): string {
+    _styleToEffect(value: PdfBorderEffectStyle): string {
         if (value === PdfBorderEffectStyle.cloudy) {
             return 'C';
         } else {

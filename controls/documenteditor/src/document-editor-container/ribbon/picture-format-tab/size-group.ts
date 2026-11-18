@@ -3,7 +3,6 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, RibbonItemSize, RibbonItemType } from '@syncfusion/ej2-ribbon';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 import { SelectionImageFormat } from '../../../document-editor/implementation/selection/selection-format';
 
@@ -15,6 +14,7 @@ export const ASPECT_RATIO_ID: string = '_aspect_ratio';
 
 /**
  * Size group implementation for Picture Format tab
+ *
  * @private
  */
 export class SizeGroup {
@@ -29,6 +29,7 @@ export class SizeGroup {
 
     /**
      * Constructor for SizeGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -49,6 +50,7 @@ export class SizeGroup {
 
     /**
      * Get the Ribbon items for Size group
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Size group
      * @private
      */
@@ -163,6 +165,7 @@ export class SizeGroup {
 
     /**
      * Initializes the NumericTextBox instances
+     *
      * @returns {void}
      * @private
      */
@@ -269,6 +272,7 @@ export class SizeGroup {
 
     /**
      * Updates the size property controls with current image properties
+     *
      * @returns {void}
      * @private
      */
@@ -282,6 +286,7 @@ export class SizeGroup {
 
     /**
      * Applies the width value to the selected image
+     *
      * @returns {void}
      * @private
      */
@@ -342,6 +347,7 @@ export class SizeGroup {
     }
     /**
      * Resets the initialization state to allow re-initialization after layout changes
+     *
      * @returns {void}
      * @private
      */
@@ -361,6 +367,7 @@ export class SizeGroup {
     }
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      * @private
      */

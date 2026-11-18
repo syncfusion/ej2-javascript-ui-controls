@@ -3,7 +3,6 @@
  */
 import { ImageDecoder } from './../../graphics/images/image-decoder';
 import { ByteArray } from './../../graphics/images/byte-array';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { PdfImage } from './pdf-image';
 /**
  * The 'PdfBitmap' contains methods and properties to handle the Bitmap images.
@@ -33,12 +32,6 @@ export class PdfBitmap extends PdfImage {
      * @private
      */
     private imageStatus : boolean = true;
-    /**
-     * Internal variable for accessing fields from `DictionryProperties` class.
-     * @hidden
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * `Type` of an image.
      * @hidden

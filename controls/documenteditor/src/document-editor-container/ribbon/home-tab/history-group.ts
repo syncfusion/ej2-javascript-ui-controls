@@ -1,6 +1,5 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
-import { Ribbon, RibbonGroupModel, RibbonItemSize } from '@syncfusion/ej2-ribbon';
-import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
+import { Ribbon, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 
 // History group constants
 export const HISTORY_GROUP_ID: string = '_history_group';
@@ -9,11 +8,13 @@ export const REDO_ID: string = '_redo';
 
 /**
  * HistoryGroup class for handling history operations in Document Editor ribbon
+ *
  * @private
  */
 export class HistoryGroup extends RibbonGroupBase implements IRibbonGroup {
     /**
      * Get the Ribbon group model for History
+     *
      * @returns {RibbonGroupModel} - The Ribbon group model for History
      * @private
      */
@@ -69,6 +70,7 @@ export class HistoryGroup extends RibbonGroupBase implements IRibbonGroup {
 
     /**
      * Update undo/redo buttons based on history state
+     *
      * @returns {void}
      * @private
      */

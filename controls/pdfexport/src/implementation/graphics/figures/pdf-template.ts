@@ -2,7 +2,6 @@
  * PdfTemplate.ts class for EJ2-PDF
  */
 import { PdfStream } from './../../primitives/pdf-stream';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { PdfArray } from './../../primitives/pdf-array';
 import { PdfGraphics } from './../pdf-graphics';
 import { PdfStreamWriter } from './../../input-output/pdf-stream-writer';
@@ -33,12 +32,6 @@ export class PdfTemplate implements IPdfWrapper {
      * @private
      */
     private templateSize : SizeF;
-    /**
-     * Initialize an instance for `DictionaryProperties` class.
-     * @private
-     * @hidden
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Stores the `content` of the 'PdfTemplate'.
      * @private
@@ -91,7 +84,7 @@ export class PdfTemplate implements IPdfWrapper {
     public getResources() : PdfResources {
         if (this.resources == null) {
             this.resources = new PdfResources();
-            this.content.items.setValue(this.dictionaryProperties.resources, this.resources);
+            this.content.items.setValue('Resources', this.resources);
         }
         return this.resources;
     }
@@ -138,16 +131,16 @@ export class PdfTemplate implements IPdfWrapper {
      * @private
      */
     private addType() : void {
-        let value : PdfName = new PdfName(this.dictionaryProperties.xObject);
-        this.content.items.setValue(this.dictionaryProperties.type, value);
+        let value : PdfName = new PdfName('XObject');
+        this.content.items.setValue('Type', value);
     }
     /**
      * `Adds SubType key`.
      * @private
      */
     private addSubType() : void {
-        let value : PdfName = new PdfName(this.dictionaryProperties.form);
-        this.content.items.setValue(this.dictionaryProperties.subtype, value);
+        let value : PdfName = new PdfName('Form');
+        this.content.items.setValue('Subtype', value);
     }
     /**
      * `Reset` the size of the 'PdfTemplate'.
@@ -158,7 +151,7 @@ export class PdfTemplate implements IPdfWrapper {
         if (typeof size === 'undefined') {
             if (this.resources != null) {
                 this.resources = null;
-                this.content.remove(this.dictionaryProperties.resources);
+                this.content.remove('Resources');
             }
             if (this.graphics != null) {
                 this.graphics.reset(this.size);
@@ -175,7 +168,7 @@ export class PdfTemplate implements IPdfWrapper {
     private setSize(size : SizeF) : void {
         let rect : RectangleF = new RectangleF(new PointF(0, 0), size);
         let val : PdfArray = PdfArray.fromRectangle(rect);
-        this.content.items.setValue(this.dictionaryProperties.bBox, val);
+        this.content.items.setValue('BBox', val);
         this.templateSize = size;
     }
     // /**

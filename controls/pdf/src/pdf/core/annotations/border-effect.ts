@@ -1,6 +1,6 @@
 import { _PdfTransformationMatrix, PdfGraphics } from '../graphics/pdf-graphics';
 import { _fromRectangle } from '../utils';
-import { Rectangle, Point } from './../pdf-type';
+import { Rectangle, Point } from './../pdf-document-helper';
 /**
  * Renders a cloud-style border effect for ellipse annotations in a PDF document.
  * Computes the bumpy arc geometry, bounding box, and writes path operators to the graphics stream.

@@ -704,6 +704,7 @@ export class ResponsiveDialogRenderer implements IAction {
 
     /**
      * Function to close the Responsive Column Chooser dialog.
+     *
      * @returns {void}
      * @hidden
      */

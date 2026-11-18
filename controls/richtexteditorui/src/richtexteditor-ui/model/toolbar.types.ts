@@ -9,12 +9,13 @@ import { ItemModel } from '@syncfusion/ej2-navigations';
  * Defines the toolbar overflow and layout behavior.
  *
  * @remarks
- * - `Expanded`: Displays items, overflow through expand control
+ * - `Auto`: Default. Resolves to `Expanded` on desktop and `Scrollable` on device
+ * - `Expanded`: Displays items in a single row, overflow through expand menu
  * - `MultiRow`: Wraps items into multiple rows
- * - `Popup`: Overflow items into popup
- * - `Scrollable`: Horizontally scrollable container
+ * - `Scrollable`: Horizontally scrollable single row
+ *
  */
-export type ToolbarType = 'Expanded' | 'MultiRow' | 'Scrollable';
+export type ToolbarType = 'Auto' | 'Expanded' | 'MultiRow' | 'Scrollable';
 
 /**
  * Defines the toolbar vertical position relative to editor.
@@ -55,9 +56,11 @@ export type BuiltInToolbarItem =
     | 'NumberedList'
     | 'NumberFormatList'
     | 'BulletFormatList'
+    | 'Checklist'
     | 'Alignment'
     | 'Quote'
     | 'CodeBlock'
+    | 'Callout'
     | 'Link'
     | 'Image'
     | 'Table'
@@ -72,7 +75,12 @@ export type BuiltInToolbarItem =
     | 'AlignLeft'
     | 'AlignCenter'
     | 'AlignRight'
-    | 'AlignJustify';
+    | 'AlignJustify'
+    | 'CalloutInfo'
+    | 'CalloutSuccess'
+    | 'CalloutWarning'
+    | 'CalloutError'
+    | 'CalloutNote';
 
 /**
  * Built-in items exposed by the Link Quick Toolbar.
@@ -85,11 +93,12 @@ export type BuiltInToolbarItem =
  * - `'|'`: Visual separator used to split action groups inside the popup.
  */
 export type LinkQuickToolbarItem =
-    | 'OpenLink'
-    | 'CopyLink'
-    | 'EditLink'
-    | 'RemoveLink'
-    | '|';
+    | 'Open'
+    | 'Copy'
+    | 'Edit'
+    | 'Remove'
+    | '|'
+    |  CustomToolbarItem;
 
 // Built-in Table Quick Toolbar items and separators (`'|'`).
 export type TableQuickToolbarItem =
@@ -99,8 +108,9 @@ export type TableQuickToolbarItem =
     | 'CellBackgroundColor'
     | 'VerticalAlign'
     | 'Align'
-    | 'Delete'
-    | '|';
+    | 'Remove'
+    | '|'
+    |  CustomToolbarItem;
 
 // Built-in Image Quick Toolbar items and separators (`'|'`).
 export type ImageQuickToolbarItem =
@@ -112,7 +122,16 @@ export type ImageQuickToolbarItem =
     | 'Dimension'
     | 'Replace'
     | 'Remove'
-    | '|';
+    | '|'
+    |  CustomToolbarItem;
+
+/**
+ * Union type for all quick toolbar item types.
+ * Simplified alias used internally to represent any quick toolbar item.
+ *
+ * @internal
+ */
+export type BaseToolbarItem = ToolbarItem[] | ImageQuickToolbarItem[] | LinkQuickToolbarItem[] | TableQuickToolbarItem[];
 
 /**
  * Configuration for a built-in toolbar item.
@@ -150,7 +169,7 @@ export interface CustomToolbarItem extends ItemModel {
  * Typed interface for font size dropdown items.
  * Represents a single font size option with numeric value and editor command.
  */
-export interface FontSizeItem extends ItemModel {
+export interface FontSizeItem {
     /** Display text for the item (e.g., '14') */
     text: string;
     /** Unique identifier for the dropdown menu item */
@@ -158,14 +177,14 @@ export interface FontSizeItem extends ItemModel {
     /** Editor command to execute (must be 'fontSize') */
     command?: string;
     /** Font size value payload with CSS unit (e.g., { size: '14px' }) */
-    value?: { size: string };
+    value?: string;
 }
 
 /**
  * Typed interface for font family dropdown items.
  * Represents a single font family option with family name and editor command.
  */
-export interface FontFamilyItem extends ItemModel {
+export interface FontFamilyItem {
     /** Display text for the item (e.g., 'Arial') */
     text: string;
     /** Unique identifier for the dropdown menu item */
@@ -173,7 +192,7 @@ export interface FontFamilyItem extends ItemModel {
     /** Editor command to execute (must be 'fontName') */
     command?: string;
     /** Font family value payload with font name (e.g., { family: 'Arial' }) */
-    value?: { family: string };
+    value?: string;
 }
 
 /**
@@ -186,7 +205,7 @@ export interface FontFamilyItem extends ItemModel {
  * - Custom items: `{ actionId: 'save', id: 'save', text: 'Save' }`
  * - Visual separators: `'|'`
  */
-export type ToolbarItem = BuiltInToolbarItem | BuiltInToolbarItemConfig | CustomToolbarItem | '|' | LinkQuickToolbarItem | TableQuickToolbarItem | ImageQuickToolbarItem;
+export type ToolbarItem = BuiltInToolbarItem | BuiltInToolbarItemConfig | CustomToolbarItem | '|';
 
 /**
  * Default toolbar items array as defined by product requirements.
