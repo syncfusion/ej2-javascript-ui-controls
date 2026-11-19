@@ -2,6 +2,68 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I888499` - Now, when `enableXhtml` is set to true, the Rich Text Editor loads content properly without causing the page to become unresponsive.
+
+- `#I887120` - Now, when importing a Word document into the editor with RTL mode enabled, text alignments and indentations are properly preserved.
+
+## 35.1.43 (2026-11-03)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I880469` - Now, the Clear Format properly removes the `strikethrough` format from text copied and pasted from Microsoft Word.
+
+- `#I880469` - Now, applying `outdent` on a list pasted from Word keeps the list item's `<span>` inside a `<p>` instead of leaving a bare `<span>` at the editor root.
+
+- `#I880469` - Now, indenting a list item into an existing sub-list preserves that sub-list's `list-style-type` instead of replacing it with the parent list's type.
+
+- `#I880469` - Now, `outdenting` a parent list item pasted from Word no longer nests the next unselected sibling one level deeper.
+
+- `#I883965` - Now, pressing Backspace or Delete after selecting all content with `Ctrl+A` and then deselecting it correctly clears the content in the Rich Text Editor.
+
+## 35.1.42 (2026-10-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I880469` - Now, elements with `margin-left` values in any unit are correctly handled during `indent` and `outdent` operations in the Rich Text Editor.
+
+## 35.1.40 (2026-10-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I870682` - Now, AI-generated list content is pasted correctly in the Rich Text Editor while preserving the intended list structure and formatting.
+
+- `#I876625` - Now, the image upload popup consistently renders within the viewport regardless of the cursor's position inside the Rich Text Editor.
+
+- `#I876850` - Now, the AI Assistant popup remains in a fixed position whenever the `e-rte-aiquery-popup-fixed` class is applied to the AI Assistant popup element.
+
+## 35.1.39 (2026-10-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I877703` - Now, Rich Text Editor properly handles dynamic `cssClass` updates, ensuring CSS classes are applied and removed without any errors.
+
+## 35.1.37 (2026-09-29)
+
+### RichTextEditor
+
+#### Features
+
+The Rich Text Editor supports the Web Model Context Protocol (WebMCP), enabling AI models and agents to interact with editor content through built-in tools. Write operations require user confirmation, and the beforeWebMcpToolExecute event lets users inspect, modify, or cancel tool execution.
+
 ## 34.1.29 (2026-07-06)
 
 ### RichTextEditor

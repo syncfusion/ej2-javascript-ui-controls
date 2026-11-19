@@ -1,5 +1,6 @@
 import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { RulerOrientation, TickAlignment } from '../../ruler/index';
+import { MeasurementUnit } from '../enum/enum';
 import { DiagramRulerModel } from './ruler-settings-model';
 /**
  * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
@@ -118,6 +119,20 @@ export class RulerSettings extends ChildProperty<RulerSettings> {
      */
     @Property(true)
     public dynamicGrid: boolean;
+
+    /**
+     * Defines the measurement unit of both the horizontal and vertical rulers.
+     * Physical units convert at a fixed 96 diagram units per inch. Model coordinates and event arguments stay in diagram units.
+     * * Pixel - Diagram units.
+     * * Point - Points (1 pt = 96 / 72 diagram units).
+     * * Centimeter - Centimeters.
+     * * Millimeter - Millimeters.
+     * * Inch - Inches.
+     *
+     * @default 'Pixel'
+     */
+    @Property('Pixel')
+    public measurementUnit: MeasurementUnit;
 
     /**
      * Defines the appearance of horizontal ruler

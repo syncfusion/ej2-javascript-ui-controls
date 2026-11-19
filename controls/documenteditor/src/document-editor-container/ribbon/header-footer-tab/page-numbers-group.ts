@@ -4,11 +4,13 @@ import { RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 
 /**
  * Represents the Page Numbers Group in Header & Footer tab
+ *
  * @private
  */
 export class PageNumbersGroup extends RibbonGroupBase {
     /**
      * Constructor for the PageNumbersGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -17,6 +19,7 @@ export class PageNumbersGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Page Numbers
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -48,6 +51,7 @@ export class PageNumbersGroup extends RibbonGroupBase {
 
     /**
      * Handler for page number button click - inserts current page number at cursor position
+     *
      * @returns {void}
      */
     private pageNumberHandler(): void {

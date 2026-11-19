@@ -1,5 +1,5 @@
-import { DocumentEditor, ContextType, BorderSettings, BorderType, LineStyle } from '../../document-editor';
-import { createElement, KeyboardEventArgs, classList, L10n, remove, updateCSSText } from '@syncfusion/ej2-base';
+import { DocumentEditor, ContextType } from '../../document-editor';
+import { createElement, KeyboardEventArgs, classList, L10n, remove, updateCSSText, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tab, TabItemModel, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { TextProperties } from './text-properties-pane';
 import { ImageProperties } from './image-properties-pane';
@@ -341,28 +341,28 @@ export class TableProperties {
         }
     }
     private applyTopMargin(): void {
-        if (!this.isTopMarginApply) {
+        if (!this.isTopMarginApply || isNullOrUndefined(this.topMargin)) {
             return;
         }
         this.documentEditor.selectionModule.cellFormat.topMargin = (this.topMargin.value > this.topMargin.max)
             ? this.topMargin.max : this.topMargin.value;
     }
     private applyBottomMargin(): void {
-        if (!this.isBottomMarginApply) {
+        if (!this.isBottomMarginApply || isNullOrUndefined(this.bottomMargin)) {
             return;
         }
         this.documentEditor.selectionModule.cellFormat.bottomMargin = (this.bottomMargin.value > this.bottomMargin.max)
             ? this.bottomMargin.max : this.bottomMargin.value;
     }
     private applyLeftMargin(): void {
-        if (!this.isLeftMarginApply) {
+        if (!this.isLeftMarginApply || isNullOrUndefined(this.leftMargin)) {
             return;
         }
         this.documentEditor.selectionModule.cellFormat.leftMargin = (this.leftMargin.value > this.leftMargin.max)
             ? this.leftMargin.max : this.leftMargin.value;
     }
     private applyRightMargin(): void {
-        if (!this.isRightMarginApply) {
+        if (!this.isRightMarginApply || isNullOrUndefined(this.rightMargin)) {
             return;
         }
         this.documentEditor.selectionModule.cellFormat.rightMargin = (this.rightMargin.value > this.rightMargin.max)
@@ -401,6 +401,12 @@ export class TableProperties {
         this.documentEditor.focusIn();
     }
     public onSelectionChange(): void {
+        // A pending selection change can arrive after the pane is destroyed;
+        // the margin text boxes are undefined then.
+        if (isNullOrUndefined(this.topMargin) || isNullOrUndefined(this.bottomMargin)
+            || isNullOrUndefined(this.leftMargin) || isNullOrUndefined(this.rightMargin)) {
+            return;
+        }
         if (this.documentEditor.selectionModule) {
             if (this.documentEditor.editorModule && this.documentEditor.editorModule.canMergeCells()) {
                 this.horizontalMerge.disabled = false;
@@ -733,7 +739,6 @@ export class TableProperties {
         if (isBorderWidth) {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
-        /* eslint-disable-next-line max-len */
         const colorPicker: ColorPicker = new ColorPicker({
             cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false,
             mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns,

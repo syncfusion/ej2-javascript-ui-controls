@@ -48,7 +48,7 @@ export class Code128 extends OneDimension {
             11010011100, 1100011101011];
         return codes;
     }
-    private getBytes(givenWord: string): number[] {
+    protected getBytes(givenWord: string): number[] {
         const bytes: number[] = [];
         for (let i: number = 0; i < givenWord.length; i++) {
             bytes.push(givenWord[parseInt(i.toString(), 10)].charCodeAt(0));
@@ -93,7 +93,7 @@ export class Code128 extends OneDimension {
         return value;
     }
 
-    private code128Clip(): string {
+    protected code128Clip(): string {
         let newString: string;
         const check128C: number = this.check128C(this.value).length;
         if (check128C >= 2) {
@@ -136,7 +136,8 @@ export class Code128 extends OneDimension {
      */
     public code128(canvas: HTMLElement): void {
         let givenCharacter: string = this.value;
-        givenCharacter = this.type !== 'Code128' ? this.appendStartStopCharacters(givenCharacter) : this.code128Clip() as string;
+        givenCharacter = this.type !== 'Code128' && this.type !== 'GS1Code128' ?
+            this.appendStartStopCharacters(givenCharacter) : this.code128Clip() as string;
         const bytes: number[] = this.getBytes(givenCharacter);
         const startCharacterValue: number = bytes.shift() - 105;
         let set: string;
@@ -166,6 +167,9 @@ export class Code128 extends OneDimension {
             const nextSet: string = this.swap(index);
             if (nextSet !== undefined) {
                 nextCode = this.encodeData(byteValue, textPosition + 1, nextSet);
+            } else {
+                // FNC1 (index 102) does not change the code set.
+                nextCode = this.encodeData(byteValue, textPosition + 1, set);
             }
         } else {
             index = this.correctIndex(byteValue, set);
@@ -185,6 +189,9 @@ export class Code128 extends OneDimension {
             return '2';
         } else if (index === 100) {
             return '1';
+        } else if (index === 102) {
+            // FNC1 in first position or as separator does not change the code set.
+            return undefined;
         } else {
             return '0';
         }
@@ -202,7 +209,7 @@ export class Code128 extends OneDimension {
     }
 
     // Correct an index by a set and shift it from the bytes array
-    private correctIndex(bytes: number[], set?: string): number {
+    protected correctIndex(bytes: number[], set?: string): number {
         if (set === '0') {
             const charCode: number = bytes.shift();
             return charCode < 32 ? charCode + 64 : charCode - 32;

@@ -1,4 +1,4 @@
-import { LongTermValidationCallback } from '../../../pdf-type';
+import { LongTermValidationCallback } from '../../../pdf-document-helper';
 import { _PdfAbstractSyntaxElement } from '../asn1/abstract-syntax';
 import { _TagClassType } from '../asn1/enumerator';
 import { _PdfX509Certificate } from '../x509/x509-certificate';

@@ -102,6 +102,20 @@ export class TableResizer {
                 startingPointX = startingPointX + preferredWidth;
             }
         } else {
+            const spanningCell: TableCellWidget = isNullOrUndefined(tableWidget) ? undefined :
+                this.getRowSpannedCellAtBorder(tableWidget, touchPoint, resizerBoundaryWidth, false);
+            if (!isNullOrUndefined(spanningCell)) {
+                this.currentResizingTable = tableWidget;
+                return position = tableWidget.isBidiTable ? (spanningCell.columnIndex + spanningCell.cellFormat.columnSpan) :
+                    spanningCell.columnIndex;
+            }
+            const rightSpanningCell: TableCellWidget = isNullOrUndefined(tableWidget) ? undefined :
+                this.getRowSpannedCellAtBorder(tableWidget, touchPoint, resizerBoundaryWidth, true);
+            if (!isNullOrUndefined(rightSpanningCell)) {
+                this.currentResizingTable = tableWidget;
+                return position = tableWidget.isBidiTable ? rightSpanningCell.columnIndex :
+                    (rightSpanningCell.columnIndex + rightSpanningCell.cellFormat.columnSpan);
+            }
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
                 /* eslint-disable-next-line max-len */
@@ -119,6 +133,74 @@ export class TableResizer {
             }
         }
         return position;
+    }
+
+    /**
+     * Gets the cell that spans vertically into the row under the touch point and whose left (or right) border is under the touch point.
+     * Such a cell has no widget in that row (it is merged with the cell above), so the cell hit test returns nothing there.
+     * @param {TableWidget} table - Specifies the table widget.
+     * @param {Point} touchPoint - Specifies the touch point.
+     * @param {number} boundaryWidth - Specifies the resizer boundary width.
+     * @param {boolean} isRightBorder - Specifies whether the right border is checked.
+     * @returns {TableCellWidget} Returns the row spanned cell.
+     */
+    private getRowSpannedCellAtBorder(
+        table: TableWidget, touchPoint: Point, boundaryWidth: number, isRightBorder: boolean
+    ): TableCellWidget {
+        for (let i: number = 1; i < table.childWidgets.length; i++) {
+            const row: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
+            if (row.y > touchPoint.y || row.y + row.height < touchPoint.y) {
+                continue;
+            }
+            for (let j: number = 0; j < i; j++) {
+                const previousRow: TableRowWidget = table.childWidgets[parseInt(j.toString(), 10)] as TableRowWidget;
+                for (let k: number = 0; k < previousRow.childWidgets.length; k++) {
+                    const spanned: TableCellWidget = previousRow.childWidgets[parseInt(k.toString(), 10)] as TableCellWidget;
+                    if (j + spanned.cellFormat.rowSpan > i
+                        /* eslint-disable-next-line max-len */
+                        && this.documentHelper.isInsideRect((isRightBorder ? spanned.x + spanned.width + spanned.margin.right :
+                            spanned.x - spanned.margin.left) - boundaryWidth / 2, row.y, boundaryWidth, row.height, touchPoint)) {
+                        return spanned;
+                    }
+                }
+            }
+            break;
+        }
+        return undefined;
+    }
+
+    /**
+     * Gets the index of the last row spanned by a vertically merged cell when the touch point is on that cell's bottom border.
+     * The cell has no widget in that last row, so the cell hit test cannot find it.
+     * @param {TableWidget} table - Specifies the table widget.
+     * @param {Point} touchPoint - Specifies the touch point.
+     * @returns {number} Returns the last spanned row index.
+     */
+    private getRowSpannedCellBottomRowIndex(table: TableWidget, touchPoint: Point): number {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            const row: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                const cell: TableCellWidget = row.childWidgets[parseInt(j.toString(), 10)] as TableCellWidget;
+                const lastRowIndex: number = i + cell.cellFormat.rowSpan - 1;
+                if (cell.cellFormat.rowSpan > 1 && lastRowIndex < table.childWidgets.length) {
+                    const lastRow: TableRowWidget = table.childWidgets[parseInt(lastRowIndex.toString(), 10)] as TableRowWidget;
+                    const isLastRow: boolean = lastRowIndex === table.childWidgets.length - 1;
+                    /* eslint-disable-next-line max-len */
+                    if (this.documentHelper.isInsideRect(cell.x - cell.margin.left, isLastRow ? lastRow.y + lastRow.height - this.documentHelper.resizerBoundaryWidth : lastRow.y + lastRow.height, cell.width + cell.margin.left + cell.margin.right, this.documentHelper.resizerBoundaryWidth + (isLastRow ? 0 : 1), touchPoint)) {
+                        return lastRowIndex;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    private getResizingCellWidget(table: TableWidget, point: Point): TableCellWidget {
+        let spanningCell: TableCellWidget = this.getRowSpannedCellAtBorder(table, point, 2, false);
+        if (isNullOrUndefined(spanningCell)) {
+            spanningCell = this.getRowSpannedCellAtBorder(table, point, 2, true);
+        }
+        return !isNullOrUndefined(spanningCell) ? spanningCell : this.getTableCellWidget(point);
     }
 
     private getCellReSizerPositionInternal(cellWidget: TableCellWidget, touchPoint: Point): number {
@@ -197,6 +279,12 @@ export class TableResizer {
             if (tableWidget && cellWidget) {
                 cellWidget = this.getTableCellWidget(touchPoint);
             }
+            const spannedRowIndex: number = isNullOrUndefined(tableWidget) ? -1 :
+                this.getRowSpannedCellBottomRowIndex(tableWidget, touchPoint);
+            if (spannedRowIndex > -1) {
+                this.currentResizingTable = tableWidget;
+                return spannedRowIndex;
+            }
             if (cellWidget) {
                 const rowWidget: TableRowWidget = cellWidget.containerWidget as TableRowWidget;
                 let height: number = 0;
@@ -208,7 +296,6 @@ export class TableResizer {
                     height = (rowWidget.nextRenderedWidget as TableRowWidget).topBorderWidth + this.documentHelper.resizerBoundaryWidth;
                     rowHeight = rowWidget.y + rowWidget.height;
                 }
-                /* eslint-disable-next-line max-len */
                 if (this.owner.documentHelper.isInsideRect(rowWidget.x, rowHeight, rowWidget.width, height, touchPoint)) {
                     this.currentResizingTable = rowWidget.ownerTable;
                     return rowWidget.rowIndex;
@@ -442,7 +529,7 @@ export class TableResizer {
             this.updateGridValue(table, true);
             return;
         }
-        const cellwidget: TableCellWidget = this.getTableCellWidget(this.startingPoint) as TableCellWidget;
+        const cellwidget: TableCellWidget = this.getResizingCellWidget(table, this.startingPoint);
         const spannedCell: TableCellWidget[] = this.isCellSpannedFromPreviousRows(cellwidget) as TableCellWidget[];
         if (this.resizerPosition === 0 || (!isNullOrUndefined(cellwidget) && isNullOrUndefined(cellwidget.previousWidget)
             && (table.isBidiTable ? cellwidget.x <= this.startingPoint.x : cellwidget.x >= this.startingPoint.x)) &&
@@ -582,7 +669,7 @@ export class TableResizer {
     }
     private resizeColumnWithSelection(selection: Selection, table: TableWidget, dragValue: number): boolean {
         //const newIndent: number = table.leftIndent;
-        const cellwidget: TableCellWidget = this.getTableCellWidget(this.startingPoint) as TableCellWidget;
+        const cellwidget: TableCellWidget = this.getResizingCellWidget(table, this.startingPoint);
         if (cellwidget && (selection.selectedWidgets.containsKey(cellwidget) || ((cellwidget as TableCellWidget).previousWidget
             && selection.selectedWidgets.containsKey(((cellwidget as TableCellWidget).previousWidget))))
             || this.owner.isTableMarkerDragging) {

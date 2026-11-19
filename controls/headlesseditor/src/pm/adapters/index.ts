@@ -1,5 +1,4 @@
 export { PositionAdapter } from './position-adapter';
-export type { CachedNodeInfo } from './position-adapter';
 export { SelectionAdapter } from './selection-adapter';
 export { NodeMapper } from './node-mapper';
 export { DocumentMapper } from './document-mapper';

@@ -29,6 +29,9 @@ export class Alignment {
 
     private applyAlignment(args: AlignmentExecutionPayload): void {
         this.parent.editor.commands.setTextAlign(args.args);
+        if (args.callBack) {
+            args.callBack({ commmand: args.command });
+        }
     }
 
     /**
@@ -36,7 +39,7 @@ export class Alignment {
      *
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 }

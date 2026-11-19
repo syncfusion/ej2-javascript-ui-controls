@@ -14,7 +14,6 @@ import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { SearchBox } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
-import { ColumnChooserSettings } from '../models/column-chooser-settings';
 
 /**
  * The `ColumnChooser` module is used to show or hide columns dynamically.
@@ -580,6 +579,7 @@ export class ColumnChooser implements IAction {
 
     /**
      * To render the header template for the column chooser.
+     *
      * @returns {HTMLElement | string} This method return HTMLElement or string.
      * @hidden
      */
@@ -603,6 +603,7 @@ export class ColumnChooser implements IAction {
 
     /**
      * To render the footer template for the column chooser.
+     *
      * @returns {HTMLElement | string} This method return HTMLElement or string.
      */
     private renderFooter(): HTMLElement | string {
@@ -743,6 +744,7 @@ export class ColumnChooser implements IAction {
 
     /**
      * Toggles the visibility of specified columns in the grid.
+     *
      * @param {Object} columns - An object specifying the columns to show or hide.
      * @param {string[]} columns.visibleColumns - An array of column identifiers specifying the columns to show.
      * @param {string[]} columns.hiddenColumns - An array of column identifiers specifying the columns to hide.

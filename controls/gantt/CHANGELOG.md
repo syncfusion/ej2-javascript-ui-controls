@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### GanttChart
+
+#### Breaking Changes
+
+- Added a lightweight Notes editor with rich-text formatting, without introducing a full rich-text editor dependency. This helps keep bundle size low and supports rendering Gantt charts in Power Apps environment. By default, an empty notes field displays a text editor without a toolbar. Enable `disableHtmlEncode` property on the notes column to enable the formatting toolbar, with options for text styling, fonts, colours, lists, and links.
+
+#### Bug fix
+
+- `I888876` - Resolved a null reference exception that occurred during parent taskbar editing when the parent task was linked to an unscheduled task in the Gantt Chart.
+
+## 35.1.43 (2026-11-03)
+
+### GanttChart
+
+#### Bug Fix
+
+- `#F198621` - Resolved an issue that caused an exception during initial Gantt Chart rendering when `enablePersistence` was enabled with remote data binding.
+
+## 35.1.41 (2026-10-20)
+
+### GanttChart
+
+#### Bug Fix
+
+- Enhanced Gantt Chart performance and scalability through internal optimizations, delivering up to 2.5 times faster loading and execution speeds for large project datasets. Validated with projects containing up to 50,000 tasks and task hierarchies up to 10 levels deep, providing a more responsive user experience for complex scheduling scenarios.
+
 ## 30.1.37 (2025-06-25)
 
 ### GanttChart

@@ -5,6 +5,7 @@
 
 import { EditorCore } from '../../core/base/editor-core';
 import { EditorController } from '../../controller/editor-controller';
+import { HeadlessEditor, SelectionContext } from '@syncfusion/ej2-headless-editor';
 
 /**
  * Snapshot of formatting state at the current selection.
@@ -17,6 +18,7 @@ export interface FormattingState {
     strikethrough: boolean;
     superscript: boolean;
     subscript: boolean;
+    link: boolean;
     inlineCode: boolean;
     fontColor: string | null;
     backgroundColor: string | null;
@@ -24,14 +26,22 @@ export interface FormattingState {
     fontFamily: string | null;
     heading: string | null;
     paragraph: boolean;
+    collapsible: boolean;
     codeBlock: boolean;
     blockQuote: boolean;
     orderedList: boolean;
     bulletList: boolean;
+    checklist: boolean;
     alignLeft: boolean;
     alignCenter: boolean;
     alignRight: boolean;
     alignJustify: boolean;
+    calloutInfo: boolean,
+    calloutWarning: boolean;
+    calloutError: boolean;
+    calloutSuccess: boolean;
+    calloutNote: boolean;
+    callout: boolean;
     uno: boolean;
     redo: boolean;
     orderedListType: string | null;
@@ -81,7 +91,7 @@ export class FormattingStateService {
             this.readActiveMarks(state, editorAccess);
 
             // Query selected block and its attributes
-            this.readSelectedBlock(state, editorAccess);
+            this.readSelectedBlock(state, editor as HeadlessEditor);
 
             // Query undo/redo availability
             this.updateUndoRedoState(editorAccess, state);
@@ -111,6 +121,9 @@ export class FormattingStateService {
 
         if (editorAccess.isMarkActive('bold')) {
             state.bold = true;
+        }
+        if (editorAccess.isMarkActive('link')) {
+            state.link = true;
         }
         if (editorAccess.isMarkActive('italic')) {
             state.italic = true;
@@ -143,66 +156,86 @@ export class FormattingStateService {
      * Reads the selected block and updates formatting state.
      *
      * @param {FormattingState} state - The state to update
-     * @param {EditorController} editorAccess - Access surface for the public API
+     * @param {HeadlessEditor} editor - Access surface for the public API
      * @returns {void}
      * @private
      */
-    private readSelectedBlock(state: FormattingState, editorAccess: EditorController): void {
-        const selected: { node: { type: string; attrs: Record<string, unknown> }; source: string } | null = editorAccess.getSelectedBlock();
-        if (!selected || !selected.node) {
+    private readSelectedBlock(state: FormattingState, editor: HeadlessEditor): void {
+        const selected: SelectionContext = editor.getSelectionContext();
+        if (!selected || !selected.nodes || selected.nodes.length === 0) {
             return;
         }
 
-        const nodeType: string = selected.node.type;
-        const attrs: Record<string, unknown> = selected.node.attrs || {};
+        for (const node of selected.nodes) {
+            const nodeType: string = node.type;
+            const attrs: Record<string, unknown> = node.attrs || {};
 
-        switch (nodeType) {
-        case 'heading': {
-            const level: string | null = readLevelAttr(attrs);
-            if (level) {
-                state.heading = 'Heading ' + level;
+            switch (nodeType) {
+            case 'heading': {
+                const level: string | null = readLevelAttr(attrs);
+                if (level) {
+                    state.heading = 'Heading ' + level;
+                }
+                break;
             }
-            break;
-        }
-        case 'paragraph':
-            state.paragraph = true;
-            break;
-        case 'codeBlock':
-            state.codeBlock = true;
-            break;
-        case 'blockquote':
-            state.blockQuote = true;
-            break;
-        case 'orderedList':
-            state.orderedList = true;
-            state.orderedListType = readStringAttr(attrs, 'listStyleType');
-            break;
-        case 'bulletList':
-            state.bulletList = true;
-            state.bulletListType = readStringAttr(attrs, 'listStyleType');
-            break;
-        default:
-            break;
-        }
+            case 'paragraph':
+                state.paragraph = true;
+                break;
+            case 'codeBlock':
+                state.codeBlock = true;
+                break;
+            case 'blockquote':
+                state.blockQuote = true;
+                break;
+            case 'orderedList':
+                state.orderedList = true;
+                state.orderedListType = readStringAttr(attrs, 'listStyleType');
+                break;
+            case 'bulletList':
+                state.bulletList = true;
+                state.bulletListType = readStringAttr(attrs, 'listStyleType');
+                break;
+            case 'callout': {
+                const variant: string | null = readStringAttr(attrs, 'variant');
+                if (variant === 'info') {
+                    state.calloutInfo = true;
+                } else if (variant === 'warning') {
+                    state.calloutWarning = true;
+                } else if (variant === 'error') {
+                    state.calloutError = true;
+                } else if (variant === 'success') {
+                    state.calloutSuccess = true;
+                } else if (variant === 'note') {
+                    state.calloutNote = true;
+                }
+                state.callout = true;
+                break;
+            }
+            case 'checklist':
+            case 'taskList':
+                state.checklist = true;
+                break;
+            default:
+                break;
+            }
 
-        // Read text alignment (available on paragraph/heading/blockquote/listItem, etc.)
-        const align: string | null = readAlignAttr(attrs);
-        switch (align) {
-        case 'left':
-            state.alignLeft = true;
-            break;
-        case 'center':
-            state.alignCenter = true;
-            break;
-        case 'right':
-            state.alignRight = true;
-            break;
-        case 'justify':
-            state.alignJustify = true;
-            break;
-        default:
-            // No explicit alignment — leave all false
-            break;
+            const align: string | null = readAlignAttr(attrs);
+            switch (align) {
+            case 'left':
+                state.alignLeft = true;
+                break;
+            case 'center':
+                state.alignCenter = true;
+                break;
+            case 'right':
+                state.alignRight = true;
+                break;
+            case 'justify':
+                state.alignJustify = true;
+                break;
+            default:
+                break;
+            }
         }
     }
 
@@ -292,20 +325,29 @@ function createEmptyFormattingState(): FormattingState {
         superscript: false,
         subscript: false,
         inlineCode: false,
+        link: false,
         fontColor: null,
         backgroundColor: null,
         fontSize: null,
         fontFamily: null,
         heading: null,
         paragraph: false,
+        collapsible: false,
         codeBlock: false,
         blockQuote: false,
         orderedList: false,
         bulletList: false,
+        checklist: false,
         alignLeft: false,
         alignCenter: false,
         alignRight: false,
         alignJustify: false,
+        calloutInfo: false,
+        calloutWarning: false,
+        calloutError: false,
+        calloutSuccess: false,
+        calloutNote: false,
+        callout: false,
         uno: false,
         redo: false,
         orderedListType: null,

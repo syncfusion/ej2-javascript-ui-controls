@@ -16,8 +16,6 @@
  * registered block-level children.
  */
 export interface EditorDocument {
-    /** Stable UUID v4 identifier. */
-    id: string;
     /** Always `'document'`. */
     type: 'document';
     /** Node attributes (alignment, indent, color, etc.). */
@@ -43,7 +41,8 @@ export type TextAlignment =
  * example, `lineHeight`) can be added without changing existing items.
  */
 export interface TextBlockAttributes {
-    textAlign?: TextAlignment;
+    align?: TextAlignment;
+    indent?: number
 }
 
 /* ---------- Block nodes ---------- */
@@ -55,11 +54,9 @@ export type BlockNode =
     | BlockquoteNode
     | CodeBlockNode
     | OrderedListNode
-    | BulletListNode
-    | RegisteredCustomBlockNode;
+    | BulletListNode;
 
 export interface ParagraphNode {
-    id: string
     type: 'paragraph';
     attrs?: TextBlockAttributes;
     children?: InlineNode[];
@@ -70,14 +67,12 @@ export interface HeadingAttributes extends TextBlockAttributes {
 }
 
 export interface HeadingNode {
-    id: string
     type: 'heading';
     attrs: HeadingAttributes;
     children?: InlineNode[];
 }
 
 export interface BlockquoteNode {
-    id: string
     type: 'blockquote';
     children: BlockNode[];
 }
@@ -87,7 +82,6 @@ export interface CodeBlockAttributes {
 }
 
 export interface CodeBlockNode {
-    id: string
     type: 'codeBlock';
     attrs?: CodeBlockAttributes;
     children?: TextNode[];
@@ -98,14 +92,12 @@ export interface OrderedListAttributes {
 }
 
 export interface OrderedListNode {
-    id: string
     type: 'orderedList';
     attrs?: OrderedListAttributes;
     children: ListItemNode[];
 }
 
 export interface BulletListNode {
-    id: string
     type: 'bulletList';
     children: ListItemNode[];
 }
@@ -120,8 +112,7 @@ export interface ListItemNode {
 /** Inline-level node union — built-in plus registered custom inline nodes. */
 export type InlineNode =
     | TextNode
-    | HardBreakNode
-    | RegisteredCustomInlineNode;
+    | HardBreakNode;
 
 export interface TextNode {
     type: 'text';
@@ -150,8 +141,7 @@ export type EditorMark =
     | CodeMark
     | LinkMark
     | TextColorMark
-    | BackgroundColorMark
-    | RegisteredCustomMark;
+    | BackgroundColorMark;
 
 export interface BoldMark {
     type: 'bold';
@@ -211,7 +201,9 @@ export interface BackgroundColorMark {
 }
 
 /* ---------- Custom-item registration (compile-time) ---------- */
-
+/**
+ * @private
+ */
 export interface CustomBlockNodeMap {
     /**
      * Internal marker for custom block-node registration.
@@ -219,6 +211,9 @@ export interface CustomBlockNodeMap {
     readonly __customBlockNodeRegistry: never;
 }
 
+/**
+ * @private
+ */
 export interface CustomInlineNodeMap {
     /**
      * Internal marker for custom inline-node registration.
@@ -226,6 +221,9 @@ export interface CustomInlineNodeMap {
     readonly __customInlineNodeRegistry: never;
 }
 
+/**
+ * @private
+ */
 export interface CustomMarkMap {
     /**
      * Internal marker for custom mark registration.
@@ -233,6 +231,9 @@ export interface CustomMarkMap {
     readonly __customMarkRegistry: never;
 }
 
+/**
+ * @private
+ */
 type RegisteredCustomBlockNode =
     CustomBlockNodeMap[
         Exclude<
@@ -241,6 +242,9 @@ type RegisteredCustomBlockNode =
         >
     ];
 
+/**
+ * @private
+ */
 type RegisteredCustomInlineNode =
     CustomInlineNodeMap[
         Exclude<
@@ -248,7 +252,9 @@ type RegisteredCustomInlineNode =
         '__customInlineNodeRegistry'
         >
     ];
-
+/**
+ * @private
+ */
 type RegisteredCustomMark =
     CustomMarkMap[
         Exclude<

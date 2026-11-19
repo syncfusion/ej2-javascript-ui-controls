@@ -7,7 +7,6 @@ import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel, TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Options Pane class.

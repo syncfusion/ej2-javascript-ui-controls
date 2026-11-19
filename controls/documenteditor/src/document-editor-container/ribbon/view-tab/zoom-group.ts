@@ -4,11 +4,13 @@ import { RibbonConstants } from '../ribbon-constants';
 
 /**
  * Zoom group implementation for View tab
+ *
  * @private
  */
 export class ZoomGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Zoom group
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -97,6 +99,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Handler for zoom in button click
+     *
      * @returns {void}
      */
     private zoomInHandler(): void {
@@ -105,6 +108,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Handler for zoom out button click
+     *
      * @returns {void}
      */
     private zoomOutHandler(): void {
@@ -115,6 +119,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Handler for full page button click
+     *
      * @returns {void}
      */
     private fitOnePageHandler(): void {
@@ -124,6 +129,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Handler for 100% button click
+     *
      * @returns {void}
      */
     private hundredpercentHandler(): void {
@@ -132,6 +138,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Handler for page width button click
+     *
      * @returns {void}
      */
     private pageWidthHandler(): void {
@@ -141,6 +148,7 @@ export class ZoomGroup extends RibbonGroupBase {
 
     /**
      * Updates the enabled state of zoom buttons based on current zoom factor
+     *
      * @returns {void}
      */
     public updateZoomButtonState(): void {

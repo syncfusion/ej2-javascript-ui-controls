@@ -419,8 +419,17 @@ export function scrollToCursor(
         return;
     }
     const range: Range = document.getSelection().getRangeAt(0);
-    const finalFocusElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement as HTMLElement :
+    let finalFocusElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement as HTMLElement :
         range.startContainer as HTMLElement;
+    const rangeCursorChildNode: HTMLElement = (range.startContainer as HTMLElement).childNodes[range.startOffset] as HTMLElement;
+    const isElementNode: boolean = rangeCursorChildNode && rangeCursorChildNode.nodeType === Node.ELEMENT_NODE;
+    let rangeRect: DOMRect | null;
+    if (range.startContainer.nodeName === '#text') {
+        rangeRect = range.getBoundingClientRect() as DOMRect;
+    } else if (isElementNode) {
+        rangeRect = rangeCursorChildNode.getBoundingClientRect() as DOMRect;
+        finalFocusElement = rangeCursorChildNode;
+    }
     const rect: DOMRect = finalFocusElement.getBoundingClientRect() as DOMRect;
     const cursorTop: number = rect.top;
     const cursorBottom: number = rect.bottom;
@@ -450,11 +459,13 @@ export function scrollToCursor(
                 finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
         } else {
-            if (cursorBottom > finalFocusElement.getBoundingClientRect().top) {
-                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-            }
-            if (cursorBottom > rootRect.bottom) {
-                rootElement.querySelector('.e-rte-content').scrollTop += (cursorBottom - rootRect.bottom) + (hasMargin ? 20 : 0);
+            if (rangeRect && (rangeRect.bottom > rootRect.bottom)) {
+                if (cursorBottom > finalFocusElement.getBoundingClientRect().top) {
+                    finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                }
+                if (cursorBottom > rootRect.bottom) {
+                    rootElement.querySelector('.e-rte-content').scrollTop += (cursorBottom - rootRect.bottom) + (hasMargin ? 20 : 0);
+                }
             }
         }
     }
@@ -860,10 +871,46 @@ export function getStructuredHtml(innerValue: string, enterKey: string, enableHt
     }
     // Apply processing to the temporary div
     wrapTextAndInlineNodes(tempDiv, parentElement, ignoreElements);
+    // Flatten any <ul>/<ol> -> <div> -> <li>/<ul>/<ol> wrappers anywhere in the tree.
+    flattenListMiddleDivsInTree(tempDiv);
     // Extract and return processed HTML
     const value: string = tempDiv.innerHTML;
     tempDiv.remove();
     return value;
+}
+
+/**
+ * Recursively walks a node tree and invokes {@link flattenListMiddleDiv} on every
+ * `<div>` that is a direct child of a `<ul>`/`<ol>`. This handles arbitrarily deep
+ * nesting, e.g. `<ul><div><ol><li>x</li></ol></div></ul>` and even deeper chains.
+ *
+ * @param {Node} root - The root node to start the traversal from.
+ * @returns {void}
+ * @private
+ */
+export function flattenListMiddleDivsInTree(root: Node): void {
+    if (!root) {
+        return;
+    }
+    // Snapshot the children first, since flattenListMiddleDiv mutates the tree.
+    const children: Node[] = Array.from(root.childNodes);
+    for (const child of children) {
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        const childElement: HTMLElement = child as HTMLElement;
+        if (childElement.nodeName === 'DIV'
+            && childElement.parentElement
+            && (childElement.parentElement.nodeName === 'UL' || childElement.parentElement.nodeName === 'OL')) {
+            flattenListMiddleDiv(childElement);
+            // After flattening, the <div> has been removed from the tree; do not recurse.
+            if (!childElement.parentNode) {
+                continue;
+            }
+        }
+        // Recurse into the (possibly mutated) subtree.
+        flattenListMiddleDivsInTree(childElement);
+    }
 }
 /**
  *
@@ -999,6 +1046,53 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string, ignore
                 }
             }
         }
+    }
+}
+
+/**
+ * Flattens a `<div>` that sits as a direct child between a `<ul>`/`<ol>`
+ *
+ * @param {HTMLElement} middleDiv - The `<div>` that wraps the list children of a `<ul>`/`<ol>`.
+ * @returns {void}
+ * @private
+ */
+export function flattenListMiddleDiv(middleDiv: HTMLElement): void {
+    if (!middleDiv || middleDiv.nodeName !== 'DIV') {
+        return;
+    }
+    const listParent: HTMLElement = middleDiv.parentElement;
+    if (!listParent || (listParent.nodeName !== 'UL' && listParent.nodeName !== 'OL')) {
+        return;
+    }
+    // Collect direct-child list nodes (li, ul, ol) of the middle <div>.
+    const liftableChildren: HTMLElement[] = [];
+    for (let i: number = 0; i < middleDiv.childNodes.length; i++) {
+        const node: Node = middleDiv.childNodes[i as number];
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        const tag: string = (node as HTMLElement).nodeName;
+        if (tag === 'LI' || tag === 'UL' || tag === 'OL') {
+            liftableChildren.push(node as HTMLElement);
+        }
+    }
+    if (liftableChildren.length === 0) {
+        return;
+    }
+    // Move <li>/<ul>/<ol> elements out of the middle <div>, placing them right before it
+    // so they become direct children of the surrounding <ul>/<ol>.
+    for (const item of liftableChildren) {
+        listParent.insertBefore(item, middleDiv);
+    }
+    // Any remaining non-list content inside the <div> is hoisted to the surrounding
+    // <ul>/<ol> so no data is lost, then the <div> is removed.
+    if (middleDiv.childNodes.length === 0) {
+        listParent.removeChild(middleDiv);
+    } else {
+        while (middleDiv.firstChild) {
+            listParent.insertBefore(middleDiv.firstChild, middleDiv);
+        }
+        listParent.removeChild(middleDiv);
     }
 }
 /**
@@ -1464,4 +1558,19 @@ export function convertFontSize(value: number, originalUnit: string, targetUnit:
     }
     const convertedValue: number = value * CONSTANT.conversionFactors[originalUnit as string][targetUnit as string];
     return convertedValue;
+}
+
+/**
+ * Returns the deepest last non-block descendant node of the given HTMLElement.
+ *
+ * @param {HTMLElement} BlockElement - The node to search from.
+ * @returns {Node} - The deepest last non-block descendant node.
+ */
+export function getDeepestLastInlineNode(BlockElement: HTMLElement): Node {
+    let lastChild: Node = BlockElement;
+    while (lastChild && lastChild.nodeType === Node.ELEMENT_NODE &&
+        isBlockNode(lastChild as Element) && lastChild.hasChildNodes()) {
+        lastChild = lastChild.lastChild as Node;
+    }
+    return lastChild;
 }

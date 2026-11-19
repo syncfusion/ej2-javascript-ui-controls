@@ -1,7 +1,7 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
-import { DialogUtility } from '@syncfusion/ej2-popups';
+import { DialogUtility, OpenEventArgs } from '@syncfusion/ej2-popups';
 /**
  * The Table dialog is used to insert table at selection.
  */
@@ -72,7 +72,6 @@ export class TableDialog {
             format: '#',
             value: 2,
             min: 1,
-            max: 63,
             strictMode: true,
             enablePersistence: false,
             placeholder: localValue.getConstant('Number of columns'),
@@ -136,7 +135,7 @@ export class TableDialog {
             const columnAlertPopup: string = this.localeValue.getConstant('Number of columns must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
             DialogUtility.alert({
                 content: columnAlertPopup,
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }
@@ -145,10 +144,10 @@ export class TableDialog {
             return;
         }
         if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > this.documentHelper.owner.documentEditorSettings.maximumRows) {
-            const rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            const rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumRows.toString();
             DialogUtility.alert({
                 content: rowAlertPopup,
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }

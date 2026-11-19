@@ -77,7 +77,6 @@ export class Optimized {
         const maxFontHeight: number = 288;
         const factor: number = 1.0 / window.devicePixelRatio;
         container.style.transform = 'scale(' + factor.toString() + ',' + factor.toString() + ')';
-        /* eslint-disable-next-line max-len */
         container.innerHTML = '';
         const baselineReferenceSpan: HTMLSpanElement = document.createElement('span');
         baselineReferenceSpan.className = 'e-de-font-info';

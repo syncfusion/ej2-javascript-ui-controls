@@ -1,16 +1,17 @@
 import { Ribbon, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 import { RibbonGroupBase } from '../ribbon-interfaces';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 export const COMMENT_ID: string = '_insert_comment';
 
 /**
  * Comments group implementation for Insert tab
+ *
  * @private
  */
 export class CommentsGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Comments group
+     *
      * @returns {RibbonGroupModel} - Returns the Ribbon items for Comments group
      * @private
      */
@@ -47,6 +48,7 @@ export class CommentsGroup extends RibbonGroupBase {
 
     /**
      * Update selection to reflect current state
+     *
      * @returns {void}
      * @private
      */

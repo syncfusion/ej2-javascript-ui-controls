@@ -86,16 +86,13 @@ export class ToolbarActionHandler {
      * @param originalEvent - Source event
      */
     public handleItemClick(itemId: string, item: ItemRef, originalEvent: Event, parent?: RichTextEditorUI): void {
-        if (!item || !item.command) {
+        const rte: IRichTextEditorMinimal | null | undefined = parent || this.rteInstance;
+        if (!rte || !item || !item.command) {
             return;
         }
-        if (!parent.isSelectionInRTE()) {
+        if (rte.enable === false || rte.readonly) {
             return;
         }
-        // Items whose command names map to a sub-component dialog are
-        // routed through the RTE's `open<Feature>Dialog` callback (e.g.
-        // `openImageDialog` set by `ImageModule`). Built-in mark / block
-        // / list commands fall through to the controller.
         if (item.command === 'image') {
             const opener: (() => void) | null | undefined = (this.rteInstance as unknown as {
                 openImageDialog?: (() => void) | null | undefined;
@@ -164,6 +161,9 @@ export class ToolbarActionHandler {
         if (!command) {
             return;
         }
+        if (!this.rteInstance || this.rteInstance.enable === false || this.rteInstance.readonly) {
+            return;
+        }
         const value: unknown = (args && typeof args !== 'undefined' && 'value' in args) ? args.value : undefined;
         if (IMAGE_QUICK_TOOLBAR_COMMANDS.indexOf(command) !== -1) {
             this.rteInstance.notify(events.imageOperations, {
@@ -206,6 +206,9 @@ export class ToolbarActionHandler {
         if (!command) {
             return;
         }
+        if (!this.rteInstance || this.rteInstance.enable === false || this.rteInstance.readonly) {
+            return;
+        }
         if (this.controller.process) {
             const pickedColor: string = !isNullOrUndefined(args) && !isNullOrUndefined(args.item) ? args.item.value : undefined;
             const colorCommand: ColorCommand = { color: pickedColor };
@@ -231,6 +234,8 @@ export class ToolbarActionHandler {
 
 /** Minimal RichTextEditor surface needed by the action handler */
 interface IRichTextEditorMinimal {
+    enable: boolean;
+    readonly: boolean;
     trigger(eventName: string, args: object): void;
     notify(eventName: string, args: object): void;
 }

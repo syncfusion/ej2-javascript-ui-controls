@@ -7,13 +7,14 @@ import { PivotEngine, IAxisSet, IDataOptions, IDataSet, FieldItemInfo, INumberIn
 import { IGroupSettings, IFieldListOptions } from '../../base/engine';
 import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields, IDrillOptions } from '../../base/engine';
 import { IConditionalFormatSettings, IStringIndex, IField, IFormatSettings } from '../../base/engine';
-import { PivotViewModel, GroupingBarSettingsModel, CellEditSettingsModel, DisplayOptionModel, PageSettingsModel, PagerSettingsModel, VirtualScrollSettingsModel } from './pivotview-model';
+import { PivotViewModel, GroupingBarSettingsModel, CellEditSettingsModel, DisplayOptionModel, PageSettingsModel, PagerSettingsModel, VirtualScrollSettingsModel, PivotViewWebMcpSettingsModel } from './pivotview-model';
 import { HyperlinkSettingsModel, ConditionalSettingsModel } from './pivotview-model';
 import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../../common/base/constant';
+import { registerWebMcpTools } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize, ExcelExportProperties, PdfExportProperties } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize, ExcelExportProperties, PdfExportProperties, WebMcpTool, WebMcpToolExecuteEventArgs } from '../../common/base/interface';
 import { BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs } from '../../common/base/interface';
 import { MultiLevelLabelClickEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, PivotColumn, ChartLabelInfo, PivotActionFailureEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
@@ -74,6 +75,7 @@ import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ExportType as PivotExportType } from '../../common/base/enum';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { IFocus } from '@syncfusion/ej2-grids/src/grid/base/interface';
+import { WebMcpPivotView } from '../actions/webmcp-adapter';
 
 /**
  * Allows a set of options for customizing the grouping bar UI with a variety of settings such as UI visibility to a specific view port,
@@ -1070,6 +1072,35 @@ export class DisplayOption extends ChildProperty<DisplayOption> {
 }
 
 /**
+ * Represents the WebMCP settings for tool registration and execution.
+ */
+export class PivotViewWebMcpSettings extends ChildProperty<PivotViewWebMcpSettings> {
+    /**
+     * Specifies the prefix name for WebMCP tool registration.
+     *
+     * @default null
+     */
+    @Property(null)
+    public name: string;
+
+    /**
+     * Specifies the list of tool names or WebMcpTool objects to register.
+     *
+     * @default null
+     */
+    @Property(null)
+    public tools: string[] | WebMcpTool[];
+
+    /**
+     * Specifies the list of origins to expose the tools to.
+     *
+     * @default null
+     */
+    @Property(null)
+    public exposedTo: string[];
+}
+
+/**
  * Represents a class that allows defining values for options relating to the virtual scrolling experience in the pivot table.
  * - Effective only when `enableVirtualization` is `true` on the {@link PivotView}.
  * - `Virtual scrolling` renders a subset of rows/columns based on the current viewport to improve performance with large datasets.
@@ -1230,6 +1261,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public toolbarModule: Toolbar;
     /** @hidden */
     public pagerModule: Pager;
+    /** @hidden */
+    public webMcpAdapterModule: WebMcpPivotView;
     /** @hidden */
     public pivotChartModule: PivotChart;
     /** @hidden */
@@ -1945,6 +1978,26 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public exportAllPages: boolean;
+
+    /**
+     * Enables WebMCP tool integration for the PivotView component.
+     * When set to true, the component will expose WebMCP tools that can be used by AI agents.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+
+    /**
+     * Configures the WebMCP settings for tool registration in the PivotView component.
+     * It allows you to specify the tool name prefix (`name`), the list of tools to register (`tools`),
+     * and the origins to expose the tools to (`exposedTo`).
+     * > To use this option, it requires the property `enableWebMcp` to be **true**.
+     *
+     * @default {}
+     */
+    @Complex<PivotViewWebMcpSettingsModel>({}, PivotViewWebMcpSettings)
+    public webMcpSettings: PivotViewWebMcpSettingsModel;
 
     /**
      * Allows you to show a menu with built-in aggregate options displayed in the pivot button's dropdown icon of field list and groupingBar UI.
@@ -2748,6 +2801,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public onHeadersSort: EmitType<HeadersSortEventArgs>;
 
     /**
+     * Event triggered before a WebMCP tool is executed.
+     * This event allows you to inspect, modify, or cancel tool execution.
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
+
+    /**
      * Constructor for creating the widget
      *
      * @param  {PivotViewModel} options - options.
@@ -2803,6 +2865,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.enablePaging) {
             modules.push({ args: [this], member: 'pager' });
+        }
+        if (this.enableWebMcp) {
+            modules.push({ args: [this], member: 'WebMcpPivotView' });
         }
         return modules;
     }
@@ -3496,6 +3561,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public render(): void {
         initializeTelemetry('PivotTable');
         this.loadData();
+        if (this.enableWebMcp) {
+            const settings: PivotViewWebMcpSettingsModel = this.webMcpSettings || {};
+            this.notify(registerWebMcpTools, { prefix: settings.name, tools: settings.tools, exposedTo: settings.exposedTo });
+        }
     }
 
     private loadData(): void {
@@ -4725,6 +4794,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public renderPivotGrid(): void {
+        if (this.isDestroyed) {
+            return;
+        }
         this.isEmptyGrid = false;
         this.notEmpty = true;
         this.clearTemplate();
@@ -5898,36 +5970,31 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     (enableOptimizedRendering ? mCnt.parentElement.scrollTop :
                         -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) -
                             this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop))) + 'px)';
-                if (Number(verOffset.split('px')[0]) > this.virtualDiv.clientHeight) {
-                    verOffset = this.virtualDiv.clientHeight + 'px)';
+                let vertiOffset: number = Number(verOffset.split('px')[0]);
+                if (vertiOffset > this.virtualDiv.clientHeight) {
+                    vertiOffset = this.virtualDiv.clientHeight;
                 }
                 const eleScrollLeft: number = Math.abs(ele.scrollLeft);
-                let horiOffset: string = (eleScrollLeft > this.scrollerBrowserLimit) ?
-                    ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
-                    'translate(' + ((this.enableRtl ? 1 : -1) * ((eleScrollLeft * this.horizontalScrollScale)
-                        - this.scrollPosObject.horizontalSection - eleScrollLeft)) + 'px,';
-                setStyleAttribute(mCnt.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: horiOffset + verOffset
-                });
-                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: horiOffset + 0 + 'px)'
-                });
+                const table: HTMLElement = mCnt.querySelector('.' + cls.TABLE) as HTMLElement;
+                const tableTransform: string = table.style.transform;
+                const tableTransformValues: string[] = tableTransform.slice(tableTransform.indexOf('(') + 1, tableTransform.indexOf(')')).split(',');
+                const tableHorizontalOffset: number = parseFloat(tableTransformValues[0]) || 0;
+                let horiOffset: number = (eleScrollLeft > this.scrollerBrowserLimit) ?
+                    tableHorizontalOffset :
+                    ((this.enableRtl ? 1 : -1) * ((eleScrollLeft * this.horizontalScrollScale)
+                        - this.scrollPosObject.horizontalSection - eleScrollLeft));
+                this.virtualscrollModule.setTableOffset(mHdr, mCnt, horiOffset, vertiOffset);
                 if ((!isHorizontalOverFlow && gridContentDiv && virtualScrollTableDiv) || this.isAdaptive) {
                     virtualScrollTableDiv.style.display = 'none';
                 } else {
                     virtualScrollTableDiv.style.display = 'block';
                 }
-                let translateValue: number = Number(
-                    -(mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split('(')[1].split(',')[0].split('px')[0]);
+                let translateValue: number = -horiOffset;
                 this.virtualscrollModule.alignFreezedCells(translateValue, true);
                 if (isHorizontalOverFlow) {
-                    let newScrollWidth: number = 0;
-                    if (this.pivotColumns.length < 25) {
-                        newScrollWidth = (vWidth + (mCnt.querySelector('.' + cls.TABLE).querySelector('.' + cls.FREEZED_CELL) as HTMLElement)
-                            .offsetWidth + (gridContentDiv.offsetWidth - gridContentDiv.clientWidth));
-                    } else {
-                        newScrollWidth = (vWidth + (gridContentDiv.offsetWidth - gridContentDiv.clientWidth));
-                    }
+                    const frozenCell: HTMLElement = mCnt.querySelector('.' + cls.TABLE).querySelector('.' + cls.FREEZED_CELL) as HTMLElement;
+                    const frozenWidth: number = frozenCell ? frozenCell.offsetWidth : 0;
+                    const newScrollWidth: number = vWidth + frozenWidth + (gridContentDiv.offsetWidth - gridContentDiv.clientWidth);
                     if (this.grid.height !== 'auto') {
                         (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as HTMLElement).style.width = newScrollWidth + horiScrollHeight + 'px';
                     } else {
@@ -5972,18 +6039,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             -((this.element.querySelector('.' + cls.GRID_CLASS)
                                 .querySelector('.' + cls.HEADERCELL + '.' + cls.FREEZED_CELL) as HTMLElement).offsetWidth);
                     }
-                    horiOffset = (eleScrollLeft > this.scrollerBrowserLimit) ?
-                        ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
-                        'translate(' + ((this.enableRtl ? 1 : -1) * ((eleScrollLeft * this.horizontalScrollScale)
-                                - this.scrollPosObject.horizontalSection - eleScrollLeft)) + 'px,';
+                    const currentTable: HTMLElement = mCnt.querySelector('.' + cls.TABLE) as HTMLElement;
+                    const currentTransform: string = currentTable.style.transform;
+                    const currentTransformValues: string[] = currentTransform.slice(
+                        currentTransform.indexOf('(') + 1, currentTransform.indexOf(')')
+                    ).split(',');
+                    const currentHorizontalOffset: number = parseFloat(currentTransformValues[0]) || 0;
+                    horiOffset = eleScrollLeft > this.scrollerBrowserLimit ? currentHorizontalOffset :
+                        ((this.enableRtl ? 1 : -1) * ((eleScrollLeft * this.horizontalScrollScale) -
+                            this.scrollPosObject.horizontalSection - eleScrollLeft));
                     setStyleAttribute(mCnt.querySelector('.' + cls.TABLE) as HTMLElement, {
-                        transform: horiOffset + verOffset
+                        transform: 'translate(' + horiOffset + 'px,' + verOffset
                     });
                     setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                        transform: horiOffset + 0 + 'px)'
+                        transform: 'translate(' + horiOffset + 'px,0px)'
                     });
-                    translateValue = Number(
-                        -(mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split('(')[1].split(',')[0].split('px')[0]);
+                    translateValue = -horiOffset;
                     this.virtualscrollModule.alignFreezedCells(translateValue, true);
                 }
             }
@@ -6019,32 +6090,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.trigger(events.dataBound);
             const wrapper: HTMLElement = document.getElementById(this.element.id + 'containerwrapper');
             if (wrapper && this.displayOption.view === 'Both' && this.showFieldList && this.element) {
-                const isGridVisible: boolean = this.grid && this.grid.element &&
-                    this.grid.element.style.getPropertyValue('display') !== 'none';
-                const isChartVisible: boolean = this.chart && this.chart.element &&
-                    this.chart.element.style.getPropertyValue('display') !== 'none';
-                if (!isGridVisible || !isChartVisible) {
-                    wrapper.style.removeProperty('min-Height');
+                const componentHeight: number = this.getComponentHeight(true);
+                if (componentHeight > 0) {
+                    wrapper.style.minHeight = `${componentHeight}px`;
                 } else {
-                    const toolbarHeight: number = (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar &&
-                        this.toolbarModule.toolbar.element) ? this.toolbarModule.toolbar.element.offsetHeight : 0;
-                    const pagerHeight: number = (this.enablePaging && this.pagerModule.pager && this.pagerModule.pager.element) ?
-                        this.pagerModule.pager.element.offsetHeight : 0;
-                    const gridContentHeight: number = (this.grid && this.grid.element) ? this.grid.element.offsetHeight : 0;
-                    let gridGroupingBarHeight: number = 0;
-                    let chartGroupingBarHeight: number = 0;
-                    if (this.showGroupingBar && this.groupingBarModule) {
-                        gridGroupingBarHeight = this.groupingBarModule['groupingTable'] ? this.groupingBarModule['groupingTable'].offsetHeight : 0;
-                        chartGroupingBarHeight = this.groupingBarModule['groupingChartTable'] ?
-                            this.groupingBarModule['groupingChartTable'].offsetHeight : 0;
-                    }
-                    const tableTotalHeight: number = toolbarHeight + gridGroupingBarHeight + gridContentHeight + pagerHeight;
-                    const chartElementHeight: number = (this.chart && this.chart.element) ? this.chart.element.offsetHeight : 0;
-                    const chartTotalHeight: number = chartGroupingBarHeight + chartElementHeight;
-                    const totalControlHeight: number = tableTotalHeight + chartTotalHeight;
-                    if (totalControlHeight > 0) {
-                        wrapper.style.minHeight = `${totalControlHeight - 2}px`;
-                    }
+                    wrapper.style.removeProperty('min-Height');
                 }
             }
         }
@@ -6096,6 +6146,42 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
         }
         this.isStaticRefresh = false;
+    }
+
+    /**
+     * Returns the rendered height of the pivot table component.
+     *
+     * @param {boolean} isBothView - Determines whether both grid and chart elements must be visible.
+     * @returns {number} - Returns the calculated component height.
+     * @hidden
+     */
+    public getComponentHeight(isBothView?: boolean): number {
+        const isGridVisible: boolean = this.grid && this.grid.element &&
+            this.grid.element.style.getPropertyValue('display') !== 'none';
+        const isChartVisible: boolean = this.chart && this.chart.element &&
+            this.chart.element.style.getPropertyValue('display') !== 'none';
+        if (isBothView && (!isGridVisible || !isChartVisible)) {
+            return 0;
+        } else {
+            const toolbarHeight: number = (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar &&
+                this.toolbarModule.toolbar.element) ? this.toolbarModule.toolbar.element.offsetHeight : 0;
+            const pagerHeight: number = (this.enablePaging && this.pagerModule.pager && this.pagerModule.pager.element) ?
+                this.pagerModule.pager.element.offsetHeight : 0;
+            const gridContentHeight: number = (this.grid && this.grid.element) ? this.grid.element.offsetHeight : 0;
+            let gridGroupingBarHeight: number = 0;
+            let chartGroupingBarHeight: number = 0;
+            if (this.showGroupingBar && this.groupingBarModule) {
+                gridGroupingBarHeight = this.groupingBarModule['groupingTable'] ?
+                    this.groupingBarModule['groupingTable'].offsetHeight : 0;
+                chartGroupingBarHeight = this.groupingBarModule['groupingChartTable'] ?
+                    this.groupingBarModule['groupingChartTable'].offsetHeight : 0;
+            }
+            const tableTotalHeight: number = toolbarHeight + gridGroupingBarHeight + gridContentHeight + pagerHeight;
+            const chartElementHeight: number = (this.chart && this.chart.element) ? this.chart.element.offsetHeight : 0;
+            const chartTotalHeight: number = chartGroupingBarHeight + chartElementHeight;
+            const totalControlHeight: number = tableTotalHeight + chartTotalHeight;
+            return totalControlHeight > 0 ? totalControlHeight - 2 : 0;
+        }
     }
 
     private setToolTip(args: TooltipEventArgs): void {
@@ -6961,7 +7047,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     // Preserve the active focus during Ctrl/Shift multi-selection; plain clicks establish the focused cell.
                     if (!observedArgs.cancel && (selectionSettings.type === 'Multiple' ?
                         (!e.ctrlKey && !e.shiftKey) : this.selectedRowIndex !== rowIndex) &&
-                        !ele.querySelector('.e-row-axis-panel')) {
+                        !ele.classList.contains(cls.GROUP_ROW)) {
                         this.setFocusedElement(ele);
                     }
                 } else {
@@ -8362,5 +8448,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             dataSourceSettings.dataSource = [];
             this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
         }
+    }
+
+    /**
+     * Returns an array of WebMCP tools available for this component.
+     * Each tool includes its name, description, input schema, and output schema.
+     *
+     * @returns {WebMcpTool[]} An array of WebMCP tool definitions.
+     */
+    public getWebMcpTools(): WebMcpTool[] {
+        const tools: WebMcpTool[] = [];
+        this.notify('getWebMcpTools', { tools: tools });
+        return tools;
     }
 }

@@ -212,11 +212,13 @@ export class Render {
                 setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
             }
             if (mHdr.querySelector('.' + cls.TABLE)) {
+                const contentTable: HTMLElement = mCont.querySelector('.' + cls.TABLE) as HTMLElement;
+                const transform: string = contentTable.style.transform;
+                const horizontalOffset: number = parseFloat(transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(',')[0]) || 0;
                 setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: ((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
+                    transform: 'translate(' + horizontalOffset + 'px,0px)'
                 });
-                const freezedCellValue: number = parseInt((mHdr.querySelector('.' + cls.TABLE) as HTMLElement)
-                    .style.transform.split('(')[1].split(',')[0].split('px')[0], 10);
+                const freezedCellValue: number = horizontalOffset;
                 if (this.parent.enableRtl) {
                     (this.parent.element.querySelector('.' + cls.FREEZED_CELL) as HTMLElement).style.right
                         = Number(freezedCellValue) + 'px';

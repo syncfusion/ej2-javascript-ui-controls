@@ -12,7 +12,6 @@ import { IPdfWrapper } from './../../interfaces/i-pdf-wrapper';
 import { PdfPageSettings } from './pdf-page-settings';
 import { RectangleF, PointF } from './../drawing/pdf-drawing';
 import { PdfSection } from './pdf-section';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 /**
  * Represents the `collection of the sections`.
  * @private
@@ -50,11 +49,6 @@ export class PdfSectionCollection implements IPdfWrapper {
      * @private
      */
     private pages : PdfDictionary;
-    /**
-     * @hidden
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     //constructor
     /**
      * Initializes a new instance of the `PdfSectionCollection` class.
@@ -105,10 +99,10 @@ export class PdfSectionCollection implements IPdfWrapper {
         this.sectionCollection = new PdfArray();
         this.pages = new PdfDictionary();
         this.pages.beginSave = new SaveSectionCollectionEventHandler(this);
-        this.pages.items.setValue(this.dictionaryProperties.type, new PdfName('Pages'));
-        this.pages.items.setValue(this.dictionaryProperties.kids, this.sectionCollection);
-        this.pages.items.setValue(this.dictionaryProperties.count, this.sectionCount);
-        this.pages.items.setValue(this.dictionaryProperties.resources, new PdfDictionary());
+        this.pages.items.setValue('Type', new PdfName('Pages'));
+        this.pages.items.setValue('Kids', this.sectionCollection);
+        this.pages.items.setValue('Count', this.sectionCount);
+        this.pages.items.setValue('Resources', new PdfDictionary());
         this.setPageSettings(this.pages, this.pdfDocument.pageSettings);
     }
     /**
@@ -133,7 +127,7 @@ export class PdfSectionCollection implements IPdfWrapper {
         //     throw new Error('ArgumentNullException : pageSettings');
         // }
         let bounds : RectangleF = new RectangleF(new PointF(), pageSettings.size);
-        container.items.setValue(this.dictionaryProperties.mediaBox, PdfArray.fromRectangle(bounds));
+        container.items.setValue('MediaBox', PdfArray.fromRectangle(bounds));
     }
     /**
      * `Adds` the specified section.

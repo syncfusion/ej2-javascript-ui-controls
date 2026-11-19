@@ -1,6 +1,6 @@
 import { DocumentEditorContainer } from '../document-editor-container';
-import { getInstance, L10n, ModuleDeclaration, initializeTelemetryFeature } from '@syncfusion/ej2-base';
-import { Ribbon as EJ2Ribbon, RibbonTabModel, RibbonGroupModel, RibbonItemModel, RibbonFileMenu, RibbonColorPicker, RibbonGallery, RibbonContextualTab, RibbonKeyTip, BackStageMenuModel, RibbonBackstage, RibbonContextualTabSettingsModel, RibbonCollectionModel } from '@syncfusion/ej2-ribbon';
+import { getInstance, L10n, initializeTelemetryFeature } from '@syncfusion/ej2-base';
+import { Ribbon as EJ2Ribbon, RibbonTabModel, RibbonGroupModel, RibbonItemModel, RibbonFileMenu, RibbonColorPicker, RibbonGallery, RibbonContextualTab, RibbonKeyTip, BackStageMenuModel, RibbonBackstage, RibbonContextualTabSettingsModel } from '@syncfusion/ej2-ribbon';
 import { Dictionary, FileMenuItemType } from '../../document-editor/base/index';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { RibbonTabManager } from './ribbon-base/ribbon-tab-manager';
@@ -68,6 +68,7 @@ export class Ribbon implements IToolbarHandler {
     public previousContext: string = '';
     /**
      * Gets the document editor instance
+     *
      * @private
      * @returns {DocumentEditor} The document editor instance
      */
@@ -77,6 +78,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Constructor for the Ribbon class
+     *
      * @param {DocumentEditorContainer} container - Specifies the document editor container
      * @private
      */
@@ -88,6 +90,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Gets the module name
+     *
      * @returns {string} Module name
      * @private
      */
@@ -97,6 +100,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Initializes the ribbon component
+     *
      * @returns {void}
      * @private
      */
@@ -157,6 +161,10 @@ export class Ribbon implements IToolbarHandler {
                     const fontSizeInstance: object = getInstance(fontSizeElement, ComboBox);
                     (fontSizeInstance as any).allowCustom = true;
                 }
+                // Format Painter: double click activates persistent mode.
+                if (this.tabManager && this.tabManager.homeTab && (this.tabManager.homeTab as any).wireFormatPainterDoubleClick) {
+                    (this.tabManager.homeTab as any).wireFormatPainterDoubleClick();
+                }
             }
         });
         this.ribbon.isAngular = this.container.isModalDialog;
@@ -182,6 +190,7 @@ export class Ribbon implements IToolbarHandler {
     }
     /**
      * Adds a new tab to the ribbon UI.
+     *
      * @param {RibbonTabModel} tab - The ribbon tab model to add.
      * @param {string | RibbonTabType} insertBefore - Specifies the existing tab ID or type before which the new tab will be inserted.
      * If not specified, the new tab will be inserted at the end of the ribbon.
@@ -198,6 +207,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Adds a new item to an existing group in the ribbon.
+     *
      * @param {RibbonGroupInfo} groupId - The information about the group to add the item to.
      * @param {RibbonItemModel} item - The ribbon item model to add.
      * @param {string | number} insertBefore - Specifies the existing item ID or index before which the new item will be inserted.
@@ -223,6 +233,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Adds a new group to an existing tab in the ribbon.
+     *
      * @param {string | RibbonTabType} tabId - The ID or type of the tab to add the group to.
      * @param {RibbonGroupModel} group - The ribbon group model to add.
      * @param {number} insertBefore - Specifies the existing group index before which the new group will be inserted. If not specified, the new group will be inserted at the end.
@@ -242,6 +253,7 @@ export class Ribbon implements IToolbarHandler {
     }
     /**
      * Shows or hides a specific tab in the ribbon.
+     *
      * @param {string | RibbonTabType} tabId - The ID or type of the tab to show or hide.
      * @param {boolean} show - Whether to show (true) or hide (false) the tab.
      * @returns {void}
@@ -262,6 +274,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Shows or hides a specific group in a tab.
+     *
      * @param {string | RibbonGroupInfo} groupId - The ID of the group or group info to show or hide.
      * @param {boolean} show - Whether to show (true) or hide (false) the group.
      * @returns {void}
@@ -280,6 +293,7 @@ export class Ribbon implements IToolbarHandler {
     }
     /**
      * Shows or hides specific items in the ribbon.
+     *
      * @param {string | RibbonItemInfo} itemId - The ID of the item or item information object to show or hide.
      * If a string is provided, it's treated as an item ID. If a RibbonItemInfo object is provided,
      * it will show/hide items based on the specified tab, group, and item indexes.
@@ -298,15 +312,27 @@ export class Ribbon implements IToolbarHandler {
         }
     }
     private showItemInternal(itemId: string, show: boolean): void {
-        if (show) {
-            this.ribbon.showItem(itemId);
-        } else {
-            this.ribbon.hideItem(itemId);
+        // Layout-only items (Classic vs Simplified) are not in the DOM. The
+        // ribbon overflow resize assumes a rendered target, so skip them.
+        if (!document.getElementById(itemId)) {
+            return;
+        }
+        try {
+            if (show) {
+                this.ribbon.showItem(itemId);
+            } else {
+                this.ribbon.hideItem(itemId);
+            }
+        } catch (e) {
+            // The ribbon overflow resize throws when an item has no layout
+            // target. Visibility already changed; do not fail the public API.
+            return;
         }
     }
 
     /**
      * Enables or disables specific items in the ribbon.
+     *
      * @param {string | RibbonItemInfo} itemId - The ID of the item or item information object to show or hide.
      * If a string is provided, it's treated as an item ID. If a RibbonItemInfo object is provided,
      * it will enable/disable items based on the specified tab, group, and item indexes.
@@ -325,7 +351,9 @@ export class Ribbon implements IToolbarHandler {
         }
     }
     private enableItemInternal(itemId: string, enable: boolean): void {
-
+        if (!document.getElementById(itemId)) {
+            return;
+        }
         if (enable) {
             this.ribbon.enableItem(itemId);
         } else {
@@ -334,6 +362,7 @@ export class Ribbon implements IToolbarHandler {
     }
     /**
      * Update ribbon state based on current selection
+     *
      * @returns {void}
      * @private
      */
@@ -349,6 +378,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Updates the contextual tab based on the current selection context
+     *
      * @returns {void}
      * @private
      */
@@ -366,6 +396,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Updates the zoom button state when zoom factor changes
+     *
      * @returns {void}
      * @private
      */
@@ -375,6 +406,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Refresh the ribbon
+     *
      * @returns {void}
      * @private
      */
@@ -455,6 +487,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Enable or disable ribbon items based on protection state
+     *
      * @param {boolean} enable - Whether to enable or disable items
      * @returns {void}
      * @private
@@ -474,6 +507,7 @@ export class Ribbon implements IToolbarHandler {
 
     /**
      * Destroy the ribbon instance
+     *
      * @returns {void}
      * @private
      */

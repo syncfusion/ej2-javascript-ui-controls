@@ -173,8 +173,13 @@ export class Tooltip {
                     }
                 } else if (args.target.classList.contains('e-notes-info')) {
                     const ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(args.event as PointerEvent);
-                    argsData.content = this.toolTipObj.content = ganttData.ganttProperties.notes;
-                    if (isNullOrUndefined(argsData.content)) {
+                    const notes: string = ganttData.ganttProperties.notes || '';
+                    const text: string = notes
+                        .replace(/<[^>]*>/g, '')
+                        .replace(/&nbsp;|&#0*160;|&#x0*a0;/gi, ' ')
+                        .trim();
+                    argsData.content = this.toolTipObj.content = notes;
+                    if (!text) {
                         args.cancel = true;
                     } else {
                         void argsData.content;

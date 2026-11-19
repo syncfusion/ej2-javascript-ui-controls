@@ -31,7 +31,9 @@ export class IsFormatted {
         'tt',
         'u',
         'var',
-        'del'
+        'del',
+        's',
+        'strike'
     ];
 
     /**

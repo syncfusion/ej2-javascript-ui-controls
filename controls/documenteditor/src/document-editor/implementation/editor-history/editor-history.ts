@@ -263,7 +263,6 @@ export class EditorHistory {
         if (tableResize.resizeNode === 1) {
             this.initializeHistory('RowResizing');
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                /* eslint-disable-next-line max-len */
                 tableResize.currentResizingTable = tableResize.currentResizingTable.combineWidget(this.viewer) as TableWidget;
                 this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(
                     tableResize.currentResizingTable, startingPoint,
@@ -448,15 +447,15 @@ export class EditorHistory {
 
     /**
      * Update complex history
-     *
+     * @param {boolean} isAcceptAllOrRejectAll - Indicates whether the operation is Accept All or Reject All.
      * @private
      * @returns {void}
      */
-    public updateComplexHistory(): void {
+    public updateComplexHistory(isAcceptAllOrRejectAll?: boolean): void {
         const selection: Selection = this.documentHelper.selection;
         if (!isNullOrUndefined(this.currentHistoryInfo) && this.currentHistoryInfo.hasAction) {
             if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline'
-            || this.currentHistoryInfo.action === 'DeleteCommentInline' || this.currentHistoryInfo.action === 'RemoveComment') {
+                || this.currentHistoryInfo.action === 'DeleteCommentInline' || this.currentHistoryInfo.action === 'RemoveComment') {
                 // this.reLayoutParagraph(startPosition.paragraph, 0);
                 if (selection.owner.editorHistoryModule.isUndoing) {
                     this.owner.editorModule.setPositionForCurrentIndex(selection.start, this.currentHistoryInfo.selectionStart);
@@ -522,9 +521,8 @@ export class EditorHistory {
         {
             this.documentHelper.updateFocus();
         }
-
         this.updateComplexHistoryInternal();
-        if (!this.owner.editorModule.isInsertingTOC) {
+        if (!this.owner.editorModule.isInsertingTOC && !isAcceptAllOrRejectAll) {
             this.owner.editorModule.fireContentChange();
         }
     }

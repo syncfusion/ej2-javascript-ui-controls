@@ -140,6 +140,54 @@ export class WRowFormat {
     public set leftMargin(value: number) {
         this.setPropertyValue('leftMargin', value);
     }
+    /**
+     * @private
+     */
+    public get verticallyMergedCellsLeftMargin(): number {
+        return this.getPropertyValue('verticallyMergedCellsLeftMargin') as number;
+    }
+    /**
+     * @private
+     */
+    public set verticallyMergedCellsLeftMargin(value: number) {
+        this.setPropertyValue('verticallyMergedCellsLeftMargin', value);
+    }
+    /**
+     * @private
+     */
+    public get verticallyMergedCellsRightMargin(): number {
+        return this.getPropertyValue('verticallyMergedCellsRightMargin') as number;
+    }
+    /**
+     * @private
+     */
+    public set verticallyMergedCellsRightMargin(value: number) {
+        this.setPropertyValue('verticallyMergedCellsRightMargin', value);
+    }
+    /**
+     * @private
+     */
+    public get verticallyMergedCellsTopMargin(): number {
+        return this.getPropertyValue('verticallyMergedCellsTopMargin') as number;
+    }
+    /**
+     * @private
+     */
+    public set verticallyMergedCellsTopMargin(value: number) {
+        this.setPropertyValue('verticallyMergedCellsTopMargin', value);
+    }
+    /**
+     * @private
+     */
+    public get verticallyMergedCellsBottomMargin(): number {
+        return this.getPropertyValue('verticallyMergedCellsBottomMargin') as number;
+    }
+    /**
+     * @private
+     */
+    public set verticallyMergedCellsBottomMargin(value: number) {
+        this.setPropertyValue('verticallyMergedCellsBottomMargin', value);
+    }
     public constructor(node?: TableRowWidget) {
         this.ownerBase = node;
     }
@@ -187,6 +235,10 @@ export class WRowFormat {
         this.addUniqueRowFormat('topMargin', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('bottomMargin', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('verticallyMergedCellsLeftMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('verticallyMergedCellsRightMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('verticallyMergedCellsTopMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('verticallyMergedCellsBottomMargin', property, propValue, uniqueRowFormatTemp);
         this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
     }
 
@@ -244,6 +296,18 @@ export class WRowFormat {
         case 'leftIndent':
             value = 0;
             break;
+        case 'verticallyMergedCellsLeftMargin':
+            value = undefined;
+            break;
+        case 'verticallyMergedCellsRightMargin':
+            value = undefined;
+            break;
+        case 'verticallyMergedCellsTopMargin':
+            value = undefined;
+            break;
+        case 'verticallyMergedCellsBottomMargin':
+            value = undefined;
+            break;
         }
         return value;
     }
@@ -271,6 +335,10 @@ export class WRowFormat {
         format.topMargin = this.topMargin;
         format.bottomMargin = this.bottomMargin;
         format.leftIndent = this.leftIndent;
+        format.verticallyMergedCellsLeftMargin = this.verticallyMergedCellsLeftMargin;
+        format.verticallyMergedCellsRightMargin = this.verticallyMergedCellsRightMargin;
+        format.verticallyMergedCellsTopMargin = this.verticallyMergedCellsTopMargin;
+        format.verticallyMergedCellsBottomMargin = this.verticallyMergedCellsBottomMargin;
         if (this.revisions.length > 0) {
             format.removedIds = Revision.cloneRevisions(this.revisions);
         } else {
@@ -303,6 +371,10 @@ export class WRowFormat {
                 this.rightMargin = format.rightMargin;
                 this.bottomMargin = format.bottomMargin;
                 this.leftIndent = format.leftIndent;
+                this.verticallyMergedCellsLeftMargin = format.verticallyMergedCellsLeftMargin;
+                this.verticallyMergedCellsRightMargin = format.verticallyMergedCellsRightMargin;
+                this.verticallyMergedCellsTopMargin = format.verticallyMergedCellsTopMargin;
+                this.verticallyMergedCellsBottomMargin = format.verticallyMergedCellsBottomMargin;
                 // this.revisions = format.revisions;
             }
             if (!isNullOrUndefined(format.borders)) {

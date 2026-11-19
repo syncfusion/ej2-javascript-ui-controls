@@ -699,7 +699,7 @@ export class DropDownButtons {
     }
 
     private updateCss(dropDownObj: DropDownButton, e: ICssClassArgs): void {
-        if (dropDownObj && e.cssClass) {
+        if (dropDownObj && !isNullOrUndefined(e.cssClass)) {
             if (isNullOrUndefined(e.oldCssClass)) {
                 dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass + ' ' + e.cssClass).trim() });
             } else {

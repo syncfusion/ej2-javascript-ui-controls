@@ -38,7 +38,7 @@ export class PdfUriAction extends PdfAction {
     }
     public set uri(value : string) {
         this.uniformResourceIdentifier = value;
-        this.dictionary.items.setValue(this.dictionaryProperties.uri, new PdfString(this.uniformResourceIdentifier));
+        this.dictionary.items.setValue('URI', new PdfString(this.uniformResourceIdentifier));
     }
     // Implementation
     /**
@@ -47,6 +47,6 @@ export class PdfUriAction extends PdfAction {
      */
     protected initialize() : void {
         super.initialize();
-        this.dictionary.items.setValue(this.dictionaryProperties.s, new PdfName(this.dictionaryProperties.uri));
+        this.dictionary.items.setValue('S', new PdfName('URI'));
     }
 }

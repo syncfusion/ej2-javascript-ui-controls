@@ -54,6 +54,7 @@ export interface ColumnChooserSettingsModel {
 
     /**
      * Renders a custom component to replace or extend the default column chooser UI.
+     *
      * @param target - The target HTML element where the custom component will be appended in the column chooser dialog.
      * @aspType string
      */

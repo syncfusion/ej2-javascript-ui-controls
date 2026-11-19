@@ -15,7 +15,6 @@ import { PdfReferenceHolder } from './../../primitives/pdf-reference';
 import { PdfFontMetrics } from './pdf-font-metrics';
 import { IPdfPrimitive } from './../../../interfaces/i-pdf-primitives';
 import { StandardWidthTable } from './pdf-font-metrics';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { Dictionary } from './../../collections/dictionary';
 import { FontDescriptorFlags } from './enum';
 import { RectangleF, Rectangle } from './../../drawing/pdf-drawing';
@@ -86,11 +85,6 @@ export class UnicodeTrueTypeFont {
      * Font metrics.
      */
     public metrics : PdfFontMetrics;
-    /**
-     * Specifies the Internal variable to store fields of `PdfDictionaryProperties`.
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Array of used chars.
      * @private
@@ -262,19 +256,19 @@ export class UnicodeTrueTypeFont {
         // Set property used to clone Font every time
         this.descendantFont.isResource = true;
         this.descendantFont.descendantFontBeginSave = new SaveDescendantFontEventHandler(this);
-        this.descendantFont.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.font));
+        this.descendantFont.items.setValue('Type', new PdfName('Font'));
         if (this.ttfReader && this.ttfReader._isOpenTypeFont) {
-            this.descendantFont.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType0));
+            this.descendantFont.items.setValue('Subtype', new PdfName('CIDFontType0'));
         } else {
-            this.descendantFont.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType2));
+            this.descendantFont.items.setValue('Subtype', new PdfName('CIDFontType2'));
         }
-        this.descendantFont.items.setValue(this.dictionaryProperties.baseFont, new PdfName(this.subsetName));
-        this.descendantFont.items.setValue(this.dictionaryProperties.cIDToGIDMap, new PdfName(this.dictionaryProperties.identity));
-        this.descendantFont.items.setValue(this.dictionaryProperties.dw, new PdfNumber(1000));
+        this.descendantFont.items.setValue('BaseFont', new PdfName(this.subsetName));
+        this.descendantFont.items.setValue('CIDToGIDMap', new PdfName('Identity'));
+        this.descendantFont.items.setValue('DW', new PdfNumber(1000));
         this.fontDescriptor = this.createFontDescriptor();
-        this.descendantFont.items.setValue(this.dictionaryProperties.fontDescriptor, new PdfReferenceHolder(this.fontDescriptor));
+        this.descendantFont.items.setValue('FontDescriptor', new PdfReferenceHolder(this.fontDescriptor));
         let systemInfo : IPdfPrimitive = this.createSystemInfo();
-        this.descendantFont.items.setValue(this.dictionaryProperties.cIDSystemInfo, systemInfo);
+        this.descendantFont.items.setValue('CIDSystemInfo', systemInfo);
     }
     /**
      * Creates font descriptor.
@@ -284,27 +278,27 @@ export class UnicodeTrueTypeFont {
         let metrics : TtfMetrics = this.ttfReader.metrics;
         // Set property used to clone Font every time
         descriptor.isResource = true;
-        descriptor.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.fontDescriptor));
-        descriptor.items.setValue(this.dictionaryProperties.fontName, new PdfName(this.subsetName));
-        descriptor.items.setValue(this.dictionaryProperties.flags, new PdfNumber(this.getDescriptorFlags()));
-        descriptor.items.setValue(this.dictionaryProperties.fontBBox, PdfArray.fromRectangle(this.getBoundBox()));
-        descriptor.items.setValue(this.dictionaryProperties.missingWidth, new PdfNumber(metrics.widthTable[32]));
-        descriptor.items.setValue(this.dictionaryProperties.stemV, new PdfNumber(metrics.stemV));
-        descriptor.items.setValue(this.dictionaryProperties.italicAngle, new PdfNumber(metrics.italicAngle));
-        descriptor.items.setValue(this.dictionaryProperties.capHeight, new PdfNumber(metrics.capHeight));
-        descriptor.items.setValue(this.dictionaryProperties.ascent, new PdfNumber(metrics.winAscent));
-        descriptor.items.setValue(this.dictionaryProperties.descent, new PdfNumber(metrics.winDescent));
-        descriptor.items.setValue(this.dictionaryProperties.leading, new PdfNumber(metrics.leading));
-        descriptor.items.setValue(this.dictionaryProperties.avgWidth, new PdfNumber(metrics.widthTable[32]));
+        descriptor.items.setValue('Type', new PdfName('FontDescriptor'));
+        descriptor.items.setValue('FontName', new PdfName(this.subsetName));
+        descriptor.items.setValue('Flags', new PdfNumber(this.getDescriptorFlags()));
+        descriptor.items.setValue('FontBBox', PdfArray.fromRectangle(this.getBoundBox()));
+        descriptor.items.setValue('MissingWidth', new PdfNumber(metrics.widthTable[32]));
+        descriptor.items.setValue('StemV', new PdfNumber(metrics.stemV));
+        descriptor.items.setValue('ItalicAngle', new PdfNumber(metrics.italicAngle));
+        descriptor.items.setValue('CapHeight', new PdfNumber(metrics.capHeight));
+        descriptor.items.setValue('Ascent', new PdfNumber(metrics.winAscent));
+        descriptor.items.setValue('Descent', new PdfNumber(metrics.winDescent));
+        descriptor.items.setValue('Leading', new PdfNumber(metrics.leading));
+        descriptor.items.setValue('AvgWidth', new PdfNumber(metrics.widthTable[32]));
         if (this.ttfReader.metrics.contains) {
-            descriptor.items.setValue(this.dictionaryProperties.fontFile3, new PdfReferenceHolder(this.fontProgram));
-            this.fontProgram.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType0C));
+            descriptor.items.setValue('FontFile3', new PdfReferenceHolder(this.fontProgram));
+            this.fontProgram.items.setValue('Subtype', new PdfName('CIDFontType0C'));
         } else {
-            descriptor.items.setValue(this.dictionaryProperties.fontFile2, new PdfReferenceHolder(this.fontProgram));
+            descriptor.items.setValue('FontFile2', new PdfReferenceHolder(this.fontProgram));
         }
-        descriptor.items.setValue(this.dictionaryProperties.maxWidth, new PdfNumber(metrics.widthTable[32]));
-        descriptor.items.setValue(this.dictionaryProperties.xHeight, new PdfNumber(0));
-        descriptor.items.setValue(this.dictionaryProperties.stemH, new PdfNumber(0));
+        descriptor.items.setValue('MaxWidth', new PdfNumber(metrics.widthTable[32]));
+        descriptor.items.setValue('XHeight', new PdfNumber(0));
+        descriptor.items.setValue('StemH', new PdfNumber(0));
         return descriptor;
     }
     /**
@@ -321,16 +315,16 @@ export class UnicodeTrueTypeFont {
         // Set property used to clone Font every time
         this.fontDictionary.isResource = true;
         this.fontDictionary.fontDictionaryBeginSave = new SaveFontDictionaryEventHandler(this);
-        this.fontDictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.font));
-        this.fontDictionary.items.setValue(this.dictionaryProperties.baseFont, new PdfName(this.subsetName));
-        this.fontDictionary.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.type0));
-        this.fontDictionary.items.setValue(this.dictionaryProperties.encoding, new PdfName(this.dictionaryProperties.identityH));
+        this.fontDictionary.items.setValue('Type', new PdfName('Font'));
+        this.fontDictionary.items.setValue('BaseFont', new PdfName(this.subsetName));
+        this.fontDictionary.items.setValue('Subtype', new PdfName('Type0'));
+        this.fontDictionary.items.setValue('Encoding', new PdfName('Identity-H'));
         let descFonts : PdfArray = new PdfArray();
         let reference : PdfReferenceHolder = new PdfReferenceHolder(this.descendantFont);
         // Set property used to clone Font every time
         descFonts.isFont = true;
         descFonts.add(reference);
-        this.fontDictionary.items.setValue(this.dictionaryProperties.descendantFonts, descFonts);
+        this.fontDictionary.items.setValue('DescendantFonts', descFonts);
     }
     /**
      * Creates font program.
@@ -344,9 +338,9 @@ export class UnicodeTrueTypeFont {
      */
     private createSystemInfo() : IPdfPrimitive {
         let systemInfo : PdfDictionary = new PdfDictionary();
-        systemInfo.items.setValue(this.dictionaryProperties.registry, new PdfString('Adobe'));
-        systemInfo.items.setValue(this.dictionaryProperties.ordering, new PdfString(this.dictionaryProperties.identity));
-        systemInfo.items.setValue(this.dictionaryProperties.supplement, new PdfNumber(0));
+        systemInfo.items.setValue('Registry', new PdfString('Adobe'));
+        systemInfo.items.setValue('Ordering', new PdfString('Identity'));
+        systemInfo.items.setValue('Supplement', new PdfNumber(0));
         return systemInfo;
     }
     /**
@@ -356,7 +350,7 @@ export class UnicodeTrueTypeFont {
         if (this.usedChars !== null && this.usedChars !== undefined && this.usedChars.size() > 0) {
             let width : PdfArray = this.getDescendantWidth();
             if (width !== null) {
-                this.descendantFont.items.setValue(this.dictionaryProperties.w, width);
+                this.descendantFont.items.setValue('W', width);
             }
         }
     }
@@ -371,8 +365,8 @@ export class UnicodeTrueTypeFont {
      */
     /* tslint:disable */
     public fontDictionaryBeginSave() : void {
-        if (this.usedChars !== null && this.usedChars !== undefined && this.usedChars.size() > 0 && !this.fontDictionary.containsKey(this.dictionaryProperties.toUnicode)) {
-            this.fontDictionary.items.setValue(this.dictionaryProperties.toUnicode, new PdfReferenceHolder(this.cmap));
+        if (this.usedChars !== null && this.usedChars !== undefined && this.usedChars.size() > 0 && !this.fontDictionary.containsKey('ToUnicode')) {
+            this.fontDictionary.items.setValue('ToUnicode', new PdfReferenceHolder(this.cmap));
         }
     }
     /* tslint:enable */

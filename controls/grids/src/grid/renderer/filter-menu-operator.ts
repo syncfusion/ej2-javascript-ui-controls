@@ -83,7 +83,7 @@ export class FlMenuOptrUI {
                         valInput.removeAttribute('disabled');
                     }
                 }
-                toggleFilterUI(this.dropOptr.value as string, column.uid, column, column.type, dlgObj, this.dropOptr['previousValue'] as string);
+                toggleFilterUI(this.dropOptr.value as string, column.uid, column, column.type, dlgObj);
             }
         });
         this.dropOptr.isAngular = isAngularMatContainer(this.parent);

@@ -1,6 +1,6 @@
 import { PdfTemplate } from './pdf-template';
 import { PdfGraphics } from './pdf-graphics';
-import { Rectangle, Size } from './../pdf-type';
+import { Rectangle, Size } from './../pdf-document-helper';
 import { PdfPage } from './../pdf-page';
 /**
  * Represents a template element for creating and rendering header and footer content in a PDF document.

@@ -12,16 +12,8 @@ import {
     getActualProperties, RowSelectEventArgs
 } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
-import {
-    RichTextEditor, Toolbar as RTEToolbar, Link, HtmlEditor, QuickToolbar,
-    RichTextEditorModel,
-    Count,
-    Image,
-    Table,
-    EmojiPicker,
-    FileManager,
-    FormatPainter,
-    MarkdownEditor} from '@syncfusion/ej2-richtexteditor';
+import { NotesEditor } from './notes-editor';
+import { NotesEditorModel } from '../models/notes-editor-model';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
 import { CObject, ConstraintType, DialogFieldType } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
@@ -40,7 +32,6 @@ import {
     RowDD  as TreeGridRowDD, ToolbarItem as TreeGridToolbarItem
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
-import { IToolbarItems } from '@syncfusion/ej2-richtexteditor/src/common/interface';
 import { CalendarContext } from '../base/calendar-context';
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line
@@ -55,6 +46,7 @@ export class DialogEdit {
     //Internal variables
     //Module declarations
     private isEdit: boolean;
+    private notesEditor: NotesEditor = null;
     /**
      * @private
      */
@@ -675,8 +667,10 @@ export class DialogEdit {
                     const gridObj: Grid = <Grid>(<EJ2Instance>element).ej2_instances[0];
                     gridObj.destroy();
                 } else if (id === 'Notes') {
-                    const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>element).ej2_instances[0];
-                    rte.destroy();
+                    if (this.notesEditor) {
+                        this.notesEditor.detach();
+                        this.notesEditor = null;
+                    }
                 } else if (id === 'Resources') {
                     const treeGridObj: TreeGrid = <TreeGrid>(<EJ2Instance>element).ej2_instances[0];
                     treeGridObj.destroy();
@@ -1131,8 +1125,9 @@ export class DialogEdit {
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
             this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
-            ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as RichTextEditor).refresh();
-            // const notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
+            if (this.notesEditor) {
+                this.notesEditor.refresh();
+            }
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
                 ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as Grid)
@@ -2408,18 +2403,34 @@ export class DialogEdit {
         return inputModel;
     }
 
-    private getNotesModel(fields: string[]): Object {
+    private getNotesModel(fields: string[]): NotesEditorModel {
         if (isNullOrUndefined(fields) || fields.length === 0) {
-            fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
-                'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
-                'LowerCase', 'UpperCase', '|',
-                'Alignments', 'OrderedList', 'UnorderedList',
-                'Outdent', 'Indent', '|', 'CreateTable',
-                'CreateLink', '|', 'ClearFormat', 'Print',
-                '|', 'Undo', 'Redo'];
+            fields = ['Bold', 'Italic', 'Underline', '|', 'FontName', 'FontSize', '|',
+                'FontColor', 'BackgroundColor', '|', 'OrderedList', 'UnorderedList', '|', 'CreateLink'];
         }
-        const inputModel: RichTextEditorModel = {
+        const inputModel: NotesEditorModel = {
             placeholder: this.localeObj.getConstant('writeNotes'),
+            toolbarLabels: {
+                toolbar: this.localeObj.getConstant('notesToolbar'),
+                Bold: this.localeObj.getConstant('bold'),
+                Italic: this.localeObj.getConstant('italic'),
+                Underline: this.localeObj.getConstant('underline'),
+                OrderedList: this.localeObj.getConstant('orderedList'),
+                UnorderedList: this.localeObj.getConstant('unorderedList'),
+                CreateLink: this.localeObj.getConstant('createLink'),
+                FontName: this.localeObj.getConstant('fontName'),
+                FontSize: this.localeObj.getConstant('fontSize'),
+                FontColor: this.localeObj.getConstant('fontColor'),
+                BackgroundColor: this.localeObj.getConstant('backgroundColor'),
+                LinkHeader: this.localeObj.getConstant('linkHeader'),
+                LinkUrl: this.localeObj.getConstant('linkWebUrl'),
+                LinkText: this.localeObj.getConstant('linkText'),
+                LinkTitle: this.localeObj.getConstant('linkTitle'),
+                LinkOpenInNewWindow: this.localeObj.getConstant('linkOpenInNewWindow'),
+                LinkAriaLabel: this.localeObj.getConstant('linkAriaLabel'),
+                Insert: this.localeObj.getConstant('dialogInsert'),
+                Cancel: this.localeObj.getConstant('dialogCancel')
+            },
             toolbarSettings: {
                 items: fields
             },
@@ -3451,75 +3462,31 @@ export class DialogEdit {
     }
     private renderNotesTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        let inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName as string];
-        inputModel.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
+        let inputModel: NotesEditorModel = this.beforeOpenArgs[itemName as string] as NotesEditorModel;
         const ganttProp: ITaskData = this.editedRecord.ganttProperties;
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         const tabIndex: number = this.getDialogTabIndex('Notes');
         let dialogField: AddDialogFieldSettingsModel;
-        let toolbarCollection: (string | IToolbarItems)[] = [];
         if (!this.isEdit) {
             dialogField = this.parent.addDialogFields[tabIndex as number];
         } else if (this.isEdit) {
             dialogField = this.parent.editDialogFields[tabIndex as number];
         }
-        let allProperty: RichTextEditorModel;
         if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
-            allProperty = dialogField.additionalParams;
-            for (const i in allProperty) {
-                if (Object.prototype.hasOwnProperty.call(allProperty, i)) {
-                    switch (i) {
-                    case 'toolbarSettings':
-                        for (let j: number = 0; j < allProperty['toolbarSettings'].items.length; j++) {
-                            /* eslint-disable-next-line */
-                            const key: any = allProperty['toolbarSettings'].items[j as number];
-                            if (key) {
-                                switch (key) {
-                                case 'Image':
-                                    RichTextEditor.Inject(Image);
-                                    break;
-                                case 'CreateTable':
-                                    RichTextEditor.Inject(Table);
-                                    break;
-                                case 'EmojiPicker':
-                                    RichTextEditor.Inject(EmojiPicker);
-                                    break;
-                                case 'FileManager':
-                                    RichTextEditor.Inject(FileManager);
-                                    break;
-                                case 'FormatPainter':
-                                    RichTextEditor.Inject(FormatPainter);
-                                    break;
-                                default:
-                                    break;
-                                }
-                            }
-                        }
-                        if (!isNullOrUndefined(allProperty['toolbarSettings'].items)) {
-                            toolbarCollection = inputModel.toolbarSettings.items;
-                        }
-                        RichTextEditor.Inject(RTEToolbar);
-                        break;
-                    case 'editorMode':
-                        RichTextEditor.Inject(MarkdownEditor);
-                        break;
-                    default:
-                        break;
-                    }
-                }
-            }
-
+            inputModel = Object.assign({}, inputModel, dialogField.additionalParams as NotesEditorModel);
         }
-        RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count, Table);
+        inputModel.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
+        inputModel.enableRtl = this.parent.enableRtl;
         inputModel.value = ganttProp.notes;
         const notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
         if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {
             inputModel.enabled = false;
         }
-        inputModel = Object.assign({}, inputModel, allProperty);
-        inputModel.toolbarSettings.items = (toolbarCollection).concat(inputModel.toolbarSettings.items);
-        const rteObj: RichTextEditor = new RichTextEditor(inputModel);
-        rteObj.appendTo(divElement);
+        if (!this.parent.notesEditorModule) {
+            return divElement;
+        }
+        this.notesEditor = this.parent.notesEditorModule;
+        this.parent.notesEditorModule.renderInto(divElement, inputModel, ganttProp.notes, this.parent.enableHtmlSanitizer);
         return divElement;
     }
     private renderInputElements(inputModel: CObject, column: GanttColumnModel): HTMLElement {
@@ -3878,7 +3845,7 @@ export class DialogEdit {
                     this.updatePredecessorTab(element);
                     this.isFromDialogPredecessor = false;
                 } else if (id === 'Notes') {
-                    this.updateNotesTab(element);
+                    this.updateNotesTab();
                 } else if (id === 'Resources') {
                     this.updateResourceTab(element);
                     this.dialogEditValidationFlag = false;
@@ -4021,7 +3988,7 @@ export class DialogEdit {
             const div: HTMLElement = childNodes[i as number] as HTMLElement;
             let inputElement: HTMLInputElement | HTMLTextAreaElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]') || div.querySelector('textarea[id^="' + ganttObj.element.id + '"]');
             const editorChild: HTMLInputElement | HTMLTextAreaElement = Array.from(div.children).find(
-                (child: Element) => child.classList.contains('e-richtexteditor')
+                (child: Element) => child.classList.contains('e-richtexteditor') || child.classList.contains('e-gantt-notes-editor')
             ) as HTMLInputElement | HTMLTextAreaElement | undefined;
             if (editorChild) {
                 inputElement = editorChild;
@@ -4112,17 +4079,8 @@ export class DialogEdit {
         for (let i: number = 0; i < childNodes.length; i++) {
             const div: HTMLElement = childNodes[i as number] as HTMLElement;
             // Get input or textarea element
-            let inputElement: HTMLInputElement | HTMLTextAreaElement =
+            const inputElement: HTMLInputElement | HTMLTextAreaElement =
                 div.querySelector(`input[id^="${ganttObj.element.id}"]`);
-
-            // Check if RichTextEditor is present
-            const editorChild: HTMLInputElement | HTMLTextAreaElement = Array.from(div.children).find((child: Element) =>
-                child.classList.contains('e-richtexteditor')
-            ) as HTMLInputElement | HTMLTextAreaElement | undefined;
-
-            if (editorChild) {
-                inputElement = editorChild;
-            }
 
             if (inputElement) {
                 const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
@@ -4385,34 +4343,27 @@ export class DialogEdit {
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }
     }
-    private updateNotesTab(notesElement: HTMLElement): void {
+    private updateNotesTab(): void {
         const ganttObj: Gantt = this.parent;
-        const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
+        const notesEditor: NotesEditor = this.notesEditor;
+        if (!notesEditor) {
+            return;
+        }
+        const notesHtml: string = notesEditor.getHtml();
+        const notesText: string = notesEditor.getText();
+        const shouldSaveHtml: boolean = ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode &&
+            notesHtml !== '<p><br></p>';
+        const notesValue: string = shouldSaveHtml ? notesHtml : notesText;
         if (this.isEdit) {
-            if (!ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
-                if (this.rowData.ganttProperties.notes !== rte.getHtml() && (this.rowData.ganttProperties.notes !== null || rte.getHtml() !== '<p><br></p>') && !this.disableUndo) {
-                    this.disableUndo = true;
-                }
-                this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
-            } else {
-                if (this.rowData.ganttProperties.notes !== rte.getText() && (this.rowData.ganttProperties.notes !== null || rte.getText() !== '') && !this.disableUndo) {
-                    this.disableUndo = true;
-                }
-                if (rte.getHtml().includes('href')) {
-                    this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
-                }
-                else {
-                    this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);
-                }
+            if (this.rowData.ganttProperties.notes !== notesValue &&
+                (this.rowData.ganttProperties.notes !== null || notesValue !== (notesValue === notesHtml ? '<p><br></p>' : '')) &&
+                !this.disableUndo) {
+                this.disableUndo = true;
             }
+            this.parent.setRecordValue('notes', notesValue, this.rowData.ganttProperties, true);
             ganttObj.dataOperation.updateMappingData(this.rowData, 'notes');
         } else {
-            if (!ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
-                this.addedRecord[this.parent.taskFields.notes] = rte.getHtml();
-            }
-            else {
-                this.addedRecord[this.parent.taskFields.notes] = rte.getText();
-            }
+            this.addedRecord[this.parent.taskFields.notes] = notesValue;
         }
     }
     private updateCustomTab(customElement: HTMLElement): void {

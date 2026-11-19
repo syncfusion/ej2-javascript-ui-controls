@@ -5079,7 +5079,7 @@ function convertDiagramToVisioFormat(diagram: Diagram, context: ParsingContext):
 }
 
 function getPageDimension(diagram: Diagram): { width: number, height: number } {
-    const pageBounds: Rect = diagram.scroller.getPageBounds();
+    const pageBounds: Rect = diagram.scroller.getPageBounds(undefined, undefined, undefined, undefined, true);
     const pageRight: number = pageBounds.right;
     const pageLeft: number = Math.min(pageBounds.left, 0);
     const pageWidth: number = pageRight - pageLeft + (0.25 * UNIT_CONVERSION.SCREEN_DPI);

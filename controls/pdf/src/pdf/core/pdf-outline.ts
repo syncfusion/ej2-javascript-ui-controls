@@ -4,7 +4,8 @@ import { PdfDocument } from './pdf-document';
 import { PdfDestination, _PdfDestinationHelper, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 import { _checkRotation, _getPageIndex, _isNullOrUndefined, _parseColor } from './utils';
-import { PdfColor, Size } from './pdf-type';
+import { PdfColor, Size } from './pdf-document-helper';
+import { PdfAction } from './pdf-action';
 /**
  * Represents a base class for all bookmark objects.
  * ```typescript
@@ -698,6 +699,12 @@ export class PdfBookmarkBase {
  */
 export class PdfBookmark extends PdfBookmarkBase {
     /**
+     * Action associated with this bookmark.
+     *
+     * @private
+     */
+    _action: PdfAction;
+    /**
      * Initializes a new instance of the `PdfBookmark` class.
      *
      * @private
@@ -975,6 +982,79 @@ export class PdfBookmark extends PdfBookmarkBase {
     set textStyle(value: PdfTextStyle) {
         this._textStyle = value;
         this._updateTextStyle(value);
+    }
+    /**
+     * Gets the action associated with the bookmark.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * document.addPage();
+     * document.addPage();
+     * // Create a bookmark
+     * let bookmark: PdfBookmark = document.bookmarks.add('Navigate');
+     * // Assign a named action directly to the bookmark
+     * bookmark.action = new PdfNamedAction(PdfActionDestination.LastPage);
+     * // Gets the action associated with the bookmark
+     * let action: PdfAction = bookmark.action;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfAction} The action associated with the bookmark.
+     */
+    public get action(): PdfAction {
+        if (this._action) {
+            return this._action;
+        }
+        if (this._dictionary && this._dictionary.has('A')) {
+            const actionDictionary: _PdfDictionary = this._dictionary.get('A') as _PdfDictionary;
+            if (actionDictionary instanceof _PdfDictionary) {
+                (actionDictionary as any)._parentDictionary = this._dictionary; // eslint-disable-line
+                this._action = PdfAction._createActionFromDictionary(actionDictionary);
+            }
+        }
+        return this._action;
+    }
+    /**
+     * Sets the action associated with the bookmark.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * document.addPage();
+     * document.addPage();
+     * // Create a bookmark
+     * let bookmark: PdfBookmark = document.bookmarks.add('Navigate');
+     * // Create a named action
+     * let action: PdfNamedAction = new PdfNamedAction(PdfActionDestination.LastPage);
+     * // Assign the action directly to the bookmark
+     * bookmark.action = action;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfAction} value The action to associate with the bookmark.
+     */
+    public set action(value: PdfAction) {
+        this._action = value;
+        if (this._dictionary) {
+            if (value) {
+                if (value._dictionary && !value._dictionary._crossReference && this._crossReference) {
+                    value._dictionary._crossReference = this._crossReference;
+                }
+                this._dictionary.update('A', value._dictionary);
+                if (this._dictionary.has('Dest')) {
+                    delete this._dictionary._map.Dest;
+                }
+                this._destination = undefined;
+            } else {
+                delete this._dictionary._map.A;
+                this._dictionary._updated = true;
+            }
+        }
     }
     /**
      * Gets the next sibling bookmark in the linked list.

@@ -1752,9 +1752,10 @@ export enum _RevocationType {
     ocspAndCrl,
     ocspOrCrl
 }
-
 /**
  * Enum for PDF loaded annotation type.
+ *
+ * @private
  */
 export enum _PdfAnnotationType {
     /**
@@ -1894,9 +1895,374 @@ export enum _PdfAnnotationType {
      */
     angleMeasurementAnnotation,
     /**
+     * Specifies the intent of `threeDAnnotation`.
+     */
+    threeDAnnotation,
+    /**
+     * Specifies the intent of `projectionAnnotation`.
+     */
+    projectionAnnotation,
+    /**
      * Specifies the intent of `null`.
      */
     null
+}
+/**
+ * Public enum to define the icon style for sound annotations in PDF documents.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a sound annotation with speaker icon
+ * let soundAnnotation: PdfSoundAnnotation = new PdfSoundAnnotation(page, {x: 50, y: 150, width: 20, height: 20});
+ * // Set the icon to display as a speaker
+ * soundAnnotation.icon = PdfSoundIcon.Speaker;
+ * // Alternatively, create with microphone icon
+ * let micAnnotation: PdfSoundAnnotation = new PdfSoundAnnotation(page, {x: 100, y: 150, width: 20, height: 20});
+ * micAnnotation.icon = PdfSoundIcon.Microphone;
+ * // Add annotations to the page
+ * page.annotations.add(soundAnnotation);
+ * page.annotations.add(micAnnotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfSoundIcon {
+    /**
+     * Specifies the type of `speaker`.
+     */
+    Speaker,
+    /**
+     * Specifies the type of `microphone`.
+     */
+    Microphone
+}
+/**
+ * Public enum to define the format of 3D artwork data embedded in a PDF 3D annotation.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(page, {x: 50, y: 350, width: 200, height: 200});
+ * // Set the embedded 3D data format to U3D
+ * annotation3D.annotationType = Pdf3DAnnotationType.U3D;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DAnnotationType {
+    /**
+     * Specifies the type of `u3d`.
+     */
+    U3D,
+    /**
+     * Specifies the type of `prc`.
+     */
+    PRC
+}
+/**
+ * Public enum to define the activation modes for a PDF 3D annotation.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(page, {x: 50, y: 350, width: 200, height: 200});
+ * // Set the activation mode to explicit activation
+ * annotation3D.activationMode = Pdf3DActivationMode.ExplicitActivation;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DActivationMode {
+    /**
+     * Specifies the type of `explicitActivation`.
+     */
+    ExplicitActivation,
+    /**
+     * Specifies the type of `pageOpen`.
+     */
+    PageOpen,
+    /**
+     * Specifies the type of `pageVisible`.
+     */
+    PageVisible
+}
+/**
+ * Public enum to define the deactivation modes for a PDF 3D annotation.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(page, {x: 50, y: 350, width: 200, height: 200});
+ * // Set the deactivation mode to explicit deactivation (user click)
+ * annotation3D.deactivationMode = Pdf3DDeactivationMode.ExplicitDeactivation;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DDeactivationMode {
+    /**
+     * Specifies the type of `explicitDeactivation`.
+     */
+    ExplicitDeactivation,
+    /**
+     * Specifies the type of `pageClose`.
+     */
+    PageClose,
+    /**
+     * Specifies the type of `pageInvisible`.
+     */
+    PageInvisible
+}
+/**
+ * Defines the animation types available for a PDF 3D view.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(page, { x: 50, y: 350, width: 200, height: 200 });
+ * // Set the animation type
+ * annotation3D.animationStyle.animationType = Pdf3DAnimationType.Linear;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DAnimationType {
+    /**
+     * Specifies no animation.
+     */
+    None,
+    /**
+     * Specifies linear animation.
+     */
+    Linear,
+    /**
+     * Specifies oscillating animation.
+     */
+    Oscillating
+}
+/**
+ * Defines the rendering styles available for 3D artwork.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(
+ *     page,
+ *     { x: 50, y: 350, width: 200, height: 200 }
+ * );
+ * // Set the render style
+ * annotation3D.renderMode.style = Pdf3DRenderStyle.Solid;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DRenderStyle {
+    /**
+     * Displays textured and lit geometric shapes.
+     */
+    Solid,
+    /**
+     * Displays textured and lit shapes with single-color edges.
+     */
+    SolidWireframe,
+    /**
+     * Displays textured and lit shapes with transparency.
+     */
+    Transparent,
+    /**
+     * Displays transparent shapes with opaque edges.
+     */
+    TransparentWireframe,
+    /**
+     * Displays the bounding-box edges of each node.
+     */
+    BoundingBox,
+    /**
+     * Displays transparent bounding-box faces.
+     */
+    TransparentBoundingBox,
+    /**
+     * Displays transparent bounding-box edges and faces.
+     */
+    TransparentBoundingBoxOutline,
+    /**
+     * Displays edges in a single color.
+     */
+    Wireframe,
+    /**
+     * Displays edges using interpolated vertex colors and lighting.
+     */
+    ShadedWireframe,
+    /**
+     * Displays visible edges and removes hidden edges.
+     */
+    HiddenWireframe,
+    /**
+     * Displays vertices in a single color.
+     */
+    Vertices,
+    /**
+     * Displays vertices using vertex colors and lighting.
+     */
+    ShadedVertices,
+    /**
+     * Displays silhouette edges with surfaces.
+     */
+    Illustration,
+    /**
+     * Displays silhouette edges with lit and textured surfaces.
+     */
+    SolidOutline,
+    /**
+     * Displays silhouette edges with lit, textured, and emissive surfaces.
+     */
+    ShadedIllustration
+}
+/**
+ * Defines the lighting styles available for 3D artwork.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(
+ *     page,
+ *     { x: 50, y: 350, width: 200, height: 200 }
+ * );
+ * // Set the lighting style
+ * annotation3D.renderMode.lightingScheme = Pdf3DLightingStyle.Day;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DLightingStyle {
+    /**
+     * Uses the lights specified in the 3D artwork.
+     */
+    Artwork,
+    /**
+     * Ignores the lighting specified in the 3D artwork.
+     */
+    None,
+    /**
+     * Uses three blue-grey infinite lights.
+     */
+    White,
+    /**
+     * Uses three light-grey infinite lights.
+     */
+    Day,
+    /**
+     * Uses yellow, aqua, and blue infinite lights.
+     */
+    Night,
+    /**
+     * Uses three grey infinite lights.
+     */
+    Hard,
+    /**
+     * Uses red, green, and blue infinite lights.
+     */
+    Primary,
+    /**
+     * Uses three blue infinite lights.
+     */
+    Blue,
+    /**
+     * Uses three red infinite lights.
+     */
+    Red,
+    /**
+     * Uses six grey infinite lights aligned with the major axes.
+     */
+    Cube,
+    /**
+     * Uses three grey infinite lights and one camera-attached light.
+     */
+    CAD,
+    /**
+     * Uses a single infinite light attached to the camera.
+     */
+    Headlamp
+}
+/**
+ * Defines the projection types available for a 3D view.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a 3D annotation with U3D data
+ * let annotation3D: Pdf3DAnnotation = new Pdf3DAnnotation(
+ *     page,
+ *     { x: 50, y: 350, width: 200, height: 200 }
+ * );
+ * // Set the projection type
+ * annotation3D.projection.projectionType = Pdf3DProjectionType.Perspective;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation3D);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum Pdf3DProjectionType {
+    /**
+     * Specifies orthographic projection.
+     */
+    Orthographic,
+    /**
+     * Specifies perspective projection.
+     */
+    Perspective
 }
 /**
  * Enum for PDF graphics unit.
@@ -2502,4 +2868,2092 @@ export enum SignatureStatus {
      * Specifies unknown status.
      */
     unknown = 2
+}
+/**
+ * Public enum that specifies how an image is sized within a `PdfGrid` cell.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a data-source grid
+ * let grid: PdfGrid = new PdfGrid([{ id: '1' }], [{ field: 'id' }]);
+ * // Set the image fit mode for a cell
+ * grid.getRow(0).cells[0].style = { imageProperties: { fitType: PdfImageStyle.fitCell } };
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 160 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfImageStyle {
+    /**
+     * Fits the image to the available content width while preserving its aspect ratio.
+     */
+    fitWidth,
+    /**
+     * Fits the image to the available content height while preserving its aspect ratio.
+     */
+    fitHeight,
+    /**
+     * Fits the image within both the available content width and height while preserving its aspect ratio.
+     */
+    fitCell,
+    /**
+     * Stretches the image to exactly fill the available content width and height, ignoring the aspect ratio.
+     */
+    stretch
+}
+/**
+ * Public enum to define the action type of an explicit `PdfLink` assigned to a `PdfGridCell`.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a data-source grid
+ * let grid: PdfGrid = new PdfGrid([{ id: '1' }], [{ field: 'id' }]);
+ * // Assign an explicit URI link to a cell
+ * grid.getRow(0).cells[0].link = { type: PdfLinkType.externalLink, uri: 'https://www.syncfusion.com' };
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 160 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfLinkType {
+    /**
+     * Specifies a link that opens an external URI.
+     */
+    externalLink,
+    /**
+     * Specifies a link that navigates to a destination within the document.
+     */
+    internalLink,
+    /**
+     * Specifies a link that opens an external file.
+     */
+    file
+}
+/**
+ * Public enum that specifies how adjacent cell borders are rendered in a `PdfGrid`.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a data-source grid
+ * let grid: PdfGrid = new PdfGrid([{ id: '1' }], [{ field: 'id' }]);
+ * // Set border overlap behavior for grid cells
+ * grid.style = { borderOverlapStyle: BorderOverlapStyle.overlap };
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 160 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum BorderOverlapStyle {
+    /**
+     * Specifies that adjacent cell borders remain separate.
+     */
+    inside,
+    /**
+     * Specifies that adjacent cell borders overlap.
+     */
+    overlap
+}
+/**
+ * Public enum that specifies the built-in `PdfGrid` appearance.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a data-source grid using a built-in style
+ * let grid: PdfGrid = new PdfGrid([{ id: '1' }], [{ field: 'id' }], {builtInStyle: PdfGridBuiltinStyle.tableGrid});
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 160 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfGridBuiltinStyle {
+    /**
+     * Specifies the type of `plainTable1`.
+     */
+    plainTable1 = 0,
+    /**
+     * Specifies the type of `plainTable2`.
+     */
+    plainTable2 = 1,
+    /**
+     * Specifies the type of `plainTable3`.
+     */
+    plainTable3 = 2,
+    /**
+     * Specifies the type of `plainTable4`.
+     */
+    plainTable4 = 3,
+    /**
+     * Specifies the type of `plainTable5`.
+     */
+    plainTable5 = 4,
+    /**
+     * Specifies the type of `gridTable1Light`.
+     */
+    gridTable1Light = 5,
+    /**
+     * Specifies the type of `gridTable1LightAccent1`.
+     */
+    gridTable1LightAccent1 = 6,
+    /**
+     * Specifies the type of `gridTable1LightAccent2`.
+     */
+    gridTable1LightAccent2 = 7,
+    /**
+     * Specifies the type of `gridTable1LightAccent3`.
+     */
+    gridTable1LightAccent3 = 8,
+    /**
+     * Specifies the type of `gridTable1LightAccent4`.
+     */
+    gridTable1LightAccent4 = 9,
+    /**
+     * Specifies the type of `gridTable1LightAccent5`.
+     */
+    gridTable1LightAccent5 = 10,
+    /**
+     * Specifies the type of `gridTable1LightAccent6`.
+     */
+    gridTable1LightAccent6 = 11,
+    /**
+     * Specifies the type of `gridTable2`.
+     */
+    gridTable2 = 12,
+    /**
+     * Specifies the type of `gridTable2Accent1`.
+     */
+    gridTable2Accent1 = 13,
+    /**
+     * Specifies the type of `gridTable2Accent2`.
+     */
+    gridTable2Accent2 = 14,
+    /**
+     * Specifies the type of `gridTable2Accent3`.
+     */
+    gridTable2Accent3 = 15,
+    /**
+     * Specifies the type of `gridTable2Accent4`.
+     */
+    gridTable2Accent4 = 16,
+    /**
+     * Specifies the type of `gridTable2Accent5`.
+     */
+    gridTable2Accent5 = 17,
+    /**
+     * Specifies the type of `gridTable2Accent6`.
+     */
+    gridTable2Accent6 = 18,
+    /**
+     * Specifies the type of `gridTable3`.
+     */
+    gridTable3 = 19,
+    /**
+     * Specifies the type of `gridTable3Accent1`.
+     */
+    gridTable3Accent1 = 20,
+    /**
+     * Specifies the type of `gridTable3Accent2`.
+     */
+    gridTable3Accent2 = 21,
+    /**
+     * Specifies the type of `gridTable3Accent3`.
+     */
+    gridTable3Accent3 = 22,
+    /**
+     * Specifies the type of `gridTable3Accent4`.
+     */
+    gridTable3Accent4 = 23,
+    /**
+     * Specifies the type of `gridTable3Accent5`.
+     */
+    gridTable3Accent5 = 24,
+    /**
+     * Specifies the type of `gridTable3Accent6`.
+     */
+    gridTable3Accent6 = 25,
+    /**
+     * Specifies the type of `gridTable4`.
+     */
+    gridTable4 = 26,
+    /**
+     * Specifies the type of `gridTable4Accent1`.
+     */
+    gridTable4Accent1 = 27,
+    /**
+     * Specifies the type of `gridTable4Accent2`.
+     */
+    gridTable4Accent2 = 28,
+    /**
+     * Specifies the type of `gridTable4Accent3`.
+     */
+    gridTable4Accent3 = 29,
+    /**
+     * Specifies the type of `gridTable4Accent4`.
+     */
+    gridTable4Accent4 = 30,
+    /**
+     * Specifies the type of `gridTable4Accent5`.
+     */
+    gridTable4Accent5 = 31,
+    /**
+     * Specifies the type of `gridTable4Accent6`.
+     */
+    gridTable4Accent6 = 32,
+    /**
+     * Specifies the type of `gridTable5Dark`.
+     */
+    gridTable5Dark = 33,
+    /**
+     * Specifies the type of `gridTable5DarkAccent1`.
+     */
+    gridTable5DarkAccent1 = 34,
+    /**
+     * Specifies the type of `gridTable5DarkAccent2`.
+     */
+    gridTable5DarkAccent2 = 35,
+    /**
+     * Specifies the type of `gridTable5DarkAccent3`.
+     */
+    gridTable5DarkAccent3 = 36,
+    /**
+     * Specifies the type of `gridTable5DarkAccent4`.
+     */
+    gridTable5DarkAccent4 = 37,
+    /**
+     * Specifies the type of `gridTable5DarkAccent5`.
+     */
+    gridTable5DarkAccent5 = 38,
+    /**
+     * Specifies the type of `gridTable5DarkAccent6`.
+     */
+    gridTable5DarkAccent6 = 39,
+    /**
+     * Specifies the type of `gridTable6Colorful`.
+     */
+    gridTable6Colorful = 40,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent1`.
+     */
+    gridTable6ColorfulAccent1 = 41,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent2`.
+     */
+    gridTable6ColorfulAccent2 = 42,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent3`.
+     */
+    gridTable6ColorfulAccent3 = 43,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent4`.
+     */
+    gridTable6ColorfulAccent4 = 44,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent5`.
+     */
+    gridTable6ColorfulAccent5 = 45,
+    /**
+     * Specifies the type of `gridTable6ColorfulAccent6`.
+     */
+    gridTable6ColorfulAccent6 = 46,
+    /**
+     * Specifies the type of `gridTable7Colorful`.
+     */
+    gridTable7Colorful = 47,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent1`.
+     */
+    gridTable7ColorfulAccent1 = 48,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent2`.
+     */
+    gridTable7ColorfulAccent2 = 49,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent3`.
+     */
+    gridTable7ColorfulAccent3 = 50,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent4`.
+     */
+    gridTable7ColorfulAccent4 = 51,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent5`.
+     */
+    gridTable7ColorfulAccent5 = 52,
+    /**
+     * Specifies the type of `gridTable7ColorfulAccent6`.
+     */
+    gridTable7ColorfulAccent6 = 53,
+    /**
+     * Specifies the type of `listTable1Light`.
+     */
+    listTable1Light = 54,
+    /**
+     * Specifies the type of `listTable1LightAccent1`.
+     */
+    listTable1LightAccent1 = 55,
+    /**
+     * Specifies the type of `listTable1LightAccent2`.
+     */
+    listTable1LightAccent2 = 56,
+    /**
+     * Specifies the type of `listTable1LightAccent3`.
+     */
+    listTable1LightAccent3 = 57,
+    /**
+     * Specifies the type of `listTable1LightAccent4`.
+     */
+    listTable1LightAccent4 = 58,
+    /**
+     * Specifies the type of `listTable1LightAccent5`.
+     */
+    listTable1LightAccent5 = 59,
+    /**
+     * Specifies the type of `listTable1LightAccent6`.
+     */
+    listTable1LightAccent6 = 60,
+    /**
+     * Specifies the type of `listTable2`.
+     */
+    listTable2 = 61,
+    /**
+     * Specifies the type of `listTable2Accent1`.
+     */
+    listTable2Accent1 = 62,
+    /**
+     * Specifies the type of `listTable2Accent2`.
+     */
+    listTable2Accent2 = 63,
+    /**
+     * Specifies the type of `listTable2Accent3`.
+     */
+    listTable2Accent3 = 64,
+    /**
+     * Specifies the type of `listTable2Accent4`.
+     */
+    listTable2Accent4 = 65,
+    /**
+     * Specifies the type of `listTable2Accent5`.
+     */
+    listTable2Accent5 = 66,
+    /**
+     * Specifies the type of `listTable2Accent6`.
+     */
+    listTable2Accent6 = 67,
+    /**
+     * Specifies the type of `listTable3`.
+     */
+    listTable3 = 68,
+    /**
+     * Specifies the type of `listTable3Accent1`.
+     */
+    listTable3Accent1 = 69,
+    /**
+     * Specifies the type of `listTable3Accent2`.
+     */
+    listTable3Accent2 = 70,
+    /**
+     * Specifies the type of `listTable3Accent3`.
+     */
+    listTable3Accent3 = 71,
+    /**
+     * Specifies the type of `listTable3Accent4`.
+     */
+    listTable3Accent4 = 72,
+    /**
+     * Specifies the type of `listTable3Accent5`.
+     */
+    listTable3Accent5 = 73,
+    /**
+     * Specifies the type of `listTable3Accent6`.
+     */
+    listTable3Accent6 = 74,
+    /**
+     * Specifies the type of `listTable4`.
+     */
+    listTable4 = 75,
+    /**
+     * Specifies the type of `listTable4Accent1`.
+     */
+    listTable4Accent1 = 76,
+    /**
+     * Specifies the type of `listTable4Accent2`.
+     */
+    listTable4Accent2 = 77,
+    /**
+     * Specifies the type of `listTable4Accent3`.
+     */
+    listTable4Accent3 = 78,
+    /**
+     * Specifies the type of `listTable4Accent4`.
+     */
+    listTable4Accent4 = 79,
+    /**
+     * Specifies the type of `listTable4Accent5`.
+     */
+    listTable4Accent5 = 80,
+    /**
+     * Specifies the type of `listTable4Accent6`.
+     */
+    listTable4Accent6 = 81,
+    /**
+     * Specifies the type of `listTable5Dark`.
+     */
+    listTable5Dark = 82,
+    /**
+     * Specifies the type of `listTable5DarkAccent1`.
+     */
+    listTable5DarkAccent1 = 83,
+    /**
+     * Specifies the type of `listTable5DarkAccent2`.
+     */
+    listTable5DarkAccent2 = 84,
+    /**
+     * Specifies the type of `listTable5DarkAccent3`.
+     */
+    listTable5DarkAccent3 = 85,
+    /**
+     * Specifies the type of `listTable5DarkAccent4`.
+     */
+    listTable5DarkAccent4 = 86,
+    /**
+     * Specifies the type of `listTable5DarkAccent5`.
+     */
+    listTable5DarkAccent5 = 87,
+    /**
+     * Specifies the type of `listTable5DarkAccent6`.
+     */
+    listTable5DarkAccent6 = 88,
+    /**
+     * Specifies the type of `listTable6Colorful`.
+     */
+    listTable6Colorful = 89,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent1`.
+     */
+    listTable6ColorfulAccent1 = 90,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent2`.
+     */
+    listTable6ColorfulAccent2 = 91,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent3`.
+     */
+    listTable6ColorfulAccent3 = 92,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent4`.
+     */
+    listTable6ColorfulAccent4 = 93,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent5`.
+     */
+    listTable6ColorfulAccent5 = 94,
+    /**
+     * Specifies the type of `listTable6ColorfulAccent6`.
+     */
+    listTable6ColorfulAccent6 = 95,
+    /**
+     * Specifies the type of `listTable7Colorful`.
+     */
+    listTable7Colorful = 96,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent1`.
+     */
+    listTable7ColorfulAccent1 = 97,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent2`.
+     */
+    listTable7ColorfulAccent2 = 98,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent3`.
+     */
+    listTable7ColorfulAccent3 = 99,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent4`.
+     */
+    listTable7ColorfulAccent4 = 100,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent5`.
+     */
+    listTable7ColorfulAccent5 = 101,
+    /**
+     * Specifies the type of `listTable7ColorfulAccent6`.
+     */
+    listTable7ColorfulAccent6 = 102,
+    /**
+     * Specifies the type of `tableGridLight`.
+     */
+    tableGridLight = 103,
+    /**
+     * Specifies the type of `tableGrid`.
+     */
+    tableGrid = 104
+}
+/**
+ * Specifies how a `PdfGrid` handles content that exceeds the available horizontal drawing area.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a grid with horizontal overflow set to nextPage
+ * let grid: PdfGrid = new PdfGrid(rows, columns);
+ * grid.horizontalOverflow = PdfGridHorizontalOverflowType.nextPage;
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 400 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfGridHorizontalOverflowType {
+    /**
+     * Specifies the type of `onePage`. Keeps all logical columns in one horizontal segment.
+     */
+    onePage = 0,
+    /**
+     * Specifies the type of `nextPage`. Continues overflowed columns on immediately following pages
+     * for the same vertical row range before moving to the next vertical row range.
+     */
+    nextPage = 1,
+    /**
+     * Specifies the type of `lastPage`. Completes the vertical flow of the current horizontal segment
+     * before rendering the next horizontal segment.
+     */
+    lastPage = 2
+}
+/**
+ * Specifies the relationship of an embedded file attachment to the PDF document content.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Create a new attachment
+ * let attachment: PdfAttachment = new PdfAttachment(attachmentData, 'input.txt');
+ * // Set the relationship
+ * attachment.relationship = PdfAttachmentRelationship.Data;
+ * // Add the attachment to the document
+ * document.attachments.add(attachment);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfAttachmentRelationship {
+    /**
+     * The original source material for the associated content.
+     */
+    Source = 0,
+    /**
+     * Information used to derive a visual presentation.
+     */
+    Data = 1,
+    /**
+     * An alternative representation of the PDF contents.
+     */
+    Alternative = 2,
+    /**
+     * A supplemental representation of the original source or data that may be more easily consumable.
+     */
+    Supplement = 3,
+    /**
+     * The relationship is unknown or cannot be described using one of the other values.
+     */
+    Unspecified = 4
+}
+/**
+ * Specifies the border groups to be rendered for a `PdfGrid`.
+ *
+ * This enumeration supports bitwise combination of values to include or
+ * exclude specific outer and inner border groups when rendering a grid.
+ *
+ * ```typescript
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * let grid: PdfGrid = new PdfGrid();
+ * grid.style.border = {
+ *     type: PdfGridBorderType.Outside | PdfGridBorderType.InsideHorizontal,
+ *     pen: {
+ *         width: 1
+ *     }
+ * };
+ * // Draw the grid on the page
+ * grid.draw(page, { x: 10, y: 10, width: 240, height: 400 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfGridBorderType {
+    /** Empty mask. */
+    None = 0,
+    /** Selects all outside and inside border groups. */
+    All = 1 << 0,
+    /** Selects or excludes the outside-left group. */
+    Left = 1 << 1,
+    /** Selects or excludes the outside-right group. */
+    Right = 1 << 2,
+    /** Selects or excludes the outside-top group. */
+    Top = 1 << 3,
+    /** Selects or excludes the outside-bottom group. */
+    Bottom = 1 << 4,
+    /** Selects or excludes inside-vertical separators. */
+    InsideVertical = 1 << 5,
+    /** Selects or excludes inside-horizontal separators. */
+    InsideHorizontal = 1 << 6,
+    /** Composite selector for both inside groups. */
+    Inside = 1 << 7,
+    /** Composite selector for all four outside groups. */
+    Outside = 1 << 8
+}
+/**
+ * Public enum to define the predefined navigation destination of a `PdfNamedAction`.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Access the first page
+ * let page: PdfPage = document.addPage();
+ * // Create a named action that navigates to the first page
+ * let namedAction: PdfNamedAction = new PdfNamedAction(PdfActionDestination.FirstPage);
+ * // Assign the action to the page open event
+ * page.actions.open = namedAction;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfActionDestination {
+    /**
+     * Specifies the type of `FirstPage`.
+     */
+    FirstPage,
+    /**
+     * Specifies the type of `LastPage`.
+     */
+    LastPage,
+    /**
+     * Specifies the type of `NextPage`.
+     */
+    NextPage,
+    /**
+     * Specifies the type of `PrevPage`.
+     */
+    PrevPage
+}
+/**
+ * Public enum to define the relationship of a `PdfTargetDictionary` entry to the current document.
+ *
+ * ```typescript
+ * // Create an embedded PDF document
+ * let embeddedDocument: PdfDocument = new PdfDocument();
+ * embeddedDocument.addPage();
+ * let embeddedData: Uint8Array = embeddedDocument.save();
+ * embeddedDocument.destroy();
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * document.attachments.add(new PdfAttachment(embeddedData, 'embedded.pdf'));
+ * // Create the embedded PDF destination
+ * let destination: PdfRemoteDestination = new PdfRemoteDestination();
+ * destination.pageNumber = 0;
+ * destination.mode = PdfDestinationMode.fitToPage;
+ * // Create a target with a child relationship
+ * let target: PdfTargetDictionary = new PdfTargetDictionary(PdfTargetRelation.Child, 'embedded.pdf');
+ * // Create an embedded GoTo action
+ * let action: PdfEmbeddedGoToAction = new PdfEmbeddedGoToAction(destination, undefined, target);
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     page, 'EmbeddedGoTo', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Open embedded PDF';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum PdfTargetRelation {
+    /**
+     * Specifies that the target is the parent of the current document.
+     */
+    Parent,
+    /**
+     * Specifies that the target is a child of the current document.
+     */
+    Child
+}
+/**
+ * Public enum to define the data format used when submitting PDF form data through a `PdfSubmitFormAction`.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create a text box field
+ * let textField: PdfTextBoxField = new PdfTextBoxField(
+ *     page, 'Name', { x: 20, y: 20, width: 150, height: 30 }
+ * );
+ * document.form.add(textField);
+ * // Create a submit-form action
+ * let action: PdfSubmitFormAction = new PdfSubmitFormAction('https://submit.example.com');
+ * action.fields = [textField];
+ * action.include = true;
+ * action.dataFormat = PdfSubmitDataFormat.Xfdf;
+ * // Create a button and assign the action
+ * let button: PdfButtonField = new PdfButtonField(
+ *     page, 'SubmitForm', { x: 20, y: 70, width: 120, height: 30 }
+ * );
+ * button.text = 'Submit form';
+ * button.actions.mouseUp = action;
+ * document.form.add(button);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum PdfSubmitDataFormat {
+    /**
+     * Specifies that form data is submitted in HTML format.
+     */
+    Html,
+    /**
+     * Specifies that the entire PDF document is submitted.
+     */
+    Pdf,
+    /**
+     * Specifies that form data is submitted in FDF format.
+     */
+    Fdf,
+    /**
+     * Specifies that form data is submitted in XFDF format.
+     */
+    Xfdf
+}
+/**
+ * Public enum to define the HTTP method used when submitting PDF form data through a `PdfSubmitFormAction`.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create a text box field
+ * let textField: PdfTextBoxField = new PdfTextBoxField(
+ *     page, 'Name', { x: 20, y: 20, width: 150, height: 30 }
+ * );
+ * document.form.add(textField);
+ * // Create a submit-form action
+ * let action: PdfSubmitFormAction = new PdfSubmitFormAction('https://submit.example.com');
+ * action.fields = [textField];
+ * action.include = true;
+ * action.httpMethod = HttpMethod.Post;
+ * // Create a button and assign the action
+ * let button: PdfButtonField = new PdfButtonField(
+ *     page, 'SubmitForm', { x: 20, y: 70, width: 120, height: 30 }
+ * );
+ * button.text = 'Submit form';
+ * button.actions.mouseUp = action;
+ * document.form.add(button);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum HttpMethod {
+    /**
+     * Specifies that form data is submitted using the GET method.
+     */
+    Get,
+    /**
+     * Specifies that form data is submitted using the POST method.
+     */
+    Post
+}
+/**
+ * Public enum to define the audio encoding of a `PdfSound` resource.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create and configure a sound resource
+ * let sound: PdfSound = new PdfSound(soundData);
+ * sound.bits = 16;
+ * sound.channels = PdfSoundChannels.Stereo;
+ * sound.encoding = PdfSoundEncoding.Signed;
+ * sound.rate = 44100;
+ * // Create a sound action
+ * let action: PdfSoundAction = new PdfSoundAction(sound);
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     page, 'PlaySound', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Play sound';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum PdfSoundEncoding {
+    /**
+     * Specifies A-law audio encoding.
+     */
+    ALaw,
+    /**
+     * Specifies mu-law audio encoding.
+     */
+    MuLaw,
+    /**
+     * Specifies raw audio encoding.
+     */
+    Raw,
+    /**
+     * Specifies signed-integer audio encoding.
+     */
+    Signed
+}
+/**
+ * Public enum to define the channel layout of a `PdfSound` resource.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create and configure a sound resource
+ * let sound: PdfSound = new PdfSound(soundData);
+ * sound.bits = 16;
+ * sound.channels = PdfSoundChannels.Stereo;
+ * sound.encoding = PdfSoundEncoding.Signed;
+ * sound.rate = 44100;
+ * // Create a sound action
+ * let action: PdfSoundAction = new PdfSoundAction(sound);
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     page, 'PlaySound', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Play sound';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum PdfSoundChannels {
+    /**
+     * Specifies a single-channel sound resource.
+     */
+    Mono = 1,
+    /**
+     * Specifies a two-channel sound resource.
+     */
+    Stereo = 2
+}
+/**
+ * Public enum to define the visibility operation applied to a layer by a `PdfLayerState`.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * let page: PdfPage = document.addPage();
+ * // Create a layer and its state
+ * let layer: PdfLayer = document.layers.add('Content Layer', true);
+ * let state: PdfLayerState = new PdfLayerState(PdfLayerStateOperation.Off, layer);
+ * // Create a layer-state action
+ * let action: PdfSetOCGStateAction = new PdfSetOCGStateAction([state], true);
+ * // Create a button and assign the action
+ * let field: PdfButtonField = new PdfButtonField(
+ *     page, 'LayerState', { x: 20, y: 20, width: 120, height: 30 }
+ * );
+ * field.text = 'Change layer';
+ * field.actions.mouseUp = action;
+ * document.form.add(field);
+ * // Save and destroy the document
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum PdfLayerStateOperation {
+    /**
+     * Specifies that the layer is turned on.
+     */
+    On,
+    /**
+     * Specifies that the layer is turned off.
+     */
+    Off,
+    /**
+     * Specifies that the current visibility state of the layer is toggled.
+     */
+    Toggle
+}
+/**
+ * Specifies the internal flags used by a submit-form action.
+ *
+ * @private
+ */
+export enum _PdfSubmitFormFlags {
+    Include = 1,
+    IncludeNoValueFields = 2,
+    ExportFormat = 4,
+    GetMethod = 8,
+    SubmitCoordinates = 16,
+    Xfdf = 32,
+    IncludeAppendSaves = 64,
+    IncludeAnnotations = 128,
+    SubmitPdf = 256,
+    CanonicalFormat = 512,
+    ExcludeNonUserAnnotations = 1024,
+    EmbedForm = 2048
+}
+/**
+ * Specifies the type of identity or location represented by a Subject Alternative Name entry in an X.509 certificate.
+ *
+ * ```typescript
+ * // Load an existing signed PDF document
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Retrieve the signature field
+ * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Retrieve the digital signature
+ * const signature: PdfSignature = field.getSignature();
+ * // Retrieve the signing certificate information
+ * const certificate: PdfCertificateInformation = signature.getCertificateInformation();
+ * // Retrieve the Subject Alternative Name entries
+ * const alternativeNames: PdfSubjectAlternativeName[] = certificate.subjectAlternativeNames;
+ * // Retrieve each alternative-name type and value
+ * for (const alternativeName of alternativeNames) {
+ *     const type: PdfSubjectAlternativeNameType = alternativeName.type;
+ *     const value: string = alternativeName.value;
+ * }
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfSubjectAlternativeNameType {
+    /**
+     * Specifies an other-name entry.
+     */
+    otherName,
+    /**
+     * Specifies an RFC822 email address.
+     */
+    rfc822Name,
+    /**
+     * Specifies a DNS name.
+     */
+    dnsName,
+    /**
+     * Specifies a directory name.
+     */
+    directoryName,
+    /**
+     * Specifies a URI.
+     */
+    uniformResourceIdentifier,
+    /**
+     * Specifies an IP address.
+     */
+    ipAddress,
+    /**
+     * Specifies a registered object identifier.
+     */
+    registeredIdentifier
+}
+/**
+ * Specifies the error correction level for a PDF417 barcode.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a PDF417 barcode
+ * let barcode: Pdf417Barcode = new Pdf417Barcode('PDF417 payload');
+ * barcode.text = 'Hello World';
+ * barcode.errorCorrectionLevel = Pdf417ErrorCorrectionLevel.Level2;
+ * barcode.draw(page, { x: 10, y: 20, width: 200, height: 100 });
+ * document.save('output.pdf');
+ * document.destroy();
+ * ```
+ */
+export enum Pdf417ErrorCorrectionLevel {
+    /**
+     * Specifies automatic ECC level selection based on data length.
+     */
+    Auto = 0,
+    /**
+     * Specifies ECC level 0 (2 ECC words).
+     */
+    Level0 = 1,
+    /**
+     * Specifies ECC level 1 (4 ECC words).
+     */
+    Level1 = 2,
+    /**
+     * Specifies ECC level 2 (8 ECC words).
+     */
+    Level2 = 3,
+    /**
+     * Specifies ECC level 3 (16 ECC words).
+     */
+    Level3 = 4,
+    /**
+     * Specifies ECC level 4 (32 ECC words).
+     */
+    Level4 = 5,
+    /**
+     * Specifies ECC level 5 (64 ECC words).
+     */
+    Level5 = 6,
+    /**
+     * Specifies ECC level 6 (128 ECC words).
+     */
+    Level6 = 7,
+    /**
+     * Specifies ECC level 7 (256 ECC words).
+     */
+    Level7 = 8,
+    /**
+     * Specifies ECC level 8 (512 ECC words).
+     */
+    Level8 = 9
+}
+/**
+ * Specifies the error correction level for a QR Code barcode.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a QR barcode with quartile error correction
+ * let barcode: PdfQRBarcode = new PdfQRBarcode('https://www.syncfusion.com');
+ * barcode.errorCorrectionLevel = PdfQRErrorCorrectionLevel.Quartile;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfQRErrorCorrectionLevel {
+    /**
+     * Specifies low error correction with approximately 7 percent recovery capability.
+     */
+    Low = 0,
+    /**
+     * Specifies medium error correction with approximately 15 percent recovery capability.
+     */
+    Medium = 1,
+    /**
+     * Specifies quartile error correction with approximately 25 percent recovery capability.
+     */
+    Quartile = 2,
+    /**
+     * Specifies high error correction with approximately 30 percent recovery capability.
+     */
+    High = 3
+}
+/**
+ * Specifies how the payload of a QR Code barcode is encoded.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a QR barcode in alphanumeric mode
+ * let barcode: PdfQRBarcode = new PdfQRBarcode('INVOICE-2026-000123');
+ * barcode.inputMode = PdfQRInputMode.AlphaNumeric;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfQRInputMode {
+    /**
+     * Specifies numeric mode which accepts only the digits 0 through 9.
+     */
+    Numeric = 0,
+    /**
+     * Specifies alphanumeric mode which accepts 0-9, A-Z, space and $ % * + - . / :
+     */
+    AlphaNumeric = 1,
+    /**
+     * Specifies byte mode which converts the text to bytes using textEncoding.
+     */
+    Byte = 2,
+    /**
+     * Specifies mixed mode which automatically splits the input into
+     * numeric, alphanumeric and byte segments.
+     */
+    Mixed = 3
+}
+/**
+ * Specifies the byte conversion used by byte segments.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a QR barcode encoded as ISO-8859-1 bytes
+ * let barcode: PdfQRBarcode = new PdfQRBarcode('https://www.syncfusion.com');
+ * barcode.textEncoding = PdfBarcodeTextEncoding.Iso88591;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfBarcodeTextEncoding {
+    /**
+     * Specifies that the text is encoded as UTF-8 bytes.
+     */
+    Utf8 = 0,
+    /**
+     * Specifies that the text is encoded as ISO-8859-1 bytes;
+     * characters outside the ISO-8859-1 range are rejected.
+     */
+    Iso88591 = 1
+}
+/**
+ * Specifies automatic selection or an explicit QR Code symbol version (1 through 40).
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a QR barcode pinned to version 5
+ * let barcode: PdfQRBarcode = new PdfQRBarcode('INVOICE-2026-000123');
+ * barcode.version = PdfQRVersion.Version05;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfQRVersion {
+    /**
+     * Specifies that the smallest version that holds the payload is selected.
+     */
+    Auto = 0,
+    /**
+     * Specifies QR Code symbol version 1 (21 x 21 modules).
+     */
+    Version01 = 1,
+    /**
+     * Specifies QR Code symbol version 2 (25 x 25 modules).
+     */
+    Version02 = 2,
+    /**
+     * Specifies QR Code symbol version 3 (29 x 29 modules).
+     */
+    Version03 = 3,
+    /**
+     * Specifies QR Code symbol version 4 (33 x 33 modules).
+     */
+    Version04 = 4,
+    /**
+     * Specifies QR Code symbol version 5 (37 x 37 modules).
+     */
+    Version05 = 5,
+    /**
+     * Specifies QR Code symbol version 6 (41 x 41 modules).
+     */
+    Version06 = 6,
+    /**
+     * Specifies QR Code symbol version 7 (45 x 45 modules).
+     */
+    Version07 = 7,
+    /**
+     * Specifies QR Code symbol version 8 (49 x 49 modules).
+     */
+    Version08 = 8,
+    /**
+     * Specifies QR Code symbol version 9 (53 x 53 modules).
+     */
+    Version09 = 9,
+    /**
+     * Specifies QR Code symbol version 10 (57 x 57 modules).
+     */
+    Version10 = 10,
+    /**
+     * Specifies QR Code symbol version 11 (61 x 61 modules).
+     */
+    Version11 = 11,
+    /**
+     * Specifies QR Code symbol version 12 (65 x 65 modules).
+     */
+    Version12 = 12,
+    /**
+     * Specifies QR Code symbol version 13 (69 x 69 modules).
+     */
+    Version13 = 13,
+    /**
+     * Specifies QR Code symbol version 14 (73 x 73 modules).
+     */
+    Version14 = 14,
+    /**
+     * Specifies QR Code symbol version 15 (77 x 77 modules).
+     */
+    Version15 = 15,
+    /**
+     * Specifies QR Code symbol version 16 (81 x 81 modules).
+     */
+    Version16 = 16,
+    /**
+     * Specifies QR Code symbol version 17 (85 x 85 modules).
+     */
+    Version17 = 17,
+    /**
+     * Specifies QR Code symbol version 18 (89 x 89 modules).
+     */
+    Version18 = 18,
+    /**
+     * Specifies QR Code symbol version 19 (93 x 93 modules).
+     */
+    Version19 = 19,
+    /**
+     * Specifies QR Code symbol version 20 (97 x 97 modules).
+     */
+    Version20 = 20,
+    /**
+     * Specifies QR Code symbol version 21 (101 x 101 modules).
+     */
+    Version21 = 21,
+    /**
+     * Specifies QR Code symbol version 22 (105 x 105 modules).
+     */
+    Version22 = 22,
+    /**
+     * Specifies QR Code symbol version 23 (109 x 109 modules).
+     */
+    Version23 = 23,
+    /**
+     * Specifies QR Code symbol version 24 (113 x 113 modules).
+     */
+    Version24 = 24,
+    /**
+     * Specifies QR Code symbol version 25 (117 x 117 modules).
+     */
+    Version25 = 25,
+    /**
+     * Specifies QR Code symbol version 26 (121 x 121 modules).
+     */
+    Version26 = 26,
+    /**
+     * Specifies QR Code symbol version 27 (125 x 125 modules).
+     */
+    Version27 = 27,
+    /**
+     * Specifies QR Code symbol version 28 (129 x 129 modules).
+     */
+    Version28 = 28,
+    /**
+     * Specifies QR Code symbol version 29 (133 x 133 modules).
+     */
+    Version29 = 29,
+    /**
+     * Specifies QR Code symbol version 30 (137 x 137 modules).
+     */
+    Version30 = 30,
+    /**
+     * Specifies QR Code symbol version 31 (141 x 141 modules).
+     */
+    Version31 = 31,
+    /**
+     * Specifies QR Code symbol version 32 (145 x 145 modules).
+     */
+    Version32 = 32,
+    /**
+     * Specifies QR Code symbol version 33 (149 x 149 modules).
+     */
+    Version33 = 33,
+    /**
+     * Specifies QR Code symbol version 34 (153 x 153 modules).
+     */
+    Version34 = 34,
+    /**
+     * Specifies QR Code symbol version 35 (157 x 157 modules).
+     */
+    Version35 = 35,
+    /**
+     * Specifies QR Code symbol version 36 (161 x 161 modules).
+     */
+    Version36 = 36,
+    /**
+     * Specifies QR Code symbol version 37 (165 x 165 modules).
+     */
+    Version37 = 37,
+    /**
+     * Specifies QR Code symbol version 38 (169 x 169 modules).
+     */
+    Version38 = 38,
+    /**
+     * Specifies QR Code symbol version 39 (173 x 173 modules).
+     */
+    Version39 = 39,
+    /**
+     * Specifies QR Code symbol version 40 (177 x 177 modules).
+     */
+    Version40 = 40
+}
+/**
+ * Specifies the Data Matrix encodation requested by the caller.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a Data Matrix barcode in ASCII encodation
+ * let barcode: PdfDataMatrixBarcode = new PdfDataMatrixBarcode('ITEM-2026-0001');
+ * barcode.encoding = PdfDataMatrixEncoding.Ascii;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfDataMatrixEncoding {
+    /**
+     * Specifies automatic encodation selection based on the payload.
+     */
+    Auto = 0,
+    /**
+     * Specifies ECC 200 ASCII encodation including digit-pair compaction.
+     */
+    Ascii = 1,
+    /**
+     * Specifies digit-only ASCII encodation with digit-pair compaction.
+     */
+    AsciiNumeric = 2,
+    /**
+     * Specifies Base256 encodation for arbitrary byte values.
+     */
+    Base256 = 3
+}
+/**
+ * Specifies automatic selection or a fixed Data Matrix symbol size.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page to the document
+ * let page: PdfPage = document.addPage();
+ * // Create a Data Matrix barcode with a fixed 20 x 20 symbol
+ * let barcode: PdfDataMatrixBarcode = new PdfDataMatrixBarcode('Test');
+ * barcode.symbolSize = PdfDataMatrixSize.Size20x20;
+ * barcode.draw(page, { x: 40, y: 40, width: 32, height: 32 });
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfDataMatrixSize {
+    /**
+     * Specifies automatic selection of the smallest fitting symbol.
+     */
+    Auto = 0,
+    /**
+     * Specifies a 10 x 10 symbol.
+     */
+    Size10x10 = 1,
+    /**
+     * Specifies a 12 x 12 symbol.
+     */
+    Size12x12 = 2,
+    /**
+     * Specifies a 14 x 14 symbol.
+     */
+    Size14x14 = 3,
+    /**
+     * Specifies a 16 x 16 symbol.
+     */
+    Size16x16 = 4,
+    /**
+     * Specifies an 18 x 18 symbol.
+     */
+    Size18x18 = 5,
+    /**
+     * Specifies a 20 x 20 symbol.
+     */
+    Size20x20 = 6,
+    /**
+     * Specifies a 22 x 22 symbol.
+     */
+    Size22x22 = 7,
+    /**
+     * Specifies a 24 x 24 symbol.
+     */
+    Size24x24 = 8,
+    /**
+     * Specifies a 26 x 26 symbol.
+     */
+    Size26x26 = 9,
+    /**
+     * Specifies a 32 x 32 symbol.
+     */
+    Size32x32 = 10,
+    /**
+     * Specifies a 36 x 36 symbol.
+     */
+    Size36x36 = 11,
+    /**
+     * Specifies a 40 x 40 symbol.
+     */
+    Size40x40 = 12,
+    /**
+     * Specifies a 44 x 44 symbol.
+     */
+    Size44x44 = 13,
+    /**
+     * Specifies a 48 x 48 symbol.
+     */
+    Size48x48 = 14,
+    /**
+     * Specifies a 52 x 52 symbol.
+     */
+    Size52x52 = 15,
+    /**
+     * Specifies a 64 x 64 symbol.
+     */
+    Size64x64 = 16,
+    /**
+     * Specifies a 72 x 72 symbol.
+     */
+    Size72x72 = 17,
+    /**
+     * Specifies an 80 x 80 symbol.
+     */
+    Size80x80 = 18,
+    /**
+     * Specifies an 88 x 88 symbol.
+     */
+    Size88x88 = 19,
+    /**
+     * Specifies a 96 x 96 symbol.
+     */
+    Size96x96 = 20,
+    /**
+     * Specifies a 104 x 104 symbol.
+     */
+    Size104x104 = 21,
+    /**
+     * Specifies a 120 x 120 symbol.
+     */
+    Size120x120 = 22,
+    /**
+     * Specifies a 132 x 132 symbol.
+     */
+    Size132x132 = 23,
+    /**
+     * Specifies a 144 x 144 symbol.
+     */
+    Size144x144 = 24,
+    /**
+     * Specifies an 8 x 18 rectangular symbol.
+     */
+    Size8x18 = 25,
+    /**
+     * Specifies an 8 x 32 rectangular symbol.
+     */
+    Size8x32 = 26,
+    /**
+     * Specifies a 12 x 26 rectangular symbol.
+     */
+    Size12x26 = 27,
+    /**
+     * Specifies a 12 x 36 rectangular symbol.
+     */
+    Size12x36 = 28,
+    /**
+     * Specifies a 16 x 36 rectangular symbol.
+     */
+    Size16x36 = 29,
+    /**
+     * Specifies a 16 x 48 rectangular symbol.
+     */
+    Size16x48 = 30
+}
+/**
+ * Specifies the symbology of a barcode form field.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a new page
+ * let page: PdfPage = document.addPage();
+ * // Create a QR code barcode field
+ * let field: PdfBarcodeField = new PdfBarcodeField(page, 'barcode', {x: 10, y: 10, width: 100, height: 100}, {
+ *     barcodeOptions: {symbology: PdfBarcodeSymbology.QR}
+ * });
+ * // Add the field to the form
+ * document.form.add(field);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfBarcodeSymbology {
+    /**
+     * Specifies the PDF417 symbology. This is the default.
+     */
+    PDF417 = 0,
+    /**
+     * Specifies the QR Code symbology.
+     */
+    QR = 1,
+    /**
+     * Specifies the Data Matrix symbology.
+     */
+    DataMatrix = 2
+}
+/**
+ * Specifies how the values of the referenced fields are combined into the barcode payload.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a new page
+ * let page: PdfPage = document.addPage();
+ * // Create a barcode field that encodes the values of other fields as XFDF
+ * let field: PdfBarcodeField = new PdfBarcodeField(page, 'barcode', {x: 10, y: 10, width: 100, height: 100}, {
+ *     fields: ['name', 'email'],
+ *     valueFormat: PdfBarcodeValueFormat.XML
+ * });
+ * // Add the field to the form
+ * document.form.add(field);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfBarcodeValueFormat {
+    /**
+     * Values are separated by a tab character.
+     */
+    TabDelimited = 0,
+    /**
+     * Values are exported as an XFDF document.
+     */
+    XML = 1,
+    /**
+     * The payload is produced by a user supplied calculation script.
+     */
+    CustomScript = 2
+}
+/**
+ * Specifies the horizontal alignment of human-readable barcode text.
+ */
+export enum PdfBarcodeTextAlignment {
+    /**
+     * Centers the barcode text.
+     */
+    Center = 0,
+    /**
+     * Left-aligns the barcode text.
+     */
+    Left = 1,
+    /**
+     * Right-aligns the barcode text.
+     */
+    Right = 2
+}
+/**
+ * Specifies the location of human-readable barcode text relative to the bars.
+ */
+export enum PdfBarcodeTextLocation {
+    /**
+     * Displays the barcode text below the bars.
+     */
+    Bottom = 0,
+    /**
+     * Displays the barcode text above the bars.
+     */
+    Top = 1,
+    /**
+     * Does not display human-readable barcode text.
+     */
+    None = 2
+}
+/**
+ * Defines the printer mark types that can be added to a PDF page.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a printer mark annotation
+ * let annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+ *     { x: 0, y: 0, width: 100, height: 100 }
+ * );
+ * // Set the printer mark type
+ * annotation.markType = PdfPrinterMarkType.Crop;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfPrinterMarkType {
+    /**
+     * Specifies crop marks.
+     */
+    Crop,
+    /**
+     * Specifies bleed marks.
+     */
+    Bleed,
+    /**
+     * Specifies registration marks.
+     */
+    Registration,
+    /**
+     * Specifies color bar marks.
+     */
+    ColorBar,
+    /**
+     * Specifies fold marks.
+     */
+    Fold,
+    /**
+     * Specifies page information marks.
+     */
+    PageInformation
+}
+/**
+ * Defines the target page boxes used when positioning printer marks.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a printer mark annotation
+ * let annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+ *     { x: 0, y: 0, width: 100, height: 100 }
+ * );
+ * // Set the target box
+ * annotation.targetBox = PdfPrinterMarkTargetBox.TrimBox;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfPrinterMarkTargetBox {
+    /**
+     * Specifies the media box.
+     */
+    MediaBox,
+    /**
+     * Specifies the crop box.
+     */
+    CropBox,
+    /**
+     * Specifies the trim box.
+     */
+    TrimBox,
+    /**
+     * Specifies the bleed box.
+     */
+    BleedBox,
+    /**
+     * Specifies the art box.
+     */
+    ArtBox
+}
+/**
+ * Defines the orientation options for printer marks.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a printer mark annotation
+ * let annotation: PdfPrinterMarkAnnotation = new PdfPrinterMarkAnnotation(
+ *     { x: 0, y: 0, width: 100, height: 100 }
+ * );
+ * // Set the printer mark orientation
+ * annotation.orientation = PdfPrinterMarkOrientation.Horizontal;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfPrinterMarkOrientation {
+    /**
+     * Specifies horizontal orientation.
+     */
+    Horizontal,
+    /**
+     * Specifies vertical orientation.
+     */
+    Vertical
+}
+/**
+ * Defines the content types supported by rich media annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a rich media annotation
+ * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the content type
+ * annotation.contentType = PdfRichMediaContentType.Video;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfRichMediaContentType {
+    /**
+     * Specifies video content.
+     */
+    Video,
+    /**
+     * Specifies audio content.
+     */
+    Audio
+}
+/**
+ * Defines the activation modes available for rich media annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a rich media annotation
+ * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the activation mode
+ * annotation.activationMode = PdfRichMediaActivationMode.PageVisible;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfRichMediaActivationMode {
+    /**
+     * Specifies explicit activation.
+     */
+    ExplicitActivation,
+    /**
+     * Specifies activation when the page is opened.
+     */
+    PageOpen,
+    /**
+     * Specifies activation when the page becomes visible.
+     */
+    PageVisible
+}
+/**
+ * Defines the deactivation modes available for rich media annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a rich media annotation
+ * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the deactivation mode
+ * annotation.deactivationMode = PdfRichMediaDeactivationMode.PageInvisible;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfRichMediaDeactivationMode {
+    /**
+     * Specifies explicit deactivation.
+     */
+    ExplicitDeactivation,
+    /**
+     * Specifies deactivation when the page is closed.
+     */
+    PageClose,
+    /**
+     * Specifies deactivation when the page becomes invisible.
+     */
+    PageInvisible
+}
+/**
+ * Defines the presentation styles available for rich media annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a rich media annotation
+ * let annotation: PdfRichMediaAnnotation = new PdfRichMediaAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the presentation style
+ * annotation.presentationStyle = PdfRichMediaPresentationStyle.Windowed;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfRichMediaPresentationStyle {
+    /**
+     * Specifies embedded presentation.
+     */
+    Embedded,
+    /**
+     * Specifies windowed presentation.
+     */
+    Windowed
+}
+/**
+ * Defines the playback modes available for movie annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a movie annotation
+ * let annotation: PdfMovieAnnotation = new PdfMovieAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the playback mode
+ * annotation.playMode = PdfMoviePlayMode.Repeat;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfMoviePlayMode {
+    /**
+     * Specifies single playback.
+     */
+    Once,
+    /**
+     * Specifies playback when the movie is opened.
+     */
+    Open,
+    /**
+     * Specifies repeated playback.
+     */
+    Repeat,
+    /**
+     * Specifies palindrome playback.
+     */
+    Palindrome
+}
+/**
+ * Defines the highlight modes available for screen annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a screen annotation
+ * let annotation: PdfScreenAnnotation = new PdfScreenAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the highlight mode
+ * annotation.highlightMode = PdfScreenAnnotationHighlightMode.Push;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfScreenAnnotationHighlightMode {
+    /**
+     * Specifies no highlight effect.
+     */
+    None,
+    /**
+     * Specifies inversion of the annotation rectangle.
+     */
+    Invert,
+    /**
+     * Specifies inversion of the annotation border.
+     */
+    Outline,
+    /**
+     * Specifies a pushed appearance effect.
+     */
+    Push
+}
+/**
+ * Defines the activation triggers available for screen annotations.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a screen annotation
+ * let annotation: PdfScreenAnnotation = new PdfScreenAnnotation(
+ *     { x: 50, y: 50, width: 200, height: 150 }
+ * );
+ * // Set the activation trigger
+ * annotation.trigger = PdfScreenAnnotationTrigger.MouseUp;
+ * // Add the annotation to the page
+ * page.annotations.add(annotation);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfScreenAnnotationTrigger {
+    /**
+     * Specifies activation on mouse-button down.
+     */
+    MouseDown,
+    /**
+     * Specifies activation on mouse-button up.
+     */
+    MouseUp,
+    /**
+     * Specifies activation when the pointer enters the annotation area.
+     */
+    MouseEnter,
+    /**
+     * Specifies activation when the pointer leaves the annotation area.
+     */
+    MouseExit
+}
+
+/**
+ * Specifies the supported shape types.
+ *
+ * ```typescript
+ * // Create a new PDF document
+ * let document: PdfDocument = new PdfDocument();
+ * // Add a page
+ * let page: PdfPage = document.addPage();
+ * // Create a shape element
+ * let element: PdfShapeElement = { shape: { type: PdfShapeType.Rectangle, bounds: { x: 20, y: 20, width: 200, height: 1000 } },
+ *                                  brush: new PdfBrush({ r: 255, g: 0, b: 0 }),
+ *                                  layoutFormat: { layoutType: PdfLayoutType.paginate, breakType: PdfLayoutBreakType.fitPage } };
+ * // Draw the shape element
+ * page.drawShapeElement(element);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfShapeType {
+    /**
+     * Specifies a line shape.
+     */
+    Line,
+    /**
+     * Specifies a Bezier curve shape.
+     */
+    BezierCurve,
+    /**
+     * Specifies an arc shape.
+     */
+    Arc,
+    /**
+     * Specifies a rectangle shape.
+     */
+    Rectangle,
+    /**
+     * Specifies an ellipse shape.
+     */
+    Ellipse,
+    /**
+     * Specifies a pie shape.
+     */
+    Pie,
+    /**
+     * Specifies a polygon shape.
+     */
+    Polygon,
+    /**
+     * Specifies a path shape.
+     */
+    Path,
+    /**
+     * Specifies a rounded rectangle shape.
+     */
+    RoundedRectangle
 }

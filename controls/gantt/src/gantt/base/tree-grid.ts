@@ -1079,7 +1079,8 @@ export class GanttTreeGrid {
         const previousColumn: GanttColumnModel = this.parent.previousGanttColumns.filter((prevcolumn: GanttColumnModel) => {
             return column.field === prevcolumn.field;
         })[0];
-        column.disableHtmlEncode = !isNullOrUndefined(column.disableHtmlEncode) ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
+        column.disableHtmlEncode = !isNullOrUndefined(column.disableHtmlEncode)
+            ? column.disableHtmlEncode : taskSettings.notes === column.field ? false : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
         }

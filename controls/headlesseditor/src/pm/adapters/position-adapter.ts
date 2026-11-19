@@ -1,57 +1,19 @@
 /**
  * position-adapter.ts — Converts between public Position and PM integer positions.
  *
- * PositionAdapter maintains a per-state cache (CachedNodeInfo keyed by nodeId)
- * so that multiple operations in one transaction batch can resolve positions
- * without repeated document traversals.
+ * Syncfusion documents carry no persistent node IDs. A public Position is a
+ * `{ path, offset }` pair resolved to a target node, then translated to the
+ * absolute PM integer position via a tree walk on `pmDoc`.
  *
  * Sealed inside src/pm/. Nothing outside src/pm/ may import from this file.
  */
-import { PMNode, Mapping, PMMapResult } from '../pm-guard';
-import { Position } from '../../model/position';
+import { PMNode, PMResolvedPos, Mapping, PMMapResult } from '../pm-guard';
+import { Position } from '../../core/model/selection';
 import { InternalPosition } from '../types/internal-position';
-
-// ── Cache type ────────────────────────────────────────────────────────────────
-
-/**
- * Precomputed node geometry for a single document state.
- * `pmBefore` / `pmAfter` are the absolute PM positions immediately before/after
- * the node's content (i.e. the token positions of the node's open/close tags).
- */
-export interface CachedNodeInfo {
-    /** Absolute PM position of the node-open token. */
-    pmBefore: number;
-    /** Absolute PM position of the node-close token. */
-    pmAfter: number;
-    /** Total size in PM position units (content + 2 for block nodes, 0 for text). */
-    nodeSize: number;
-    /** First content position inside the node (pmBefore + 1 for block nodes). */
-    start: number;
-    /** Last content position inside the node. */
-    end: number;
-}
 
 // ── Adapter ───────────────────────────────────────────────────────────────────
 
 export class PositionAdapter {
-    private cache: Map<string, CachedNodeInfo>;
-
-    constructor() {
-        this.cache = new Map<string, CachedNodeInfo>();
-    }
-
-    // ── Cache management ──────────────────────────────────────────────────────
-
-    /**
-     * Clears all cached node geometry.
-     * Must be called after every PM transaction dispatch so stale positions
-     * are not reused across document states.
-     *
-     * @returns {void}
-     */
-    public invalidateCache(): void {
-        this.cache.clear();
-    }
 
     // ── Resolve position ──────────────────────────────────────────────────────
 
@@ -59,51 +21,27 @@ export class PositionAdapter {
      * Converts a public Position to an InternalPosition carrying the resolved
      * absolute PM integer position.
      *
-     * Traverses the PM document once per unique nodeId per transaction
-     * (subsequent lookups hit the cache).
+     * Walks the PM doc along `pos.path` to find the target node, then
+     * advances `pos.offset` characters into its content.
      *
      * @param {Position} pos - The public position to convert.
-     * @param {PMNode} pmDoc - The current PM document used for context.
+     * @param {PMNode} pmDoc - The PM document to resolve against.
      * @returns {InternalPosition} The internal position with the resolved PM offset.
-     * @throws Error if the nodeId does not exist in the current PM document.
      */
     public toPMPosition(pos: Position, pmDoc: PMNode): InternalPosition {
-        const info: CachedNodeInfo = this.getNodeInfo(pos.nodeId, pmDoc);
-        const pmPos: number = info.start + pos.offset;
-        return { nodeId: pos.nodeId, offset: pos.offset, pmPos };
+        const resolved: number = resolvePathToPMPos(pmDoc, pos.path, pos.offset);
+        return { offset: pos.offset, pmPos: resolved };
     }
 
     /**
      * Converts an absolute PM integer position back to a public Position.
      *
-     * Walks the document to find the node whose content range contains
-     * `pmPos` and computes the local offset within it.
-     *
      * @param {number} pmPos - The absolute PM integer position to convert.
-     * @param {PMNode} pmDoc - The current PM document used for context.
+     * @param {PMNode} pmDoc - The current PM document used to derive the path.
      * @returns {Position} The corresponding public Position.
-     * @throws Error if `pmPos` does not resolve to a known node.
      */
     public fromPMPosition(pmPos: number, pmDoc: PMNode): Position {
-        let found: { nodeId: string; offset: number } | null = null;
-
-        pmDoc.nodesBetween(pmPos, pmPos, (node: PMNode, pos: number) => {
-            if (found) { return false; }
-            const nodeId: string | null = node.attrs ? node.attrs['id'] : null;
-            if (!nodeId) { return true; }
-
-            const start: number = pos + 1; // first content position inside node
-            if (pmPos >= start && pmPos <= start + node.content.size) {
-                found = { nodeId: String(nodeId), offset: pmPos - start };
-                return false;
-            }
-            return true;
-        });
-
-        if (!found) {
-            throw new Error('PositionAdapter.fromPMPosition: no node contains pmPos=' + pmPos);
-        }
-        return found as Position;
+        return { ...derivePathFromPMPos(pmDoc, pmPos), offset: pmPos };
     }
 
     /**
@@ -113,65 +51,74 @@ export class PositionAdapter {
      * Returns null when the position was deleted by the mapping.
      *
      * @param {Position} pos - The public position to remap.
-     * @param {PMNode} pmDoc - The current PM document used for context.
      * @param {Mapping} mapping - The PM mapping produced by the transaction.
+     * @param {PMNode} pmDoc - The PM document after the transaction (used to
+     *                          rebuild the path from the remapped integer).
      * @returns {Position} The remapped public position, or null if it was deleted.
      */
     public mapAfterTransaction(
         pos: Position,
-        pmDoc: PMNode,
-        mapping: Mapping
+        mapping: Mapping,
+        pmDoc: PMNode
     ): Position | null {
-        let internal: InternalPosition;
-        try {
-            internal = this.toPMPosition(pos, pmDoc);
-        } catch (e) {
-            return null;
-        }
-
-        const mapped: PMMapResult = mapping.mapResult(internal.pmPos);
+        const mapped: PMMapResult = mapping.mapResult(pos.offset);
         if (mapped.deleted) { return null; }
-
-        // Re-resolve the mapped PM position back to a public Position
-        try {
-            return this.fromPMPosition(mapped.pos, pmDoc);
-        } catch (e) {
-            return null;
-        }
+        return { ...derivePathFromPMPos(pmDoc, mapped.pos), offset: mapped.pos };
     }
+}
 
-    // ── Internal helpers ──────────────────────────────────────────────────────
+// ── Local helpers ─────────────────────────────────────────────────────────────
 
-    private getNodeInfo(nodeId: string, pmDoc: PMNode): CachedNodeInfo {
-        const cached: CachedNodeInfo | undefined = this.cache.get(nodeId);
-        if (cached) { return cached; }
-
-        const info: CachedNodeInfo | null = this.findNode(nodeId, pmDoc);
-        if (!info) {
-            throw new Error('PositionAdapter: nodeId "' + nodeId + '" not found in document.');
+/**
+ * Resolve a path+offset to an absolute PM integer position by walking the
+ * PM doc. Returns 0 when the path is empty.
+ *
+ * @param {PMNode} pmDoc The PM document to descend into.
+ * @param {number[]} path Path from document root to the target node.
+ * @param {number} offset Character offset within the resolved node.
+ * @returns {number} The absolute PM integer position.
+ */
+function resolvePathToPMPos(pmDoc: PMNode, path: number[], offset: number): number {
+    let node: PMNode = pmDoc;
+    let absPos: number = 0;
+    for (let depth: number = 0; depth < path.length; depth++) {
+        const idx: number = path[depth as number];
+        if (!node.content || idx < 0 || idx >= node.childCount) {
+            return absPos;
         }
-        this.cache.set(nodeId, info);
-        return info;
-    }
-
-    private findNode(nodeId: string, pmDoc: PMNode): CachedNodeInfo | null {
-        let result: CachedNodeInfo | null = null;
-
-        pmDoc.descendants((node: PMNode, pos: number) => {
-            if (result) { return false; }
-            const id: string | null = node.attrs ? node.attrs['id'] : null;
-            if (!id || String(id) !== nodeId) { return true; }
-
-            const pmBefore: number = pos;
-            const nodeSize: number = node.nodeSize;
-            const pmAfter: number = pos + nodeSize;
-            const start: number = node.isText ? pos : pos + 1;
-            const end: number = node.isText ? pos + nodeSize : pos + nodeSize - 1;
-
-            result = { pmBefore, pmAfter, nodeSize, start, end };
-            return false;
+        let childPos: number = -1;
+        let target: PMNode | null = null;
+        node.content.forEach((child: PMNode, cp: number) => {
+            if (target) { return false; }
+            if (cp === idx) {
+                target = child;
+                childPos = cp;
+                return false;
+            }
+            return undefined as never;
         });
-
-        return result;
+        if (!target) { return absPos; }
+        absPos = absPos + childPos + 1;
+        node = target;
     }
+    // `offset` is interpreted as character offset from start of resolved node's content.
+    return absPos + offset;
+}
+
+/**
+ * Derive a path from an absolute PM integer position by walking the resolved
+ * position back up to the root and recording the child index at each depth.
+ *
+ * @param {PMNode} pmDoc The PM document to read from.
+ * @param {number} pmPos Absolute PM integer position.
+ * @returns {{ path: number[] }} The derived path from document root.
+ */
+function derivePathFromPMPos(pmDoc: PMNode, pmPos: number): { path: number[] } {
+    const $pos: PMResolvedPos = pmDoc.resolve(pmPos);
+    const path: number[] = [];
+    for (let depth: number = $pos.depth; depth >= 0; depth--) {
+        const idx: number = $pos.index(depth);
+        if (idx >= 0) { path.unshift(idx); }
+    }
+    return { path };
 }

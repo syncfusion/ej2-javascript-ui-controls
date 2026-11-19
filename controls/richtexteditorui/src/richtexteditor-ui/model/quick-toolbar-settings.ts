@@ -19,7 +19,7 @@ export const DEFAULT_TABLE_QUICK_TOOLBAR_ITEMS: TableQuickToolbarItem[] = [
     'CellBackgroundColor',
     'VerticalAlign',
     'Align',
-    'Delete'
+    'Remove'
 ];
 
 /**
@@ -38,7 +38,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
      * Specifies the toolbar items shown when text is selected.
      * If no items are configured, the text quick toolbar is not rendered.
      *
-     * @default []
+     * @default null
      */
     @Property(null)
     public text: ToolbarItem[];
@@ -46,11 +46,9 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     /**
      * Specifies the toolbar items shown when an image is selected.
      *
-     * @default ['AltText', 'Caption', 'Align',
-     * 'Display', 'WrapText',
-     * 'Dimension', 'Replace', 'Remove']
+     * @default ['AltText', 'Caption', '|', 'Align', 'Display', 'WrapText', '|', 'Dimension', 'Replace', 'Remove']
      */
-    @Property(DEFAULT_IMAGE_QUICK_TOOLBAR_ITEMS)
+    @Property(['AltText', 'Caption', '|', 'Align', 'Display', 'WrapText', '|', 'Dimension', 'Replace', 'Remove'])
     public image: ImageQuickToolbarItem[];
 
     /**
@@ -59,19 +57,17 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
      *
      * Default order: Open, Copy, Edit, Remove
      *
-     * @default ['Open', 'Copy', 'Edit', 'Remove']
+     * @default [ 'OpenLink', 'CopyLink', 'EditLink', 'RemoveLink']
      */
-    @Property(null)
+    @Property(['Open', 'Copy', 'Edit', 'Remove'])
     public link: LinkQuickToolbarItem[];
 
     /**
      * Items displayed in the Table Quick Toolbar.
      *
-     * @default ['Row', 'Column', 'Header',
-     * 'CellBackgroundColor', 'VerticalAlign',
-     * 'Align', 'Delete']
+     * @default ['Header', 'Remove', '|', 'Row', 'Column', '|', 'CellBackgroundColor', 'Align', 'VerticalAlign']]
      */
-    @Property(DEFAULT_TABLE_QUICK_TOOLBAR_ITEMS)
+    @Property(['Header', 'Remove', '|', 'Row', 'Column', '|', 'CellBackgroundColor', 'Align', 'VerticalAlign'])
     public table: TableQuickToolbarItem[];
 
     /**
@@ -82,5 +78,5 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
      * @default false
      */
     @Property(false)
-    public appendToBody: boolean;
+    public enableAppendToBody: boolean;
 }

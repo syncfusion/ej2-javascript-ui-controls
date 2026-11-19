@@ -1,31 +1,32 @@
 import { BaseEventArgs, ChildProperty, EmitType, Event, Property } from '@syncfusion/ej2-base';
-import { ToolbarItem, ToolbarType, ToolbarPosition, DEFAULT_TOOLBAR_ITEMS, FontSizeItem, FontFamilyItem } from './toolbar.types';
+import { ToolbarItem, ToolbarType, ToolbarPosition, FontSizeItem, FontFamilyItem } from './toolbar.types';
 import { ToolbarSubItem } from '../../base/renderer/toolbar-item-config';
 import { ToolbarItemModel } from '../../base/renderer/toolbar-item-normalizer';
+import { UpdatedToolbarStatusEventArgs } from '../interface';
 
 /**
  * Default font size items for the dropdown.
  */
 const DEFAULT_FONT_SIZE_ITEMS: FontSizeItem[] = [
-    { text: 'Default', value: { size: 'Default' } },
-    { text: '8', value: { size: '8px' } },
-    { text: '10', value: { size: '10px' } },
-    { text: '12', value: { size: '12px' } },
-    { text: '14', value: { size: '14px' } },
-    { text: '16', value: { size: '16px' } },
-    { text: '18', value: { size: '18px' } },
-    { text: '24', value: { size: '24px' } }
+    { text: 'Default', value: 'Default' },
+    { text: '8', value: '8px'  },
+    { text: '10', value: '10px' },
+    { text: '12', value: '12px' },
+    { text: '14', value: '14px' },
+    { text: '16', value: '16px' },
+    { text: '18', value: '18px' },
+    { text: '24', value: '24px' }
 ];
 
 /**
  * Default font family items for the dropdown.
  */
 const DEFAULT_FONT_FAMILY_ITEMS: FontFamilyItem[] = [
-    { text: 'Default', value: { family: 'Default' } },
-    { text: 'Arial', value: { family: 'Arial' } },
-    { text: 'Helvetica', value: { family: 'Helvetica' } },
-    { text: 'Times New Roman', value: { family: 'Times New Roman' } },
-    { text: 'Courier New', value: { family: 'Courier New' } }
+    { text: 'Default', value: 'Default' },
+    { text: 'Arial', value: 'Arial' },
+    { text: 'Helvetica', value: 'Helvetica' },
+    { text: 'Times New Roman', value: 'Times New Roman' },
+    { text: 'Courier New', value: 'Courier New' }
 ];
 
 /**
@@ -39,6 +40,9 @@ const DEFAULT_FORMAT_ITEMS: ToolbarSubItem[] = [
     { id: 'Heading 4', text: 'Heading 4', command: 'heading4' }
 ];
 
+/**
+ * Configures the Toolbar settings of the RichTextEditor.
+ */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
      * Specifies whether to render the Toolbar in the Editor.
@@ -51,17 +55,17 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
      * Defines the items displayed in the toolbar.
      *
-     * @default DEFAULT_TOOLBAR_ITEMS (cloned per instance)
+     * @default ['Bold', 'Italic', 'Underline', 'Strikethrough', '|', 'Formats', 'Alignment', 'BulletList', 'NumberedList', '|', 'Link', 'Image', 'Table', '|', 'Undo', 'Redo']
      */
-    @Property()
+    @Property(['Bold', 'Italic', 'Underline', 'Strikethrough', '|', 'Formats', 'Alignment', 'BulletList', 'NumberedList', '|', 'Link', 'Image', 'Table', '|', 'Undo', 'Redo'])
     public items: ToolbarItem[];
 
     /**
      * Defines the toolbar overflow and layout behavior.
      *
-     * @default 'Expanded'
+     * @default 'Auto'
      */
-    @Property('Expanded')
+    @Property('Auto')
     public type: ToolbarType;
 
     /**
@@ -96,6 +100,16 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     @Event()
     public itemClicked: EmitType<ToolbarItemClickedEventArgs>;
 
+    /**
+     * Raised after the toolbar item status (active states, dropdown values, color picker selections)
+     * has been synchronized with the current editor selection. This event fires after formatting states
+     * are updated to reflect the user's current cursor position or selection in the editor.
+     *
+     * @event updatedToolbarStatus
+     */
+    @Event()
+    public updatedToolbarStatus: EmitType<UpdatedToolbarStatusEventArgs>;
+
 }
 
 /**
@@ -120,15 +134,6 @@ export interface ToolbarItemClickedEventArgs extends BaseEventArgs {
      *
      */
     event?: Event
-    /**
-     * Specifies whether the click event should be cancelled.
-     * Determines if the default action associated with the click event should be prevented.
-     *
-     * @type {boolean}
-     * @default false
-     *
-     */
-    cancel?: boolean
 
     /**
      * Specifies the index of the message data associated with the toolbar item click event.

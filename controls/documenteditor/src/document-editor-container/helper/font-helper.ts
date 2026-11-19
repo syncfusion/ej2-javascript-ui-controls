@@ -6,11 +6,13 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * Helper class for font operations in Document Editor
+ *
  * @private
  */
 export class FontHelper {
     /**
      * Get highlight color items
+     *
      * @param {L10n} localObj - Localization object
      * @param {string} id - ID for the highlight color items
      * @returns {HighlightColorInfo[]} Array of highlight color items
@@ -37,6 +39,7 @@ export class FontHelper {
 
     /**
      * Get HighlightColor enum value based on the color string
+     *
      * @param {string} color - Color string in rgb format
      * @returns {HighlightColor} HighlightColor enum value
      */
@@ -79,6 +82,7 @@ export class FontHelper {
 
     /**
      * Get background color from HighlightColor enum
+     *
      * @param {HighlightColor} highlightColor - HighlightColor enum value
      * @returns {string} Background color string in rgb format
      */
@@ -121,6 +125,7 @@ export class FontHelper {
 
     /**
      * Apply highlight color to selection
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {string} color - Color string in rgb format
      * @returns {string} Applied highlight color
@@ -136,6 +141,7 @@ export class FontHelper {
 
     /**
      * Apply font formatting action
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {string} action - Action to perform (bold, italic, etc.)
      * @returns {void}
@@ -176,6 +182,7 @@ export class FontHelper {
 
     /**
      * Apply case change to selection
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {L10n} localObj  - Localization object
      * @param {string} caseType - Case type to apply
@@ -208,6 +215,7 @@ export class FontHelper {
 
     /**
      * Change font family
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {string} fontFamily - Font family to apply
      * @returns {void}
@@ -220,6 +228,7 @@ export class FontHelper {
 
     /**
      * Change font size
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {string | number} fontSize - Font size to apply
      * @returns {void}
@@ -236,6 +245,7 @@ export class FontHelper {
 
     /**
      * Change font color
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {string} color - Color to apply
      * @returns {void}
@@ -247,6 +257,7 @@ export class FontHelper {
     }
     /**
      * Update toggle button state
+     *
      * @param {HTMLElement} button - Button element
      * @param {boolean} isActive - Whether the button should be active
      * @returns {void}
@@ -265,6 +276,7 @@ export class FontHelper {
 
     /**
      * Get font size items
+     *
      * @returns {string[]} Array of font size items
      */
     public static getFontSizeItems(): string[] {
@@ -273,6 +285,7 @@ export class FontHelper {
 
     /**
      * Get change case items
+     *
      * @param {L10n} localObj - Localization object
      * @param {string} commonId - Common ID for localization
      * @returns {ItemModel[]} Array of change case items
@@ -289,6 +302,7 @@ export class FontHelper {
 
     /**
      * Increase font size
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @returns {void}
      */
@@ -300,6 +314,7 @@ export class FontHelper {
 
     /**
      * Decrease font size
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @returns {void}
      */

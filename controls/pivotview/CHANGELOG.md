@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 35.1.43 (2026-11-03)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I831103` - Resolved a Content Security Policy (CSP) violation that occurred during Calculated Field evaluation when using strict CSP settings.
+
+## 35.1.39 (2026-10-07)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I871098` - Fixed an issue where row header values did not retain the correct date formatting in the server-side Pivot Table when using the Tabular layout after expanding and collapsing members.
+
 ## 31.1.17 (2025-09-05)
 
 ### Pivot Table

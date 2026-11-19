@@ -136,9 +136,15 @@ export class HtmlEditor {
         this.parent.on(events.tableclass, this.isTableClassAdded, this);
         this.parent.on(events.onHandleFontsizeChange, this.onHandleFontsizeChange, this);
         this.parent.on(events.afterKeyDown, this.afterKeyDown, this);
+        this.parent.on(events.mouseUp, this.onMouseUp, this);
     }
     private onSlashMenuOpen(): void {
         this.isSlashMenuOpen = true;
+    }
+    private onMouseUp(): void {
+        // Reset isCopyAll flag when mouse is released within the editor
+        // This handles the case where user presses Ctrl+A and then clicks/drags to change selection
+        this.isCopyAll = false;
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -1636,6 +1642,7 @@ export class HtmlEditor {
         this.parent.off(events.paste, this.onPaste);
         this.parent.off(events.tableclass, this.isTableClassAdded);
         this.parent.off(events.afterKeyDown, this.afterKeyDown);
+        this.parent.off(events.mouseUp, this.onMouseUp);
     }
 
     private render(): void {

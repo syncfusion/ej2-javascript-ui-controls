@@ -26,6 +26,7 @@ export class VirtualScroll {
     private horizontalScrollTimeoutObj: ReturnType<typeof setTimeout>;
     private boundElements: HTMLElement[] = [];
     private scrollingDirection: string = 'Up';
+    private horizontalTableOffset: number = 0;
 
     /**
      * Constructor for PivotView scrolling.
@@ -301,6 +302,31 @@ export class VirtualScroll {
             }
         }
     }
+
+    /**
+     * Updates the translated positions of the virtualized header/content tables.
+     *
+     * This keeps the scrolling UI (header and content) in sync by updating the
+     * table `transform: translate(x, y)` values.
+     *
+     * @param {HTMLElement} mHdr - Movable header container element.
+     * @param {HTMLElement} mCont - Content container element.
+     * @param {number} horiOffset - Horizontal translate offset in pixels.
+     * @param {number} vertiOffset - Vertical translate offset in pixels.
+     * @returns {void}
+     * @hidden
+     */
+    public setTableOffset(mHdr: HTMLElement, mCont: HTMLElement, horiOffset: number, vertiOffset: number): void {
+        this.horizontalTableOffset = horiOffset;
+        const contentTable: HTMLElement = mCont.querySelector('.' + cls.TABLE) as HTMLElement;
+        const headerTable: HTMLElement = mHdr.querySelector('.' + cls.TABLE) as HTMLElement;
+        setStyleAttribute(contentTable, {
+            transform: 'translate(' + horiOffset + 'px,' + vertiOffset + 'px)'
+        });
+        setStyleAttribute(headerTable, {
+            transform: 'translate(' + horiOffset + 'px,0px)'
+        });
+    }
     private enginePopulatedEventMethod(engine: PivotEngine | OlapEngine, control?: PivotView): void {
         const pivot: PivotView = control ? control : this.parent;
         const eventArgs: EnginePopulatedEventArgs = {
@@ -388,15 +414,12 @@ export class VirtualScroll {
             this.isScrolling = true;
             horiOffset = left - this.parent.scrollPosObject.horizontalSection - eleScrollLeft;
             horiOffset = this.parent.enableRtl ? horiOffset : -horiOffset;
-            const vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
-                (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() : '0px)';
+            const table: HTMLElement = mCont.querySelector('.' + cls.TABLE) as HTMLElement;
+            const transform: string = table.style.transform;
+            const translateValues: string[] = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(',');
+            const vertiOffset: number = parseFloat(translateValues[1]) || 0;
             if (eleScrollLeft < this.parent.scrollerBrowserLimit) {
-                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
-                });
-                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
-                });
+                this.setTableOffset(mHdr, mCont, horiOffset, vertiOffset);
                 this.alignFreezedCells(horiOffset, false);
             }
             let excessMove: number = this.parent.scrollPosObject.horizontalSection > left ?
@@ -433,12 +456,7 @@ export class VirtualScroll {
                     horiOffset = left;
                     excessMove = 0;
                 }
-                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
-                });
-                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
-                });
+                this.setTableOffset(mHdr, mCont, horiOffset, vertiOffset);
                 this.alignFreezedCells(horiOffset, false);
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
                 this.adjustHorizontalScrollOffset(mHdr, mCont, mScrollBar);
@@ -454,15 +472,10 @@ export class VirtualScroll {
                 const mCntVScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
                 this.parent.scrollPosObject.horizontalSection -= mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos;
                 horiOffset = (eleScrollLeft > this.parent.scrollerBrowserLimit) ?
-                    Number((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].split('px')[0].trim()) :
+                    parseFloat((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.left) || 0 :
                     -(((eleScrollLeft * this.parent.horizontalScrollScale) -
                         this.parent.scrollPosObject.horizontalSection - eleScrollLeft));
-                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
-                });
-                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
-                });
+                this.setTableOffset(mHdr, mCont, horiOffset, vertiOffset);
                 this.alignFreezedCells(horiOffset, false);
             }
             this.previousValues.left = left;
@@ -668,16 +681,12 @@ export class VirtualScroll {
         const tableContentPos: number = Math.abs((mCont.scrollWidth - (Math.abs(mCont.scrollLeft) + mCont.offsetWidth)));
         const offset: number = hSrcollPos - tableContentPos;
         if (offset < 0) {
-            const transform: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform;
+            const table: HTMLElement = mCont.querySelector('.' + cls.TABLE) as HTMLElement;
+            const transform: string = table.style.transform;
             const translateValues: string[] = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(',');
-            const horiOffset: number = (parseFloat(translateValues[0]) || 0) + offset;
-            const vertOffset: number = (parseFloat(translateValues[1]) || 0);
-            setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
-                transform: `translate(${horiOffset}px, ${vertOffset}px)`
-            });
-            setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
-                transform: `translate(${horiOffset}px, 0px)`
-            });
+            const horiOffset: number = this.horizontalTableOffset + offset;
+            const vertOffset: number = parseFloat(translateValues[1]) || 0;
+            this.setTableOffset(mHdr, mCont, horiOffset, vertOffset);
             this.alignFreezedCells(horiOffset, false);
             this.parent.scrollPosObject.horizontalSection = horiOffset;
         }

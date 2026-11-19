@@ -4,15 +4,27 @@ import { ICssClassArgs } from '../../common/interface';
 import { isNullOrUndefined as isNOU, L10n } from '@syncfusion/ej2-base';
 import { RichTextEditorUIModel } from '../richtexteditor-ui-model';
 
+/**
+ * @private
+ */
 export abstract class BaseModule {
     protected parent: RichTextEditorUI;
     protected locale: L10n;
     protected isDestroyed: boolean = false;
     protected isEnabled: boolean;
+
+    /** Bound method references to avoid scoping issues with event handler removal */
+    private boundOnDestroy: (() => void) | null = null;
+    private boundHandleCssClassChange: ((e: ICssClassArgs) => void) | null = null;
+    private boundHandleModelChanged: ((e: { [key: string]: RichTextEditorUIModel }) => void) | null = null;
+
     constructor(parent: RichTextEditorUI, locale: L10n) {
         this.parent = parent;
         this.locale = locale;
         this.isEnabled = parent.enable;
+        this.boundOnDestroy = this.onDestroy.bind(this);
+        this.boundHandleCssClassChange = this.handleCssClassChange.bind(this);
+        this.boundHandleModelChanged = this.handleModelChanged.bind(this);
         this.registerBaseEventListeners();
         this.addEventListener();
     }
@@ -63,15 +75,15 @@ export abstract class BaseModule {
     protected onModelPropertyChanged(_prop: string, _e: { [key: string]: RichTextEditorUIModel }): void { /* no-op */ }
 
     private registerBaseEventListeners(): void {
-        this.parent.on(events.destroy, this.onDestroy, this);
-        this.parent.on(events.bindCssClass, this.handleCssClassChange, this);
-        this.parent.on(events.modelChanged, this.handleModelChanged, this);
+        this.parent.on(events.destroy, this.boundOnDestroy, this);
+        this.parent.on(events.bindCssClass, this.boundHandleCssClassChange, this);
+        this.parent.on(events.modelChanged, this.boundHandleModelChanged, this);
     }
 
     private removeBaseEventListeners(): void {
-        this.parent.off(events.destroy, this.onDestroy);
-        this.parent.off(events.bindCssClass, this.handleCssClassChange);
-        this.parent.off(events.modelChanged, this.handleModelChanged);
+        this.parent.off(events.destroy, this.boundOnDestroy);
+        this.parent.off(events.bindCssClass, this.boundHandleCssClassChange);
+        this.parent.off(events.modelChanged, this.boundHandleModelChanged);
     }
 
     private handleCssClassChange(e: ICssClassArgs): void {
@@ -112,7 +124,7 @@ export abstract class BaseModule {
         }
     }
 
-    private onDestroy = (): void => {
+    private onDestroy(): void {
         if (this.isDestroyed) {
             return;
         }
@@ -120,7 +132,10 @@ export abstract class BaseModule {
         this.removeBaseEventListeners();
         this.destroyModule();
         this.isDestroyed = true;
-    };
+        this.boundHandleCssClassChange = null;
+        this.boundHandleModelChanged = null;
+        this.boundOnDestroy = null;
+    }
 
     public destroy(): void {
         this.onDestroy();

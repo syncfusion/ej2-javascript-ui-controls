@@ -1,7 +1,8 @@
 import { addClass, isNullOrUndefined, Observer, removeClass, EventHandler } from '@syncfusion/ej2-base';
 import { IEditorCoreOptions } from './interface';
+import { ValueFormat } from '../../richtexteditor-ui/interface';
 import * as events from '../../common/constant';
-import { HeadlessEditor, ExtensionDefinition, paragraphExtension, EditorConfig, DocumentRoot, textAlignExtension, fontFamilyExtension, fontSizeExtension, placeholderExtension } from '@syncfusion/ej2-headless-editor';
+import { HeadlessEditor, ExtensionDefinition, paragraphExtension, EditorConfig, DocumentRoot, textAlignExtension, fontFamilyExtension, fontSizeExtension, placeholderExtension, collapsibleExtension } from '@syncfusion/ej2-headless-editor';
 import * as classes from '../../common/classes';
 import { EditorCommandName } from '../../controller/interface';
 import * as coreEvents from '../constants';
@@ -28,7 +29,6 @@ export class EditorCore {
 
     public observer: Observer;
     public editor: HeadlessEditor;
-    // Formats objects
     private inlineFormatsObj: InlineFormats;
     private blockFormatsObj: BlockFormats;
     private listFormatsObj: ListFormats;
@@ -86,7 +86,7 @@ export class EditorCore {
     public mount(hostElement: HTMLElement, options: IEditorCoreOptions): void {
         const extensions: ExtensionDefinition<Object>[] = options.extensions && options.extensions.length
             ? options.extensions
-            : [paragraphExtension, textAlignExtension, fontFamilyExtension, fontSizeExtension];
+            : [paragraphExtension, textAlignExtension, fontFamilyExtension, fontSizeExtension, collapsibleExtension];
 
         const editorOptions: EditorConfig = {
             extensions: extensions,
@@ -109,7 +109,7 @@ export class EditorCore {
         this.inputElement = contentElement;
         addClass([this.inputElement], 'e-content');
         this.inputElement.setAttribute('aria-label' , 'Rich Text Editor');
-        this.inputElement.setAttribute('aria-multline', 'true');
+        this.inputElement.setAttribute('aria-multiline', 'true');
         this.inputElement.setAttribute('role', 'textbox');
         this.applyRtl(options.enableRtl);
         this.wireEvents();
@@ -152,10 +152,11 @@ export class EditorCore {
                 break;
             case 'value':
                 if (!isNullOrUndefined(newProperties.value) && newProperties.value !== oldProperties?.value) {
-                    if (newProperties.valueFormat === 'html' && typeof newProperties.value === 'string') {
-                        this.editor.setOptions({ content: newProperties.value });
+                    const nextFormat: ValueFormat = newProperties.valueFormat;
+                    if (nextFormat === 'html' && typeof newProperties.value === 'string') {
+                        this.editor.setContent(newProperties.value);
                     } else {
-                        this.editor.setOptions({ document: newProperties as DocumentRoot });
+                        this.editor.setDocument(newProperties.value as unknown as DocumentRoot);
                     }
                 }
                 break;
@@ -205,6 +206,12 @@ export class EditorCore {
         }
         this.unwireEvents();
         this.tablePluginObj.destroy();
+        this.inlineFormatsObj.destroy();
+        this.imageFormatsObj.destroy();
+        this.blockFormatsObj.destroy();
+        this.listFormatsObj.destroy();
+        this.alignmentObj.destroy();
+        this.linkObj.destroy();
         this.editor.destroy();
         this.observer.notify(coreEvents.destroyCore, this);
         // Cleanup placeholder: In full implementation, would clean up
@@ -275,6 +282,8 @@ export class EditorCore {
             case 'blockQuote':
             case 'codeBlock':
             case 'horizontalRule':
+            case 'callout':
+            case 'collapsible':
                 this.observer.notify(coreEvents.blockExecution, {
                     command: command,
                     args: payload.args,
@@ -293,6 +302,7 @@ export class EditorCore {
             case 'numberedList':
             case 'bulletList':
             case 'setListStyle':
+            case 'checklist':
                 this.observer.notify(coreEvents.listExecution, {
                     command: command,
                     args: payload.args,

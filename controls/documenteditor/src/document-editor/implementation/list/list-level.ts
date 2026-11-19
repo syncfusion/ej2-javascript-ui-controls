@@ -60,6 +60,7 @@ export class WListLevel {
     public set restartLevel(restartLevel: number) {
         this.setPropertyValue('restartLevel', restartLevel);
     }
+    // eslint-disable-next-line jsdoc/require-returns
     /**
      * Gets the boolean that specifies that the format for the numbering at this level should be in the decimal format.
      */
@@ -68,6 +69,7 @@ export class WListLevel {
     }
     /**
      * Sets the boolean that specifies that the format for the numbering at this level should be in the decimal format.
+     *
      * @param {boolean} isLegalStyleNumbering - Specifies the value.
      */
     public set isLegalStyleNumbering(isLegalStyleNumbering: boolean) {
@@ -156,6 +158,7 @@ export class WListLevel {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
      * @returns {void}
      */

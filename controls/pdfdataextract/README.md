@@ -1,18 +1,16 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-pdf-data-extract/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pdf-data-extract)
-
 # JavaScript PDF Library For Data Extraction
 
 > **Using this package with an AI coding agent**
 >
-> Before generating Syncfusion® code, ask your AI coding agent to run the Syncfusion® setup using the following prompt:
+> Before generating Syncfusion code, ask your AI coding agent to run the Syncfusion setup using the following prompt:
 >
 > ```text
-> Set up this project for Syncfusion® before generating code. Fetch
-> and follow the official instructions at https://ai.syncfusion.com/,
-> then report the detected platform, installed skill pack, MCP 
+> Set up this project for Syncfusion before generating code. Fetch
+> and follow the official instructions at https://ai.syncfusion.com,
+> then report the detected platform, installed skill pack, MCP
 > status, and any required licensing action.
 > ```
-> The setup detects your project’s platform and loads the appropriate Syncfusion® skill pack. No Syncfusion® account or MCP key is required to install or read Syncfusion® agent skills.
+> The setup detects your project’s platform and loads the appropriate Syncfusion skill pack. No Syncfusion account or MCP key is required to install or read Syncfusion agent skills.
 >
 > **Platform reference:** [https://ai.syncfusion.com/javascript/llms.txt](https://ai.syncfusion.com/javascript/llms.txt)
 

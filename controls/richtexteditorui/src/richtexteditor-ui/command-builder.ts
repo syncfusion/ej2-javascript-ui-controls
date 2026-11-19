@@ -2,6 +2,7 @@
  * Chainable command builder for executing editor commands with type-safe arguments.
  */
 
+import { ToggleCollapsiblePayload } from '@syncfusion/ej2-headless-editor/src/extensions/collapsible';
 import { IEditorController } from '../controller/interface';
 import {
     ExecuteOptions,
@@ -12,7 +13,8 @@ import {
     CodeBlockCommand,
     ListCommand,
     ListStyleTypeCommand,
-    AlignmentCommand
+    AlignmentCommand,
+    CalloutCommand
 } from '../controller/interface';
 
 /**
@@ -48,6 +50,55 @@ export class ToggleCommandBuilder {
         if (controller && controller.execute) {
             controller.execute(command as any, args);
         }
+    }
+}
+
+/**
+ * Builder for collapsible command
+ */
+export class CollapsibleCommandBuilder extends ToggleCommandBuilder {
+    private collapsibleArgs: ToggleCollapsiblePayload = {
+        triggerType: 'paragraph'
+    };
+
+    /**
+     * Creates a collapsible command builder
+     *
+     * @param {any} editor - The editor instance
+     */
+    constructor(editor: any) {
+        super(editor, 'collapsible');
+    }
+
+    /**
+     * Set trigger type
+     *
+     * @param {'paragraph' | 'heading'} triggerType - Trigger type
+     * @returns {CollapsibleCommandBuilder} - Builder instance
+     */
+    public triggerType(triggerType: 'paragraph' | 'heading'): this {
+        this.collapsibleArgs.triggerType = triggerType;
+        return this;
+    }
+
+    /**
+     * Set heading level
+     *
+     * @param {1 | 2 | 3 | 4} level - Heading level
+     * @returns {CollapsibleCommandBuilder} - Builder instance
+     */
+    public level(level: 1 | 2 | 3 | 4): this {
+        this.collapsibleArgs.level = level;
+        return this;
+    }
+
+    /**
+     * Execute the collapsible command
+     *
+     * @returns {void}
+     */
+    public apply(): void {
+        this.executeCommand('collapsible', this.collapsibleArgs);
     }
 }
 
@@ -408,6 +459,29 @@ export class ListStyleCommandBuilder extends ToggleCommandBuilder {
         this.executeCommand('setListStyle', this.styleArgs);
     }
 }
+/**
+ * Builder for checklist command
+ */
+export class ChecklistCommandBuilder extends ToggleCommandBuilder {
+
+    /**
+     * Creates a checklist command builder
+     *
+     * @param {any} editor - The editor instance
+     */
+    constructor(editor: any) {
+        super(editor, 'checklist');
+    }
+
+    /**
+     * Execute the checklist command
+     *
+     * @returns {void}
+     */
+    public apply(): void {
+        this.executeCommand(this.commandName);
+    }
+}
 
 /**
  * Builder for text alignment command
@@ -442,6 +516,38 @@ export class AlignmentCommandBuilder extends ToggleCommandBuilder {
      */
     public apply(): void {
         this.executeCommand('setTextAlign', this.alignArgs);
+    }
+}
+
+/**
+ * Builder for the callout command. Sets the callout variant (info | warning
+ * | error | success | note) before dispatching the toggle to the headless
+ * editor.
+ */
+export class CalloutCommandBuilder extends ToggleCommandBuilder {
+    private calloutArgs: CalloutCommand = {callout: 'info'};
+
+    constructor(editor: any) {
+        super(editor, 'callout');
+    }
+
+    /**
+     * Set the callout variant.
+     *
+     * @param {CalloutCommand} variant - The variant to apply. Valid values:
+     *                                   `'info' | 'warning' | 'error' | 'success' | 'note'`.
+     * @returns {CalloutCommandBuilder} this builder, for chaining.
+     */
+    public callout(variant: 'info' | 'warning' | 'error' | 'success' | 'note'): this {
+        this.calloutArgs.callout = variant;
+        return this;
+    }
+
+    /** Execute the callout command with set options.
+     * @returns {void}
+     */
+    public apply(): void {
+        this.executeCommand('callout', this.calloutArgs);
     }
 }
 
@@ -603,6 +709,14 @@ export class CommandExecutor {
     public paragraph(): ToggleCommandBuilder {
         return new ToggleCommandBuilder(this.editor, 'paragraph');
     }
+    /**
+     * Get a builder for the collapsible command
+     *
+     * @returns {ToggleCommandBuilder} - The command builder
+     */
+    public collapsible(): CollapsibleCommandBuilder {
+        return new CollapsibleCommandBuilder(this.editor);
+    }
 
     /**
      * Get a builder for the blockQuote command
@@ -740,11 +854,29 @@ export class CommandExecutor {
     }
 
     /**
+     * Get a builder for the toggleTaskList command
+     *
+     * @returns {ChecklistCommandBuilder} - The task list command builder
+     */
+    public toggleTaskList(): ChecklistCommandBuilder {
+        return new ChecklistCommandBuilder(this.editor);
+    }
+
+    /**
      * Get a builder for the setTextAlign command
      *
      * @returns {AlignmentCommandBuilder} - The alignment command builder
      */
     public setTextAlign(): AlignmentCommandBuilder {
         return new AlignmentCommandBuilder(this.editor);
+    }
+
+    /**
+     * Get a builder for the callout command.
+     *
+     * @returns {CalloutCommandBuilder} the callout command builder.
+     */
+    public callout(): CalloutCommandBuilder {
+        return new CalloutCommandBuilder(this.editor);
     }
 }

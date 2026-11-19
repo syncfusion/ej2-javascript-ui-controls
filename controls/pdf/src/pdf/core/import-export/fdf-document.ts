@@ -278,7 +278,17 @@ export class _FdfDocument extends _ExportHelper {
                                     if (annotations._comments && annotations._comments.length > 0) {
                                         annotations._comments = [];
                                     }
-                                    pageDictionary.set('Annots', annotations._annotations);
+                                    let pageAnnotations: _PdfReference[] = [];
+                                    if (pageDictionary.has('Annots')) {
+                                        const existingAnnotations: _PdfReference[] = pageDictionary.get('Annots');
+                                        if (existingAnnotations && Array.isArray(existingAnnotations)) {
+                                            pageAnnotations = existingAnnotations;
+                                        }
+                                    }
+                                    if (pageAnnotations.indexOf(reference) === -1) {
+                                        pageAnnotations.push(reference);
+                                    }
+                                    pageDictionary.set('Annots', pageAnnotations);
                                     pageDictionary._updated = true;
                                     annotations._parsedAnnotations.set(index, annotation);
                                     this._handlePopup(annotations, reference, dictionary, pageDictionary);
@@ -746,74 +756,89 @@ export class _FdfDocument extends _ExportHelper {
         }
     }
     /**
-     * Appends dictionary entries to FDF output and queues nested objects for subsequent emission while tracking streams.
+     * Appends dictionary entries to the FDF output.
      *
      * @private
-     * @param {Map<any, any>} list Queue of pending objects keyed by assigned object id.
-     * @param {number[]} streamReference List of object ids that must include a stream body.
-     * @param {number} index Current object index used to allocate new ids.
-     * @param {_PdfDictionary} dictionary Dictionary to serialize.
-     * @param {string} fdfString Current FDF buffer for concatenation.
-     * @param {boolean} hasAppearance Indicates whether appearance related entries are allowed.
-     * @returns {_FdfHelper} Helper with updated list stream references and index.
+     * @param {Map<any, any>} list The pending objects.
+     * @param {number[]} streamReference The stream object identifiers.
+     * @param {number} index The current object identifier.
+     * @param {_PdfDictionary} dictionary The dictionary to serialize.
+     * @param {string} fdfString The current FDF content.
+     * @param {boolean} hasAppearance Indicates whether to export appearances.
+     * @returns {_FdfHelper} The updated FDF helper.
      */
     _getEntries(list: Map<any, any>, // eslint-disable-line
-                streamReference: number[], index: number, dictionary: _PdfDictionary, fdfString: string,
-                hasAppearance: boolean): _FdfHelper {
+                streamReference: number[], index: number,
+                dictionary: _PdfDictionary, fdfString: string, hasAppearance: boolean): _FdfHelper {
         let flag: boolean = false;
-        const helper : _FdfHelper = new _FdfHelper();
-        this.fdfString = fdfString;
+        const helper: _FdfHelper = new _FdfHelper();
         let listDictionary: Map<any, any> = list; // eslint-disable-line
-        dictionary.forEach((key: string, value: any) => { // eslint-disable-line
-            if (!((!hasAppearance && key === 'AP'))) {
+        this.fdfString = fdfString;
+        dictionary.forEach((key: string, value: any): void => { // eslint-disable-line
+            if (!(!hasAppearance && key === 'AP')) {
                 if (key !== 'P') {
                     this.fdfString += '/' + key;
                 }
                 if (key === 'Sound' || key === 'F' || hasAppearance) {
                     flag = true;
                 }
-                let primitive: any = value // eslint-disable-line
+                let primitive: any = value; // eslint-disable-line
                 if (typeof primitive === 'string') {
-                    this.fdfString += '(' + this._getFormattedString((primitive as string )) + ')';
-                } else if (primitive instanceof _PdfName ) {
+                    this.fdfString += '(' +
+                        this._getFormattedString(primitive as string) + ')';
+                } else if (primitive instanceof _PdfName) {
                     this.fdfString += '/' + primitive.name;
                 } else if (primitive instanceof Array) {
                     primitive = primitive as any[]; // eslint-disable-line
-                    const value: _FdfHelper = this._appendArray(primitive, this.fdfString, index, flag, listDictionary, streamReference);
-                    listDictionary = value.list;
-                    streamReference = value.streamReference;
-                    index = value.index;
-                } else if (typeof primitive === 'number' ) {
+                    const result: _FdfHelper = this._appendArray(
+                        primitive, this.fdfString,
+                        index, flag, listDictionary, streamReference);
+                    listDictionary = result.list;
+                    streamReference = result.streamReference;
+                    index = result.index;
+                } else if (typeof primitive === 'number') {
                     this.fdfString += ' ' + primitive.toString();
                 } else if (typeof primitive === 'boolean') {
-                    this.fdfString += ' ' + (((primitive as boolean)) ? 'true' : 'false');
+                    this.fdfString += primitive ? ' true' : ' false';
                 } else if (primitive instanceof _PdfDictionary) {
                     this.fdfString += '<<';
-                    primitive = primitive as _PdfDictionary;
-                    const value: _FdfHelper = this._getEntries(listDictionary, streamReference, index, primitive, this.fdfString,
-                                                               hasAppearance);
-                    listDictionary = value.list;
-                    streamReference = value.streamReference;
-                    index = value.index;
+                    const result: _FdfHelper = this._getEntries(
+                        listDictionary, streamReference,
+                        index, primitive,
+                        this.fdfString, hasAppearance);
+                    listDictionary = result.list;
+                    streamReference = result.streamReference;
+                    index = result.index;
                     this.fdfString += '>>';
                 } else if (primitive instanceof _PdfReference) {
                     const pageNumber: number = dictionary.get('Page');
                     if (key === 'Parent') {
-                        this.fdfString += ' ' + this._annotationID + ' 0 R';
+                        this.fdfString += ' ' +
+                            this._annotationID + ' 0 R';
                         this.fdfString += '/Page ' + pageNumber;
+                    } else if (key === 'AN') {
+                        this.fdfString += ' ' +
+                            this._annotationID + ' 0 R';
                     } else if (key === 'IRT') {
-                        if (this._crossReference && this._crossReference._fetch && primitive) {
+                        if (this._crossReference &&
+                            this._crossReference._fetch &&
+                            primitive) {
                             const inReplyToDictionary: _PdfDictionary = this._crossReference._fetch(primitive);
-                            if (inReplyToDictionary && inReplyToDictionary.has('NM')) {
+                            if (inReplyToDictionary &&
+                                inReplyToDictionary.has('NM')) {
                                 const input: string = inReplyToDictionary.get('NM');
-                                if (input !== null && typeof input !== 'undefined') {
-                                    this.fdfString += '(' + this._getFormattedString(input) + ')';
+                                if (input !== null &&
+                                    typeof input !== 'undefined') {
+                                    this.fdfString += '(' +
+                                        this._getFormattedString(input) +
+                                        ')';
                                 }
                             }
                         }
                     } else if (key !== 'P') {
                         const holder: _PdfReference = primitive as _PdfReference;
-                        if (holder !== null && typeof holder !== 'undefined') {
+                        if (holder !== null &&
+                            typeof holder !== 'undefined') {
                             index++;
                             this.fdfString += ' ' + index + ' 0 R';
                             if (flag) {

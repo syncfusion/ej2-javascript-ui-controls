@@ -2,14 +2,7 @@ import { Dictionary } from '../../base/dictionary';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CONTROL_CHARACTERS, FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
-import {
-    LineWidget, ElementBox, TextElementBox, ParagraphWidget,
-    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget,
-    HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox,
-    BookmarkElementBox,
-    CommentCharacterElementBox,
-    ImageElementBox
-} from '../viewer/page';
+import { LineWidget, ElementBox, TextElementBox, ParagraphWidget, BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox, BookmarkElementBox, ImageElementBox } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
 import { TextSearchResults } from './text-search-results';
@@ -134,7 +127,6 @@ export class TextSearch {
             } else if (inlineElement instanceof FieldElementBox) {
                 let fieldBegin: ElementBox = inlineElement as FieldElementBox;
                 if (!isNullOrUndefined((fieldBegin as FieldElementBox).fieldEnd)) {
-                    /* eslint-disable-next-line max-len */
                     if (isSpellCheck) {
                         // In MS Word for field text error will not be shown. So made the text as unique character. So that error will not be generated.
                         // Also in spell check based on the index only selection will be trigger. So need to consider and calculate the length for the field and concatenate unique character for the text.
@@ -197,7 +189,6 @@ export class TextSearch {
                     inlineElement = inlineElement.nextNode;
                 }
             }
-        // eslint-disable-next-line no-constant-condition
         }
         const text: string = stringBuilder.toString();
 

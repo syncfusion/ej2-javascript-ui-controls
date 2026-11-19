@@ -1,7 +1,6 @@
-import { LineStyle } from '../../base/types';
 import { WBorder } from './border';
-import { isNullOrUndefined , Property } from '@syncfusion/ej2-base';
-import { BlockContainer, IWidget, ParagraphWidget } from '../viewer/page';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { IWidget } from '../viewer/page';
 import { WParagraphFormat } from './paragraph-format';
 import { WParagraphStyle } from './style';
 /**

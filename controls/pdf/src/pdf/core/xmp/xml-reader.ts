@@ -1,5 +1,5 @@
 import { PdfXmpMetadata } from './pdf-xmp-metadata';
-import { PdfXmpLangArray, PdfXmpDimensionsStruct, PdfXmpThumbnail } from '../pdf-type';
+import { PdfXmpLangArray, PdfXmpDimensionsStruct, PdfXmpThumbnail } from '../pdf-document-helper';
 import { PdfSchema } from './pdf-schema';
 import { PdfDublinCoreSchema } from './pdf-dublin-core-schema';
 import { PdfPagedTextSchema } from './pdf-paged-text-schema';

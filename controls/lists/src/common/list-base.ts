@@ -1010,6 +1010,9 @@ export namespace ListBase {
             anchorWrapper.appendChild(document.createTextNode(safeText));
             append([anchorWrapper], anchorTag);
         }
+        if (options && options.moduleName === 'menu') {
+            attr['tabindex'] = '-1';
+        }
         setAttribute(anchorTag, attr);
         return anchorTag;
     }

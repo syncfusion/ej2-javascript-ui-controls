@@ -1,7 +1,8 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { RibbonGroupModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
+import { Ribbon, RibbonGroupModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
 import { DocumentEditor } from '../../../document-editor';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { L10n } from '@syncfusion/ej2-base';
 
 /**
  * Constants for form fields group identification
@@ -14,6 +15,7 @@ export const DROPDOWN: string = '_dropdown';
 
 /**
  * FormFieldsGroup module
+ *
  * @private
  */
 export class FormFieldsGroup {
@@ -23,6 +25,7 @@ export class FormFieldsGroup {
 
     /**
      * Constructor for FormFieldsGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -32,6 +35,7 @@ export class FormFieldsGroup {
 
     /**
      * Get the DocumentEditor instance
+     *
      * @returns {DocumentEditor} The DocumentEditor instance
      */
     private get documentEditor(): DocumentEditor {
@@ -40,10 +44,11 @@ export class FormFieldsGroup {
 
     /**
      * Get the FormFields group model
+     *
      * @returns {RibbonGroupModel} The FormFields group model
      */
     public getGroupModel(): RibbonGroupModel {
-        const locale: any = this.container.localObj;
+        const locale: L10n = this.container.localObj;
         const id: string = this.ribbonId + FORM_FIELDS_GROUP;
 
         return {
@@ -65,10 +70,11 @@ export class FormFieldsGroup {
 
     /**
      * Get the FormFields dropdown model
+     *
      * @returns {RibbonItemModel} The FormFields dropdown model
      */
     private getFormFieldsDropDownModel(): RibbonItemModel {
-        const locale: any = this.container.localObj;
+        const locale: L10n = this.container.localObj;
         const id: string = this.ribbonId;
 
         return {
@@ -104,6 +110,7 @@ export class FormFieldsGroup {
 
     /**
      * Handle form fields dropdown selection
+     *
      * @param {MenuEventArgs} args - Menu event arguments
      * @returns {void}
      */
@@ -125,13 +132,14 @@ export class FormFieldsGroup {
 
     /**
      * Update UI based on current selection
+     *
      * @returns {void}
      */
     public updateSelection(): void {
         const isHeaderFooter: boolean = this.documentEditor.selection.contextType.indexOf('Header') >= 0 ||
             this.documentEditor.selection.contextType.indexOf('Footer') >= 0;
 
-        const ribbon: any = this.container.ribbon.ribbon;
+        const ribbon: Ribbon = this.container.ribbon.ribbon;
         if (ribbon) {
             if (isHeaderFooter) {
                 ribbon.disableItem(this.ribbonId + FORM_FIELDS_ID);
@@ -144,6 +152,7 @@ export class FormFieldsGroup {
 
     /**
      * Destroy the FormFieldsGroup instance
+     *
      * @returns {void}
      */
     public destroy(): void {

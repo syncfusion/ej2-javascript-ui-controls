@@ -1,7 +1,7 @@
 import { PdfFont, PdfStringFormat } from '../../fonts';
 import { PdfDocument } from '../../pdf-document';
 import { PdfPage } from '../../pdf-page';
-import { Point, Size, Rectangle } from '../../pdf-type';
+import { Point, Size, Rectangle } from '../../pdf-document-helper';
 import { PdfBrush, PdfGraphics } from '../pdf-graphics';
 import { PdfTemplate } from '../pdf-template';
 import { PdfDynamicField } from './dynamic-field';

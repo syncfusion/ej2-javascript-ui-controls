@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 35.1.41 (2026-10-20)
+## 35.1.43 (2026-11-03)
+
+### ListBase
+
+#### Bug Fixes
+
+- `#F75911` - The issue with "Menu component traps keyboard focus when navigating with Tab" has been resolved.
+
+## 35.1.37 (2026-09-29)
 
 ### ListView
 

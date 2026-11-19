@@ -93,10 +93,15 @@ export class ToolbarStatusUpdater {
         this.updateButtonActivation('Superscript', state.superscript);
         this.updateButtonActivation('Subscript', state.subscript);
         this.updateButtonActivation('InlineCode', state.inlineCode);
+        this.updateButtonActivation('Link', state.link);
 
         // List buttons
         this.updateButtonActivation('BulletList', state.bulletList);
         this.updateButtonActivation('NumberedList', state.orderedList);
+        this.updateButtonActivation('Checklist', state.checklist);
+        this.updateButtonActivation('BulletFormatList', state.bulletList);
+        this.updateButtonActivation('NumberFormatList', state.orderedList);
+        this.updateButtonActivation('Callout', state.callout);
 
         // Block format buttons
         this.updateButtonActivation('Quote', state.blockQuote);
@@ -107,11 +112,8 @@ export class ToolbarStatusUpdater {
         this.updateButtonActivation('Heading 4', state.heading === 'Heading 4');
         this.updateButtonActivation('Paragraph', state.paragraph);
 
-        // Alignment buttons (mutually exclusive)
-        this.updateButtonActivation('AlignLeft', state.alignLeft);
-        this.updateButtonActivation('AlignCenter', state.alignCenter);
-        this.updateButtonActivation('AlignRight', state.alignRight);
-        this.updateButtonActivation('AlignJustify', state.alignJustify);
+        // Update alignment button icons
+        this.updateAlignmentButtonIcons(state.alignLeft, state.alignCenter, state.alignRight, state.alignJustify);
 
         // Undo/Redo buttons (enable/disable with overlay class)
         this.updateUndoRedoButtons(state.uno, state.redo);
@@ -184,6 +186,55 @@ export class ToolbarStatusUpdater {
     }
 
     /**
+     * Updates alignment button icons based on the current alignment state.
+     * Updates the icon class for AlignLeft, AlignCenter, AlignRight, and AlignJustify buttons.
+     *
+     * @param {boolean} alignLeft - Whether left alignment is active
+     * @param {boolean} alignCenter - Whether center alignment is active
+     * @param {boolean} alignRight - Whether right alignment is active
+     * @param {boolean} alignJustify - Whether justify alignment is active
+     * @returns {void}
+     * @private
+     */
+    private updateAlignmentButtonIcons(alignLeft: boolean, alignCenter: boolean, alignRight: boolean, alignJustify: boolean): void {
+        this.updateAlignmentIcon('Alignment', 'e-align-left', alignLeft);
+        this.updateAlignmentIcon('Alignment', 'e-align-center', alignCenter);
+        this.updateAlignmentIcon('Alignment', 'e-align-right', alignRight);
+        this.updateAlignmentIcon('Alignment', 'e-justify', alignJustify);
+    }
+
+    /**
+     * Updates the icon span of an alignment button with the appropriate icon class.
+     * Gets the first child element of the resolved toolbar item and updates the icon span
+     * by removing alignment-specific classes and adding the appropriate one.
+     *
+     * @param {string} itemName - The alignment button name (e.g. 'AlignLeft', 'AlignCenter')
+     * @param {string} iconClass - The icon class to apply (e.g. 'e-align-left', 'e-align-center')
+     * @param {boolean} isActive - Whether the alignment is currently active
+     * @returns {void}
+     * @private
+     */
+    private updateAlignmentIcon(itemName: string, iconClass: string, isActive: boolean): void {
+        const el: HTMLElement | null = this.resolveItem(itemName);
+        if (!el) {
+            return;
+        }
+        const firstChild: Element | null = el.firstElementChild;
+        if (!firstChild) {
+            return;
+        }
+        const iconSpan: HTMLElement | null = firstChild.querySelector('.e-btn-icon') as HTMLElement | null;
+        if (!iconSpan) {
+            return;
+        }
+        // Add the appropriate class if alignment is active
+        if (isActive) {
+            iconSpan.classList.remove('e-align-left', 'e-align-center', 'e-align-right', 'e-justify');
+            iconSpan.classList.add(iconClass);
+        }
+    }
+
+    /**
      * Updates the Formats dropdown with the current block format.
      *
      * @param {string | null} heading - The current heading label, or null
@@ -212,6 +263,7 @@ export class ToolbarStatusUpdater {
      */
     private updateFontNameDropdown(family: string | null): void {
         if (!family) {
+            this.setDropdownContent('FontName', 'Font Name');
             return;
         }
         this.setDropdownContent('FontName', family);
@@ -226,6 +278,7 @@ export class ToolbarStatusUpdater {
      */
     private updateFontSizeDropdown(size: string | null): void {
         if (!size) {
+            this.setDropdownContent('FontSize', 'Font Size');
             return;
         }
         this.setDropdownContent('FontSize', size);
@@ -381,9 +434,50 @@ export class ToolbarStatusUpdater {
             }
             return null;
         case 'NumberFormatList':
-            return state.orderedListType;
+            switch (state.orderedListType) {
+            case 'decimal':
+                return 'Number';
+            case 'lower-greek':
+                return 'Lower Greek';
+            case 'lower-roman':
+                return 'Lower Roman';
+            case 'upper-alpha':
+                return 'Upper Alpha';
+            case 'lower-alpha':
+                return 'Lower Alpha';
+            case 'upper-roman':
+                return 'Upper Roman';
+            default:
+                return null;
+            }
         case 'BulletFormatList':
-            return state.bulletListType;
+            switch (state.bulletListType) {
+            case 'disc':
+                return 'Disc';
+            case 'circle':
+                return 'Circle';
+            case 'square':
+                return 'Square';
+            default:
+                return null;
+            }
+        case 'Callout':
+            if (state.calloutInfo) {
+                return 'CalloutInfo';
+            }
+            if (state.calloutWarning) {
+                return 'CalloutWarning';
+            }
+            if (state.calloutError) {
+                return 'CalloutError';
+            }
+            if (state.calloutSuccess) {
+                return 'CalloutSuccess';
+            }
+            if (state.calloutNote) {
+                return 'CalloutNote';
+            }
+            return null;
         default:
             return null;
         }
@@ -430,7 +524,8 @@ export type ToolbarItemKind =
     | 'FontSize'
     | 'Alignment'
     | 'NumberFormatList'
-    | 'BulletFormatList';
+    | 'BulletFormatList'
+    | 'Callout';
 
 /**
  * CSS class applied to a toolbar item button when its format is active
@@ -458,6 +553,7 @@ export interface FormattingState {
     superscript: boolean;
     subscript: boolean;
     inlineCode: boolean;
+    link: boolean;
     fontColor: string | null;
     backgroundColor: string | null;
     fontSize: string | null;
@@ -472,8 +568,15 @@ export interface FormattingState {
     alignCenter: boolean;
     alignRight: boolean;
     alignJustify: boolean;
+    checklist: boolean;
     uno: boolean;
     redo: boolean;
     orderedListType: string | null;
     bulletListType: string | null;
+    calloutInfo: boolean,
+    calloutWarning: boolean;
+    calloutError: boolean;
+    calloutSuccess: boolean;
+    calloutNote: boolean;
+    callout: boolean;
 }

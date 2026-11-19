@@ -81,17 +81,18 @@ export class XhtmlValidation {
         return currentValue;
     }
 
-    private clean(node: HTMLElement): string {
-        for (let n: number = 0; n < node.childNodes.length; n++) {
+    private clean(node: HTMLElement): void {
+        // Iterate backwards to safely remove nodes without index shifting issues
+        for (let n: number = node.childNodes.length - 1; n >= 0; n--) {
             const child: HTMLElement = node.childNodes[n as number] as HTMLElement;
             if (child.nodeType === 8 || child.nodeName === 'V:IMAGE') {
-                node.removeChild(child);
-                n--;
+                // Remove comment nodes and V:IMAGE elements
+                detach(child);
             } else if (child.nodeType === 1) {
+                // Recursively clean element nodes
                 this.clean(child);
             }
         }
-        return this.currentElement.innerHTML;
     }
 
     private ImageTags(): void {

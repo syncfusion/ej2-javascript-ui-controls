@@ -1,6 +1,6 @@
 import { PdfXmpSchema } from './pdf-xmp-schema';
 import { PdfXmpSchemaType } from '../enumerator';
-import { PdfXmpLangArray } from '../pdf-type';
+import { PdfXmpLangArray } from '../pdf-document-helper';
 import { PdfXmpMetadata } from './pdf-xmp-metadata';
 /**
  Represents standard Dublin Core metadata for document description.

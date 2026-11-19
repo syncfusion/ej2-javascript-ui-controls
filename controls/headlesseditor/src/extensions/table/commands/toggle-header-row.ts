@@ -3,7 +3,7 @@
  *
  * PM boundary: allowed inside src/extensions/table/commands/.
  */
-import { PMCommandInternal, PMCommandContext } from '../../../commands/internal/pm-command-context';
+import { PMCommandInternal, PMCommandContext } from '../../../core/commands/internal/pm-command-context';
 import { wrapTransaction } from '../../../pm/adapters/editor-state-adapter';
 import { toggleHeaderRowPM, isCursorInTable } from '../../../pm/adapters/table';
 import { PMEditorState, PMTransaction } from '../../../pm/pm-guard';
@@ -16,7 +16,7 @@ import { TABLE_COMMAND_META_KEY } from '../table-constants';
  */
 export const toggleHeaderRowCommand: PMCommandInternal<void> = {
     name: 'toggleHeaderRow',
-    meta: { label: 'Toggle Header Row', category: 'table' },
+    meta: { label: 'Toggle Header Row', category: 'table', focusAfterDispatch: true },
 
     canExecute(ctx: PMCommandContext, _payload: void): boolean {
         return isCursorInTable(ctx.pmState);

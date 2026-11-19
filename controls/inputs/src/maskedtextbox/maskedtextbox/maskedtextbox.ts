@@ -144,14 +144,17 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     public enablePersistence: boolean;
 
     /**
-     * Sets a value that masks the MaskedTextBox to allow/validate the user input.
-     * * Mask allows [`standard mask elements`](../../maskedtextbox/mask-configuration/#standard-mask-elements)
-     * </b>, <b>[`custom characters`](../../maskedtextbox/mask-configuration/#custom-characters)</b> and
-     * <b>[`regular expression`](../../maskedtextbox/mask-configuration/#regular-expression)</b> as mask
-     * elements.
-     * For more information on mask, refer to
-     * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
-     * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
+     * Sets a value that masks the MaskedTextBox to allow or validate user input.
+     *
+     * Mask supports
+     * [`standard mask elements`](../../maskedtextbox/mask-configuration#standard-mask-elements),
+     * [`custom characters`](../../maskedtextbox/mask-configuration#custom-characters) snd
+     * [`regular expression`](../../maskedtextbox/mask-configuration#regular-expression)
+     * as mask elements.
+     *
+     * For more information, refer to the [mask](../../maskedtextbox/mask-configuration#standard-mask-elements) documentation.
+     *
+     * If the `mask` value is empty, the MaskedTextBox behaves as an input element with text type.
      *
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
      *

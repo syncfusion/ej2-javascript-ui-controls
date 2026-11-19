@@ -1,7 +1,7 @@
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { RibbonGroupModel, RibbonItemModel, RibbonItemType, ItemOrientation, Ribbon } from '@syncfusion/ej2-ribbon';
-import { ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { RibbonGroupModel, RibbonItemModel, ItemOrientation, Ribbon } from '@syncfusion/ej2-ribbon';
+import { ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Editor, Selection, SelectionSectionFormat } from '../../../document-editor/implementation';
 import { SectionBreakType } from '../../../document-editor/base/types';
 import { BeforeItemRenderEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -17,12 +17,14 @@ export const BREAKS_DROPDOWN_ID: string = '_breaks_dropdown';
 
 /**
  * Represents the Page Setup Group in Layout tab
+ *
  * @private
  */
 export class PageSetupGroup extends RibbonGroupBase {
     private commonId: string;
     /**
      * Constructor for the PageSetupGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -32,6 +34,7 @@ export class PageSetupGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Page Setup
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Page Setup
      * @private
      */
@@ -160,7 +163,7 @@ export class PageSetupGroup extends RibbonGroupBase {
         };
     }
 
-    private onMarginsChange(args: any): void {
+    private onMarginsChange(args: MenuEventArgs): void {
         const section: SelectionSectionFormat = this.documentEditor.selection.sectionFormat;
         if (!section) { return; }
 
@@ -232,7 +235,7 @@ export class PageSetupGroup extends RibbonGroupBase {
         };
     }
 
-    private onOrientationChange(args: any): void {
+    private onOrientationChange(args: MenuEventArgs): void {
         if (args.item.id === this.commonId + '_portrait') {
             this.documentEditor.editor.onPortrait();
         } else if (args.item.id === this.commonId + '_landscape') {
@@ -337,7 +340,7 @@ export class PageSetupGroup extends RibbonGroupBase {
         };
     }
 
-    private onPageSizeChange(args: any): void {
+    private onPageSizeChange(args: MenuEventArgs): void {
         const section: SelectionSectionFormat = this.documentEditor.selection.sectionFormat;
         if (!section) { return; }
 
@@ -449,7 +452,7 @@ export class PageSetupGroup extends RibbonGroupBase {
         };
     }
 
-    private onColumnsChange(args: any): void {
+    private onColumnsChange(args: MenuEventArgs): void {
         const section: SelectionSectionFormat = this.documentEditor.selection.sectionFormat;
         if (!section) { return; }
         const editor: Editor = this.container.documentEditor.editor;
@@ -515,7 +518,7 @@ export class PageSetupGroup extends RibbonGroupBase {
         };
     }
 
-    private onBreakInsert(args: any): void {
+    private onBreakInsert(args: MenuEventArgs): void {
         switch (args.item.id) {
         case this.commonId + '_page-break':
             this.documentEditor.editor.insertPageBreak();

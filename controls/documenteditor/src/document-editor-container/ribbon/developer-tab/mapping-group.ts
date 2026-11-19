@@ -11,6 +11,7 @@ export const XMLMAPPING_ID: string = '_xmlmapping';
 
 /**
  * MappingGroup module
+ *
  * @private
  */
 export class MappingGroup {
@@ -19,6 +20,7 @@ export class MappingGroup {
 
     /**
      * Constructor for MappingGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     public constructor(container: DocumentEditorContainer) {
@@ -28,6 +30,7 @@ export class MappingGroup {
 
     /**
      * Get the DocumentEditor instance
+     *
      * @returns {DocumentEditor} The DocumentEditor instance
      */
     private get documentEditor(): DocumentEditor {
@@ -36,6 +39,7 @@ export class MappingGroup {
 
     /**
      * Get the Mapping group model
+     *
      * @returns {RibbonGroupModel} The Mapping group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -60,6 +64,7 @@ export class MappingGroup {
 
     /**
      * Get the XML Mapping button model
+     *
      * @returns {RibbonItemModel} The XML Mapping button model
      */
     private getXmlMappingButtonModel(): RibbonItemModel {
@@ -82,6 +87,7 @@ export class MappingGroup {
 
     /**
      * Handle XML Mapping button click
+     *
      * @returns {void}
      */
     private onXmlMappingClick(): void {
@@ -97,6 +103,7 @@ export class MappingGroup {
 
     /**
      * Update UI based on current selection
+     *
      * @returns {void}
      * @private
      */
@@ -117,6 +124,7 @@ export class MappingGroup {
 
     /**
      * Destroy the MappingGroup instance
+     *
      * @returns {void}
      * @private
      */

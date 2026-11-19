@@ -1,0 +1,81 @@
+{
+	"name": "@syncfusion/ej2-pptxeditor",
+	"version": "35.1.37",
+	"description": "PPTX Editor enables viewing, navigating, presenting, printing, and exporting PPTX files directly in the browser.",
+	"homepage": "https://www.syncfusion.com/javascript-ui-controls",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-pptxeditor.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-pptxeditor.es5.js",
+	"typings": "index.d.ts",
+	"files": [
+		"dist/",
+		"!dist/ts/",
+		"!dist/ts/**",
+		"src/",
+		"!src/**/*.ts",
+		"!src/**/*.tsx",
+		"src/**/*.d.ts",
+		"styles/",
+		"index.js",
+		"index.d.ts",
+		"README.md",
+		"package.json",
+		"pptxeditor.d.ts",
+		"pptxeditor.js",
+		"license",
+		".eslintrc.js.json",
+		".eslintrc.json",
+		".gitleaksignore",
+		"tslint.json"
+	],
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-buttons": "*",
+		"@syncfusion/ej2-charts": "*",
+		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-lists": "*",
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-notifications": "*",
+		"@syncfusion/ej2-office-chart": "*",
+		"@syncfusion/ej2-popups": "*",
+		"@syncfusion/ej2-pptx": "*",
+		"@syncfusion/ej2-ribbon": "*",
+		"@syncfusion/ej2-splitbuttons": "*"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"pptx-editor",
+		"pptxeditor",
+		"powerpoint-editor",
+		"powerpointeditor",
+		"JavaScript",
+		"TypeScript"
+	],
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.15",
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"esbuild": "^0.20.2",
+		"markdown-spellcheck": "^1.3.1",
+		"typescript": "2.3.4",
+		"typescript-modern": "npm:typescript@5.4.5",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
+	}
+}

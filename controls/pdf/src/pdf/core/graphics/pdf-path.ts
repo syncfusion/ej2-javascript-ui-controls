@@ -1,7 +1,7 @@
 import { PdfPen, PdfBrush } from './pdf-graphics';
 import { _getBezierArc } from './../utils';
 import { PdfFillMode, PathPointType } from './../enumerator';
-import { Point, Rectangle } from './../pdf-type';
+import { Point, Rectangle } from './../pdf-document-helper';
 /**
  * Implements graphics path, which is a sequence of primitive graphics elements.
  *

@@ -79,6 +79,8 @@ import { PopupUploader } from '../renderer/popup-uploader-renderer';
 import { AutoFormat } from '../actions';
 import { sanitizeHelper } from '../base/util';
 import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
+import { RichTextEditorWebMcpSettings } from '../models/webmcp-settings';
+import { RichTextEditorWebMcpSettingsModel } from '../models/webmcp-settings-model';
 
 /**
  * Represents the Rich Text Editor component.
@@ -1628,9 +1630,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public documentExporting: EmitType<ExportingEventArgs>;
 
     /**
-     * Specifies whether the WebMCP integration is enabled in the component.
-     * When set to `true`, the component provides a set of tools with schemas and execute functions
-     * that allow AI models to perform actions within the component context.
+     * Specifies whether the WebMCP integration is enabled.
+     * When set to `true`, the editor provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the editor context.
      *
      * @default false
      */
@@ -1647,6 +1649,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
 
     /**
+     * Specifies the WebMCP integration settings for the RichTextEditor.
+     * Use `name`, `tools`, and `exposedTo` to customize registration.
+     *
+     * @default {}
+     */
+    @Complex<RichTextEditorWebMcpSettingsModel>({}, RichTextEditorWebMcpSettings)
+    public webMcpSettings: RichTextEditorWebMcpSettingsModel;
+
+    /**
      * Returns the WebMCP tool schemas for the given tool names.
      * When `toolNames` is omitted, schemas for all available tools are returned.
      *
@@ -1657,23 +1668,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const args: { toolNames?: string[], tools?: WebMcpTool[] } = { toolNames };
         this.notify(getWebMcpTools, args);
         return args.tools || [];
-    }
-
-    /**
-     * Registers WebMCP tools on document.modelContext for this component instance.
-     *
-     * @param {string} [prefix] - Optional: unique prefix for tool names (ensures uniqueness when multiple instances exist)
-     *   - If null or undefined, the component element's `id` will be used
-     *   - If empty string (''), tools registered without prefix
-     * @param {string[] | WebMcpTool[]} [tools] - Optional: specific tools to register
-     *   - `string[]`: allowlist of tool names
-     *   - `WebMcpTool[]`: customized tool definitions
-     *   - Omit to register all available tools
-     * @param {string[]} [exposedTo] - Optional: list of allowed origins for cross-origin iframe access
-     * @returns {void}
-     */
-    public registerWebMcpTools(prefix?: string, tools?: string[] | WebMcpTool[], exposedTo?: string[]): void {
-        this.notify(registerWebMcpTools, { prefix, tools, exposedTo });
     }
 
     public keyboardModule: KeyboardEvents;
@@ -1806,7 +1800,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             );
         }
         if (this.enableWebMcp) {
-            modules.push({ member: 'WebMcpAdapter', args: [this] });
+            modules.push({ member: 'WebMcpRichTextEditor', args: [this] });
         }
         return modules;
     }
@@ -2037,17 +2031,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
         IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IAudioCommandsArgs
         | IVideoCommandsArgs | ICodeBlockCommandsArgs, option?: ExecuteCommandOption): void {
-        if (commandName === 'importWord') {
-            const importContainer: HTMLElement = this.createElement('div');
-            importContainer.innerHTML = value as string;
-            const tableElement: NodeListOf<HTMLElement> = importContainer.querySelectorAll('table:not(.e-rte-table):not(.e-rte-paste-table)');
-            for (let i: number = 0; i < tableElement.length; i++) {
-                tableElement[i as number].classList.add('e-rte-paste-table');
-            }
-            value = importContainer.innerHTML;
-            importContainer.remove();
-            commandName = 'insertHTML';
-        }
         value = this.htmlPurifier(commandName, value);
         let internalValue: string | HTMLElement | ILinkCommandsArgs |
         IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IFormatPainterArgs |
@@ -2368,6 +2351,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.autoResize();
         this.toolbarStatusUpdateOnLoad();
         this.renderComplete();
+        if (this.webMcpSettings && this.webMcpSettings.tools && this.webMcpSettings.tools.length > 0 ) {
+            this.notify(registerWebMcpTools, {
+                prefix: this.webMcpSettings.name || this.element.id,
+                tools: this.webMcpSettings.tools,
+                exposedTo: this.webMcpSettings.exposedTo
+            });
+        }
     }
 
     /**
@@ -3849,6 +3839,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.toggleOverlay(maxOrMin.parentElement, true);
             }
             this.disableToolbarItem(this.toolbarSettings.items as string[]);
+            this.disableSplitButtons();
             if (!this.inlineMode.enable && this.toolbarModule && this.toolbarModule.baseToolbar) {
                 this.toolbarModule.baseToolbar.toolbarObj.disable(true);
             }
@@ -3856,6 +3847,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const previewElement: HTMLElement = this.getToolbar().querySelector(`[id="${this.getID()}_toolbar_Preview"]`);
             if (isNOU(previewElement)) {
                 this.enableToolbarItem(this.toolbarSettings.items as string[]);
+                this.enableSplitButtons();
             } else {
                 if (previewElement && previewElement.parentElement.classList.contains('e-overlay')) {
                     this.toggleOverlay(previewElement.parentElement, false);
@@ -3870,6 +3862,36 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.toggleOverlay(maxOrMin.parentElement, false);
             }
         }
+    }
+
+    private disableSplitButtons(): void {
+        const toolbarElement: HTMLElement = this.getToolbarElement() as HTMLElement;
+        if (!toolbarElement) {
+            return;
+        }
+        const splitButtonWrappers: NodeListOf<HTMLElement> = toolbarElement.querySelectorAll('.e-split-btn-wrapper');
+        splitButtonWrappers.forEach((wrapper: HTMLElement) => {
+            const buttons: NodeListOf<HTMLButtonElement> = wrapper.querySelectorAll('button');
+            buttons.forEach((button: HTMLButtonElement) => {
+                button.tabIndex = -1;
+                button.setAttribute('aria-disabled', 'true');
+            });
+        });
+    }
+
+    private enableSplitButtons(): void {
+        const toolbarElement: HTMLElement = this.getToolbarElement() as HTMLElement;
+        if (!toolbarElement) {
+            return;
+        }
+        const splitButtonWrappers: NodeListOf<HTMLElement> = toolbarElement.querySelectorAll('.e-split-btn-wrapper');
+        splitButtonWrappers.forEach((wrapper: HTMLElement) => {
+            const buttons: NodeListOf<HTMLButtonElement> = wrapper.querySelectorAll('button');
+            buttons.forEach((button: HTMLButtonElement) => {
+                button.tabIndex = 0;
+                button.setAttribute('aria-disabled', 'false');
+            });
+        });
     }
 
     private replaceEntities(value: string): string {
@@ -5540,7 +5562,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.selectionChangeMouseUp, { args: e });
         }
         // Update the toolbar to reflect current selection state
-        if (!(this.quickToolbarModule.linkQTBar && this.quickToolbarModule.linkQTBar.element && this.quickToolbarModule.linkQTBar.element.classList.contains('e-popup-open'))) {
+        if (!(this.quickToolbarModule && this.quickToolbarModule.linkQTBar && this.quickToolbarModule.linkQTBar.element && this.quickToolbarModule.linkQTBar.element.classList.contains('e-popup-open'))) {
             this.notify(events.toolbarRefresh, { args: e });
         }
         this.triggerSelectionChanged();
@@ -5700,4 +5722,5 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public clearAIPromptHistory(): void {
         this.aiAssistantModule.clearAIPromptHistory();
     }
+
 }

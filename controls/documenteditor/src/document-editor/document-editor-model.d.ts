@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser, initializeTelemetry, initializeTelemetryFeature } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { XmlPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CheckboxSymbolOptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog, NotesDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo, CommentPane, CommentView } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';import { CommentCharacterElementBox, CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { ColumnsDialog } from './implementation/dialogs/columns-dialog';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';import { Ruler } from './implementation/ruler/index';import { TabDialog } from './implementation/dialogs/tab-dialog';import { RulerHelper } from './implementation/utility/dom-util';import { ColorPickerModel } from '@syncfusion/ej2-inputs';import { MentionModel } from '@syncfusion/ej2-dropdowns';import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs, UnsupportedBorderStyleClickEventArgs } from './base/events-helper';import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, updateCSSText } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser, initializeTelemetry, initializeTelemetryFeature } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData, WebMcpTool, WebMcpToolExecuteEventArgs } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { XmlPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CheckboxSymbolOptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog, NotesDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo, CommentPane, CommentView } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { RevisionCollection } from './implementation/track-changes/track-changes';import { CommentCharacterElementBox, CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { ColumnsDialog } from './implementation/dialogs/columns-dialog';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';import { Ruler } from './implementation/ruler/index';import { TabDialog } from './implementation/dialogs/tab-dialog';import { RulerHelper } from './implementation/utility/dom-util';import { ColorPickerModel } from '@syncfusion/ej2-inputs';import { MentionModel } from '@syncfusion/ej2-dropdowns';import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';import { DialogUtility, hideSpinner, showSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs, registerWebMcpTools, UnsupportedBorderStyleClickEventArgs } from './base/events-helper';import { TextBoxDialog } from './implementation/dialogs/text-box-dialog';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -24,6 +24,7 @@ export interface DocumentEditorSettingsModel {
 
     /**
      * Specifies the user preferred font family of Document Editor.
+     *
      * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Wingdings']
      */
     fontFamilies?: string[];
@@ -207,6 +208,18 @@ export interface DocumentEditorSettingsModel {
     defaultCheckBoxOption?: CheckboxSymbolOptions;
 
     /**
+     * Gets or sets the comment settings.
+     */
+    commentSettings?: CommentSettingsModel;
+
+}
+
+/**
+ * Interface for a class CommentSettings
+ */
+export interface CommentSettingsModel {
+
+    /**
      * Gets or sets a value indicating whether comments from each author are highlighted using a color derived from the author's avatar.
      * These highlight colors are used only for visual identification within the editor and are not preserved when the document is exported.
      *
@@ -214,6 +227,34 @@ export interface DocumentEditorSettingsModel {
      * @aspType bool
      */
     highlightCommentsByAuthor?: boolean;
+
+}
+
+/**
+ * Interface for a class DocumentEditorWebMcpSettings
+ */
+export interface DocumentEditorWebMcpSettingsModel {
+
+    /**
+     * Specifies the prefix name for WebMCP tool registration.
+     *
+     * @default null
+     */
+    name?: string;
+
+    /**
+     * Specifies the list of tool names or WebMcpTool objects to register.
+     *
+     * @default null
+     */
+    tools?: string[] | WebMcpTool[];
+
+    /**
+     * Specifies the list of origins to expose the tools to.
+     *
+     * @default null
+     */
+    exposedTo?: string[];
 
 }
 
@@ -262,6 +303,70 @@ export interface RevisionSettingsModel {
      * @default ['#b5082e', '#0e76b1', '#bb00ff', '#c14f16', '#128317', '#881824', '#a26400', '#50565e']
      */
     revisionColors?: string[];
+
+    /**
+     * Gets or sets the color value used for insert revisions for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#0e76b1').
+     * If the value is 'byAuthor', insert revisions (Insertion/MoveTo) are highlighted using the author-specific color.
+     * Otherwise, insert revisions are highlighted using the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    insertRevisionColor?: string;
+
+    /**
+     * Gets or sets the color value used for delete revisions for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#b5082e').
+     * If the value is 'byAuthor', delete revisions (Deletion/MoveFrom) are highlighted using the author-specific color.
+     * Otherwise, delete revisions are highlighted using the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    deleteRevisionColor?: string;
+
+    /**
+     * Gets or sets the background color used for inserted table-row for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#0e76b1').
+     * If the value is 'byAuthor', inserted row revisions (Insertion/MoveTo) use the author-specific color.
+     * Otherwise, inserted row revisions use the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * > * The applied color is automatically tinted by 10% and used as the row background color to ensure visibility of inserted content within the row.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    insertedRowColor?: string;
+
+    /**
+     * Gets or sets the background color used for deleted table-row for visual identification within the Document Editor.
+     * The default value is 'byAuthor'.
+     *
+     * This property accepts either 'byAuthor' or a hexadecimal color value string (for example, '#b5082e').
+     * If the value is 'byAuthor', deleted row revisions (Deletion/MoveFrom) use the author-specific color.
+     * Otherwise, deleted row revisions use the color value specified for this property.
+     *
+     * > * Application-level only; not maintained in the DOCX file.
+     *
+     * > * The applied color is automatically tinted by 10% and used as the row background color to ensure visibility of deleted content within the row.
+     *
+     * @default 'byAuthor'
+     * @returns {string}
+     */
+    deletedRowColor?: string;
 
 }
 
@@ -695,6 +800,15 @@ export interface DocumentEditorModel extends ComponentModel{
     enableLayout?: boolean;
 
     /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    enableWebMcp?: boolean;
+
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}
@@ -707,6 +821,14 @@ export interface DocumentEditorModel extends ComponentModel{
      * @default {}
      */
     documentSettings?: DocumentSettingsModel;
+
+    /**
+     * Specifies the WebMCP integration settings for the DocumentEditor.
+     * Use `name`, `tools`, and `exposedTo` to customize registration.
+     *
+     * @default {}
+     */
+    webMcpSettings?: DocumentEditorWebMcpSettingsModel;
 
     /**
      * Defines the settings of the DocumentEditor services
@@ -896,7 +1018,7 @@ export interface DocumentEditorModel extends ComponentModel{
     /**
      * This event is triggered before content is pasted in Document Editor.
      *
-     * @event
+     * @event beforePaste
      * @returns {void}
      */
     beforePaste?: EmitType<BeforePasteEventArgs>;
@@ -945,6 +1067,28 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers when SFDT is failed to load in the document editor
      */
     documentLoadFailed?: EmitType<DocumentLoadFailedEventArgs>;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Use this event to inspect, modify, or cancel the tool execution before it takes effect.
+     * ```html
+     * <div id='DocumentEditor'></div>
+     * ```
+     * ```typescript
+     * new DocumentEditor({
+     *     beforeWebMcpToolExecute: (args: WebMcpToolExecuteEventArgs) => {
+     *         // Cancel execution for restricted tools
+     *         if (args.toolName === 'deleteDocument' && args.cancel !== true) {
+     *             args.showConfirmationDialog = true;
+     *         }
+     *     }
+     *     ...
+     * }, '#DocumentEditor');
+     * ```
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    beforeWebMcpToolExecute?: EmitType<WebMcpToolExecuteEventArgs>;
 
 }
 

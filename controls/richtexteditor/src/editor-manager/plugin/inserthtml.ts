@@ -2856,8 +2856,7 @@ export class InsertHtml {
             // Check if parent is one of the allowed block elements.
             const isParentTagValid: boolean = !isNOU(parentElement.tagName) && (
                 this.isTagInList(parentElement.tagName, CONSTANT.IGNORE_BLOCK_TAGS) ||
-                this.isTagInList(parentElement.tagName, CONSTANT.ALLOWED_TABLE_BLOCK_TAGS)
-            );
+                ( parentElement.tagName !== 'DIV' && this.isTagInList(parentElement.tagName, CONSTANT.ALLOWED_TABLE_BLOCK_TAGS)));
             if (isParentTagValid) {
                 return currentElement;
             }

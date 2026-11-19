@@ -2199,15 +2199,26 @@ export class CommandHandler {
         // EJ2-57157 - Added to consider the lane header at selection change when selecting a lane.
         if (obj.length > 0 && (obj[0] && (obj[0] as SwimLaneModel).isLane)) {
             const swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
-            ((obj[0] as NodeModel).shape as any).header = [];
-            let laneId: string = '';
-            for (let j: number = 0; j < obj.length; j++) {
-                for (let i: number = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
-                    const parentId: string[] = (obj[0] as Node).id.split((obj[0] as Node).parentId);
-                    laneId = parentId[1].slice(0, -1);
-                    if (laneId === (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].id) {
-                        ((obj[0] as NodeModel).shape as any).header.push(
-                            (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].header);
+            // 1049650: guard against the owning swimlane not being found in `nameTable` — when the
+            // lane was created by `addNodeToLane` while the swimlane had zero phases and then the
+            // lane's `parentId` is left pointing at a swimlane whose `nameTable` entry has been
+            // churned by `removeFinalPhase`'s grid mutations, `getObject` returns undefined and the
+            // unguarded `(swimlaneNode.shape as SwimLaneModel).lanes.length` access throws
+            // `Cannot read properties of undefined (reading 'length')`. Skip the header-copy loop
+            // in that case rather than crashing the entire selection path.
+            if (swimlaneNode && (swimlaneNode.shape as SwimLaneModel) &&
+                (swimlaneNode.shape as SwimLaneModel).lanes &&
+                (obj[0] as NodeModel).shape) {
+                ((obj[0] as NodeModel).shape as any).header = [];
+                let laneId: string = '';
+                for (let j: number = 0; j < obj.length; j++) {
+                    for (let i: number = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
+                        const parentId: string[] = (obj[0] as Node).id.split((obj[0] as Node).parentId);
+                        laneId = parentId[1].slice(0, -1);
+                        if (laneId === (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].id) {
+                            ((obj[0] as NodeModel).shape as any).header.push(
+                                (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].header);
+                        }
                     }
                 }
             }

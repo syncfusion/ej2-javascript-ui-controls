@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 35.1.41 (2026-10-20)
+## 35.1.43 (2026-11-03)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved the bundle size increase issue by optimizing package inclusion.
+
+## 35.1.37 (2026-09-29)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved a console error that occurred when creating a PDF with an A9 page size.
+
+## 34.1.31 (2026-07-14)
 
 ### Pdf Export
 

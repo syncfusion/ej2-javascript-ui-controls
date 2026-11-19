@@ -7,7 +7,7 @@ import { ReturnType } from '../base/type';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
-import { isRowEnteredInGrid, parentsUntil, setDisplayValue, generateExpandPredicates, getPredicates, getGroupKeysAndFields } from '../base/util';
+import { isRowEnteredInGrid, parentsUntil, setDisplayValue, generateExpandPredicates, getParsedFieldID, getPredicates, getGroupKeysAndFields } from '../base/util';
 import { Grid } from '../base/grid';
 import { RowRenderer } from '../renderer/row-renderer';
 import { GroupModelGenerator, GroupedData } from '../services/group-model-generator';
@@ -889,7 +889,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const childRow: Row<Column> = rows[parseInt(index.toString(), 10)];
         const parentCapRow: Row<Column> = this.getRowByUid(childRow.parentUid);
         const capRowObjIdx: number = this.getRowObjectIndexByUid(parentCapRow.uid);
-        const captionRowEle: Element = this.parent.getContent().querySelector('tr[data-uid=' + parentCapRow.uid + ']');
+        const captionRowEle: Element = this.parent.getContent().querySelector('tr[data-uid=' + getParsedFieldID(parentCapRow.uid) + ']');
         const capRowEleIndex: number = (captionRowEle as HTMLTableRowElement).rowIndex;
         const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
         const childIdx: number = child.indexOf(childRow);
@@ -1391,7 +1391,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                     const idxs: string[] = Object.keys(uids);
                     for (let i: number = 0; i < idxs.length; i++) {
                         const tr: HTMLTableRowElement = this.parent.getContent()
-                            .querySelector('tr[data-uid=' + idxs[parseInt(i.toString(), 10)] + ']');
+                            .querySelector('tr[data-uid=' + getParsedFieldID(idxs[parseInt(i.toString(), 10)]) + ']');
                         const row: Row<Column> = uids[idxs[parseInt(i.toString(), 10)]];
                         if (row.isCaptionRow) {
                             if (!this.captionModelGen.isEmpty()) {

@@ -7,6 +7,8 @@ import { QRCodeGeneratorModel } from '../../qrcode/qrcode-model';
 import { DataMatrixGeneratorModel } from '../../datamatrix/datamatrix-model';
 import { QRCodeGenerator } from '../../qrcode/qrcode';
 import { DataMatrixGenerator } from '../../datamatrix/datamatrix';
+import { PDF417Generator } from '../../pdf417/pdf417';
+import { DotCodeGenerator } from '../../dotcode/dotcode';
 import { BarcodeCanvasRenderer } from './../../barcode/rendering/canvas-renderer';
 import { RenderingMode } from '../enum/enum';
 import { BaseAttributes } from './../../barcode/rendering/canvas-interface';
@@ -112,8 +114,14 @@ export function triggerDownload(type: string, fileName: string, url: string): vo
  * @param {HTMLCanvasElement} code - Provide the url string value .
  * @private
  */
+/**
+ * A generator component with a render mode, for the shared export path.
+ * @private
+ */
+type BarcodeComponent = BarcodeGenerator | QRCodeGenerator | DataMatrixGenerator | PDF417Generator | DotCodeGenerator;
+
 export function exportAsImage(exportType: string, fileName: string, element: Element, isReturnBase64: boolean,
-                              code: BarcodeGenerator | QRCodeGenerator | DataMatrixGenerator): Promise<string> {
+                              code: BarcodeComponent): Promise<string> {
     const returnValue: Promise<string> = imageExport(exportType, fileName, element, isReturnBase64, code);
     if (returnValue instanceof Promise) {
         returnValue.then((data: string) => {
@@ -135,7 +143,7 @@ export function exportAsImage(exportType: string, fileName: string, element: Ele
  * @private
  */
 export function imageExport(type: string, fileName: string, element: Element, isReturnBase64: boolean,
-                            code: BarcodeGenerator | QRCodeGenerator | DataMatrixGenerator): Promise<string> {
+                            code: BarcodeComponent): Promise<string> {
     // eslint-disable-next-line
     const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
         // eslint-disable-next-line

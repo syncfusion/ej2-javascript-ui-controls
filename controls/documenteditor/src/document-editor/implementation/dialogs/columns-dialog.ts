@@ -1,7 +1,7 @@
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
-import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs, classNames } from '@syncfusion/ej2-buttons';
-import { NumericTextBox, ChangeEventArgs as NumericChangeEventArgs, TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
+import { CheckBox } from '@syncfusion/ej2-buttons';
+import { NumericTextBox, ChangeEventArgs as NumericChangeEventArgs, ChangedEventArgs } from '@syncfusion/ej2-inputs';
 import { SelectionSectionFormat, WSectionFormat, WColumnFormat, HelperMethods, ParagraphInfo } from '../index';
 import { SectionBreakType } from '../../base/types';
 
@@ -431,6 +431,7 @@ export class ColumnsDialog {
 
 
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public checkBox = (args: ChangedEventArgs): void => {
         for (let i: number = 0; i < this.columns.length; i++) {
             const col: Column = this.columns[parseInt(i.toString(), 10)];
@@ -601,7 +602,6 @@ export class ColumnsDialog {
             }
             if (this.equalCheckbox.checked === false) {
                 for (let i: number = 0; i < this.columns.length; i++) {
-                    const col: Column = this.columns[parseInt(i.toString(), 10)];
                     let updatedNumber: number;
                     if (columnWidth === this.columns[parseInt(i.toString(), 10)].width.value) {
                         updatedNumber = i;
@@ -726,7 +726,6 @@ export class ColumnsDialog {
         }
         if (this.equalCheckbox.checked === false) {
             for (let i: number = 0; i < this.columns.length; i++) {
-                const col: Column = this.columns[parseInt(i.toString(), 10)];
                 let updatedNumber: number;
                 if (columnSpace === this.columns[parseInt(i.toString(), 10)].space.value) {
                     updatedNumber = i;
@@ -791,6 +790,7 @@ export class ColumnsDialog {
             }
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public canUpdateColumnWidthAndSpacing = (numberOfColumns: number, colIndex: number, colWidth: number, colSpace: number): void => {
         const spaceValue: number = 36;
         const valueWidthEqualFirst: number = (this.pageWidth - 36 * (numberOfColumns - 1)) / numberOfColumns;
@@ -879,7 +879,6 @@ export class ColumnsDialog {
         this.equalCheckbox.checked = true;
         this.lineCheckbox.checked = false;
         this.equalCheckbox.disabled = true;
-        const cols: WColumnFormat[] = [];
         for (let i: number = 0; i < this.columns.length; i++) {
             this.columns.splice(1, this.columns.length - 1);
             this.columns[0].space.enabled = false;

@@ -1,4 +1,3 @@
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfCatalog } from './pdf-catalog';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { PdfBoolean } from './../primitives/pdf-boolean';
@@ -26,7 +25,6 @@ export class PdfViewerPreferences implements IPdfWrapper {
     constructor(catalog: PdfCatalog) {
         this._catalog = catalog;
     }
-    _dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     _catalog: PdfCatalog;
     _centerWindow: boolean = false;
     _fitWindow: boolean = false;
@@ -71,7 +69,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set centerWindow(value: boolean) {
         this._centerWindow = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.centerWindow, new PdfBoolean(this._centerWindow));
+        this._dictionary.items.setValue('CenterWindow', new PdfBoolean(this._centerWindow));
     }
     /**
      * A flag specifying whether the window’s title bar should display the document title taken 
@@ -108,7 +106,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set displayTitle(value: boolean) {
         this._displayTitle = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.displayTitle, new PdfBoolean(this._displayTitle));
+        this._dictionary.items.setValue('DisplayTitle', new PdfBoolean(this._displayTitle));
     }
     /**
      * A flag specifying whether to resize the document’s window to fit the size of the first 
@@ -143,7 +141,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set fitWindow(value: boolean) {
         this._fitWindow = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.fitWindow, new PdfBoolean(this._fitWindow));
+        this._dictionary.items.setValue('FitWindow', new PdfBoolean(this._fitWindow));
     }
     /**
      * A flag specifying whether to hide the viewer application’s menu bar when the 
@@ -178,7 +176,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set hideMenuBar(value: boolean) {
         this._hideMenuBar = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.hideMenuBar, new PdfBoolean(this._hideMenuBar));
+        this._dictionary.items.setValue('HideMenubar', new PdfBoolean(this._hideMenuBar));
     }
     /**
      * A flag specifying whether to hide the viewer application’s tool bar when the 
@@ -213,7 +211,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set hideToolBar(value: boolean) {
         this._hideToolBar = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.hideToolBar, new PdfBoolean(this._hideToolBar));
+        this._dictionary.items.setValue('HideToolbar', new PdfBoolean(this._hideToolBar));
     }
     /**
      * A flag specifying whether to hide user interface elements in the document’s window 
@@ -248,7 +246,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set hideWindowUI(value: boolean) {
         this._hideWindowUI = value;
-        this._dictionary.items.setValue(this._dictionaryProperties.hideWindowUI, new PdfBoolean(this._hideWindowUI));
+        this._dictionary.items.setValue('HideWindowUI', new PdfBoolean(this._hideWindowUI));
     }
     /**
      * A name object specifying how the document should be displayed when opened.
@@ -281,7 +279,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set pageMode(value: PdfPageMode) {
         this._pageMode = value;
-        this._catalog.items.setValue(this._dictionaryProperties.pageMode, new PdfName(this._mapPageMode(this._pageMode)));
+        this._catalog.items.setValue('PageMode', new PdfName(this._mapPageMode(this._pageMode)));
     }
     /**
      * Gets print duplex mode handling option to use when printing the file from the print dialog.
@@ -314,7 +312,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set duplex(value: DuplexMode) {
         this._duplex = value;
-        this._catalog.items.setValue(this._dictionaryProperties.duplex, new PdfName(this._mapDuplexMode(this._duplex)));
+        this._catalog.items.setValue('Duplex', new PdfName(this._mapDuplexMode(this._duplex)));
     }
     /**
      * A name object specifying the page layout to be used when the document is opened.
@@ -347,7 +345,7 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set pageLayout(value: PdfPageLayout) {
         this._pageLayout = value;
-        this._catalog.items.setValue(this._dictionaryProperties.pageLayout, new PdfName(this._mapPageLayout(this._pageLayout)));
+        this._catalog.items.setValue('PageLayout', new PdfName(this._mapPageLayout(this._pageLayout)));
     }
     /**
      * Gets the page scaling option to be selected 
@@ -382,10 +380,10 @@ export class PdfViewerPreferences implements IPdfWrapper {
      */
     set pageScaling(value: PageScalingMode) {
         this._pageScaling = value;
-        if (this._pageScaling === PageScalingMode.AppDefault && this._dictionary.items.containsKey(this._dictionaryProperties.printScaling)) {
-            this._dictionary.items.remove(this._dictionaryProperties.printScaling);
+        if (this._pageScaling === PageScalingMode.AppDefault && this._dictionary.items.containsKey('PrintScaling')) {
+            this._dictionary.items.remove('PrintScaling');
         } else if (this._pageScaling === PageScalingMode.None) {
-            this._dictionary.items.setValue(this._dictionaryProperties.printScaling, new PdfName('None'));
+            this._dictionary.items.setValue('PrintScaling', new PdfName('None'));
         }
     }
     /**

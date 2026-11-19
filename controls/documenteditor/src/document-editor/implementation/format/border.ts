@@ -4,7 +4,6 @@ import { WBorders } from './borders';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Color, LineWidget } from '../';
 
 /**
  * @private
@@ -233,7 +232,6 @@ export class WBorder {
     }
     public getBorderWeight(): number {
         let weight: number = 0;
-        const numberOfLines: number = this.getNumberOfLines();
         const borderNumber: number = this.getBorderNumber();
         switch (this.lineStyle) {
         case 'Single':

@@ -73,8 +73,6 @@ export class FontColor extends ChildProperty<FontColor> {
  * Defines the configuration for the background color (text highlight color)
  * picker.
  *
- * Mirrors the {@link FontColor} shape but uses the background-color defaults
- * prescribed by the public API (default `'#1E293B'`, `columns: 5`).
  */
 export class BackgroundColor extends ChildProperty<BackgroundColor> {
 

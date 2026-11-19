@@ -11,6 +11,7 @@ import { IEditorModel, ITableModel, NotifyArgs, OffsetPosition, ResizeArgs, ITab
 import { TABLE_SELECTION_STATE_ALLOWED_ACTIONKEYS } from '../../common/config';
 import { TablePasting } from './table-pasting';
 import { IFrameSettingsModel } from '../../models';
+import { getDeepestLastInlineNode } from '../../common/util';
 
 /**
  * Link internal component
@@ -675,8 +676,16 @@ export class TableCommand {
         this.prepareTableForColumnInsertion(e, currentTabElm as HTMLElement);
         this.insertCellsInAllRows(e, allRows, colIndex, currentTabElm as HTMLElement);
         const currentCellIndex: number = e.item.subCommand === 'InsertColumnRight' ? colIndex + 1 : colIndex;
-        const focusedCell: HTMLElement = ((curRow as HTMLTableRowElement).cells[currentCellIndex as number]) as HTMLElement;
+        const rowCells: HTMLCollectionOf<HTMLTableCellElement> = (curRow as HTMLTableRowElement).cells;
+        let focusedCell: HTMLElement = rowCells[currentCellIndex as number] as HTMLElement;
+        if (isNOU(focusedCell)) {
+            focusedCell = rowCells[rowCells.length - 1] as HTMLElement;
+        }
         this.clearTableSelections();
+        if (isNOU(focusedCell)) {
+            this.executeCallback(e);
+            return;
+        }
         addClass([focusedCell], CLS_TABLE_SEL);
         this.finalizeColumnInsertion(e, focusedCell);
     }
@@ -718,10 +727,18 @@ export class TableCommand {
 
         //update the column
         for (let i: number = 0; i < allRows.length; i++) {
-            const curCell: Element = allRows[i as number].querySelectorAll(':scope > td, :scope > th')[colIndex as number];
+            const rowCells: NodeListOf<Element> = allRows[i as number].querySelectorAll(':scope > td, :scope > th');
+            let curCell: Element = rowCells[colIndex as number];
+            const isMissingCell: boolean = isNOU(curCell);
+            if (isMissingCell) {
+                curCell = rowCells[rowCells.length - 1];
+            }
+            if (isNOU(curCell)) {
+                continue;
+            }
             const colTemplate: HTMLElement = this.createColumnCell(curCell);
 
-            if (e.item.subCommand === 'InsertColumnLeft') {
+            if (e.item.subCommand === 'InsertColumnLeft' && !isMissingCell) {
                 curCell.parentElement.insertBefore(colTemplate, curCell);
             } else {
                 this.insertAfter(colTemplate, curCell);
@@ -1854,7 +1871,11 @@ export class TableCommand {
         for (let i: number = 1; i < selectedCells.length; i++) {
             const currentCell: HTMLElement = selectedCells[i as number];
             if (!this.isCellEmpty(currentCell)) {
-                innerHtml = this.appendCellContent(innerHtml, currentCell.innerHTML);
+                const tempDiv: HTMLElement = document.createElement('div');
+                tempDiv.innerHTML = innerHtml;
+                const isLastElementBR: boolean =
+                    !isNOU(getDeepestLastInlineNode(tempDiv)) && getDeepestLastInlineNode(tempDiv).nodeName === 'BR' ? true : false;
+                innerHtml = this.appendCellContent(innerHtml, currentCell.innerHTML, isLastElementBR);
             }
         }
         selectedCells[0].innerHTML = innerHtml;
@@ -1870,8 +1891,8 @@ export class TableCommand {
     /*
      * Appends cell content with appropriate separator.
      */
-    private appendCellContent(existingContent: string, newContent: string): string {
-        return existingContent ? existingContent + '<br>' + newContent : newContent;
+    private appendCellContent(existingContent: string, newContent: string, isLastElementBR: boolean): string {
+        return existingContent ? existingContent + (isLastElementBR ? '' : '<br>') + newContent : newContent;
     }
 
     /*
@@ -3849,10 +3870,10 @@ export class TableCommand {
         const allColInsertIcons: NodeListOf<Element> = (this.tableModel.getEditPanel() as HTMLElement).querySelectorAll('.e-tb-col-insert');
         const resizeGripperElementsRow: Element[] = Array.from(allRowInsertIcons).filter((el: Element) => el.querySelector('.e-circle, .e-circle-add'));
         const resizeGripperElementsCol: Element[] = Array.from(allColInsertIcons).filter((el: Element) => el.querySelector('.e-circle, .e-circle-add'));
-        this.currentRowIndex = resizeGripperElementsRow.length === 1 ? Number(resizeGripperElementsRow[0].getAttribute('data-row')) :
-            Number(resizeGripperElementsRow[1].getAttribute('data-row'));
-        this.currentColIndex = resizeGripperElementsCol.length === 1 ? Number(resizeGripperElementsCol[0].getAttribute('data-col')) - 1 :
-            Number(resizeGripperElementsCol[1].getAttribute('data-col')) - 1;
+        const targetRowGripper: Element = resizeGripperElementsRow.length === 1 ? resizeGripperElementsRow[0] : resizeGripperElementsRow[1];
+        const targetColGripper: Element = resizeGripperElementsCol.length === 1 ? resizeGripperElementsCol[0] : resizeGripperElementsCol[1];
+        this.currentRowIndex = targetRowGripper ? Number(targetRowGripper.getAttribute('data-row')) : -1;
+        this.currentColIndex = targetColGripper ? Number(targetColGripper.getAttribute('data-col')) - 1 : -1;
     }
 
     private resetInsertIconState(insertIcon: HTMLElement, dataAttr: string): void {

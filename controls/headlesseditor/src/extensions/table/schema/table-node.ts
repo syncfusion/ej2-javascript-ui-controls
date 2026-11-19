@@ -4,8 +4,8 @@
  * The table node is a block-level container for tableRow nodes.
  * Dimensions are derived at runtime via TableMap; no stored attributes needed.
  */
-import type { NodeDefinition } from '../../../schema/types/node-definition';
-import { NodeContent } from '../../../schema/types/content-expression';
+import type { NodeDefinition } from '../../../core/schema/types/node-definition';
+import { NodeContent } from '../../../core/schema/types/content-expression';
 
 /**
  * NodeDefinition for the `table` node.

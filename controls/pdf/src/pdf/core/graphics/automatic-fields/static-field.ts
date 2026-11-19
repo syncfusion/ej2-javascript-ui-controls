@@ -1,5 +1,5 @@
 import { PdfFont, PdfStringFormat } from '../../fonts';
-import { Point, Size, Rectangle } from '../../pdf-type';
+import { Point, Size, Rectangle } from '../../pdf-document-helper';
 import { PdfBrush, PdfGraphics } from '../pdf-graphics';
 import { PdfTemplate } from '../pdf-template';
 import { PdfAutomaticField } from './automatic-field';

@@ -264,6 +264,15 @@ export enum DataMatrixSize {
  * * Code93Extension
  * * Code39Extension
  * * Code32
+ * * GS1Code128
+ * * ITF14
+ * * GS1DataBarOmnidirectional
+ * * GS1DataBarTruncated
+ * * GS1DataBarStacked
+ * * GS1DataBarStackedOmnidirectional
+ * * GS1DataBarLimited
+ * * GS1DataBarExpanded
+ * * GS1DataBarExpandedStacked
  */
 export type BarcodeType =
     /** code39 - render the code39 barcode */
@@ -295,7 +304,67 @@ export type BarcodeType =
     /** Code39EXTD - render the code39EXTD barcode */
     'Code39Extension' |
     /** Code32 - render the Code32 barcode */
-    'Code32' ;
+    'Code32' |
+    /**
+     * GS1-128: Code 128 with FNC1 and GS1 Application Identifiers (AIs). The
+     * value is GS1 data, bracketed such as (01)09506000134376(10)ABC123, or raw.
+     * FNC1 characters and the Modulo 103 check character are added automatically.
+     */
+    'GS1Code128' |
+    /**
+     * ITF-14: Interleaved 2 of 5 barcode for a 14-digit GTIN on outer cartons. Accepts
+     * 13 digits (the check digit is calculated) or 14 digits (the check digit is validated).
+     */
+    'ITF14' |
+    /**
+     * GS1 DataBar Omnidirectional: one-row barcode for a GTIN that reads in any direction
+     * on checkout scanners. Accepts 13 or 14 digits, or (01) and 14 digits.
+     */
+    'GS1DataBarOmnidirectional' |
+    /**
+     * GS1 DataBar Truncated: the Omnidirectional barcode at reduced height, for small
+     * items read with handheld scanners. Accepts 13 or 14 digits, or (01) and 14 digits.
+     */
+    'GS1DataBarTruncated' |
+    /**
+     * GS1 DataBar Stacked: compact two-row barcode for a GTIN, for narrow items read
+     * with handheld scanners.
+     */
+    'GS1DataBarStacked' |
+    /**
+     * GS1 DataBar Stacked Omnidirectional: two-row barcode for a GTIN that reads in any
+     * direction on checkout scanners.
+     */
+    'GS1DataBarStackedOmnidirectional' |
+    /**
+     * GS1 DataBar Limited: the narrowest one-row barcode, for a GTIN starting with 0 or 1,
+     * read with handheld scanners.
+     */
+    'GS1DataBarLimited' |
+    /**
+     * GS1 DataBar Expanded: one-row barcode for GS1 data, such as a GTIN with a weight,
+     * price, batch or expiry date. Holds up to 74 digits or 41 letters.
+     */
+    'GS1DataBarExpanded' |
+    /**
+     * GS1 DataBar Expanded Stacked: the Expanded barcode split into rows of
+     * segmentsPerRow segments, up to 11 rows.
+     */
+    'GS1DataBarExpandedStacked' ;
+
+/**
+ * Defines the bearer bars drawn around an ITF-14 barcode.
+ * * Frame - Bars on all four sides
+ * * Horizontal - Bars above and below only
+ * * None - No bearer bars
+ */
+export type BearerBarType =
+    /** Frame - Bearer bars on all four sides, recommended for printing on corrugated board. */
+    'Frame' |
+    /** Horizontal - Bearer bars above and below only. */
+    'Horizontal' |
+    /** None - No bearer bars. */
+    'None';
 
 
 
@@ -579,3 +648,49 @@ export type BarcodeExportType  =
     'PNG';
 
 
+
+/**
+ * Defines the data compaction mode used by the PDF417 barcode. They are
+ * * Auto - Selects Text, Numeric and Byte compaction per segment to produce the fewest codewords.
+ * * Text - Encodes the whole value using Text compaction (printable ASCII, tab, line feed and carriage return).
+ * * Numeric - Encodes the whole value using Numeric compaction (digits 0-9 only).
+ * * Byte - Encodes the whole value using Byte compaction (any character).
+ */
+export type PDF417CompactionMode =
+    /** Auto - Selects the most compact mode for each segment of the value */
+    'Auto' |
+    /** Text - Encodes printable ASCII characters, tab, line feed and carriage return */
+    'Text' |
+    /** Numeric - Encodes the digits 0-9 */
+    'Numeric' |
+    /** Byte - Encodes any character as bytes */
+    'Byte';
+
+/**
+ * Defines the error correction level of the PDF417 barcode.
+ * Level n adds 2^(n+1) error correction codewords to the symbol.
+ */
+export enum PDF417ErrorCorrectionLevel {
+    /**
+     * Uses the level recommended by ISO/IEC 15438 for the amount of data.
+     */
+    Auto = -1,
+    /** 2 error correction codewords (error detection only). */
+    Level0 = 0,
+    /** 4 error correction codewords. */
+    Level1 = 1,
+    /** 8 error correction codewords. */
+    Level2 = 2,
+    /** 16 error correction codewords. */
+    Level3 = 3,
+    /** 32 error correction codewords. */
+    Level4 = 4,
+    /** 64 error correction codewords. */
+    Level5 = 5,
+    /** 128 error correction codewords. */
+    Level6 = 6,
+    /** 256 error correction codewords. */
+    Level7 = 7,
+    /** 512 error correction codewords. */
+    Level8 = 8
+}

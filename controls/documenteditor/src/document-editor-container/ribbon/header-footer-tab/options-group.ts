@@ -1,8 +1,8 @@
 import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { RibbonGroupModel, RibbonItemType } from '@syncfusion/ej2-ribbon';
+import { Ribbon, RibbonGroupModel, RibbonItemModel, RibbonItemType } from '@syncfusion/ej2-ribbon';
 import { HeaderFooterType } from '../../../document-editor/base';
-import { HeaderFooterWidget } from '../../../document-editor/implementation';
+import { HeaderFooterWidget, Selection } from '../../../document-editor/implementation';
 
 // Constants for UI element IDs
 export const OPTIONS_GROUP_ID: string = '_options_group';
@@ -12,11 +12,13 @@ export const DIFFERENT_ODD_EVEN_BUTTON_ID: string = '_different_odd_even_button'
 
 /**
  * Represents the Options Group in Header & Footer tab
+ *
  * @private
  */
 export class OptionsGroup extends RibbonGroupBase {
     /**
      * Constructor for the OptionsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -25,6 +27,7 @@ export class OptionsGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Options
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -45,7 +48,7 @@ export class OptionsGroup extends RibbonGroupBase {
                                 checked: false,
                                 change: (args: { checked: boolean }) => {
                                     if (!this.documentEditor.isReadOnly) {
-                                        const selection: any = this.documentEditor.selectionModule;
+                                        const selection: Selection = this.documentEditor.selectionModule;
                                         if (selection) {
                                             selection.sectionFormat.differentFirstPage = args.checked;
                                             setTimeout((): void => {
@@ -68,7 +71,7 @@ export class OptionsGroup extends RibbonGroupBase {
                                 checked: false,
                                 change: (args: { checked: boolean }) => {
                                     if (!this.documentEditor.isReadOnly) {
-                                        const selection: any = this.documentEditor.selectionModule;
+                                        const selection: Selection = this.documentEditor.selectionModule;
                                         if (selection) {
                                             selection.sectionFormat.differentOddAndEvenPages = args.checked;
                                             setTimeout((): void => {
@@ -91,7 +94,7 @@ export class OptionsGroup extends RibbonGroupBase {
                                 checked: false,
                                 change: (args: { checked: boolean }) => {
                                     if (!this.documentEditor.isReadOnly) {
-                                        const selection: any = this.documentEditor.selectionModule;
+                                        const selection: Selection = this.documentEditor.selectionModule;
                                         if (selection) {
                                             const headerFooterType: HeaderFooterType = this.getCurrentHeaderFooterType();
                                             if (headerFooterType) {
@@ -113,10 +116,11 @@ export class OptionsGroup extends RibbonGroupBase {
 
     /**
      * Gets the current header/footer type
+     *
      * @returns {HeaderFooterType} The current header/footer type
      */
     private getCurrentHeaderFooterType(): HeaderFooterType {
-        const selection: any = this.documentEditor.selectionModule;
+        const selection: Selection = this.documentEditor.selectionModule;
         if (selection && selection.start && selection.start.paragraph &&
             selection.start.paragraph.containerWidget) {
             return (selection.start.paragraph.containerWidget as HeaderFooterWidget).headerFooterType;
@@ -127,10 +131,11 @@ export class OptionsGroup extends RibbonGroupBase {
 
     /**
      * Checks if the current header/footer is linked to previous
+     *
      * @returns {boolean} Whether the current header/footer is linked to previous
      */
     private isLinkToPreviousChecked(): boolean {
-        const selection: any = this.documentEditor.selectionModule;
+        const selection: Selection = this.documentEditor.selectionModule;
         if (!selection) {
             return false;
         }
@@ -160,12 +165,13 @@ export class OptionsGroup extends RibbonGroupBase {
 
     /**
      * Sets the link to previous value for the current header/footer
+     *
      * @param {string} headerFooterType - The header/footer type
      * @param {boolean} value - The value to set
      * @returns {void}
      */
     private setLinkToPreviousValue(headerFooterType: string, value: boolean): void {
-        const selection: any = this.documentEditor.selectionModule;
+        const selection: Selection = this.documentEditor.selectionModule;
         if (!selection) {
             return;
         }
@@ -198,16 +204,17 @@ export class OptionsGroup extends RibbonGroupBase {
 
     /**
      * Updates the checkbox states based on current document state
+     *
      * @returns {void}
      */
     public updateSelection(): void {
-        const ribbon: any = this.container.ribbon.ribbon;
+        const ribbon: Ribbon = this.container.ribbon.ribbon;
         // Get checkbox elements
-        const linkToPreviousCheckbox: any = ribbon.getItem(this.ribbonId + LINK_PREVIOUS_BUTTON_ID);
-        const differentFirstCheckbox: any = ribbon.getItem(this.ribbonId + DIFFERENT_FIRST_BUTTON_ID);
-        const differentOddEvenCheckbox: any = ribbon.getItem(this.ribbonId + DIFFERENT_ODD_EVEN_BUTTON_ID);
+        const linkToPreviousCheckbox: RibbonItemModel = ribbon.getItem(this.ribbonId + LINK_PREVIOUS_BUTTON_ID);
+        const differentFirstCheckbox: RibbonItemModel = ribbon.getItem(this.ribbonId + DIFFERENT_FIRST_BUTTON_ID);
+        const differentOddEvenCheckbox: RibbonItemModel = ribbon.getItem(this.ribbonId + DIFFERENT_ODD_EVEN_BUTTON_ID);
 
-        const selection: any = this.documentEditor.selectionModule;
+        const selection: Selection = this.documentEditor.selectionModule;
 
         if (selection) {
             if (!selection.start || !selection.start.paragraph || !selection.start.paragraph.bodyWidget) {
@@ -235,7 +242,6 @@ export class OptionsGroup extends RibbonGroupBase {
             if (linkToPreviousCheckbox) {
                 // Disable if this is the first section
                 const isFirstSection: boolean = selection.start.paragraph.bodyWidget.sectionIndex === 0;
-                const prevLinkToPreviousCheckbox: boolean = linkToPreviousCheckbox.checkBoxSettings.checked;
                 if (isFirstSection) {
                     ribbon.disableItem(this.ribbonId + LINK_PREVIOUS_BUTTON_ID);
                 } else {

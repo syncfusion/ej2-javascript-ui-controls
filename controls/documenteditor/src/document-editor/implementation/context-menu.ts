@@ -1,4 +1,4 @@
-import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs, Item, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { LayoutViewer, DocumentHelper } from './viewer';
 import { isNullOrUndefined, L10n, classList, Browser } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
@@ -48,7 +48,6 @@ const CONTEXTMENU_RESTART_AT: string = '_contextmenu_restart_at';
 const CONTEXTMENU_SPELLING_DIALOG: string = '_contextmenu_spelling_dialog';
 const CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS: string = '_contextmenu_otherSuggestions_spellcheck_';
 const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
-const CONTEXTMENU_MORE_SUGGESTION: string = '_contextmenu_more_suggestion';
 const CONTEXTMENU_ACCEPT_CHANGES: string = '_contextmenu_accept_changes';
 const CONTEXTMENU_REJECT_CHANGES: string = '_contextmenu_reject_changes';
 const CONTEXTMENU_NOTE_OPTIONS: string = '_contextmenu_note_options';

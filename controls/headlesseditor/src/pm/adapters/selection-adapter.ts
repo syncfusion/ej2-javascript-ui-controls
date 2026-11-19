@@ -1,7 +1,8 @@
 /**
  * selection-adapter.ts — Converts between Syncfusion Selection and PM Selection.
  *
- * Supports all five SelectionType variants: text, node, cell, block, all.
+ * Syncfusion documents carry no persistent node IDs; selection `Position`
+ * is therefore expressed as `{ offset }` only.
  *
  * Sealed inside src/pm/. Nothing outside src/pm/ may import from this file.
  */
@@ -15,8 +16,7 @@ import {
     Mapping
 } from '../pm-guard';
 import { PositionAdapter } from './position-adapter';
-import { Selection, SelectionType, CellSelection, isCellSelection } from '../../model/selection';
-import { Position } from '../../model/position';
+import { Selection, SelectionType, CellSelection, isCellSelection, Position } from '../../core/model/selection';
 import { InternalPosition } from '../types';
 import {
     toPMCellSelection,
@@ -28,15 +28,15 @@ export class SelectionAdapter {
 
     private positionAdapter: PositionAdapter;
 
-    constructor(positionAdapter: PositionAdapter) {
-        this.positionAdapter = positionAdapter;
+    constructor(positionAdapter?: PositionAdapter) {
+        this.positionAdapter = positionAdapter ?? new PositionAdapter();
     }
 
     // ── To PM ─────────────────────────────────────────────────────────────────
 
     /**
      * Converts a Syncfusion Selection to a ProseMirror Selection.
-     * Returns null when the selection cannot be resolved (e.g. unknown nodeId).
+     * Returns null when the selection cannot be resolved.
      *
      * @param {Selection} sel - The Syncfusion selection to convert.
      * @param {PMNode} pmDoc - The current PM document used for context.
@@ -51,12 +51,10 @@ export class SelectionAdapter {
             case SelectionType.Node: {
                 if (!sel.anchor) { return null; }
                 const internal: InternalPosition = this.positionAdapter.toPMPosition(sel.anchor, pmDoc);
-                // NodeSelection requires the position to be at the start of a node
                 return NodeSelection.create(pmDoc, internal.pmPos - 1 >= 0 ? internal.pmPos - 1 : 0);
             }
 
             case SelectionType.Cell: {
-                // Delegate to cell-selection-adapter for real PM CellSelection
                 if (isCellSelection(sel)) {
                     return toPMCellSelection(sel, pmDoc);
                 }
@@ -106,7 +104,6 @@ export class SelectionAdapter {
                 return { type: SelectionType.Node, anchor: pos };
             }
 
-            // PM CellSelection — convert via cell-selection-adapter
             if (pmSel instanceof PMCellSelection) {
                 return fromPMCellSelection(pmSel);
             }
@@ -147,7 +144,6 @@ export class SelectionAdapter {
             return { type: SelectionType.All };
         }
 
-        // CellSelection: remap by nodeId lookup in the post-mutation document
         if (isCellSelection(sel)) {
             return remapCellSelection(sel as CellSelection, pmDoc);
         }
@@ -156,12 +152,12 @@ export class SelectionAdapter {
         let newHead: Position | null = null;
 
         if (sel.anchor) {
-            newAnchor = this.positionAdapter.mapAfterTransaction(sel.anchor, pmDoc, mapping);
+            newAnchor = this.positionAdapter.mapAfterTransaction(sel.anchor, mapping, pmDoc);
             if (!newAnchor) { return null; }
         }
 
         if (sel.head) {
-            newHead = this.positionAdapter.mapAfterTransaction(sel.head, pmDoc, mapping);
+            newHead = this.positionAdapter.mapAfterTransaction(sel.head, mapping, pmDoc);
             if (!newHead) { return null; }
         }
 

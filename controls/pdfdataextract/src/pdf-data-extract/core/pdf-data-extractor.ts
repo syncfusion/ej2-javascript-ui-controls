@@ -6,6 +6,9 @@ import { _FontStructure } from './text-extraction/font-structure';
 import { PdfTagType } from './text-extraction/enumerator';
 import { _TextProcessingMode } from './enum';
 import { _addFontResources, _getXObject, _getXObjectResources, _ignoreEscapeSequence, _isArrayEqual, _parseEncodedText, canvasRenderCallback } from './utils';
+import { _normalizeRtlText, _normalizeSearchText, _containsRtlCharacter, _containsArabicPresentationForm,
+    _isVisualOrderRtl, _reorderFragmentsForRtlReading, _mapArabicPresentationForms,
+    _invertVisualLtrFragment, _resolveMirroredBrackets, _TextFragment } from './rtl-utils';
 import { PdfDocument, _PdfDictionary, _PdfReference, PdfPage, PdfPath, _ContentParser, _PdfRecord, _PdfCrossReference, PdfFontStyle, PdfRotationAngle, _PdfName, Rectangle } from '@syncfusion/ej2-pdf';
 import { _PdfTextParser } from './pdf-text-parser';
 import { PdfStructureElement } from './pdf-structure-element';
@@ -508,6 +511,7 @@ export class PdfDataExtractor {
         this._processPages(startIndex, endIndex);
         if (this._resultantText.length) {
             this._resultantText = _ignoreEscapeSequence(this._resultantText);
+            this._resultantText = this._buildRtlReadingText(startIndex, endIndex, this._resultantText);
         }
         this._isLayout = false;
         return this._resultantText;
@@ -571,6 +575,7 @@ export class PdfDataExtractor {
         await this._processPdfPages(startIndex, endIndex);
         if (this._resultantText.length) {
             this._resultantText = _ignoreEscapeSequence(this._resultantText);
+            this._resultantText = await this._buildRtlReadingTextAsync(startIndex, endIndex, this._resultantText);
         }
         this._isLayout = false;
         return this._resultantText;
@@ -1924,6 +1929,7 @@ export class PdfDataExtractor {
         this._textLine = [];
         this._processPages(startIndex, endIndex);
         this._isExtractTextLines = false;
+        this._normalizeTextLines(this._textLine);
         return this._textLine;
     }
     /**
@@ -1980,6 +1986,7 @@ export class PdfDataExtractor {
         this._textLine = [];
         await this._processPdfPages(startIndex, endIndex);
         this._isExtractTextLines = false;
+        this._normalizeTextLines(this._textLine);
         return this._textLine;
     }
     /**
@@ -2162,6 +2169,298 @@ export class PdfDataExtractor {
         return textSearchResults[0];
     }
     /**
+     * Rebuilds the plain-text extraction result in logical RTL reading order.
+     * Non-RTL documents keep the existing flat text. RTL documents are rebuilt
+     * from the line pipeline so rows are read top-to-bottom and RTL rows are
+     * emitted right-to-left, matching Adobe extraction order.
+     *
+     * @private
+     * @param {number} startIndex - Start page index of the extraction.
+     * @param {number} endIndex - End page index of the extraction.
+     * @param {string} flatText - Flat extracted text in stream order.
+     * @returns {string} Reading-order text for RTL documents, otherwise flatText.
+     */
+    private _buildRtlReadingText(startIndex: number, endIndex: number, flatText: string): string {
+        if (!_containsRtlCharacter(flatText)) {
+            return flatText;
+        }
+        const textLines: TextLine[] = this.extractTextLinesSync({ startPageIndex: startIndex, endPageIndex: endIndex });
+        if (!textLines || textLines.length === 0) {
+            return _normalizeRtlText(flatText);
+        }
+        let result: string = '';
+        for (let i: number = 0; i < textLines.length; i++) {
+            const textLine: TextLine = textLines[Number.parseInt(i.toString(), 10)];
+            result += textLine._text;
+            if (i < textLines.length - 1) {
+                result += '\r\n';
+            }
+        }
+        return result;
+    }
+    /**
+     * Asynchronous variant of `_buildRtlReadingText`.
+     *
+     * @private
+     * @param {number} startIndex - Start page index of the extraction.
+     * @param {number} endIndex - End page index of the extraction.
+     * @param {string} flatText - Flat extracted text in stream order.
+     * @returns {Promise<string>} Reading-order text for RTL documents, otherwise flatText.
+     */
+    private async _buildRtlReadingTextAsync(startIndex: number, endIndex: number, flatText: string): Promise<string> {
+        if (!_containsRtlCharacter(flatText)) {
+            return flatText;
+        }
+        const textLines: TextLine[] = await this.extractTextLines({ startPageIndex: startIndex, endPageIndex: endIndex });
+        if (!textLines || textLines.length === 0) {
+            return _normalizeRtlText(flatText);
+        }
+        let result: string = '';
+        for (let i: number = 0; i < textLines.length; i++) {
+            const textLine: TextLine = textLines[Number.parseInt(i.toString(), 10)];
+            result += textLine._text;
+            if (i < textLines.length - 1) {
+                result += '\r\n';
+            }
+        }
+        return result;
+    }
+    private _normalizeTextLines(textLines: TextLine[]): void {
+        if (!textLines || textLines.length === 0) {
+            return;
+        }
+        const fragments: _TextFragment[] = [];
+        for (let i: number = 0; i < textLines.length; i++) {
+            const textLine: TextLine = textLines[Number.parseInt(i.toString(), 10)];
+            if (textLine && textLine._text && textLine._bounds) {
+                fragments.push({ text: textLine._text, bounds: textLine._bounds });
+            }
+        }
+        const rowOrder: TextLine[] = [];
+        if (fragments.length === textLines.length) {
+            const ordered: _TextFragment[] = _reorderFragmentsForRtlReading(fragments);
+            const consumed: boolean[] = new Array<boolean>(textLines.length).fill(false);
+            for (let f: number = 0; f < ordered.length; f++) {
+                const fragment: _TextFragment = ordered[Number.parseInt(f.toString(), 10)];
+                for (let i: number = 0; i < textLines.length; i++) {
+                    if (consumed[Number.parseInt(i.toString(), 10)]) {
+                        continue;
+                    }
+                    const textLine: TextLine = textLines[Number.parseInt(i.toString(), 10)];
+                    if (textLine._text === fragment.text && textLine._bounds === fragment.bounds) {
+                        rowOrder.push(textLine);
+                        consumed[Number.parseInt(i.toString(), 10)] = true;
+                        break;
+                    }
+                }
+            }
+        }
+        const orderedLines: TextLine[] = rowOrder.length === textLines.length ? rowOrder : textLines;
+        for (let i: number = 0; i < orderedLines.length; i++) {
+            const textLine: TextLine = orderedLines[Number.parseInt(i.toString(), 10)];
+            this._normalizeRtlTextLine(textLine);
+        }
+        const tolerance: number = this._getMergeRowTolerance(orderedLines);
+        const mergedLines: TextLine[] = [];
+        for (let i: number = 0; i < orderedLines.length; i++) {
+            const textLine: TextLine = orderedLines[Number.parseInt(i.toString(), 10)];
+            const previous: TextLine = mergedLines.length > 0 ?
+                mergedLines[Number.parseInt((mergedLines.length - 1).toString(), 10)] : null;
+            const rowHasRtl: boolean = _containsRtlCharacter(previous ? previous._text : '') ||
+                _containsRtlCharacter(textLine._text);
+            if (previous && rowHasRtl && this._isSameRtlRowLine(previous._bounds, textLine._bounds, tolerance) &&
+                this._isAdjacentWordGap(previous._bounds, textLine._bounds, tolerance)) {
+                const needsSpace: boolean = previous._text.length > 0 && textLine._text.length > 0 &&
+                    previous._text[Number.parseInt((previous._text.length - 1).toString(), 10)] !== ' ' &&
+                    textLine._text[0] !== ' ';
+                previous._text += (needsSpace ? ' ' : '') + textLine._text;
+                if (textLine._wordCollection) {
+                    for (let j: number = 0; j < textLine._wordCollection.length; j++) {
+                        previous._wordCollection.push(textLine._wordCollection[Number.parseInt(j.toString(), 10)]);
+                    }
+                }
+                previous._bounds = this._getMergedBounds(previous._bounds, textLine._bounds);
+            } else {
+                mergedLines.push(textLine);
+            }
+        }
+        if (mergedLines.length !== textLines.length) {
+            for (let i: number = 0; i < mergedLines.length; i++) {
+                textLines[Number.parseInt(i.toString(), 10)] = mergedLines[Number.parseInt(i.toString(), 10)];
+            }
+            textLines.length = mergedLines.length;
+        }
+    }
+    /**
+     * Computes the vertical tolerance used to decide whether two text lines
+     * share the same baseline (fraction of the dominant line height).
+     *
+     * @private
+     * @param {TextLine[]} textLines - Lines being merged.
+     * @returns {number} Row-grouping tolerance in page units.
+     */
+    private _getMergeRowTolerance(textLines: TextLine[]): number {
+        let totalHeight: number = 0;
+        let count: number = 0;
+        for (let i: number = 0; i < textLines.length; i++) {
+            const textLine: TextLine = textLines[Number.parseInt(i.toString(), 10)];
+            if (textLine && textLine._bounds && textLine._bounds.height > 0) {
+                totalHeight += textLine._bounds.height;
+                count++;
+            }
+        }
+        if (count === 0) {
+            return 2;
+        }
+        return Math.max(2, (totalHeight / count) * 0.5);
+    }
+    /**
+     * Determines whether two line bounds share the same baseline row.
+     *
+     * @private
+     * @param {Rectangle} first - First line bounds.
+     * @param {Rectangle} second - Second line bounds.
+     * @param {number} tolerance - Vertical tolerance for row grouping.
+     * @returns {boolean} True when both lines are on the same baseline row.
+     */
+    private _isSameRtlRowLine(first: Rectangle, second: Rectangle, tolerance: number): boolean {
+        if (!first || !second) {
+            return false;
+        }
+        const firstCenter: number = first.y + first.height / 2;
+        const secondCenter: number = second.y + second.height / 2;
+        return Math.abs(firstCenter - secondCenter) <= tolerance;
+    }
+    /**
+     * Determines whether the horizontal gap between two same-baseline lines is
+     * small enough to treat them as words of the same visual line. Large gaps
+     * (columns, tab-separated figures) are kept as separate lines.
+     *
+     * @private
+     * @param {Rectangle} previous - Bounds of the already merged line.
+     * @param {Rectangle} current - Bounds of the candidate line to merge.
+     * @param {number} tolerance - Row tolerance used as the gap scale.
+     * @returns {boolean} True when the gap indicates words of one visual line.
+     */
+    private _isAdjacentWordGap(previous: Rectangle, current: Rectangle, tolerance: number): boolean {
+        if (!previous || !current) {
+            return false;
+        }
+        const gap: number = Math.max(previous.x - (current.x + current.width), current.x - (previous.x + previous.width));
+        return gap < Math.max(24, tolerance * 8);
+    }
+    /**
+     * Computes the union of two line bounds.
+     *
+     * @private
+     * @param {Rectangle} first - First line bounds.
+     * @param {Rectangle} second - Second line bounds.
+     * @returns {Rectangle} Union bounds covering both lines.
+     */
+    private _getMergedBounds(first: Rectangle, second: Rectangle): Rectangle {
+        if (!first) {
+            return second;
+        }
+        if (!second) {
+            return first;
+        }
+        const x: number = Math.min(first.x, second.x);
+        const y: number = Math.min(first.y, second.y);
+        return {
+            x: x,
+            y: y,
+            width: Math.max(first.x + first.width, second.x + second.width) - x,
+            height: Math.max(first.y + first.height, second.y + second.height) - y
+        };
+    }
+    /**
+     * Normalizes a single text line (and its words) from visual RTL order into
+     * logical reading order, sorting RTL words right-to-left by position when
+     * the line advances leftward.
+     *
+     * @private
+     * @param {TextLine} textLine - Line to normalize.
+     * @returns {void}
+     */
+    private _normalizeRtlTextLine(textLine: TextLine): void {
+        const words: TextWord[] = textLine._wordCollection;
+        if (!textLine._text || !_containsRtlCharacter(textLine._text)) {
+            return;
+        }
+        const isVisualOrder: boolean = _containsArabicPresentationForm(textLine._text) ||
+            this._isLineAdvancingLeftward(words);
+        let changed: boolean = false;
+        if (words && words.length > 1 && isVisualOrder) {
+            const orderedWords: TextWord[] = words.slice().sort(
+                (a: TextWord, b: TextWord): number => b._bounds.x - a._bounds.x
+            );
+            for (let j: number = 0; j < orderedWords.length; j++) {
+                if (orderedWords[Number.parseInt(j.toString(), 10)] !== words[Number.parseInt(j.toString(), 10)]) {
+                    changed = true;
+                    break;
+                }
+            }
+            if (changed) {
+                for (let j: number = 0; j < orderedWords.length; j++) {
+                    words[Number.parseInt(j.toString(), 10)] = orderedWords[Number.parseInt(j.toString(), 10)];
+                }
+            }
+        }
+        for (let j: number = 0; j < (words ? words.length : 0); j++) {
+            const textWord: TextWord = words[Number.parseInt(j.toString(), 10)];
+            if (!textWord || !textWord._text) {
+                continue;
+            }
+            if (_containsRtlCharacter(textWord._text)) {
+                textWord._text = _normalizeRtlText(textWord._text);
+            } else if (isVisualOrder) {
+                textWord._text = _invertVisualLtrFragment(textWord._text);
+            }
+        }
+        if (changed) {
+            let rebuilt: string = '';
+            for (let j: number = 0; j < words.length; j++) {
+                rebuilt += words[Number.parseInt(j.toString(), 10)]._text;
+            }
+            textLine._text = rebuilt;
+        } else if (isVisualOrder) {
+            textLine._text = _normalizeRtlText(textLine._text);
+        } else {
+            textLine._text = _mapArabicPresentationForms(textLine._text);
+        }
+        if (isVisualOrder) {
+            textLine._text = _resolveMirroredBrackets(textLine._text);
+        }
+    }
+    /**
+     * Determines whether the words of a line advance leftward (visual RTL order)
+     * by comparing the bounds of consecutive words.
+     *
+     * @private
+     * @param {TextWord[]} words - Line words in stream order.
+     * @returns {boolean} True when consecutive words are placed right-to-left.
+     */
+    private _isLineAdvancingLeftward(words: TextWord[]): boolean {
+        if (!words || words.length < 2) {
+            return false;
+        }
+        let rightward: number = 0;
+        let leftward: number = 0;
+        for (let i: number = 1; i < words.length; i++) {
+            const previous: TextWord = words[Number.parseInt((i - 1).toString(), 10)];
+            const current: TextWord = words[Number.parseInt(i.toString(), 10)];
+            if (!previous._bounds || !current._bounds) {
+                continue;
+            }
+            if (_isVisualOrderRtl(previous._bounds, current._bounds)) {
+                rightward++;
+            } else if (current._bounds.x < previous._bounds.x) {
+                leftward++;
+            }
+        }
+        return leftward === 0 && rightward > 0;
+    }
+    /**
      * Coordinates document-wide text search and returns the search results for all supplied search strings.
      *
      * @private
@@ -2234,7 +2533,8 @@ export class PdfDataExtractor {
         const page: PdfPage = this._document.getPage(pageIndex);
         for (let i: number = 0; i < searchTextCollection.length; i++) {
             const searchText: string = searchTextCollection[Number.parseInt(i.toString(), 10)];
-            const searchTextLower: string = options.caseSensitive ? searchText : searchText.toLowerCase();
+            const normalizedSearchText: string = _normalizeSearchText(searchText);
+            const searchTextLower: string = options.caseSensitive ? normalizedSearchText : normalizedSearchText.toLowerCase();
             searchTextLowerCollection.push(searchTextLower);
             boundsCollection.set(i, []);
         }
@@ -2265,6 +2565,7 @@ export class PdfDataExtractor {
                         rectangles.push(this._getFindTextBounds(page, textWord._bounds));
                     } else {
                         let startIndex: number = 0;
+                        const isRtlWord: boolean = _containsRtlCharacter(wordText);
                         while (true) { // eslint-disable-line
                             const matchIndex: number = wordText.indexOf(searchTextLower, startIndex);
                             if (matchIndex === -1) {
@@ -2279,6 +2580,14 @@ export class PdfDataExtractor {
                                     matchGlyphs.push(glyphs[Number.parseInt(i.toString(), 10)]);
                                 }
                                 charIndex++;
+                            }
+                            if (isRtlWord && glyphs.length === wordText.length) {
+                                matchGlyphs.length = 0;
+                                const glyphStart: number = glyphs.length - endIndex;
+                                const glyphEnd: number = glyphs.length - matchIndex;
+                                for (let i: number = glyphStart; i < glyphEnd; i++) {
+                                    matchGlyphs.push(glyphs[Number.parseInt(i.toString(), 10)]);
+                                }
                             }
                             if (matchGlyphs.length > 0) {
                                 const pdfPath: PdfPath = new PdfPath();

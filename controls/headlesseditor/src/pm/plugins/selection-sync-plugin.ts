@@ -1,8 +1,8 @@
 import { PMPlugin, PMEditorView, PMEditorState } from '../pm-guard';
-import { EventBus } from '../../events/event-bus';
-import { SELECTION_UPDATED } from '../../events/event-names';
+import { EventBus } from '../../core/events/event-bus';
+import { SELECTION_UPDATED } from '../../core/events/event-names';
 import { PositionAdapter, SelectionAdapter } from '../adapters';
-import { Selection } from '../../model/selection';
+import { Selection } from '../../core/model/selection';
 
 /**
  * selectionSyncPlugin — bridges PM selection changes to the EventBus.

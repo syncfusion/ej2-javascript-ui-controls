@@ -1538,7 +1538,7 @@ export class Edit {
                         this.isDialogEditing = true;
                     }
                     this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
-                    this.parent.predecessorModule.isChildRecordValidated = [];
+                    this.parent.predecessorModule.isChildRecordValidated.clear();
                 }
                 this.isValidatedEditedRecord = false;
             }
@@ -2321,8 +2321,13 @@ export class Edit {
         this.saveSuccess(args);
         this.remoteCrud = false;
         if (this.parent.focusModule['tabElement']['isTab']) {
-            this.parent.treeGrid.editCell(this.parent.ganttChartModule.focusedRowIndex, this.parent.focusModule['tabElement']['column']);
+            const  editState: boolean = this.parent.treeGrid.grid.isEdit;
+            this.parent.treeGrid.grid.isEdit = false;
+            if (this.parent.element.querySelectorAll('.e-editedcell').length === 0) {
+                this.parent.treeGrid.editCell(this.parent.ganttChartModule.focusedRowIndex, this.parent.focusModule['tabElement']['column']);
+            }
             this.parent.focusModule['tabElement'] = Object.assign({}, this.parent.focusModule['tabElement'], { isTab: false });
+            this.parent.treeGrid.grid.isEdit = editState;
         }
     }
 
@@ -2671,7 +2676,9 @@ export class Edit {
         this.parent.ids.splice(recordIndex1 + 1, 0, cAddedRecord.ganttProperties.rowUniqueID.toString());
         const taskId: string = cAddedRecord.level === 0 ? 'R' + cAddedRecord.ganttProperties.taskId : 'T' + cAddedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+        this.parent.invalidateTaskIdsCache();
         this.updateTreeGridUniqueID(cAddedRecord, 'add');
+        this.parent['recordIdCache'].clear();
     }
 
     private addNewRecord(updateRecord: IGanttData, parentRecord: IGanttData): void {
@@ -2754,6 +2761,8 @@ export class Edit {
                     this.parent.removeRecords(flatRecordIndex);
                     this.parent.ids.splice(flatRecordIndex, 1);
                     this.parent.getTaskIds().splice(flatRecordIndex, 1);
+                    this.parent['recordIdCache'].clear();
+                    this.parent.invalidateTaskIdsCache();
                 }
             }
             const recordIndex: number = data.indexOf(deletedRow);
@@ -2763,6 +2772,8 @@ export class Edit {
                 this.parent.removeRecords(flatRecordIndex, deletedRecordCount + 1);
                 this.parent.ids.splice(flatRecordIndex, deletedRecordCount + 1);
                 this.parent.getTaskIds().splice(flatRecordIndex, deletedRecordCount + 1);
+                this.parent['recordIdCache'].clear();
+                this.parent.invalidateTaskIdsCache();
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
                 this.parent.setRecordValue('expanded', false, flatParentData);
@@ -2849,6 +2860,8 @@ export class Edit {
         this.updateTreeGridUniqueID(draggedRecord, 'add');
         const recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+        this.parent['recordIdCache'].clear();
+        this.parent.invalidateTaskIdsCache();
         if (!droppedRecord.hasChildRecords) {
             this.parent.setRecordValue('hasChildRecords', true, droppedRecord);
             this.parent.setRecordValue('expanded', true, droppedRecord);
@@ -2890,7 +2903,10 @@ export class Edit {
             if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
                 this.dialogModule.dialogObj.hide();
             }
-            this.dialogModule.dialogClose();
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed &&
+                this.dialogModule.dialogObj['dialogOpen']) {
+                this.dialogModule.dialogClose();
+            }
         }
         this.parent.hideSpinner();
         this.parent.initiateEditAction(false);
@@ -3617,6 +3633,8 @@ export class Edit {
                 deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
                 if (flatIndex !== -1) {
                     this.parent.ids.splice(flatIndex, 1);
+                    this.parent['recordIdCache'].clear();
+                    this.parent.invalidateTaskIdsCache();
                     if (this.parent.viewType === 'ResourceView') {
                         this.parent.getTaskIds().splice(flatIndex, 1);
                         if (!deleteRecord.hasChildRecords) {
@@ -4178,6 +4196,16 @@ export class Edit {
             this.recordCollectionUpdate(childIndex + 1, recordIndex, updatedCollectionIndex, record, parentItem, rowPosition);
             break;
         }
+        // Map registration fix: the add flow (unlike the load flow's appendGanttRecord/insertRecord)
+        // never registered new records in the O(1) lookup maps, so getTaskByUniqueID/getRecordByID
+        // could not resolve them. Register here — covers every row position since all fall through
+        // the switch. Re-registering on undo/redo re-add is idempotent (same reference overwrite).
+        if (this.parent.uniqueIDMap) {
+            this.parent.uniqueIDMap.set(record.uniqueID, record);
+        }
+        if (this.parent.flatRecordMap && record.ganttProperties) {
+            this.parent.flatRecordMap.set(String(record.ganttProperties.rowUniqueID), record);
+        }
         this.newlyAddedRecordBackup = record;
     }
 
@@ -4204,6 +4232,7 @@ export class Edit {
         if (this.parent.viewType === 'ResourceView') {
             const taskId: string = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
             this.parent.getTaskIds().splice(recordIndex, 0, taskId);
+            this.parent.invalidateTaskIdsCache();
         }
         /* data Source update */
         if (!isNullOrUndefined(parentItem)) {
@@ -4685,11 +4714,17 @@ export class Edit {
                                     args.newTaskData[tempTaskID as string] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.data['ganttProperties']['rowUniqueID'] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     const taskId: string = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    const removedBackup: IGanttData = this.newlyAddedRecordBackup;
                                     if (!this.triggerDuplicateIdError(taskId)) {
                                         if (previousIDIndex !== -1) {
                                             this.parent.ids.splice(previousIDIndex, 1, taskId);
                                         } else {
                                             this.parent.ids.push(taskId);
+                                        }
+                                        // Sync record-lookup caches after the server-assigned ID replaces the local one.
+                                        if (this.parent.flatRecordMap && removedBackup && removedBackup.ganttProperties) {
+                                            this.parent.flatRecordMap.delete(String(removedBackup.ganttProperties.rowUniqueID));
+                                            this.parent.flatRecordMap.set(taskId, removedBackup);
                                         }
                                     }
                                 }
@@ -5133,6 +5168,13 @@ export class Edit {
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);
         ids.splice(idsIndex, 1);
+        // Keep the O(1) record-lookup caches in sync when a record leaves flatData outside removeRecords().
+        if (this.parent.uniqueIDMap) {
+            this.parent.uniqueIDMap.delete(this.newlyAddedRecordBackup.uniqueID);
+        }
+        if (this.parent.flatRecordMap && this.newlyAddedRecordBackup.ganttProperties) {
+            this.parent.flatRecordMap.delete(String(this.newlyAddedRecordBackup.ganttProperties.rowUniqueID));
+        }
     }
     private getPrevRecordIndex(): number {
         const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
@@ -5301,14 +5343,14 @@ export class Edit {
                             if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
                                 (this.ganttData as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
-                            this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                            this.parent.insertRecord(this.draggedRecord, recordIndex1 + 1);
                             this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         } else {
                             c = this.parent.editModule.getChildCount(droppedRec, 0);
                             if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
                                 (this.ganttData as IGanttData[]).splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
                             }
-                            this.treeGridData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            this.parent.insertRecord(this.draggedRecord, recordIndex1 + c + 1);
                             this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                             const idIndex: number = this.parent.ids.indexOf(this.draggedRecord[this.parent.taskFields.id].toString());
                             if (idIndex !== recordIndex1 + c + 1) {
@@ -5636,7 +5678,7 @@ export class Edit {
             if (obj.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
                 (this.ganttData as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
-            this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            this.parent.insertRecord(this.draggedRecord, childRecordsLength);
             this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord[this.parent.taskFields.id].toString());
             this.recordLevel();
             if (this.draggedRecord.hasChildRecords) {
@@ -5711,22 +5753,23 @@ export class Edit {
             const flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
             if (delRow.parentItem) {
                 const childRecords: IGanttData[] = this.getValueOrFallback(flatParent, 'childRecords', []) as IGanttData[];
-                let childIndex: number = 0;
+                let childIndex: number = -1;
                 if (childRecords && childRecords.length > 0) {
                     childIndex = childRecords.indexOf(delRow);
-                    flatParent.childRecords.splice(childIndex, 1);
-                    if (!this.parent.taskFields.parentID) {
-                        flatParent.taskData[this.parent.taskFields.child].splice(childIndex, 1);
+                    if (childIndex >= 0) {
+                        flatParent.childRecords.splice(childIndex, 1);
+                        if (!this.parent.taskFields.parentID) {
+                            flatParent.taskData[this.parent.taskFields.child].splice(childIndex, 1);
+                        }
+                        this.updateParentRecords.push(flatParent);
                     }
-                    // collection for updating parent record
-                    this.updateParentRecords.push(flatParent);
                 }
             }
             if (obj.taskFields.parentID) {
                 if (delRow.hasChildRecords && delRow.childRecords.length > 0) {
                     this.removeChildItem(delRow);
                 }
-                let indx: number;
+                let indx: number = -1;
                 const ganttData: IGanttData[] = this.resolveCondition<IGanttData[]>(
                     (dataSource as IGanttData[]).length > 0,
                     dataSource as IGanttData[],
@@ -5737,28 +5780,27 @@ export class Edit {
                         indx = i;
                     }
                 }
-                if (indx !== -1) {
+                if (indx >= 0) {
                     if ((dataSource as IGanttData[]).length > 0) {
                         (dataSource as IGanttData[]).splice(indx, 1);
                     }
-                    let gridIndx: number;
-                    for (let i: number = 0; i < this.treeGridData.length; i++) {
-                        if (this.treeGridData[i as number][this.parent.taskFields.id] === delRow.taskData[this.parent.taskFields.id]) {
-                            gridIndx = i;
-                        }
+                    const gridIndx: number = this.parent.flatData.indexOf(delRow);
+                    if (gridIndx >= 0) {
+                        this.parent.removeRecords(gridIndx);
+                        this.parent.ids.splice(gridIndx, 1);
                     }
-                    this.treeGridData.splice(gridIndx, 1);
-                    this.parent.ids.splice(gridIndx, 1);
                     if (this.parent.treeGrid.parentData.indexOf(delRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(delRow), 1);
                     }
                 }
             }
-            const recordIdx: number = this.treeGridData.indexOf(delRow);
+            const recordIdx: number = this.parent.flatData.indexOf(delRow);
             if (!obj.taskFields.parentID) {
                 const deletedRecordCount: number = this.getChildCount(delRow, 0);
-                this.treeGridData.splice(recordIdx, deletedRecordCount + 1);
-                this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
+                if (recordIdx >= 0) {
+                    this.parent.removeRecords(recordIdx, deletedRecordCount + 1);
+                    this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
+                }
                 const parentIndex: number = (this.ganttData as IGanttData[]).indexOf(delRow.taskData);
                 if (parentIndex !== -1) {
                     (this.ganttData as IGanttData[]).splice(parentIndex, 1);
@@ -5773,7 +5815,6 @@ export class Edit {
     }
     private removeChildItem(record: IGanttData): void {
         let currentRec: IGanttData;
-        let indx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRec = record.childRecords[i as number];
             let data: Object;
@@ -5782,23 +5823,21 @@ export class Edit {
             } else {
                 data = this.parent.dataSource;
             }
+            let indx: number = -1;
             for (let j: number = 0; j < (<IGanttData[]>data).length; j++) {
                 if (data[j as number][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
                     indx = j;
                 }
             }
-            if (indx !== -1) {
+            if (indx >= 0) {
                 if ((data as IGanttData[]).length > 0) {
                     (data as IGanttData[]).splice(indx, 1);
                 }
-                let gridIndx: number;
-                for (let i: number = 0; i < this.treeGridData.length; i++) {
-                    if (this.treeGridData[i as number][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
-                        gridIndx = i;
-                    }
+                const gridIndx: number = this.parent.flatData.indexOf(currentRec);
+                if (gridIndx >= 0) {
+                    this.parent.removeRecords(gridIndx);
+                    this.parent.ids.splice(gridIndx, 1);
                 }
-                this.treeGridData.splice(gridIndx, 1);
-                this.parent.ids.splice(gridIndx, 1);
             }
             if (currentRec.hasChildRecords) {
                 this.removeChildItem(currentRec);

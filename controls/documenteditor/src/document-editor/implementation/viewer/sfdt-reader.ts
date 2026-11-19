@@ -28,7 +28,7 @@ import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
 import { AutoShapeType, BaselineAlignment, BiDirectionalOverride, BreakClearType, CellVerticalAlignment, CheckBoxSizeType, CompatibilityMode, ContentControlType, FillType, FollowCharacterType, FontHintType, FootEndNoteNumberFormat, FootnoteRestartIndex, FootnoteType, HeightType, HighlightColor, HorizontalAlignment, HorizontalOrigin, Ligature, LineDashing, LineFormatType, LineSpacingType, LineStyle, ListLevelPattern, OutlineLevel, ProtectionType, RevisionType, Strikethrough, StyleType, TabJustification, TabLeader, TableAlignment, TextAlignment, TextFormFieldType, TextureStyle, TextWrappingStyle, TextWrappingType, Underline, VerticalAlignment, VerticalOrigin, WidthType } from '../../base/types';
 import { Themes, FontSchemeStruct, MajorMinorFontScheme, ActionInfo } from '../index';
-import { sectionsProperty, hiddenProperty, imagesProperty, paraStyleNameProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, fontHintTypeProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty, isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty, nsidProperty, incrementalOps, isLegalStyleNumberingProperty, horizontalRuleProperty, isCreatedUsingHtmlSpanTagProperty, isAutoMajorProperty, underlineColorProperty, editingPointsProperty, childShapeProperty, offsetXValue, offsetYValue, extentXValue, extentYValue, customDataProperty, hasImageReferenceProperty, ligatureProperty, verticallyMergedCellsKeepWithNext, is2007Shape, coordinateXOrigin, coordinateYOrigin, coordinateSize, isDefaultFillProperty, fillTypeProperty, lineFromXPosition, lineFromYPosition, lineToXPosition, lineToYPosition } from '../../index';
+import { sectionsProperty, hiddenProperty, imagesProperty, paraStyleNameProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, fontHintTypeProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty, isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty, nsidProperty, incrementalOps, isLegalStyleNumberingProperty, horizontalRuleProperty, isCreatedUsingHtmlSpanTagProperty, isAutoMajorProperty, underlineColorProperty, editingPointsProperty, childShapeProperty, offsetXValue, offsetYValue, extentXValue, extentYValue, customDataProperty, hasImageReferenceProperty, ligatureProperty, verticallyMergedCellsKeepWithNext, verticallyMergedCellsLeftMarginProperty, verticallyMergedCellsRightMarginProperty, verticallyMergedCellsTopMarginProperty, verticallyMergedCellsBottomMarginProperty, is2007Shape, coordinateXOrigin, coordinateYOrigin, coordinateSize, isDefaultFillProperty, fillTypeProperty, lineFromXPosition, lineFromYPosition, lineToXPosition, lineToYPosition, authorNameProperty, revDateTimeProperty, isInsertRevisionProperty, isDeleteRevisionProperty, cellContentControlProperty } from '../../index';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 /**
  * @private
@@ -546,7 +546,8 @@ export class SfdtReader {
                     }
                     let textValue: string = inline[textProperty[this.keywordIndex]];
                     if (isFieldDisplayText) {
-                        text = text + '<span contenteditable="false" class="e-mention-chip">' + textValue + '</span>';
+                        const encodedFieldText: string = textValue ? textValue.replace(/</g, "&lt;").replace(/>/g, "&gt;") : textValue;
+                        text = text + '<span contenteditable="false" class="e-mention-chip">' + encodedFieldText + '</span>';
                         isFieldDisplayText = false;
                     } else if (textValue) {
                         text = text + textValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -963,6 +964,22 @@ export class SfdtReader {
             }
         }
     }
+    /**
+     * The HTML to SFDT conversion adds a bare "Normal (Web)" style (without character format) to the pasted content.
+     * An internal copy exports the full "Normal (Web)" style definition, which has to be retained as it is.
+     */
+    private isHtmlConvertedWebStyle(styles: any): boolean {
+        if (isNullOrUndefined(styles)) {
+            return true;
+        }
+        for (let i: number = 0; i < styles.length; i++) {
+            if (styles[i][nameProperty[this.keywordIndex]] === 'Normal (Web)') {
+                const charFormat: any = styles[i][characterFormatProperty[this.keywordIndex]];
+                return isNullOrUndefined(charFormat) || Object.keys(charFormat).length === 0;
+            }
+        }
+        return true;
+    }
     public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean, contentControlProperties?: ContentControlProperties, styles?: any, breakCode?: string, isFootnoteEndnote?: boolean): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {
@@ -991,9 +1008,16 @@ export class SfdtReader {
                             isParaHasStyleName = true;
                         }
                         styleObj = this.documentHelper.styles.findByName(styleName, 'Paragraph');
-                        // if the para belongs to "Normal (Web)" style but Normal (Web) style object were undefined
-                        // then using the "Normal" style object.
-                        if (this.isPaste && isNullOrUndefined(styleObj) && styleName === 'Normal (Web)') {
+                        // While pasting, the "Normal (Web)" style (added by the HTML to SFDT conversion) is not parsed.
+                        // So the paragraph preserves the base style of the selected paragraph, else uses the "Normal" style object.
+                        if (this.isPaste && styleName === 'Normal (Web)' && this.isHtmlConvertedWebStyle(styles)) {
+                            const selection = this.documentHelper.selection;
+                            const selectedBaseStyle: WStyle = selection && selection.start && selection.start.paragraph ?
+                                selection.start.paragraph.paragraphFormat.baseStyle : undefined;
+                            styleObj = selectedBaseStyle instanceof WParagraphStyle ? selectedBaseStyle :
+                                this.documentHelper.styles.findByName('Normal', 'Paragraph');
+                        }
+                        else if (this.isPaste && isNullOrUndefined(styleObj) && styleName === 'Normal (Web)') {
                             styleObj = this.documentHelper.styles.findByName('Normal', 'Paragraph');
                         }
                         if (!isNullOrUndefined(styleObj)) {
@@ -1037,6 +1061,22 @@ export class SfdtReader {
                     blockEndContentControl.contentControlProperties = blockStartContentControl.contentControlProperties;
                     blockStartContentControl.type = 0;
                     blockEndContentControl.type = 1;
+                    if (block.hasOwnProperty(authorNameProperty[this.keywordIndex])) {
+                        blockStartContentControl.authorName = block[authorNameProperty[this.keywordIndex]];
+                        blockEndContentControl.authorName = block[authorNameProperty[this.keywordIndex]];
+                    }
+                    if (block.hasOwnProperty(revDateTimeProperty[this.keywordIndex])) {
+                        blockStartContentControl.revDateTime = block[revDateTimeProperty[this.keywordIndex]];
+                        blockEndContentControl.revDateTime = block[revDateTimeProperty[this.keywordIndex]];
+                    }
+                    if (block.hasOwnProperty(isInsertRevisionProperty[this.keywordIndex])) {
+                        blockStartContentControl.isInsertRevision = HelperMethods.parseBoolValue(block[isInsertRevisionProperty[this.keywordIndex]]);
+                        blockEndContentControl.isInsertRevision = HelperMethods.parseBoolValue(block[isInsertRevisionProperty[this.keywordIndex]]);
+                    }
+                    if (block.hasOwnProperty(isDeleteRevisionProperty[this.keywordIndex])) {
+                        blockStartContentControl.isDeleteRevision = HelperMethods.parseBoolValue(block[isDeleteRevisionProperty[this.keywordIndex]]);
+                        blockEndContentControl.isDeleteRevision = HelperMethods.parseBoolValue(block[isDeleteRevisionProperty[this.keywordIndex]]);
+                    }
 
                     this.parseBody(block[blocksProperty[this.keywordIndex]], blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
                     for (let j: number = 0; j < 2; j++) {
@@ -1075,6 +1115,7 @@ export class SfdtReader {
     }
     private parseTable(block: any, blocks: BlockWidget[], index: number, section: Widget): void {
         const table: TableWidget = new TableWidget();
+        let hasSfdtColumnIndex : boolean = false;
         table.index = index;
         if (!isNullOrUndefined(block[tableFormatProperty[this.keywordIndex]])) {
             this.parseTableFormat(block[tableFormatProperty[this.keywordIndex]], table.tableFormat, this.keywordIndex);
@@ -1105,7 +1146,13 @@ export class SfdtReader {
                     cell.containerWidget = row;
                     cell.index = j;
                     cell.rowIndex = i;
-                    cell.columnIndex = j;
+                    if (tableCell.hasOwnProperty(columnIndexProperty[this.keywordIndex])
+                        && !isNullOrUndefined(tableCell[columnIndexProperty[this.keywordIndex]])) {
+                        cell.columnIndex = tableCell[columnIndexProperty[this.keywordIndex]];
+                        hasSfdtColumnIndex = true;
+                    } else {
+                        cell.columnIndex = j;
+                    }
                     if (tableCell.hasOwnProperty(cellFormatProperty[this.keywordIndex])) {
                         this.parseCellFormat(tableCell[cellFormatProperty[this.keywordIndex]], cell.cellFormat, this.keywordIndex);
                     }
@@ -1123,6 +1170,23 @@ export class SfdtReader {
                         const cellEndContentControl: ContentControl = new ContentControl('Cell');
                         cellStartContentControl.contentControlProperties = cell.contentControlProperties;
                         cellEndContentControl.contentControlProperties = cell.contentControlProperties;
+                        const cellContentControl: any = tableCell[cellContentControlProperty[this.keywordIndex]];
+                        if (cellContentControl && cellContentControl.hasOwnProperty(authorNameProperty[this.keywordIndex])) {
+                            cellStartContentControl.authorName = cellContentControl[authorNameProperty[this.keywordIndex]];
+                            cellEndContentControl.authorName = cellContentControl[authorNameProperty[this.keywordIndex]];
+                        }
+                        if (cellContentControl && cellContentControl.hasOwnProperty(revDateTimeProperty[this.keywordIndex])) {
+                            cellStartContentControl.revDateTime = cellContentControl[revDateTimeProperty[this.keywordIndex]];
+                            cellEndContentControl.revDateTime = cellContentControl[revDateTimeProperty[this.keywordIndex]];
+                        }
+                        if (cellContentControl && cellContentControl.hasOwnProperty(isInsertRevisionProperty[this.keywordIndex])) {
+                            cellStartContentControl.isInsertRevision = cellContentControl[isInsertRevisionProperty[this.keywordIndex]];
+                            cellEndContentControl.isInsertRevision = cellContentControl[isInsertRevisionProperty[this.keywordIndex]];
+                        }
+                        if (cellContentControl && cellContentControl.hasOwnProperty(isDeleteRevisionProperty[this.keywordIndex])) {
+                            cellStartContentControl.isDeleteRevision = cellContentControl[isDeleteRevisionProperty[this.keywordIndex]];
+                            cellEndContentControl.isDeleteRevision = cellContentControl[isDeleteRevisionProperty[this.keywordIndex]];
+                        }
                         cellStartContentControl.type = 0;
                         cellEndContentControl.type = 1;
 
@@ -1176,6 +1240,9 @@ export class SfdtReader {
         }
         table.isGridUpdated = false;
         table.updateRowSpan();
+        if (!hasSfdtColumnIndex) {
+            table.assignCellColumnIndexes();
+        }
     }
 
     private parseTablePositioning(block: any, table: TableWidget): void {
@@ -1408,8 +1475,14 @@ export class SfdtReader {
             if ((inline.hasOwnProperty(textProperty[this.keywordIndex]) || inline.hasOwnProperty(breakClearTypeProperty[this.keywordIndex])) && !(inline.hasOwnProperty(footnoteTypeProperty[this.keywordIndex]))) {
                 let textElement: any = undefined;
                 if (this.documentHelper.isPageField) {
+                    const currentFieldBegin: FieldElementBox = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
+                    const lastChild: ElementBox = lineWidget.children[lineWidget.children.length - 1];
+                    // In header/footer, a page field result split into multiple runs must produce a single result element, otherwise the page number is rendered once per run.
+                    if (this.isParseHeader && lastChild instanceof FieldTextElementBox && lastChild.fieldBegin === currentFieldBegin) {
+                        continue;
+                    }
                     textElement = new FieldTextElementBox();
-                    (textElement as FieldTextElementBox).fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
+                    (textElement as FieldTextElementBox).fieldBegin = currentFieldBegin;
                 } else if (inline[textProperty[this.keywordIndex]] === '\t') {
                     textElement = new TabElementBox();
 
@@ -1769,6 +1842,22 @@ export class SfdtReader {
                 inlineEndContentControl.line = lineWidget;
                 inlineStartContentControl.type = 0;
                 inlineEndContentControl.type = 1;
+                if (inline.hasOwnProperty(authorNameProperty[this.keywordIndex])) {
+                    inlineStartContentControl.authorName = inline[authorNameProperty[this.keywordIndex]];
+                    inlineEndContentControl.authorName = inline[authorNameProperty[this.keywordIndex]];
+                }
+                if (inline.hasOwnProperty(revDateTimeProperty[this.keywordIndex])) {
+                    inlineStartContentControl.revDateTime = inline[revDateTimeProperty[this.keywordIndex]];
+                    inlineEndContentControl.revDateTime = inline[revDateTimeProperty[this.keywordIndex]];
+                }
+                if (inline.hasOwnProperty(isInsertRevisionProperty[this.keywordIndex])) {
+                    inlineStartContentControl.isInsertRevision = HelperMethods.parseBoolValue(inline[isInsertRevisionProperty[this.keywordIndex]]);
+                    inlineEndContentControl.isInsertRevision = HelperMethods.parseBoolValue(inline[isInsertRevisionProperty[this.keywordIndex]]);
+                }
+                if (inline.hasOwnProperty(isDeleteRevisionProperty[this.keywordIndex])) {
+                    inlineStartContentControl.isDeleteRevision = HelperMethods.parseBoolValue(inline[isDeleteRevisionProperty[this.keywordIndex]]);
+                    inlineEndContentControl.isDeleteRevision = HelperMethods.parseBoolValue(inline[isDeleteRevisionProperty[this.keywordIndex]]);
+                }
 
                 lineWidget.children.push(inlineStartContentControl);
                 this.parseParagraph(inline[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, lineWidget);
@@ -2149,20 +2238,33 @@ export class SfdtReader {
         if (!isNullOrUndefined(data[editRangeIdProperty[this.keywordIndex]])) {
             permStart.editRangeId = data[editRangeIdProperty[this.keywordIndex]]
         }
-        if (!isNullOrUndefined(data[userProperty[this.keywordIndex]])) {
-            permStart.user = data[userProperty[this.keywordIndex]];
+        let userName: string = !isNullOrUndefined(data[userProperty[this.keywordIndex]])
+            ? data[userProperty[this.keywordIndex]] : '';
+        let groupName: string = !isNullOrUndefined(data[groupProperty[this.keywordIndex]])
+            ? data[groupProperty[this.keywordIndex]] : '';
+        if (groupName === 'everyone') {
+            groupName = 'Everyone';
+        }
+        if (userName !== '') {
+            permStart.user = userName;
             if (this.documentHelper.userCollection.indexOf(permStart.user) === -1) {
                 this.documentHelper.userCollection.push(permStart.user);
             }
             this.addEditRangeCollection(permStart.user, permStart);
         }
-        if (!isNullOrUndefined(data[groupProperty[this.keywordIndex]]) && data[groupProperty[this.keywordIndex]] !== '') {
-            permStart.group = data[groupProperty[this.keywordIndex]];
-            permStart.group = permStart.group === 'everyone' ? 'Everyone' : permStart.group;
+        if (groupName !== '') {
+            permStart.group = groupName;
             if (this.documentHelper.userCollection.indexOf(permStart.group) === -1) {
                 this.documentHelper.userCollection.push(permStart.group);
             }
             this.addEditRangeCollection(permStart.group, permStart);
+        }
+        if (userName === '' && groupName === '') {
+            permStart.group = 'Everyone';
+            if (this.documentHelper.userCollection.indexOf('Everyone') === -1) {
+                this.documentHelper.userCollection.push('Everyone');
+            }
+            this.addEditRangeCollection('Everyone', permStart);
         }
         return permStart;
     }
@@ -2466,6 +2568,18 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat[leftIndentProperty[keyIndex]])) {
                 rowFormat.leftIndent = sourceFormat[leftIndentProperty[keyIndex]];
+            }
+            if (!isNullOrUndefined(sourceFormat[verticallyMergedCellsLeftMarginProperty[keyIndex]])) {
+                rowFormat.verticallyMergedCellsLeftMargin = sourceFormat[verticallyMergedCellsLeftMarginProperty[keyIndex]];
+            }
+            if (!isNullOrUndefined(sourceFormat[verticallyMergedCellsRightMarginProperty[keyIndex]])) {
+                rowFormat.verticallyMergedCellsRightMargin = sourceFormat[verticallyMergedCellsRightMarginProperty[keyIndex]];
+            }
+            if (!isNullOrUndefined(sourceFormat[verticallyMergedCellsTopMarginProperty[keyIndex]])) {
+                rowFormat.verticallyMergedCellsTopMargin = sourceFormat[verticallyMergedCellsTopMarginProperty[keyIndex]];
+            }
+            if (!isNullOrUndefined(sourceFormat[verticallyMergedCellsBottomMarginProperty[keyIndex]])) {
+                rowFormat.verticallyMergedCellsBottomMargin = sourceFormat[verticallyMergedCellsBottomMarginProperty[keyIndex]];
             }
             if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[keyIndex]]) && sourceFormat[revisionIdsProperty[keyIndex]].length > 0) {
                 this.checkAndApplyRevision(keyIndex, sourceFormat, rowFormat, rowFormat);
@@ -3470,6 +3584,14 @@ export class SfdtReader {
                 return 'FarEast';
             case 12:
                 return 'Special';
+            case 14:
+                return 'Hebrew1';
+            case 15:
+                return 'Hebrew2';
+            case 16:
+                return 'Arabic1';
+            case 17:
+                return 'Arabic2';
             default:
                 return listLevelPattern as ListLevelPattern;
         }

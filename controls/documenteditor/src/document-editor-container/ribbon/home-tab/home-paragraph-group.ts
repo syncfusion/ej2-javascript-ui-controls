@@ -22,6 +22,7 @@ export const BORDERS_ID: string = '_borders';
 
 /**
  * HomeParagraphGroup class for handling paragraph formatting operations in Document Editor ribbon
+ *
  * @private
  */
 export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup {
@@ -32,6 +33,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     /**
      * Constructor for HomeParagraphGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -44,6 +46,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     /**
      * Get the Ribbon group model for Paragraph formatting
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Paragraph formatting
      * @private
      */
@@ -203,6 +206,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     /**
      * Update paragraph formatting buttons based on document state
+     *
      * @returns {void} - void
      * @private
      */
@@ -277,7 +281,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
         const element: HTMLElement = document.getElementById(buttonId);
         if (!element) { return; }
 
-        const splitButton: any = getInstance(element, SplitButton);
+        const splitButton: SplitButton = getInstance(element, SplitButton) as SplitButton;
         if (!splitButton) { return; }
         const isCurrentlyActive: boolean = /\be-active\b/.test(splitButton.cssClass );
         if (isCurrentlyActive) {
@@ -344,6 +348,7 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     /**
      * Clean up resources when group is destroyed
+     *
      * @returns {void}
      * @private
      */

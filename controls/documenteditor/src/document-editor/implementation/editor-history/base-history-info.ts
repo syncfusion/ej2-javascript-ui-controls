@@ -5,18 +5,10 @@ import { WListFormat } from '../format/list-format';
 import { WListLevel } from '../list/list-level';
 import { Editor, EditorHistory, Selection, Revision, HistoryInfo, CommentView, WList } from '../index';
 import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo, ContentInfo } from './history-helper';
-import {
-    IWidget, BlockWidget,
-    ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
-    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
-    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField,
-    TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox,
-    Widget, ListTextElementBox, ContentControl,
-    ErrorTextElementBox
-} from '../viewer/page';
+import { IWidget, BlockWidget, ParagraphWidget, LineWidget, BodyWidget, TableCellWidget, FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget, EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField, TextElementBox, HeaderFooters, CommentEditInfo, FootnoteElementBox, Widget, ListTextElementBox, ContentControl, ErrorTextElementBox } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
-import { Action, ContainerContentChangeEventArgs, abstractListsProperty, listIdProperty, listsProperty, nsidProperty } from '../../index';
+import { Action, abstractListsProperty, listIdProperty, listsProperty, nsidProperty } from '../../index';
 import { TextPosition, ImageSizeInfo } from '../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -25,10 +17,10 @@ import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle, WCharacterStyle, WShading, WBorders} from '../format/index';
 import { ParagraphInfo, HelperMethods, AbsolutePositionInfo, CellInfo, PositionInfo, ElementInfo, ContextElementInfo } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
-import { DocumentHelper, TextHelper } from '../viewer';
+import { DocumentHelper } from '../viewer';
 import { CONTROL_CHARACTERS, HeaderFooterType, ListLevelPattern, ProtectionType } from '../../base/types';
+import { ContentControlInfo } from '../../base/events-helper';
 
-import { WBorder } from '../../index';
 
 // Code for Comparing the offset calculated using old approach and optimized approach
 // /**
@@ -154,7 +146,7 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
-    public originalHeaderFooters: any = undefined;
+    public originalHeaderFooters: HeaderFooters[] = undefined;
     //Properties
     //gets owner control
     public get owner(): DocumentEditor {
@@ -402,7 +394,20 @@ export class BaseHistoryInfo {
         }
     }
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
-        this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
+        // Store line character offsets in addition to child indices. After content
+        // delete/undo, highlight can re-split text runs so indexInOwner becomes stale
+        // while character offsets remain stable (Bug 1052092).
+        const startOffset: number = !isNullOrUndefined(bookmark.line) ?
+            bookmark.line.getOffset(bookmark, 0) : bookmark.indexInOwner;
+        const endOffset: number = !isNullOrUndefined(bookmark.reference) && !isNullOrUndefined(bookmark.reference.line) ?
+            bookmark.reference.line.getOffset(bookmark.reference, 0) : bookmark.reference.indexInOwner;
+        this.removedNodes.push({
+            'bookmark': bookmark,
+            'startIndex': bookmark.indexInOwner,
+            'endIndex': bookmark.reference.indexInOwner,
+            'startOffset': startOffset,
+            'endOffset': endOffset
+        });
     }
     public setContentControlInfo(contentControl: ContentControl): void {
         this.removedNodes.push({ 'contentcontrol': contentControl, 'startIndex': contentControl.indexInOwner, 'endIndex': contentControl.reference.indexInOwner});
@@ -475,7 +480,8 @@ export class BaseHistoryInfo {
             (this.removedNodes[0] as BookmarkInfo).bookmark = bookmark;
         }
         if (this.editorHistory.isUndoing) {
-            if (isNullOrUndefined(bookmark.line.paragraph.containerWidget) && !isNullOrUndefined(this.owner.selection)) {
+            if ((isNullOrUndefined(bookmark.line) || isNullOrUndefined(bookmark.line.paragraph) ||
+                isNullOrUndefined(bookmark.line.paragraph.containerWidget)) && !isNullOrUndefined(this.owner.selection)) {
                 const startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
                 const endPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
                 bookmark.line = startPosition.currentWidget;
@@ -484,13 +490,22 @@ export class BaseHistoryInfo {
             const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(bookmark);
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             this.markerData.push(markerData);
-            bookmark.line.children.splice(bookmarkInfo.startIndex, 0, bookmark);
+            // Prefer character offsets when present so insert indices survive text re-split (Bug 1052092).
+            let startIndex: number = bookmarkInfo.startIndex;
+            let endIndex: number = bookmarkInfo.endIndex;
+            if (!isNullOrUndefined(bookmarkInfo.startOffset) && !isNullOrUndefined(bookmark.line)) {
+                startIndex = this.getBookmarkInsertIndex(bookmark.line, bookmarkInfo.startOffset);
+            }
+            bookmark.line.children.splice(startIndex, 0, bookmark);
             const previousNode: ElementBox = bookmark.previousNode;
             if (previousNode instanceof FieldElementBox && !isNullOrUndefined(previousNode.formFieldData)) {
                 previousNode.formFieldData.name = bookmark.name;
             }
             this.markerData.push(markerData);
-            bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
+            if (!isNullOrUndefined(bookmarkInfo.endOffset) && !isNullOrUndefined(bookmark.reference.line)) {
+                endIndex = this.getBookmarkInsertIndex(bookmark.reference.line, bookmarkInfo.endOffset);
+            }
+            bookmark.reference.line.children.splice(endIndex, 0, bookmark.reference);
             this.owner.editorModule.updateBookmarkCollection(bookmark.name, bookmark);
             // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
             // Need to skip recording changes if the currentHistoryInfo action is Grouping. Because in grouping the history already recorded while updating complex history.
@@ -509,6 +524,28 @@ export class BaseHistoryInfo {
                 this.editorHistory.undoStack.push(this);
             }
         }
+    }
+    private getBookmarkInsertIndex(line: LineWidget, offset: number): number {
+        if (isNullOrUndefined(line) || isNullOrUndefined(line.children)) {
+            return 0;
+        }
+        if (offset <= 0) {
+            return 0;
+        }
+        const inlineInfo: ElementInfo = line.getInline(offset, 0);
+        if (isNullOrUndefined(inlineInfo) || isNullOrUndefined(inlineInfo.element)) {
+            return line.children.length;
+        }
+        let index: number = line.children.indexOf(inlineInfo.element);
+        if (index < 0) {
+            return line.children.length;
+        }
+        // When offset lands at the start of an element, insert before it.
+        // When offset is past the start (indexInInline > 0), insert after that element.
+        if (inlineInfo.index > 0) {
+            index += 1;
+        }
+        return index;
     }
     private revertComment(): void {
         const editPosition: string = this.insertPosition;
@@ -576,13 +613,13 @@ export class BaseHistoryInfo {
             const contentcontrol: ContentControl = this.owner.selection.currentContentControl;
             if (contentcontrol) {
                 if (contentcontrol.contentControlProperties.type === 'CheckBox' && this.modifiedProperties.length === 0) {
-                    const contentControlInfo: any = this.removedNodes[0];
+                    const contentControlInfo: any  = this.removedNodes[0] as ContentControlInfo;
                     this.owner.editorModule.toggleContentControlCheckBox(contentcontrol, !contentControlInfo.value);
                     contentControlInfo.value = !contentControlInfo.value;
                 } else {
                     const contenControlObject: any = this.modifiedProperties.pop();
                     this.editorHistory.currentBaseHistoryInfo = this;
-                    const content: any = this.owner.editorModule.getContentControlPropObject(contentcontrol.contentControlProperties);
+                    const content: Object = this.owner.editorModule.getContentControlPropObject(contentcontrol.contentControlProperties);
                     this.owner.editorModule.assignContentControl(contentcontrol.contentControlProperties, contenControlObject);
                     this.modifiedProperties.push(content);
                     this.format = JSON.stringify(contenControlObject);
@@ -1342,8 +1379,12 @@ export class BaseHistoryInfo {
                             this.owner.editorModule.constructRevisionFromID(firstNode.characterFormat);
                         }
                         deletedNodes.splice(deletedNodes.indexOf(firstNode), 1);
+                        let isRemoveEmptyPara: boolean = false;
+                        if (this.action !== 'Paste' && this.editorHistory.isUndoing && firstNode instanceof ParagraphWidget && deletedNodes[deletedNodes.length - 1] instanceof TextElementBox && this.owner.selectionModule.start.paragraph.isEmpty()) {
+                            isRemoveEmptyPara = true;
+                        }
                         //Removes the intermediate empty paragraph instance.
-                        if (this.action !== 'Paste' && this.owner.selectionModule.start.paragraph !== firstNode.containerWidget.lastChild) {
+                        if (this.action !== 'Paste' && (this.owner.selectionModule.start.paragraph !== firstNode.containerWidget.lastChild || isRemoveEmptyPara)) {
                             let skipElementRemoval: boolean = false;
                             let currentParagarph = this.owner.selectionModule.start.paragraph
                             if (!(isNullOrUndefined(currentParagarph) && isNullOrUndefined(currentParagarph.bodyWidget) && isNullOrUndefined(currentParagarph.previousWidget)
@@ -1356,7 +1397,7 @@ export class BaseHistoryInfo {
                             editor.removeBlock(this.owner.selectionModule.start.paragraph, undefined, skipElementRemoval);
                         }
                         let paragraph: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
-                        if (!isNullOrUndefined(paragraph) && (firstNode !== firstNode.containerWidget.lastChild || !isNullOrUndefined(firstNode.nextSplitWidget) && !(deletedNodes[0] instanceof BodyWidget))) {
+                        if (!isNullOrUndefined(paragraph) && (firstNode !== firstNode.containerWidget.lastChild || isRemoveEmptyPara || (!isNullOrUndefined(firstNode.nextSplitWidget) && !(deletedNodes[0] instanceof BodyWidget)))) {
                             this.owner.selectionModule.selectParagraphInternal(paragraph, true);
                         } else if (!isNullOrUndefined(firstNode)) {
                             this.owner.selectionModule.selectParagraphInternal(firstNode, false);
@@ -1394,7 +1435,14 @@ export class BaseHistoryInfo {
                 this.owner.selectionModule.end.setPositionInternal(this.owner.selectionModule.start);
             }
             if (node instanceof ElementBox) {
-                this.owner.editorModule.insertInlineInSelection(this.owner.selectionModule, node as ElementBox);
+                // Performance: for table paragraphs, each re-layout re-lays out the whole table.
+                // Defer it until the last element of the run is inserted.
+                this.owner.editorModule.isSkipElementRelayout = isSelectionInsideTable && i > 0 && deletedNodes[i - 1] instanceof ElementBox;
+                try {
+                    this.owner.editorModule.insertInlineInSelection(this.owner.selectionModule, node as ElementBox);
+                } finally {
+                    this.owner.editorModule.isSkipElementRelayout = false;
+                }
             } else if (node instanceof BlockWidget) {
                 if (node instanceof TableRowWidget) {
                     if (block instanceof TableWidget) {
@@ -4242,6 +4290,11 @@ export class BaseHistoryInfo {
             }
         } else if (action === 'CharacterFormat') {
             let charFormat: WCharacterFormat = this.insertedFormat as WCharacterFormat;
+            // Format Painter's ClearCharacterFormat entry replays with no format
+            // object; the operation then carries the default character format only.
+            if (isNullOrUndefined(charFormat)) {
+                characterFormat.styleName = null;
+            } else {
             characterFormat.bold = charFormat.hasValue('bold') ? charFormat.bold : characterFormat.bold;
             characterFormat.italic = charFormat.hasValue('italic') ? charFormat.italic : characterFormat.italic;
             characterFormat.fontSize = charFormat.hasValue('fontSize') ? charFormat.fontSize : characterFormat.fontSize;
@@ -4257,6 +4310,7 @@ export class BaseHistoryInfo {
             characterFormat.CapitalizeEachWord = charFormat.hasValue('CapitalizeEachWord') ? charFormat.CapitalizeEachWord : characterFormat.CapitalizeEachWord;
             characterFormat.SentenceCase = charFormat.hasValue('SentenceCase') ? charFormat.SentenceCase : characterFormat.SentenceCase;
             characterFormat.ToggleCase = charFormat.hasValue('ToggleCase') ? charFormat.ToggleCase : characterFormat.ToggleCase;
+            }
         } else {
             if (this.insertedFormat === 'increment' || this.insertedFormat === 'decrement') {
                 this.type = this.insertedFormat as string;

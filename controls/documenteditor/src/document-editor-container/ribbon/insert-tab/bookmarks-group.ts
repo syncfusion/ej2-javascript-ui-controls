@@ -9,11 +9,13 @@ export const SHOW_BOOKMARKS_ID: string = '_show_bookmarks';
 
 /**
  * Bookmarks group implementation for Insert tab
+ *
  * @private
  */
 export class BookmarksGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Bookmarks group
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Bookmarks group
      * @private
      */

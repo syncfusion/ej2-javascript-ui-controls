@@ -5,6 +5,7 @@
  * context menus) and the headless `EditorCore`. All command-driven mutations
  * route through the controller via the action pipeline defined here.
  */
+import { ToggleCollapsiblePayload } from '@syncfusion/ej2-headless-editor/src/extensions/collapsible';
 import { InsertTablePayload } from '../common/table-payload';
 
 /**
@@ -87,6 +88,12 @@ export type CodeBlockCommand = {
     language: string
 }
 
+export type CalloutType = 'info' | 'warning' | 'error' | 'success' | 'note';
+
+export type CalloutCommand = {
+    callout: CalloutType
+}
+
 /**
  * Numbered (ordered) list style types.
  *
@@ -98,11 +105,11 @@ export type CodeBlockCommand = {
 export type NumberListType =
     | 'none'
     | 'decimal'
-    | 'lowerGreek'
-    | 'lowerRoman'
-    | 'upperAlpha'
-    | 'lowerAlpha'
-    | 'upperRoman';
+    | 'lower-alpha'
+    | 'lower-greek'
+    | 'upper-roman'
+    | 'lower-roman'
+    | 'upper-alpha';
 
 /**
  * Bulleted (unordered) list style types.
@@ -122,11 +129,13 @@ export type BulletListType =
  * Discriminated union of all list-style type identifiers.
  *
  * Use {@link NumberListType} or {@link BulletListType} for
- * narrower contexts. This union is the full set supported by
- * the editor and is the value type for the
- * {@link ListStyleTypeCommand} payload.
+ * narrower contexts. `'task'` represents a checklist style — the
+ * headless editor's `toggleTaskList` command handles wrapping the
+ * selection in a task list whose `<li>` elements carry a checkbox
+ * marker. This union is the full set supported by the editor and
+ * is the value type for the {@link ListStyleTypeCommand} payload.
  */
-export type ListStyleType = NumberListType | BulletListType;
+export type ListStyleType = NumberListType | BulletListType | 'task';
 
 /**
  * Value payload for the `numberedList` and `bulletList` commands.
@@ -134,7 +143,9 @@ export type ListStyleType = NumberListType | BulletListType;
  * @property listType - Optional style identifier to apply when the
  *                      list is created. When omitted the editor
  *                      uses its default (decimal for numbered,
- *                      disc for bulleted).
+ *                      disc for bulleted, task for checklist).
+ *                      Any {@link ListStyleType} is accepted,
+ *                      including `'task'` for checklists.
  * @property keepMarks - When true, active marks on the new list
  *                       item are preserved after toggling.
  */
@@ -147,7 +158,7 @@ export type ListCommand = {
  * Value payload for the `setListStyle` command.
  *
  * Converts the list at the current selection to the supplied
- * list style type (e.g. `'lowerAlpha'`, `'square'`).
+ * list style type (e.g. `'lower-alpha'`, `'square'`).
  */
 export type ListStyleTypeCommand = {
     listType: ListStyleType;
@@ -269,10 +280,12 @@ export interface EditorCommandMap {
     heading3: string;
     heading4: string;
     paragraph: string;
+    collapsible: ToggleCollapsiblePayload;
     blockQuote: string;
     indent: string;
     outdent: string;
     codeBlock: CodeBlockCommand;
+    callout: CalloutCommand;
     horizontalRule: string;
     clearFormat: string;
     fontColor: ColorCommand;
@@ -283,6 +296,7 @@ export interface EditorCommandMap {
     numberedList: ListCommand;
     bulletList: ListCommand;
     setListStyle: ListStyleTypeCommand;
+    checklist: string;
     setTextAlign: AlignmentCommand;
     insertTable: InsertTablePayload;
     table: string;

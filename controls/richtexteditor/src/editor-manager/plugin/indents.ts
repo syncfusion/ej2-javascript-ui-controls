@@ -38,6 +38,42 @@ export class Indents {
         this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
 
     }
+
+    /**
+     * Converts margin values with units (in, pt, px, etc.) to pixels.
+     *
+     * @param {string} marginValue - the margin value with unit (e.g., "1.0in", "20px", "12pt")
+     * @returns {number} - the value in pixels
+     * @private
+     */
+    private convertMarginToPixels(marginValue: string): number {
+        if (!marginValue || marginValue === '') {
+            return 0;
+        }
+        // Extract numeric value and unit
+        const match: RegExpMatchArray | null = marginValue.match(/^([\d.]+)(.*)$/);
+        if (!match) {
+            return 0;
+        }
+        const numValue: number = parseFloat(match[1]);
+        const unit: string = match[2].trim().toLowerCase();
+        // Convert to pixels based on unit
+        switch (unit) {
+        case 'in': // inches: 1 inch = 96px
+            return numValue * 96;
+        case 'cm': // centimeters: 1cm = 37.8px
+            return numValue * 37.8;
+        case 'mm': // millimeters: 1mm = 3.78px
+            return numValue * 3.78;
+        case 'pt': // points: 1pt = 1.333px
+            return numValue * 1.333;
+        case 'em': // em units (relative to font size, assume 16px base)
+            return numValue * 16;
+        case 'px':
+        default:
+            return numValue;
+        }
+    }
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
         case 'indents':
@@ -108,10 +144,14 @@ export class Indents {
             if (parentNode.tagName !== 'HR') {
                 if (e.subCommand === 'Indent') {
                     /* eslint-disable */
-                    indentsValue = marginLeftOrRight === '' ? this.indentValue + 'px' : parseInt(marginLeftOrRight, null) + this.indentValue + 'px';
+                    const currentMarginInPixels = this.convertMarginToPixels(marginLeftOrRight);
+                    const newMarginInPixels = currentMarginInPixels + this.indentValue;
+                    indentsValue = newMarginInPixels + 'px';
                     isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
                 } else {
-                    indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px' || marginLeftOrRight === '0in') ? '' : (parseInt(marginLeftOrRight, null) - this.indentValue < 0) ? '0px' : (parseInt(marginLeftOrRight, null) - this.indentValue) + 'px';
+                    const currentMarginInPixels = this.convertMarginToPixels(marginLeftOrRight);
+                    const newMarginInPixels = currentMarginInPixels - this.indentValue;
+                    indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px' || marginLeftOrRight === '0in') ? '' : (newMarginInPixels < 0) ? '0px' : newMarginInPixels + 'px';
                     isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
                     /* eslint-enable */
                 }

@@ -111,9 +111,12 @@ export class StylesDialog {
     public show(): void {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
-        const paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter((obj: any) => (obj as any).Type === 'Paragraph');
-        const linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter((obj: any) => (obj as any).Type === 'Linked');
-        const charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter((obj: any) => (obj as any).Type === 'Character');
+        const paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(
+            (obj: {[key: string]: string}) => obj.Type === 'Paragraph');
+        const linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(
+            (obj: {[key: string]: string}) => obj.Type === 'Linked');
+        const charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter(
+            (obj: {[key: string]: string}) => obj.Type === 'Character');
         for (const linkedStyle of linkedStyles) {
             for (const charStyle of charStyles) {
                 if (linkedStyle['StyleName'] + ' Char' === charStyle['StyleName']) {
@@ -147,16 +150,18 @@ export class StylesDialog {
         const linkedIcon: string = 'e-de-listview-icon e-de-e-linked-style-mark e-icons';
         const finalList: {[key: string]: string}[] = [];
         for (let i: number = 0; i < collection.length; i++) {
-            let styleName : string = localValue.getConstant((collection[parseInt(i.toString(), 10)] as any).name);
+            const styleItem: { name: string; type: string } =
+                collection[parseInt(i.toString(), 10)] as { name: string; type: string };
+            let styleName: string = localValue.getConstant(styleItem.name);
             if (styleName === '') {
-                styleName = (collection[parseInt(i.toString(), 10)] as any).name;
+                styleName = styleItem.name;
             }
-            if ((collection[parseInt(i.toString(), 10)] as any).type === 'Paragraph') {
-                finalList.push({ StyleName: styleName, IconClass: paraIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
-            } else if ((collection[parseInt(i.toString(), 10)] as any).type === 'Character'){
-                finalList.push({ StyleName: styleName, IconClass: charIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
+            if (styleItem.type === 'Paragraph') {
+                finalList.push({ StyleName: styleName, IconClass: paraIcon, Type: styleItem.type });
+            } else if (styleItem.type === 'Character') {
+                finalList.push({ StyleName: styleName, IconClass: charIcon, Type: styleItem.type });
             } else {
-                finalList.push({ StyleName: styleName, IconClass: linkedIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
+                finalList.push({ StyleName: styleName, IconClass: linkedIcon, Type: styleItem.type });
             }
         }
         return finalList;

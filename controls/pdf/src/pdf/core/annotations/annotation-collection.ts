@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _checkReview, _isNullOrUndefined } from './../utils';
-import { PdfAnnotation, PdfLineAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfAngleMeasurementAnnotation, PdfRectangleAnnotation, PdfSquareAnnotation, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfInkAnnotation, PdfPopupAnnotation, PdfAttachmentAnnotation, Pdf3DAnnotation, PdfFileLinkAnnotation, PdfWatermarkAnnotation, PdfRubberStampAnnotation, PdfSoundAnnotation, PdfFreeTextAnnotation, PdfRedactionAnnotation, PdfRichMediaAnnotation, PdfTextMarkupAnnotation, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfComment } from './annotation';
+import { PdfAnnotation, PdfLineAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfRedactionAnnotation, PdfFreeTextAnnotation, PdfAngleMeasurementAnnotation, PdfRectangleAnnotation, PdfSquareAnnotation, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfInkAnnotation, PdfPopupAnnotation, PdfAttachmentAnnotation, PdfFileLinkAnnotation, PdfWatermarkAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfComment, PdfSoundAnnotation, PdfRichMediaAnnotation, Pdf3DAnnotation, PdfMovieAnnotation, PdfPrinterMarkAnnotation, PdfProjectionAnnotation, PdfScreenAnnotation, PdfTrapNetAnnotation } from './annotation';
 import { PdfAnnotationFlag } from './../enumerator';
 import { PdfTemplate } from '../graphics/pdf-template';
 import {initializeTelemetryFeature } from '@syncfusion/ej2-base';
@@ -155,6 +155,17 @@ export class PdfAnnotationCollection {
         if (annotation._isLoaded) {
             throw Error('cannot add an existing annotation');
         }
+        const trapNetIndex: number = this._findTrapNetAnnotationIndex();
+        if (annotation instanceof PdfTrapNetAnnotation) {
+            if (trapNetIndex !== -1) {
+                throw new Error('A page can contain only one TrapNet annotation.');
+            }
+        } else if (trapNetIndex !== -1) {
+            throw new Error('An annotation cannot be added after a TrapNet annotation.');
+        }
+        if (!annotation._dictionary) {
+            throw new Error('Annotation is not initialized.');
+        }
         annotation._initialize(this._page);
         let reference: _PdfReference;
         if (typeof annotation._ref !== 'undefined' && annotation._ref._isNew) {
@@ -285,6 +296,34 @@ export class PdfAnnotationCollection {
                 crossReference._cacheMap.delete(reference);
             }
         }
+    }
+    /**
+     * Finds the TrapNet annotation index.
+     *
+     * @private
+     * @returns {number} The TrapNet annotation index, or -1 when not found.
+     */
+    private _findTrapNetAnnotationIndex(): number {
+        for (let i: number = 0; i < this._annotations.length; i++) {
+            const entry: unknown = this._annotations[<number>i];
+            let dictionary: _PdfDictionary;
+            if (entry instanceof _PdfReference) {
+                const value: unknown = this._crossReference._fetch(entry);
+                if (value instanceof _PdfDictionary) {
+                    dictionary = value;
+                }
+            } else if (entry instanceof _PdfDictionary) {
+                dictionary = entry;
+            }
+            if (!dictionary || !dictionary.has('Subtype')) {
+                continue;
+            }
+            const subtype: unknown = dictionary.get('Subtype');
+            if (subtype instanceof _PdfName && subtype.name === 'TrapNet') {
+                return i;
+            }
+        }
+        return -1;
     }
     /**
      * Processes and prunes matching object references from the provided arrays,
@@ -587,6 +626,21 @@ export class PdfAnnotationCollection {
                 case 'StrikeOut':
                 case 'Underline':
                     annot = PdfTextMarkupAnnotation._load(this._page, dictionary);
+                    break;
+                case 'PrinterMark':
+                    annot = PdfPrinterMarkAnnotation._load(this._page, dictionary);
+                    break;
+                case 'Screen':
+                    annot = PdfScreenAnnotation._load(this._page, dictionary);
+                    break;
+                case 'Movie':
+                    annot = PdfMovieAnnotation._load(this._page, dictionary);
+                    break;
+                case 'Projection':
+                    annot = PdfProjectionAnnotation._load(this._page, dictionary);
+                    break;
+                case 'TrapNet':
+                    annot = PdfTrapNetAnnotation._load(this._page, dictionary);
                     break;
                 }
             }

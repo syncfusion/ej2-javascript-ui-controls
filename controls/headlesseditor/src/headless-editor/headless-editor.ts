@@ -1,16 +1,17 @@
-import { DocumentRoot } from '../model/editor-node';
-import { IdGenerator } from '../utils/id-generator';
+import { DocumentRoot } from '../core/model/editor-node';
 import { DocumentMapper } from '../pm/adapters/document-mapper';
 import { IntegrationManager } from '../pm/integration/integration-manager';
 import { adaptNodeViews } from '../pm/nodeviews/node-view';
 import type { DirectEditorProps, PMEditorView } from '../pm/pm-guard';
 import type { PMEditorState } from '../pm/pm-guard';
 import { PMDOMSerializer, TextSelection } from '../pm/pm-guard';
-import { PMFragment, PMNode, PMSchema, PMTransaction } from '../pm/pm-guard';
-import { parseHtmlToDocument } from '../schema/serialization/html-content-parser';
+import { PMFragment, PMNode, PMSchema, PMSlice, PMTransaction } from '../pm/pm-guard';
+import { parseHtmlToDocument } from '../core/schema/serialization/html-content-parser';
 import { PasteHandler, createPasteHandler } from '../pm/adapters/clipboard/paste-handler';
+import { sanitizeClipboardHTML } from '../pm/adapters/clipboard/sanitizer';
+import type { ClipboardOptions, ClipboardTransformContext, ClipboardContent } from '../core/model/editor-config';
 import { EditorBuilder, EditorBuilderOptions } from './editor-builder';
-import { EditorConfig } from '../model/editor-config';
+import { EditorConfig } from '../core/model/editor-config';
 import {
     CONTENT_CHANGED,
     SELECTION_CHANGED,
@@ -18,58 +19,85 @@ import {
     BLUR,
     BEFORE_PASTE,
     AFTER_PASTE,
-    BEFORE_DELETE,
-    AFTER_DELETE
-} from '../events/event-names';
+    RESIZE_START,
+    RESIZING,
+    RESIZE_STOP,
+    DOCUMENT_CHANGED,
+    BEFORE_FILE_UPLOAD,
+    FILE_RECEIVED
+} from '../core/events/event-names';
 import {
-    ContentChangedPayload,
-    SelectionChangedPayload
-} from '../events/public-events/document-events';
+    ContentChangedEventArgs,
+    DocumentChangedEventArgs,
+    SelectionChangedEventArgs
+} from '../core/events/public-events/document-events';
+import type { BeforePasteEventArgs, AfterPasteEventArgs } from '../core/events/public-events/clipboard-events';
 import {
-    BeforePastePayload,
-    AfterPastePayload,
-    BeforeDeletePayload,
-    AfterDeletePayload
-} from '../events/public-events/user-events';
-import { DiagnosticsService } from '../diagnostics/diagnostics-service';
-import { EventBus, SubscriberPriority } from '../events/event-bus';
-import { ServiceRegistry } from '../services/service-registry';
-import { ServiceLifecycleManager } from '../services/service-lifecycle-manager';
-import { DiagnosticsToken, EventBusToken } from '../services/built-in-tokens';
-import { EventAggregator } from '../events/public-events/event-aggregator';
-import { EditorEvent, IDisposable } from '../events';
-import { EditorLifecycleError } from '../errors/editor-lifecycle-error';
-import { CommandRegistry } from '../commands/registry';
-import { CommandManager } from '../commands/manager';
-import { readCodeBlockContent } from '../commands/builtins/code-block/get-code-block-content';
-import { readCodeBlockLanguage } from '../commands/builtins/code-block/get-code-block-language';
-import { createCommandsFacade, createCanFacade, createChainFacade } from '../commands/facade';
-import { TypedCommandsFacade, TypedCanFacade, TypedChain } from '../commands/typed-surface';
-import { ChainBuilder } from '../commands/chain';
+    ResizeStartEventArgs,
+    ResizingEventArgs,
+    ResizeStopEventArgs
+} from '../core/events/public-events/user-events';
+import { DiagnosticsService } from '../core/diagnostics/diagnostics-service';
+import { EventBus, SubscriberPriority } from '../core/events/event-bus';
+import { ServiceRegistry } from '../core/services/service-registry';
+import { ServiceLifecycleManager } from '../core/services/service-lifecycle-manager';
+import { DiagnosticsToken, EventBusToken } from '../core/services/built-in-tokens';
+import { EventAggregator } from '../core/events/public-events/event-aggregator';
+import { EditorEvent, IDisposable } from '../core/events';
+import { EditorLifecycleError } from '../core/errors/editor-lifecycle-error';
+import { CommandRegistry } from '../core/commands/registry';
+import { CommandManager } from '../core/commands/manager';
+import { getCodeBlockContent, getCodeBlockLanguage } from '../extensions/code-block/helper';
+import { createCommandsFacade, createCanFacade, createChainFacade } from '../core/commands/facade';
+import { TypedCommandsFacade, TypedCanFacade, TypedChain } from '../core/commands/typed-surface';
+import { ChainBuilder } from '../core/commands/chain';
 import { SelectionManager } from '../pm/integration/selection-manager';
 import { SelectionAdapter } from '../pm/adapters/selection-adapter';
 import { SelectedNodeResolver } from '../pm/integration/selected-node-resolver';
 import { ActiveMarksResolver } from '../pm/integration/active-marks-resolver';
-import type { SelectedNode, SelectedCell, SelectionSnapshot } from '../model/selection';
-import { FOCUS_LOST } from '../events/event-names';
+import { SelectionContextResolver } from '../pm/integration/selection-context-resolver';
+import type { SelectedNode, SelectedCell, SelectionSnapshot } from '../core/model/selection';
+import type { SelectionContext } from '../core/model/selection-context';
+import { FOCUS_LOST } from '../core/events/event-names';
 import type { ExtensionManager } from '../extensions/extension-manager';
-import { FileHandler } from '../services/file-handler';
-import { UploadStateRegistry } from '../services/upload-state-registry';
-import type { FileUploadHandler } from '../model/file-upload-handler';
+import { FileHandler } from '../core/services/file-handler';
+import { UploadStateRegistry } from '../core/services/upload-state-registry';
+import type { FileUploadHandler } from '../core/model/file-upload-handler';
 import { initializeTelemetry, validateLicense } from '@syncfusion/ej2-base';
+import { BeforeFileUploadEventArgs, FileReceivedEventArgs } from '../core/events/public-events/file-upload-events';
 
 /**
- * Editor — the public entry point for the Syncfusion Headless Editor.
+ * HeadlessEditor — Syncfusion's frameworkless rich text editor with complete command control,
+ * extension system, and event-driven architecture.
  *
- * Usage:
- *   const editor = Editor.create({ schema: mySchema });
- *   editor.mount(containerElement);
- *   const doc = editor.getDocument();
- *   editor.destroy();
+ * The Headless Editor provides a decoupled editing engine with no DOM dependencies for initialization,
+ * full undo/redo, custom content schemas, extensible node types,
+ * and comprehensive keyboard/paste/clipboard handling. Mount into any DOM container and control
+ * via the typed command system.
+ *
+ * ```typescript
+ * // Create and mount editor
+ * const editor = HeadlessEditor.create({ schema: mySchema });
+ * editor.mount(document.getElementById('editor'));
+ *
+ * // Execute typed commands
+ * editor.commands.toggleBold();
+ * editor.commands.setHeading({ level: 1 });
+ * editor.commands.insertImage({ src: 'image.png' });
+ *
+ * // Query editor state
+ * const doc = editor.getDocument();
+ * const selection = editor.getSelection();
+ *
+ * // Subscribe to events
+ * editor.on('contentChanged', (args) => console.log('Updated:', args.document));
+ *
+ * // Cleanup
+ * editor.destroy();
+ * ```
  */
 export class HeadlessEditor {
     private readonly config: EditorConfig;
-    private readonly idGen: IdGenerator;
     private currentDoc: DocumentRoot;
 
     // ── Bootstrap singletons (per design.md Decision 4) ──────────────────────
@@ -82,6 +110,7 @@ export class HeadlessEditor {
     private readonly selectionManager: SelectionManager;
     private readonly selectedNodeResolver: SelectedNodeResolver;
     private readonly activeMarksResolver: ActiveMarksResolver;
+    private readonly selectionContextResolver: SelectionContextResolver;
     private blurSubscription: IDisposable | null;
     private readonly extensionManager?: ExtensionManager;
 
@@ -121,8 +150,9 @@ export class HeadlessEditor {
      * Publishes upload lifecycle state keyed by an opaque owner key
      * (e.g. a stable image node ID) so extension NodeViews can render
      * product-supplied status UI without touching the document.
+     *
+     * @hidden
      */
-    /* @hidden */
     public readonly uploadStateRegistry: UploadStateRegistry = new UploadStateRegistry();
 
     /**
@@ -133,7 +163,6 @@ export class HeadlessEditor {
      *
      * @param {EditorConfig} config - Resolved editor configuration used to construct the editor.
      * @param {IntegrationManager} integration - Fully initialized IntegrationManager (owns PM state).
-     * @param {IdGenerator} idGen - IdGenerator for future document operations.
      * @param {DocumentRoot} initialDoc - The initial document after schema compilation and PM mapping.
      * @param {DiagnosticsService} diagnostics - The diagnostics service for error reporting.
      * @param {EventBus} eventBus - The event bus for inter-service communication.
@@ -147,7 +176,6 @@ export class HeadlessEditor {
     constructor(
         config: EditorConfig,
         integration: IntegrationManager,
-        idGen: IdGenerator,
         initialDoc: DocumentRoot,
         diagnostics: DiagnosticsService,
         eventBus: EventBus,
@@ -160,7 +188,6 @@ export class HeadlessEditor {
     ) {
         this.config = config;
         this.integration = integration;
-        this.idGen = idGen;
         this.currentDoc = initialDoc;
         this.diagnostics = diagnostics;
         this.eventBus = eventBus;
@@ -177,7 +204,6 @@ export class HeadlessEditor {
         this.selectionManager = new SelectionManager(
             this.integration,
             selectionAdapter,
-            this.integration.positionAdapter,
             initialDoc.schemaVersion ?? 1
         );
         this.selectionManager.discard();
@@ -193,6 +219,7 @@ export class HeadlessEditor {
 
         // Initialize active marks resolver for toolbar state queries
         this.activeMarksResolver = new ActiveMarksResolver();
+        this.selectionContextResolver = new SelectionContextResolver();
 
         // Activate the auto-save-on-blur subscription if requested.
         if (this.config.autoSaveSelectionOnBlur) {
@@ -205,13 +232,35 @@ export class HeadlessEditor {
     // ── Factory ───────────────────────────────────────────────────────────────
 
     /**
-     * Creates an Editor instance.
+     * Creates a fully initialized HeadlessEditor instance.
      *
-     * Does NOT create any DOM element or PM view.
-     * Call editor.mount(container) after creation to attach to the DOM.
+     * Performs full bootstrap of the editor including schema compilation, extension loading, command registry
+     * initialization, and service layer setup. This method is called directly by applications; the constructor
+     * is not public.
      *
-     * @param {EditorConfig} config - The editor configuration.
-     * @returns {Editor} A fully initialized Editor instance.
+     * The returned HeadlessEditor is ready for immediate use but does NOT attach to the DOM. Call `mount(container)`
+     * to render the editor in the DOM. The editor can be mounted and unmounted multiple times without re-initialization.
+     *
+     * @param {EditorConfig} config - The editor configuration object containing schema, extensions, event callbacks, and options.
+     *
+     * @returns {HeadlessEditor} A fully initialized, DOM-independent editor instance ready for mounting and command execution.
+     *
+     * @throws {Error} Throws if the configuration is invalid or schema compilation fails.
+     *
+     * @example
+     * ```typescript
+     * // Create editor with schema and extensions
+     * const editor = HeadlessEditor.create({
+     *   schema: mySchema,
+     *   extensions: [boldExtension, italicExtension],
+     *   autofocus: 'start',
+     *   created: () => console.log('Editor ready!')
+     * });
+     *
+     * // Mount to DOM and use
+     * editor.mount(document.getElementById('editor'));
+     * editor.commands.toggleBold();
+     * ```
      */
     public static create(config: EditorConfig): HeadlessEditor {
         // ── Bootstrap sequence (design.md Decision 4, 7-step order) ──────────
@@ -241,14 +290,12 @@ export class HeadlessEditor {
         // 9. Wire EventAggregator — maps internal PM events to public editor events
         const aggregator: EventAggregator = new EventAggregator(
             eventBus,
-            () => DocumentMapper.fromPMDoc(options.integration.getState().doc, options.idGen),
-            () => options.integration.getState().selection as never,
-            () => options.idGen
+            () => DocumentMapper.fromPMDoc(options.integration.getState().doc),
+            () => options.integration.getState().selection as never
         );
         const editor: HeadlessEditor = new HeadlessEditor(
             config,
             options.integration,
-            options.idGen,
             options.initialDoc,
             diagnostics,
             eventBus,
@@ -304,15 +351,36 @@ export class HeadlessEditor {
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     /**
-     * Mounts the editor into the given container element. DOM required.
+     * Mounts the editor into the specified DOM container element.
      *
-     * If `config.autofocus` is set, focuses the editor after mounting:
-     *   - `true` or `'auto'`: at the last saved selection (or start if none)
-     *   - `'start'`: at document beginning
-     *   - `'end'`: at document end
+     * Creates the ProseMirror editor view within the container and initializes event listeners.
+     * The container element must be a valid HTMLElement in the document. After mounting, the editor
+     * is interactive and ready for user input and command execution.
      *
-     * @param {HTMLElement} container - The DOM element to mount the editor into.
+     * Autofocus behavior is controlled by `config.autofocus`:
+     * - `true` or `'auto'`: Focuses at the last saved selection if available, otherwise at document start
+     * - `'start'`: Focuses at the beginning of the document
+     * - `'end'`: Focuses at the end of the document
+     * - `false` or undefined: No autofocus (editor container must be manually focused if needed)
+     *
+     * The editor can be mounted, unmounted (`unmount()`), and re-mounted multiple times on the same instance.
+     *
+     * @param {HTMLElement} container - The DOM element that will contain the editor view. Must be a valid HTMLElement present in the document.
+     *
      * @returns {void}
+     *
+     * @throws {Error} Throws if container is not a valid HTMLElement or if the editor is already destroyed.
+     *
+     * @example
+     * ```typescript
+     * // Mount editor into a div container
+     * const container = document.getElementById('editor');
+     * editor.mount(container);
+     *
+     * // Editor is now interactive and visible
+     * editor.commands.focus();
+     * editor.commands.toggleBold();
+     * ```
      */
     public mount(container: HTMLElement): void {
         this.integration.mount(container, this.buildViewProps());
@@ -324,9 +392,28 @@ export class HeadlessEditor {
     }
 
     /**
-     * Destroys the PM view but preserves state. Can be re-mounted.
+     * Unmounts the editor from the DOM without destroying the editor instance.
+     *
+     * This method detaches the ProseMirror view from the DOM container but preserves all editor state
+     * (document, selection, history). The editor can be re-mounted to a container (same or different)
+     * using `mount()` without loss of state or configuration.
+     *
+     * All event listeners attached to the DOM are removed and the view is disposed.
+     * The editor instance remains valid and can be used to query state via `getDocument()`, `getSelection()`, etc.
      *
      * @returns {void}
+     *
+     * @example
+     * ```typescript
+     * // Unmount editor from DOM
+     * editor.unmount();
+     *
+     * // Editor state is preserved
+     * const doc = editor.getDocument(); // Still accessible
+     *
+     * // Re-mount to same or different container
+     * editor.mount(anotherContainer);
+     * ```
      */
     public unmount(): void {
         this.integration.unmount();
@@ -377,11 +464,16 @@ export class HeadlessEditor {
     private wireConfigCallbacks(callbacks: EditorConfig): void {
         if (callbacks.contentChanged) {
             const contentChanged: NonNullable<EditorConfig['contentChanged']> = callbacks.contentChanged;
-            this.on<ContentChangedPayload>(CONTENT_CHANGED, (payload: ContentChangedPayload): void => { contentChanged(payload); });
+            this.on<ContentChangedEventArgs>(CONTENT_CHANGED, (payload: ContentChangedEventArgs): void => { contentChanged(payload); });
+        }
+        if (callbacks.documentChanged) {
+            const documentChanged: NonNullable<EditorConfig['documentChanged']> = callbacks.documentChanged;
+            this.on<ContentChangedEventArgs>(DOCUMENT_CHANGED, (payload: DocumentChangedEventArgs): void => { documentChanged(payload); });
         }
         if (callbacks.selectionChanged) {
             const selectionChanged: NonNullable<EditorConfig['selectionChanged']> = callbacks.selectionChanged;
-            this.on<SelectionChangedPayload>(SELECTION_CHANGED, (payload: SelectionChangedPayload): void => { selectionChanged(payload); });
+            this.on<SelectionChangedEventArgs>(SELECTION_CHANGED, (payload: SelectionChangedEventArgs): void =>
+            { selectionChanged(payload); });
         }
         if (callbacks.focus) {
             const focus: NonNullable<EditorConfig['focus']> = callbacks.focus;
@@ -393,19 +485,32 @@ export class HeadlessEditor {
         }
         if (callbacks.beforePaste) {
             const beforePaste: NonNullable<EditorConfig['beforePaste']> = callbacks.beforePaste;
-            this.on<BeforePastePayload>(BEFORE_PASTE, (payload: BeforePastePayload): void => { beforePaste(payload); });
+            this.on<BeforePasteEventArgs>(BEFORE_PASTE, (payload: BeforePasteEventArgs): void => { beforePaste(payload); });
         }
         if (callbacks.afterPaste) {
             const afterPaste: NonNullable<EditorConfig['afterPaste']> = callbacks.afterPaste;
-            this.on<AfterPastePayload>(AFTER_PASTE, (payload: AfterPastePayload): void => { afterPaste(payload); });
+            this.on<AfterPasteEventArgs>(AFTER_PASTE, (payload: AfterPasteEventArgs): void => { afterPaste(payload); });
         }
-        if (callbacks.beforeDelete) {
-            const beforeDelete: NonNullable<EditorConfig['beforeDelete']> = callbacks.beforeDelete;
-            this.on<BeforeDeletePayload>(BEFORE_DELETE, (payload: BeforeDeletePayload): void => { beforeDelete(payload); });
+        if (callbacks.beforeFileUpload) {
+            const beforeFileUpload: NonNullable<EditorConfig['beforeFileUpload']> = callbacks.beforeFileUpload;
+            this.on<BeforeFileUploadEventArgs>(BEFORE_FILE_UPLOAD, (payload: BeforeFileUploadEventArgs): void =>
+            { beforeFileUpload(payload); });
         }
-        if (callbacks.afterDelete) {
-            const afterDelete: NonNullable<EditorConfig['afterDelete']> = callbacks.afterDelete;
-            this.on<AfterDeletePayload>(AFTER_DELETE, (payload: AfterDeletePayload): void => { afterDelete(payload); });
+        if (callbacks.fileReceived) {
+            const fileReceived: NonNullable<EditorConfig['fileReceived']> = callbacks.fileReceived;
+            this.on<FileReceivedEventArgs>(FILE_RECEIVED, (payload: FileReceivedEventArgs): void => { fileReceived(payload); });
+        }
+        if (callbacks.resizeStart) {
+            const resizeStart: NonNullable<EditorConfig['resizeStart']> = callbacks.resizeStart;
+            this.on<ResizeStartEventArgs>(RESIZE_START, (payload: ResizeStartEventArgs): void => { resizeStart(payload); });
+        }
+        if (callbacks.resizing) {
+            const resizing: NonNullable<EditorConfig['resizing']> = callbacks.resizing;
+            this.on<ResizingEventArgs>(RESIZING, (payload: ResizingEventArgs): void => { resizing(payload); });
+        }
+        if (callbacks.resizeStop) {
+            const resizeStop: NonNullable<EditorConfig['resizeStop']> = callbacks.resizeStop;
+            this.on<ResizeStopEventArgs>(RESIZE_STOP, (payload: ResizeStopEventArgs): void => { resizeStop(payload); });
         }
     }
 
@@ -435,12 +540,108 @@ export class HeadlessEditor {
             this.pasteHandler = createPasteHandler(this.eventBus as any, this.fileHandler);
         }
 
+        const clipboardOptions: ClipboardOptions | undefined = this.config.clipboard;
+
         return {
             editable: () => !(this.config.readOnly ?? false),
             nodeViews: this.adaptedNodeViews,
-            handlePaste: (view: PMEditorView, event: ClipboardEvent): boolean => {
+            transformCopied: (slice: PMSlice, view: PMEditorView): PMSlice => {
+                const { $from, $to } = view.state.selection;
+                const { collapsible, collapsibleHeader, collapsibleBody } = view.state.schema.nodes;
+                if (!collapsible || !collapsibleHeader || !collapsibleBody) {
+                    return slice;
+                }
+                const findAncestor: ( resolved: typeof $from, type: typeof collapsibleHeader) => number
+                = (resolved: typeof $from, type: typeof collapsibleHeader): number => {
+                    for (let depth: number = resolved.depth; depth > 0; depth--) {
+                        if (resolved.node(depth).type === type
+                            && resolved.node(depth - 1).type === collapsible) {
+                            return depth;
+                        }
+                    }
+                    return -1;
+                };
+                const fromHeaderDepth: number = findAncestor($from, collapsibleHeader);
+                const toHeaderDepth: number = findAncestor($to, collapsibleHeader);
+                const toBodyDepth: number = findAncestor($to, collapsibleBody);
+                const fromCollapsibleDepth: number = fromHeaderDepth - 1;
+                const toCollapsibleDepth: number = (toHeaderDepth !== -1 ? toHeaderDepth : toBodyDepth) - 1;
+
+                if (fromHeaderDepth !== -1) {
+                    const topLevelNodes: PMNode[] = [];
+                    let fromIndex: number = -1;
+                    let toIndex: number = -1;
+                    let childPos: number = 0;
+                    for (let index: number = 0; index < view.state.doc.childCount; index++) {
+                        const child: PMNode = view.state.doc.child(index);
+                        const childEnd: number = childPos + child.nodeSize;
+                        if ($from.pos >= childPos && $from.pos < childEnd) {
+                            fromIndex = index;
+                        }
+                        if ($to.pos > childPos && $to.pos <= childEnd) {
+                            toIndex = index;
+                        }
+                        childPos = childEnd;
+                    }
+                    if (fromIndex !== -1 && toIndex !== -1 && fromIndex <= toIndex) {
+                        for (let index: number = fromIndex; index <= toIndex; index++) {
+                            const child: PMNode = view.state.doc.child(index);
+                            if (child.type !== collapsible) {
+                                topLevelNodes.length = 0;
+                                break;
+                            }
+                            topLevelNodes.push(child);
+                        }
+                        if (topLevelNodes.length > 1) {
+                            return new PMSlice(PMFragment.fromArray(topLevelNodes), 0, 0);
+                        }
+                    }
+                }
+
+                if (fromHeaderDepth !== -1
+                    && fromCollapsibleDepth !== -1
+                    && toCollapsibleDepth !== -1
+                    && fromCollapsibleDepth === toCollapsibleDepth
+                    && (toHeaderDepth !== -1 || toBodyDepth !== -1)
+                    && $from.before(fromCollapsibleDepth) === $to.before(toCollapsibleDepth)
+                    && (toHeaderDepth === -1 || $from.before(fromHeaderDepth) === $to.before(toHeaderDepth))
+                    && (toBodyDepth === -1 || $from.before(fromHeaderDepth) < $to.before(toBodyDepth))
+                ) {
+                    return new PMSlice(PMFragment.from($from.node(fromCollapsibleDepth)), 0, 0);
+                }
+                return slice;
+            },
+            // Headless composes a non-overridable security sanitiser
+            // (sanitizeClipboardHTML) ahead of any product-supplied
+            // transformHTML hook. The result feeds ProseMirror's native
+            // readHTML → DOMParser.fromSchema(schema).parseSlice flow.
+            transformPastedHTML: (html: string, _view: PMEditorView): string => {
+                const secured: string = sanitizeClipboardHTML(html);
+                if (clipboardOptions?.transformHTML) {
+                    const context: ClipboardTransformContext = {
+                        editor: this,
+                        source: secured ? 'html' : 'unknown'
+                    };
+                    return clipboardOptions.transformHTML(secured, context);
+                }
+                return secured;
+            },
+            // Optional post-parse product hook operating on the
+            // ProseMirror slice produced by the schema parser.
+            transformPasted: (slice: PMSlice, _view: PMEditorView, asText: boolean): PMSlice => {
+                if (clipboardOptions?.transformContent) {
+                    const context: ClipboardTransformContext = {
+                        editor: this,
+                        source: asText ? 'text' : 'html'
+                    };
+                    const result: ClipboardContent = clipboardOptions.transformContent({ slice }, context);
+                    return result.slice;
+                }
+                return slice;
+            },
+            handlePaste: (view: PMEditorView, event: ClipboardEvent, slice: PMSlice): boolean => {
                 if (this.pasteHandler) {
-                    return this.pasteHandler.handlePaste(view, event) as any;
+                    return this.pasteHandler.handlePaste(view, event, slice) as any;
                 }
                 return false;
             },
@@ -448,9 +649,9 @@ export class HeadlessEditor {
             // with no clipboardData — only dataTransfer — so this path is
             // separate from handlePaste but routes into the same
             // insertImageNodes helper.
-            handleDrop: (view: PMEditorView, event: DragEvent, _slice: unknown): boolean => {
+            handleDrop: (view: PMEditorView, event: DragEvent, slice: PMSlice, _moved: boolean): boolean => {
                 if (this.pasteHandler) {
-                    return this.pasteHandler.handleDrop(view, event) as any;
+                    return this.pasteHandler.handleDrop(view, event, slice) as any;
                 }
                 return false;
             },
@@ -475,11 +676,29 @@ export class HeadlessEditor {
     }
 
     /**
-     * Fully destroys the editor in reverse bootstrap order:
-     * integration → lifecycleManager → registry → eventBus → diagnostics
-     * Subsequent calls are no-ops.
+     * Destroys the editor and releases all resources.
+     *
+     * Performs complete teardown in reverse bootstrap order:
+     * integration → lifecycleManager → serviceRegistry → eventBus → diagnostics.
+     * All event subscriptions are disposed, the DOM view is destroyed, and internal
+     * state is cleared. Subsequent calls to `destroy()` are safe no-ops.
+     *
+     * After calling `destroy()`, the editor instance becomes invalid and should not
+     * be used. A new editor must be created via `HeadlessEditor.create()`.
      *
      * @returns {void}
+     *
+     * @example
+     * ```typescript
+     * // Create and use editor
+     * const editor = HeadlessEditor.create({ schema: mySchema });
+     * editor.mount(container);
+     *
+     * // ... use editor ...
+     *
+     * // Cleanup and destroy
+     * editor.destroy();
+     * ```
      */
     public destroy(): void {
         this.aggregator.publishEditorDestroyed();
@@ -504,19 +723,20 @@ export class HeadlessEditor {
     }
 
     /**
-     * Returns the ExtensionManager if extensions were loaded.
+     * Returns the FileHandler instance for file upload operations.
      *
-     * @returns {ExtensionManager|undefined} The extension manager instance if extensions were loaded; otherwise, `undefined`.
-     */
-    public getExtensionManager(): ExtensionManager | undefined {
-        return this.extensionManager;
-    }
-
-    /**
-     * Returns the FileHandler for managing file uploads.
-     * Lazy-initializes on first access via buildViewProps().
+     * The FileHandler is lazily initialized on first access and manages the complete file lifecycle:
+     * paste/drop detection, upload ID generation, handler invocation, and event emission.
+     * This method provides low-level access for advanced use cases; most applications use
+     * `setFileUploadHandler()` instead.
      *
-     * @returns {FileHandler} The file handler instance.
+     * @returns {FileHandler} The initialized file handler instance.
+     *
+     * @example
+     * ```typescript
+     * const fileHandler = editor.getFileHandler();
+     * const uploadState = fileHandler.getUploadState(imageNodeId);
+     * ```
      */
     public getFileHandler(): FileHandler {
         // Ensure fileHandler is initialized before returning
@@ -527,47 +747,77 @@ export class HeadlessEditor {
     }
 
     /**
-     * Sets the product's file upload handler.
-     * Must be called before file operations (paste/drop) begin.
+     * Registers a file upload handler for paste and drag-drop file operations.
      *
-     * Example:
-     * ```ts
+     * The provided handler is invoked whenever files are pasted or dropped into the editor.
+     * This method must be called before file paste/drop operations begin to have any effect.
+     * Calling it multiple times replaces the previous handler.
+     *
+     * The FileUploadHandler receives a file object and metadata, and must return a Promise
+     * resolving to the uploaded file URL or resource identifier.
+     *
+     * @param {FileUploadHandler} handler - The upload handler implementation with an `upload()` method
+     * that accepts a file request and returns a Promise with the uploaded URL.
+     *
+     * @returns {void}
+     *
+     * @example
+     * ```typescript
      * import { FileUploadHandler } from '@syncfusion/ej2-headless-editor';
      *
      * const handler: FileUploadHandler = {
      *   upload: async (request) => {
      *     const formData = new FormData();
      *     formData.append('file', request.file);
-     *     const response = await fetch('/api/upload', { method: 'POST', body: formData });
-     *     return { url: response.json().url };
+     *     const response = await fetch('/api/upload', {
+     *       method: 'POST',
+     *       body: formData
+     *     });
+     *     const data = await response.json();
+     *     return { url: data.url };
      *   }
      * };
      *
      * editor.setFileUploadHandler(handler);
      * ```
-     *
-     * @param {FileUploadHandler} handler - The upload handler implementation
-     * @returns {void}
-     * @public
      */
     public setFileUploadHandler(handler: FileUploadHandler): void {
         this.getFileHandler().setUploadHandler(handler);
     }
 
     /**
-     * Subscribes to a public editor event by name.
-     * The handler receives the event payload directly — identical to the
-     * corresponding config-level callback argument.
+     * Subscribes to a public editor event.
      *
-     * Example:
-     * ```ts
-     * editor.on('contentChanged', ({ document, selection }) => { });
-     * editor.on('focus', () => { });
-     * ```
+     * Registers an event listener that fires each time the specified event is published.
+     * The handler receives the event payload directly. Event names correspond to the config-level
+     * callbacks (e.g., `'contentChanged'`, `'focus'`, `'beforePaste'`).
      *
-     * @param {string} eventName - The public event name (e.g. `'contentChanged'`).
-     * @param {Function} handler - Invoked with the event payload on each occurrence.
+     * Multiple handlers can be registered for the same event. Call `off()` to unsubscribe.
+     *
+     * @param {string} eventName - The public event name (e.g., `'contentChanged'`, `'focus'`, `'beforePaste'`).
+     * @param {Function} handler - Callback invoked with the event payload each time the event fires.
+     *
      * @returns {void}
+     *
+     * @example
+     * ```typescript
+     * // Subscribe to content changes
+     * editor.on('contentChanged', ({ document, selection }) => {
+     *   console.log('Document updated');
+     * });
+     *
+     * // Subscribe to focus event
+     * editor.on('focus', () => {
+     *   console.log('Editor focused');
+     * });
+     *
+     * // Subscribe to before-paste event
+     * editor.on('beforePaste', ({ pasteContent, preventDefault }) => {
+     *   if (containsMalicious(pasteContent)) {
+     *     preventDefault();
+     *   }
+     * });
+     * ```
      */
     public on<T>(
         eventName: string,
@@ -583,11 +833,28 @@ export class HeadlessEditor {
     }
 
     /**
-     * Removes a previously registered event handler.
+     * Unsubscribes from a previously registered event listener.
      *
-     * @param {string} eventName - The public event name to unsubscribe from.
-     * @param {Function} handler - The handler originally passed to `on`.
+     * Removes the handler that was registered via `on()`. If the handler is not found or was
+     * already unsubscribed, this method is a safe no-op.
+     *
+     * @param {string} eventName - The public event name to unsubscribe from (must match the name passed to `on()`).
+     * @param {Function} handler - The exact callback function that was passed to `on()`.
+     *
      * @returns {void}
+     *
+     * @example
+     * ```typescript
+     * const handleContentChange = (args) => console.log('Changed:', args.document);
+     *
+     * // Subscribe
+     * editor.on('contentChanged', handleContentChange);
+     *
+     * // ... later ...
+     *
+     * // Unsubscribe
+     * editor.off('contentChanged', handleContentChange);
+     * ```
      */
     public off<T>(
         eventName: string,
@@ -603,44 +870,95 @@ export class HeadlessEditor {
     // ── Command API ───────────────────────────────────────────────────────────
 
     /**
-     * Execute a command by name.
+     * Executes a command by name with optional payload.
      *
-     * @param {string} name - Registered command name (e.g. `'toggleBold'`).
-     * @param {*} [payload] - Optional payload; type is validated at runtime by the command.
-     * @returns {boolean} `true` if the command dispatched a transaction; `false` otherwise.
-     * @throws UnknownCommandError if `name` is not registered.
+     * This is the low-level untyped path. For type safety and IDE autocomplete,
+     * use `editor.commands.commandName()` instead (via the typed facade).
+     *
+     * The command's `canExecute()` is checked first. If it returns false, the command
+     * is not dispatched and this method returns false. If canExecute is true,
+     * `execute()` is called and returns true (assuming a transaction was dispatched).
+     *
+     * @param {string} name - Registered command name (e.g., `'toggleBold'`, `'setHeading'`).
+     * @param {unknown} [payload] - Optional command-specific payload object. Type validation happens at runtime within the command.
+     *
+     * @returns {boolean} `true` if the command dispatched a transaction; `false` if the command was unavailable (canExecute returned false).
+     *
+     * @throws {Error} Throws if the command name is not registered.
+     *
+     * @example
+     * ```typescript
+     * // Execute without payload
+     * editor.execute('toggleBold');
+     *
+     * // Execute with payload
+     * editor.execute('setHeading', { level: 2 });
+     * editor.execute('insertImage', { src: 'image.png', alt: 'Alt text' });
+     * ```
      */
     public execute(name: string, payload?: unknown): boolean {
         return this.manager.execute(name, payload);
     }
 
     /**
-     * Returns a `TypedCanFacade` proxy for availability checks.
+     * Returns a facade for dry-run command availability checks.
      *
-     * `editor.can().toggleBold()` evaluates `canExecute` without dispatching.
-     * A new facade instance is created per call (cheap — proxy only).
-     */
-    /**
-     * Returns a `TypedCanFacade` proxy for availability checks.
+     * Provides typed methods (`can().toggleBold()`, `can().setHeading({ level: 1 })`, etc.) that
+     * evaluate the command's `canExecute()` logic without dispatching any transaction.
+     * Useful for toolbar/menu state management and validation.
      *
-     * `editor.can().toggleBold()` evaluates `canExecute` without dispatching.
-     * A new facade instance is created per call (cheap — proxy only).
+     * A new facade instance is created per call; the cost is minimal as it wraps the command manager
+     * without extra state. Facade creation is intentionally cheap.
      *
-     * @returns {TypedCanFacade} A facade for read-only command availability checks.
+     * @returns {TypedCanFacade} A facade providing typed `canX()` methods for all registered commands.
+     *
+     * @example
+     * ```typescript
+     * // Check if bold is available
+     * if (editor.can().toggleBold()) {
+     *   // Enable bold button in toolbar
+     *   updateToolbar('bold', true);
+     * }
+     *
+     * // Check if image insertion is available
+     * if (editor.can().insertImage({ src: 'url' })) {
+     *   enableImageButton();
+     * }
+     * ```
      */
     public can(): TypedCanFacade {
         return createCanFacade(this.manager);
     }
 
     /**
-     * Returns a `TypedChain` for deferred, batched command execution.
+     * Returns a facade for building and executing chained command sequences.
      *
-     * `editor.chain().toggleBold().insertText({ text: 'x' }).run()`
-     * dispatches exactly one transaction regardless of how many steps are queued.
+     * Enables fluent API for command batching:
+     * `editor.chain().command1().command2().command3().run()`.
+     * All chained commands are collected and executed in a single atomic transaction.
      *
-     * A new `ChainBuilder` (and facade) is created per call.
+     * Terminal methods:
+     * - `.run()` — Execute the chain and apply the transaction
+     * - `.canRun()` — Check if all chained commands are available without executing
      *
-     * @returns {TypedChain} A new typed chain facade.
+     * A new ChainBuilder and facade are created per call, ensuring independent chains.
+     *
+     * @returns {TypedChain} A new typed chain facade with methods for each registered command and terminal methods.
+     *
+     * @example
+     * ```typescript
+     * // Chain multiple commands in a single transaction
+     * editor.chain()
+     *   .deleteSelection()
+     *   .toggleBold()
+     *   .insertText({ text: 'Hello' })
+     *   .run();
+     *
+     * // Check if chain is executable before running
+     * if (editor.chain().toggleBold().insertImage({ src: 'img.png' }).canRun()) {
+     *   // Safe to execute
+     * }
+     * ```
      */
     public chain(): TypedChain {
         const builder: ChainBuilder = new ChainBuilder(this.commandRegistry, this.integration);
@@ -648,14 +966,28 @@ export class HeadlessEditor {
     }
 
     /**
-     * Returns the nesting depth of the given list type at the current cursor/selection.
+     * Returns the nesting depth of the given list type at the current selection.
      *
-     * A depth of `0` indicates that the current selection is not inside a list
-     * of that type. Higher values represent deeper levels of nested lists of
-     * the same type.
+     * Measures how deeply nested the current selection is within lists of the specified type.
+     * A depth of `0` means the selection is not inside any list of that type. Depths of 1 or higher
+     * represent nesting levels (1 = direct child of list, 2 = nested list within a list, etc.).
      *
-     * @param {'ordered' | 'bullet'} listType - The logical list type to measure.
-     * @returns {number} The current list nesting depth.
+     * @param {'ordered' | 'bullet'} listType - The list type to measure: `'ordered'` (numbered lists) or `'bullet'` (bulleted lists).
+     *
+     * @returns {number} The nesting depth of the given list type at the current selection. Returns 0 if not in a list of that type.
+     *
+     * @example
+     * ```typescript
+     * // In a single-level bullet list
+     * const depth = editor.getCurrentListDepth('bullet');
+     * console.log(depth); // Output: 1
+     *
+     * // In a nested ordered list (nested within an ordered list)
+     * const nestedDepth = editor.getCurrentListDepth('ordered');
+     * console.log(nestedDepth); // Output: 2
+     * ```
+     *
+     * @hidden
      */
     public getCurrentListDepth(listType: 'ordered' | 'bullet'): number {
         return this.integration.getCurrentListDepth(listType);
@@ -664,23 +996,56 @@ export class HeadlessEditor {
     // ── Document access ───────────────────────────────────────────────────────
 
     /**
-     * Returns the current document as a pure `DocumentRoot`.
-     * No PM types appear in the return value.
-     * Throws `EditorLifecycleError` if destroyed.
+     * Returns the current document as a Syncfusion-native DocumentRoot object.
      *
-     * @returns {DocumentRoot} The current document snapshot.
+     * The returned DocumentRoot is a pure TypeScript type containing the full node tree,
+     * with all nodes having stable IDs and no ProseMirror types exposed.
+     * This snapshot reflects the current state at the time of the call.
+     *
+     * Throws `EditorLifecycleError` if the editor has been destroyed.
+     *
+     * @returns {DocumentRoot} The current document structure with all nodes, marks, and content.
+     *
+     * @throws {EditorLifecycleError} Throws if `destroy()` has been called.
+     *
+     * @example
+     * ```typescript
+     * const doc = editor.getDocument();
+     *
+     * // Traverse the node tree
+     * doc.content.forEach(node => {
+     *   console.log(`Node: ${node.type}`, node);
+     * });
+     *
+     * // Serialize to HTML
+     * const html = serializeDocumentToHTML(doc);
+     * ```
      */
     public getDocument(): DocumentRoot {
         const pmState: ReturnType<IntegrationManager['getState']> = this.integration.getState(); // throws if destroyed
-        return DocumentMapper.fromPMDoc(pmState.doc, this.idGen);
+        return DocumentMapper.fromPMDoc(pmState.doc);
     }
 
     /**
      * Returns the plain-text content of the current selection.
-     * Returns an empty string if the selection is collapsed (cursor only) or
-     * if the editor has been destroyed.
      *
-     * @returns {string} The selected text, or '' if the selection is collapsed.
+     * Extracts text from the current selection range, preserving newlines between blocks.
+     * Returns an empty string if no text is selected (selection is collapsed) or if the editor
+     * has been destroyed.
+     *
+     * @returns {string} The plain-text content of the selection, or an empty string if the selection is collapsed or the editor is destroyed.
+     *
+     * @example
+     * ```typescript
+     * // User selects "Hello World" in the editor
+     * const selectedText = editor.getSelectionText();
+     * console.log(selectedText); // Output: "Hello World"
+     *
+     * // Cursor only (no selection)
+     * if (!selectedText) {
+     *   console.log('No text selected');
+     * }
+     * ```
      */
     public getSelectionText(): string {
         try {
@@ -696,9 +1061,30 @@ export class HeadlessEditor {
     }
 
     /**
-     * Returns the current selection range.
+     * Returns the current selection range as absolute document positions.
      *
-     * @returns {{from: number, to: number, empty: boolean}} The current selection range.
+     * Provides the `from` and `to` positions (in document offset units) and an `empty` flag
+     * indicating whether the selection is a collapsed cursor or spans text.
+     *
+     * All positions are absolute offsets relative to the document root.
+     *
+     * @returns {Object} An object containing the selection range.
+     * @returns {number} .from - Start position of the selection (inclusive, 0-based offset).
+     * @returns {number} .to - End position of the selection (exclusive, 0-based offset).
+     * @returns {boolean} .empty - `true` if the selection is collapsed to a cursor position (from === to), `false` if text or nodes are selected.
+     *
+     * @example
+     * ```typescript
+     * const sel = editor.getSelection();
+     *
+     * if (sel.empty) {
+     *   console.log(`Cursor is at position ${sel.from}`);
+     * } else {
+     *   console.log(`Selected text spans from ${sel.from} to ${sel.to}`);
+     *   const length = sel.to - sel.from;
+     *   console.log(`Selection is ${length} characters long`);
+     * }
+     * ```
      */
     public getSelection(): { from: number; to: number; empty: boolean } {
         return this.integration.getState().selection as { from: number; to: number; empty: boolean };
@@ -707,19 +1093,34 @@ export class HeadlessEditor {
     // ── Selection save & restore ──────────────────────────────────────────────
 
     /**
-     * Captures the current PM selection as a PM-free SelectionSnapshot.
+     * Captures and stores the current selection as a PM-free SelectionSnapshot.
      *
-     * The snapshot is held by the editor. The next call to
-     * `editor.commands.x()`, `editor.can().x()`, `editor.execute(x)`, or
-     * any chain run/canRun will auto-apply the snapshot to the live state
-     * before the command runs. This is what makes toolbar-button clicks
-     * (which blur the editor) safe — the original range is restored
-     * transparently.
+     * Creates a persistent snapshot of the current selection (text range, node selection, or cell selection)
+     * that survives DOM events like blur. The snapshot is retained by the editor and automatically applied
+     * before the next command execution, making toolbar button clicks (which blur the editor) safe.
      *
-     * Calling `saveSelection()` again replaces the previously held snapshot.
+     * Multiple calls to `saveSelection()` replace the previously held snapshot. The snapshot is independent
+     * of any command chain or execution.
      *
-     * @returns {SelectionSnapshot} The captured snapshot.
-     * @throws EditorLifecycleError if the editor has been destroyed.
+     * This is essential for maintaining selection across focus changes in toolbar-based editors where
+     * clicking a toolbar button blurs the editor, causing focus loss and selection reset.
+     *
+     * @returns {SelectionSnapshot} A PM-free snapshot of the current selection with lifecycle tracking.
+     *
+     * @throws {EditorLifecycleError} Throws if the editor has been destroyed via `destroy()`.
+     *
+     * @example
+     * ```typescript
+     * // User has text selected
+     * const snapshot = editor.saveSelection();
+     * console.log(snapshot.status); // 'pending'
+     *
+     * // User clicks toolbar button (blurs editor)
+     * // ... selection would normally be lost ...
+     *
+     * // Next command auto-applies the snapshot
+     * editor.commands.toggleBold(); // Selection is restored before executing bold
+     * ```
      */
     public saveSelection(): SelectionSnapshot {
         if (this.isDestroyed) {
@@ -729,20 +1130,40 @@ export class HeadlessEditor {
     }
 
     /**
-     * Applies a previously captured selection snapshot to the live state.
+     * Applies a previously captured selection snapshot to the current editor state.
      *
-     * If no snapshot is provided, the most recently held snapshot is used.
-     * If an explicit snapshot is provided, it replaces the held one only on
-     * success; on failure (stale), the held snapshot is updated to the
-     * provided one's status.
+     * Restores a saved selection from a SelectionSnapshot. If no snapshot is provided,
+     * uses the most recently held snapshot from `saveSelection()`. If an explicit snapshot
+     * is provided, it updates the editor's held snapshot.
      *
-     * Restore does NOT mark the snapshot as consumed — only command
-     * execution consumes. Calling `restoreSelection` then immediately
-     * running a command is the same as a single command run.
+     * Success depends on snapshot freshness (stale snapshots may fail if document structure changed).
+     * Restore operations do NOT consume the snapshot — only command execution consumes.
+     * Calling `restoreSelection()` followed by a command is equivalent to a single command execution
+     * with automatic selection restoration.
      *
-     * @param {SelectionSnapshot} [snapshot] - Optional explicit snapshot. Defaults to the held one.
-     * @returns {boolean} `true` if the snapshot was applied; `false` if it was stale or missing.
-     * @throws EditorLifecycleError if the editor has been destroyed.
+     * @param {SelectionSnapshot} [snapshot] - Optional SelectionSnapshot to apply. If omitted, uses the most recently held snapshot.
+     *
+     * @returns {boolean} `true` if the snapshot was successfully applied; `false` if the snapshot was stale or no snapshot is available.
+     *
+     * @throws {EditorLifecycleError} Throws if the editor has been destroyed.
+     *
+     * @example
+     * ```typescript
+     * // Save selection before an async operation
+     * const snapshot = editor.saveSelection();
+     * console.log(snapshot.status); // 'pending'
+     *
+     * // Perform async work or other operations...
+     * await someAsyncWork();
+     *
+     * // Restore selection
+     * const restored = editor.restoreSelection(snapshot);
+     * if (restored) {
+     *   console.log('Selection restored successfully');
+     * } else {
+     *   console.log('Snapshot became stale, using last known position');
+     * }
+     * ```
      */
     public restoreSelection(snapshot?: SelectionSnapshot): boolean {
         if (this.isDestroyed) {
@@ -792,13 +1213,13 @@ export class HeadlessEditor {
      * horizontal rule, hard break, etc.).
      *
      * Returns null for any other selection shape (Text, Cell, Block, All).
-     * Use {@link getSelectedBlock} for block-level context; use
-     * {@link getSelectedCell} for table cells.
      *
      * The returned node includes its live DOM element (if mounted) for toolbar
      * positioning.
      *
      * @returns {SelectedNode | null} Info for the selected atom, or null.
+     *
+     * @hidden
      */
     public getSelectedNode(): SelectedNode | null {
         try {
@@ -807,35 +1228,7 @@ export class HeadlessEditor {
             return this.selectedNodeResolver.resolveSelectedNode(
                 pmState.selection,
                 pmState.doc,
-                pmView,
-                this.idGen
-            );
-        } catch {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the block-level node that encloses the current selection.
-     *
-     * For any selection shape, walks up the node tree to find the nearest
-     * ancestor with `group: 'block'` in its schema. Returns the document
-     * root as a fallback.
-     *
-     * The returned node includes its live DOM element (if mounted) for toolbar
-     * positioning.
-     *
-     * @returns {SelectedNode | null} Info for the enclosing block, or null if destroyed.
-     */
-    public getSelectedBlock(): SelectedNode | null {
-        try {
-            const pmState: PMEditorState = this.integration.getState();
-            const pmView: PMEditorView = this.integration.getView();
-            return this.selectedNodeResolver.resolveSelectedBlock(
-                pmState.selection,
-                pmState.doc,
-                pmView,
-                this.idGen
+                pmView
             );
         } catch {
             return null;
@@ -860,8 +1253,7 @@ export class HeadlessEditor {
             return this.selectedNodeResolver.resolveSelectedBlocks(
                 pmState.selection,
                 pmState.doc,
-                pmView,
-                this.idGen
+                pmView
             );
         } catch {
             return [];
@@ -879,11 +1271,13 @@ export class HeadlessEditor {
      * surfaces stay consistent.
      *
      * @returns {string} Plain text of the resolved code block, or '' if none exists / editor destroyed.
+     *
+     * @hidden
      */
     public getCodeBlockContent(): string {
         try {
             const pmState: PMEditorState = this.integration.getState();
-            return readCodeBlockContent(pmState);
+            return getCodeBlockContent(pmState);
         } catch {
             return '';
         }
@@ -898,11 +1292,13 @@ export class HeadlessEditor {
      * read the language even when Syncfusion's widget wrapper owns focus.
      *
      * @returns {string} Language of the resolved code block, or '' if none exists / editor destroyed.
+     *
+     * @hidden
      */
     public getCodeBlockLanguage(): string {
         try {
             const pmState: PMEditorState = this.integration.getState();
-            return readCodeBlockLanguage(pmState);
+            return getCodeBlockLanguage(pmState);
         } catch {
             return '';
         }
@@ -912,6 +1308,8 @@ export class HeadlessEditor {
      * Returns the currently selected image node (for NodeSelection on an image).
      *
      * @returns {SelectedNode | null} Info for the selected image, or null.
+     *
+     * @hidden
      */
     public getSelectedImage(): SelectedNode | null {
         const node: SelectedNode = this.getSelectedNode();
@@ -922,40 +1320,12 @@ export class HeadlessEditor {
     }
 
     /**
-     * Returns the currently selected table cell (for CellSelection).
-     *
-     * For multi-cell selections, returns the anchor (first) cell only.
-     * Use {@link getSelectedCells} to retrieve all selected cells.
-     *
-     * The returned cell includes its live DOM element (if mounted), row and
-     * table node references, and 0-based row/column coordinates for toolbar
-     * actions like "delete column".
-     *
-     * @returns {SelectedCell | null} Info for the anchor cell, or null.
-     */
-    public getSelectedCell(): SelectedCell | null {
-        try {
-            const pmState: PMEditorState = this.integration.getState();
-            const pmView: PMEditorView = this.integration.getView();
-            const syncDoc: DocumentRoot = this.currentDoc;
-            return this.selectedNodeResolver.resolveSelectedCell(
-                pmState.selection,
-                pmState.doc,
-                pmView,
-                this.idGen,
-                syncDoc
-            );
-        } catch {
-            return null;
-        }
-    }
-
-    /**
      * Returns all currently selected table cells (for CellSelection).
      *
      * For non-CellSelection, returns an empty array.
-     * Each cell includes its live DOM element (if mounted), row and table
-     * references, and 0-based coordinates.
+     * For a single cell (cursor or text range inside a cell) returns a
+     * one-element array for that cell. For multi-cell selections, every
+     * cell in the rectangular range is returned in row-major order.
      *
      * @returns {SelectedCell[]} Array of cell info. Empty for non-cell selections.
      */
@@ -963,12 +1333,13 @@ export class HeadlessEditor {
         try {
             const pmState: PMEditorState = this.integration.getState();
             const pmView: PMEditorView = this.integration.getView();
-            const syncDoc: DocumentRoot = this.currentDoc;
+            // Derive the sync doc from the live PM state so cell paths line
+            // up with the actual document tree the PM selection lives in.
+            const syncDoc: DocumentRoot = DocumentMapper.fromPMDoc(pmState.doc);
             return this.selectedNodeResolver.resolveSelectedCells(
                 pmState.selection,
                 pmState.doc,
                 pmView,
-                this.idGen,
                 syncDoc
             );
         } catch {
@@ -992,8 +1363,7 @@ export class HeadlessEditor {
             return this.selectedNodeResolver.resolveSelectedLeafNodes(
                 pmState.selection,
                 pmState.doc,
-                pmView,
-                this.idGen
+                pmView
             );
         } catch {
             return [];
@@ -1025,6 +1395,8 @@ export class HeadlessEditor {
      *     });
      * });
      * ```
+     *
+     * @hidden
      */
     public getActiveMarks(): Set<string> {
         try {
@@ -1057,6 +1429,8 @@ export class HeadlessEditor {
      *     linkButton.classList.add('active');
      * }
      * ```
+     *
+     * @hidden
      */
     public isMarkActive(markName: string, attrs?: Record<string, unknown>): boolean {
         const activeMarks: Set<string> = this.getActiveMarks();
@@ -1107,6 +1481,8 @@ export class HeadlessEditor {
      *     console.log('Link URL:', linkAttrs.href);
      * }
      * ```
+     *
+     * @hidden
      */
     public getMarkAttributes(markName: string): Record<string, unknown> | null {
         try {
@@ -1114,6 +1490,25 @@ export class HeadlessEditor {
             return this.activeMarksResolver.getActiveMarkAttributes(pmState, markName) as Record<string, unknown> | null;
         } catch {
             return null;
+        }
+    }
+
+    /**
+     * Returns the formatting marks and structural nodes relevant to the current selection.
+     *
+     * Marks are limited to those present at the selection start. A mark is
+     * mixed when its attributes differ or it is absent from part of the range.
+     * Structural wrapper nodes that do not represent toolbar context are omitted.
+     *
+     * @returns {SelectionContext} PM-free selection context, or an empty context
+     * when the editor is destroyed or the selection cannot be resolved.
+     */
+    public getSelectionContext(): SelectionContext {
+        try {
+            const pmState: PMEditorState = this.integration.getState();
+            return this.selectionContextResolver.resolve(pmState);
+        } catch {
+            return { marks: [], nodes: [] };
         }
     }
 
@@ -1195,14 +1590,14 @@ export class HeadlessEditor {
 
         // Empty / whitespace-only input resets to a default empty document.
         if (html.trim() === '') {
-            return this._setEmptyDocument();
+            return this.setEmptyDocument();
         }
 
         try {
-            const newRoot: DocumentRoot = parseHtmlToDocument(html, pmState.schema as PMSchema, this.idGen);
+            const newRoot: DocumentRoot = parseHtmlToDocument(html, pmState.schema as PMSchema);
             // Convert once: DocumentRoot → PM doc, taking the body content.
             const newPMDoc: PMNode = DocumentMapper.toPMDoc(newRoot, pmState.schema as PMSchema);
-            return this._replaceDocument(newPMDoc.content, false);
+            return this.replaceDocument(newPMDoc.content);
         } catch (error) {
             this.diagnostics.warn(
                 `setContent() failed to parse HTML. Existing content preserved. Error: ${String(error)}`
@@ -1218,11 +1613,11 @@ export class HeadlessEditor {
      * @returns {boolean} `true` when the transaction was dispatched.
      * @hidden
      */
-    private _setEmptyDocument(): boolean {
+    private setEmptyDocument(): boolean {
         try {
             const pmState: PMEditorState = this.integration.getState();
-            const emptyPMDoc: PMNode = DocumentMapper.toPMDoc(this._buildEmptyRoot(), pmState.schema as PMSchema);
-            return this._replaceDocument(emptyPMDoc.content, false);
+            const emptyPMDoc: PMNode = DocumentMapper.toPMDoc(this.buildEmptyRoot(), pmState.schema as PMSchema);
+            return this.replaceDocument(emptyPMDoc.content);
         } catch (error) {
             this.diagnostics.warn(
                 `setContent() failed to build the empty document. Existing content preserved. Error: ${String(error)}`
@@ -1256,9 +1651,9 @@ export class HeadlessEditor {
      * @example
      * ```typescript
      * editor.setDocument({
-     *     type: 'document', id: 'root', attrs: {}, marks: [],
+     *     type: 'document', attrs: {}, marks: [],
      *     schemaVersion: 1,
-     *     children: [{ type: 'paragraph', id: 'p1', attrs: {}, marks: [], children: [] }]
+     *     children: [{ type: 'paragraph', attrs: {}, marks: [], children: [] }]
      * });
      * ```
      */
@@ -1276,7 +1671,7 @@ export class HeadlessEditor {
             // NodeMapper throw), then hand the fragment to the shared
             // replacement primitive — no second conversion.
             const newPMDoc: PMNode = DocumentMapper.toPMDoc(doc, pmState.schema as PMSchema);
-            return this._replaceDocument(newPMDoc.content, true, doc.id);
+            return this.replaceDocument(newPMDoc.content);
         } catch (error) {
             this.diagnostics.warn(
                 `setDocument() failed to map the supplied document. Existing content preserved. Error: ${String(error)}`
@@ -1301,14 +1696,10 @@ export class HeadlessEditor {
      *
      * @param {PMFragment} newContent - The pre-converted PM content for the new
      *        document body (callers convert exactly once).
-     * @param {boolean} adoptRootId - `true` when the public caller supplied the
-     *        root itself (`setDocument`) and its identity should replace the
-     *        live root's; `false` to keep the current root id (`setContent`).
-     * @param {string} [rootId] - The new root id, applied when `adoptRootId` is set.
      * @returns {boolean} `true` when the transaction was dispatched.
      * @hidden
      */
-    private _replaceDocument(newContent: PMFragment, adoptRootId: boolean, rootId?: string): boolean {
+    private replaceDocument(newContent: PMFragment): boolean {
         try {
             const pmState: PMEditorState = this.integration.getState();
             const tr: PMTransaction = pmState.tr;
@@ -1331,12 +1722,6 @@ export class HeadlessEditor {
             // One ReplaceStep covering the full range [0, size].
             tr.replaceWith(0, pmState.doc.content.size, newContent);
 
-            // setDocument adopts the supplied root identity (create-time parity);
-            // setContent keeps the current root id.
-            if (adoptRootId && rootId !== undefined) {
-                tr.setDocAttribute('id', rootId);
-            }
-
             // Collapse the selection to the start of the new document. atStart
             // resolves a valid insertion point for every document shape
             // (including empty bodies) — a raw resolve(1) would throw on those.
@@ -1354,21 +1739,19 @@ export class HeadlessEditor {
 
     /**
      * Builds a minimal empty root for empty-input resets. The PM conversion
-     * happens in `_replaceDocument`; this only supplies the seed shape.
+     * happens in `replaceDocument`; this only supplies the seed shape.
      *
      * @returns {DocumentRoot} A single-empty-paragraph document root.
      * @hidden
      */
-    private _buildEmptyRoot(): DocumentRoot {
+    private buildEmptyRoot(): DocumentRoot {
         return {
-            id: this.idGen.generate(),
             type: 'document',
             schemaVersion: 1,
             attrs: {},
             marks: [],
             children: [
                 {
-                    id: this.idGen.generate(),
                     type: 'paragraph',
                     attrs: {},
                     marks: [],
@@ -1418,6 +1801,8 @@ export class HeadlessEditor {
      *     console.log('Image src:', imageAttrs.src);
      * }
      * ```
+     *
+     * @hidden
      */
     public getNodeAttributes(nodeName: string): Record<string, unknown> | null {
         try {
@@ -1472,7 +1857,7 @@ export class HeadlessEditor {
      * - `enableInputRules` — Update input rules enabled state
      *
      * Unsupported properties (structural, require re-init):
-     * - `document`, `content`, `extensions`, `idGenerator`, `schema`
+     * - `document`, `content`, `extensions`, `schema`
      *
      * @param {Partial<EditorConfig>} options - Configuration properties to update
      * @returns {void}

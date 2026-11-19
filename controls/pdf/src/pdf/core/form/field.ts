@@ -1,7 +1,7 @@
 import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference, _PdfObjectInformation } from './../pdf-cross-reference';
 import { PdfForm } from './form';
-import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
+import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder, PdfButtonFieldItem } from './../annotations/annotation';
 import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontStyle, _createFontStream, _encode, _getFontFromDescriptor, _decodeFontFamily, _updateDashedBorderStyle, _bytesEqual, _areArrayEqual, _toRectangle } from './../utils';
 import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType, _SignatureFlag, PdfCertificationFlag, RevocationStatus, SignatureStatus, RevocationType } from './../enumerator';
 import { PdfPage } from './../pdf-page';
@@ -16,7 +16,7 @@ import { PdfPath } from './../graphics/pdf-path';
 import { PdfAnnotationCollection } from '../annotations/annotation-collection';
 import { PdfFieldActions, PdfJavaScriptAction } from '../pdf-action';
 import { PdfSignature } from '../security/digital-signature/signature/pdf-signature';
-import { Point, Size, Rectangle, PdfColor, PdfSignatureValidationResult, TimestampInformation, RevocationResult, LtvVerificationInformation, PdfSignatureValidationOptions, PdfSignerCertificate, PdfRevocationCertificate, PdfX509CertificateProperties } from './../pdf-type';
+import { Point, Size, Rectangle, PdfColor, PdfSignatureValidationResult, TimestampInformation, RevocationResult, LtvVerificationInformation, PdfSignatureValidationOptions, PdfSignerCertificate, PdfRevocationCertificate, PdfX509CertificateProperties } from './../pdf-document-helper';
 import { _PdfCryptographicMessageSyntaxSigner } from '../security/digital-signature/signature/cryptographic-signer';
 import { _PdfX509CertificateStructure } from '../security/digital-signature/x509/x509-certificate-structure';
 import { _PdfSignedCertificate } from '../security/digital-signature/x509/x509-signed-certificate';
@@ -140,6 +140,12 @@ export abstract class PdfField {
      * @private
      */
     _visible: boolean = true;
+    /**
+     * Defines JavaScript and other field-level actions.
+     *
+     * @private
+     */
+    _actions: PdfFieldActions;
     /**
      * The page on which the field is placed.
      *
@@ -1196,6 +1202,30 @@ export abstract class PdfField {
         }
     }
     /**
+     * Gets the actions of the field. [Read-Only]
+     *
+     * @returns {PdfFieldActions} The actions.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the form field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Gets the actions of the field
+     * let actions: PdfFieldActions = field.actions;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get actions(): PdfFieldActions {
+        if (!this._actions) {
+            this._actions = new PdfFieldActions(this);
+        }
+        return this._actions;
+    }
+    /**
      * Gets the tab index of annotation in current page.
      *
      * @returns {number} tab index.
@@ -1712,7 +1742,9 @@ export abstract class PdfField {
                 const item: PdfWidgetAnnotation = this.itemAt(i);
                 if (item) {
                     const template: PdfTemplate = item.createTemplate();
-                    templates.push(template);
+                    if (template) {
+                        templates.push(template);
+                    }
                 }
             }
         } else {
@@ -1722,7 +1754,9 @@ export abstract class PdfField {
             }
             if (widget) {
                 const template: PdfTemplate = widget.createTemplate();
-                templates.push(template);
+                if (template) {
+                    templates.push(template);
+                }
             }
         }
         return templates;
@@ -2680,6 +2714,94 @@ export abstract class PdfField {
         }
     }
     /**
+     * Sets the normal appearance for a widget with complete resource and reference handling.
+     *
+     * @private
+     * @param {PdfWidgetAnnotation} widget - The target widget.
+     * @param {PdfTemplate} template - The appearance template to set.
+     * @returns {void} nothing.
+     */
+    _setNormalAppearance(widget: PdfWidgetAnnotation, template: PdfTemplate): void {
+        if (!widget || !template) {
+            return;
+        }
+        if (!widget.bounds || typeof widget.bounds.width === 'undefined' || typeof widget.bounds.height === 'undefined') {
+            return;
+        }
+        if (!widget._crossReference) {
+            return;
+        }
+        if (!template._content) {
+            return;
+        }
+        let previousNormalReference: _PdfReference;
+        let existingAppearanceDictionary: _PdfDictionary;
+        if (widget._dictionary && widget._dictionary.has('AP')) {
+            existingAppearanceDictionary = widget._dictionary.get('AP');
+            if (existingAppearanceDictionary && existingAppearanceDictionary.has('N')) {
+                previousNormalReference = existingAppearanceDictionary.getRaw('N');
+            }
+        }
+        const sourceCrossReference: _PdfCrossReference = template._crossReference;
+        const destinationCrossReference: _PdfCrossReference = widget._crossReference;
+        let destinationTemplate: PdfTemplate = template;
+        if (sourceCrossReference && destinationCrossReference && sourceCrossReference !== destinationCrossReference) {
+            try {
+                const tempExportDict: _PdfDictionary = new _PdfDictionary(sourceCrossReference);
+                if (template._content && template._content.reference) {
+                    tempExportDict.update('N', template._content);
+                } else if (template._content) {
+                    tempExportDict.update('N', template._content);
+                }
+                template._exportStream(tempExportDict, sourceCrossReference, 'N');
+                const destinationBounds: {x: number, y: number, width: number, height: number} = {
+                    x: 0, y: 0, width: widget.bounds.width, height: widget.bounds.height
+                };
+                destinationTemplate = new PdfTemplate(destinationBounds, destinationCrossReference);
+                destinationTemplate._appearance = template._appearance;
+                destinationTemplate._importStream(true, false);
+                if (!destinationTemplate._content) {
+                    destinationTemplate = template;
+                    return;
+                }
+            } catch (err) {
+                return;
+            }
+        }
+        if (destinationTemplate._pendingResources && typeof destinationTemplate._pendingResources === 'string') {
+            destinationTemplate._updatePendingResource(destinationCrossReference);
+        }
+        let appearanceDictionary: _PdfDictionary;
+        if (widget._dictionary && widget._dictionary.has('AP')) {
+            appearanceDictionary = widget._dictionary.get('AP');
+        } else {
+            appearanceDictionary = new _PdfDictionary(destinationCrossReference);
+            if (widget._dictionary) {
+                widget._dictionary.update('AP', appearanceDictionary);
+                widget._dictionary._updated = true;
+            } else {
+                if (previousNormalReference && existingAppearanceDictionary) {
+                    existingAppearanceDictionary.update('N', previousNormalReference);
+                }
+                return;
+            }
+        }
+        if (appearanceDictionary && destinationTemplate._content) {
+            _removeDuplicateReference(appearanceDictionary, destinationCrossReference, 'N');
+            const normalReference: _PdfReference = destinationCrossReference._getNextReference();
+            destinationCrossReference._cacheMap.set(normalReference, destinationTemplate._content);
+            appearanceDictionary.update('N', normalReference);
+            appearanceDictionary._updated = true;
+            if (widget._dictionary) {
+                widget._dictionary._updated = true;
+            }
+        } else {
+            if (previousNormalReference && appearanceDictionary) {
+                appearanceDictionary.update('N', previousNormalReference);
+            }
+        }
+    }
+    /**
      * Adds or replaces an appearance stream entry for the specified state key.
      *
      * @private
@@ -2897,12 +3019,6 @@ export class PdfTextBoxField extends PdfField {
      */
     _isTextChanged: boolean = false;
     /**
-     * Defines JavaScript and other field-level actions.
-     *
-     * @private
-     */
-    _actions: PdfFieldActions;
-    /**
      * Represents a text box field of the PDF document.
      *
      * @private
@@ -3045,30 +3161,6 @@ export class PdfTextBoxField extends PdfField {
         field._defaultIndex = 0;
         field._parsedItems = new Map<number, PdfWidgetAnnotation>();
         return field;
-    }
-    /**
-     * Gets the actions of the field. [Read-Only]
-     *
-     * @returns {PdfFieldActions} The actions.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access the text box field
-     * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
-     * // Get the action value from the text box field.
-     *  const PdfFieldActions: PdfFieldActions = field.actions;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get actions(): PdfFieldActions {
-        if (!this._actions) {
-            this._actions = new PdfFieldActions(this);
-        }
-        return this._actions;
     }
     /**
      * Gets the value of the text box field.
@@ -3745,7 +3837,7 @@ export class PdfTextBoxField extends PdfField {
      * @returns {void} nothing.
      */
     _createItem(bounds: Rectangle): void {
-        const widget: PdfWidgetAnnotation = new PdfWidgetAnnotation();
+        const widget: PdfButtonFieldItem = new PdfButtonFieldItem();
         widget._create(this._page, bounds, this);
         widget.textAlignment = PdfTextAlignment.left;
         this._stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
@@ -3763,7 +3855,7 @@ export class PdfTextBoxField extends PdfField {
      * @returns {void} nothing.
      */
     _doPostProcess(isFlatten: boolean = false): void {
-        if (isFlatten || this._setAppearance || this._form._setAppearance) {
+        if (isFlatten || this._setAppearance || this._form._setAppearance || this._hasNumberFormat()) {
             const count: number = this._kidsCount;
             if (this._isLoaded) {
                 if (count > 0) {
@@ -3776,7 +3868,7 @@ export class PdfTextBoxField extends PdfField {
                 } else if ((isFlatten || this._form._setAppearance || this._setAppearance) && !this._checkFieldFlag(this._dictionary)) {
                     this._postProcess(isFlatten);
                 }
-            } else if (isFlatten || this._form._setAppearance || this._setAppearance) {
+            } else if (isFlatten || this._form._setAppearance || this._setAppearance || this._hasNumberFormat()) {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfWidgetAnnotation = this.itemAt(i);
                     if (item && !this._checkFieldFlag(item._dictionary)) {
@@ -3908,6 +4000,8 @@ export class PdfTextBoxField extends PdfField {
                 const pattern: string = this._tryParseAcrobatFormFormat(script);
                 if (pattern) {
                     text = this._normalizeDateValue(this.text, pattern);
+                } else {
+                    text = this._applyNumberFormat(script, text);
                 }
             }
         }
@@ -3975,12 +4069,97 @@ export class PdfTextBoxField extends PdfField {
      * @returns {string} The normalized value.
      */
     _normalizeDateValue(textValue: string, afFormat: string): string {
-        const date: Date = this._parseUnknownDate(textValue);
-        if (date) {
-            return this._formatDateUsingAcrobatFormat(date, afFormat);
-        } else {
+        if (!textValue || !afFormat) {
             return textValue;
         }
+        if (!this._isFullDateFormat(afFormat) &&
+            this._textMatchesAcrobatFormat(textValue, afFormat)) {
+            return textValue;
+        }
+        const date: Date = this._parseUnknownDate(textValue);
+        if (date) {
+            const formatted: string = this._formatDateUsingAcrobatFormat(date, afFormat);
+            if (formatted && formatted.indexOf('undefined') < 0 &&
+                this._textMatchesAcrobatFormat(formatted, afFormat)
+            ) {
+                return formatted;
+            }
+        }
+        return textValue;
+    }
+    /**
+     * Returns whether the text is already a proper value for the Acrobat format.
+     * A proper value is painted unchanged. Anything else skips date manipulation.
+     *
+     * @private
+     * @param {string} textValue - The input text value.
+     * @param {string} afFormat - The Acrobat format pattern.
+     * @returns {boolean} True when the text matches the format exactly.
+     */
+    _textMatchesAcrobatFormat(textValue: string, afFormat: string): boolean {
+        if (!textValue || !afFormat) {
+            return false;
+        }
+        const months: string = 'jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec';
+        const tokenPattern: RegExp = /[A-Za-z]+/g;
+        let expression: string = '^';
+        let cursor: number = 0;
+        let match: RegExpExecArray = tokenPattern.exec(afFormat);
+        while (match) {
+            const token: string = match[0];
+            const tokenExpression: string = this._acrobatTokenPattern(token, months);
+            if (!tokenExpression) {
+                return false;
+            }
+            expression += this._escapeFormatLiteral(afFormat.substring(cursor, match.index));
+            expression += tokenExpression;
+            cursor = match.index + token.length;
+            match = tokenPattern.exec(afFormat);
+        }
+        expression += this._escapeFormatLiteral(afFormat.substring(cursor)) + '$';
+        return new RegExp(expression, 'i').test(textValue.trim());
+    }
+    /**
+     * Returns the source pattern for one Acrobat format token.
+     *
+     * @private
+     * @param {string} token - Acrobat format token.
+     * @param {string} months - Month-name alternatives.
+     * @returns {string} A regular-expression fragment, or empty when the token is not a format token.
+     */
+    _acrobatTokenPattern(token: string, months: string): string {
+        if (token === 'yyyy') {
+            return '\\d{4}';
+        }
+        if (token === 'yy') {
+            return '\\d{2}';
+        }
+        if (token === 'mmmm') {
+            return '(?:' + months + ')[a-z]*';
+        }
+        if (token === 'mmm') {
+            return '(?:' + months + ')[a-z]{0,6}';
+        }
+        if (token === 'mm' || token === 'dd' || token === 'HH' || token === 'hh' || token === 'MM' || token === 'ss') {
+            return '\\d{2}';
+        }
+        if (token === 'm' || token === 'd' || token === 'H' || token === 'h' || token === 'M' || token === 's') {
+            return '\\d{1,2}';
+        }
+        if (token === 'tt') {
+            return '(?:am|pm)';
+        }
+        return '';
+    }
+    /**
+     * Escapes a format literal so it is matched as text, not as an expression.
+     *
+     * @private
+     * @param {string} literal - Characters between format tokens.
+     * @returns {string} An escaped regular-expression fragment.
+     */
+    _escapeFormatLiteral(literal: string): string {
+        return literal.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
     }
     /**
      * Attempts to parse an unknown date value using multiple common date patterns.
@@ -3993,33 +4172,32 @@ export class PdfTextBoxField extends PdfField {
         let result: Date;
         if (text) {
             const normalized: string = text.trim().replace(/[.-]/g, '/');
-            const native: Date = new Date(normalized);
-            if (isNaN(native.getTime()) === false) {
-                result = native;
-            } else {
-                // Extracts year, month, day, and optional time (hours, minutes, optional seconds) from a date string formatted as YYYY/MM/DD or similar.
-                const dateRegEx: RegExp = /^(\d{1,4})\/(\d{1,2})\/(\d{1,4})$/;
-                const parts: string[] = normalized.trim().split(/\s+/);
-                const datePart: string =  parts[0];
-                let dateMatch: RegExpMatchArray;
-                if (datePart) {
-                    dateMatch = datePart.match(dateRegEx);
-                }
-                const timePart: string = parts [1];
-                if (dateMatch) {
-                    const toNumberOrZero: (value: string) => number = (value: string): number => isNaN(Number(value)) ? 0 : Number(value);
-                    const firstPart: number  = toNumberOrZero(dateMatch[1]);
-                    const secondPart: number = toNumberOrZero(dateMatch[2]);
-                    const thirdPart: number = toNumberOrZero(dateMatch[3]);
-                    let year: number;
-                    let monthIndex: number;
-                    let dayOfMonth: number;
-                    if (thirdPart > 31) {
-                        year = thirdPart;
-                        if (firstPart > 12) {
-                            dayOfMonth = firstPart;
-                            monthIndex = secondPart - 1;
-                        }
+            // Extracts year, month, day, and optional time (hours, minutes, optional seconds) from a date string formatted as YYYY/MM/DD or similar.
+            const dateRegEx: RegExp = /^(\d{1,4})\/(\d{1,2})\/(\d{1,4})$/;
+            const parts: string[] = normalized.trim().split(/\s+/);
+            const datePart: string =  parts[0];
+            let dateMatch: RegExpMatchArray;
+            if (datePart) {
+                dateMatch = datePart.match(dateRegEx);
+            }
+            const timePart: string = parts [1];
+            if (dateMatch) {
+                const toNumberOrZero: (value: string) => number = (value: string): number => isNaN(Number(value)) ? 0 : Number(value);
+                const firstPart: number  = toNumberOrZero(dateMatch[1]);
+                const secondPart: number = toNumberOrZero(dateMatch[2]);
+                const thirdPart: number = toNumberOrZero(dateMatch[3]);
+                if (thirdPart > 31) {
+                    let monthIndex: number = -1;
+                    let dayOfMonth: number = 0;
+                    if (firstPart > 12 && secondPart <= 12) {
+                        monthIndex = secondPart - 1;
+                        dayOfMonth = firstPart;
+                    } else if (firstPart <= 12) {
+                        monthIndex = firstPart - 1;
+                        dayOfMonth = secondPart;
+                    }
+                    if (monthIndex >= 0 && monthIndex <= 11 && dayOfMonth >= 1 && dayOfMonth <= 31) {
+                        const year: number = thirdPart;
                         let hours: number = 0;
                         let minutes: number = 0;
                         let seconds: number = 0;
@@ -4044,8 +4222,32 @@ export class PdfTextBoxField extends PdfField {
                     }
                 }
             }
+            if (!result) {
+                const native: Date = new Date(normalized);
+                if (isNaN(native.getTime()) === false) {
+                    result = native;
+                }
+            }
         }
         return result;
+    }
+    /**
+     * Determines whether the specified Acrobat date format represents a complete
+     * date containing day, month, and year components.
+     *
+     * @private
+     * @param {string} format - Acrobat date format string.
+     * @returns {boolean} `true` if the format contains day, month, and year
+     * components; otherwise, `false`.
+     */
+    _isFullDateFormat(format: string): boolean {
+        if (!format) {
+            return false;
+        }
+        const lower: string = format.toLowerCase();
+        return lower.indexOf('d') !== -1 &&
+            lower.indexOf('m') !== -1 &&
+            lower.indexOf('y') !== -1;
     }
     /**
      * Formats a date using an acrobat date pattern with mapped tokens.
@@ -4058,12 +4260,15 @@ export class PdfTextBoxField extends PdfField {
     _formatDateUsingAcrobatFormat(date: Date, format: string): string {
         const monthsShort: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthsLong: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        const pad: (input: number) => string = (input: number) => ('0' + input).slice(-2);
+        const pad: (input: number) => string = (input: number): string => {
+            const text: string = input.toString();
+            return text.length >= 2 ? text : '0' + text;
+        };
         const hours24: number = date.getHours();
         const hours12: number = hours24 % 12 || 12;
         const map: Map<string, string> = new Map([
             ['yyyy' , date.getFullYear().toString()],
-            ['yy', date.getFullYear().toString().slice(-2)],
+            ['yy', date.getFullYear().toString().substring(2)],
             ['mmmm', monthsLong[date.getMonth()]],
             ['mmm', monthsShort[date.getMonth()]],
             ['mm' , pad(date.getMonth() + 1)],
@@ -4095,6 +4300,55 @@ export class PdfTextBoxField extends PdfField {
      * @param {string} js - The JavaScript source.
      * @returns {string} The extracted format pattern, if any.
      */
+    _hasNumberFormat(): boolean {
+        if (this._isLoaded || !this._actions || !this._actions.format) {
+            return false;
+        }
+        const script: string = this._actions.format.script;
+        return typeof script === 'string' && /AFNumber_Format\s*\(/.test(script);
+    }
+    /**
+     * Applies an Acrobat number format defined by an `AFNumber_Format`
+     * JavaScript function call.
+     *
+     * @private
+     * @param {string} js - The JavaScript source.
+     * @param {string} value - The value to format.
+     * @returns {string} The formatted value, if formatting is applied;
+     * otherwise, the original value.
+     */
+    _applyNumberFormat(js: string, value: string): string {
+        if (typeof js !== 'string' || typeof value !== 'string' || value === '') {
+            return value;
+        }
+        const match: RegExpMatchArray = js.match(/AFNumber_Format\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(?:(['"])(.*?)\5|null)\s*,\s*(true|false|1|0)\s*\)/);
+        if (!match) {
+            return value;
+        }
+        const number: number = Number(value.replace(/,/g, ''));
+        if (isNaN(number) || !isFinite(number)) {
+            return value;
+        }
+        const decimals: number = parseInt(match[1], 10);
+        const sepStyle: number = parseInt(match[2], 10);
+        const negStyle: number = parseInt(match[3], 10);
+        const currency: string = (match[6] || '').replace(/\\u([0-9a-fA-F]{4})/g, (m: string, h: string) => String.fromCharCode(parseInt(h, 16)));
+        const prepend: boolean = match[7] === 'true' || match[7] === '1';
+        const negative: boolean = number < 0;
+        const parts: string[] = Math.abs(number).toFixed(decimals).split('.');
+        const groups: string[] = [',', '', '.', '', '\''];
+        const decimalMarks: string[] = ['.', '.', ',', ',', '.'];
+        const group: string = groups[<number>sepStyle] || '';
+        let result: string = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, group);
+        if (parts.length > 1) {
+            result += (decimalMarks[<number>sepStyle] || '.') + parts[1];
+        }
+        result = prepend ? currency + result : result + currency;
+        if (negative) {
+            result = (negStyle === 2 || negStyle === 3) ? '(' + result + ')' : '-' + result;
+        }
+        return result;
+    }
     _tryParseAcrobatFormFormat(js: string): string {
         let result: string;
         if (typeof js === 'string') {
@@ -4326,12 +4580,6 @@ export class PdfButtonField extends PdfField {
      */
     _appearance: PdfAppearance;
     /**
-     * Appearance object used to render the button.
-     *
-     * @private
-     */
-    _actions: PdfFieldActions;
-    /**
      * Represents a button field of the PDF document.
      *
      * @private
@@ -4449,30 +4697,6 @@ export class PdfButtonField extends PdfField {
                 this.highlightMode = properties.highlightMode;
             }
         }
-    }
-    /**
-     * Gets the actions of the field. [Read-Only]
-     *
-     * @returns {PdfFieldActions} The actions.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access button field
-     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
-     * // Get the action value from button field
-     * let action: PdfAction = field.actions.mouseEnter;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get actions(): PdfFieldActions {
-        if (!this._actions) {
-            this._actions = new PdfFieldActions(this);
-        }
-        return this._actions;
     }
     /**
      * Gets value of the text box field.
@@ -4639,6 +4863,59 @@ export class PdfButtonField extends PdfField {
             widget.highlightMode = value;
         } else if (!this._dictionary.has('H') || _mapHighlightMode(this._dictionary.get('H')) !== value) {
             this._dictionary.update('H', _reverseMapHighlightMode(value));
+        }
+    }
+    /**
+     * Gets the appearance of the field.
+     *
+     * @returns {PdfAppearance} The appearance of the field.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Gets the appearance from button field
+     * let appearance: PdfAppearance = field.appearance;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get appearance(): PdfAppearance {
+        if (typeof this._appearance === 'undefined') {
+            const item: PdfButtonFieldItem = this._getWidget(this._defaultIndex);
+            if (item) {
+                this._appearance = item.appearance;
+            }
+        }
+        return this._appearance;
+    }
+    /**
+     * Sets the appearance of the field.
+     *
+     * @param {PdfAppearance} value The appearance to assign to the field.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Create and assign appearance
+     * let appearance: PdfAppearance = new PdfAppearance({ x: 0, y: 0, width: 100, height: 50 }, field._crossReference);
+     * field.appearance = appearance;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set appearance(value: PdfAppearance) {
+        if (value && this._appearance !== value) {
+            const item: PdfButtonFieldItem = this._getWidget(this._defaultIndex);
+            if (item) {
+                item.appearance = value;
+                this._appearance = value;
+            }
         }
     }
     /**
@@ -4815,7 +5092,7 @@ export class PdfButtonField extends PdfField {
      * @returns {void} nothing.
      */
     _createItem(bounds: {x: number, y: number, width: number, height: number}): void {
-        const widget: PdfWidgetAnnotation = new PdfWidgetAnnotation();
+        const widget: PdfButtonFieldItem = new PdfButtonFieldItem();
         widget._create(this._page, bounds, this);
         widget.textAlignment = PdfTextAlignment.center;
         this._stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
@@ -4834,28 +5111,32 @@ export class PdfButtonField extends PdfField {
      * @returns {void} nothing.
      */
     _doPostProcess(isFlatten: boolean = false): void {
-        if (isFlatten || this._setAppearance || this._form._setAppearance) {
-            const count: number = this._kidsCount;
-            if (this._isLoaded) {
-                if (count > 0) {
-                    for (let i: number = 0; i < count; i++) {
-                        const item: PdfWidgetAnnotation = this.itemAt(i);
-                        if (item) {
-                            this._postProcess(isFlatten, item);
-                        }
-                    }
-                } else if ((isFlatten || this._form._setAppearance || this._setAppearance) && !this._checkFieldFlag(this._dictionary)) {
-                    this._postProcess(isFlatten);
-                }
-            } else if (isFlatten || this._form._setAppearance || this._setAppearance) {
+        const hasCustomAppearance: boolean = this._hasCustomWidgetAppearance();
+        if (!isFlatten && !this._setAppearance && !this._form._setAppearance && !hasCustomAppearance) {
+            return;
+        }
+        const count: number = this._kidsCount;
+        if (this._isLoaded) {
+            if (count > 0) {
                 for (let i: number = 0; i < count; i++) {
-                    const item: PdfWidgetAnnotation = this.itemAt(i);
-                    if (item && !this._checkFieldFlag(item._dictionary)) {
+                    const item: PdfButtonFieldItem = this.itemAt(i);
+                    if (item && (isFlatten || this._form._setAppearance || this._setAppearance || this._hasCustomAppearance(item))) {
+                        this._postProcess(isFlatten, item);
+                    }
+                }
+            } else if ((isFlatten || this._form._setAppearance || this._setAppearance) && !this._checkFieldFlag(this._dictionary)) {
+                this._postProcess(isFlatten);
+            }
+        } else {
+            for (let i: number = 0; i < count; i++) {
+                const item: PdfButtonFieldItem  = this.itemAt(i);
+                if (item && !this._checkFieldFlag(item._dictionary)) {
+                    if (this._hasCustomAppearance(item)) {
+                        this._postProcess(isFlatten, item);
+                    } else if (isFlatten || this._form._setAppearance || this._setAppearance) {
                         const template: PdfTemplate = this._createAppearance(item);
                         if (isFlatten) {
-                            const bounds: Rectangle = {x: item.bounds.x,
-                                y: item.bounds.y,
-                                width: template._size.width,
+                            const bounds: Rectangle = {x: item.bounds.x, y: item.bounds.y, width: template._size.width,
                                 height: template._size.height};
                             this._drawTemplate(template, item._getPage(), bounds);
                         } else {
@@ -4869,10 +5150,99 @@ export class PdfButtonField extends PdfField {
                     }
                 }
             }
-            if (isFlatten) {
-                this._dictionary._updated = false;
+        }
+        if (isFlatten) {
+            this._dictionary._updated = false;
+        }
+    }
+    /**
+     * Gets the button field item at the specified index.
+     *
+     * @param {number} index The zero-based index of the item.
+     * @returns {PdfButtonFieldItem} The button field item at the specified index.
+     *
+     * @example
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Access the first button field item
+     * let item: PdfButtonFieldItem = field.itemAt(0);
+     * // Get the appearance of the button field item
+     * let appearance: PdfAppearance = item.appearance;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public itemAt(index: number): PdfButtonFieldItem {
+        let item: PdfButtonFieldItem;
+        if (index >= 0 && index < this._kidsCount) {
+            if (this._parsedItems.has(index)) {
+                const parsedItem: PdfWidgetAnnotation = this._parsedItems.get(index);
+                if (parsedItem instanceof PdfButtonFieldItem) {
+                    item = parsedItem;
+                } else if (parsedItem && parsedItem._dictionary) {
+                    item = PdfButtonFieldItem._load(parsedItem._dictionary, this._crossReference);
+                    item._ref = parsedItem._ref;
+                    item._page = parsedItem._page;
+                    item._index = index;
+                    this._parsedItems.set(index, item);
+                }
+            } else {
+                let dictionary: _PdfDictionary;
+                const reference: _PdfReference = this._kids[<number>index];
+                if (reference && reference instanceof _PdfReference) {
+                    dictionary = this._crossReference._fetch(reference);
+                }
+                if (dictionary) {
+                    item = PdfButtonFieldItem._load(dictionary, this._crossReference);
+                    item._ref = reference;
+                    item._index = index;
+                    this._parsedItems.set(index, item);
+                }
             }
         }
+        return item;
+    }
+    /**
+     * Resolves the widget annotation for the button field by index.
+     *
+     * @private
+     * @param {number} [index=0] - The index of the widget to retrieve (default: 0 for non-grouped fields).
+     * @returns {PdfWidgetAnnotation} The widget annotation at the specified index.
+     */
+    _getWidget(index: number = this._defaultIndex): PdfButtonFieldItem {
+        return this.itemAt(index);
+    }
+    /**
+     * Determines whether the widget has a custom normal appearance.
+     *
+     * @private
+     * @param {PdfWidgetAnnotation} widget Widget annotation.
+     * @returns {boolean} True when the normal appearance template exists.
+     */
+    _hasCustomAppearance(widget: PdfButtonFieldItem): boolean {
+        return Boolean(widget && widget._hasAppearance && widget.appearance._hasNormalTemplate);
+    }
+    /**
+     * Determines whether any widget of the button field has
+     * a custom normal appearance.
+     *
+     * @private
+     * @returns {boolean} True when any widget has a custom normal appearance.
+     */
+    _hasCustomWidgetAppearance(): boolean {
+        const count: number = this._kidsCount;
+        for (let i: number = 0; i < count; i++) {
+            const item: PdfButtonFieldItem = this.itemAt(i);
+            if (item && this._hasCustomAppearance(item)) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Processes one widget to load reuse or rebuild its appearance and optionally flatten.
@@ -4884,27 +5254,30 @@ export class PdfButtonField extends PdfField {
      */
     _postProcess(isFlatten: boolean, widget ?: PdfWidgetAnnotation): void {
         let template: PdfTemplate;
-        let bounds: {x: number, y: number, width: number, height: number};
+        let bounds: Rectangle;
         const source: PdfWidgetAnnotation | PdfButtonField = widget ? widget : this;
-        if ((widget !== null && typeof widget !== 'undefined' && widget._setAppearance && widget._enableGrouping) || this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
+        const hasCustomNormal: boolean = source instanceof PdfButtonFieldItem && this._hasCustomAppearance(source);
+        if (hasCustomNormal && source instanceof PdfButtonFieldItem) {
+            template = source.appearance.normal;
+        } else if ((widget !== null && typeof widget !== 'undefined' && widget._setAppearance && widget._enableGrouping) || this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
             template = this._createAppearance(source);
         } else if (source._dictionary.has('AP')) {
             let appearanceStream: _PdfBaseStream;
-            const dictionary: _PdfDictionary = source._dictionary.get('AP');
-            if (dictionary && dictionary.has('N')) {
-                appearanceStream = dictionary.get('N');
-                const reference: _PdfReference = dictionary.getRaw('N');
-                if (reference) {
-                    appearanceStream.reference = reference;
+            const appearanceDictionary: _PdfDictionary = source._dictionary.get('AP');
+            if (appearanceDictionary && appearanceDictionary.has('N')) {
+                appearanceStream = appearanceDictionary.get('N');
+                const appearanceReference: _PdfReference = appearanceDictionary.getRaw('N');
+                if (appearanceReference) {
+                    appearanceStream.reference = appearanceReference;
                 }
                 if (appearanceStream && appearanceStream instanceof _PdfDictionary && source._dictionary.has('AS')) {
-                    const name: _PdfName = source._dictionary.get('AS');
-                    if (name && name instanceof _PdfName && appearanceStream.has(name.name)) {
-                        const reference: _PdfReference = appearanceStream.getRaw(name.name);
-                        const value: _PdfBaseStream = appearanceStream.get(name.name);
-                        if (reference && value && value instanceof _PdfBaseStream) {
-                            appearanceStream = value;
-                            appearanceStream.reference = reference;
+                    const appearanceState: _PdfName = source._dictionary.get('AS');
+                    if (appearanceState && appearanceState instanceof _PdfName && appearanceStream.has(appearanceState.name)) {
+                        const stateReference: _PdfReference = appearanceStream.getRaw(appearanceState.name);
+                        const stateStream: _PdfBaseStream = appearanceStream.get(appearanceState.name);
+                        if (stateReference && stateStream && stateStream instanceof _PdfBaseStream) {
+                            appearanceStream = stateStream;
+                            appearanceStream.reference = stateReference;
                         }
                     }
                 }
@@ -4913,10 +5286,16 @@ export class PdfButtonField extends PdfField {
                 }
             }
         }
-        if (template) {
-            if (isFlatten) {
-                const page: PdfPage = source instanceof PdfWidgetAnnotation ? source._getPage() : source.page;
-                if (page) {
+        if (!template) {
+            return;
+        }
+        if (isFlatten) {
+            const page: PdfPage = source instanceof PdfWidgetAnnotation ? source._getPage() : source.page;
+            if (page) {
+                bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size.width, height: template._size.height};
+                if (hasCustomNormal && this._isLoaded === false) {
+                    this._drawTemplate(template, page, bounds);
+                } else {
                     const graphics: PdfGraphics = page.graphics;
                     graphics.save();
                     if (page.rotation === PdfRotationAngle.angle90) {
@@ -4929,14 +5308,22 @@ export class PdfButtonField extends PdfField {
                         graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(270);
                     }
-                    bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size.width, height: template._size.height};
                     graphics.drawTemplate(template, bounds);
                     graphics.restore();
                 }
-                source._dictionary._updated = false;
-            } else {
-                this._addAppearance(source._dictionary, template, 'N');
             }
+            source._dictionary._updated = false;
+        } else if (hasCustomNormal && source instanceof PdfButtonFieldItem) {
+            this._setNormalAppearance(source, template);
+            if (!this._isLoaded) {
+                const pressed: PdfTemplate = this._createAppearance(source, true);
+                if (pressed) {
+                    this._addAppearance(source._dictionary, pressed, 'D');
+                }
+            }
+            source._dictionary._updated = true;
+        } else {
+            this._addAppearance(source._dictionary, template, 'N');
         }
     }
     /**

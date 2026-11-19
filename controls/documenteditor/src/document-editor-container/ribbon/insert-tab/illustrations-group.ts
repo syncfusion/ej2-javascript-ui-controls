@@ -7,6 +7,7 @@ import { DocumentEditorContainer } from '../../document-editor-container';
 export const IMAGE_LOCAL_ID: string = '_image_local';
 /**
  * Illustrations group implementation for Insert tab
+ *
  * @private
  */
 export class IllustrationsGroup extends RibbonGroupBase {
@@ -14,6 +15,7 @@ export class IllustrationsGroup extends RibbonGroupBase {
 
     /**
      * Constructor for IllustrationsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -35,6 +37,7 @@ export class IllustrationsGroup extends RibbonGroupBase {
 
     /**
      * Get the Ribbon items for Illustrations group
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Illustrations group
      * @private
      */
@@ -110,6 +113,7 @@ export class IllustrationsGroup extends RibbonGroupBase {
 
     /**
      * Clean up resources
+     *
      * @returns {void}
      */
     public destroy(): void {

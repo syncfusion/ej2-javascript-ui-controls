@@ -12,11 +12,13 @@ export const RESTRICT_EDITING_ID: string = '_restrict_editing';
 
 /**
  * Represents the Protect Group in Review
+ *
  * @private
  */
 export class ProtectGroup extends RibbonGroupBase {
     /**
      * Constructor for the ProtectGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -25,6 +27,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Protect
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -77,6 +80,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Handle selection in protect document dropdown
+     *
      * @param {MenuEventArgs} args - Menu event arguments
      * @returns {void}
      */
@@ -96,6 +100,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Handle rendering of protection dropdown items to show current state
+     *
      * @param {MenuEventArgs} args - Menu event arguments
      * @returns {void}
      */
@@ -118,6 +123,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Updates the read-only icon in the dropdown item
+     *
      * @param {HTMLElement} menuElement - The menu element
      * @returns {void}
      */
@@ -130,6 +136,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Toggles the selected icon state
+     *
      * @param {HTMLElement} icon - The icon element
      * @param {boolean} isSelected - Whether the item is selected
      * @returns {void}
@@ -144,6 +151,7 @@ export class ProtectGroup extends RibbonGroupBase {
 
     /**
      * Update UI based on document protection state
+     *
      * @returns {void}
      */
     public updateSelection(): void {

@@ -8,7 +8,8 @@
 
 import {
     ToolbarItem, ToolbarItemUpdate, AddToolbarItem, RemoveToolbarItem,
-    ToolbarType
+    ToolbarType,
+    BaseToolbarItem
 } from '../../richtexteditor-ui/model';
 import { L10n } from '@syncfusion/ej2-base';
 import { EditorCommandExecutor } from './editor-integration';
@@ -255,6 +256,8 @@ export class EditorToolbar {
 
 /** Minimal RichTextEditor surface needed by BaseToolbar (avoids circular import) */
 interface IRichTextEditorMinimal {
+    enable: boolean;
+    readonly: boolean;
     trigger(eventName: string, args: object): void;
     notify(eventName: string, args: object): void;
     fontColor?: FontColorModel;
@@ -268,7 +271,7 @@ export interface BaseToolbarOptions {
     /** Host element for the toolbar */
     element: HTMLElement;
     /** Initial set of toolbar items */
-    items: ToolbarItem[];
+    items: BaseToolbarItem;
     /** Toolbar layout type */
     type: ToolbarType;
     /** Narrow editor command executor interface — do not pass EditorController directly */

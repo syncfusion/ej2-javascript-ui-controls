@@ -426,7 +426,8 @@ export class TextHelper {
                     || (temp >= '\uff00' && temp <= '\uffef') // Full-width roman characters and half-width katakana
                     || (temp >= '\u4e00' && temp <= '\u9faf') //CJK unifed ideographs - Common and uncommon kanji
                     || (temp >= '\u3400' && temp <= '\u4dbf') //CJK unified ideographs Extension A - Rare kanji
-                    || (temp >= '\uac00' && temp <= '\uffef') //Korean Hangul characters
+                    || ((temp >= '\uac00' && temp <= '\uffef')
+                        && !(temp >= '\ufe70' && temp <= '\ufeff')) //Korean Hangul characters, excluding Arabic Presentation Forms (U+FE70-U+FEFF)
                     || (temp >= '\u0d80' && temp <= '\u0dff') //Sinhala characters
                     || (isWordBreak && ((temp >= '\u0590' && temp <= '\u05FF')  // Hebrew characters
                         || (temp >= '\u0400' && temp <= '\u04FF')  // Cyrillic characters
@@ -614,7 +615,7 @@ export class TextHelper {
     /**
      * @private
      */
-    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: LtrRtlTextInfo, hasRTLCharacter: LtrRtlTextInfo, isPrevLTRBidi: LtrRtlTextInfo): string[] {
+    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: LtrRtlTextInfo, hasRTLCharacter: LtrRtlTextInfo, isPrevLTRBidi: LtrRtlTextInfo, isPrevHebrewText?: LtrRtlTextInfo): string[] {
         let charTypeIndex: number = characterRangeTypes.length;
         let splittedText: string[] = [];
         if (isNullOrUndefined(text) || text === '') {
@@ -626,6 +627,9 @@ export class TextHelper {
         let rtlText: string = '';
         let wordSplitChars: string = '';
         let numberText: string = '';
+        const isHebrewText: boolean = !isNullOrUndefined(isPrevHebrewText) && isPrevHebrewText.value;
+        // A hyphen between two numbers is kept as a single unit when it follows Hebrew text.
+        const isHebrewHyphen: (separator: string) => boolean = (separator: string): boolean => isHebrewText && separator === '-';
         let hasNumberWithSeparatorPattern: boolean = !isNullOrUndefined(isPrevLTRText.value) && isPrevLTRText.value && isTextBidi && /^\d+(\.\d+)+$/.test(text);
 
         for (let i: number = 0; i < text.length; i++) {
@@ -645,6 +649,9 @@ export class TextHelper {
             } else if (this.isRTLText(text[i]) && !this.isNumber(text[i])) {
                 isPrevLTRText.value = false;
                 hasRTLCharacter.value = true;
+                if (!isNullOrUndefined(isPrevHebrewText)) {
+                    isPrevHebrewText.value = /[\u0590-\u05FF\uFB1D-\uFB4F]/.test(text[i]);
+                }
                 rtlText += text[i];
                 currentCharacterType = 1;
             } else {
@@ -704,7 +711,8 @@ export class TextHelper {
                     && characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.WordSplit
                     && (characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.Number
                         //Else handled to combine consecutive number when text bidi is false and middle word split character is not white space.
-                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi)
+                        || isHebrewHyphen(splittedText[i]))
                     && characterRangeTypes[i + charTypeIndex - 1] == characterRangeTypes[i + charTypeIndex + 1]) {
                     splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
                     splittedText.splice(i, 1);
@@ -759,7 +767,8 @@ export class TextHelper {
                     && i + charTypeIndex + 1 < characterRangeTypes.length
                     && characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.WordSplit
                     && (characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.Number
-                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi) || !isRTLLang)
+                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi) || !isRTLLang
+                        || isHebrewHyphen(splittedText[i]))
                     && characterRangeTypes[i + charTypeIndex - 1] == characterRangeTypes[i + charTypeIndex + 1]) {
                     splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
                     splittedText.splice(i, 1);
@@ -779,6 +788,7 @@ export class TextHelper {
                 }
                 //Combines the consecutive LTR and Number
                 else if (charType == CharacterRangeType.LeftToRight
+                    && !(isHebrewText && /\d-\d$/.test(splittedText[i - 1]))
                     && (characterRangeTypes[i + charTypeIndex - 1] == CharacterRangeType.Number
                         || characterRangeTypes[i + charTypeIndex - 1] == CharacterRangeType.LeftToRight)) {
                     splittedText[i - 1] = splittedText[i - 1] + splittedText[i];

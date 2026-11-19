@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-diagrams",
-	"version": "32.1.19",
+	"version": "35.1.37",
 	"description": "Feature-rich diagram control to create diagrams like flow charts, organizational charts, mind maps, and BPMN diagrams. Its rich feature set includes built-in shapes, editing, serializing, exporting, printing, overview, data binding, and automatic layouts.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -29,19 +29,7 @@
 		"gulp-sass": "^3.1.0",
 		"gulp-typescript": "^3.1.6",
 		"requirejs": "^2.3.3",
-		"typescript": "2.3.4",
-		"canteen": "^1.0.5",
-		"jasmine-ajax": "^3.3.1",
-		"jasmine-core": "^2.6.1",
-		"karma": "6.4.2",
-		"karma-chrome-launcher": "^2.2.0",
-		"karma-generic-preprocessor": "^1.1.0",
-		"karma-htmlfile-reporter": "^0.3.5",
-		"karma-jasmine": "^1.1.0",
-		"karma-jasmine-ajax": "^0.1.13",
-		"karma-requirejs": "^1.1.0",
-		"nedb": "^1.8.0",
-		"simple-odata-server": "^0.3.1"
+		"typescript": "2.3.4"
 	},
 	"keywords": [
 		"ej2",
@@ -65,8 +53,14 @@
 	},
 	"homepage": "https://www.syncfusion.com/products/javascript/diagram",
 	"scripts": {
-		"build": "gulp build",
-		"test": "gulp test"
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
 	},
 	"typings": "index.d.ts"
 }

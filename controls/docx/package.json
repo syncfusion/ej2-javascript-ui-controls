@@ -1,0 +1,56 @@
+{
+	"name": "@syncfusion/ej2-docx",
+	"version": "35.1.37",
+	"description": "The EJ2 DOCX library enables the creation, editing, and manipulation of Word documents in JavaScript.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-docx.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-docx.es5.js",
+	"typings": "index.d.ts",
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.15",
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4"
+	},
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-compression": "*",
+		"@syncfusion/ej2-office-common": "*",
+		"@syncfusion/ej2-xlsx": "*"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-docx",
+		"web-components",
+		"javascript",
+		"typescript",
+		"word",
+		"docx",
+		"ooxml",
+		"document-processing"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/docx"
+	}
+}

@@ -4,12 +4,11 @@ import { Toolbar } from '@syncfusion/ej2-navigations';
 import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableWidget, BlockWidget, HeaderFooterWidget, ChartElementBox, TableCellWidget } from '../viewer/page';
-import { WRowFormat, WCharacterFormat, SelectionSectionFormat, TextHelper, TextPosition } from '../index';
+import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableWidget, ChartElementBox } from '../viewer/page';
+import { WRowFormat, WCharacterFormat, TextPosition } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
-import { Dictionary, HeaderFooterType, RevisionType } from '../../base/index';
-import { createSpinner } from '@syncfusion/ej2-popups';
+import { Dictionary, RevisionType } from '../../base/index';
 /**
  * Track changes pane
  */
@@ -140,7 +139,7 @@ export class TrackChangesPane {
         this.renderedChanges = new Dictionary<Revision, ChangesSingleView>();
         this.trackChangeDiv = createElement('div', { className: 'e-de-tc-pane' });
         this.trackChangeDiv.appendChild(this.initPaneHeader());
-        this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto', className: !this.owner.documentEditorSettings.showHiddenMarks ? 'e-de-tc-hide-para-mark' : '' });
+        this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto', className: !this.owner.documentEditorSettings.showHiddenMarks ? 'e-de-tc-hide-para-mark' : '', attrs: {tabindex: '0'} });
         this.trackChangeDiv.appendChild(this.changesInfoDiv);
         this.noChangeDivElement = createElement('div', { styles: 'display:none;', className: 'e-de-tc-no-chng' });
         this.noChangeDivElement.textContent = this.locale.getConstant('No changes');
@@ -430,8 +429,20 @@ export class TrackChangesPane {
 
     public updatePendingChangesToView(): void {
         let revision: Revision[] = this.owner.revisions.changes.filter((item: Revision) => item.hasChanges);
+        // Revisions of a group share one change view, and rebuilding the view text covers every revision in the group.
+        // Rebuild each view once instead of once per pending revision, which is quadratic for large pastes (for example big tables).
+        const updatedViews: ChangesSingleView[] = [];
         for (let i: number = 0; i < revision.length; i++) {
+            const currentChangeView: ChangesSingleView = this.changes.get(revision[i]);
+            if (!isNullOrUndefined(currentChangeView) && updatedViews.indexOf(currentChangeView) !== -1 && revision[i].getRange().length > 0) {
+                revision[i].hasChanges = false;
+                continue;
+            }
+            const hasRange: boolean = !isNullOrUndefined(currentChangeView) && revision[i].getRange().length > 0;
             this.updateCurrentTrackChanges(revision[i], true);
+            if (hasRange) {
+                updatedViews.push(currentChangeView);
+            }
             revision[i].hasChanges = false;
         }
     }

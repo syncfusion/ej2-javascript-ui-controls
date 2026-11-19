@@ -18,6 +18,7 @@ export type EditorKeyBindingAction =
     | 'clear-format'
     | 'ordered-list'
     | 'unordered-list'
+    | 'checklist'
     | 'inlinecode'
     | 'uppercase'
     | 'lowercase'
@@ -37,14 +38,15 @@ export const DEFAULT_EDITOR_KEY_BINDINGS: EditorKeyBindingMap = {
     underline: 'ctrl+u',
     strikethrough: 'ctrl+shift+s',
     superscript: 'ctrl+shift+=',
-    uppercase: 'Ctrl+Shift+u',
-    lowercase: 'Ctrl+Shift+l',
+    uppercase: 'ctrl+shift+u',
+    lowercase: 'ctrl+shift+l',
     subscript: 'ctrl+=',
     indents: 'tab',
     outdents: 'shift+tab',
     'clear-format': 'ctrl+shift+r',
     'ordered-list': 'ctrl+shift+o',
     'unordered-list': 'ctrl+alt+o',
+    checklist: 'ctrl+shift+7',
     inlinecode: 'ctrl+e',
     'code-block': 'ctrl+shift+b'
 };

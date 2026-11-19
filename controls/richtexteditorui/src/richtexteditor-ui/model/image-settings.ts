@@ -51,11 +51,7 @@ const DEFAULT_IMAGE_DIMENSION: ImageDimensionOptions = {
 };
 
 /**
- * Configures image upload, validation, storage, display, dimensions, and
- * resize behavior in the Rich Text Editor.
- *
- * Mirrors the public contract declared in
- * `docs/spec/06.image-settings.md`.
+ * Configures the image settings of the RichTextEditor.
  */
 export class ImageSettings extends ChildProperty<ImageSettings> {
 

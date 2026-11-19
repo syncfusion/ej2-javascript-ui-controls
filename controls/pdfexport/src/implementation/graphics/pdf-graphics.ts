@@ -24,7 +24,6 @@ import { PdfStringLayouter, PdfStringLayoutResult, LineType } from './fonts/stri
 import { PdfPageLayer } from './../pages/pdf-page-layer';
 import { PdfPageBase } from './../pages/pdf-page-base';
 import { PdfPage } from './../pages/pdf-page';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { StringTokenizer } from './fonts/string-tokenizer';
 import { PdfResources } from './pdf-resources';
 import { LineInfo } from './fonts/string-layouter';
@@ -249,11 +248,6 @@ export class PdfGraphics {
      */
     private static transparencyObject : boolean = false;
     /**
-     * Stores an instance of `DictionaryProperties`.
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
-    /**
      * `last document colorspace`.
      * @hidden
      * @private
@@ -474,7 +468,6 @@ export class PdfGraphics {
             if (template == null) {
                 throw Error('ArgumentNullException-template');
             }
-
             let scaleX : number = (template.width > 0) ? size.width / template.width : 1;
             let scaleY : number = (template.height > 0) ? size.height / template.height : 1;
             let bNeedScale : boolean = !(scaleX === 1 && scaleY === 1);
@@ -653,7 +646,6 @@ export class PdfGraphics {
             this.getResources.getResources().requireProcedureSet(this.procedureSets.pdf);
         }
     }
-
     // DrawRectangle overloads
     /**
      * `Draws a rectangle` specified by a pen, a coordinate pair, a width, and a height.
@@ -1299,7 +1291,6 @@ export class PdfGraphics {
             this.pdfStreamWriter.startNextLine(0, -(vAlignShift - result.lineHeight));
         }
         this.pdfStreamWriter.endText();
-
     }
     /**
      * `Draws Ascii line`.
@@ -1560,7 +1551,6 @@ export class PdfGraphics {
                     hShift += (!this.rightToLeft(format)) ? lineIndent : 0;
                     let x1 : number = layoutRectangle.x + hShift;
                     let x2 : number = (!this.shouldJustify(lineInfo, layoutRectangle.width, format)) ? x1 + lineWidth - lineIndent : x1 + layoutRectangle.width - lineIndent;
-                    
                     if (font.underline) {
                         let y : number = underlineYOffset;
                         this.drawLine(linePen, x1, y, x2, y);
@@ -1722,7 +1712,6 @@ export class PdfGraphics {
                 this.pdfStreamWriter.setColorSpace('DeviceGray' , false);
                 this.bCSInitialized = true;
             }
-
         }
     }
     /**
@@ -1951,7 +1940,6 @@ export class PdfGraphics {
      * @param scaleX Scale factor in the x direction.
      * @param scaleY Scale factor in the y direction.
      */
-    
     public scaleTransform(scaleX : number, scaleY : number) : void {
         let matrix : PdfTransformationMatrix = new PdfTransformationMatrix();
         this.getScaleTransform(scaleX, scaleY, matrix);
@@ -2111,7 +2099,6 @@ export class PdfGraphics {
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
     }
-    
     /**
      * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
      * ```typescript
@@ -2156,7 +2143,6 @@ export class PdfGraphics {
         this.buildUpPath(pathPoints, pathTypes);
         this.drawPathHelper(pen, brush, fillMode, false);
     }
-    
     //drawArc overloads
     /**
      * `Draws the specified arc`, using its original physical size, at the location specified by a coordinate pair.
@@ -2243,7 +2229,6 @@ export class PdfGraphics {
         }
         return { i : i, p2 : p2, p3 : p3 };
     }
-
     /**
      * Checks path point type flags.
      * @private
@@ -2501,7 +2486,6 @@ export class PdfGraphicsState {
     public set textRenderingMode(value : TextRenderingMode) {
         this.internalTextRenderingMode = value;
     }
-
     // Constructors
     /**
      * `default constructor`.

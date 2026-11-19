@@ -1,4 +1,3 @@
-import { L10n } from '@syncfusion/ej2-base';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonItemModel, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 import { AltTextDialog } from './alt-text-dialog';
@@ -6,6 +5,7 @@ import { RibbonGroupBase } from '../ribbon-interfaces';
 
 /**
  * Alt Text Group implementation for Picture Format tab
+ *
  * @private
  */
 export class AltTextGroup extends RibbonGroupBase {
@@ -16,6 +16,7 @@ export class AltTextGroup extends RibbonGroupBase {
 
     /**
      * Constructor for AltTextGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -27,6 +28,7 @@ export class AltTextGroup extends RibbonGroupBase {
 
     /**
      * Get the Alt Text group configuration
+     *
      * @returns {RibbonGroupModel} - Alt Text group configuration
      * @private
      */
@@ -59,6 +61,7 @@ export class AltTextGroup extends RibbonGroupBase {
 
     /**
      * Handle Alt Text button click
+     *
      * @returns {void}
      */
     private altTextButtonClick(): void {
@@ -67,6 +70,7 @@ export class AltTextGroup extends RibbonGroupBase {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      * @private
      */

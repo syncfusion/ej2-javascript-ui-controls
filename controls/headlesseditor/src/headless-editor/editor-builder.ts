@@ -12,43 +12,44 @@
  * from src/index.ts. It exists solely to keep Editor clean and focused
  * on its public API.
  */
-import { DocumentRoot } from '../model/editor-node';
-import { IdGenerator, DefaultIdGenerator } from '../utils/id-generator';
-import { SchemaManager } from '../schema/schema-manager';
+import { DocumentRoot } from '../core/model/editor-node';
+import { SchemaManager } from '../core/schema/schema-manager';
 import { PMPlugin, PMNode } from '../pm/pm-guard';
 import { DocumentMapper } from '../pm/adapters/document-mapper';
-import { parseHtmlToDocument } from '../schema/serialization/html-content-parser';
+import { parseHtmlToDocument } from '../core/schema/serialization/html-content-parser';
 import { IntegrationManager } from '../pm/integration/integration-manager';
-import { EditorConfig } from '../model/editor-config';
+import { EditorConfig } from '../core/model/editor-config';
 import { ExtensionManager } from '../extensions/extension-manager';
 import { CompiledExtensionArtifacts, ExtensionCompiler } from '../extensions/extension-compiler';
 import { ExtensionDefinition } from '../extensions/types';
-import { EventBus } from '../events/event-bus';
-import { CommandRegistry } from '../commands/registry';
+import { EventBus } from '../core/events/event-bus';
+import { CommandRegistry } from '../core/commands/registry';
 import { HeadlessEditor } from './headless-editor';
-import { UploadStateRegistry } from '../services/upload-state-registry';
-import { createHistoryPlugin } from '../pm/plugins/undo-redo';
+import { UploadStateRegistry } from '../core/services/upload-state-registry';
+import { createHistoryPlugin } from '../extensions/undo-redo/plugins/undo-redo-plugin';
 import { selectionSyncPlugin } from '../pm/plugins/selection-sync-plugin';
 import { focusBlurPlugin } from '../pm/plugins/focus-blur-plugin';
 import { buildKeymapPlugin } from '../pm/plugins/keymap-plugin';
 import { compileInputRulesPlugin } from '../pm/plugins/input-rules-plugin';
-import { createImageUploadPlugin } from '../pm/plugins/image-upload-plugin';
+import { specialNodeDeletionPlugin } from '../pm/plugins/special-node-deletion-plugin';
+import { createImageUploadPlugin } from '../extensions/image/plugins/image-upload-plugin';
 import { FlattenedExtension } from '../extensions/types';
-import { documentExtension, textExtension, listExtension, taskListExtension, listKeymapExtension, indentOutdentExtension } from '../extensions/builtins/index';
-import { DiagnosticsService } from '../diagnostics';
-import { UndoRedoOptions } from '../extensions/builtins/undo-redo';
-import { registerInternalCommands } from '../commands/builtins/register';
-import { CommandManager } from '../commands/manager';
+import { documentExtension, textExtension, listExtension, taskListExtension, listKeymapExtension, indentOutdentExtension, collapsibleKeymapExtension, collapsibleExtension } from '../extensions/index';
+import { DiagnosticsService } from '../core/diagnostics';
+import { UndoRedoOptions } from '../extensions/undo-redo/undo-redo';
+import { registerInternalCommands } from '../core/commands/builtins/register';
+import { CommandManager } from '../core/commands/manager';
 
 /**
  * EditorBuilderOptions — internal result object returned by EditorBuilder.
  * Contains all initialized dependencies needed to construct an Editor.
  *
  * Used internally by Editor.create() only.
+ *
+ * @hidden
  */
 export interface EditorBuilderOptions {
     integration: IntegrationManager;
-    idGen: IdGenerator;
     initialDoc: DocumentRoot;
     extensionManager?: ExtensionManager;
     extensionCompiler: ExtensionCompiler;
@@ -61,10 +62,11 @@ export interface EditorBuilderOptions {
  *
  * Instead of constructing an Editor directly, it returns EditorBuilderOptions
  * so Editor.create() can invoke the constructor itself.
+ *
+ * @hidden
  */
 export class EditorBuilder {
     private readonly config: EditorConfig;
-    private idGen: IdGenerator;
     private schemaManager: SchemaManager;
     private initialDoc: DocumentRoot = null;
     private extensionManager: ExtensionManager = null;
@@ -81,7 +83,6 @@ export class EditorBuilder {
     private compiledArtifacts: CompiledExtensionArtifacts = {
         nodeSpecs: {},
         markSpecs: {},
-        globalAttributes: {},
         plugins: [],
         keyboardShortcuts: {},
         inputRules: [],
@@ -97,7 +98,6 @@ export class EditorBuilder {
 
     constructor(config: EditorConfig) {
         this.config = { ...this.defaultConfig, ...config };
-        this.idGen = config.idGenerator ?? new DefaultIdGenerator();
         this.schemaManager = new SchemaManager();
     }
 
@@ -129,14 +129,12 @@ export class EditorBuilder {
      */
     public initiate(eventBus: EventBus, commandRegistry: CommandRegistry, diagnostics: DiagnosticsService): EditorBuilderOptions {
         this.diagnostics = diagnostics;
-        this._resolveIdGenerator();
         this._initializeExtensions(commandRegistry);   // must run before _buildDOMSpecRegistry
         this.validateAndLoadSchema();
         this._resolveInitialDocument();
         this._initializeIntegration(eventBus, commandRegistry);
         return {
             integration: this.integration,
-            idGen: this.idGen,
             initialDoc: this.initialDoc,
             extensionManager: this.extensionManager,
             extensionCompiler: this.extensionCompiler,
@@ -147,16 +145,7 @@ export class EditorBuilder {
     // ── Private initialization steps ────────────────────────────────────────
 
     /**
-     * Step 1: Resolve the ID generator (already done in constructor, but explicit here).
-     *
-     * @returns {void}
-     */
-    private _resolveIdGenerator(): void {
-        this.idGen = this.config.idGenerator ?? new DefaultIdGenerator();
-    }
-
-    /**
-     * Step 2: Load and validate the schema definition.
+     * Step 1: Load and validate the schema definition.
      * Delegates to SchemaManager for structural validation.
      *
      * @returns {void}
@@ -199,10 +188,15 @@ export class EditorBuilder {
         // Auto-register listKeymapExtension to configure key actions whenever the consumer has
         // brought any list-type extension of their own.
         if (!this.hasExtensionRegistered(extensions, listKeymapExtension)
-                && (this.hasExtensionRegistered(extensions, listExtension)
-                    || this.hasExtensionRegistered(extensions, taskListExtension))) {
+            && (this.hasExtensionRegistered(extensions, listExtension)
+                || this.hasExtensionRegistered(extensions, taskListExtension))) {
             extensions.push(listKeymapExtension);
         }
+        // Auto-register collapsibleKeymapExtension whenever
+        // collapsibleExtension is present.
+        if (!this.hasExtensionRegistered(extensions, collapsibleKeymapExtension)
+            && this.hasExtensionRegistered(extensions, collapsibleExtension)
+        ) { extensions.push(collapsibleKeymapExtension); }
         if (this.config.enableTabKey && !this.hasExtensionRegistered(
             extensions,
             indentOutdentExtension)) {
@@ -303,7 +297,7 @@ export class EditorBuilder {
      *   1. history()              — undo/redo stack (MUST come first to see all transactions)
      *   2. selectionSyncPlugin    — bridges PM selection changes to EventBus
      *   3. focusBlurPlugin        — bridges DOM focus/blur events to EventBus
-     *   4. buildKeymapPlugin      — maps keyboard shortcuts to CommandManager
+     *   4. specialNodeDeletionPlugin — two-beat selection/deletion for built-in special blocks
      *   5. compileInputRulesPlugin     — text-pattern → command dispatch (NEW)
      *   6. ...artifacts.plugins        — plugins contributed by extensions (last)
      *
@@ -345,6 +339,7 @@ export class EditorBuilder {
             createHistoryPlugin(undoRedoConfig),
             selectionSyncPlugin(eventBus),
             focusBlurPlugin(eventBus),
+            specialNodeDeletionPlugin(),
             ...(this.config.enableInputRules ? [compileInputRulesPlugin(artifacts.inputRules, commandManager)] : []),
             ...artifacts.plugins
         ];
@@ -417,10 +412,7 @@ export class EditorBuilder {
      */
     private _parseHtmlContent(html: string): DocumentRoot {
         try {
-            // Delegate to the shared schema-driven HTML parsing pipeline (also
-            // used by HeadlessEditor.setContent for runtime replacement).
-            // The pipeline applies all parseDOM rules from registered extensions.
-            return parseHtmlToDocument(html, this.extensionCompiler.pmSchema, this.idGen);
+            return parseHtmlToDocument(html, this.extensionCompiler.pmSchema);
         } catch (error) {
             this.diagnostics.warn(
                 `Failed to parse config.content HTML. Falling back to empty document. Error: ${String(error)}`
@@ -437,14 +429,12 @@ export class EditorBuilder {
      */
     private _buildDefaultDocument(): DocumentRoot {
         return {
-            id: this.idGen.generate(),
             type: 'document',
             schemaVersion: 1,
             attrs: {},
             marks: [],
             children: [
                 {
-                    id: this.idGen.generate(),
                     type: 'paragraph',
                     attrs: {},
                     children: [],

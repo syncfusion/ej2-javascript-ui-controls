@@ -1,11 +1,6 @@
-import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContentControl, DocumentHelper } from '../viewer';
-import { DialogUtility } from '@syncfusion/ej2-popups';
 import { Calendar, ChangedEventArgs } from '@syncfusion/ej2-calendars';
-import { Dialog } from '@syncfusion/ej2-popups';
-import { DocumentEditorContainer } from '../../../document-editor-container';
-import { Editor } from '../editor';
 
 /**
  * The DateContent dialog is used to display calendar
@@ -36,6 +31,7 @@ export class DatePickerDialog {
      * @param {L10n} localValue - Specified the locale value.
      * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public initDateContentDialog(localValue: L10n): void {
         this.target = createElement('div');
         this.parentDiv = createElement('div');

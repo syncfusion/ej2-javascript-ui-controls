@@ -3,7 +3,7 @@
  *
  * PM boundary: allowed inside src/extensions/table/commands/.
  */
-import { PMCommandInternal, PMCommandContext } from '../../../commands/internal/pm-command-context';
+import { PMCommandInternal, PMCommandContext } from '../../../core/commands/internal/pm-command-context';
 import { wrapTransaction } from '../../../pm/adapters/editor-state-adapter';
 import { insertTable as insertTablePM } from '../../../pm/adapters/table';
 import { PMEditorState, PMTransaction } from '../../../pm/pm-guard';
@@ -12,13 +12,24 @@ import { TABLE_COMMAND_META_KEY } from '../table-constants';
 // ── Payload ───────────────────────────────────────────────────────────────────
 
 /**
- * Payload accepted by the insertTable command.
+ * Payload for the `insertTable` command.
  *
- * @property {number} rows - Number of rows in the new table (minimum 1).
- * @property {number} columns - Number of columns in the new table (minimum 1).
+ * Inserts a new table at the current cursor position. Each cell is initialized
+ * with an empty paragraph and inherits document alignment settings.
+ *
+ * @example
+ * ```typescript
+ * // Insert a 3x3 table
+ * editor.commands.insertTable({ rows: 3, columns: 3 });
+ *
+ * // Insert a table with 5 rows and 2 columns
+ * editor.commands.insertTable({ rows: 5, columns: 2 });
+ * ```
  */
 export interface InsertTablePayload {
+    /** Number of rows in the new table (minimum 1). */
     rows: number;
+    /** Number of columns in the new table (minimum 1). */
     columns: number;
 }
 

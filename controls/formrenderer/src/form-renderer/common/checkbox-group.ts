@@ -140,7 +140,7 @@ export class CheckboxGroup {
             `flex-wrap:wrap;gap:${component.gap || '2px'};width:100%;`;
         itemsContainer.setAttribute('style', itemsStyle);
 
-        const options: any[] = Array.isArray(component.options) ? component.options : ['Option 1'];
+        const options: any[] = Array.isArray(component.options) ? component.options : [];
         const selectedItems: string[] = this.getSelectedItems();
 
         options.forEach((option: any, idx: number) => {

@@ -1348,6 +1348,13 @@ export class Table {
      */
     private docClick(e: { [key: string]: object }): void {
         const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
+        const isTableSelectionTarget: boolean = !!target && !!closest(
+            target,
+            '.e-row-wrapper, .e-col-wrapper, .e-table-wrapper, .e-rte-table-resize, .e-move, .e-drag-and-drop, .e-circle'
+        );
+        if (isTableSelectionTarget) {
+            return;
+        }
         if (target && target.classList && ((this.popupObj && !closest(target, `[id='${this.popupObj.element.id}']`) ||
             (this.editdlgObj && !closest(target, '#' + this.editdlgObj.element.id)))) && !target.classList.contains('e-create-table') &&
             target.offsetParent && !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown')) {
@@ -1393,6 +1400,8 @@ export class Table {
                 if (!isToolbarClick && !isClickedOnPasteCleanupDialog) {
                     this.tableObj.removeCellSelectClasses();
                     this.tableObj.removeTableSelection();
+                    this.tableObj.removeSelectionWrappers(true);
+                    this.tableObj.removeResizeElement();
                 }
             }
             if (!Browser.isIE) {

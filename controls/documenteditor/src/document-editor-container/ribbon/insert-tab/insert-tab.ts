@@ -1,5 +1,5 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { RibbonTabModel, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
+import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
 import { PagesGroup } from './pages-group';
 import { TablesGroup } from './tables-group';
 import { IllustrationsGroup } from './illustrations-group';
@@ -8,11 +8,13 @@ import { TOCGroup } from './toc-group';
 import { BookmarksGroup } from './bookmarks-group';
 import { CommentsGroup } from './comments-group';
 import { HeaderFooterGroup } from './header-footer-group';
+import { TextBoxGroup } from './text-box-group';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 
 export const INSERT_TAB_ID: string = '_insert_tab';
 /**
  * InsertTab class - Implements the Insert tab in DocumentEditor Ribbon using individual group classes
+ *
  * @private
  */
 export class InsertTab {
@@ -28,9 +30,11 @@ export class InsertTab {
      */
     public commentsGroup: CommentsGroup;
     private headerFooterGroup: HeaderFooterGroup;
+    private textBoxGroup: TextBoxGroup;
 
     /**
      * Constructor for InsertTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -40,6 +44,7 @@ export class InsertTab {
         this.pagesGroup = new PagesGroup(container);
         this.tablesGroup = new TablesGroup(container);
         this.illustrationsGroup = new IllustrationsGroup(container);
+        this.textBoxGroup = new TextBoxGroup(container);
         this.linksGroup = new LinksGroup(container);
         this.tocGroup = new TOCGroup(container);
         this.bookmarksGroup = new BookmarksGroup(container);
@@ -49,6 +54,7 @@ export class InsertTab {
 
     /**
      * Get the Insert tab configuration
+     *
      * @returns {RibbonTabModel} - Insert tab configuration
      * @private
      */
@@ -62,6 +68,7 @@ export class InsertTab {
                 this.pagesGroup.getGroupModel(),
                 this.tablesGroup.getGroupModel(),
                 this.illustrationsGroup.getGroupModel(),
+                this.textBoxGroup.getGroupModel(),
                 this.linksGroup.getGroupModel(),
                 this.tocGroup.getGroupModel(),
                 this.bookmarksGroup.getGroupModel(),
@@ -73,6 +80,7 @@ export class InsertTab {
 
     /**
      * Update control states based on current selection
+     *
      * @returns {void}
      * @private
      */
@@ -84,6 +92,7 @@ export class InsertTab {
 
     /**
      * Clean up resources when tab is destroyed
+     *
      * @returns {void}
      * @private
      */
@@ -113,6 +122,9 @@ export class InsertTab {
         if (this.headerFooterGroup) {
             this.headerFooterGroup.destroy();
         }
+        if (this.textBoxGroup) {
+            this.textBoxGroup.destroy();
+        }
 
         // Clear all references
         this.pagesGroup = undefined;
@@ -123,6 +135,7 @@ export class InsertTab {
         this.bookmarksGroup = undefined;
         this.commentsGroup = undefined;
         this.headerFooterGroup = undefined;
+        this.textBoxGroup = undefined;
         this.container = undefined;
     }
 }

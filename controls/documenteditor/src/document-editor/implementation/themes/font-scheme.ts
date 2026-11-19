@@ -27,6 +27,7 @@ export class FontScheme {
     public set minorFontScheme(value: MajorMinorFontScheme) {
         this.minFontScheme = value;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public constructor(node?: Object) {
         this.majFontScheme = new MajorMinorFontScheme();
         this.minFontScheme = new MajorMinorFontScheme();

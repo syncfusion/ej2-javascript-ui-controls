@@ -13,7 +13,7 @@ import { _PdfX509CertificateParser } from '../x509/x509-certificate-parser';
 import { _PdfSignaturePrivateKey } from './signature-privatekey';
 import { _PdfCryptographicMessageSyntaxSigner } from './cryptographic-signer';
 import { PdfForm } from '../../../form/form';
-import { ExternalSignatureCallback, LongTermValidationCallback, PdfSignerCertificate, PdfX509CertificateProperties, Rectangle, TimestampCallback, TimestampInformation } from './../../../pdf-type';
+import { ExternalSignatureCallback, LongTermValidationCallback, PdfAuthorityInformationAccess, PdfCrlDistributionPoint, PdfSignerCertificate, PdfSubjectAlternativeName, PdfX509CertificateProperties, Rectangle, TimestampCallback, TimestampInformation } from './../../../pdf-document-helper';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { _Sha1 } from '../../encryptors/secureHash-algorithm1';
 import { _PdfRevocationList } from '../ocsp/revocation';
@@ -31,6 +31,7 @@ import { PdfTemplate } from '../../../graphics/pdf-template';
 import { PdfAppearance } from '../../../annotations/pdf-appearance';
 import { PdfFontFamily, PdfFontStyle, PdfStandardFont } from '../../../fonts/pdf-standard-font';
 import { PdfBrush, PdfGraphicsState } from '../../../graphics/pdf-graphics';
+import { _PdfSignedCertificate } from '../x509/x509-signed-certificate';
 /**
  * 'PdfSignature' class represents a digital signature used for signing a PDF document.
  *
@@ -538,11 +539,53 @@ export class PdfSignature {
             signature._certificate = certificate;
             signature._certificateInfo = {
                 issuerName: certificate._issuerName,
+                issuer: certificate._issuer,
+                issuerAttributes: certificate._issuerAttributes,
                 serialNumber: certificate._serialNumber,
+                signatureAlgorithm: certificate._signatureAlgorithm,
+                extendedKeyUsage: certificate._extendedKeyUsage ? certificate._extendedKeyUsage.slice() : [],
+                certificatePolicies: certificate._cloneCertificatePolicies(certificate._certificatePolicies),
+                keyUsage: certificate._keyUsageNames
+                    ? certificate._keyUsageNames.slice()
+                    : [],
+                sha1Thumbprint: certificate._sha1Thumbprint,
                 subjectName: certificate._subjectName,
+                subject: certificate._subject,
+                subjectAttributes: certificate._subjectAttributes,
                 validFrom: certificate._validFrom,
                 validTo: certificate._validTo,
-                version: certificate._version
+                version: certificate._version,
+                x509Data: certificate._x509Data,
+                subjectKeyIdentifier: certificate._subjectKeyIdentifier,
+                authorityKeyIdentifier: certificate._authorityKeyIdentifier,
+                subjectAlternativeNames: certificate._subjectAlternativeNames
+                    ? certificate._subjectAlternativeNames.map(
+                        (item: PdfSubjectAlternativeName):
+                        PdfSubjectAlternativeName => {
+                            return { type: item.type, value: item.value };
+                        })
+                    : [],
+                rfc822EmailAddresses: certificate._rfc822EmailAddresses
+                    ? certificate._rfc822EmailAddresses.slice()
+                    : [],
+                crlDistributionPoints: certificate._crlDistributionPoints
+                    ? certificate._crlDistributionPoints.map(
+                        (item: PdfCrlDistributionPoint):
+                        PdfCrlDistributionPoint => {
+                            return { type: item.type, value: item.value };
+                        })
+                    : [],
+                authorityInformationAccess:
+                    certificate._authorityInformationAccess
+                        ? certificate._authorityInformationAccess.map(
+                            (item: PdfAuthorityInformationAccess):
+                            PdfAuthorityInformationAccess => {
+                                return { method: item.method, uri: item.uri };
+                            })
+                        : [],
+                publicKey: certificate._publicKey,
+                sha1PublicKeyHash: certificate._sha1PublicKeyHash,
+                md5Thumbprint: certificate._md5Thumbprint
             };
             if (arg3) {
                 signature._applySignatureOptions(arg3 as PdfSignatureOptions);
@@ -627,35 +670,102 @@ export class PdfSignature {
         return this._signedDate;
     }
     /**
-     * Gets the certificate information associated with the PDF signature.
+     * Gets the signer certificate information associated with the PDF signature.
      *
      * ```typescript
-     * // Load the document
+     * // Load an existing signed PDF document
      * let document: PdfDocument = new PdfDocument(data);
-     * // Gets the first page of the document
-     * let page: PdfPage = document.getPage(0);
-     * // Access the PDF form
-     * let form: PdfForm = document.form;
-     * // Create a new signature field
-     * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
-     * // Create a new signature using PFX data and private key
-     * const sign: PdfSignature = PdfSignature.create({ cryptographicStandard: CryptographicStandard.cms, digestAlgorithm: DigestAlgorithm.sha256 }, certData, password);
-     * // Sets the signature to the field
-     * field.setSignature(sign);
-     * // Gets the certificate information of the signature
-     * const certificateInfo: PdfCertificateInformation = sign.getCertificateInformation();
-     * // Add the field into PDF form
-     * form.add(field);
-     * // Save the document
-     * document.save('output.pdf');
+     * // Get the signature field
+     * let field: PdfSignatureField =
+     *     document.form.fieldAt(0) as PdfSignatureField;
+     * // Get the digital signature
+     * let signature: PdfSignature = field.getSignature();
+     * // Get the signer certificate information
+     * let certificate: PdfCertificateInformation =
+     *     signature.getCertificateInformation();
+     * // Retrieve the signer certificate subject
+     * let subject: string = certificate.subject;
      * // Destroy the document
      * document.destroy();
      * ```
      *
-     * @returns {PdfCertificateInformation} - The certificate information.
+     * @returns {PdfCertificateInformation} The signer certificate information.
      */
-    public getCertificateInformation() : PdfCertificateInformation {
+    public getCertificateInformation(): PdfCertificateInformation {
         return this._certificateInfo;
+    }
+    /**
+     * Gets the certificates embedded in the PDF signature.
+     *
+     * ```typescript
+     * // Load an existing signed PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the signature field
+     * let field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+     * // Get the digital signature
+     * let signature: PdfSignature = field.getSignature();
+     * // Get the available certificate chain
+     * let certificates: PdfCertificateInformation[] = signature.getCertificateChain();
+     * // Get the signer certificate when the chain is available
+     * if (certificates.length > 0) {
+     *     let signer: PdfCertificateInformation = certificates[certificates.length - 1];
+     * }
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfCertificateInformation[]} The embedded certificates ordered
+     * with the highest available issuer first and the signer certificate last,
+     * or an empty array when certificate information is unavailable.
+     */
+    public getCertificateChain(): PdfCertificateInformation[] {
+        const signer: _PdfCryptographicMessageSyntaxSigner = this._signatureDictionary ?
+            this._signatureDictionary._cmsSigner : undefined;
+        if (!signer || !signer._certificates || signer._certificates.length === 0) {
+            return [];
+        }
+        const certificates: _PdfX509Certificate[] = signer._certificates.slice();
+        let current: _PdfX509Certificate = signer._getSignatureCertificate();
+        if (!current) {
+            return [];
+        }
+        const chain: _PdfX509Certificate[] = [];
+        const visited: Set<string> = new Set<string>();
+        while (current) {
+            const currentKey: string = _bytesToHex(current._getEncoded());
+            if (visited.has(currentKey)) {
+                break;
+            }
+            visited.add(currentKey);
+            chain.push(current);
+            const signed: _PdfSignedCertificate = current._structure._getSignedCertificate();
+            if (signed._issuer._equals(signed._subject)) {
+                break;
+            }
+            let parent: _PdfX509Certificate;
+            for (const candidate of certificates) {
+                const candidateKey: string = _bytesToHex(candidate._getEncoded());
+                if (candidateKey === currentKey) {
+                    continue;
+                }
+                const candidateSigned: _PdfSignedCertificate = candidate._structure._getSignedCertificate();
+                if (!signed._issuer._equals(candidateSigned._subject)) {
+                    continue;
+                }
+                try {
+                    current._verify(candidate._getPublicKey());
+                    parent = candidate;
+                    break;
+                } catch {
+                    continue;
+                }
+            }
+            current = parent;
+        }
+        chain.reverse();
+        return chain.map((certificate: _PdfX509Certificate): PdfCertificateInformation => {
+            return this._getCertificateInformation(certificate);
+        });
     }
     /**
      * Gets the options for configuring a digital signature in a PDF document.
@@ -1205,6 +1315,74 @@ export class PdfSignature {
         return Promise.resolve(false);
     }
     /**
+     * Converts an internal X.509 certificate to public certificate information.
+     *
+     * @private
+     * @param {_PdfX509Certificate} certificate The internal X.509 certificate.
+     * @returns {PdfCertificateInformation} The extracted public certificate information.
+     */
+    private _getCertificateInformation(certificate: _PdfX509Certificate): PdfCertificateInformation {
+        const value: _PdfCertificate = new _PdfCertificate(certificate);
+        return {
+            issuerName: value._issuerName,
+            issuer: value._issuer,
+            issuerAttributes: value._issuerAttributes,
+            serialNumber: value._serialNumber
+                ? value._serialNumber.slice()
+                : undefined,
+            subjectName: value._subjectName,
+            subject: value._subject,
+            subjectAttributes: value._subjectAttributes,
+            validFrom: value._validFrom,
+            validTo: value._validTo,
+            version: value._version,
+            signatureAlgorithm: value._signatureAlgorithm,
+            extendedKeyUsage: value._extendedKeyUsage ? value._extendedKeyUsage.slice() : [],
+            certificatePolicies: value._cloneCertificatePolicies(value._certificatePolicies),
+            keyUsage: value._keyUsageNames ? value._keyUsageNames.slice() : [],
+            sha1Thumbprint: value._sha1Thumbprint,
+            x509Data: value._x509Data,
+            subjectKeyIdentifier: value._subjectKeyIdentifier,
+            authorityKeyIdentifier: value._authorityKeyIdentifier,
+            subjectAlternativeNames: value._subjectAlternativeNames
+                ? value._subjectAlternativeNames.map(
+                    (item: PdfSubjectAlternativeName):
+                    PdfSubjectAlternativeName => {
+                        return {
+                            type: item.type,
+                            value: item.value
+                        };
+                    })
+                : [],
+            rfc822EmailAddresses: value._rfc822EmailAddresses
+                ? value._rfc822EmailAddresses.slice()
+                : [],
+            crlDistributionPoints: value._crlDistributionPoints
+                ? value._crlDistributionPoints.map(
+                    (item: PdfCrlDistributionPoint):
+                    PdfCrlDistributionPoint => {
+                        return {
+                            type: item.type,
+                            value: item.value
+                        };
+                    })
+                : [],
+            authorityInformationAccess: value._authorityInformationAccess
+                ? value._authorityInformationAccess.map(
+                    (item: PdfAuthorityInformationAccess):
+                    PdfAuthorityInformationAccess => {
+                        return {
+                            method: item.method,
+                            uri: item.uri
+                        };
+                    })
+                : [],
+            publicKey: value._publicKey,
+            sha1PublicKeyHash: value._sha1PublicKeyHash,
+            md5Thumbprint: value._md5Thumbprint
+        };
+    }
+    /**
      * Indicates whether the signature has a validation appearance.
      *
      * @private
@@ -1538,11 +1716,54 @@ export class PdfSignature {
                     this._certificate = certificate;
                     this._certificateInfo = {
                         issuerName: certificate._issuerName,
+                        issuer: certificate._issuer,
+                        issuerAttributes: certificate._issuerAttributes,
                         serialNumber: certificate._serialNumber,
+                        signatureAlgorithm: certificate._signatureAlgorithm,
+                        extendedKeyUsage: certificate._extendedKeyUsage
+                            ? certificate._extendedKeyUsage.slice() : [],
+                        certificatePolicies: certificate._cloneCertificatePolicies(certificate._certificatePolicies),
+                        keyUsage: certificate._keyUsageNames
+                            ? certificate._keyUsageNames.slice()
+                            : [],
+                        sha1Thumbprint: certificate._sha1Thumbprint,
+                        x509Data: certificate._x509Data,
                         subjectName: certificate._subjectName,
+                        subject: certificate._subject,
+                        subjectAttributes: certificate._subjectAttributes,
                         validFrom: certificate._validFrom,
                         validTo: certificate._validTo,
-                        version: certificate._version
+                        version: certificate._version,
+                        subjectKeyIdentifier: certificate._subjectKeyIdentifier,
+                        authorityKeyIdentifier: certificate._authorityKeyIdentifier,
+                        subjectAlternativeNames: certificate._subjectAlternativeNames
+                            ? certificate._subjectAlternativeNames.map(
+                                (item: PdfSubjectAlternativeName):
+                                PdfSubjectAlternativeName => {
+                                    return { type: item.type, value: item.value };
+                                })
+                            : [],
+                        rfc822EmailAddresses: certificate._rfc822EmailAddresses
+                            ? certificate._rfc822EmailAddresses.slice()
+                            : [],
+                        crlDistributionPoints: certificate._crlDistributionPoints
+                            ? certificate._crlDistributionPoints.map(
+                                (item: PdfCrlDistributionPoint):
+                                PdfCrlDistributionPoint => {
+                                    return { type: item.type, value: item.value };
+                                })
+                            : [],
+                        authorityInformationAccess:
+                            certificate._authorityInformationAccess
+                                ? certificate._authorityInformationAccess.map(
+                                    (item: PdfAuthorityInformationAccess):
+                                    PdfAuthorityInformationAccess => {
+                                        return { method: item.method, uri: item.uri };
+                                    })
+                                : [],
+                        publicKey: certificate._publicKey,
+                        sha1PublicKeyHash: certificate._sha1PublicKeyHash,
+                        md5Thumbprint: certificate._md5Thumbprint
                     };
                 }
             }

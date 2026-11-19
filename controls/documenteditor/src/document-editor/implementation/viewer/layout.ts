@@ -164,6 +164,7 @@ export class Layout {
     private hasFloatingElement: boolean = false;
     private isFootNoteLayoutStart: boolean = false;
     public wrapPosition: WrapPosition[] = [];
+    private isRtlShapeWrapAtStart: boolean = false;
     private shiftedFloatingItemsFromTable: any = [];
     public isDocumentContainsRtl: boolean = false;
     /**
@@ -445,7 +446,6 @@ export class Layout {
                     if (!isNullOrUndefined(lastpage) && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1]) && lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].childWidgets.length === 0 && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget)) {
                         bodyWidget = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget as BodyWidget;
                     }
-                    /* eslint-disable-next-line max-len */
                     // If page break next para is section last para and it is empty then ms word will layout in the section break in previous para. So checking the next para into existing behaviour.
                     if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget)) {
                         let lastChild: ParagraphWidget = bodyWidget.lastChild as ParagraphWidget;
@@ -1314,7 +1314,28 @@ export class Layout {
             maxCellHeight = 0;
         }
     }
+    /**
+     * @private
+     */
     public layoutHeaderFooter(section: BodyWidget, viewer: PageLayoutViewer, page: Page): void {
+        // 1050670 — isolate the HF pass: body counters accumulated so far are
+        // snapshotted; HF layout runs on a throw-away dictionary so it can never
+        // seed/increment stale values into the body pass (and vice versa).
+        const savedLists = this.documentHelper.renderedLists;
+        const savedOverrides = this.documentHelper.renderedLevelOverrides;
+        this.documentHelper.renderedLists = new Dictionary<WAbstractList, Dictionary<number, ListCounterInfo>>();
+        this.documentHelper.renderedLevelOverrides = [];
+        try {
+            this.layoutHeaderFooterInternal(section, viewer, page);
+        } finally {
+            this.documentHelper.renderedLists = savedLists;
+            this.documentHelper.renderedLevelOverrides = savedOverrides;
+        }
+    }
+    /**
+     * @private
+     */
+    public layoutHeaderFooterInternal(section: BodyWidget, viewer: PageLayoutViewer, page: Page): void {
         //Header layout
         let headerFooterWidget: HeaderFooterWidget = viewer.getCurrentPageHeaderFooter(section, true);
         if (headerFooterWidget) {
@@ -1368,7 +1389,12 @@ export class Layout {
             this.skip2003 = false;
         }
     }
-    private shiftItemsForVerticalAlignment(headerWidget: HeaderFooterWidget): HeaderFooterWidget {
+    /**
+     * @private
+     * @param {HeaderFooterWidget} headerWidget - header widget whose floating items are adjusted.
+     * @returns {HeaderFooterWidget} - the adjusted header widget.
+     */
+    public shiftItemsForVerticalAlignment(headerWidget: HeaderFooterWidget): HeaderFooterWidget {
         let floatingElements: (ShapeBase | TableWidget)[] = headerWidget.floatingElements;
         for (let i: number = 0; i < floatingElements.length; i++) {
             let floatingItem: ShapeBase = floatingElements[i] as ShapeBase;
@@ -1388,6 +1414,16 @@ export class Layout {
                                 block.y = block.y + diff;
                             }
                         }
+                    }
+                }
+            }
+            else if (verticalOrigin === 'TopMargin' && floatingItem.verticalAlignment === 'Bottom' && !paragraph.isInsideTable) {
+                // When the header content grows beyond the top margin, the bottom aligned item should be placed at the bottom of the header.
+                const yPosition: number = headerWidget.y + headerWidget.height - floatingItem.height;
+                if (yPosition > floatingItem.y) {
+                    floatingItem.y = yPosition;
+                    if (floatingItem instanceof ShapeElementBox) {
+                        this.updateChildLocationForCellOrShape(floatingItem.y + floatingItem.textFrame.marginTop, floatingItem);
                     }
                 }
             }
@@ -1769,6 +1805,10 @@ export class Layout {
             const tableRect: Rect = new Rect(table.x, table.y, table.width, table.height);
             table.bodyWidget.floatingElements.forEach((shape: ShapeElementBox | TableWidget) => {
                 if (shape instanceof ShapeElementBox && !shape.paragraph.isInsideTable) {
+                    if (this.isRelayout && (shape.verticalOrigin === 'Paragraph' || shape.verticalOrigin === 'Line')
+                        && this.viewer.documentHelper.selection.isExistAfter(shape.paragraph, table)) {
+                        return;
+                    }
                     const shapeRect: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
                     const considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
                     if (considerShape && tableRect.isIntersecting(shapeRect)) {
@@ -1836,8 +1876,10 @@ export class Layout {
                  : new Rect(table.x, table.y, table.getTableCellWidth(), table.height);
                 while (preivousBlock) {
                     if (preivousBlock instanceof ParagraphWidget) {
-                        let blockRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
-                        if (tableRect.isTableIntersecting(blockRect) && 
+                        const afterSpace = HelperMethods.convertPointToPixel(preivousBlock.paragraphFormat.afterSpacing);
+                        const lineSpace = preivousBlock.paragraphFormat.lineSpacing > 0 ? HelperMethods.convertPointToPixel(preivousBlock.paragraphFormat.lineSpacing) : 0;
+                        let blockRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height - (afterSpace + lineSpace));
+                        if (tableRect.isTableIntersecting(blockRect) &&
                             this.startOverlapWidget !== preivousBlock) {
                             this.startOverlapWidget = preivousBlock;
                             this.endOverlapWidget = block;
@@ -1856,11 +1898,35 @@ export class Layout {
                 }
             }
             if (this.startOverlapWidget) {
-                this.isRelayoutOverlap = true;
-                this.skipRelayoutOverlap = true;
-                this.layoutStartEndBlocks(this.startOverlapWidget, block);
-                this.isRelayoutOverlap = false;
-                this.skipRelayoutOverlap = false;
+                let skipOverlapRelayout: boolean = false;
+                // After re-laying out the overlapping paragraphs, validate the floating table position.
+                // For floating tables with "Around" text wrapping, check if the table + its wrapping distances
+                // (distanceTop, distanceBottom) fit on the current page after paragraph relayout.
+                // If the table with its bottom distance exceeds page boundary, move it to the next page.
+                if (block instanceof TableWidget && block.wrapTextAround && !block.isInsideTable) {
+                    let distanceBottom: number = block.positioning ? block.positioning.distanceBottom : 0;
+                    let distanceTop: number = block.positioning ? block.positioning.distanceTop : 0;
+                    let tableBottomWithDistance: number = block.y + block.height + distanceBottom + distanceTop;
+                    if (tableBottomWithDistance > this.viewer.clientArea.bottom) {
+                        this.moveBlocksToNextPage(block.previousRenderedWidget as BlockWidget);
+                        this.reLayoutTable(block);
+                        skipOverlapRelayout = true;
+                    }
+                }
+                if (!skipOverlapRelayout) {
+                    this.isRelayoutOverlap = true;
+                    this.skipRelayoutOverlap = true;
+                    const isInCellParagraph: boolean = block instanceof ParagraphWidget && block.isInsideTable;
+                    if (isInCellParagraph) {
+                        this.viewer.updateClientAreaForBlock(block, false);
+                    }
+                    this.layoutStartEndBlocks(this.startOverlapWidget, block);
+                    if (isInCellParagraph) {
+                        this.viewer.updateClientAreaForBlock(block, true);
+                    }
+                    this.isRelayoutOverlap = false;
+                    this.skipRelayoutOverlap = false;
+                }
             }
             this.startOverlapWidget = undefined;
             this.endOverlapWidget = undefined;
@@ -2017,7 +2083,6 @@ export class Layout {
             this.isRelayoutFootnote = false;
             let index: number = 0;
             //        this.isfoot = true;
-            /* eslint-disable-next-line max-len */
             if (this.viewer instanceof PageLayoutViewer && footnote.bodyWidgets.length > 0 && ((footnote.footNoteType === 'Footnote' && footnote.sectionFormat.columns.length > 1) || (footnote.footNoteType === 'Endnote' && footnote.bodyWidgets[0].sectionFormat.columns.length > 1))) {
                 if (this.isLayoutWhole) {
                     this.updateColumnIndex(footnote.bodyWidgets[0], false);
@@ -2279,6 +2344,7 @@ export class Layout {
         let line: LineWidget = lineIndex < paragraph.childWidgets.length ?
             paragraph.childWidgets[lineIndex] as LineWidget : undefined;
         const finalizeParagraph = (): BlockWidget => {
+            this.normalizeBookmarkEndForParagraph(paragraph);
             this.updateWidgetToPage(this.viewer, paragraph);
             paragraph.isLayouted = true;
             paragraph.isFieldCodeBlock = false;
@@ -2354,6 +2420,82 @@ export class Layout {
         }
     }
     
+    private normalizeBookmarkEndForParagraph(paragraph: ParagraphWidget): void {
+        if (isNullOrUndefined(paragraph) || isNullOrUndefined(paragraph.childWidgets) || paragraph.childWidgets.length === 0) {
+            return;
+        }
+        const firstLine: LineWidget = paragraph.childWidgets[0] as LineWidget;
+        if (isNullOrUndefined(firstLine) || isNullOrUndefined(firstLine.children) || firstLine.children.length === 0) {
+            return;
+        }
+        const bookmarkEnd: ElementBox = firstLine.children[0];
+        if (!(bookmarkEnd instanceof BookmarkElementBox) || bookmarkEnd.bookmarkType !== 1 || !isNullOrUndefined(bookmarkEnd.properties)) {
+            return;
+        }
+        if (isNullOrUndefined(bookmarkEnd.line) || isNullOrUndefined(bookmarkEnd.line.paragraph)) {
+            return;
+        }
+        if (firstLine.children.indexOf(bookmarkEnd) == -1 || firstLine.children.indexOf(bookmarkEnd) !== 0) {
+            return;
+        }
+        if(HelperMethods.startsWith(bookmarkEnd.name, '_')){
+            return
+        }
+        // While a paragraph is being split, the bookmark start is moved to a new paragraph that is not yet laid out in a page.
+        // The end marker must stay with its start in that case.
+        const bookmarkStart: BookmarkElementBox = bookmarkEnd.reference;
+        if (!isNullOrUndefined(bookmarkStart) && !isNullOrUndefined(bookmarkStart.line) && !isNullOrUndefined(bookmarkStart.line.paragraph)) {
+            const startParagraph: ParagraphWidget = bookmarkStart.line.paragraph;
+            if (startParagraph !== bookmarkEnd.line.paragraph && (isNullOrUndefined(startParagraph.bodyWidget)
+                || isNullOrUndefined(startParagraph.bodyWidget.page))) {
+                return;
+            }
+        }
+        const currentParagraph: ParagraphWidget = bookmarkEnd.line.paragraph;
+        const previousBlock: BlockWidget = currentParagraph.previousRenderedWidget as BlockWidget;
+        if (isNullOrUndefined(previousBlock)) {
+            return;
+        }
+        let targetParagraph: ParagraphWidget;
+        let property: string;
+        if (previousBlock instanceof TableWidget) {
+            targetParagraph = this.documentHelper.getLastParagraphInLastCell(previousBlock as TableWidget);
+            property = 'isAfterRowMark';
+        } else if (previousBlock instanceof ParagraphWidget) {
+            targetParagraph = previousBlock as ParagraphWidget;
+            property = 'isAfterParagraphMark';
+        }
+        if (isNullOrUndefined(targetParagraph)) {
+            return;
+        }
+        const targetLine: LineWidget = targetParagraph.lastChild as LineWidget;
+        if (isNullOrUndefined(targetLine)) {
+            return;
+        }
+        const sourceLine: LineWidget = bookmarkEnd.line;
+        const sourceIndex: number = sourceLine.children.indexOf(bookmarkEnd);
+        if (sourceIndex === -1) {
+            return;
+        }
+        if (!isNullOrUndefined(bookmarkEnd.margin) && bookmarkEnd.margin.left > 0) {
+            const bookmarkMarginLeft: number = bookmarkEnd.margin.left;
+            if (sourceIndex + 1 < sourceLine.children.length) {
+                const nextElement: ElementBox = sourceLine.children[sourceIndex + 1];
+                if (!isNullOrUndefined(nextElement)) {
+                    if (isNullOrUndefined(nextElement.margin)) {
+                        nextElement.margin = new Margin(0, 0, 0, 0);
+                    }
+                    nextElement.margin.left = bookmarkMarginLeft;
+                }
+            }
+            bookmarkEnd.margin.left = 0;
+        }
+        sourceLine.children.splice(sourceIndex, 1);
+        targetLine.children.push(bookmarkEnd);
+        bookmarkEnd.line = targetLine;
+        bookmarkEnd.properties = {};
+        bookmarkEnd.properties = property === 'isAfterRowMark' ? { isAfterRowMark: true } : { isAfterParagraphMark: true };
+    }
     private checkIsFieldParagraph(paragraph: ParagraphWidget): boolean {
         if (isNullOrUndefined(paragraph.childWidgets) || paragraph.childWidgets.length === 0) {
             return false;
@@ -2396,9 +2538,6 @@ export class Layout {
         });
     }
     private layoutShape(element: ShapeBase, isPaste?: boolean): void {
-        if (element instanceof ShapeElementBox && element.isHorizontalRule) {
-            return;
-        }
         if (element instanceof GroupShapeElementBox && element.childWidgets && element.childWidgets.length <=0) {
             return;
         }
@@ -2532,6 +2671,11 @@ export class Layout {
                 const blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
                 for (let j: number = 0; j < blocks.length; j++) {
                     const block: BlockWidget = blocks[j];
+                    if (block instanceof ParagraphWidget) {
+                        this.linkFieldInParagraph(block);
+                    } else if (block instanceof TableWidget) {
+                        this.linkFieldInTable(block);
+                    }
                     this.viewer.updateClientAreaForBlock(block, true);
                     if (block instanceof TableWidget) {
                         this.clearTableWidget(block, true, true);
@@ -2552,8 +2696,14 @@ export class Layout {
             xPosition = shape.leftMargin - parent.coordinateXOrigin;
             YPosition = shape.topMargin - parent.coordinateYOrigin;
         } else {
-            xPosition = shape.shapeX - parent.shapeX;
-            YPosition = shape.shapeY - parent.shapeY;
+            if (shape instanceof GroupShapeElementBox) {
+                xPosition = shape.offsetXValue - parent.shapeX;
+                YPosition = shape.offsetYValue - parent.shapeY;
+            }
+            else {
+                xPosition = shape.shapeX - parent.shapeX;
+                YPosition = shape.shapeY - parent.shapeY;
+            }
         }
         parent.extentXValue = parent.is2007Shape ? this.getExtentXValue(parent) : parent.extentXValue;
         parent.extentYValue = parent.is2007Shape ? this.getExtentYValue(parent) : parent.extentYValue;
@@ -2563,10 +2713,6 @@ export class Layout {
         shape.y = parent.y + (YPosition * heightFact);
         shape.height = shape.shapeHeight * heightFact;
         shape.width = shape.shapeWidth * widthFact;
-        if (shape instanceof GroupShapeElementBox && shape.shapeX <= 0) {
-            shape.x += (shape.offsetXValue * widthFact);
-            shape.y += (shape.offsetYValue * heightFact);
-        }
     }
     private updateNestedShapePosition(parent: GroupShapeElementBox): void {
         for (let i = 0; i < parent.childWidgets.length; i++) {
@@ -2635,6 +2781,7 @@ export class Layout {
         }
         while (nextLine instanceof LineWidget) {
             if (nextLine.children.length > 0) {
+                nextLine.layoutedElements = undefined;
                 let element: ElementBox = nextLine.children[0];
                 let isNextElement: boolean = true;
                 while (isNextElement) {
@@ -2797,7 +2944,7 @@ export class Layout {
     }
     /* eslint-disable  */
     private layoutElement(element: ElementBox, paragraph: ParagraphWidget, isEmptyField?: boolean): void {
-        if (((element.isColumnBreak || element.isPageBreak) && paragraph.isInHeaderFooter) || (element instanceof ShapeElementBox && element.isHorizontalRule)) {
+        if (((element.isColumnBreak || element.isPageBreak) && paragraph.isInHeaderFooter)) {
             return;
         }
         let line: LineWidget = element.line;
@@ -2867,8 +3014,13 @@ export class Layout {
                     }
                 }
             if (element instanceof BookmarkElementBox) {
-                if (element.bookmarkType === 0 && !this.documentHelper.bookmarks.containsKey(element.name)) {
-                    this.documentHelper.bookmarks.add(element.name, element);
+                if (element.bookmarkType === 0) {
+                    if (!this.isInitialLoad && !isNullOrUndefined(this.viewer.owner.editorModule)
+                        && !isNullOrUndefined(this.documentHelper.selection)) {
+                        this.viewer.owner.editorModule.updateBookmarkCollection(element.name, element);
+                    } else if (!this.documentHelper.bookmarks.containsKey(element.name)) {
+                        this.documentHelper.bookmarks.add(element.name, element);
+                    }
                     if (!isNullOrUndefined(element.properties)) {
                         let columnFirst = parseInt(element.properties["columnFirst"]);
                         if (element.paragraph.isInsideTable) {
@@ -2909,7 +3061,7 @@ export class Layout {
                                     let endCell: TableCellWidget = undefined;
                                     let cellIndex: number = columnLast;
                                     while (isNullOrUndefined(endCell) && cellIndex > -1) {
-                                        endCell = endRow.getCellUsingColumnIndex(endRow.rowIndex, cellIndex);
+                                        endCell = endRow.getCellUsingColumnIndex(element.paragraph.associatedCell.rowIndex, cellIndex);
                                         if (isNullOrUndefined(endCell)) {
                                             cellIndex--;
                                         }
@@ -3177,13 +3329,25 @@ export class Layout {
             if (element instanceof FieldTextElementBox) {
                 this.updateFieldText(element);
             }
-            if (element.previousElement && !this.hasPreviousListElement(element) && 
+            if (element.previousElement && !(this.hasPreviousListElement(element) && element.paragraph.paragraphFormat.firstLineIndent < 0) &&
                 (((element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox) && element.previousElement.textWrappingStyle === 'Inline') ||
                     !(element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox))) {
                 this.cutClientWidth(element.previousElement, undefined, ((element instanceof TextElementBox && element.text === '\f') || element instanceof ImageElementBox) ? true : false);
             }
         }
-        if ((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') {
+        if (element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline' && element.isHorizontalRule && element.previousElement) {
+            this.splitElementForClientArea(paragraph, element);
+            this.checkLineWidgetWithClientArea(line, element);
+            let is2013Justification: boolean = this.is2013Justification;
+            this.layoutShape(element);
+            this.is2013Justification = is2013Justification;
+        }
+        else if (element.previousElement instanceof ShapeElementBox && element.previousElement.textWrappingStyle === 'Inline' && element.previousElement.isHorizontalRule) {
+            this.splitElementForClientArea(paragraph, element);
+            this.checkLineWidgetWithClientArea(line, element);
+        }
+        if ((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline' && 
+        (!element.isHorizontalRule || (isNullOrUndefined(element.previousElement)))) {
             if (paragraph.floatingElements.indexOf(element) === -1) {
                 paragraph.floatingElements.push(element);
             }
@@ -3197,7 +3361,11 @@ export class Layout {
         }
         // tslint:disable-next-line:max-line-length
         if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
+            const is2013Justification: boolean = this.is2013Justification;
+            const nextElementToLayout: ElementBox = this.nextElementToLayout;
             this.layoutFootEndNoteElement(element);
+            this.is2013Justification = is2013Justification;
+            this.nextElementToLayout = nextElementToLayout;
         }
         if (element instanceof FootnoteElementBox) {
             if (this.isfootMove) {
@@ -3216,7 +3384,7 @@ export class Layout {
                 }
             }
         }
-        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || (parseFloat(width.toFixed(3)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(3)) && paragraph.isInsideTable) || !this.viewer.textWrap || (element instanceof TextElementBox && element.text === '\v')) {
+        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || (parseFloat(width.toFixed(3)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(3)) && paragraph.isInsideTable) || !this.viewer.textWrap || (element instanceof TextElementBox && element.text === '\v') || this.isTextAfterTabToRetainInLine(element)) {
             if (paragraph.paragraphFormat.textAlignment === "Justify" && element instanceof TextElementBox && element.characterFormat.bidi && !element.isCombinedRTLText) {
                 if (element.text.trim() !== "") {
                     const nextWordWidth: number = this.getWholeTextWidth(element, true);
@@ -3384,7 +3552,10 @@ export class Layout {
         }
         this.isSkipFirstLineIndent = false;
         element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
-        if (previousWidth !== this.viewer.clientActiveArea.width) {
+        // For RTL paragraph beside a square wrapped shape at the start, text starts from the right edge, so the wrap position is not recorded.
+        const skipWrapPosition: boolean = this.isRtlShapeWrapAtStart && element.line.paragraph.bidi && wrapDiff === 0;
+        this.isRtlShapeWrapAtStart = false;
+        if (previousWidth !== this.viewer.clientActiveArea.width && !skipWrapPosition) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
             this.updateWrapPosition(wrapPos);
         }
@@ -3432,14 +3603,28 @@ export class Layout {
                         }
                     }
                 }
-                if (!hadWrapNarrowing) {
-                    element.line.paragraph.containerWidget.height += (this.viewer.clientActiveArea.y - previousTop);
+                if (!hadWrapNarrowing && element.line.isFirstLine()) {
+                    const headerFooter: Widget = element.line.paragraph.containerWidget;
+                    if (!this.skipRelayoutOverlap || this.viewer.clientActiveArea.y > headerFooter.y + headerFooter.height) {
+                        headerFooter.height += (this.viewer.clientActiveArea.y - previousTop);
+                    }
                 }
             }
             if (!(element instanceof ListTextElementBox)) {
                 this.isYPositionUpdated = false;
             }
         }
+    }
+    // Returns true when any element before the given one in its line occupies width (zero-width items like bookmarks are ignored).
+    private hasPrecedingContentInLine(elementBox: ElementBox): boolean {
+        const children: ElementBox[] = elementBox.line.children;
+        for (let j: number = 0; j < children.length && children[j] !== elementBox; j++) {
+            const element: ElementBox = children[j];
+            if (!(element instanceof ShapeBase && (element as ShapeBase).textWrappingStyle !== 'Inline') && element.width > 0) {
+                return true;
+            }
+        }
+        return false;
     }
     private getFirstElement(line: LineWidget): ElementBox {
         for (let j = 0; j < line.children.length; j++) {
@@ -3681,6 +3866,48 @@ export class Layout {
         }
         return nextSibling as TextElementBox;
     }
+    private getIntersectingSquareItemBounds(current: ShapeBase | TableWidget, items: (ShapeBase | TableWidget)[], rect: Rect): Rect[] {
+        const result: Rect[] = [];
+        let distanceLeft: number = 0;
+        let distanceTop: number = 0;
+        let distanceRight: number = 0;
+        let distanceBottom: number = 0;
+        for (let i: number = 0; i < items.length; i++) {
+            const item: ShapeBase | TableWidget = items[i];
+            if (item instanceof ShapeBase) {
+                distanceLeft = item.distanceLeft;
+                distanceTop = item.distanceTop;
+                distanceRight = item.distanceRight;
+                distanceBottom = item.distanceBottom;
+            } else {
+                distanceLeft = item.positioning.distanceLeft;
+                distanceTop = item.positioning.distanceTop;
+                distanceRight = item.positioning.distanceRight;
+                distanceBottom = item.positioning.distanceBottom;
+            }
+            if (item === current || (item instanceof ShapeBase && item.textWrappingStyle !== 'Square')) {
+                continue;
+            }
+            const bounds: Rect = new Rect(item.x - distanceLeft, item.y - distanceTop,
+                item.width + distanceLeft + distanceRight, item.height + distanceTop + distanceBottom);
+            if (bounds.y <= rect.y && bounds.bottom >= rect.y) {
+                result.push(bounds);
+            }
+        }
+        return result;
+    }
+    private getXPositionOfIntersectionFloatingItemBasedOnHorizontally(bounds: Rect[], currentRight: number): number {
+        let x: number = Number.POSITIVE_INFINITY;
+        for (let i: number = 0; i < bounds.length; i++) {
+            if (bounds[i].x >= currentRight) {
+                x = Math.min(x, bounds[i].x);
+            }
+        }
+        return x;
+    }
+    private getBottomPositionOfIntersectionFloatingItemBasedOnHorizontally(bounds: Rect[]): number {
+        return Math.min(...bounds.map((b: Rect) => b.bottom));
+    }
 
     private adjustClientAreaBasedOnTextWrap(elementBox: ElementBox, rect: Rect, isEmptyPara: boolean): Rect {
         let ownerPara: ParagraphWidget = elementBox.line.paragraph;
@@ -3738,6 +3965,12 @@ export class Layout {
                 if (this.isRelayout && !this.isRelayoutOverlap &&
                     this.viewer.documentHelper.selection.isExistAfter(floatingItem instanceof TableWidget ? floatingItem : floatingItem.line.paragraph, elementBox.line.paragraph)
                     || this.isRelayout && this.isRelayoutOverlap && this.viewer.documentHelper.selection.isExistAfter(floatingItem instanceof TableWidget ? floatingItem : floatingItem.line.paragraph, this.endOverlapWidget)) {
+                    continue;
+                }
+                if (ownerPara.isInsideTable && floatingItem instanceof ShapeBase && floatingItem.verticalOrigin === 'Paragraph'
+                    && floatingItem.verticalPosition >= 0 && floatingItem.paragraph !== ownerPara
+                    && floatingItem.paragraph.containerWidget === ownerPara.containerWidget
+                    && ownerPara.indexInOwner < floatingItem.paragraph.indexInOwner) {
                     continue;
                 }
                 // if (ownerPara.isInsideTable && allowOverlap
@@ -3861,6 +4094,9 @@ export class Layout {
                             isBorderValueZero = this.getDefaultBorderSpacingValue(border, isBorderValueZero, tableHorizontalPosition);
                             borderThickness = floatingItem.tableFormat.borders.left.lineWidth / 2;
                         }
+                        // RTL paragraph beside a square wrapped shape placed at the start of the text area.
+                        const isRtlShapeAtStart: boolean = ownerPara.bidi && !ownerPara.isInsideTable && floatingItem instanceof ShapeBase
+                            && textWrappingStyle === 'Square' && textWrappingType === 'Both' && textWrappingBounds.x <= clientLayoutArea.x;
                         // Skip to update when the wrap type as left
                         if (rect.x + borderThickness >= textWrappingBounds.x && rect.x <= textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
                         {
@@ -3908,15 +4144,21 @@ export class Layout {
                                         //         isPositionsUpdated = true;
                                         //     }
                                         // }
-                                       if(!isPositionsUpdated) {
+                                        if (this.documentHelper.compatibilityMode === 'Word2013' && !isPositionsUpdated && textWrappingStyle === 'Square' && elementBox instanceof TextElementBox
+                                            && this.hasPrecedingContentInLine(elementBox) && minwidth > 0 && rect.width < minwidth
+                                            && elementBox.text.trim().length > 0 && textWrappingBounds.right + minwidth > this.viewer.clientArea.right
+                                            && !isNullOrUndefined(bodyWidget) && bodyWidget.sectionFormat.numberOfColumns === 1) {
+                                            rect.width = 0;
+                                        }
+                                        else if (!isPositionsUpdated) {
                                             this.isYPositionUpdated = true;
                                             rect.width = this.viewer.clientArea.width;
                                             rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
                                             rect.y = textWrappingBounds.bottom + topMarginValue;
                                             if ((this.viewer.clientArea.x + this.viewer.clientArea.width - rect.x) < minwidth) {
-                                               rect.x = this.viewer.clientArea.x;
-                                               this.isXPositionUpdated = true;
-                                           }
+                                                rect.x = this.viewer.clientArea.x;
+                                                this.isXPositionUpdated = true;
+                                            }
                                         }
                                     }
                                     this.viewer.updateClientAreaForTextWrap(rect);
@@ -3924,9 +4166,28 @@ export class Layout {
                                 } else {
                                     let xposition = rect.x;
                                     //TabsLayoutInfo tabsInfo = null;
-                                    rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
-                                    rect.width -= firstLineIndent;
-                                    this.isSkipFirstLineIndent = true;
+                                    if (isRtlShapeAtStart) {
+                                        // RTL text starts from the right edge, so only the width is reduced and the start position is retained.
+                                        rect.width = this.viewer.clientArea.right - textWrappingBounds.right;
+                                        this.isRtlShapeWrapAtStart = true;
+                                    } else {
+                                        rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
+                                        rect.width -= firstLineIndent;
+                                        this.isSkipFirstLineIndent = true;
+                                    }
+                                    if (textWrappingStyle === 'Square' && floatingItem instanceof ShapeBase) {
+                                        const intersecting: Rect[] = this.getIntersectingSquareItemBounds(floatingItem, floatingElements, rect);
+                                        if (intersecting.length == 1) {
+                                            const nextX: number = this.getXPositionOfIntersectionFloatingItemBasedOnHorizontally(intersecting, textWrappingBounds.right);
+                                            if (nextX !== Number.POSITIVE_INFINITY && nextX - textWrappingBounds.right < minimumWidthRequired && rect.right - intersecting[0].right < minimumWidthRequired) {
+                                                const bottom: number = this.getBottomPositionOfIntersectionFloatingItemBasedOnHorizontally(intersecting);
+                                                this.isYPositionUpdated = true;
+                                                rect.height -= (bottom - rect.y);
+                                                rect.y = bottom;
+                                                rect.width = this.viewer.clientArea.right - rect.x;
+                                            }
+                                        }
+                                    }
 
                                     //When there is no space to fit the content in right, then update the y position.
                                     if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -3958,9 +4219,15 @@ export class Layout {
                                 //if contains value means continue the layouting even x position exceeds the page right position.
 
                                 let xposition: number = rect.x;
-                                rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
-                                rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
-                                this.isSkipFirstLineIndent = true;
+                                if (isRtlShapeAtStart) {
+                                    // RTL text starts from the right edge, so only the width is reduced and the start position is retained.
+                                    rect.width = this.viewer.clientArea.right - textWrappingBounds.right;
+                                    this.isRtlShapeWrapAtStart = true;
+                                } else {
+                                    rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
+                                    rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
+                                    this.isSkipFirstLineIndent = true;
+                                }
 
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -4148,6 +4415,17 @@ export class Layout {
         return rect;
     }
 
+    private isShapeInsideTable(shape: ShapeBase, table: TableWidget): boolean {
+        let widget: Widget = shape.line ? shape.line.paragraph : undefined;
+        while (widget && !(widget instanceof BlockContainer)) {
+            if (widget === table) {
+                return true;
+            }
+            widget = widget.containerWidget;
+        }
+        return false;
+    }
+
     private adjustClientAreaBasedOnTextWrapForTable(table: TableWidget, rect: Rect): Rect {
         //let ownerPara: ParagraphWidget = elementBox.line.paragraph;
         if (isNullOrUndefined(table.containerWidget) || isNullOrUndefined(table.bodyWidget)) {
@@ -4174,6 +4452,13 @@ export class Layout {
             floatingElements.sort(function (a, b) { return a.x - b.x; });
             for (let i: number = 0; i < floatingElements.length; i++) {
                 let floatingElement: ShapeBase | TableWidget = floatingElements[i];
+                if (floatingElement instanceof TableWidget && floatingElement.wrapTextAround
+                    && table.getSplitWidgets().indexOf(floatingElement as BlockWidget) !== -1) {
+                    continue;
+                }
+                if (floatingElement instanceof ShapeBase && this.isShapeInsideTable(floatingElement, table)) {
+                    continue;
+                }
                 let allowOverlap: boolean = false;
                 if (floatingElement instanceof ShapeBase) {
                     allowOverlap = floatingElement.allowOverlap;
@@ -4456,7 +4741,20 @@ export class Layout {
                     bodyWidget.page.endnoteWidget = endNote;
                 }
             }
-            this.layoutfootNote(endNote);
+            if (!isNullOrUndefined(endNote) && !isNullOrUndefined(endNote.page)) {
+                let clientActiveArea: Rect = this.viewer.clientActiveArea.clone();
+                const lastBody: BodyWidget = this.getBodyWidget(endNote.page.bodyWidgets[endNote.page.bodyWidgets.length - 1], true);
+                this.viewer.updateClientArea(lastBody, lastBody.page);
+                const contentHeight: number = this.getNextWidgetHeight(lastBody);
+                if (contentHeight > 0) {
+                    this.viewer.clientActiveArea.height -= contentHeight - this.viewer.clientActiveArea.y;
+                    this.viewer.clientActiveArea.y = contentHeight;
+                }
+                this.layoutfootNote(endNote);
+                this.viewer.clientActiveArea = clientActiveArea;
+            } else {
+                this.layoutfootNote(endNote);
+            }
         }
     }
     public hasValidElement(paragraph: ParagraphWidget): boolean {
@@ -4787,7 +5085,10 @@ export class Layout {
             this.moveToNextPage(this.viewer, lineWidget);
         }
         //Gets line spacing.
-        const lineSpacing: number = this.getLineSpacing(paragraph, maxHeight);
+        let lineSpacing: number = this.getLineSpacing(paragraph, maxHeight);
+        if (this.documentHelper.compatibilityMode === 'Word2003' && lineSpacing < 0 && paragraph.paragraphFormat.lineSpacingType === 'Exactly') {
+            lineSpacing = Math.abs(lineSpacing);
+        }
         //let maxDescent: number = maxHeight - paragraphMarkSize.BaselineOffset;
         //Calculate the bottom position of current line - max height + line spacing.
         if (!isNaN(this.maxTextHeight)
@@ -5141,6 +5442,11 @@ export class Layout {
             index = index - 1;
         } else if (previousElement.isColumnBreak && isNullOrUndefined(previousElement.nextNode)) {
             columneBreak = true;
+        }
+        let trailingElement: ElementBox = lineWidget.children[index];
+        while (index > 0 && trailingElement instanceof BookmarkElementBox && trailingElement.bookmarkType === 0 && isNullOrUndefined(trailingElement.properties)) {
+            index--;
+            trailingElement = lineWidget.children[index];
         }
         //Move Next element box to temp collection
         for (let i: number = index + 1; i < lineWidget.children.length; i++) {
@@ -5594,6 +5900,10 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
+        if (height === 0 && paraFormat.lineSpacingType === 'Multiple' && this.isImageOnlyLine(line)) {
+            height = this.documentHelper.textHelper.measureText('a', paragraph.characterFormat).Height;
+            lineSpacing = this.getLineSpacing(paragraph, height);
+        }
         if ((line.skipClipImage || paragraph.paragraphFormat.lineSpacing >= 14 || lineSpacing < 0) && paraFormat.lineSpacingType === 'Exactly'
             && lineSpacing < maxDescent + this.maxBaseline) {
             lineSpacing = maxDescent + this.maxBaseline;
@@ -5746,6 +6056,10 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
+        if (height === 0 && paraFormat.lineSpacingType === 'Multiple' && this.isImageOnlyLine(line)) {
+            height = this.documentHelper.textHelper.measureText('a', paragraph.characterFormat).Height;
+            lineSpacing = this.getLineSpacing(paragraph, height);
+        }
         if ((line.skipClipImage || paragraph.paragraphFormat.lineSpacing >= 14 || lineSpacing < 0) && paraFormat.lineSpacingType === 'Exactly'
             && lineSpacing < maxDescent + this.maxBaseline) {
             lineSpacing = maxDescent + this.maxBaseline;
@@ -5916,15 +6230,19 @@ export class Layout {
                 if (i !== 0 || elementBox.margin.left > 0) {
                     let elementLeftMargin: number = children[0].margin.left;
                     elementBox.x += elementLeftMargin;
-                    const childWidgets: any = elementBox instanceof ShapeElementBox ? elementBox.textFrame.childWidgets : elementBox.childWidgets;
-                    for (let i: number = 0; i < childWidgets.length; i++) {
-                        let widget: BlockWidget = childWidgets[i] as BlockWidget;
-                        if (widget instanceof TableWidget) {
-                            widget.updateChildWidgetLeft(widget.x + elementLeftMargin);
-                        } else if (widget instanceof GroupShapeElementBox) {
-                            this.updateNestedGroupShapeX(widget, elementLeftMargin);
-                        } else {
-                            (widget as Widget).x += elementLeftMargin;
+                    // Group shapes: shift nested children and their text frames together.
+                    // Plain shapes: shift text-frame / table children as before.
+                    if (elementBox instanceof GroupShapeElementBox) {
+                        this.updateNestedGroupShapeX(elementBox, elementLeftMargin);
+                    } else {
+                        const childWidgets: any = elementBox.textFrame.childWidgets;
+                        for (let i: number = 0; i < childWidgets.length; i++) {
+                            let widget: BlockWidget = childWidgets[i] as BlockWidget;
+                            if (widget instanceof TableWidget) {
+                                widget.updateChildWidgetLeft(widget.x + elementLeftMargin);
+                            } else {
+                                (widget as Widget).x += elementLeftMargin;
+                            }
                         }
                     }
                 }
@@ -5956,6 +6274,18 @@ export class Layout {
         }
         this.wrapPosition = [];
     }
+    private isImageOnlyLine(line: LineWidget): boolean {
+        let hasImage: boolean = false;
+        for (let i: number = 0; i < line.children.length; i++) {
+            const element: ElementBox = line.children[i];
+            if (element instanceof ImageElementBox && element.textWrappingStyle === 'Inline') {
+                hasImage = true;
+            } else if (!(element instanceof TextElementBox && element.text.length === 0)) {
+                return false;
+            }
+        }
+        return hasImage;
+    }
 
     private checkPrevElementTextWrappingStyle(lineWidget: LineWidget, index: number): boolean {
         for (let i: number = index - 1; i >= 0; i--) {
@@ -5969,15 +6299,19 @@ export class Layout {
     private updateNestedGroupShapeX(widget: any, elementLeftMargin: number): void {
         const childWidgets: any = widget.childWidgets;
         for (let j: number = 0; j < childWidgets.length; j++) {
-            let widget: any = childWidgets[j];
-            widget.x += elementLeftMargin;
-            if (widget instanceof ShapeElementBox) {
-                for (let k: number = 0; k < widget.textFrame.childWidgets.length; k++) {
-                    (widget.textFrame.childWidgets[k] as Widget).x += elementLeftMargin;
+            let child: any = childWidgets[j];
+            child.x += elementLeftMargin;
+            if (child instanceof ShapeElementBox) {
+                for (let k: number = 0; k < child.textFrame.childWidgets.length; k++) {
+                    const textChild: Widget = child.textFrame.childWidgets[k] as Widget;
+                    if (textChild instanceof TableWidget) {
+                        textChild.updateChildWidgetLeft(textChild.x + elementLeftMargin);
+                    } else {
+                        textChild.x += elementLeftMargin;
+                    }
                 }
-            }
-            if (widget instanceof GroupShapeElementBox){
-                this.updateNestedGroupShapeX(widget, elementLeftMargin);
+            } else if (child instanceof GroupShapeElementBox) {
+                this.updateNestedGroupShapeX(child, elementLeftMargin);
             }
         }
     }
@@ -5985,31 +6319,39 @@ export class Layout {
     private updateNestedGroupShapeY(widget: any, topMargin: number): void {
         const childWidgets: any = widget.childWidgets;
         for (let j: number = 0; j < childWidgets.length; j++) {
-            let widget: any = childWidgets[j];
-            widget.y += topMargin;
-            if (widget instanceof ShapeElementBox) {
-                for (let k: number = 0; k < widget.textFrame.childWidgets.length; k++) {
-                    (widget.textFrame.childWidgets[k] as Widget).y += topMargin;
+            let child: any = childWidgets[j];
+            child.y += topMargin;
+            if (child instanceof ShapeElementBox) {
+                for (let k: number = 0; k < child.textFrame.childWidgets.length; k++) {
+                    const textChild: Widget = child.textFrame.childWidgets[k] as Widget;
+                    textChild.y += topMargin;
+                    if (textChild instanceof TableWidget) {
+                        this.updateChildLocationForTable(textChild.y, textChild);
+                        this.updateWidgetsToPage([textChild], [], textChild, true);
+                    }
                 }
-            }
-            if (widget instanceof GroupShapeElementBox) {
-                this.updateNestedGroupShapeY(widget, topMargin);
+            } else if (child instanceof GroupShapeElementBox) {
+                this.updateNestedGroupShapeY(child, topMargin);
             }
         }
     }
 
     private updateShapeYPosition(elementBox: ShapeElementBox | GroupShapeElementBox): void {
         elementBox.y += elementBox.margin.top;
-        const childWidgets: any = elementBox instanceof ShapeElementBox ? elementBox.textFrame.childWidgets : elementBox.childWidgets;
+        // Nested group shapes already shift child shape x/y and text-frame blocks via
+        // updateNestedGroupShapeY. Applying margin.top only at the group root avoids
+        // double-offsetting group.childWidgets, then walk nested shapes for text frames.
+        if (elementBox instanceof GroupShapeElementBox) {
+            this.updateNestedGroupShapeY(elementBox, elementBox.margin.top);
+            return;
+        }
+        const childWidgets: any = elementBox.textFrame.childWidgets;
         for (let j: number = 0; j < childWidgets.length; j++) {
             const widget = childWidgets[j] as BlockWidget;
             widget.y += elementBox.margin.top;
             if (widget instanceof TableWidget) {
                 this.updateChildLocationForTable(widget.y, widget);
                 this.updateWidgetsToPage([widget], [], widget, true);
-            }
-            if (widget instanceof GroupShapeElementBox) {
-                this.updateNestedGroupShapeY(widget, elementBox.margin.top);
             }
         }
     }
@@ -6100,7 +6442,7 @@ export class Layout {
             });
             if (overlapShape) {
                 this.viewer.cutFromTop(overlapShape.y + overlapShape.height + overlapShape.distanceBottom);
-            } else if (this.isRelayoutOverlap) {
+            } else if (this.isRelayoutOverlap && !(line.paragraph.containerWidget instanceof HeaderFooterWidget && line.marginTop > 0)) {
                 line.marginTop = 0;
             }
         }
@@ -6345,7 +6687,6 @@ export class Layout {
                     }
                 }
             }
-            /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(paragraphWidget.bodyWidget) && !isNullOrUndefined(paragraphWidget.bodyWidget.containerWidget) && !(paragraphWidget.bodyWidget.containerWidget instanceof FootNoteWidget) && paragraphWidget.bodyWidget.page.footnoteWidget !== undefined) {
                 // this.viewer.updateClientAreaForBlock(paragraphWidget.bodyWidget.page.footnoteWidget.block, true);
                 this.layoutfootNote(paragraphWidget.bodyWidget.page.footnoteWidget);
@@ -6683,6 +7024,8 @@ export class Layout {
         }
         if (!isNullOrUndefined(startBlock) && startBlock instanceof ParagraphWidget && startBlock.indexInOwner === 0 && startBlock.paragraphFormat.keepWithNext && startBlock.paragraphFormat.widowControl) {
             startBlock = block;
+            // The whole keep with next chain starts at the page top, so only the current block moves; discard the line index of the chain's first block.
+            startIndex = 0;
         }
         return { node: startBlock, position: { index: startIndex.toString() } };
     }
@@ -6869,7 +7212,6 @@ export class Layout {
         }
         return false;
     }
-    /* eslint-disable-next-line max-len */
     private alignLineElements(element: ElementBox, topMargin: number, bottomMargin: number, maxDescent: number, addSubWidth: boolean, subWidth: number, textAlignment: TextAlignment, whiteSpaceCount: number, isLastElement: boolean): LineElementInfo {
         if (element.width > 0 && (element instanceof TextElementBox || element instanceof ListTextElementBox)) {
             let textElement: TextElementBox = element instanceof TextElementBox ? element as TextElementBox : undefined;
@@ -7448,9 +7790,54 @@ export class Layout {
                 return (listValue).toString();
             case 'Special':
                 return (listValue).toString();
+            case 'Hebrew1':
+                return this.getAsHebrewNumber(listValue);
+            case 'Hebrew2':
+                const hebrew2: string = '\u05D0\u05D1\u05D2\u05D3\u05D4\u05D5\u05D6\u05D7\u05D8\u05D9\u05DB\u05DC\u05DE\u05E0\u05E1\u05E2\u05E4\u05E6\u05E7\u05E8\u05E9\u05EA';
+                return this.getAsAlphabet(listValue, hebrew2);
+            case 'Arabic1':
+                const arabic1: string = '\u0623\u0628\u062A\u062B\u062C\u062D\u062E\u062F\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063A\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064A';
+                return this.getAsAlphabet(listValue, arabic1);
+            case 'Arabic2':
+                const arabic2: string = '\u0623\u0628\u062C\u062F\u0647\u0648\u0632\u062D\u0637\u064A\u0643\u0644\u0645\u0646\u0633\u0639\u0641\u0635\u0642\u0631\u0634\u062A\u062B\u062E\u0630\u0636\u0638\u063A';
+                return this.getAsAlphabet(listValue, arabic2);
             default:
                 return '';
         }
+    }
+
+    private getAsAlphabet(number: number, alphabet: string): string {
+        if (number <= 0) {
+            return '';
+        }
+        const count: number = Math.floor((number - 1) / alphabet.length) + 1;
+        const letter: string = alphabet.charAt((number - 1) % alphabet.length);
+        let result: string = '';
+        for (let i: number = 0; i < count; i++) {
+            result += letter;
+        }
+        return result;
+    }
+    private getAsHebrewNumber(number: number): string {
+        if (number <= 0) {
+            return '';
+        }
+        const units: string[] = ['', '\u05D0', '\u05D1', '\u05D2', '\u05D3', '\u05D4', '\u05D5', '\u05D6', '\u05D7', '\u05D8'];
+        const tens: string[] = ['', '\u05D9', '\u05DB', '\u05DC', '\u05DE', '\u05E0', '\u05E1', '\u05E2', '\u05E4', '\u05E6'];
+        const hundreds: string[] = ['', '\u05E7', '\u05E8', '\u05E9', '\u05EA'];
+        let result: string = '';
+        let remaining: number = number;
+        while (remaining >= 400) {
+            result += '\u05EA';
+            remaining -= 400;
+        }
+        result += hundreds[Math.floor(remaining / 100)];
+        remaining %= 100;
+        // 15 and 16 are written as 9+6 and 9+7 to avoid spelling a divine name.
+        if (remaining === 15 || remaining === 16) {
+            return result + '\u05D8' + (remaining === 15 ? '\u05D5' : '\u05D6');
+        }
+        return result + tens[Math.floor(remaining / 10)] + units[remaining % 10];
     }
     public getFootEndNote(numberFormat: FootEndNoteNumberFormat, value: number): string {
         switch (numberFormat) {
@@ -7702,6 +8089,40 @@ export class Layout {
         }
         return words;
     }
+     /**
+     * Returns true when the highest tab stop of the paragraph reaches or exceeds the right edge of the client area.
+     * Tab stop positions are measured from the left margin, so the client area right edge is converted to the same origin.
+     */
+    private isHighestTabStopReachesClientArea(paragraph: ParagraphWidget): boolean {
+        const tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
+        if (tabs.length === 0 || this.documentHelper.selection.isTocStyle(paragraph)) {
+            return false;
+        }
+        const leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+        const clientAreaRight: number = this.viewer.clientArea.right - (this.viewer.clientArea.x - leftIndent);
+        return HelperMethods.convertPointToPixel(tabs[tabs.length - 1].position) >= clientAreaRight - 0.01;
+    }
+    private isTextAfterTabToRetainInLine(element: ElementBox): boolean {
+        if (!(element instanceof TextElementBox) || this.documentHelper.compatibilityMode === 'Word2013' || !this.isHighestTabStopReachesClientArea(element.paragraph)) {
+            return false;
+        }
+        if (element.text === '\t') {
+            return element instanceof TabElementBox && element.indexInOwner > 0;
+        }
+        if (this.viewer.clientActiveArea.width > 1) {
+            return false;
+        }
+        if (element.text.trim().indexOf(' ') !== -1) {
+            return false;
+        }
+        const children: ElementBox[] = element.line.children;
+        for (let i: number = children.indexOf(element) - 1; i >= 0; i--) {
+            if (children[i] instanceof TabElementBox) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     private getAsOrdinal(number: number, characterFormat: WCharacterFormat): string {
         switch (characterFormat.localeIdAscii) {
@@ -7908,7 +8329,7 @@ export class Layout {
     }
 
     private isNeedToConsiderTabStopPosition(paragraph: ParagraphWidget, tabs: WTabStop[], isList: boolean): boolean {
-        return !(paragraph.paragraphFormat.firstLineIndent < 0 && tabs.length !== 0 && tabs[0].position < Math.abs(paragraph.paragraphFormat.firstLineIndent) && isList);
+        return !(paragraph.paragraphFormat.firstLineIndent < 0 && tabs.length !== 0 && !(tabs.length === 1 && tabs[0].position === 0) && tabs[0].position < Math.abs(paragraph.paragraphFormat.firstLineIndent) && isList);
     }
     
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
@@ -7924,7 +8345,7 @@ export class Layout {
         let tabBeforeLeftIndent: boolean = false;
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat: WParagraphFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
-            if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
+            if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent || paragraph.paragraphFormat.firstLineIndent !== listFormat.firstLineIndent) {
                 isList = true;
             }
         }
@@ -7964,7 +8385,7 @@ export class Layout {
                 tabs = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat.tabs;
             }
         }
-        firstLineIndent = paragraph.paragraphFormat.firstLineIndent < 0 ? paragraph.paragraphFormat.leftIndent : 0;
+		firstLineIndent = paragraph.paragraphFormat.firstLineIndent < 0 ? paragraph.paragraphFormat.leftIndent : 0;
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
         if (tabs.length === 0 && (position > 0 && defaultTabWidth > Math.round(position) && isList ||
@@ -8215,11 +8636,9 @@ export class Layout {
                 }
                 width += element.width;
             }
-            if (!justify) {
-                width = Math.round(width);
-            } else {
-                width = width;
-            }
+        }
+        if (!justify) {
+            width = Math.round(width);
         }
         let totalSpaceCount: number = lineText.length - HelperMethods.removeSpace(lineText).length;
         lineText = lineText.trim();
@@ -8234,7 +8653,14 @@ export class Layout {
                 subWidth = totalSubWidth;
             }
         }
-        if ((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify && !isBidi)) {
+        if (isBidi && !justify && subWidth < 0 && lineWidget.paragraph.paragraphFormat.textAlignment === 'Right' && trimmedSpaceWidth === 0
+            && this.isOverflowOnlyByTrailingSpaces(lineWidget, width, firstLineIndent)) {
+            // In RTL paragraph, the overflowing consecutive spaces are allowed to extend beyond the left margin.
+            // So retain the negative sub width to keep the text aligned to the right margin instead of resetting it to zero.
+            // The width is re-measured without the per element rounding, as it accumulates an error for lines with many spaces.
+            subWidth = this.viewer.clientArea.width - firstLineIndent - this.getUnroundedLineWidth(lineWidget);
+            spaceCount = 0;
+        } else if ((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify && !isBidi)) {
             spaceCount = 0;
             subWidth = 0;
         } else if (justify) {
@@ -8255,6 +8681,34 @@ export class Layout {
         // So set sub width to zero to layout the element in left alignment
         // Need to remove is once after implementing subwidth update separatly
         return [{ 'trimmedSpaceWidth':trimmedSpaceWidth, 'subWidth': subWidth, 'spaceCount': spaceCount, 'totalSpaceCount': totalSpaceCount  }];
+    }
+    private getUnroundedLineWidth(lineWidget: LineWidget): number {
+        let lineWidth: number = 0;
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            const element: ElementBox = lineWidget.children[i];
+            if (!(element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
+                lineWidth += element.width;
+            }
+        }
+        return lineWidth;
+    }
+    /**
+     * Returns true only when the line ends with consecutive spaces (more than one space character)
+     * and the line fits the client width without those trailing spaces, i.e. the overflow is caused purely by them.
+     */
+    private isOverflowOnlyByTrailingSpaces(lineWidget: LineWidget, lineWidth: number, firstLineIndent: number): boolean {
+        let trailingSpaceWidth: number = 0;
+        let trailingSpaceCount: number = 0;
+        for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
+            const element: ElementBox = lineWidget.children[i];
+            if (element instanceof TextElementBox && element.text.length > 0 && element.text.trim() === '') {
+                trailingSpaceWidth += element.width;
+                trailingSpaceCount += element.text.length;
+            } else if (!(element instanceof TextElementBox) || element.text.length > 0) {
+                break;
+            }
+        }
+        return trailingSpaceCount > 1 && lineWidth - trailingSpaceWidth <= this.viewer.clientArea.width - firstLineIndent;
     }
 
     private getSubWidthBasedOnTextWrap(lineWidget: LineWidget, justify: boolean, spaceCount: number, firstLineIndent: number, isParagraphEnd: boolean): SubWidthInfo[] {
@@ -8782,6 +9236,7 @@ export class Layout {
             }
             footnotes.length = 0;
         }
+        this.updateRowHeightByFloatingElements(row);
         tableWidget.height = tableWidget.height + row.height;
         if (this.viewer instanceof PageLayoutViewer) {
             if (!isNullOrUndefined(tableWidget.containerWidget)
@@ -8795,6 +9250,36 @@ export class Layout {
         this.viewer.clientActiveArea.height -= this.getFootNoteHeight(footnoteWidgets);
         if (!row.ownerTable.isInsideTable) {
             this.existFootnoteHeight = 0;
+        }
+    }
+    private updateRowHeightByFloatingElements(row: TableRowWidget): void {
+        if (row.rowFormat.heightType === 'Exactly' || row.ownerTable.isInsideTable || isNullOrUndefined(row.ownerTable.previousSplitWidget)) {
+            return;
+        }
+        let extraHeight: number = 0;
+        for (let i: number = 0; i < row.childWidgets.length; i++) {
+            const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+            if (cell.cellFormat.rowSpan > 1) {
+                continue;
+            }
+            for (let j: number = 0; j < cell.childWidgets.length; j++) {
+                const para: ParagraphWidget = cell.childWidgets[j] as ParagraphWidget;
+                if (!(para instanceof ParagraphWidget)) {
+                    continue;
+                }
+                for (let k: number = 0; k < para.floatingElements.length; k++) {
+                    const floatElement: ShapeBase = para.floatingElements[k];
+                    const textWrappingStyle: TextWrappingStyle = floatElement.textWrappingStyle;
+                    if (textWrappingStyle === 'InFrontOfText' || textWrappingStyle === 'Behind' || textWrappingStyle === 'Inline'
+                        || !(this.documentHelper.compatibilityMode === 'Word2013' || floatElement.layoutInCell)) {
+                        continue;
+                    }
+                    extraHeight = Math.max(extraHeight, floatElement.y + floatElement.height + cell.margin.bottom - (row.y + row.height));
+                }
+            }
+        }
+        if (extraHeight > 0) {
+            row.height += extraHeight;
         }
     }
     private layoutFootnoteInSplittedRow(row: TableRowWidget, footnoteWidgets: BodyWidget[]): void {
@@ -8896,6 +9381,23 @@ export class Layout {
         }
     }
 
+    /**
+     * Removes the splitted cell widgets left over from a different table. Such stale cells would otherwise be treated as
+     * row span of the current table row, so the row is never fitted and is moved to the next page endlessly.
+     */
+    private removeStaleSplittedCellWidgets(row: TableRowWidget): void {
+        if (row.ownerTable.isInsideTable) {
+            return;
+        }
+        const splittedCells: TableCellWidget[] = this.documentHelper.splittedCellWidgets;
+        for (let i: number = splittedCells.length - 1; i >= 0; i--) {
+            const ownerTable: TableWidget = splittedCells[i].ownerTable;
+            if (!isNullOrUndefined(ownerTable) && !ownerTable.equals(row.ownerTable)) {
+                splittedCells.splice(i, 1);
+            }
+        }
+    }
+
     private isRowSpanEnd(row: TableRowWidget, viewer: LayoutViewer): boolean {
         let rowIndex: number = row.index;
         let rowSpan: number = 1;
@@ -8926,7 +9428,7 @@ export class Layout {
             splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, undefined, isRowSpan);
             footNoteCollection = [];
             if (this.documentHelper.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
-                if (isLastRow) {
+                if (isLastRow && !isNullOrUndefined(splittedWidget)) {
                     for (let i: number = 0; i < splittedWidget.childWidgets.length; i++) {
                         let cell: TableCellWidget = splittedWidget.childWidgets[i] as TableCellWidget;
                         if (cell.rowIndex !== splittedWidget.index) {
@@ -9221,13 +9723,16 @@ export class Layout {
         }
         let isInitialLayout: boolean = row.ownerTable.isInsideTable;
         let isLastRow: boolean = false;
+        const hasPendingSplitCells: () => boolean = (): boolean => this.documentHelper.splittedCellWidgets.length > 0
+            && (row.ownerTable.isInsideTable || this.documentHelper.splittedCellWidgets.some((cell: TableCellWidget) => cell.ownerTable.equals(row.ownerTable)));
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
+            this.removeStaleSplittedCellWidgets(row);
             if (this.isRowSpanEnd(row, viewer) && row.rowFormat.heightType === 'Exactly' && this.documentHelper.splittedCellWidgets.length === 1) {
                 this.documentHelper.splittedCellWidgets = [];
             }
-            if (!isMultiColumnSplit && (row.ownerTable.isInsideTable || row.bodyWidget instanceof HeaderFooterWidget  || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footHeight <= viewer.clientArea.bottom))) {
+            if (!isMultiColumnSplit && (row.ownerTable.isInsideTable || row.bodyWidget instanceof HeaderFooterWidget  || (!hasPendingSplitCells() && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footHeight <= viewer.clientArea.bottom))) {
                 row.ownerTable.isHeaderNotRepeatForAllPages = false;
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
@@ -9235,11 +9740,11 @@ export class Layout {
                 }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, undefined, isInitialLayout, startRowIndex, isRepeatRowHeader);
                 let skipToInsert: boolean = this.documentHelper.splittedCellWidgets.length > 0 && row.ownerTable.isInsideTable && !row.ownerTable.equals(this.documentHelper.splittedCellWidgets[0].ownerTable) ? true : false;
-                if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && !skipToInsert && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
+                if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && hasPendingSplitCells() && !skipToInsert && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 // If the entire split cell widget does not fit on the current page, we should consider splitting the row again. This is why we check that the next row is not the end of a row span, and we decrease the count value accordingly.
-                } else if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && !skipToInsert && !isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow) && !this.isRowSpanEnd(rowWidgets[rowWidgets.length - 1].nextRow, viewer)) {
+                } else if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && hasPendingSplitCells() && !skipToInsert && !isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow) && !this.isRowSpanEnd(rowWidgets[rowWidgets.length - 1].nextRow, viewer)) {
                     count--;
                 }
                 isInitialLayout = false;
@@ -9449,7 +9954,7 @@ export class Layout {
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
                     if (moveRowToNextTable && removeTable) {
-                        if (rowToMove.index === 0 && curretTable.containerWidget && curretTable.containerWidget.childWidgets.indexOf(curretTable) !== -1) {
+                        if ((rowToMove.index === 0 || (tableWidgets.length === 1 && rowToMove.indexInOwner === 0)) && curretTable.containerWidget && curretTable.containerWidget.childWidgets.indexOf(curretTable) !== -1) {
                             curretTable.containerWidget.childWidgets.splice(curretTable.containerWidget.childWidgets.indexOf(curretTable), 1);
                         }
                     }
@@ -9696,7 +10201,6 @@ export class Layout {
         }
     }
 
-    /* eslint-disable-next-line max-len */
     private updateHeightForRowWidget(viewer: LayoutViewer, isUpdateVerticalPosition: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], rowWidget: TableRowWidget, isLayouted: boolean, endRowWidget?: TableRowWidget, isInitialLayout?: boolean): void {
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             let cellspacing: number = 0;
@@ -9762,13 +10266,11 @@ export class Layout {
                             }
                         }
                     } else {
-                        /* eslint-disable-next-line max-len */
                         spanEndRowWidget = rowWidget.containerWidget.childWidgets[rowWidget.containerWidget.childWidgets.length - 1] as TableRowWidget;
                     }
                 }
                 if (cellWidget.y + cellWidget.height + cellWidget.margin.bottom < spanEndRowWidget.y + spanEndRowWidget.height) {
                     cellWidget.height = spanEndRowWidget.y + spanEndRowWidget.height - spanEndRowWidget.bottomBorderWidth - cellWidget.y - cellWidget.margin.bottom;
-                    /* eslint-disable-next-line max-len */
                 } else if (isLayouted && spanEndRowWidget && (spanEndRowWidget.y !== 0 && spanEndRowWidget.height !== 0) && cellWidget.y + cellWidget.height + cellWidget.margin.bottom > spanEndRowWidget.y + spanEndRowWidget.height) {
                     if (spanEndRowWidget.rowFormat.heightType !== 'Exactly' || (spanEndRowWidget.rowFormat.heightType === 'Exactly' && spanEndRowWidget.rowFormat.height > cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y)) {
                         spanEndRowWidget.height = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y;
@@ -9808,7 +10310,6 @@ export class Layout {
             if (widget instanceof BodyWidget) {
                 page = (widget as BodyWidget).page;
             }
-            /* eslint-disable-next-line max-len */
             if ((viewer instanceof PageLayoutViewer && (viewer as PageLayoutViewer).visiblePages.indexOf(page) !== -1) || isUpdateVerticalPosition) {
                 this.updateCellVerticalPosition(cellWidget, false, cellWidget.ownerTable.isInsideTable);
             }
@@ -9823,7 +10324,6 @@ export class Layout {
         }
     }
 
-    /* eslint-disable-next-line max-len */
     private updateHeightForCellWidget(viewer: LayoutViewer, tableWidget: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget): void {
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             if (cellWidget.childWidgets[i] instanceof TableWidget) {
@@ -9847,9 +10347,7 @@ export class Layout {
         return height;
     }
 
-    /* eslint-disable-next-line max-len */
     private splitSpannedCellWidget(cellWidget: TableCellWidget, tableCollection: TableWidget[], rowCollection: TableRowWidget[], viewer: LayoutViewer): void {
-        /* eslint-disable-next-line max-len */
         const splittedCell: TableCellWidget = this.getSplittedWidget(viewer.clientArea.bottom, false, tableCollection, rowCollection, cellWidget, undefined, undefined, undefined, undefined, true);
         if (!isNullOrUndefined(splittedCell)) {
             //Adds the splitted contents of a vertical merged cell, in order preserve in next page.
@@ -9865,7 +10363,6 @@ export class Layout {
         }
     }
 
-    /* eslint-disable-next-line max-len */
     private insertSplittedCellWidgets(viewer: LayoutViewer, tableCollection: TableWidget[], rowWidget: TableRowWidget, previousRowIndex: number, isSkipUpdateHeight?: boolean): void {
         if (!isNullOrUndefined(rowWidget)) {
         let left: number = rowWidget.x;
@@ -9916,7 +10413,6 @@ export class Layout {
             }
         }
         // Special case: when the child widgets of row is equal to 0 then the splitted widgets in the viewer is added in the table row widgets.
-        /* eslint-disable-next-line max-len */
         if ((isNullOrUndefined(rowWidget.childWidgets) || rowWidget.childWidgets.length === 0) && this.documentHelper.splittedCellWidgets.length > 0) {
             for (let j: number = 0; j < this.documentHelper.splittedCellWidgets.length; j++) {
                 const widget: TableCellWidget = this.documentHelper.splittedCellWidgets[j] as TableCellWidget;
@@ -9973,7 +10469,6 @@ export class Layout {
         return false;
     }
 
-    /* eslint-disable-next-line max-len */
     private insertEmptySplittedCellWidget(currentRow: TableRowWidget, tableCollection: TableWidget[], left: number, index: number, previousRowIndex: number): void {
         let tableWidget: TableWidget = tableCollection[tableCollection.length - 1];
         let previousRow: TableRowWidget;
@@ -10042,7 +10537,6 @@ export class Layout {
         return false;
     }
     
-    /* eslint-disable-next-line max-len */
     private getSplittedWidget(bottom: number, splitMinimalWidget: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, nestedCount?: number, splitSpannedCellWidget?: boolean): TableCellWidget {
         let splittedWidget: TableCellWidget = undefined;
         let footnoteHeight: number = 0;
@@ -10099,7 +10593,6 @@ export class Layout {
                     //Check for nested table.
                     if (isMultiColumnSplit || bottom - cellWidget.margin.bottom < tableWidget.y + tableWidget.height + existFootnoteHeight) {
                         const tableHeight: number = tableWidget.height;
-                        /* eslint-disable-next-line max-len */
                         let splittedTable: TableWidget;
                         if (isCellSplit) {
                             splittedTable = tableWidget;
@@ -10424,7 +10917,6 @@ export class Layout {
                     allowRowBreakAcrossPages = rowWidget.rowFormat.allowBreakAcrossPages;
                 }
                 if (allowRowBreakAcrossPages) {
-                    /* eslint-disable-next-line max-len */
                     splittedRow = (isNullOrUndefined(splittedWidget) && this.isFirstLineFitForRow(bottom, rowWidget)) ? this.getSplittedWidgetForRow(bottom, tableCollection, [rowWidget], rowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count) : rowWidget;
                 } else {
                     if ((isNullOrUndefined(tableWidget.containerWidget.containerWidget.previousWidget)
@@ -10482,7 +10974,6 @@ export class Layout {
         // }
         //checks first line of the page is exceed the page height
         if (this.documentHelper.isFirstLineFitInShiftWidgets) {
-            /* eslint-disable-next-line max-len */
             if (this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paraWidget.y + lineHeight >= bottom) {
                 return true;
             }
@@ -10915,7 +11406,6 @@ export class Layout {
             updateNextBlockList = false;
             let nextWidget: Widget = undefined;
             nextWidget = block.getSplitWidgets()[0] as ParagraphWidget;
-            /* eslint-disable-next-line max-len */
             if (this.documentHelper.fieldStacks.length === 0 && !isNullOrUndefined(nextWidget) && currentWidget.containerWidget === nextWidget.containerWidget 
                 && !this.documentHelper.isFollowedListLayoutRequired && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
                 if (!isNullOrUndefined(this.documentHelper.blockToShift) || this.documentHelper.owner.editorModule.isFootnoteElementRemoved) {
@@ -10944,7 +11434,6 @@ export class Layout {
                 if (currentWidget.containerWidget !== block.containerWidget) {
                     if (!(currentWidget instanceof ParagraphWidget) ||
                         (currentWidget instanceof ParagraphWidget) && !currentWidget.isEndsWithPageBreak && !currentWidget.isEndsWithColumnBreak && (currentWidget.containerWidget as BodyWidget).page !== (block.containerWidget as BodyWidget).page && !(block.bodyWidget instanceof BodyWidget && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')) {
-                        /* eslint-disable-next-line max-len */
                         this.updateContainerWidget(block as Widget, currentWidget.containerWidget as BodyWidget, currentWidget.indexInOwner + 1, false);
                     }
                 }
@@ -11025,7 +11514,6 @@ export class Layout {
         return undefined;
     }
 
-    /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
         if (this.isReplaceAll || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             return;
@@ -11138,7 +11626,6 @@ export class Layout {
                 } else if (!this.isReplacingAll) {
                     this.reLayoutTable(paragraphWidget);
                 }
-                /* eslint-disable-next-line max-len */
                 if (this.isFootnoteContentChanged && (!isNullOrUndefined(paragraphWidget.bodyWidget)) && !isNullOrUndefined(paragraphWidget.bodyWidget.page.footnoteWidget)) {
                     const foot: FootNoteWidget = paragraphWidget.bodyWidget.page.footnoteWidget;
                     this.layoutfootNote(foot);
@@ -11154,6 +11641,7 @@ export class Layout {
             this.shiftFooterChildLocation(paragraphWidget.bodyWidget, this.viewer);
         }
         // this.updateLinearIndex(paragraphWidget);
+        this.normalizeBookmarkEndForParagraph(paragraphWidget);
     }
 
     private getParentRow(block: BlockWidget): TableRowWidget {
@@ -11193,14 +11681,12 @@ export class Layout {
             if ((this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
                 (block.bodyWidget as HeaderFooterWidget).isEmpty = false;
                 bodyWidget.height -= currentTable.height;
-                /* eslint-disable-next-line max-len */
                 (this.viewer as PageLayoutViewer).updateHeaderFooterClientAreaWithTop(currentTable.bodyWidget.sectionFormat, this.documentHelper.isBlockInHeader(currentTable), bodyWidget.page);
             } else if (bodyWidget instanceof TextFrame) {
                 this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
             } else {
                 this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
             }
-            /* eslint-disable-next-line max-len */
             const area: Rect = new Rect(this.viewer.clientArea.x, this.viewer.clientArea.y, this.viewer.clientArea.width, this.viewer.clientArea.height);
             const clientArea: Rect = new Rect(area.x, area.y, area.width, area.height);
             if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
@@ -11263,7 +11749,6 @@ export class Layout {
         if ((this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
             (block.bodyWidget as HeaderFooterWidget).isEmpty = false;
             bodyWidget.height -= currentTable.height;
-            /* eslint-disable-next-line max-len */
             (this.viewer as PageLayoutViewer).updateHeaderFooterClientAreaWithTop(table.bodyWidget.sectionFormat, this.documentHelper.isBlockInHeader(table), bodyWidget.page);
         } else if (bodyWidget instanceof TextFrame) {
             this.viewer.clientActiveArea.y = bodyWidget.containerShape.y;
@@ -11302,8 +11787,8 @@ export class Layout {
         if (table.wrapTextAround) {
             let prevWidget: Widget = table.previousWidget;
             while (prevWidget) {
-                if (prevWidget.y > table.y && isNullOrUndefined(prevWidget.previousWidget)) {
-                    return this.viewer.clientActiveArea.y + prevWidget.height
+                if (prevWidget.y > table.y) {
+                    return table.y;
                 }
                 if (prevWidget instanceof ParagraphWidget) {
                     return prevWidget.y + prevWidget.height;
@@ -11425,7 +11910,6 @@ export class Layout {
         }
     }
 
-    /* eslint-disable-next-line max-len */
     public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean, isSelectionInsideTable?: boolean): void {
         if ((!isNullOrUndefined(block) && block.isFieldCodeBlock)) {
             return;
@@ -11513,7 +11997,6 @@ export class Layout {
                     if (!(isNullOrUndefined(prevWidget) || prevWidget instanceof ParagraphWidget) ||
                         (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak) {
                         if (!isSkipShifting && curretBlock.containerWidget !== prevWidget.containerWidget) {
-                            /* eslint-disable-next-line max-len */
                             const prevBodyWidget: BodyWidget = curretBlock.containerWidget as BodyWidget;
                             const newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
                             const footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(curretBlock);
@@ -11897,20 +12380,14 @@ export class Layout {
         if (tableWidget.tableFormat.cellSpacing > 0) {
             tableWidget.height = tableWidget.height + HelperMethods.convertPointToPixel(tableWidget.tableFormat.cellSpacing);
             if (!tableWidget.isBidiTable) {
-                /* eslint-disable-next-line max-len */
                 tableWidget.leftBorderWidth = HelperMethods.convertPointToPixel(this.getTableLeftBorder(tableWidget.tableFormat.borders).getLineWidth());
-                /* eslint-disable-next-line max-len */
                 tableWidget.rightBorderWidth = HelperMethods.convertPointToPixel(this.getTableRightBorder(tableWidget.tableFormat.borders).getLineWidth());
             } else { // Right to left direction table.
-                /* eslint-disable-next-line max-len */
                 tableWidget.leftBorderWidth = HelperMethods.convertPointToPixel(this.getTableRightBorder(tableWidget.tableFormat.borders).getLineWidth());
-                /* eslint-disable-next-line max-len */
                 tableWidget.rightBorderWidth = HelperMethods.convertPointToPixel(this.getTableLeftBorder(tableWidget.tableFormat.borders).getLineWidth());
             }
 
-            /* eslint-disable-next-line max-len */
             tableWidget.topBorderWidth = HelperMethods.convertPointToPixel(this.getTableTopBorder(tableWidget.tableFormat.borders).getLineWidth());
-            /* eslint-disable-next-line max-len */
             tableWidget.bottomBorderWidth = HelperMethods.convertPointToPixel(this.getTableBottomBorder(tableWidget.tableFormat.borders).getLineWidth());
             tableWidget.x += tableWidget.leftBorderWidth;
             tableWidget.y += tableWidget.topBorderWidth;
@@ -11948,7 +12425,6 @@ export class Layout {
             }
         }
         if (table.tableFormat.cellSpacing > 0) {
-            /* eslint-disable-next-line max-len */
             if (tableWidget.y + tableWidget.height + HelperMethods.convertPointToPixel(table.tableFormat.cellSpacing) > viewer.clientArea.bottom && viewer instanceof WebLayoutViewer) {
                 //update the table height when split to next page. Which is equivalent Ms Word Behaviour.
                 //In Ms Word if the Table Split to next page the bottom spacing of the table will be half of the current spacing.
@@ -11990,7 +12466,6 @@ export class Layout {
         }
     }
 
-    /* eslint-disable-next-line max-len */
     public updateHeightForTableWidget(tables: TableWidget[], rows: TableRowWidget[], tableWidget: TableWidget, endRowWidget?: TableRowWidget): void {
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
             const rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
@@ -12131,7 +12606,6 @@ export class Layout {
             for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
                 if (!isNullOrUndefined((rowWidget.childWidgets[j] as TableCellWidget).cellFormat)
                     && !isNullOrUndefined((rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders)) {
-                    /* eslint-disable-next-line max-len */
                     const width: number = (TableCellWidget.getCellBottomBorder(rowWidget.childWidgets[j] as TableCellWidget) as WBorder).getLineWidth();
                     if (width > borderWidth) {
                         borderWidth = width;
@@ -12144,9 +12618,7 @@ export class Layout {
                 const prevRow: TableRowWidget = (rowWidget.previousWidget as TableRowWidget);
                 borderWidth = 0;
                 for (let i: number = 0; i < prevRow.childWidgets.length; i++) {
-                    /* eslint-disable-next-line max-len */
                     if (!isNullOrUndefined((prevRow.childWidgets[i] as TableCellWidget).cellFormat) && !isNullOrUndefined((prevRow.childWidgets[i] as TableCellWidget).cellFormat.borders)) {
-                        /* eslint-disable-next-line max-len */
                         const value: number = (TableCellWidget.getCellBottomBorder(prevRow.childWidgets[i] as TableCellWidget) as WBorder).getLineWidth();
                         if (value > borderWidth) {
                             borderWidth = value;
@@ -12159,9 +12631,7 @@ export class Layout {
         }
         if (!isNullOrUndefined(rowWidget.childWidgets)) {
             for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
-                /* eslint-disable-next-line max-len */
                 if (!isNullOrUndefined((rowWidget.childWidgets[i] as TableCellWidget).cellFormat) && !isNullOrUndefined((rowWidget.childWidgets[i] as TableCellWidget).cellFormat.borders)) {
-                    /* eslint-disable-next-line max-len */
                     const topBorderWidth: number = (TableCellWidget.getCellTopBorder(rowWidget.childWidgets[i] as TableCellWidget) as WBorder).getLineWidth();
                     if (topBorderWidth > borderWidth) {
                         borderWidth = topBorderWidth;
@@ -12172,13 +12642,10 @@ export class Layout {
         //Maximum border width is calculated and hold it in a variable to add with the padding of the cells.
         rowWidget.topBorderWidth = HelperMethods.convertPointToPixel(borderWidth);
         //Update the table height of tableWidget when cell spacing has been defined.
-        /* eslint-disable-next-line max-len */
         if (!isNullOrUndefined(rowWidget.ownerTable) && !isNullOrUndefined(rowWidget.ownerTable.tableFormat) && rowWidget.ownerTable.tableFormat.cellSpacing <= 0 && rowWidget.rowIndex === rowWidget.ownerTable.childWidgets.length - 1) {
             // Update the bottom width for last row .
             for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
-                /* eslint-disable-next-line max-len */
                 if (!isNullOrUndefined((rowWidget.childWidgets[i] as TableCellWidget).cellFormat) && !isNullOrUndefined((rowWidget.childWidgets[i] as TableCellWidget).cellFormat.borders)) {
-                    /* eslint-disable-next-line max-len */
                     const bottomBorderWidth: number = (TableCellWidget.getCellBottomBorder(rowWidget.childWidgets[i] as TableCellWidget) as WBorder).getLineWidth();
                     if (bottomBorderWidth > borderWidth) {
                         borderWidth = bottomBorderWidth;
@@ -12211,6 +12678,10 @@ export class Layout {
                 value = topMargin;
             }
         }
+        // Vertically merged continuation cells are not maintained in the editor, so their margin is taken from the row format.
+        if (row.rowFormat.hasValue('verticallyMergedCellsTopMargin')) {
+            value = Math.max(value, HelperMethods.convertPointToPixel(row.rowFormat.verticallyMergedCellsTopMargin));
+        }
         return value;
     }
 
@@ -12232,6 +12703,10 @@ export class Layout {
             if (bottomMargin > value) {
                 value = bottomMargin;
             }
+        }
+        // Vertically merged continuation cells are not maintained in the editor, so their margin is taken from the row format.
+        if (row.rowFormat.hasValue('verticallyMergedCellsBottomMargin')) {
+            value = Math.max(value, HelperMethods.convertPointToPixel(row.rowFormat.verticallyMergedCellsBottomMargin));
         }
         return value;
     }
@@ -12311,19 +12786,14 @@ export class Layout {
                 }
                 if (border) {
                     let width: number = 0;
-                    /* eslint-disable-next-line max-len */
                     if (HelperMethods.round(adjCellEndPos, 2) === HelperMethods.round(cellEndPos, 2) && HelperMethods.round(adjCellStartPos, 2) === HelperMethods.round(cellStartPos, 2)) {
                         width = cellEndPos - cellStartPos;
-                        /* eslint-disable-next-line max-len */
                     } else if (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
                         width = cellEndPos - adjCellStartPos;
-                        /* eslint-disable-next-line max-len */
                     } else if (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2)) {
                         width = adjCellEndPos - adjCellStartPos;
-                        /* eslint-disable-next-line max-len */
                     } else if (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2)) {
                         width = adjCellEndPos - cellStartPos;
-                        /* eslint-disable-next-line max-len */
                     } else if (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
                         width = cellEndPos - cellStartPos;
                     } else {
@@ -12340,7 +12810,16 @@ export class Layout {
             }
         }
     }
-
+    private isMultiColumnStartUnchanged(previousBlock: BlockWidget, nextBlock: BlockWidget): boolean {
+        const nextBody: BodyWidget = nextBlock.bodyWidget;
+        const splits: BlockWidget[] = previousBlock.getSplitWidgets() as BlockWidget[];
+        const lastSplit: BlockWidget = splits[splits.length - 1];
+        return this.viewer instanceof PageLayoutViewer && nextBody.sectionFormat.columns.length > 1
+            && nextBody.columnIndex === 0 && nextBlock === nextBody.firstChild
+            && isNullOrUndefined(nextBlock.previousSplitWidget) && isNullOrUndefined(nextBody.previousSplitWidget)
+            && lastSplit.bodyWidget instanceof BodyWidget && lastSplit.bodyWidget.page === nextBody.page
+            && HelperMethods.round(nextBody.y, 2) === HelperMethods.round(this.viewer.clientActiveArea.y, 2);
+    }
     //endregion cell
 
     //#region Shifting
@@ -12389,13 +12868,20 @@ export class Layout {
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         let footnoteCollection: BodyWidget[] = [];
+        let processedBlocks: BlockWidget[] = [block];
         while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || (nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && block.bodyWidget.sectionFormat.pageWidth === nextBlock.bodyWidget.sectionFormat.pageWidth && block.bodyWidget.sectionFormat.pageHeight === nextBlock.bodyWidget.sectionFormat.pageHeight))) {
+            if (processedBlocks.indexOf(nextBlock) !== -1) {
+                break;
+            }
+            processedBlocks.push(nextBlock);
             if (isMultiColumnShift && nextBlock.bodyWidget.sectionFormat.columns.length === 0) {
                 return;
             }
             isColumnBreak = this.getColumnBreak(nextBlock.bodyWidget);
+            if (!this.isMultiColumnSplit && !this.documentHelper.owner.editorModule.isFootnoteElementRemoved && this.isMultiColumnStartUnchanged(block, nextBlock)) {
+                break;
+            }
             if ((!isColumnBreak || (reLayout && this.isSectionEndsWithColumnBreak(nextBlock.bodyWidget))) && this.viewer instanceof PageLayoutViewer && !this.isMultiColumnSplit && nextBlock.bodyWidget.sectionFormat.columns.length > 1) {
-                // let lastbody: BodyWidget = this.getBodyWidget(nextBlock.bodyWidget, false);
                 // if (((!isNullOrUndefined(lastbody.nextRenderedWidget) && lastbody.page === (lastbody.nextRenderedWidget as BodyWidget).page) && !(nextBlock.bodyWidget.firstChild === nextBlock && isNullOrUndefined(nextBlock.bodyWidget.previousWidget) && this.viewer.clientActiveArea.height > (nextBlock.firstChild as Widget).height))|| (this.documentHelper.endnoteCollection.length > 0 && lastSection === lastbody)) {
                     if (nextBlock.bodyWidget.columnIndex === 0 && nextBlock === nextBlock.bodyWidget.firstChild && !isNullOrUndefined(nextBlock.previousRenderedWidget) && nextBlock.bodyWidget.page === (nextBlock.previousRenderedWidget as BlockWidget).bodyWidget.page) {
                         nextBlock.bodyWidget.y = this.viewer.clientActiveArea.y;
@@ -12600,7 +13086,10 @@ export class Layout {
         // } else {
         //     reLayoutItems = viewer.renderedElements.get(block as TableWidget).length === 0;
         // }
-        if (this.isNeedToRelayout(blockAdv.bodyWidget) || this.isPageBreakInsideContentControl(blockAdv)) {
+        // Bug 1046887: A paragraph that anchors a floating element must be re-layouted (instead of merely shifted),
+        // so that the paragraph before-spacing and the floating element position are recalculated properly.
+        if (this.isNeedToRelayout(blockAdv.bodyWidget) || this.isPageBreakInsideContentControl(blockAdv)
+            || (blockAdv instanceof ParagraphWidget && blockAdv.floatingElements.length > 0)) {
             if (!this.isMultiColumnSplit) {
                 this.updateContainerForTable(block, viewer);
             }
@@ -12654,7 +13143,7 @@ export class Layout {
     }
     // To skip the before spacing while shifting the paragraph. If it is the first child of the BodyWidget.
     private updateParaOnBeforeSpacing(widget: BlockWidget, bodyWidget: BodyWidget, updateBeforeSpace: Boolean) {
-        if (this.isInitialLoad || widget.bodyWidget instanceof HeaderFooterWidget || widget instanceof TableWidget || isNullOrUndefined((widget.firstChild as LineWidget).margin)) {
+        if (widget.bodyWidget instanceof HeaderFooterWidget || widget instanceof TableWidget || isNullOrUndefined((widget.firstChild as LineWidget).margin)) {
             return;
         }
         let paragraph: ParagraphWidget = widget as ParagraphWidget;
@@ -12669,13 +13158,23 @@ export class Layout {
         beforeSpacing = HelperMethods.convertPointToPixel(beforeSpacing);
         let line: LineWidget = paragraph.firstChild as LineWidget;
         if (updateBeforeSpace) {
-            if (isNullOrUndefined(paragraph.previousSplitWidget) && isPrevWidgetPara && bodyWidget.indexInOwner === 0 && bodyWidget.page.index > 0 && paragraph.indexInOwner === 0 && line.margin.top > 0) {
+            if (isNullOrUndefined(paragraph.previousSplitWidget) && bodyWidget.indexInOwner === 0 && bodyWidget.page.index > 0 && paragraph.indexInOwner === 0 && line.margin.top > 0) {
                 paragraph.height -= beforeSpacing;
                 line.height -= beforeSpacing;
-                line.margin.top = 0;
                 for (let i: number = 0; i < line.children.length; i++) {
                     let element: ElementBox = line.children[i];
-                    element.margin.top = 0;
+                    const beforeSpace: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.beforeSpacing)
+                    if (line.paragraph.paragraphFormat.lineSpacing > 0 && line.paragraph.paragraphFormat.beforeSpacing > 0 && element.margin.top > beforeSpace) {
+                        element.margin.top -= beforeSpace;
+                        if (i === 0) {
+                            line.margin.top -= beforeSpace;
+                        }
+                    } else if (line.paragraph.paragraphFormat.beforeSpacing > 0) {
+                        element.margin.top = 0;
+                        if (i === 0) {
+                            line.margin.top = 0;
+                        }
+                    }
                 }
             }
         } else {
@@ -13042,7 +13541,6 @@ export class Layout {
         const footWidgets: BodyWidget[] = [];
         if (widget.bodyWidget.page.footnoteWidget) {
             for (let i: number = 0; i < widget.bodyWidget.page.footnoteWidget.bodyWidgets.length; i++) {
-                /* eslint-disable-next-line max-len */
                 for (let j: number = 0; j < footnoteElements.length; j++) {
                     if ((widget.bodyWidget.page.footnoteWidget.bodyWidgets[i]).footNoteReference === footnoteElements[j]) {
                         footWidgets.push(widget.bodyWidget.page.footnoteWidget.bodyWidgets[i] as BodyWidget);
@@ -13052,7 +13550,6 @@ export class Layout {
         }
         if (footWidgets.length === 0 && (!isNullOrUndefined(widget.previousRenderedWidget) && (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget)) {
             for (let i: number = 0; i < (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.bodyWidgets.length; i++) {
-                /* eslint-disable-next-line */
                 for (let j: number = 0; j < footnoteElements.length; j++) {
                     if (((widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.bodyWidgets[i]).footNoteReference === footnoteElements[j]) {
                         footWidgets.push((widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.bodyWidgets[i] as BodyWidget);
@@ -13062,7 +13559,6 @@ export class Layout {
         }
         if (footWidgets.length === 0 && !isNullOrUndefined(widget.bodyWidget.previousRenderedWidget) && (widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget) {
             for (let i: number = 0; i < (widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets.length; i++) {
-                /* eslint-disable-next-line max-len */
                 for (let j: number = 0; j < footnoteElements.length; j++) {
                     if (((widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets[i]).footNoteReference === footnoteElements[j]) {
                         footWidgets.push((widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets[i] as BodyWidget);
@@ -13072,7 +13568,6 @@ export class Layout {
         }
         if (footWidgets.length === 0 && !isNullOrUndefined(widget.bodyWidget.nextRenderedWidget) && (widget.bodyWidget.nextRenderedWidget as BodyWidget).page.footnoteWidget) {
             for (let i: number = 0; i < (widget.bodyWidget.nextRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets.length; i++) {
-                /* eslint-disable-next-line max-len */
                 for (let j: number = 0; j < footnoteElements.length; j++) {
                     if (((widget.bodyWidget.nextRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets[i]).footNoteReference === footnoteElements[j]) {
                         footWidgets.push((widget.bodyWidget.nextRenderedWidget as BodyWidget).page.footnoteWidget.bodyWidgets[i] as BodyWidget);
@@ -13106,17 +13601,19 @@ export class Layout {
                         } else {
                             footnoteElements = this.getFootNotesOfBlock(block, footnoteElements);
                         }
-                        let blockfootnoteWidgets: BodyWidget[] = this.getFootNoteWidgetsBy(block, footnoteElements);
-                        if (isShifting && blockfootnoteWidgets.length === 0) {
-                            for (var l = 0; l < footnoteElements.length; l++) {
-                                if (footnoteWidgets.indexOf(footnoteElements[l].bodyWidget) === -1) {
-                                    footnoteWidgets.push(footnoteElements[l].bodyWidget);
+                        if (footnoteElements.length > 0) {
+                            let blockfootnoteWidgets: BodyWidget[] = this.getFootNoteWidgetsBy(block, footnoteElements);
+                            if (isShifting && blockfootnoteWidgets.length === 0) {
+                                for (var l = 0; l < footnoteElements.length; l++) {
+                                    if (footnoteWidgets.indexOf(footnoteElements[l].bodyWidget) === -1) {
+                                        footnoteWidgets.push(footnoteElements[l].bodyWidget);
+                                    }
                                 }
-                            }
-                        } else {
-                            for (let f: number = 0; f < blockfootnoteWidgets.length; f++) {
-                                if (footnoteWidgets.indexOf(blockfootnoteWidgets[f]) === -1) {
-                                    footnoteWidgets.push(blockfootnoteWidgets[f]);
+                            } else {
+                                for (let f: number = 0; f < blockfootnoteWidgets.length; f++) {
+                                    if (footnoteWidgets.indexOf(blockfootnoteWidgets[f]) === -1) {
+                                        footnoteWidgets.push(blockfootnoteWidgets[f]);
+                                    }
                                 }
                             }
                         }
@@ -13229,7 +13726,6 @@ export class Layout {
             if (isClearHeight) {
                 cell.height = 0;
             }
-            /* eslint-disable-next-line max-len */
             this.shiftCellWidget(cell, this.getMaxTopCellMargin(row) + row.topBorderWidth, this.getMaxBottomCellMargin(row) + row.bottomBorderWidth, isClearHeight);
         }
         viewer.updateClientAreaForRow(row, false);
@@ -13376,7 +13872,6 @@ export class Layout {
             }
         }
     }
-    /* eslint-disable-next-line max-len */
     private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BodyWidget[], isColumnBreak?: boolean, footHeight?: number): boolean {
         const firstLine: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
         const keepLinesTogether: boolean = (paragraphWidget.paragraphFormat.keepLinesTogether && (this.viewer.clientActiveArea.y !== this.viewer.clientArea.y));
@@ -13434,9 +13929,7 @@ export class Layout {
             }
             if (isNullOrUndefined(splittedWidget.containerWidget) && splittedWidget.childWidgets.length > 0) {
                 const y: number = viewer.clientActiveArea.y;
-                // eslint-disable-next-line max-len
                 const clientArea: Rect = new Rect(viewer.clientArea.x, viewer.clientArea.y, viewer.clientArea.width, viewer.clientArea.height);
-                // eslint-disable-next-line max-len
                 const activeArea: Rect = new Rect(viewer.clientActiveArea.x, viewer.clientActiveArea.y, viewer.clientActiveArea.width, viewer.clientActiveArea.height);
                 let prevPage: Page = paragraphWidget.bodyWidget.page;
                 //Checks whether next node exists, else adds new page.
@@ -13479,7 +13972,7 @@ export class Layout {
             let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
             if (!this.isInitialLoad && !isNullOrUndefined(blockInfo.node) && !paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak && isNullOrUndefined(paragraphWidget.previousSplitWidget)) {
                 startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
-                if (startBlock.containerWidget instanceof BodyWidget && startBlock.containerWidget.firstChild !== startBlock) {
+                if (startBlock.containerWidget instanceof BodyWidget && startBlock.containerWidget == previousBodyWidget && startBlock.containerWidget.firstChild !== startBlock) {
                     startIndex = startBlock instanceof TableWidget ? 0 : parseInt(blockInfo.position.index, 10);
                     paragraphWidget = startBlock as ParagraphWidget;
                     keepWithNext = true;
@@ -13587,7 +14080,6 @@ export class Layout {
             let insertIndex: number = 0;
             let check: boolean = false;
             for (let k: number = 0; k < footnoteWidgets.length; k++) {
-                /* eslint-disable-next-line max-len */
                 footNoteWidget = footnoteWidgets[k];
                 footNoteIndex = fromBodyWidget.page.footnoteWidget.bodyWidgets.indexOf(footNoteWidget);
                 if (footNoteIndex >= 0) {
@@ -13649,7 +14141,6 @@ export class Layout {
         if (isNullOrUndefined(lineWidget) || isNullOrUndefined(lineWidget.children)) {
             return 0;
         }
-        /* eslint-disable-next-line max-len */
         if (lineWidget.children.length === 0 || ((lineWidget.children.length === 1 && lineWidget.children[0] instanceof ListTextElementBox) || (lineWidget.children.length === 2 && lineWidget.children[0] instanceof ListTextElementBox && lineWidget.children[1] instanceof ListTextElementBox))) {
             const topMargin: number = 0;
             const bottomMargin: number = 0;
@@ -13731,7 +14222,6 @@ export class Layout {
         }
         return false;
     }
-    /* eslint-disable-next-line max-len */
     private shiftToPreviousWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousWidget: ParagraphWidget, isPageBreak: boolean, isColumnBreak: boolean): void {
         const fromBodyWidget: BodyWidget = paragraphWidget.containerWidget as BodyWidget;
         let toBodyWidget: BodyWidget = previousWidget.containerWidget as BodyWidget;
@@ -14010,7 +14500,7 @@ export class Layout {
         }
         // eslint-disable  no-constant-condition
         if (this.isTextFormat) {
-            let index = body.childWidgets.indexOf(block);
+            let index = body.childWidgets.indexOf(block) + 1;
             let child = body.childWidgets.slice(index);
             body.childWidgets.splice(index);
             for (const obj of child) {
@@ -14058,7 +14548,6 @@ export class Layout {
                 }
                 lastBlock.containerWidget = nextBody;
                 nextBody.height += lastBlock.height;
-                // eslint-disable-next-line no-constant-condition
             } while (true);
         }
         return nextBody;
@@ -14196,7 +14685,6 @@ export class Layout {
             (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak)) {
             this.viewer.cutFromTop(paragraph.y + paragraph.height);
             if (paragraph.containerWidget !== prevWidget.containerWidget && !isNullOrUndefined(prevWidget.containerWidget)) {
-                /* eslint-disable-next-line max-len */
                 let prevBodyWidget: BodyWidget = paragraph.containerWidget as BodyWidget;
                 let newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
                 const footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(paragraph);
@@ -14682,6 +15170,50 @@ export class Layout {
         }
     }
 
+    private isPageOrNumPageField(element: ElementBox): boolean {
+        const isField = (e: ElementBox | undefined): e is FieldElementBox =>
+            !!e && (e as FieldElementBox).fieldType !== undefined;
+        let fieldStart: FieldElementBox | undefined;
+        if (isField(element)) {
+            fieldStart = element.fieldType === 0 ? element : element.fieldBegin;
+        } else {
+            let prev: ElementBox | undefined = element.previousElement;
+            let depth: number = 0;
+            while (prev) {
+                if (isField(prev)) {
+                    if (prev.fieldType === 1) {
+                        depth++;
+                    } else if (prev.fieldType === 0) {
+                        if (depth === 0) {
+                            fieldStart = prev;
+                            break;
+                        }
+                        depth--;
+                    }
+                }
+                prev = prev.previousElement;
+            }
+        }
+        if (!fieldStart) {
+            return false;
+        }
+        let code: string = '';
+        let next: ElementBox | undefined = fieldStart.nextElement;
+        while (next && !isField(next)) {
+            if (typeof (next as TextElementBox).text === 'string') {
+                code += (next as TextElementBox).text;
+            }
+            next = next.nextElement;
+        }
+        return /^\s*(NUMPAGES|PAGE)(\s|$)/i.test(code);
+    }
+    private isNeedToConsiderPagefieldAsBidi(line: LineWidget, prevBidi: boolean, element: ElementBox): boolean {
+        const paragraph: ParagraphWidget = line.paragraph;
+        return !isNullOrUndefined(paragraph) &&
+            paragraph.isInHeaderFooter &&
+            prevBidi &&
+            this.isPageOrNumPageField(element);
+    }
     private reorderElements(line: LineWidget, characterRangeTypes: CharacterRangeType[], listElementsBidiValues: boolean[], paraBidi: boolean): ElementBox[] {
         let insertIndex: number = 0, lastItemIndexWithoutRTLFlag = -1, consecutiveRTLCount = 0, consecutiveNumberCount = 0;
         let reorderedElements: ElementBox[] = [];
@@ -14694,7 +15226,11 @@ export class Layout {
             textElement.characterRange = characterRangeTypes[i];
        
             let isRTLText: boolean = (textElement.characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft || textElement.characterRange == CharacterRangeType.Number;
-            let isBidi: boolean = listElementsBidiValues[i];
+            const isPageFieldBidi: boolean = this.isNeedToConsiderPagefieldAsBidi(line, prevBidi, element);
+            let isBidi: boolean = listElementsBidiValues[i] || isPageFieldBidi;
+            if (element instanceof FieldTextElementBox) {
+                element.isRtlPageNumber = isPageFieldBidi && !listElementsBidiValues[i];
+            }
             const text: string = textElement.text;
             if (!isNullOrUndefined(text) && (textElement.characterRange & CharacterRangeType.WordSplit) !== 0) {
                 const hasRLM: boolean = text.indexOf('\u200F') !== -1;
@@ -15092,7 +15628,6 @@ export class Layout {
                                 //     }
                                 // }
 
-                                // eslint-disable-next-line max-len
                                 //Floating item Y position is calculated from paragraph original Y position not from wrapped paragraph Y(ParagraphLayoutInfo.YPosition) position.
                                 indentY = Math.round(paragraph.y) + space + vertPosition;
                                 break;
@@ -15283,6 +15818,11 @@ export class Layout {
                                         case 'None':
                                             break;
                                     }
+                                    if ((floatElement instanceof ImageElementBox || floatElement instanceof ShapeElementBox || floatElement instanceof GroupShapeElementBox) && paragraph.bodyWidget.floatingElements && (floatElement.textWrappingStyle !== 'InFrontOfText' && floatElement.textWrappingStyle !== 'Behind')) {
+                                        const adjustedPosition: { x: number; y: number } = this.adjustPositionForFloatingTableCollision(indentX, indentY, floatElement, pageWidth);
+                                        indentX = adjustedPosition.x;
+                                        indentY = adjustedPosition.y;
+                                    }
                                 } else {
                                     indentX = this.viewer.clientArea.x + horzPosition;
                                 }
@@ -15346,6 +15886,65 @@ export class Layout {
         //}
 
         return new Point(indentX, indentY);
+    }
+    private adjustPositionForFloatingTableCollision(currentIndentX: number, currentIndentY: number, element: ShapeBase, bodyRight: number): { x: number; y: number } {
+        let result = { x: currentIndentX, y: currentIndentY };
+        let bodyWidget: BodyWidget = element.paragraph.bodyWidget;
+        if (!bodyWidget.floatingElements || bodyWidget.floatingElements.length === 0) {
+            return result;
+        }
+        for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+            const floatingElement: ShapeBase | TableWidget = bodyWidget.floatingElements[i];
+            if (!(floatingElement instanceof TableWidget) || element.allowOverlap && floatingElement instanceof TableWidget && (floatingElement as TableWidget).positioning.allowOverlap) {
+                continue;
+            }
+            const bodyTop: number = this.viewer.clientArea.y;
+            const bodyBottom: number = this.viewer.clientArea.bottom;
+            const tableX: number = floatingElement.x;
+            const tableY: number = floatingElement.y;
+            const tableWidth: number = this.getTableWidth(floatingElement);
+            const tableHeight: number = floatingElement.height;
+            const tableRight: number = tableX + tableWidth;
+            const tableBottom: number = tableY + tableHeight;
+            const tableDistanceLeft: number = floatingElement.positioning.distanceLeft;
+            const tableDistanceTop: number = floatingElement.positioning.distanceTop;
+            const tableDistanceRight: number = floatingElement.positioning.distanceRight;
+            const tableDistanceBottom: number = floatingElement.positioning.distanceBottom;
+            const tableWrappingBounds = {
+                x: tableX - tableDistanceLeft,
+                y: tableY - tableDistanceTop,
+                right: tableRight + tableDistanceRight,
+                bottom: tableBottom + tableDistanceBottom
+            };
+            const availableLeft = tableWrappingBounds.x;
+            const availableRight = bodyRight - tableWrappingBounds.right;
+            const availableTop = tableWrappingBounds.y - bodyTop;
+            const availableBottom = bodyBottom - tableWrappingBounds.bottom;
+            const imageRight: number = currentIndentX + element.width;
+            const imageBottom: number = currentIndentY + element.height;
+            const isHorizontalOverlap: boolean = currentIndentX < tableWrappingBounds.right && imageRight > tableWrappingBounds.x;
+            const isVerticalOverlap: boolean = currentIndentY < tableWrappingBounds.bottom && imageBottom > tableWrappingBounds.y;
+            if (isHorizontalOverlap && isVerticalOverlap) {
+                if (availableRight >= element.width) {
+                    result.x = tableWrappingBounds.right;
+                    return result;
+                }
+                if (availableLeft >= element.width) {
+                    result.x = tableWrappingBounds.x - element.width;
+                    return result;
+                }
+                if (availableBottom >= element.height) {
+                    result.y = tableWrappingBounds.bottom;
+                    return result;
+                }
+                if (availableTop >= element.height) {
+                    result.y = tableWrappingBounds.y - element.height;
+                    return result;
+                }
+                return result;
+            }
+        }
+        return result;
     }
     private getLeftMarginHorizPosition(leftMargin: number, horzAlignment: HorizontalAlignment, horzPosition: number, shapeWidth: number, textWrapStyle: TextWrappingStyle): number {
         let indentX: number = horzPosition;
@@ -15558,7 +16157,8 @@ export class Layout {
                         }
                     }
 
-                    if (Math.round(position.horizontalPosition) > 0 || (position.horizontalOrigin === 'Margin' && position.horizontalAlignment === 'Left')) {
+                    if (Math.round(position.horizontalPosition) > 0 || ((position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column')
+                        && position.horizontalAlignment === 'Left')) {
                         this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
                     }
                 } else if (table.isInsideTable) {

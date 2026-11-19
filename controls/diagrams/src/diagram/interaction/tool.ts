@@ -44,6 +44,9 @@ import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../obje
 import { findAngle } from '../utility/connector';
 import { updateLaneBoundsWithSelector, hideErFieldInsertionIndicator } from './container-interaction';
 import { Diagram } from '../diagram';
+import { MeasurementUnit } from '../enum/enum';
+import { currentRulerUnitState, formatTooltipValue, getRulerUnitState, isPhysicalUnit } from '../utility/measurement-util';
+import { Internationalization } from '@syncfusion/ej2-base';
 import { AnnotationModel } from '../objects/annotation-model';
 import { BpmnTextNode } from '../objects/bpmn';
 
@@ -146,6 +149,7 @@ export class ToolBase {
         this.isTooltipVisible = true;
         this.startAction(args.source);
         this.checkProperty = true;
+        this.captureGestureUnitState();
         // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
         this.mouseDownElement = args.source;
     }
@@ -188,7 +192,37 @@ export class ToolBase {
         this.mouseDownElement = null;
     }
 
+    /**
+     * Builds `a:<x> b:<y>` tooltip text. Pixel keeps the previous rounded strings; physical units show two decimals and the symbol.
+     *
+     * @param {string} labelA - First label, such as X or W.
+     * @param {number} valueA - First value in diagram units.
+     * @param {string} labelB - Second label, such as Y or H.
+     * @param {number} valueB - Second value in diagram units.
+     * @returns {string} The tooltip text.
+     * @private
+     */
+    protected unitTooltip(labelA: string, valueA: number, labelB: string, valueB: number): string {
+        const diagram: Diagram = this.commandHandler ? this.commandHandler.diagram : null;
+        const unit: MeasurementUnit = diagram ? getRulerUnitState(diagram).unit : 'Pixel';
+        if (!isPhysicalUnit(unit)) {
+            return labelA + ':' + Math.round(valueA) + ' ' + labelB + ':' + Math.round(valueB);
+        }
+        const locale: string = new Internationalization().culture;
+        return labelA + ':' + formatTooltipValue(valueA, unit, locale) + ' ' + labelB + ':' + formatTooltipValue(valueB, unit, locale);
+    }
+
+    private captureGestureUnitState(): void {
+        const diagram: Diagram = this.commandHandler ? this.commandHandler.diagram : null;
+        if (diagram && diagram.rulerSettings) {
+            diagram.gestureUnitState = currentRulerUnitState(diagram);
+        }
+    }
+
     protected endAction(): void {
+        if (this.commandHandler && this.commandHandler.diagram) {
+            this.commandHandler.diagram.endUnitGesture();
+        }
         if (!this.isTooltipVisible) {
             this.commandHandler.closeTooltip();
         }
@@ -876,7 +910,7 @@ export class ConnectTool extends ToolBase {
     }
 
     private getTooltipContent(position: PointModel): string {
-        return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
+        return this.unitTooltip('X', position.x, 'Y', position.y);
     }
 
     private checkConnect(target: PointPortModel, args: MouseEventArgs): boolean {
@@ -1691,7 +1725,7 @@ export class MoveTool extends ToolBase {
 
 
     private getTooltipContent(node: SelectorModel): string {
-        return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
+        return this.unitTooltip('X', node.wrapper.bounds.x, 'Y', node.wrapper.bounds.y);
     }
 
     /**
@@ -2050,7 +2084,7 @@ export class ResizeTool extends ToolBase {
         this.mouseUp(args);
     }
     private getTooltipContent(node: SelectorModel): string {
-        return 'W:' + Math.round(node.wrapper.bounds.width) + ' ' + 'H:' + Math.round(node.wrapper.bounds.height);
+        return this.unitTooltip('W', node.wrapper.bounds.width, 'H', node.wrapper.bounds.height);
     }
 
     private getChanges(change: PointModel): PointModel {
@@ -2290,7 +2324,7 @@ export class ConnectorDrawingTool extends ConnectTool {
             if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 //970513- Draw connector's target end from InConnect-Only ports
-                if (args.sourceWrapper && args.actualObject && !(args.actualObject as Node).isPhase && !(args.actualObject as Node).isLane) {
+                if (args.sourceWrapper && args.actualObject) {
                     const targetObjID: string = (args.sourceWrapper.id).split('_')[0];
                     const portId: string = (args.sourceWrapper.id).split('_')[1];
                     const targetPort: PortModel = (args.actualObject as Node).ports.find((port: PortModel) => port.id === portId);

@@ -4,13 +4,12 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DropDownButton, MenuEventArgs, ItemModel, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
-import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
+import { hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
-import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType } from './../../index';
+import { ProtectionType, SectionBreakType } from './../../index';
 import { ListView, SelectEventArgs as ListSelectEventArgs } from '@syncfusion/ej2-lists';
-import { HelperMethods } from './../../index';
 import { IToolbarHandler } from '../helper/toolbar-handler';
 
 const TOOLBAR_ID: string = '_toolbar';
@@ -34,6 +33,7 @@ const PAGE_NUMBER_ID: string = '_page_number';
 const BREAK_ID: string = '_break';
 const LISTVIEW_ID: string = '_listView';
 const FIND_ID: string = '_find';
+const TEXT_BOX_ID: string = '_text_box';
 const CLIPBOARD_ID: string = '_use_local_clipboard';
 const RESTRICT_EDITING_ID: string = '_restrict_edit';
 const PAGE_BREAK: string = '_page_break';
@@ -181,6 +181,7 @@ export class Toolbar implements IToolbarHandler {
         this.toolbar.appendTo(toolbarTarget);
         this.initToolbarDropdown(toolbarTarget);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private initToolbarDropdown(toolbarTarget: HTMLElement): void {
         if (this.container) {
             const locale: L10n = this.container.localObj;
@@ -575,6 +576,14 @@ export class Toolbar implements IToolbarHandler {
                         id: id + BREAK_ID, htmlAttributes: {'aria-label': locale.getConstant('Break')}
                     });
                     break;
+                case 'TextBox':
+                    toolbarItems.push({
+                        template: '<button title="' + locale.getConstant('Text Box') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib" type="button" id="' + id + TEXT_BOX_ID + '">' +
+                        '<span class="e-btn-icon e-icons e-text-annotation e-icon-left"></span>' + '<span class="e-tbar-btn-text">' + locale.getConstant('Text Box') + '</span>' + '</button>',
+                        id: id + TEXT_BOX_ID,
+                        htmlAttributes: { 'aria-label': locale.getConstant('Text Box')}
+                    });
+                    break;
                 case 'Find':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
@@ -717,6 +726,9 @@ export class Toolbar implements IToolbarHandler {
             break;
         case id + FIND_ID:
             this.container.documentEditor.showOptionsPane();
+            break;
+        case id + TEXT_BOX_ID:
+            this.container.documentEditor.showDialog('TextBox');
             break;
         case id + CLIPBOARD_ID:
             this.toggleLocalPaste(args.item.id);
@@ -934,7 +946,6 @@ export class Toolbar implements IToolbarHandler {
         hideSpinner(this.container.containerTarget);
     }
     private successHandler(result: any): void {
-        /* eslint-disable */
         this.container.documentEditor.open(result.data as string);
         hideSpinner(this.container.containerTarget);
         /* eslint-enable */
@@ -1120,7 +1131,6 @@ export class Toolbar implements IToolbarHandler {
         if (this.toolbarItems.indexOf('Undo') >= 0) {
             const undoElement: HTMLElement = this.container.element.querySelector('#' + id + UNDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
-            /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(undoElement)) {
                 this.toolbar.enableItems(undoElement.parentElement, this.container.documentEditor.editorHistoryModule.canUndo());
             }
@@ -1128,7 +1138,6 @@ export class Toolbar implements IToolbarHandler {
         if (this.toolbarItems.indexOf('Redo') >= 0) {
             const redoElement: HTMLElement = this.container.element.querySelector('#' + id + REDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
-            /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(redoElement)) {
                 this.toolbar.enableItems(redoElement.parentElement, this.container.documentEditor.editorHistoryModule.canRedo());
             }
@@ -1168,6 +1177,7 @@ export class Toolbar implements IToolbarHandler {
 
     /**
      * Handles document changes (like loading a new document)
+     *
      * @returns {void}
      * @private
      */

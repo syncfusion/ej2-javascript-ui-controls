@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 35.1.41 (2026-10-20)
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved an issue where ink annotations were not redacted when applying redactions.
+- Resolved an issue where text search failed in right-to-left documents.
+
+## 35.1.40 (2026-10-13)
+
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved the bundle size increase issue by optimizing package inclusion.
+
+## 34.1.32 (2026-07-21)
 
 ### PDF Data Extract
 

@@ -20,17 +20,20 @@ export const PRINT_ID: string = 'print';
 
 /**
  * FileMenu class for Document Editor Ribbon
+ *
  * @private
  */
 export class FileMenu {
     /**
      * Container reference
+     *
      * @private
      */
     private container: DocumentEditorContainer;
 
     /**
      * File picker element
+     *
      * @private
      */
     private filePicker: HTMLInputElement;
@@ -172,6 +175,7 @@ export class FileMenu {
 
     /**
      * Handle file change event when a document is opened
+     *
      * @private
      * @returns {void}
      */
@@ -231,6 +235,7 @@ export class FileMenu {
 
     /**
      * Check if the file format is supported
+     *
      * @private
      * @param {string} formatType - The file format extension
      * @returns {boolean} Whether the format is supported
@@ -255,6 +260,7 @@ export class FileMenu {
 
     /**
      * Destroy the file menu
+     *
      * @returns {void}
      */
     public destroy(): void {

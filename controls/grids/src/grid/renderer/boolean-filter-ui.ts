@@ -1,14 +1,12 @@
 import { IGrid, IFilterMUI, EJ2Intance, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
-import { L10n } from '@syncfusion/ej2-base';
 import { eventPromise, getZIndexCalcualtion, toggleFilterUI } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { Query, DataManager, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Filter } from '../actions/filter';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { FlMenuOptrUI } from './filter-menu-operator';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
@@ -53,7 +51,7 @@ export class BooleanFilterUI implements IFilterMUI {
         args.target.appendChild(this.multiSelectElement);
         this.createDropDownList(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
     }
 
     public write(args: IFilterWrite): void {

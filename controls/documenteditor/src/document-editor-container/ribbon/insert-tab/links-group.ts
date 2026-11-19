@@ -3,11 +3,13 @@ import { RibbonGroupBase } from '../ribbon-interfaces';
 
 /**
  * Links group implementation for Insert tab
+ *
  * @private
  */
 export class LinksGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Links group
+     *
      * @returns {RibbonGroupModel} - Links group model
      * @private
      */

@@ -1383,7 +1383,7 @@ export interface WebMcpToolExecuteEventArgs {
      */
     cancel?: boolean;
     /**
-     * Specifies the name of the WebMCP tool being executed (e.g. `'editCell'`, `'getCellData'`).
+     * Specifies the name of the WebMCP tool being executed (e.g. `'getContent'`, `'getSelectedHtml'`).
      */
     toolName?: string;
     /**
@@ -1411,7 +1411,7 @@ export interface WebMcpToolExecuteEventArgs {
  */
 export interface WebMcpTool {
     /**
-     * The unique identifier name of the WebMCP tool (e.g., 'editCell', 'getCellData').
+     * The unique identifier name of the WebMCP tool (e.g., 'getContent', 'getSelectedHtml').
      */
     name: string;
     /**

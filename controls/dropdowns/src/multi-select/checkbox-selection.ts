@@ -187,12 +187,14 @@ export class CheckBoxSelection {
         let target: EventTarget;
         if (!isNullOrUndefined(args.e)) {
             const frameElm: Element = args.li.querySelector('.e-checkbox-wrapper .e-frame');
-            target = !isNullOrUndefined(args.e.target) ?
-                ((args.e.target as HTMLElement).classList.contains('e-frame')
-                && (!this.parent.showSelectAll
-                    || ( this.checkAllParent && !this.checkAllParent.contains(args.e.target as Element)))) ?
-                    args.e.target : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]
-                : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
+            const checkboxWrapper: Element | null = args.li.querySelector('.e-checkbox-wrapper');
+            target = !isNullOrUndefined(args.e.target)
+                ? ((args.e.target as HTMLElement).classList.contains('e-frame') &&
+                    (!this.parent.showSelectAll ||
+                        (this.checkAllParent && !this.checkAllParent.contains(args.e.target as Element))))
+                    ? args.e.target
+                    : (checkboxWrapper ? checkboxWrapper.childNodes[1] : null)
+                : (checkboxWrapper ? checkboxWrapper.childNodes[1] : null);
         } else {
             const checkboxWrapper: Element = args.li.querySelector('.e-checkbox-wrapper');
             target = checkboxWrapper ? checkboxWrapper.childNodes[1] : args.li.lastElementChild.childNodes[1];

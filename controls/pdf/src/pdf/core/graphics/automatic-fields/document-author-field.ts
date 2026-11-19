@@ -1,6 +1,6 @@
 import { PdfFont, PdfStringFormat } from '../../fonts';
 import { PdfDocument } from '../../pdf-document';
-import { PdfDocumentInformation } from '../../pdf-document-information';
+import { PdfDocumentInformation } from '../../pdf-document-helper';
 import { PdfPage } from '../../pdf-page';
 import { PdfBrush, PdfGraphics } from '../pdf-graphics';
 import { PdfSingleValueField } from './single-value-field';

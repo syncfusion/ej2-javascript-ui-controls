@@ -54,7 +54,7 @@ export class StringFilterUI implements IFilterMUI {
         this.dialogObj = args.dialogObj;
         this.processDataOperation(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
     }
 
     private processDataOperation(args: IFilterCreate): void {
@@ -62,7 +62,8 @@ export class StringFilterUI implements IFilterMUI {
             (<Promise<Object>>this.parent.getDataModule().dataManager.executeQuery(this.parent.getDataModule().generateQuery(true)))
                 .then((result: ReturnType) => {
                     this.getAutoCompleteOptions(args, result);
-                    toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
+                    toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid,
+                                   args.column, args.column.type, args.dialogObj);
                 });
             return;
         }

@@ -82,7 +82,8 @@ export class HtmlExport {
         let isList: boolean = false;
         const tagAttributes: string[] = [];
         let listLevel: WListLevel = undefined;
-        if (!isNullOrUndefined(paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]])) {
+        const listFormat = paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(listFormat) && !isNullOrUndefined(listFormat[listIdProperty[this.keywordIndex]])) {
             listLevel = this.getListLevel(paragraph);
             if (!isNullOrUndefined(listLevel)) {
                 isList = true;

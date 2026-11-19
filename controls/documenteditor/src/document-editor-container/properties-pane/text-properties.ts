@@ -179,7 +179,6 @@ export class Text {
         const hgltSplitObj: SplitButton = new SplitButton({
             cssClass: 'e-de-btn-hghlclr',
             iconCss: 'e-de-ctnr-hglt-color',
-            /* eslint-disable-next-line max-len */
             target: this.highlightColorElement, close: this.closePopup.bind(this), enableRtl: this.isRtl,
             beforeOpen: function (this: SplitButton, e: any): void {
                 textProperties.openPopup(e, this);
@@ -332,7 +331,6 @@ export class Text {
         return div;
 
     }
-    /* eslint-disable-next-line max-len */
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
         const button: HTMLButtonElement = createElement('Button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // button.style.width = width + 'px';

@@ -5,6 +5,20 @@ import { Operation, Revision } from '../implementation';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 
 /**
+ * Internal event constants for WebMCP communication between component and adapter.
+ * getWebMcpTools: fired when component.getWebMcpTools() is called
+ * registerWebMcpTools: fired when component.registerWebMcpTools() is called
+ */
+/**
+ * @private
+ */
+export const getWebMcpTools: string = 'getWebMcpTools';
+/**
+ * @private
+ */
+export const registerWebMcpTools: string = 'registerWebMcpTools';
+
+/**
  * ServiceFailureArgs
  */
 export interface ServiceFailureArgs {
@@ -46,6 +60,82 @@ export interface FormFieldFillEventArgs {
      * Specifies whether form fill action is canceled or not.
      */
     isCanceled?: boolean
+}
+
+/**
+ * Defines the event arguments for the `beforeWebMcpToolExecute` event.
+ * Provides access to the tool name and its input arguments before execution,
+ * and allows the application to inspect, modify, or cancel the operation.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /**
+     * Specifies whether the tool execution should be cancelled.
+     * Set to `true` to prevent the tool from executing.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the name of the WebMCP tool being executed (e.g. `'saveDocument'`, `'insertBookmark'`).
+     */
+    toolName?: string;
+    /**
+     * Specifies the arguments passed to the tool.
+     * The shape of this object matches the tool's `inputSchema` as defined in the tool registry.
+     */
+    toolArgs?: object;
+    /**
+     * Set to `true` to display a confirmation dialog to the user before the tool executes.
+     * Execution proceeds only if the user confirms.
+     */
+    showConfirmationDialog?: boolean;
+    /**
+     * Specifies a custom response message to send back to the AI when tool execution is cancelled,
+     * either by setting `cancel` to `true` or when the user dismisses the confirmation dialog.
+     * When not provided, a default cancellation message is sent to the AI.
+     */
+    cancellationResponse?: string;
+}
+
+
+/**
+ * Defines the structure of a WebMCP tool, including its name, description,
+ * and input/output JSON schemas used for tool registration and execution.
+ */
+export interface WebMcpTool {
+    /**
+     * The unique identifier name of the WebMCP tool (e.g., 'insertText', 'saveDocument').
+     */
+    name: string;
+    /**
+     * A description of the tool's functionality and purpose.
+     */
+    description: string;
+    /**
+     * The JSON schema object that defines the expected input parameters for the tool.
+     */
+    inputSchema: object;
+    /**
+     * The JSON schema object that defines the structure of the tool's output response.
+     */
+    outputSchema: object;
+    /**
+     * A readOnlyHint flag indicating whether the tool performs read-only operations without modifying state.
+     */
+    annotations: object;
+    /**
+     * A function that executes the tool's logic when invoked.
+     */
+    execute?: Function;
+}
+
+/**
+ * Defines the result returned by a WebMCP tool execution,
+ * containing the response content array and an optional error flag.
+ *
+ * @hidden
+ */
+export interface WebMcpToolResponse {
+    content: { type: string; text: string }[];
+    isError?: boolean;
 }
 
 /**
@@ -286,6 +376,7 @@ export interface ContentChangeEventArgs {
 
     /**
      * Provide necessary information about operations performed in DocumentEditor.
+     *
      * @private
      */
     operations?: Operation[]
@@ -448,6 +539,7 @@ export interface ContainerContentChangeEventArgs {
     source: DocumentEditorContainer
     /**
      * Provide necessary information about operations performed in DocumentEditor.
+     *
      * @private
      */
     operations?: Operation[]
@@ -582,6 +674,7 @@ export interface BeforePasteEventArgs {
     /**
      * Gets or sets a value indicating whether to cancel the paste operation.
      * Set to true to prevent the default paste behavior.
+     *
      * @default false
      * @returns {boolean}
      */
@@ -604,6 +697,7 @@ export interface UnsupportedBorderStyleClickEventArgs {
     /**
      * Gets or sets a value indicating whether to cancel the built-in alert dialog.
      * Set to true to suppress the default dialog when an unsupported border style is clicked.
+     *
      * @default false
      * @returns {boolean}
      */
@@ -611,6 +705,7 @@ export interface UnsupportedBorderStyleClickEventArgs {
     /**
      * Gets or sets the display text shown in the built-in alert dialog.
      * This allows customization of the message when an unsupported border style is selected.
+     *
      * @returns {string}
      */
     alertMessage: string;

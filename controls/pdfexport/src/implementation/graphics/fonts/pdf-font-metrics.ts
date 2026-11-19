@@ -139,7 +139,6 @@ export class PdfFontMetrics {
                 case PdfSubSuperScript.SubScript:
                     size /= this.subScriptSizeFactor;
                     break;
-
                 case PdfSubSuperScript.SuperScript:
                     size /= this.superscriptSizeFactor;
                     break;

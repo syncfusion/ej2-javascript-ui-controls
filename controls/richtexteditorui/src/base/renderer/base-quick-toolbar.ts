@@ -2,7 +2,7 @@ import { detach, append, isNullOrUndefined as isNOU, closest, remove } from '@sy
 import { addClass, removeClass, Browser, setStyleAttribute } from '@syncfusion/ej2-base';
 import { CollisionType, Popup, PopupModel, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
-import { ToolbarItem } from '../../richtexteditor-ui/model/toolbar.types';
+import { BaseToolbarItem } from '../../richtexteditor-ui/model/toolbar.types';
 import { EditorToolbar } from './editor-toolbar';
 import { RichTextEditorUI } from '../../richtexteditor-ui/richtexteditor-ui';
 import { QuickPopupRenderer, QuickToolbarEventArgs } from './quick-popup';
@@ -19,7 +19,7 @@ export class BaseQuickToolbar {
     public element: HTMLElement;
     public isRendered: boolean;
     public quickTBarObj: EditorToolbar;
-    private toolbarItems: ToolbarItem[];
+    private toolbarItems: BaseToolbarItem;
     private parent: RichTextEditorUI;
     public toolbarElement: HTMLElement;
     public tooltip: Tooltip;
@@ -82,14 +82,17 @@ export class BaseQuickToolbar {
         const quickPopupRenderer: QuickPopupRenderer = new QuickPopupRenderer(this.parent);
         this.popupObj = quickPopupRenderer.renderPopup(args.popupType as QuickToolbarType);
         this.element = this.popupObj.element;
-        this.tipPointerElem = this.element.querySelector('.e-rte-ui-tip-pointer');
+        this.tipPointerElem = this.element.querySelector('.' + classes.CLS_QUICK_TBAR_TIP_POINTER);
         this.appendToolbarElement();
         this.createToolbar(args.toolbarItems, args.statusRefresh);
         this.addEventListener();
         this.addCSSClass();
     }
 
-    private createToolbar(items: ToolbarItem[], statusRefresh?: () => void): void {
+    private createToolbar(
+        items: BaseToolbarItem,
+        statusRefresh?: () => void
+    ): void {
         this.quickTBarObj = new EditorToolbar();
         this.quickTBarObj.render({
             element: this.toolbarElement,
@@ -162,7 +165,7 @@ export class BaseQuickToolbar {
         const range: Range = selection.getRangeAt(0);
         const iframeRect: DOMRect = null;
         const clientRects: DOMRectList = range.getClientRects() as DOMRectList;
-        const isEmptyContent: boolean = clientRects.length === 0 && (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV' ||
+        const isEmptyContent: boolean = clientRects.length === 0 && ((range.startContainer.nodeName === 'P' && !range.startContainer.parentElement.closest('table')) || range.startContainer.nodeName === 'DIV' ||
             (range.startContainer.nodeName === 'BR' && !range.startContainer.parentElement.closest('table')));
         const direction: SelectionDirection = this.getSelectionDirection(selection);
         if (this.type === 'Text' && direction === 'Backward') {
@@ -188,7 +191,8 @@ export class BaseQuickToolbar {
         };
         this.popupWidth = this.getPopupDimension(this.popupObj, 'width');
         this.popupHeight = this.getPopupDimension(this.popupObj, 'height');
-        this.toolbarHeight = this.parent.toolbarModule.wrapperElement.getBoundingClientRect().height;
+        this.toolbarHeight = this.parent.toolbarSettings.enable ?
+            this.parent.toolbarModule.wrapperElement.getBoundingClientRect().height : 0;
         const offsetX: number = isEmptyContent ? 1 : this.calculateOffsetX(offsetCalculationParam);
         const offsetY: number = this.calculateOffsetY(offsetCalculationParam);
         if (isEmptyContent) {
@@ -227,7 +231,7 @@ export class BaseQuickToolbar {
 
     private renderTooltip(): void {
         addClass([this.element], [classes.CLS_HIDE]);
-        append([this.element], this.parent.quickToolbarSettings.appendToBody ?
+        append([this.element], this.parent.quickToolbarSettings.enableAppendToBody ?
             this.parent.inputElement.ownerDocument.body : this.parent.inputElement.parentElement);
         if (this.quickTBarObj && this.quickTBarObj.getRenderer() && this.quickTBarObj.getRenderer().isRendered) {
             this.quickTBarObj.ensureQuickPopupNestedItems();
@@ -541,7 +545,7 @@ export class BaseQuickToolbar {
             this.parent.scrollParentElements[0].nodeName !== '#document' ? this.parent.scrollParentElements[0] : this.parent.inputElement;
         const scrollParentRect: DOMRect = scrollTopParentElement.getBoundingClientRect() as DOMRect;
         const blockRect: DOMRect = offsetParams.blockRect;
-        const toolbarRect: DOMRect = this.parent.quickToolbarSettings.appendToBody ?
+        const toolbarRect: DOMRect = this.parent.quickToolbarSettings.enableAppendToBody || this.parent.toolbarSettings.enable === false ?
             { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 } as DOMRect :
             this.parent.toolbarModule.wrapperElement.firstElementChild.getBoundingClientRect() as DOMRect;
         const isBottomToolbar: boolean = this.parent.toolbarSettings.position === 'Bottom';
@@ -574,7 +578,7 @@ export class BaseQuickToolbar {
             const parentTopClamped: number = !isFloating ? Math.max(parentRect.top, 0) : parentRect.top;
             const withToolbarHeight: number = -(blockRect.top) + toolbarRect.bottom; // WHen floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
             const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
-                (this.parent.quickToolbarSettings.appendToBody ?
+                (this.parent.quickToolbarSettings.enableAppendToBody ?
                     -(blockRect.top - parentTopClamped) :
                     -(blockRect.top)) : (-blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.
             if (isBottomToolbar) {
@@ -702,7 +706,7 @@ export class BaseQuickToolbar {
         const isBottomToolbar: boolean = this.parent.toolbarSettings.position === 'Bottom';
         const containsMedia: boolean = (this.type === 'Text' || this.type === 'Inline') && offsetParams.blockElement.querySelectorAll('img, video').length > 0;
         const blockRect: DOMRect = containsMedia ? offsetParams.rangeRect : offsetParams.blockRect;
-        const toolbarRect: DOMRect = this.parent.quickToolbarSettings.appendToBody ?
+        const toolbarRect: DOMRect = this.parent.quickToolbarSettings.enableAppendToBody || this.parent.toolbarSettings.enable === false ?
             { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 } as DOMRect :
             this.parent.toolbarModule.wrapperElement.firstElementChild.getBoundingClientRect() as DOMRect;
         const isFloating: boolean = this.parent.toolbarSettings.enableFloating;
@@ -724,7 +728,7 @@ export class BaseQuickToolbar {
             args.positionY = -(this.popupHeight + 10) + (offsetParams.rangeRect.top - offsetParams.blockRect.top);
             this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
         } else if ((spaceAbove < totalPopupHeight && spaceBelow < totalPopupHeight) &&
-            (containsMedia || isLargeBlock) && !this.parent.quickToolbarSettings.appendToBody) {
+            (containsMedia || isLargeBlock) && !this.parent.quickToolbarSettings.enableAppendToBody) {
             const withToolbarHeight: number = -(offsetParams.blockRect.top) + toolbarRect.bottom; // When floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
             const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
                 -(offsetParams.blockRect.top) : (-offsetParams.blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.
@@ -760,7 +764,7 @@ export class BaseQuickToolbar {
     // Hides the quick toolbar by setting positionY to off-screen when the block element or popup is outside the editor's visible bounds.
     private applyFloatingVisibilityClamp(
         args: BeforeQuickToolbarOpenArgs, blockRect: DOMRect, parentRect: DOMRect): BeforeQuickToolbarOpenArgs {
-        if (this.parent.quickToolbarSettings.appendToBody) {
+        if (this.parent.quickToolbarSettings.enableAppendToBody) {
             const blockTop: number = blockRect.top;
             const blockBottom: number = blockRect.bottom;
             const isBlockInViewport: boolean = blockBottom > 0 && blockTop < window.innerHeight;
@@ -886,7 +890,7 @@ export const CLS_LINK_QUICK_TB: string = 'e-link-quicktoolbar';
 export interface IQuickToolbarOptions {
     popupType: string
     mode: OverflowMode
-    toolbarItems: ToolbarItem[],
+    toolbarItems: BaseToolbarItem,
     cssClass: string
     statusRefresh?: () => void
 }

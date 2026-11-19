@@ -1136,6 +1136,7 @@ export class TablePropertiesDialog {
     }
     //#endregion
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private initTableAltProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
         const altDiv: HTMLElement = createElement('div', { className: 'e-de-table-dialog-size-label' });
 

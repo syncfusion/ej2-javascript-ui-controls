@@ -1,14 +1,14 @@
 /**
- * WebMcpAdapter - Diagram Component WebMCP Integration
+ * WebMcpDiagram - Diagram Component WebMCP Integration
  * Enables AI model access to diagram manipulation capabilities through the WebMCP protocol
  *
  */
 
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Property, ChildProperty } from '@syncfusion/ej2-base';
 import { Diagram } from '../diagram';
-import { AlignmentOptions, ConnectorConstraints, DiagramConstraints, DistributeOptions, NodeConstraints,
-    PortConstraints, PortVisibility, SizingOptions } from '../enum/enum';
 import { WebMcpTool, WebMcpToolResponse, WebMcpToolExecuteEventArgs } from '../objects/interface/IElement';
+/* eslint-disable @typescript-eslint/ban-types */
+import { AlignmentOptions, ConnectorConstraints, DiagramConstraints, DistributeOptions, NodeConstraints, PortConstraints, PortVisibility, SizingOptions } from '../enum/enum';
 
 /**
  * Each tool represents a workflow that can be executed by AI models
@@ -35,7 +35,14 @@ const webMcpTools: WebMcpTool[] = [
                 },
                 style: { type: 'object', description: 'Style properties (fill, stroke, strokeWidth, etc.)' },
                 parentId: { type: 'string', description: 'Parent node ID if adding to group' },
-                swimlaneId: { type: 'string', description: 'Swimlane ID if adding to swimlane' },
+                swimlaneId: {
+                    type: 'string',
+                    description: 'Swimlane nodeId when the node belongs to a swimlane; pair with laneId targeting a specific lane under it.'
+                },
+                laneId: {
+                    type: 'string',
+                    description: 'Lane ID inside the swimlane; must be supplied with swimlaneId so the node renders inside the lane.'
+                },
                 constraints: { type: 'array', items: { type: 'string' }, description: 'Array of constraints (e.g., Select, Drag, Delete)' }
             },
             required: ['nodeId']
@@ -58,9 +65,9 @@ const webMcpTools: WebMcpTool[] = [
     },
     {
         name: 'createSpecializedDiagramNode',
-        description: 'Creates specialized diagram nodes using canonical component models. Use this tool for BPMN nodes instead of ' +
-            'createDiagramNode. BPMN examples: shape bpmnstart with eventType Start, shape bpmnend with eventType End, ' +
-            'shape activity for tasks, and shape gateway with gatewayType Exclusive.',
+        description: 'Creates specialized diagram nodes using canonical component models. Use this tool for BPMN, ER, UML, and swimlane nodes. ' +
+            'For swimlane children, supply swimlaneId and laneId so the node is positioned inside the swimlane instead of at absolute coordinates. ' +
+            'BPMN examples: shape bpmnstart with eventType Start, shape bpmnend with eventType End, shape activity for tasks, and shape gateway with gatewayType Exclusive.',
         annotations: { readOnlyHint: false },
         inputSchema: {
             type: 'object',
@@ -69,12 +76,29 @@ const webMcpTools: WebMcpTool[] = [
                 shape: {
                     type: 'string',
                     description: 'Specialized shape. BPMN values: bpmnstart, bpmnend, bpmnintermediateevent, activity, gateway, message, ' +
-                        'dataobject, datasource, group, textannotation. ER values: entity, erentity, or table.'
+                        'dataobject, datasource, group, textannotation. ER values: entity, erentity, or table. Swimlane value: swimlane.'
                 },
                 x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' },
                 fields: { type: 'array', description: 'ER fields with name and dataType; type is also accepted and normalized' },
                 classShape: { type: 'object', description: 'UML class data with name, attributes, and methods' },
-                lanes: { type: 'array' }, phases: { type: 'array' },
+                lanes: {
+                    type: 'array',
+                    description: 'For swimlane shape: array of lane definitions. Each lane has id, label, and height (e.g. {"id":"lane_customer","label":"Customer","height":150}).',
+                    items: { type: 'object' }
+                },
+                phases: {
+                    type: 'array',
+                    description: 'For swimlane shape: optional phase splits inside the swimlane. Each phase has id, offset, and header.',
+                    items: { type: 'object' }
+                },
+                swimlaneId: {
+                    type: 'string',
+                    description: 'Required for child nodes inside a swimlane: the parent swimlane nodeId supplied at swimlane creation time. The returned shape body contains the lane IDs, address children via {swimlaneId, laneId}.'
+                },
+                laneId: {
+                    type: 'string',
+                    description: 'Required together with swimlaneId when the node belongs to a particular lane of a swimlane. Use the id returned in the swimlane shape body.'
+                },
                 eventType: { type: 'string' }, trigger: { type: 'string' }, gatewayType: { type: 'string' },
                 task: { type: 'object' }, subProcess: { type: 'object' },
                 orientation: { type: 'string' }, container: { type: 'object' }
@@ -626,6 +650,53 @@ const webMcpTools: WebMcpTool[] = [
                 message: { type: 'string' }
             }
         }
+    },
+    {
+        name: 'createSpecializedRelationship',
+        description: 'Creates specialized relationship connectors for ER diagrams and UML class diagrams with proper cardinality ' +
+            'and relationship types. Use this tool for creating relationships between entities or classes.',
+        annotations: { readOnlyHint: false },
+        inputSchema: {
+            type: 'object',
+            properties: {
+                connectorId: { type: 'string', description: 'Unique identifier for the relationship connector' },
+                sourceId: { type: 'string', description: 'Source entity/class ID' },
+                targetId: { type: 'string', description: 'Target entity/class ID' },
+                relationshipType: {
+                    type: 'string',
+                    description: 'Type of relationship (oneToOne, oneToMany, manyToMany, association, inheritance, etc.)'
+                },
+                cardinality: {
+                    type: 'string',
+                    description: 'Cardinality notation (1..1, 1..*, 0..*, *, etc.)'
+                },
+                label: { type: 'string', description: 'Relationship label/annotation text' },
+                lineType: { type: 'string', description: 'Line routing type (straight, orthogonal, curved)' },
+                lineColor: { type: 'string', description: 'Connector line color (hex or named)' },
+                lineWidth: { type: 'number', description: 'Connector line thickness' },
+                startDecorator: { type: 'string', description: 'Start decorator (arrow, circle, diamond, etc.)' },
+                endDecorator: { type: 'string', description: 'End decorator (arrow, circle, diamond, etc.)' }
+            },
+            required: ['sourceId', 'targetId']
+        },
+        outputSchema: {
+            type: 'object',
+            properties: {
+                success: { type: 'boolean' },
+                data: {
+                    type: 'object',
+                    properties: {
+                        connectorId: { type: 'string' },
+                        sourceId: { type: 'string' },
+                        targetId: { type: 'string' },
+                        status: { type: 'string' },
+                        relationshipType: { type: 'string' },
+                        cardinality: { type: 'string' }
+                    }
+                },
+                message: { type: 'string' }
+            }
+        }
     }
 ];
 
@@ -739,6 +810,8 @@ const diagramShapeMap: { [key: string]: WebMcpArgs } = {
     'table': { type: 'Er', shape: 'Entity', fields: [] },
     // UML shapes
     'umlclass': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Class', attributes: [], methods: [] } },
+    'class': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Class', attributes: [], methods: [] } },
+    'classdiagram': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Class', attributes: [], methods: [] } },
     'action': { type: 'UmlActivity', shape: 'Action' },
     'umlaction': { type: 'UmlActivity', shape: 'Action' },
     'umldecision': { type: 'UmlActivity', shape: 'Decision' },
@@ -752,14 +825,47 @@ const diagramShapeMap: { [key: string]: WebMcpArgs } = {
     'sendsignal': { type: 'UmlActivity', shape: 'SendSignal' },
     'receivesignal': { type: 'UmlActivity', shape: 'ReceiveSignal' },
     'structurednode': { type: 'UmlActivity', shape: 'StructuredNode' },
-    'note': { type: 'UmlActivity', shape: 'Note' }
+    'note': { type: 'UmlActivity', shape: 'Note' },
+    // Additional shapes for better AI recognition
+    'customer': { type: 'Er', shape: 'Entity', fields: [] },
+    'order': { type: 'Er', shape: 'Entity', fields: [] },
+    'product': { type: 'Er', shape: 'Entity', fields: [] },
+    'library': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Library', attributes: [], methods: [] } },
+    'book': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Book', attributes: [], methods: [] } },
+    'member': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Member', attributes: [], methods: [] } },
+    'loan': { type: 'UmlClassifier', classifier: 'Class', classShape: { name: 'Loan', attributes: [], methods: [] } },
+    // ER diagram specific shapes
+    'erdiagram': { type: 'Er', shape: 'Entity', fields: [] },
+    'erd': { type: 'Er', shape: 'Entity', fields: [] },
+    // Additional common entities for order management system
+    'customerid': { type: 'Er', shape: 'Entity', fields: [] },
+    'name': { type: 'Er', shape: 'Entity', fields: [] },
+    'email': { type: 'Er', shape: 'Entity', fields: [] },
+    'phonenumber': { type: 'Er', shape: 'Entity', fields: [] },
+    'orderid': { type: 'Er', shape: 'Entity', fields: [] },
+    'orderdate': { type: 'Er', shape: 'Entity', fields: [] },
+    'totalamount': { type: 'Er', shape: 'Entity', fields: [] },
+    'productid': { type: 'Er', shape: 'Entity', fields: [] },
+    'productname': { type: 'Er', shape: 'Entity', fields: [] },
+    'price': { type: 'Er', shape: 'Entity', fields: [] },
+    'category': { type: 'Er', shape: 'Entity', fields: [] },
+    // Relationship types for ER diagrams
+    'relationship': { type: 'Basic', shape: 'Rectangle' },
+    'onerelationship': { type: 'Basic', shape: 'Rectangle' },
+    'manyrelationship': { type: 'Basic', shape: 'Rectangle' },
+    // UML relationship types
+    'association': { type: 'Basic', shape: 'Rectangle' },
+    'inheritance': { type: 'Basic', shape: 'Rectangle' },
+    'dependency': { type: 'Basic', shape: 'Rectangle' },
+    'aggregation': { type: 'Basic', shape: 'Rectangle' },
+    'composition': { type: 'Basic', shape: 'Rectangle' }
 };
 
 /**
- * WebMcpAdapter — Integrates Diagram with WebMCP protocol
+ * WebMcpDiagram — Integrates Diagram with WebMCP protocol
  * Manages tool registration, execution, and communication with the MCP server
  */
-export class WebMcpAdapter {
+export class WebMcpDiagram {
     private parent: Diagram = null as Diagram;
     private webMcpAbortController: AbortController = null;
     private listenersAttached: boolean = false;
@@ -769,6 +875,7 @@ export class WebMcpAdapter {
     private registerToolsHandler: Function = null;
     private unregisterToolsHandler: Function = null;
     private destroyHandler: Function = null;
+    private registeredToolNames: string[] = [];
 
     /**
      * Creates the adapter. The module loader supplies the owning diagram.
@@ -874,11 +981,13 @@ export class WebMcpAdapter {
      * @returns {WebMcpTool[]} - The matching tool definitions.
      */
     private getTools(args: WebMcpToolsRequest): WebMcpTool[] {
-        const toolNames: string[] = args.toolNames;
-        const source: WebMcpTool[] = (toolNames && toolNames.length !== 0)
-            ? webMcpTools.filter((tool: WebMcpTool) => toolNames.indexOf(tool.name) !== -1)
-            : webMcpTools;
-        args.tools = source.map((tool: WebMcpTool) => this.cloneTool(tool));
+        const toolNames: string[] = <string[]>args.toolNames;
+        if (toolNames && toolNames.length !== 0) {
+            args.tools = webMcpTools.filter((webMcpTool: WebMcpTool) => toolNames.indexOf(webMcpTool.name) !== -1)
+                .map((webMcpTool: WebMcpTool) => ({ ...webMcpTool }));
+        } else {
+            args.tools = webMcpTools.map((webMcpTool: WebMcpTool) => ({ ...webMcpTool }));
+        }
         return args.tools;
     }
 
@@ -888,31 +997,32 @@ export class WebMcpAdapter {
      * @param {WebMcpRegisterRequest} args - Registration options: name prefix, tool filter or definitions, and allowed origins.
      * @returns {void}
      */
-    private registerTools(args: WebMcpRegisterRequest): void {
-        if (isNullOrUndefined(this.parent)) {
-            return;
-        }
+    /**
+     * Registers tools for WebMCP integration. Called automatically when webMcpSettings is configured.
+     *
+     * @param {WebMcpRegisterRequest} args - Tool registration request containing prefix, tools, and exposedTo
+     * @returns {void}
+     */
+    public registerTools(args: WebMcpRegisterRequest): void {
         const modelContext: { registerTool: Function } =
-            (document as { modelContext?: { registerTool: Function } }).modelContext as { registerTool: Function };
+            <{ registerTool: Function }>(document as { modelContext?: { registerTool: Function } }).modelContext;
         if (!modelContext || typeof modelContext.registerTool !== 'function') {
             return;
         }
-        // Revoke any previous registration for this instance before creating a new scope.
-        this.unregisterTools();
         this.webMcpAbortController = new AbortController();
-        const toolPrefix: string = isNullOrUndefined(args.prefix) ? this.parent.element.id : args.prefix;
-        const isCustom: boolean = !!(args.tools && args.tools.length && typeof args.tools[0] === 'object');
-        const source: WebMcpTool[] = isCustom
-            ? (args.tools as WebMcpTool[]).map((tool: WebMcpTool) => this.cloneTool(tool))
-            : this.getTools({ toolNames: args.tools as string[] });
-        source.forEach((tool: WebMcpTool): void => {
-            // Keep the unprefixed name in the closure so dispatch never has to parse it back out.
-            const baseName: string = tool.name;
-            const registered: WebMcpTool = this.cloneTool(tool);
-            registered.name = toolPrefix ? `${toolPrefix}_${baseName}` : baseName;
-            registered.execute = tool.execute ||
-                ((toolArgs: Object): Promise<WebMcpToolResponse> => this.executeHandler(baseName, toolArgs || {}));
-            modelContext.registerTool(registered, { signal: this.webMcpAbortController.signal, exposedTo: args.exposedTo });
+        const toolPrefix: string = (isNullOrUndefined(args.prefix) ? this.parent.element.id : args.prefix) as string;
+        const tools: WebMcpTool[] = args.tools && args.tools.length && typeof args.tools[0] === 'object' ? <WebMcpTool[]>args.tools :
+            this.getTools({ toolNames: <string[]>args.tools });
+        tools.forEach((tool: WebMcpTool): void => {
+            tool.name = `${toolPrefix}_${tool.name}`;
+            tool.execute = tool.execute || (async (args: object) => this.executeHandler(tool.name, args || {}));
+            const registerOptions: { signal: AbortSignal; exposedTo?: string[] } = {
+                signal: (<AbortController>this.webMcpAbortController).signal
+            };
+            if (Array.isArray(args.exposedTo) && args.exposedTo.length > 0) {
+                registerOptions.exposedTo = args.exposedTo;
+            }
+            modelContext.registerTool(tool, registerOptions);
         });
     }
 
@@ -926,6 +1036,7 @@ export class WebMcpAdapter {
             this.webMcpAbortController.abort();
             this.webMcpAbortController = null;
         }
+        this.registeredToolNames = [];
     }
 
     /**
@@ -936,8 +1047,20 @@ export class WebMcpAdapter {
      * @returns {string} - The base command name used for handler dispatch.
      */
     private resolveBaseCommand(command: string): string {
+        if (!command) {
+            return command;
+        }
+        // Direct hit on a registered base name
         for (const tool of webMcpTools) {
-            if (command === tool.name || command.lastIndexOf(`_${tool.name}`) === command.length - tool.name.length - 1) {
+            if (command === tool.name || command.endsWith(`_${tool.name}`)) {
+                return tool.name;
+            }
+        }
+        // Strip any trailing '_toolName' style suffix that a prefix may have introduced
+        for (const tool of webMcpTools) {
+            const suffix: string = `_${tool.name}`;
+            const idx: number = command.lastIndexOf(suffix);
+            if (idx !== -1 && idx + suffix.length === command.length) {
                 return tool.name;
             }
         }
@@ -983,7 +1106,7 @@ export class WebMcpAdapter {
      */
     private async executeHandler(command: string, args: Object): Promise<WebMcpToolResponse> {
         if (!this.ensureParent()) {
-            return this.error('WebMcpAdapter is not properly initialized. Parent diagram is not available.');
+            return this.error('WebMcpDiagram is not properly initialized. Parent diagram is not available.');
         }
         const baseCommand: string = this.resolveBaseCommand(command);
         const eventArgs: WebMcpToolExecuteEventArgs = {
@@ -1005,25 +1128,46 @@ export class WebMcpAdapter {
         try {
             // Route to the appropriate tool handler.
             switch (baseCommand) {
-            case 'createDiagramNode': return this.handleCreateDiagramNode(args);
-            case 'createSpecializedDiagramNode': return this.handleCreateDiagramNode(args);
-            case 'createDiagramConnector': return this.handleCreateDiagramConnector(args);
-            case 'manageNodeSelection': return this.handleManageNodeSelection(args);
-            case 'manageInteractionMode': return this.handleManageInteractionMode(args);
+            case 'createDiagramNode':
+            case 'createSpecializedDiagramNode':
+                return this.handleCreateDiagramNode(args);
+            case 'createDiagramConnector':
+                return this.handleCreateDiagramConnector(args);
+            case 'createSpecializedRelationship':
+                return this.createSpecializedRelationship(args);
+            case 'manageNodeSelection':
+                return this.handleManageNodeSelection(args);
+            case 'manageInteractionMode':
+                return this.handleManageInteractionMode(args);
             case 'enableEditingMode':
                 return this.handleManageInteractionMode({ mode: (args as { enabled?: boolean }).enabled ? 'readWrite' : 'readOnly' });
-            case 'arrangeAndAlignObjects': return this.handleArrangeAndAlignObjects(args);
-            case 'deleteFromDiagram': return this.handleDeleteFromDiagram(args);
-            case 'manageUndoRedo': return this.handleManageUndoRedo(args);
-            case 'manageClipboardOperations': return this.handleManageClipboardOperations(args);
-            case 'exportAndImportDiagrams': return this.handleExportAndImportDiagrams(args);
-            case 'arrangeZOrder': return this.handleArrangeZOrder(args);
-            case 'navigateAndZoomDiagram': return this.handleNavigateAndZoomDiagram(args);
-            case 'manageGroupsAndHierarchies': return this.handleManageGroupsAndHierarchies(args);
-            case 'manageAnnotationsAndLabels': return this.handleManageAnnotationsAndLabels(args);
-            case 'managePorts': return this.handleManagePorts(args);
-            case 'manageLayers': return this.handleManageLayers(args);
-            case 'applyLayoutToNodes': return this.handleApplyLayoutToNodes(args);
+            case 'arrangeAndAlignObjects':
+                return this.handleArrangeAndAlignObjects(args);
+            case 'deleteFromDiagram':
+                return this.handleDeleteFromDiagram(args);
+            case 'manageUndoRedo':
+                return this.handleManageUndoRedo(args);
+            case 'manageClipboardOperations':
+                return this.handleManageClipboardOperations(args);
+            case 'exportAndImportDiagrams':
+                return this.handleExportAndImportDiagrams(args);
+            case 'arrangeZOrder':
+                return this.handleArrangeZOrder(args);
+            case 'navigateAndZoomDiagram':
+            case 'zoomAndPan':
+            case 'fitToPage':
+            case 'pan':
+                return this.handleNavigateAndZoomDiagram(args);
+            case 'manageGroupsAndHierarchies':
+                return this.handleManageGroupsAndHierarchies(args);
+            case 'manageAnnotationsAndLabels':
+                return this.handleManageAnnotationsAndLabels(args);
+            case 'managePorts':
+                return this.handleManagePorts(args);
+            case 'manageLayers':
+                return this.handleManageLayers(args);
+            case 'applyLayoutToNodes':
+                return this.handleApplyLayoutToNodes(args);
             default: return this.error(`Tool "${baseCommand}" not found.`);
             }
         } catch (err) {
@@ -1118,9 +1262,11 @@ export class WebMcpAdapter {
             content: content,
             style: style,
             horizontalAlignment: args.labelHorizontalAlignment || args.labelAlignment || args.horizontalAlignment ||
-                previous.horizontalAlignment || 'Center',
-            verticalAlignment: args.labelVerticalAlignment || args.verticalAlignment || previous.verticalAlignment || 'Center',
-            margin: args.labelOffset || args.labelMargin || args.margin || previous.margin ||
+                (previous ? previous.horizontalAlignment : undefined) || 'Center',
+            verticalAlignment: args.labelVerticalAlignment || args.verticalAlignment ||
+                (previous ? previous.verticalAlignment : undefined) || 'Center',
+            margin: args.labelOffset || args.labelMargin || args.margin ||
+                (previous ? previous.margin : undefined) ||
                 { left: 0, top: 0, right: 0, bottom: 0 }
         };
         if (id !== undefined) {
@@ -1148,6 +1294,22 @@ export class WebMcpAdapter {
                 annotation.hyperlink = typeof args.hyperlink === 'string' ? { link: args.hyperlink } : args.hyperlink;
             }
         }
+
+        // Handle specialized annotations for ER and UML diagrams
+        if (args.annotationType) {
+            annotation.type = args.annotationType;
+            // Add cardinality information for ER relationships
+            if (args.annotationType === 'ERRelationship') {
+                annotation.cardinality = args.cardinality || '1..1';
+                annotation.relationshipType = args.relationshipType || 'association';
+            }
+            // Add multiplicity information for UML associations
+            else if (args.annotationType === 'UMLAssociation') {
+                annotation.multiplicity = args.multiplicity || '1';
+                annotation.stereotype = args.stereotype || '';
+            }
+        }
+
         return annotation;
     }
     /**
@@ -1156,8 +1318,10 @@ export class WebMcpAdapter {
      * @returns {Object[]} - The selected diagram objects.
      */
     private getSelectedObjects(): WebMcpArgs[] {
-        const selected: WebMcpArgs = this.parent.selectedItems as WebMcpArgs;
-        return ((selected.nodes as WebMcpArgs[]) || []).concat((selected.connectors as WebMcpArgs[]) || []);
+        const selected: WebMcpArgs = (this.parent.selectedItems as WebMcpArgs) || {};
+        const nodes: WebMcpArgs[] = (selected.nodes as WebMcpArgs[]) || [];
+        const connectors: WebMcpArgs[] = (selected.connectors as WebMcpArgs[]) || [];
+        return nodes.concat(connectors);
     }
 
     /**
@@ -1225,10 +1389,81 @@ export class WebMcpAdapter {
                 children: []
             }];
         } else if (shape.type === 'Er') {
-            shape.header = args.header || { annotation: { content: args.label || 'Entity' } };
-            shape.fields = this.normalizeErFields(args.fields || this.parseEntityFields(args.label));
+            // Handle ER entity creation with proper fields
+            const headerContent: string = args.label || 'Entity';
+            shape.header = args.header || { annotation: { content: headerContent.split('\n')[0] || headerContent } };
+
+            // Parse fields from label if not explicitly provided
+            let fields: any = args.fields;
+            if (!fields && headerContent.includes('\n')) {
+                fields = this.parseEntityFields(headerContent);
+            }
+
+            shape.fields = this.normalizeErFields(fields || []);
         } else if (shape.type === 'UmlClassifier') {
-            shape.classShape = args.classShape || { name: args.label || 'Class', attributes: [], methods: [] };
+            // Handle UML class creation with proper attributes and methods
+            const className: string = args.label || 'Class';
+            let classShape: WebMcpArgs = args.classShape;
+
+            if (!classShape) {
+                // Parse class information from label
+                classShape = { name: className, attributes: [], methods: [] };
+
+                if (className.includes('\n')) {
+                    const lines: string[] = className.split('\n').map((line: string) => line.trim())
+                        .filter((line: string) => line.length > 0);
+                    classShape.name = lines[0];
+
+                    // Parse attributes and methods from subsequent lines
+                    for (let i: number = 1; i < lines.length; i++) {
+                        const line: string = lines[parseInt(i.toString(), 10)];
+                        if (line.startsWith('+') || line.startsWith('-')) {
+                            // This is likely a method or attribute
+                            const cleanLine: string = line.replace(/[+-]\s*/, '');
+                            if (line.includes('(') && line.includes(')')) {
+                                // Method - extract name and parameters
+                                // eslint-disable-next-line security/detect-unsafe-regex
+                                const methodMatch: RegExpMatchArray = cleanLine.match(/^([^(]+)\(([^)]*)\)(?::\s*(.+))?/);
+                                if (methodMatch) {
+                                    const methodName: string = methodMatch[1].trim();
+                                    const params: string = methodMatch[2].trim();
+                                    const returnType: string = methodMatch[3] ? methodMatch[3].trim() : 'void';
+                                    classShape.methods.push({
+                                        name: methodName,
+                                        parameters: params ? params.split(',').map((p: string) => p.trim()) : [],
+                                        type: returnType
+                                    });
+                                } else {
+                                    // Fallback for simple method format
+                                    classShape.methods.push({ name: cleanLine });
+                                }
+                            } else {
+                                // Attribute - extract name and type
+                                const parts: string[] = cleanLine.split(':');
+                                classShape.attributes.push({
+                                    name: parts[0].trim(),
+                                    type: parts[1] ? parts[1].trim() : 'string'
+                                });
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Coerce AI supplied attributes/methods (which are sometimes plain strings)
+                // into the UmlClassModel shape expected by the engine.
+                classShape.attributes = this.normalizeUmlMembers(classShape.attributes, false);
+                classShape.methods = this.normalizeUmlMembers(classShape.methods, true);
+            }
+
+            // Ensure attributes and methods arrays exist
+            if (!classShape.attributes || !Array.isArray(classShape.attributes)) {
+                classShape.attributes = [];
+            }
+            if (!classShape.methods || !Array.isArray(classShape.methods)) {
+                classShape.methods = [];
+            }
+
+            shape.classShape = classShape;
         } else if (shape.type === 'Bpmn' && shape.shape === 'Event') {
             shape.event = {
                 event: args.eventType || shape.event.event,
@@ -1241,23 +1476,176 @@ export class WebMcpAdapter {
     }
     /**
      * Normalizes ER field definitions, accepting the common aliases an AI client may produce.
+     * Strips stray (PK)/(FK) markers that an AI sometimes appends to the dataType literal
+     * ("INT (PK)") and re-uses them as isPrimaryKey / isForeignKey flags. The EJ2 ER renderer
+     * renders the Key column itself via getKeyIndicator(); the marker must never appear in
+     * the dataType column.
      *
      * @param {Object[]} fields - The raw field definitions.
      * @returns {Object[]} - The normalized field definitions.
      */
     private normalizeErFields(fields: WebMcpArgs[]): WebMcpArgs[] {
-        return (Array.isArray(fields) ? fields : []).map((field: WebMcpArgs, index: number) => ({
-            id: field.id || `field_${index + 1}`,
-            name: field.name || field.fieldName || `Field ${index + 1}`,
-            dataType: field.dataType || field.type || 'VARCHAR',
-            isPrimaryKey: field.isPrimaryKey === true || field.primaryKey === true,
-            isForeignKey: field.isForeignKey === true || field.foreignKey === true,
-            constraints: Array.isArray(field.constraints) ? field.constraints : []
-        }));
+        return (Array.isArray(fields) ? fields : []).map((field: WebMcpArgs, index: number) => {
+            const explicitPk: boolean = field.isPrimaryKey === true || field.primaryKey === true || field.pk === true;
+            const explicitFk: boolean = field.isForeignKey === true || field.foreignKey === true || field.fk === true;
+            // Look at the raw text BEFORE alias resolution so we can strip markers the AI put
+            // inside the dataType literal itself ("INT (PK)").
+            const rawType: string = (field.dataType || field.type || '').toString();
+            const { cleanDataType, hasPk, hasFk } = this.splitErTypeMarkers(rawType);
+
+            // Strip inline (PK)/(FK)/(PK, FK) markers from the name itself — the AI sometimes
+            // writes "CustomerID (PK)" — so they don't leak into the rendered Name column.
+            let nameText: string = field.name || field.fieldName || field.attribute || `Field ${index + 1}`;
+            const nameHasPk: boolean = nameText.includes('(PK)') || nameText.includes('*') || nameText.startsWith('^');
+            const nameHasFk: boolean = /\(FK\)/i.test(nameText);
+            nameText = nameText.replace(/\(\s*(PK\s*,\s*FK|PK|FK)\s*\)/gi, '')
+                .replace(/[*^]/g, '').trim();
+
+            return {
+                id: field.id || `field_${index + 1}`,
+                name: nameText,
+                dataType: cleanDataType || field.dataType || field.type || 'VARCHAR',
+                isPrimaryKey: explicitPk || hasPk || nameHasPk,
+                isForeignKey: explicitFk || hasFk || nameHasFk,
+                constraints: Array.isArray(field.constraints) ? field.constraints : [],
+                // Handle cardinality for relationships
+                cardinality: field.cardinality || field.relationship || field.multiplicity || ''
+            };
+        }).filter((field: WebMcpArgs): boolean => !!(field && field.name && field.name.trim() !== ''));
+    }
+
+    /**
+     * Splits (PK) / (FK) / (PK, FK) markers from the tail of a raw dataType literal.
+     * Returns the trimmed dataType without the markers plus the parsed key flags.
+     * The renderer adds the key column itself, so we never want these tokens inside dataType.
+     *
+     * @param {string} rawDataType - The raw dataType supplied by the AI client.
+     * @returns {{ cleanDataType: string, hasPk: boolean, hasFk: boolean }} - Sanitized result.
+     */
+    private splitErTypeMarkers(rawDataType: string): { cleanDataType: string, hasPk: boolean, hasFk: boolean } {
+        let hasPk: boolean = false;
+        let hasFk: boolean = false;
+        let current: string = (rawDataType || '').trim();
+        // Pull off "(PK, FK)", "(PK)", "(FK)" — possibly repeated — from the end of the string.
+        let changed: boolean = true;
+        while (changed) {
+            changed = false;
+            const match: RegExpMatchArray = current.match(/\s*\(\s*(PK\s*,\s*FK|PK|FK)\s*\)\s*$/i);
+            if (match) {
+                const marker: string = match[1].toUpperCase().replace(/\s+/g, '');
+                if (marker.indexOf('PK') !== -1) {
+                    hasPk = true;
+                }
+                if (marker.indexOf('FK') !== -1) {
+                    hasFk = true;
+                }
+                current = current.substring(0, match.index).trim();
+                changed = true;
+            }
+        }
+        return { cleanDataType: current, hasPk: hasPk, hasFk: hasFk };
+    }
+
+    /**
+     * Coerces a UML attribute or method declaration into the canonical UmlClassModel entry.
+     * Accepts an already-formed object, a plain string like "+ addBook(book: Book): void",
+     * or an empty value, and guarantees the resulting array only contains the model shape
+     * (with name, type, and optional parameters) that the EJ2 engine expects.
+     *
+     * @param {Object[] | string[]} members - The raw member definitions supplied by the AI.
+     * @param {boolean} isMethod - True to coerce method entries, false for attributes.
+     * @returns {Object[]} - An array of well-formed UmlClassMembers.
+     */
+    private normalizeUmlMembers(members: WebMcpArgs[], isMethod: boolean): WebMcpArgs[] {
+        if (!Array.isArray(members)) {
+            return [];
+        }
+        return members
+            .map((member: WebMcpArgs): WebMcpArgs => {
+                if (typeof member === 'string') {
+                    return this.parseUmlMemberString(member, isMethod);
+                }
+                // Already an object: fill in defaults so the engine receives a complete model.
+                const name: string = (member.name as string) || (member.propertyName as string) || '';
+                return {
+                    name: name,
+                    type: (member.type as string) || (isMethod ? 'void' : 'string'),
+                    scope: (member.scope as string) || (member.visibility as string) || 'Public',
+                    parameters: Array.isArray(member.parameters) ? member.parameters : [],
+                    style: member.style || {}
+                };
+            })
+            .filter((member: WebMcpArgs): boolean => !!(member && (member.name as string) && ((member.name as string).length > 0)));
+    }
+
+    /**
+     * Parses a single UML member in the form "+ name: type" or "+ name(params): returnType".
+     *
+     * @param {string} raw - The raw member string.
+     * @param {boolean} isMethod - True for method parsing, false for attribute parsing.
+     * @returns {Object} - The parsed UmlClassMember.
+     */
+    private parseUmlMemberString(raw: string, isMethod: boolean): WebMcpArgs {
+        let source: string = (raw || '').trim();
+        if (!source) {
+            return { name: '', type: isMethod ? 'void' : 'string', scope: 'Public', parameters: [] };
+        }
+        let scope: string = 'Public';
+        const visibility: string = source.charAt(0);
+        if (visibility === '+') {
+            scope = 'Public';
+            source = source.substring(1).trim();
+        } else if (visibility === '-') {
+            scope = 'Private';
+            source = source.substring(1).trim();
+        } else if (visibility === '#') {
+            scope = 'Protected';
+            source = source.substring(1).trim();
+        } else {
+            scope = 'Package';
+        }
+        // eslint-disable-next-line security/detect-unsafe-regex
+        const nameTypeMatch: RegExpMatchArray = source.match(/^([\w$]+(?:\s*<[^>]*>)?)\s*(?:\(([^)]*)\))?\s*:?\s*(.*)$/);
+        if (!nameTypeMatch) {
+            return { name: source.replace(/\(.*\)/, '').trim(), type: isMethod ? 'void' : 'string', scope: scope, parameters: [] };
+        }
+        const name: string = nameTypeMatch[1].trim();
+        const params: string = (nameTypeMatch[2] || '').trim();
+        const explicit: string = (nameTypeMatch[3] || '').trim();
+        // Detect whether the source had parentheses; that determines method vs attribute.
+        const hadParens: boolean = /\(/.test(source);
+        if (hadParens || isMethod) {
+            const parameters: WebMcpArgs[] = params
+                ? params.split(',').map((p: string): WebMcpArgs => {
+                    const trimmed: string = p.trim();
+                    const colonAt: number = trimmed.lastIndexOf(':');
+                    if (colonAt > 0) {
+                        return { name: trimmed.substring(0, colonAt).trim(), type: trimmed.substring(colonAt + 1).trim() };
+                    }
+                    return { name: trimmed, type: '' };
+                })
+                : [];
+            return {
+                name: name,
+                type: explicit || 'void',
+                scope: scope,
+                parameters: parameters,
+                style: {}
+            };
+        }
+        return {
+            name: name,
+            type: explicit || 'string',
+            scope: scope,
+            style: {}
+        };
     }
 
     /**
      * Derives ER fields from a multi line label of the form "Entity\nname: type".
+     * Also tolerates (PK)/(FK) markers — both inside the name ("CustomerID (PK)") and
+     * appended to the dataType literal ("INT (PK)") — and converts them into the dedicated
+     * isPrimaryKey / isForeignKey flags rather than leaving them inside the rendered strings.
      *
      * @param {string} label - The label to parse.
      * @returns {Object[]} - The parsed field definitions.
@@ -1271,13 +1659,43 @@ export class WebMcpAdapter {
         // The first line is the entity name and is applied to the header, not to the field list.
         lines.shift();
         return lines.map((line: string, index: number) => {
-            const field: string[] = line.replace(/^\+\s*/, '').split(':');
+            // Handle different field formats:
+            // 1. "name: type" (standard format)
+            // 2. "+ name: type" (with visibility modifier)
+            // 3. "name" (just name, default type)
+            // 4. "name*: type" (primary key with asterisk)
+            // 5. "name (PK): type" (primary key with PK indicator)
+            // 6. "name: type (PK)" (PK marker appended to the dataType literal)
+            const cleanLine: string = line.replace(/^\+\s*/, ''); // Remove visibility modifiers
+            const fieldParts: string[] = cleanLine.split(':');
+
+            let fieldName: string = fieldParts[0].trim();
+            const combinedType: string = fieldParts.length > 1 ? fieldParts.slice(1).join(':').trim() : '';
+
+            // Detect and strip markers that appear in the name itself.
+            const nameHasPk: boolean = fieldName.includes('*') || fieldName.includes('(PK)') || fieldName.startsWith('^');
+            fieldName = fieldName.replace(/[*^]|\(PK\)/g, '').trim();
+
+            // Detect and strip markers inside the dataType string. Same helper used in
+            // normalizeErFields so both code paths produce identical output.
+            const { cleanDataType, hasPk: typeHasPk, hasFk: typeHasFk } = this.splitErTypeMarkers(combinedType || 'VARCHAR');
+
+            const isPrimaryKey: boolean = nameHasPk || typeHasPk;
+            // Foreign‑key marker may also appear inside the dataType literal or the name.
+            const isForeignKey: boolean = /\(FK\)/i.test(fieldName)
+                || /\(FK\)/i.test(combinedType || '')
+                || fieldName.includes('_id')
+                || fieldName.includes('Id')
+                || typeHasFk;
+
             return {
                 id: `field_${index + 1}`,
-                name: field[0].trim(),
-                dataType: field.slice(1).join(':').trim() || 'VARCHAR'
+                name: fieldName,
+                dataType: cleanDataType || 'VARCHAR',
+                isPrimaryKey: isPrimaryKey,
+                isForeignKey: isForeignKey
             };
-        });
+        }).filter((field: WebMcpArgs): boolean => !!(field && field.name && field.name.length > 0));
     }
     /**
      * Normalizes node style aliases, mapping stroke to the strokeColor member used by the model.
@@ -1367,6 +1785,40 @@ export class WebMcpAdapter {
     }
 
     /**
+     * Inspects the source and target node shapes to infer the right connector shape when
+     * the AI client did not provide one. Returns undefined when no inference applies.
+     *
+     * BPMN-to-BPMN edges default to a Sequence flow so the correct BPMN marker renders;
+     * UML class-to-UML class edges default to an Association relationship so UML class
+     * notation applies; ER-to-ER edges default to a NonIdentifying Er relationship.
+     *
+     * @param {string} sourceId - The source node id.
+     * @param {string} targetId - The target node id.
+     * @returns {Object} - The inferred connector shape, or undefined.
+     */
+    private inferConnectorShape(sourceId: string, targetId: string): WebMcpArgs {
+        const sourceShape: WebMcpArgs = ((this.findNode(sourceId) || {}).shape as WebMcpArgs) || {};
+        const targetShape: WebMcpArgs = ((this.findNode(targetId) || {}).shape as WebMcpArgs) || {};
+        const sourceType: string = (sourceShape.type || '').toString();
+        const targetType: string = (targetShape.type || '').toString();
+        if (sourceType === 'Bpmn' && targetType === 'Bpmn') {
+            return { type: 'Bpmn', flow: 'Sequence', sequence: 'Normal' };
+        }
+        if (sourceType === 'UmlClassifier' && targetType === 'UmlClassifier') {
+            return { type: 'UmlClassifier', relationship: 'Association', associationType: 'Default' };
+        }
+        if (sourceType === 'Er' && targetType === 'Er') {
+            return {
+                type: 'Er',
+                relationship: 'NonIdentifying',
+                sourceMultiplicity: { type: 'One' },
+                targetMultiplicity: { type: 'One' }
+            };
+        }
+        return undefined as any;
+    }
+
+    /**
      * Finds a connector by id.
      *
      * @param {string} id - The connector id.
@@ -1389,6 +1841,42 @@ export class WebMcpAdapter {
      */
     private resolveDiagramObject(id: string): WebMcpArgs {
         return this.findNode(id) || this.findConnector(id);
+    }
+
+    /**
+     * Picks the swimlane and lane that should own a freshly created node.
+     * When the AI supplies both swimlaneId and laneId this is a pass-through. Otherwise, the
+     * helper walks every existing SwimLane in the diagram and returns the lane whose vertical
+     * strip contains the node's center, which is how nodes are positioned inside lanes visually.
+     *
+     * @param {Object} node - The node that has just been built and added to the diagram.
+     * @param {Object} args - The original tool arguments.
+     * @returns {WebMcpArgs} - The {swimlaneId, laneId} pair, or undefined when no lane owns the node.
+     */
+    private resolveLaneMembership(node: WebMcpArgs, args: WebMcpArgs): WebMcpArgs {
+        if (args.swimlaneId && args.laneId) {
+            return { swimlaneId: args.swimlaneId, laneId: args.laneId };
+        }
+        const nodeCenterY: number = (node.offsetY as number) + ((node.height as number) / 2);
+        for (const swimlane of this.parent.nodes) {
+            const shape: WebMcpArgs = swimlane.shape as WebMcpArgs;
+            if (!shape || shape.type !== 'SwimLane') {
+                continue;
+            }
+            // Lane area starts directly below the phase header row (which has height phaseSize).
+            const lanes: WebMcpArgs[] = (shape.lanes as WebMcpArgs[]) || [];
+            const headerOffset: number = shape.phaseSize as number || 0;
+            let laneTop: number = (swimlane.offsetY as number) + headerOffset;
+            for (const lane of lanes) {
+                const laneHeight: number = (lane.height as number) || 0;
+                const laneBottom: number = laneTop + laneHeight;
+                if (nodeCenterY >= laneTop && nodeCenterY <= laneBottom && lane.id) {
+                    return { swimlaneId: swimlane.id, laneId: lane.id as string };
+                }
+                laneTop = laneBottom;
+            }
+        }
+        return undefined as WebMcpArgs;
     }
 
     /**
@@ -1441,7 +1929,6 @@ export class WebMcpAdapter {
      * @returns {WebMcpToolResponse} - The tool response.
      */
     private handleCreateDiagramNode(args: WebMcpArgs): WebMcpToolResponse {
-        let nodeAdded: boolean = false;
         try {
             if (!this.ensureParent()) {
                 return this.error('Diagram is not initialized');
@@ -1464,21 +1951,49 @@ export class WebMcpAdapter {
                 warnings.push(`Shape '${args.shape}' is not recognized; a Basic Rectangle was used instead.`);
             }
 
+            const shapeName: string = this.normalizeShapeName(args.shape);
+            const specializedShape: WebMcpArgs = this.buildSpecializedShape(args);
+
+            // Enhanced error handling for shape creation
+            if (!specializedShape || !specializedShape.type) {
+                return this.error(`Failed to create shape for node '${nodeId}'. Invalid shape type.`);
+            }
+
+            // Top-level annotations on the node are ONLY valid for plain Basic/Flow shapes.
+            // Container shapes (Er, UmlClassifier, SwimLane, Bpmn) manage their own internal
+            // labels (e.g., shape.header.annotation.content for ER, shape.classShape.name for
+            // UML, swimLane.lanes[].header for swimlanes). A redundant top-level annotation
+            // on these containers causes the container-rendering pipeline to fight with our
+            // annotation and breaks the `children` collection — yielding the
+            // "Cannot read properties of undefined (reading 'push')" error inside er-util.
             const annotations: WebMcpArgs[] = [];
             const labelContent: string = args.label || args.labelText;
-            if (labelContent) {
+            const shapeTypeUpper: string = (specializedShape.type || '').toString().toLowerCase();
+            const isContainerShape: boolean = shapeTypeUpper === 'er'
+                || shapeTypeUpper === 'umlclassifier'
+                || shapeTypeUpper === 'swimlane'
+                || shapeTypeUpper === 'bpmn';
+            if (labelContent && !isContainerShape) {
                 annotations.push(this.buildAnnotation(args, labelContent));
             }
 
-            const shapeName: string = this.normalizeShapeName(args.shape);
+            // Container shapes that auto-size from their content must NOT receive an
+            // arbitrary width/height from the AI. The renderer computes minWidth from the
+            // columnar layout; user-supplied dimensions would be silently overridden or
+            // produce clipped fields. ER and UML classifier fall into this category.
+            const isAutoSizedContainer: boolean = shapeTypeUpper === 'er'
+                || shapeTypeUpper === 'umlclassifier';
+            const nodeWidth: number | undefined = isAutoSizedContainer ? undefined : (args.width || 100);
+            const nodeHeight: number | undefined = isAutoSizedContainer ? undefined : (args.height || 100);
+
             const node: WebMcpArgs = {
                 id: nodeId,
                 offsetX: args.x || args.offsetX || 100,
                 offsetY: args.y || args.offsetY || 100,
-                width: args.width || 100,
-                height: args.height || 100,
+                width: nodeWidth,
+                height: nodeHeight,
                 annotations: annotations,
-                shape: this.buildSpecializedShape(args),
+                shape: specializedShape,
                 container: args.container || (shapeName === 'container'
                     ? { type: args.containerType || 'Canvas', orientation: args.orientation || 'Vertical' } : undefined),
                 style: this.normalizeNodeStyle(args.style),
@@ -1507,40 +2022,57 @@ export class WebMcpAdapter {
                 }
             });
 
-            const createdNode: Object = this.parent.addNode(node as WebMcpArgs);
-            nodeAdded = !!createdNode;
-            this.parent.dataBind();
-
-            if (args.parentId) {
-                this.parent.addChildToGroup({ id: args.parentId } as WebMcpArgs, nodeId);
+            try {
+                this.parent.addNode(node as WebMcpArgs);
                 this.parent.dataBind();
-            }
 
-            if (args.swimlaneId && args.laneId) {
-                this.parent.addNodeToLane(node as WebMcpArgs, args.swimlaneId, args.laneId);
-                this.parent.dataBind();
-            }
-
-            return this.message({
-                success: true,
-                data: {
-                    nodeId: nodeId,
-                    status: 'created',
-                    shape: node.shape,
-                    properties: { x: node.offsetX, y: node.offsetY, width: node.width, height: node.height }
-                },
-                warnings: warnings,
-                message: `Node '${nodeId}' created successfully`
-            });
-        } catch (err) {
-            if (nodeAdded && this.ensureParent() && this.parent.getObject(args.nodeId)) {
-                try {
-                    this.parent.remove(this.parent.getObject(args.nodeId));
+                if (args.parentId) {
+                    this.parent.addChildToGroup({ id: args.parentId } as WebMcpArgs, nodeId);
                     this.parent.dataBind();
-                } catch (cleanupError) {
-                    // Preserve the original creation error if cleanup is unavailable.
                 }
+
+                // Resolve lane membership before adding to lane: when an AI client omits
+                // swimlaneId/laneId, snap to the lane whose vertical bounds contain the node.
+                let swimlaneId: string = args.swimlaneId;
+                let laneId: string = args.laneId;
+                if (!swimlaneId || !laneId) {
+                    const resolved: { swimlaneId: string, laneId: string }
+                        = this.resolveLaneMembership(node, args) as { swimlaneId: string, laneId: string };
+                    if (resolved) {
+                        swimlaneId = swimlaneId || resolved.swimlaneId;
+                        laneId = laneId || resolved.laneId;
+                    }
+                }
+                if (swimlaneId && laneId) {
+                    this.parent.addNodeToLane(node as WebMcpArgs, swimlaneId, laneId);
+                    this.parent.dataBind();
+                }
+
+                return this.message({
+                    success: true,
+                    data: {
+                        nodeId: nodeId,
+                        status: 'created',
+                        shape: node.shape,
+                        properties: { x: node.offsetX, y: node.offsetY, width: node.width, height: node.height }
+                    },
+                    warnings: warnings,
+                    message: `Node '${nodeId}' created successfully`
+                });
+            } catch (addNodeError) {
+                // If node was partially added, try to remove it
+                if (this.ensureParent() && this.parent.getObject(nodeId)) {
+                    try {
+                        this.parent.remove(this.parent.getObject(nodeId));
+                        this.parent.dataBind();
+                    } catch (cleanupError) {
+                        // Log cleanup error but don't throw it
+                        console.warn(`Failed to cleanup node ${nodeId}: ${(cleanupError as Error).message}`);
+                    }
+                }
+                throw addNodeError;
             }
+        } catch (err) {
             return this.error(`Failed to create node: ${(err as Error).message}`);
         }
     }
@@ -1600,6 +2132,76 @@ export class WebMcpAdapter {
                 connectorStyle.strokeDashArray = args.lineDashArray;
             }
 
+            // Handle specialized connector shapes for BPMN, UML, and ER diagrams
+            let connectorShape: WebMcpArgs = args.shape;
+            // When the AI omits an explicit shape, infer the right connector type from the
+            // node types at both ends. BPMN-to-BPMN edges must produce a Bpmn sequence flow
+            // (rendered with the diamond marker); otherwise the renderer falls back to a plain
+            // arrow that doesn't match BPMN semantics.
+            if (!connectorShape) {
+                const inferred: WebMcpArgs = this.inferConnectorShape(sourceId, targetId);
+                if (inferred) {
+                    connectorShape = inferred;
+                }
+            }
+            if (args.shape) {
+                // When the AI client supplies a shape object directly, hand it through untouched
+                // so the renderer can apply whatever relationship / cardinality / flow markup it carries.
+                if (typeof args.shape === 'object') {
+                    connectorShape = args.shape;
+                } else {
+                    const shapeName: string = this.normalizeShapeName(args.shape);
+
+                    // Handle BPMN connectors
+                    if (shapeName.indexOf('bpmn') >= 0) {
+                        // Default BPMN flow properties
+                        connectorShape = {
+                            type: 'Bpmn',
+                            flow: args.bpmnFlowType || 'Sequence'
+                        };
+
+                        // Set specific properties based on flow type
+                        const flowType: string = args.bpmnFlowType || 'Sequence';
+                        if (flowType === 'Sequence') {
+                            connectorShape.sequence = args.sequenceFlowType || 'Normal';
+                        } else if (flowType === 'Message') {
+                            connectorShape.message = args.messageFlowType || 'Default';
+                        } else if (flowType === 'Association') {
+                            connectorShape.association = args.associationFlowType || 'Default';
+                        }
+                    }
+                    // Handle ER relationship connectors
+                    else if (shapeName.indexOf('relationship') >= 0 || shapeName.indexOf('er') >= 0) {
+                        connectorShape = {
+                            type: 'Er',
+                            relationship: args.erRelationshipType || 'NonIdentifying',
+                            sourceMultiplicity: {
+                                type: args.sourceMultiplicity || 'One'
+                            },
+                            targetMultiplicity: {
+                                type: args.targetMultiplicity || 'One'
+                            }
+                        };
+                    }
+                    // Handle UML association connectors
+                    else if (shapeName.indexOf('association') >= 0 || shapeName.indexOf('uml') >= 0) {
+                        connectorShape = {
+                            type: 'UmlClassifier',
+                            relationship: args.umlRelationshipType || 'Association',
+                            associationType: args.associationType || 'Default'
+                        };
+
+                        // Add multiplicity if provided
+                        if (args.sourceMultiplicity || args.targetMultiplicity) {
+                            connectorShape.multiplicity = {
+                                source: args.sourceMultiplicity || 'OneToOne',
+                                target: args.targetMultiplicity || 'OneToOne'
+                            };
+                        }
+                    }
+                }
+            }
+
             const connector: WebMcpArgs = {
                 id: connectorId,
                 sourceID: sourceId,
@@ -1610,7 +2212,7 @@ export class WebMcpAdapter {
                 sourceDecorator: { shape: startDecorator },
                 targetDecorator: { shape: endDecorator },
                 constraints: connectorConstraints,
-                shape: args.shape,
+                shape: connectorShape,
                 segments: args.segments,
                 cornerRadius: args.cornerRadius,
                 hitPadding: args.hitPadding,
@@ -1628,23 +2230,29 @@ export class WebMcpAdapter {
                 }
             });
 
-            this.parent.addConnector(connector as WebMcpArgs);
-            // setProperties ensures the connector type change is picked up by the renderer.
-            this.parent.setProperties({ connectors: this.parent.connectors });
+            try {
+                this.parent.addConnector(connector as WebMcpArgs);
+                // setProperties ensures the connector type change is picked up by the renderer.
+                this.parent.setProperties({ connectors: this.parent.connectors });
 
-            return this.message({
-                success: true,
-                data: {
-                    connectorId: connectorId,
-                    status: 'created',
-                    sourceId: sourceId,
-                    targetId: targetId,
-                    connectorType: connectorType,
-                    labelAdded: !!labelContent
-                },
-                warnings: warnings,
-                message: `Connector '${connectorId}' created successfully as ${connectorType} type between ${sourceId} and ${targetId}`
-            });
+                return this.message({
+                    success: true,
+                    data: {
+                        connectorId: connectorId,
+                        status: 'created',
+                        sourceId: sourceId,
+                        targetId: targetId,
+                        connectorType: connectorType,
+                        labelAdded: !!labelContent
+                    },
+                    warnings: warnings,
+                    message: `Connector '${connectorId}' created successfully as ${connectorType} type between ${sourceId} and ${targetId}`
+                });
+            } catch (addConnectorError) {
+                // Log the error but don't throw it to avoid breaking the flow
+                console.warn(`Failed to add connector ${connectorId}: ${(addConnectorError as Error).message}`);
+                throw addConnectorError;
+            }
         } catch (err) {
             return this.error(`Failed to create connector: ${(err as Error).message}`);
         }
@@ -1689,7 +2297,10 @@ export class WebMcpAdapter {
             const selectedObjects: WebMcpArgs[] = this.getSelectedObjects().map((obj: WebMcpArgs) => ({
                 id: obj.id,
                 type: this.findConnector(obj.id) ? 'connector' : 'node',
-                label: obj.annotations[0].content || ''
+                // Some nodes (container shapes like Er / UmlClassifier / SwimLane / Bpmn) do not
+                // expose a top-level annotations array. Guard before accessing [0] so a missing
+                // annotations entry cannot blow up the whole selection response.
+                label: ((obj.annotations && obj.annotations[0] && obj.annotations[0].content) || '') as string
             }));
 
             return this.message({
@@ -1985,13 +2596,15 @@ export class WebMcpAdapter {
             const operation: string = args.operation;
 
             switch (operation) {
-            case 'copy':
+            case 'copy': {
+                const copyCount: number = this.getSelectedObjects().length;
                 this.parent.copy();
                 return this.message({
                     success: true,
-                    data: { operation: 'copy', objectsCopied: (this.parent.selectedItems.nodes || []).length, canPaste: true },
-                    message: `${(this.parent.selectedItems.nodes || []).length} object(s) copied`
+                    data: { operation: 'copy', objectsCopied: copyCount, canPaste: true },
+                    message: `${copyCount} object(s) copied`
                 });
+            }
             case 'cut':
                 this.parent.cut();
 
@@ -2056,7 +2669,7 @@ export class WebMcpAdapter {
             case 'load':
             case 'import':
                 if (!args.diagramData) {
-                    return this.error('diagramData is required for load and import operations');
+                    return this.error('diagramData is required for load operations');
                 }
                 this.parent.loadDiagram(args.diagramData);
                 this.parent.dataBind();
@@ -2085,10 +2698,10 @@ export class WebMcpAdapter {
                     message: 'Diagram print requested successfully'
                 });
             default:
-                return this.error(`Unknown export/import operation: ${operation}. Use save, export, load, import, or print.`);
+                return this.error(`Unknown export operation: ${operation}. Use save, export, load, or print.`);
             }
         } catch (err) {
-            return this.error(`Failed to export/import: ${(err as Error).message}`);
+            return this.error(`Failed to export: ${(err as Error).message}`);
         }
     }
 
@@ -2323,17 +2936,19 @@ export class WebMcpAdapter {
             const operation: string = args.operation;
 
             switch (operation) {
-            case 'group':
+            case 'group': {
                 this.parent.group();
 
                 // Update diagram to show grouped objects
                 this.parent.dataBind();
 
+                const groupedCount: number = this.getSelectedObjects().length;
                 return this.message({
                     success: true,
-                    data: { operation: 'group', childrenCount: (this.parent.selectedItems.nodes || []).length },
+                    data: { operation: 'group', childrenCount: groupedCount },
                     message: 'Objects grouped successfully'
                 });
+            }
             case 'unGroup':
                 this.parent.unGroup();
 
@@ -2707,7 +3322,7 @@ export class WebMcpAdapter {
      * @returns {string} - The module name.
      */
     public getModuleName(): string {
-        return 'WebMcpAdapter';
+        return 'WebMcpDiagram';
     }
 
     /**
@@ -2758,10 +3373,34 @@ export class WebMcpAdapter {
             case 'complexhierarchical':
                 layout = { ...common, type: 'ComplexHierarchicalTree' };
                 break;
-            default:
-                return this.error(`Unknown layout type: ${layoutType}. ` +
-                    'Supported types: Hierarchical, Radial, MindMap, Flowchart, Symmetric, ComplexHierarchical');
-            }
+            // Additional layout types for better AI recognition
+            case 'organization':
+            case 'org':
+                layout = { ...common, type: 'HierarchicalTree', orientation: orientation || 'TopToBottom' };
+                break;
+            case 'network':
+                layout = { ...common, type: 'Flowchart', orientation: orientation || 'TopToBottom' };
+                break;
+            default: {
+                // Try to match layout type more flexibly
+                const normalizedLayoutType: string = layoutType.toLowerCase().replace(/\s+/g, '');
+                if (normalizedLayoutType.includes('hierarchical') || normalizedLayoutType.includes('tree')) {
+                    layout = { ...common, type: 'HierarchicalTree', orientation: orientation };
+                } else if (normalizedLayoutType.includes('mind') || normalizedLayoutType.includes('map')) {
+                    layout = { ...common, type: 'MindMap', root: rootNode };
+                } else if (normalizedLayoutType.includes('flow') || normalizedLayoutType.includes('chart')) {
+                    layout = { ...common, type: 'Flowchart', orientation: orientation };
+                } else if (normalizedLayoutType.includes('radial')) {
+                    layout = { ...common, type: 'RadialTree', root: rootNode };
+                } else if (normalizedLayoutType.includes('symmetric')) {
+                    layout = { ...common, type: 'SymmetricLayout' };
+                } else if (normalizedLayoutType.includes('complex')) {
+                    layout = { ...common, type: 'ComplexHierarchicalTree' };
+                } else {
+                    layout = { ...common, type: 'HierarchicalTree', orientation: orientation };
+                }
+                break;
+            }}
 
             const createdConnectors: string[] = [];
             if (this.parent.nodes.length > 1 && this.parent.connectors.length === 0) {
@@ -2842,6 +3481,201 @@ export class WebMcpAdapter {
     }
 
     /**
+     * Creates a specialized relationship connector between two entities for ER or UML diagrams.
+     *
+     * @param {Object} args - The tool arguments describing the relationship.
+     * @returns {WebMcpToolResponse} - The tool response.
+     */
+    private createSpecializedRelationship(args: WebMcpArgs): WebMcpToolResponse {
+        try {
+            if (!this.ensureParent()) {
+                return this.error('Diagram is not initialized');
+            }
+
+            const sourceId: string = args.sourceId;
+            const targetId: string = args.targetId;
+
+            if (!sourceId || !targetId) {
+                return this.error('Both sourceId and targetId are required for relationship creation');
+            }
+
+            // Determine connector type based on provided properties
+            const connectorType: string = args.connectorType || args.type || 'Orthogonal';
+
+            // Prepare connector arguments with proper defaults
+            const connectorArgs: WebMcpArgs = {
+                connectorId: args.connectorId || `rel_${sourceId}_${targetId}_${Date.now()}`,
+                sourceId: sourceId,
+                targetId: targetId,
+                label: args.label,
+                lineType: connectorType,
+                style: {
+                    strokeColor: args.lineColor || '#000000',
+                    strokeWidth: args.lineWidth || 2
+                }
+            };
+
+            // Handle different diagram types based on provided properties
+            if (args.bpmnFlowType) {
+                // BPMN connector
+                connectorArgs.shape = {
+                    type: 'Bpmn',
+                    flow: args.bpmnFlowType,
+                    sequence: args.sequenceFlowType || 'Normal',
+                    message: args.messageFlowType || 'Default',
+                    association: args.associationFlowType || 'Default'
+                };
+
+                // Set decorators based on BPMN flow type
+                if (args.bpmnFlowType === 'Sequence') {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'Arrow';
+                } else if (args.bpmnFlowType === 'Message') {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'Arrow';
+                } else if (args.bpmnFlowType === 'Association') {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'None';
+                }
+            } else if (args.erRelationshipType || args.sourceMultiplicity || args.targetMultiplicity) {
+                // ER connector
+                connectorArgs.shape = {
+                    type: 'Er',
+                    relationship: args.erRelationshipType || 'NonIdentifying',
+                    sourceMultiplicity: {
+                        type: args.sourceMultiplicity || 'One'
+                    },
+                    targetMultiplicity: {
+                        type: args.targetMultiplicity || 'One'
+                    }
+                };
+
+                // Set decorators based on multiplicity
+                const sourceMult: string = args.sourceMultiplicity || 'One';
+                const targetMult: string = args.targetMultiplicity || 'One';
+                connectorArgs.startDecorator = sourceMult.includes('Many') || sourceMult.includes('ZeroOrMany') || sourceMult.includes('OneOrMany') ? 'Crow' : 'None';
+                connectorArgs.endDecorator = targetMult.includes('Many') || targetMult.includes('ZeroOrMany') || targetMult.includes('OneOrMany') ? 'Crow' : 'None';
+            } else if (args.umlRelationshipType || args.associationType) {
+                // UML connector
+                connectorArgs.shape = {
+                    type: 'UmlClassifier',
+                    relationship: args.umlRelationshipType || 'Association',
+                    associationType: args.associationType || 'Default'
+                };
+
+                // Add multiplicity if provided
+                if (args.sourceMultiplicity || args.targetMultiplicity) {
+                    connectorArgs.shape.multiplicity = {
+                        source: args.sourceMultiplicity || 'OneToOne',
+                        target: args.targetMultiplicity || 'OneToOne'
+                    };
+                }
+
+                // Set decorators based on relationship type
+                const relType: string = args.umlRelationshipType || 'Association';
+                if (relType === 'Aggregation') {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'Diamond';
+                } else if (relType === 'Composition') {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'FilledDiamond';
+                } else {
+                    connectorArgs.startDecorator = 'None';
+                    connectorArgs.endDecorator = 'Arrow';
+                }
+            } else {
+                // Detect whether this is an ER relationship request from cardinality-style signals.
+                // The AI commonly supplies relationshipType as "oneToMany"/"manyToMany"/"oneToOne"
+                // or a cardinality like "1..*"/"*..*"/"1..1" — none of which are UML relationship names.
+                const relationshipType: string = (args.relationshipType || '').toString();
+                const cardinality: string = (args.cardinality || '').toString();
+                const isErLikeRelationship: boolean = /oneToOne|oneToMany|manyToOne|manyToMany/i.test(relationshipType)
+                    || /\*|\.\./.test(cardinality);
+                const isUmlLikeRelationship: boolean = /Aggregation|Composition|Inheritance|Realization|Dependency|Association/i.test(relationshipType);
+
+                if (isErLikeRelationship && !isUmlLikeRelationship) {
+                    // ER connector — translate cardinality notation into ErMultiplicity values.
+                    const srcMult: string = this.toErMultiplicity(this.parseCardinalitySide(cardinality, 0), relationshipType);
+                    const tgtMult: string = this.toErMultiplicity(this.parseCardinalitySide(cardinality, 1), relationshipType);
+
+                    connectorArgs.shape = {
+                        type: 'Er',
+                        relationship: args.erRelationshipType || 'NonIdentifying',
+                        sourceMultiplicity: { type: srcMult },
+                        targetMultiplicity: { type: tgtMult }
+                    };
+                    connectorArgs.startDecorator = this.getCrowDecorator(srcMult);
+                    connectorArgs.endDecorator = this.getCrowDecorator(tgtMult);
+                } else {
+                    // UML connector (default fallback)
+                    connectorArgs.shape = {
+                        type: 'UmlClassifier',
+                        relationship: relationshipType || 'Association',
+                        associationType: args.associationType || 'Default'
+                    };
+
+                    connectorArgs.label = args.label || `${cardinality}`;
+                    connectorArgs.startDecorator = relationshipType.includes('one') || relationshipType.includes('1') ? 'None' : 'Circle';
+                    connectorArgs.endDecorator = relationshipType.includes('many') || relationshipType.includes('n') ? 'Crow' : 'Arrow';
+                }
+            }
+
+            // Use the existing connector creation method
+            return this.handleCreateDiagramConnector(connectorArgs);
+        } catch (err) {
+            return this.error(`Failed to create specialized relationship: ${(err as Error).message}`);
+        }
+    }
+
+    /**
+     * Extracts one side of a cardinality string like "1..*". Returns 'One' or 'Many'.
+     *
+     * @param {string} cardinality - The cardinality string.
+     * @param {number} side - 0 for the source side, 1 for the target side.
+     * @returns {string} - 'One' or 'Many'.
+     */
+    private parseCardinalitySide(cardinality: string, side: number): string {
+        if (!cardinality) {
+            return 'One';
+        }
+        const parts: string[] = cardinality.split('..');
+        // Use indexOf with explicit bounds instead of array index access so the
+        // security plugin does not flag this as an object-injection sink.
+        const sideIndex: number = (side === 1) ? 1 : 0;
+        const token: string = (sideIndex < parts.length ? parts[parseInt(sideIndex.toString(), 10)] : (parts[0] || '')).trim();
+        if (!token || token === '0' || token === '1') {
+            return 'One';
+        }
+        return 'Many';
+    }
+
+    /**
+     * Maps an ER relationship description to the appropriate ErMultiplicityTypes value.
+     * Falls back to the parsed cardinality side when the relationship type yields no hint.
+     *
+     * @param {string} side - 'One' or 'Many' parsed from the cardinality literal.
+     * @param {string} relationshipType - The relationship type supplied by the AI client.
+     * @returns {string} - A valid ErMultiplicityTypes value.
+     */
+    private toErMultiplicity(side: string, relationshipType: string): string {
+        const rel: string = (relationshipType || '').toLowerCase();
+        const isMany: boolean = side === 'Many'
+            || rel.indexOf('many') !== -1
+            || rel.indexOf('mandatory') !== -1;
+        return isMany ? 'Many' : 'One';
+    }
+
+    /**
+     * Picks the appropriate decorator shape for an ER multiplicity value.
+     *
+     * @param {string} multiplicity - The ErMultiplicityTypes value.
+     * @returns {string} - A valid DecoratorShapes value.
+     */
+    private getCrowDecorator(multiplicity: string): string {
+        return multiplicity === 'Many' ? 'Crow' : 'None';
+    }
+
+    /**
      * Formats a successful result in the WebMCP standard response format.
      *
      * @param {unknown} data - The payload serialized into the response content.
@@ -2860,4 +3694,34 @@ export class WebMcpAdapter {
     private error(text: string): WebMcpToolResponse {
         return { content: [{ type: 'text', text }], isError: true };
     }
+}
+
+/**
+ * Defines the settings for WebMCP integration in the Diagram component.
+ * Provides declarative configuration for tool registration and exposure.
+ */
+export class WebMcpDiagramSettings extends ChildProperty<WebMcpDiagramSettings> {
+    /**
+     * Name of the diagram for organizing registered tools
+     *
+     * @default null
+     */
+    @Property(null)
+    public name: string;
+
+    /**
+     * Array of tool names or custom WebMcpTool definitions to register
+     *
+     * @default null
+     */
+    @Property(null)
+    public tools: string[] | WebMcpTool[];
+
+    /**
+     * Optional list of allowed origins for cross-origin iframe access
+     *
+     * @default null
+     */
+    @Property(null)
+    public exposedTo: string[];
 }

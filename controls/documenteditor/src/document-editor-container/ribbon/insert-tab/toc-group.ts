@@ -5,11 +5,13 @@ import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 
 /**
  * Table of Contents group implementation for Insert tab
+ *
  * @private
  */
 export class TOCGroup extends RibbonGroupBase {
     /**
      * Get the Ribbon items for Table of Contents group
+     *
      * @returns {RibbonGroupModel} - Table of Contents group model
      * @private
      */

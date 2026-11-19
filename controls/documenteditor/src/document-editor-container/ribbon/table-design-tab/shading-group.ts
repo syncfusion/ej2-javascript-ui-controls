@@ -7,11 +7,11 @@ import {
     SHADING_COLOR_PICKER_ID
 } from './constants';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
-import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 export const SHADING_BUTTON_ID: string = '_SHADING_BUTTON';
 
 /**
  * ShadingGroup class provides the shading options for table design
+ *
  * @private
  */
 export class ShadingGroup {
@@ -26,6 +26,7 @@ export class ShadingGroup {
 
     /**
      * Constructor for the ShadingGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -41,6 +42,7 @@ export class ShadingGroup {
 
     /**
      * Create the Shading group configuration
+     *
      * @returns {void}
      */
     private createColorPickerElement(): void {
@@ -81,6 +83,7 @@ export class ShadingGroup {
 
     /**
      * Gets the Shading group configuration
+     *
      * @returns {RibbonGroupModel} - The Shading group configuration
      * @private
      */
@@ -103,6 +106,7 @@ export class ShadingGroup {
 
     /**
      * Gets the Shading Split Button configuration with color picker dropdown
+     *
      * @returns {RibbonItemModel} - The Shading Split Button configuration
      * @private
      */
@@ -137,6 +141,7 @@ export class ShadingGroup {
 
     /**
      * Shows the color picker dialog
+     *
      * @returns {void}
      * @private
      */
@@ -150,6 +155,7 @@ export class ShadingGroup {
 
     /**
      * Applies the shading color to the selected table or cells
+     *
      * @param {string} color - The color to apply as shading
      * @returns {void}
      */
@@ -165,6 +171,7 @@ export class ShadingGroup {
     }
     /**
      * Updates the shading color to reflect the current selection
+     *
      * @returns {void}
      * @private
      */
@@ -184,6 +191,7 @@ export class ShadingGroup {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      * @private
      */

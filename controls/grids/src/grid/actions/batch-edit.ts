@@ -577,7 +577,6 @@ export class BatchEdit {
                     }
                 } else {
                     e.keyArgs.preventDefault();
-                    // eslint-disable-next-line no-case-declarations
                     const args: { cancel: boolean, keyArgs: object } = {cancel: false, keyArgs: e.keyArgs};
                     this.parent.notify('beforeFocusCellEdit', args);
                     if (!args.cancel && isEdit) {
@@ -706,6 +705,7 @@ export class BatchEdit {
 
     /**
      * Restores rows after batch cancel with frozen rows.
+     *
      * @returns {void}
      * @hidden
      */
@@ -1410,7 +1410,11 @@ export class BatchEdit {
                         if (gObj.isEdit) {
                             break;
                         }
-                        else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td:not(.e-hide, .e-rowdragdrop, .e-detailrowcollapse, .e-detailrowexpand, .e-indentcell)')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerHTML === '') {
+                        const rowElement: Element = insertedRows[parseInt(i.toString(), 10)];
+                        const rowObj: Row<Column> = gObj.getRowObjectFromUID(rowElement.getAttribute('data-uid'));
+                        const fieldName: string = this.validationColObj[parseInt(j.toString(), 10)].field;
+                        const fieldValue: string | null = rowObj && rowObj.changes ? getObject(fieldName, rowObj.changes) : null;
+                        if (isNullOrUndefined(fieldValue) || fieldValue === '') {
                             this.editCell(parseInt(insertedRows[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1, this.validationColObj[parseInt(j.toString(), 10)].field);
                             if (this.validateFormObj()) {
                                 this.saveCell();
@@ -1596,6 +1600,7 @@ export class BatchEdit {
             rowElement = this.parent.getDataRows()[parseInt(index.toString(), 10)];
         }
         const row: Row<Column> = this.parent.getRowObjectFromUID(rowElement.getAttribute('data-uid'));
+        if (!row) { return null; }
         return row.changes ? row.changes : row.data;
     }
 

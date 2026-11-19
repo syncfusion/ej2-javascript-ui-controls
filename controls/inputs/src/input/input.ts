@@ -20,6 +20,8 @@ const CLASSNAMES: ClassNames = {
     FLOATCUSTOMTAG: 'e-float-custom-tag'
 };
 
+let isReactMode: boolean = false;
+
 /* eslint-disable no-inner-declarations */
 
 /**
@@ -42,14 +44,51 @@ export const TEXTBOX_FOCUS: string = 'e-input-focus';
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Input {
-    let privateInputObj: InputObject = {
-        container: null,
-        buttons: [],
-        clearButton: null
-    };
     let floatType: string;
     let isBindClearAction: boolean = true;
-    const resizeHandlers: Map<HTMLElement, EventListener> = new Map<HTMLElement, EventListener>();
+    let resizeHandlers: Map<HTMLElement, EventListener> = new Map<HTMLElement, EventListener>();
+    const mutationObservers: Map<HTMLElement, MutationObserver> = new Map<HTMLElement, MutationObserver>();
+
+    const observeElementDetach: (
+        element: HTMLElement,
+        container: HTMLElement,
+        resizeHandler: EventListener
+    ) => void = (
+        element: HTMLElement,
+        container: HTMLElement,
+        resizeHandler: EventListener
+    ): void => {
+
+        const parent: HTMLElement = container.parentElement;
+
+        if (!parent) {
+            if (!isNullOrUndefined(resizeHandlers)) {
+                window.removeEventListener('resize', resizeHandler);
+                resizeHandlers.delete(element);
+            }
+            return;
+        }
+
+        const observer: MutationObserver = new MutationObserver(() => {
+            if (!document.documentElement.contains(container)) {
+                window.removeEventListener('resize', resizeHandler);
+                resizeHandlers.delete(element);
+                observer.disconnect();
+                mutationObservers.delete(element);
+            }
+        });
+        let host: HTMLElement = parent;
+
+        while (host && host.parentElement && host.parentElement !== document.body) {
+            host = host.parentElement;
+        }
+
+        observer.observe(host || parent, {
+            childList: true,
+            subtree: true
+        });
+        mutationObservers.set(element, observer);
+    };
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
      * ```
@@ -91,7 +130,6 @@ export namespace Input {
         validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         createSpanElement(inputObject.container, makeElement);
-        privateInputObj = inputObject;
         return inputObject;
     }
 
@@ -493,24 +531,37 @@ export namespace Input {
             _internalRipple(false, null, args.buttons as any);
         }
         unwireFloatingEvents(args.element);
-        const resizeHandler: EventListener = resizeHandlers.get(args.element as HTMLElement);
-        if (resizeHandler) {
-            window.removeEventListener('resize', resizeHandler);
-            resizeHandlers.delete(args.element as HTMLElement);
+
+        if (!isNullOrUndefined(resizeHandlers)) {
+            const resizeHandler: EventListener = resizeHandlers.get(args.element as HTMLElement);
+            if (resizeHandler) {
+                window.removeEventListener('resize', resizeHandler);
+                resizeHandlers.delete(args.element as HTMLElement);
+                const observer: MutationObserver = mutationObservers.get(args.element as HTMLElement);
+                if (observer) {
+                    observer.disconnect();
+                    mutationObservers.delete(args.element as HTMLElement);
+                }
+                if (isReactMode) {
+                    resizeHandlers = null;
+                }
+            }
         }
+
         if (!isNullOrUndefined(args.element)) {
             delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers;
             if (args.element.classList.contains(CLASSNAMES.INPUT)) {
                 args.element.classList.remove(CLASSNAMES.INPUT);
             }
         }
-        privateInputObj = null;
     }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {
         const parent: HTMLElement = getParentNode(element);
         if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
             const label: HTMLElement = <HTMLElement> getParentNode(element).getElementsByClassName('e-float-text')[0];
-            updateLabelState(element.value, label, element);
+            if (label) {
+                updateLabelState(element.value, label, element);
+            }
         }
     }
 
@@ -567,7 +618,11 @@ export namespace Input {
      * @param {boolean} clearButton - Boolean value to specify whether the clear icon is enabled / disabled on the input.
      */
     export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
-                             floatLabelType ?: string, clearButton?: boolean): void {
+                             floatLabelType ?: string, clearButton?: boolean, reactMode?: boolean): void {
+        isReactMode = reactMode;
+        if (isNullOrUndefined(resizeHandlers) && isReactMode) {
+            resizeHandlers = new Map<HTMLElement, EventListener>();
+        }
         element.value = value;
         if (floatLabelType !== 'Never') {
             calculateWidth(element, element.parentElement);
@@ -620,7 +675,8 @@ export namespace Input {
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
     export function calculateWidth(element: any, container: HTMLElement, moduleName?: string): void {
-        if (moduleName !== 'multiselect' && element && container && !resizeHandlers.has(element as HTMLElement)) {
+        if (moduleName !== 'multiselect' && element && container && resizeHandlers
+            && !resizeHandlers.has(element as HTMLElement)) {
             const resizeHandler: EventListener = (): void => {
                 if (!document.documentElement.contains(container)) {
                     window.removeEventListener('resize', resizeHandler);
@@ -631,6 +687,7 @@ export namespace Input {
             };
             resizeHandlers.set(element as HTMLElement, resizeHandler);
             window.addEventListener('resize', resizeHandler);
+            observeElementDetach(element as HTMLElement, container, resizeHandler);
         }
         if (moduleName !== 'multiselect' && !_isElementVisible(element)) {
             return;
@@ -866,7 +923,8 @@ export namespace Input {
         if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
             const inputEle: HTMLElement = container.querySelector('textarea') ? <HTMLElement>container.querySelector('textarea') :
         <HTMLElement>container.querySelector('input');
-            const placeholder: string = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
+            const floatTextElement: HTMLElement = container.querySelector('.' + CLASSNAMES.FLOATTEXT) as HTMLElement;
+            const placeholder: string = floatTextElement ? floatTextElement.textContent : '';
             const clearButton: boolean = container.querySelector('.e-clear-icon') !== null;
             detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
             detach(container.querySelector('.' + CLASSNAMES.FLOATTEXT));

@@ -6,7 +6,7 @@ import { Cell } from '../models/cell';
 import { rowDataBound, queryCellInfo } from '../base/constant';
 import {
     setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos,
-    resetColspanGroupCaption, resetColandRowSpanStickyPosition, addFixedColumnBorder
+    resetColspanGroupCaption, resetColandRowSpanStickyPosition, addFixedColumnBorder, getParsedFieldID
 } from '../base/util';
 import { ICellRenderer, IRowRenderer, IRow, QueryCellInfoEventArgs, RowDataBoundEventArgs, IGrid } from '../base/interface';
 import { CellType } from '../base/enum';
@@ -74,7 +74,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             row.data = extendObjWithFn({}, row.changes);
             this.refreshMergeCells(row);
         }
-        const node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
+        const node: Element = this.parent.element.querySelector('[data-uid=' + getParsedFieldID(row.uid) + ']');
         const tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
         if (node.classList.contains('e-grid-pin-row')) {
             tr.classList.add('e-grid-pin-row');
@@ -93,7 +93,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                                 this.parent.refreshReactColumnTemplateByUid(col.uid, true);
                             }
                             if (this.parent.isAngular) {
-                                this.parent.refreshColumnTemplates();
+                                this.parent.refreshRowCellTemplates(node);
                             }
                         },
                         0);

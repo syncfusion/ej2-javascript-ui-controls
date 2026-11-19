@@ -7,12 +7,15 @@ import { RibbonItemModel, RibbonSplitButtonSettingsModel, RibbonItemSize } from 
 import { ParagraphWidget } from '../../../document-editor/implementation/viewer/page';
 import { BulletListHelper } from '../../helper/bullet-list-helper';
 import { ElementsMap } from '../../helper/ribbon-interfaces';
+import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { Ribbon } from '../ribbon';
 
 // Bullet list constants
 export const BULLET_LIST_ID: string = '_bullet_list';
 
 /**
  * BulletsGroup class for handling bullet list operations in Document Editor ribbon
+ *
  * @private
  */
 export class BulletsGroup {
@@ -29,6 +32,7 @@ export class BulletsGroup {
 
     /**
      * Constructor for BulletsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -43,6 +47,7 @@ export class BulletsGroup {
 
     /**
      * Get the bullet list split button item configuration
+     *
      * @returns {RibbonItemModel} The ribbon item model for bullet list
      * @private
      */
@@ -61,6 +66,7 @@ export class BulletsGroup {
 
     /**
      * Create bullet dropdown in ribbon
+     *
      * @returns {RibbonSplitButtonSettingsModel} SplitButtonModel configuration
      * @private
      */
@@ -122,7 +128,7 @@ export class BulletsGroup {
 
     private createBulletElements(ulTag: HTMLElement): void {
         // Define bullet types with their properties
-        const bulletTypes: any[] = [
+        const bulletTypes: { key: string, cssClass: string, isNone: boolean, handler: (e: MouseEvent) => void }[] = [
             { key: 'none', cssClass: 'e-de-ctnr-bullet-none e-icons e-de-ctnr-list', isNone: true, handler: this.bulletNoneClick.bind(this) },
             { key: 'dot', cssClass: 'e-de-ctnr-bullet-dot e-icons e-de-ctnr-list', isNone: false, handler: this.bulletDotClick.bind(this) },
             { key: 'circle', cssClass: 'e-de-ctnr-bullet-circle e-icons e-de-ctnr-list', isNone: false, handler: this.bulletCircleClick.bind(this) },
@@ -133,7 +139,7 @@ export class BulletsGroup {
         ];
 
         // Create all elements and store them
-        bulletTypes.forEach((type: any) => {
+        bulletTypes.forEach((type: { key: string, cssClass: string, isNone: boolean, handler: (e: MouseEvent) => void }) => {
             const element: HTMLElement = this.createBulletListTag(ulTag, type.cssClass, type.isNone);
             element.addEventListener('click', type.handler);
             this.bulletElements[type.key] = element;
@@ -168,6 +174,7 @@ export class BulletsGroup {
 
     /**
      * Apply the last used bullet style
+     *
      * @returns {void}
      * @private
      */
@@ -177,11 +184,12 @@ export class BulletsGroup {
 
     /**
      * Handle bullet style selection from dropdown
-     * @param {any} args - The event arguments
+     *
+     * @param {MenuEventArgs} args - The event arguments
      * @returns {void}
      * @private
      */
-    public handleBulletSelection(args: any): void {
+    public handleBulletSelection(args: MenuEventArgs): void {
         const styleMap: { [key: string]: string } = {};
         styleMap[this.localObj.getConstant('None')] = 'none';
         styleMap[this.localObj.getConstant('Dot')] = 'dot';
@@ -199,7 +207,7 @@ export class BulletsGroup {
 
 
     private applyBulletStyle(style: string): void {
-        const appliedStyle: any = { value: this.appliedBulletStyle };
+        const appliedStyle: { value: string } = { value: this.appliedBulletStyle };
         BulletListHelper.applyBulletStyle(this.documentEditor, style, appliedStyle);
         this.appliedBulletStyle = appliedStyle.value;
         this.refreshHomeSelection();
@@ -238,10 +246,10 @@ export class BulletsGroup {
 
     public destroy(): void {
         // Remove event listeners
-        const keys: any = Object.keys(this.eventHandlers);
+        const keys: string[] = Object.keys(this.eventHandlers);
         for (const key of keys) {
             /* eslint-disable */
-            const item: any = this.eventHandlers[key];
+            const item: { element: HTMLElement, handler: (e: MouseEvent) => void } = this.eventHandlers[key];
             if (item.element && item.handler) {
                 item.element.removeEventListener('click', item.handler);
             }
@@ -252,7 +260,7 @@ export class BulletsGroup {
     }
 
     private refreshHomeSelection(): void {
-        const ribbonModule: any = (this.container as any).ribbonModule;
+        const ribbonModule: Ribbon = this.container.ribbonModule;
         if (ribbonModule && ribbonModule.tabManager && ribbonModule.tabManager.homeTab) {
             ribbonModule.tabManager.homeTab.updateSelection();
         }

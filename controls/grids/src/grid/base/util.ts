@@ -367,7 +367,7 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
             if (isNullOrUndefined(column.width)) {
                 column.width = 60;
             }
-            if(isNullOrUndefined(column.textAlign)) {
+            if (isNullOrUndefined(column.textAlign)) {
                 column.textAlign = 'Right';
             }
             column.allowReordering = false;
@@ -717,7 +717,7 @@ export function getComplexFieldID(field: string = ''): string {
  * @hidden
  */
 export function getParsedFieldID(field: string = ''): string {
-    return field.replace(/[^a-zA-Z0-9_.]/g, '\\$&');
+    return field.replace(/[^a-zA-Z0-9_.]/g, '\\$&').replace(/^(\d)/, '\\3$1 ');
 }
 
 /**
@@ -939,13 +939,12 @@ export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog):
  * @param {Column} column - Defines the column
  * @param {string} columnType - Defines the column type
  * @param {Dialog} dlgObj - Defines the dialog
- * @param {string} previousValue - Defines the previous operator
  * @returns {void}
  * @hidden
  */
 export function toggleFilterUI(
     operator: string, columnUid: string, column: Column | ColumnModel, columnType: string,
-    dlgObj: Dialog, previousValue: string
+    dlgObj: Dialog
 ): void {
     if (isNullOrUndefined(column.filterTemplate)) {
         let columnID: string = '';
@@ -958,7 +957,6 @@ export function toggleFilterUI(
         } else if (columnType === 'date' || columnType === 'datetime') {
             columnID = 'dateui-' + columnUid;
         }
-        const isPreviousValue: boolean = previousValue === 'in' || previousValue === 'notin';
         const isMultiSelect: boolean = operator === 'in' || operator === 'notin';
         const multiselectParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#multiselect${columnID}`), 'e-control-wrapper') as HTMLElement;
         const singleInputParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#${columnID}`), 'e-popup-flmenu') as HTMLElement;
@@ -1876,7 +1874,7 @@ export function isMatDialogContainer(gObj: IGrid, dialogObj: Dialog): void {
  * @hidden
  */
 export function isAngularMatContainer(gObj: IGrid): boolean {
-    return gObj && gObj.isAngular && gObj.element && !isNullOrUndefined(gObj.element.closest('mat-dialog-container'));
+    return gObj && gObj.isAngular && gObj.element && (!isNullOrUndefined(gObj.element.closest('mat-dialog-container')) || !isNullOrUndefined(gObj.element.closest('cdk-dialog-container')));
 }
 
 /**
@@ -2684,6 +2682,11 @@ export function getVisiblePage(blockes: number[]): number[] {
     return visiblePage;
 }
 
+/**
+ *
+ * @param { IGrid } grid - Defines the grid instance.
+ * @returns { Object[] } - Returns the filtered records.
+ */
 export function getSerachFilteredData(grid: IGrid): Object[] {
     const isTreeGrid: string = 'isTreeGrid';
     if (grid[`${isTreeGrid}`]) {

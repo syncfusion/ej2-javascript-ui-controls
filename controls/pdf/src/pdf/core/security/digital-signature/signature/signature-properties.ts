@@ -1,4 +1,5 @@
 import { CryptographicStandard, DigestAlgorithm, PdfCertificationFlag } from '../../../enumerator';
+import { PdfAuthorityInformationAccess, PdfCrlDistributionPoint, PdfSubjectAlternativeName } from '../../../pdf-document-helper';
 /**
  * Represents the properties used to configure a PDF signature.
  *
@@ -102,6 +103,10 @@ export type PdfSignatureOptions = {
  * field.setSignature(sign);
  * // Gets the certificate information of the signature
  * const certificateInfo: PdfCertificateInformation = sign.getCertificateInformation();
+ * // Get the extended key usage names defined by the certificate
+ * const extendedKeyUsage: string[] = certificateInfo.extendedKeyUsage;
+ * // Get the certificate policies encoded in the certificate
+ * const certificatePolicies: PdfCertificatePolicy[] = certificateInfo.certificatePolicies;
  * // Add the field into PDF form
  * form.add(field);
  * // Save the document
@@ -112,17 +117,33 @@ export type PdfSignatureOptions = {
  */
 export type PdfCertificateInformation = {
     /**
-     * Specifies the issuer name of the certificate.
+     * Specifies the simplified issuer name of the certificate, normally the Common Name.
      */
     issuerName: string;
+    /**
+     * Specifies the complete distinguished name of the certificate issuer.
+     */
+    issuer: string;
+    /**
+     * Specifies the structured distinguished-name attributes of the certificate issuer.
+     */
+    issuerAttributes: PdfDistinguishedName;
     /**
      * Specifies the serial number of the certificate.
      */
     serialNumber: Uint8Array;
     /**
-     * Specifies the subject name of the certificate.
+     * Specifies the simplified subject name of the certificate, normally the Common Name.
      */
     subjectName: string;
+    /**
+     * Specifies the complete distinguished name of the certificate subject.
+     */
+    subject: string;
+    /**
+     * Specifies the structured distinguished-name attributes of the certificate subject.
+     */
+    subjectAttributes: PdfDistinguishedName;
     /**
      * Specifies the date and time before which the certificate is not valid.
      */
@@ -135,4 +156,226 @@ export type PdfCertificateInformation = {
      * Specifies the version number of the certificate.
      */
     version: number;
-}
+    /**
+     * Specifies the certificate signature algorithm name.
+     */
+    signatureAlgorithm: string;
+    /**
+     * Specifies the key usage names defined by the certificate.
+     */
+    keyUsage: string[];
+    /**
+     * Specifies the SHA-1 thumbprint of the complete DER-encoded certificate as hexadecimal text.
+     */
+    sha1Thumbprint: string;
+    /**
+     * Specifies the extended key usage names defined by the certificate.
+     */
+    extendedKeyUsage: string[];
+    /**
+     * Specifies the certificate policies defined by the certificate.
+     */
+    certificatePolicies: PdfCertificatePolicy[];
+    /**
+     * Specifies the SHA-1 digest of the certificate public key.
+     */
+    sha1PublicKeyHash: string;
+    /**
+     * Specifies the complete DER-encoded X.509 certificate.
+     */
+    x509Data: string;
+    /**
+     * Specifies the MD5 digest of the complete DER-encoded certificate.
+     */
+    md5Thumbprint: string;
+    /**
+     * Specifies the Subject Key Identifier.
+     */
+    subjectKeyIdentifier: string;
+    /**
+     * Specifies the Authority Key Identifier.
+     */
+    authorityKeyIdentifier: string;
+    /**
+     * Specifies the Subject Alternative Name entries defined by the certificate.
+     */
+    subjectAlternativeNames: PdfSubjectAlternativeName[];
+    /**
+     * Specifies the RFC822 email addresses defined in the Subject Alternative Name extension.
+     */
+    rfc822EmailAddresses: string[];
+    /**
+     * Specifies the CRL Distribution Point locations defined by the certificate.
+     */
+    crlDistributionPoints: PdfCrlDistributionPoint[];
+    /**
+     * Specifies the Authority Information Access entries defined by the certificate.
+     */
+    authorityInformationAccess: PdfAuthorityInformationAccess[];
+    /**
+     * Specifies the certificate public key.
+     */
+    publicKey: string;
+};
+/**
+ * Represents the distinguished-name attributes of an X.509 certificate.
+ *
+ * @property {string} commonName The Common Name attribute.
+ * @property {string} organization The Organization attribute.
+ * @property {string} organizationalUnit The Organizational Unit attribute.
+ * @property {string} emailAddress The Email Address attribute.
+ * @property {string} country The Country attribute.
+ * @property {string} state The State or Province attribute.
+ * @property {string} locality The Locality attribute.
+ *
+ * ```typescript
+ * // Load an existing signed PDF document.
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Get the first signature field from the document form.
+ * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Get the digital signature associated with the signature field.
+ * const signature: PdfSignature = field.getSignature();
+ * // Get the certificate information associated with the signature.
+ * const certificateInfo: PdfCertificateInformation = signature.getCertificateInformation();
+ * // Get the distinguished-name attributes of the certificate subject.
+ * const subject: PdfDistinguishedName = certificateInfo.subjectAttributes;
+ * // Get the Common Name of the certificate subject.
+ * const commonName: string = subject.commonName;
+ * // Get the Organization of the certificate subject.
+ * const organization: string = subject.organization;
+ * // Get the Organizational Unit of the certificate subject.
+ * const organizationalUnit: string = subject.organizationalUnit;
+ * // Get the Email Address of the certificate subject.
+ * const emailAddress: string = subject.emailAddress;
+ * // Get the Country of the certificate subject.
+ * const country: string = subject.country;
+ * // Get the State or Province of the certificate subject.
+ * const state: string = subject.state;
+ * // Get the Locality of the certificate subject.
+ * const locality: string = subject.locality;
+ * // Destroy the document.
+ * document.destroy();
+ * ```
+ */
+export type PdfDistinguishedName = {
+    /**
+     * Specifies the Common Name attribute.
+     */
+    commonName: string;
+    /**
+     * Specifies the Organization attribute.
+     */
+    organization: string;
+    /**
+     * Specifies the Organizational Unit attribute.
+     */
+    organizationalUnit: string;
+    /**
+     * Specifies the Email Address attribute.
+     */
+    emailAddress: string;
+    /**
+     * Specifies the Country attribute.
+     */
+    country: string;
+    /**
+     * Specifies the State or Province attribute.
+     */
+    state: string;
+    /**
+     * Specifies the Locality attribute.
+     */
+    locality: string;
+};
+/**
+ * Represents a certificate policy defined by an X.509 certificate.
+ *
+ * @property {string} policyIdentifier The certificate policy object identifier.
+ * @property {string} [description] The policy description when encoded in the certificate.
+ * @property {string[]} cpsUrls The certification practice statement (CPS) pointer URLs.
+ * @property {PdfCertificatePolicyNotice[]} userNotices The user notice and issuer notice qualifiers.
+ *
+ * ```typescript
+ * // Load an existing signed PDF document.
+ * const document: PdfDocument = new PdfDocument(data);
+ * // Get the first signature field from the document form.
+ * const field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Get the digital signature associated with the signature field.
+ * const signature: PdfSignature = field.getSignature();
+ * // Get the certificate information associated with the signature.
+ * const certificateInfo: PdfCertificateInformation = signature.getCertificateInformation();
+ * // Get the certificate policies encoded in the certificate.
+ * const certificatePolicies: PdfCertificatePolicy[] = certificateInfo.certificatePolicies;
+ * // Get the first certificate policy object identifier.
+ * const policyIdentifier: string = certificatePolicies[0].policyIdentifier;
+ * // Get the policy description when it is encoded in the certificate.
+ * const description: string = certificatePolicies[0].description;
+ * // Get the certification practice statement pointer URLs of the policy.
+ * const cpsUrls: string[] = certificatePolicies[0].cpsUrls;
+ * // Get the user notice or legal notice text of the policy.
+ * const userNotices: PdfCertificatePolicyNotice[] = certificatePolicies[0].userNotices;
+ * // Destroy the document.
+ * document.destroy();
+ * ```
+ */
+export type PdfCertificatePolicy = {
+    /**
+     * Specifies the certificate policy object identifier.
+     */
+    policyIdentifier: string;
+    /**
+     * Specifies the policy description when it is encoded in the certificate.
+     */
+    description?: string;
+    /**
+     * Specifies the certification practice statement (CPS) pointer URLs.
+     */
+    cpsUrls: string[];
+    /**
+     * Specifies the user notice and issuer notice qualifiers from the certificate.
+     */
+    userNotices: PdfCertificatePolicyNotice[];
+};
+/**
+ * Represents a user notice qualifier of an X.509 certificate policy.
+ *
+ * @property {string} [explicitText] The human-readable policy notice.
+ * @property {string} [organization] The notice organization when available.
+ * @property {number[]} [noticeNumbers] The notice-reference numbers in encoded order.
+ *
+ * ```typescript
+ * // Load an existing signed PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Get the signature field
+ * let field: PdfSignatureField = document.form.fieldAt(0) as PdfSignatureField;
+ * // Get the digital signature
+ * let signature: PdfSignature = field.getSignature();
+ * // Get the signer certificate information
+ * let certificate: PdfCertificateInformation = signature.getCertificateInformation();
+ * // Get the certificate policies
+ * let policies: PdfCertificatePolicy[] = certificate.certificatePolicies;
+ * // Get the first policy notice when available
+ * if (policies.length > 0 && policies[0].userNotices.length > 0) {
+ *     let notice: PdfCertificatePolicyNotice = policies[0].userNotices[0];
+ *     let explicitText: string = notice.explicitText;
+ *     let organization: string = notice.organization;
+ *     let noticeNumbers: readonly number[] = notice.noticeNumbers;
+ * }
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export type PdfCertificatePolicyNotice = {
+    /**
+     * Specifies the human-readable policy notice.
+     */
+    explicitText?: string;
+    /**
+     * Specifies the notice organization when available.
+     */
+    organization?: string;
+    /**
+     * Specifies the notice-reference numbers in encoded order.
+     */
+    noticeNumbers?: number[];
+};

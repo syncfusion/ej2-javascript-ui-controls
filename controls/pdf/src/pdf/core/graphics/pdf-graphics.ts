@@ -16,9 +16,9 @@ import { _TrueTypeReader } from './../fonts/ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
 import { PdfImage } from './images/pdf-image';
 import { PdfLayer } from '../layers/layer';
-import { Rectangle, Point, Size, PdfColor} from '../pdf-type';
-import { PdfTextElement } from '../pdf-type';
+import { Rectangle, Point, Size, PdfColor, PdfShapeElement, PdfTextElement } from '../pdf-document-helper';
 import { initializeTelemetryFeature } from '@syncfusion/ej2-base';
+import { _drawOnGraphics } from './pdf-shape-element';
 /**
  * Represents a graphics from a PDF page.
  * ```typescript
@@ -1355,6 +1355,17 @@ export class PdfGraphics {
         this._beginMarkContent();
         let hasPendingTemplate: boolean = true;
         if (typeof template !== 'undefined') {
+            const sourceCrossReference: _PdfCrossReference = template._crossReference;
+            if (template._sourcePage && this._crossReference && sourceCrossReference && sourceCrossReference !== this._crossReference && template._content && template._content.dictionary && template._content.dictionary.has('Resources')) {
+                template._exportStream(template._content.dictionary, sourceCrossReference, 'Resources', true);
+                template._crossReference = this._crossReference;
+                template._content.dictionary._crossReference = this._crossReference;
+                template._importStream(true, true);
+                template._content.reference = undefined;
+                template._key = undefined;
+                template._isResourceExport = false;
+                template._isExported = false;
+            }
             if (template._isExported || template._isResourceExport) {
                 if (this._crossReference) {
                     template._crossReference = this._crossReference;
@@ -1368,10 +1379,9 @@ export class PdfGraphics {
             let scaleX: number;
             let scaleY: number;
             if (this._page &&
-                this._page.rotation &&
                 template._isSignature &&
                 this._page._size.width > this._page._size.height &&
-                this._page.rotation === PdfRotationAngle.angle270 && template._content &&
+                template._content &&
                 template._content.dictionary &&
                 template._content.dictionary.has('Matrix')) {
                 scaleX = (template && template._size.width > 0) ? bounds.width / template._size.height : 1;
@@ -1427,20 +1437,28 @@ export class PdfGraphics {
                         const templateScaleY: number = Number.parseFloat(_numberToString(templateMatrix[2]));
                         const roundScaleX: number = Number.parseFloat(_numberToString(scaleX));
                         const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
-                        if (roundScaleX === templateScaleX &&
-                            roundScaleY === templateScaleY &&
-                            templateBox[2] === template._size.width &&
-                            templateBox[3] === template._size.height && template._isAnnotationTemplate
-                            && template._needScale && needScale) {
+                        const isSignature: boolean = this._page && template._isSignature;
+                        if (roundScaleX === templateScaleX && roundScaleY === templateScaleY && templateBox[2] === template._size.width &&
+                            templateBox[3] === template._size.height && template._isAnnotationTemplate &&
+							template._needScale && needScale ) {
                             matrix = new _PdfTransformationMatrix();
                             matrix._translate(bounds.x - templateMatrix[4], -(bounds.y + templateMatrix[5]));
                             matrix._scale(1, 1);
                             scaleApplied = true;
-                        } else if (templateBox[0] !== 0 && templateBox[1] !== 0 && templateBox[0] === bounds.x &&
-                                   this._page && template._isSignature) {
+                        } else if (isSignature && templateBox[0] !== 0 && templateBox[1] !== 0 && templateBox[0] === bounds.x) {
                             matrix._translate(bounds.x - templateBox[0], -this._page.size.height);
                             matrix._scale(scaleX, scaleY);
                             scaleApplied = true;
+                        } else if (isSignature && this._page._size.width > this._page._size.height) {
+                            switch (this._page.rotation) {
+                            case PdfRotationAngle.angle90:
+                                matrix._translate(bounds.x - templateMatrix[4], -(bounds.y - bounds.x));
+                                break;
+                            case PdfRotationAngle.angle0:
+                            case PdfRotationAngle.angle180:
+                                matrix._translate(bounds.x - templateMatrix[4], -bounds.y);
+                                break;
+                            }
                         }
                     }
                 }
@@ -1520,6 +1538,9 @@ export class PdfGraphics {
             _addProcSet('ImageC', this._resourceObject);
             _addProcSet('ImageI', this._resourceObject);
             _addProcSet('Text', this._resourceObject);
+            if (template._sourcePage && this._page && this._crossReference && this._crossReference._document) {
+                this._crossReference._document._copyInteractiveContent(template._sourcePage, this._page);
+            }
         }
         this._endMarkContent();
     }
@@ -2004,6 +2025,37 @@ export class PdfGraphics {
         const defaultBrush: PdfBrush = new PdfBrush({ r: 0, g: 0, b: 0 });
         const brushToUse: PdfBrush = (typeof element.brush === 'undefined' || element.brush === null) ? defaultBrush : element.brush;
         this.drawString(element.text, element.font, bounds, element.pen, brushToUse, element.stringFormat);
+    }
+    /**
+     * Draws a shape element on the PDF graphics.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * // Add a page
+     * let page: PdfPage = document.addPage();
+     * // Create a shape element
+     * let element: PdfShapeElement = {
+     *     shape: {
+     *         type: PdfShapeType.Rectangle,
+     *         bounds: { x: 20, y: 20, width: 100, height: 100 }
+     *     },
+     *     pen: new PdfPen({ r: 0, g: 0, b: 0 }, 1),
+     *     brush: new PdfBrush({ r: 165, g: 42, b: 42 })
+     * };
+     * // Draw the shape element
+     * page.graphics.drawShapeElement(element);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfShapeElement} element The shape element to draw.
+     * @returns {void} Nothing.
+     */
+    public drawShapeElement(element: PdfShapeElement): void {
+        _drawOnGraphics(this, element);
     }
     /**
      * Pops and restores a graphics state from the stack and emits the 'Q' operator.
@@ -3835,6 +3887,11 @@ class _TransparencyData {
      */
     _name: _PdfName;
 }
+/**
+ * Represents the text rendering modes used internally while rendering PDF text.
+ *
+ * @private
+ */
 export enum _TextRenderingMode {
     fill = 0,
     stroke = 1,

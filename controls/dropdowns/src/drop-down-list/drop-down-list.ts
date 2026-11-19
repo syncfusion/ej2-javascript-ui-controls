@@ -157,6 +157,9 @@ export class DropDownList extends DropDownBase implements IInput {
     protected keyConfigure: { [key: string]: string };
     protected isCustomFilter: boolean;
     private isSecondClick: boolean;
+    private filterGeneration: { value: string | number | boolean | object | null } = null;
+    private pendingFilterRequests: number = 0;
+    private isStaleFilter: boolean = false;
     protected isListSearched: boolean = false;
     protected preventChange: boolean = false;
     protected selectedElementID: string;
@@ -177,6 +180,8 @@ export class DropDownList extends DropDownBase implements IInput {
     private isUpdateFooterHeight: boolean = false;
     private filterArgs: KeyboardEventArgs;
     private isReactTemplateUpdate: boolean = false;
+    private popupPositionObserver: MutationObserver | null = null;
+    private popupPositionRefreshTimer: ReturnType<typeof setTimeout> | null = null;
     private iOSscrollPosition: {x: number, y: number};
     private resizeHandler: () => void;
 
@@ -547,6 +552,9 @@ export class DropDownList extends DropDownBase implements IInput {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
+        this.filterGeneration = null;
+        this.pendingFilterRequests = 0;
+        this.isStaleFilter = false;
         this.previousValue = null;
         this.keyConfigure = {
             tab: 'tab',
@@ -605,7 +613,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private floatLabelChange(): void {
         if (this.getModuleName() === 'dropdownlist' && this.floatLabelType === 'Auto') {
             let floatElement: HTMLElement = <HTMLElement>this.inputWrapper.container.querySelector('.e-float-text');
-            if (floatElement && this.inputElement.value !== '' || this.isInteracted) {
+            if (floatElement && (this.inputElement.value !== '' || this.isInteracted)) {
                 classList(floatElement, ['e-label-top'], ['e-label-bottom']);
             } else if (floatElement) {
                 classList(floatElement, ['e-label-bottom'], ['e-label-top']);
@@ -763,8 +771,7 @@ export class DropDownList extends DropDownBase implements IInput {
             'aria-disabled': 'false',
             'role': 'combobox',
             'aria-expanded': 'false',
-            'aria-live': 'polite',
-            'aria-labelledby': this.hiddenElement.id
+            'aria-live': 'polite'
         };
     }
 
@@ -2006,6 +2013,10 @@ export class DropDownList extends DropDownBase implements IInput {
         preventSelect?: boolean,
         selectedData?: string | number | boolean | { [key: string]: Object },
         value?: string | number | boolean): void {
+        if (this.getModuleName() === 'dropdownlist' && this.allowFiltering &&
+            this.dataSource instanceof DataManager && this.filterGeneration) {
+            this.isStaleFilter = true;
+        }
         this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
         if (this.itemData !== selectedData){
             this.previousValue = (!isNullOrUndefined(this.itemData)) ? typeof this.itemData == 'object' &&
@@ -2054,7 +2065,10 @@ export class DropDownList extends DropDownBase implements IInput {
     protected setValue(e?: KeyboardEventArgs, autofill?: boolean): boolean {
         const dataItem: { [key: string]: string } = this.getItemData();
         this.isTouched = !isNullOrUndefined(e);
-        if (dataItem.value === null) {
+        if (dataItem.value === null && !isNullOrUndefined(this.item) &&
+            this.item.getAttribute('data-value') === 'null') {
+            Input.setValue('null', this.inputElement, this.floatLabelType, this.showClearButton);
+        } else if (dataItem.value === null) {
             Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
         } else {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -2097,6 +2111,10 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected setSelection(li: Element, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        if (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.dataSource instanceof DataManager &&
+            this.pendingFilterRequests > 0 && this.isValidLI(li)) {
+            this.isStaleFilter = true;
+        }
         if (this.isValidLI(li) && (!li.classList.contains(dropDownBaseClasses.selected) || (this.isPopupOpen && this.isSelected
             && li.classList.contains(dropDownBaseClasses.selected)))) {
             this.updateSelectedItem(li, e, false, true);
@@ -2679,7 +2697,21 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.previousStartIndex = 0;
                     this.virtualListInfo = null;
                 }
+                if (this.getModuleName() === 'dropdownlist' && this.allowFiltering && dataSource instanceof DataManager) {
+                    this.filterGeneration = {
+                        value: this.value
+                    };
+                    this.pendingFilterRequests++;
+                }
                 this.resetList(dataSource, fields, query);
+                if (this.getModuleName() === 'dropdownlist' && this.allowFiltering &&
+                    dataSource instanceof DataManager && !this.isRequesting) {
+                    this.pendingFilterRequests--;
+                    if (this.pendingFilterRequests === 0) {
+                        this.filterGeneration = null;
+                        this.isStaleFilter = false;
+                    }
+                }
                 if (this.getModuleName() === 'dropdownlist' && this.list.classList.contains(dropDownBaseClasses.noData)) {
                     this.popupContentElement.setAttribute('role', 'status');
                     this.popupContentElement.setAttribute('id', 'no-record');
@@ -2807,6 +2839,14 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected onActionFailure(e: Object): void {
+        if (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.dataSource instanceof DataManager &&
+            this.pendingFilterRequests > 0) {
+            this.pendingFilterRequests--;
+            if (this.pendingFilterRequests === 0) {
+                this.filterGeneration = null;
+                this.isStaleFilter = false;
+            }
+        }
         super.onActionFailure(e);
         if (this.beforePopupOpen) {
             this.renderPopup();
@@ -2819,6 +2859,26 @@ export class DropDownList extends DropDownBase implements IInput {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
+        if (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.dataSource instanceof DataManager &&
+            !isNullOrUndefined(e) && this.pendingFilterRequests > 0) {
+            this.pendingFilterRequests--;
+            if (this.filterGeneration && (this.isStaleFilter || this.filterGeneration.value !== this.value)) {
+                if (this.actionCompleteData.ulElement && this.actionCompleteData.list) {
+                    ulElement = this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement;
+                    list = this.actionCompleteData.list;
+                    e = null;
+                    this.typedString = '';
+                    this.isTyped = false;
+                    if (this.filterInput) {
+                        this.filterInput.value = '';
+                    }
+                }
+            }
+            if (this.pendingFilterRequests === 0) {
+                this.filterGeneration = null;
+                this.isStaleFilter = false;
+            }
+        }
         if (this.dataSource instanceof DataManager && !isNullOrUndefined(e) && !this.virtualGroupDataSource) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.totalItemCount = (e as any).count;
@@ -3093,7 +3153,19 @@ export class DropDownList extends DropDownBase implements IInput {
                 return (((typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') && data === value) ||
                     (getValue(this.fields.value, data) === value));
             });
-            if (!isExist) {
+            const isRemoteFilteredDropDownList: boolean = this.getModuleName() === 'dropdownlist' && this.allowFiltering &&
+                this.dataSource instanceof DataManager;
+            const isExistInCachedList: boolean = Boolean(isRemoteFilteredDropDownList && this.actionCompleteData.list &&
+                this.actionCompleteData.list.some((data: { [key: string]: Object }) => {
+                    return (((typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') && data === value) ||
+                        (getValue(this.fields.value, data) === value));
+                }));
+            const isExistInCachedElement: boolean = Boolean(isRemoteFilteredDropDownList && this.actionCompleteData.ulElement &&
+                Array.prototype.some.call(
+                    this.actionCompleteData.ulElement.querySelectorAll('li[data-value]'),
+                    (item: HTMLElement) => item.getAttribute('data-value') === String(value)
+                ));
+            if (!isExist && (!isRemoteFilteredDropDownList || (!isExistInCachedList && !isExistInCachedElement))) {
                 this.addItem(this.itemData);
             }
         }
@@ -3383,6 +3455,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         if (!isNullOrUndefined(this.popupObj)) {
                             this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
                             this.isPopupRender = true;
+                            this.setupPopupPositionObserver();
                         }
                         if (this.isReact) {
                             setTimeout(() => {
@@ -4054,10 +4127,55 @@ export class DropDownList extends DropDownBase implements IInput {
         ulElement = null;
     }
 
+    private setupPopupPositionObserver(): void {
+        if (!this.isAngular) {
+            return;
+        }
+        if (!isNullOrUndefined(this.popupPositionObserver)) {
+            this.popupPositionObserver.disconnect();
+        }
+        const observerTarget: HTMLElement = this.inputWrapper && this.inputWrapper.container
+            ? this.inputWrapper.container.parentElement as HTMLElement
+            : this.element.parentElement as HTMLElement;
+        if (isNullOrUndefined(observerTarget)) {
+            return;
+        }
+        this.popupPositionObserver = new MutationObserver((): void => {
+            clearTimeout(this.popupPositionRefreshTimer);
+            this.popupPositionRefreshTimer = setTimeout((): void => {
+                if (
+                    !isNullOrUndefined(this.popupObj) &&
+                    !isNullOrUndefined(this.inputWrapper)
+                ) {
+                    this.popupObj.refreshPosition(this.inputWrapper.container);
+                }
+            }, 0);
+        });
+        this.popupPositionObserver.observe(observerTarget, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+
+    private destroyPopupPositionObserver(): void {
+        if (this.popupPositionRefreshTimer) {
+            clearTimeout(this.popupPositionRefreshTimer);
+            this.popupPositionRefreshTimer = null;
+        }
+        if (this.popupPositionObserver) {
+            this.popupPositionObserver.disconnect();
+            this.popupPositionObserver = null;
+        }
+    }
+
+
     private destroyPopup(): void {
         this.isPopupOpen = false;
         this.isFilterFocus = false;
         this.inputElement.removeAttribute('aria-controls');
+        this.destroyPopupPositionObserver();
         if (this.popupObj)
         {
             if (this.resizer) {
@@ -4088,6 +4206,9 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
                 this.inputElement.setAttribute('type', 'text');
+            }
+            if (this.getModuleName() === 'dropdownlist') {
+                this.inputElement.setAttribute('aria-label', this.getModuleName());
             }
             this.inputElement.setAttribute('aria-expanded', 'false');
         } else {
@@ -4175,7 +4296,7 @@ export class DropDownList extends DropDownBase implements IInput {
             if (!this.targetElement().hasAttribute('aria-label')) {
                 attributes(this.targetElement(), { 'aria-label': this.getModuleName()});
             }
-            if (!this.inputElement.hasAttribute('aria-labelledby')) {
+            if (this.getModuleName() !== 'dropdownlist' && !this.inputElement.hasAttribute('aria-labelledby')) {
                 this.inputElement.setAttribute('aria-labelledby', this.hiddenElement.id);
             }
             this.inputElement.setAttribute('aria-expanded', 'false');
@@ -4183,8 +4304,17 @@ export class DropDownList extends DropDownBase implements IInput {
         attributes(this.targetElement(), this.getAriaAttributes());
         this.updateDataAttribute(this.htmlAttributes);
         this.setHTMLAttributes();
-        if (this.targetElement() === this.inputElement) {
+        if (this.getModuleName() !== 'dropdownlist' && this.targetElement() === this.inputElement) {
             this.inputElement.removeAttribute('aria-labelledby');
+        }
+        if (this.getModuleName() === 'dropdownlist' && this.targetElement() === this.inputWrapper.container) {
+            const floatLabel: HTMLElement = this.inputWrapper.container.getElementsByClassName('e-float-text')[0] as HTMLElement;
+            if (!isNullOrUndefined(this.element.id) && this.element.id !== '' && !isNullOrUndefined(floatLabel)) {
+                floatLabel.id = 'label_' + this.element.id.replace(/ /g, '_');
+                attributes(this.inputWrapper.container, { 'aria-labelledby': floatLabel.id });
+            } else {
+                this.inputWrapper.container.removeAttribute('aria-labelledby');
+            }
         }
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             if (this.enableVirtualization){
@@ -4242,7 +4372,15 @@ export class DropDownList extends DropDownBase implements IInput {
         const floatLabelElement: HTMLElement = <HTMLElement>this.inputWrapper.container.getElementsByClassName('e-float-text')[0];
         if (!isNullOrUndefined(this.element.id) && this.element.id !== '' && !isNullOrUndefined(floatLabelElement)) {
             floatLabelElement.id = 'label_' + this.element.id.replace(/ /g, '_');
-            attributes(this.inputElement, { 'aria-labelledby': floatLabelElement.id });
+            attributes(
+                this.getModuleName() === 'dropdownlist'
+                    ? this.inputWrapper.container
+                    : this.inputElement,
+                { 'aria-labelledby': floatLabelElement.id }
+            );
+            if (this.getModuleName() === 'dropdownlist' && this.inputElement) {
+                this.inputElement.removeAttribute('aria-labelledby');
+            }
         }
         this.renderComplete();
         this.listItemHeight = this.getListHeight();
@@ -4253,7 +4391,6 @@ export class DropDownList extends DropDownBase implements IInput {
         this.viewPortInfo.startIndex = this.virtualItemStartIndex = 0;
         this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.viewPortInfo.startIndex > 0 ?
             this.viewPortInfo.endIndex : this.itemCount;
-
     }
 
     private getListHeight(): number {
@@ -4449,7 +4586,46 @@ export class DropDownList extends DropDownBase implements IInput {
             case 'htmlAttributes': this.setHTMLAttributes();
                 break;
             case 'width': this.setEleWidth(newProp.width); Input.calculateWidth(this.inputElement, this.inputWrapper.container); break;
-            case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement); break;
+            case 'placeholder':
+                Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement);
+                if (this.getModuleName() === 'dropdownlist') {
+                    if (!newProp.placeholder || newProp.placeholder.trim() === '') {
+                        const label: HTMLElement | null = this.inputWrapper.container.querySelector('.e-float-text');
+                        if (label) {
+                            label.remove();
+                        }
+                        this.inputWrapper.container.removeAttribute('aria-labelledby');
+                    } else if (this.floatLabelType !== 'Never' && !this.value) {
+                        let floatLabel: HTMLElement | null = this.inputWrapper.container
+                            .querySelector('.e-float-text') as HTMLElement;
+                        if (!floatLabel) {
+                            floatLabel = this.createElement('label') as HTMLElement;
+                            floatLabel.classList.add('e-float-text');
+                            if (this.floatLabelType === 'Auto') {
+                                floatLabel.classList.add('e-label-bottom');
+                            } else if (this.floatLabelType === 'Always') {
+                                floatLabel.classList.add('e-label-top');
+                            }
+                            floatLabel.id = 'label_' + this.inputElement.id;
+                            floatLabel.setAttribute('for', this.inputElement.id);
+                            const floatLine: HTMLElement | null = this.inputWrapper.container
+                                .querySelector('.e-float-line') as HTMLElement;
+                            const icon: HTMLElement = this.inputWrapper.container
+                                .querySelector('.e-input-group-icon') as HTMLElement;
+                            if (floatLine) {
+                                floatLine.insertAdjacentElement('afterend', floatLabel);
+                            } else if (icon) {
+                                this.inputWrapper.container.insertBefore(floatLabel, icon);
+                            } else {
+                                this.inputWrapper.container.appendChild(floatLabel);
+                            }
+                        }
+                        floatLabel.style.width = this.inputElement.offsetWidth + 'px';
+                        floatLabel.textContent = newProp.placeholder;
+                        this.inputWrapper.container.setAttribute('aria-labelledby', floatLabel.id);
+                    }
+                }
+                break;
             case 'filterBarPlaceholder':
                 if (this.filterInput) {
                     Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement);
@@ -4635,14 +4811,27 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.updateSelectElementData(this.allowFiltering);
                 }
                 break;
-            case 'floatLabelType':
+            case 'floatLabelType': {
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, newProp.floatLabelType, this.placeholder, this.createElement);
                 if (!isNullOrUndefined(this.inputWrapper.buttons[0]) &&
                 this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0] && this.floatLabelType !== 'Never') {
                     this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
                 }
+                if (this.getModuleName() === 'dropdownlist') {
+                    const floatLabelElement: HTMLElement = this.inputWrapper.container.getElementsByClassName('e-float-text')[0] as HTMLElement;
+                    if (!isNullOrUndefined(this.element.id) &&
+                        this.element.id !== '' && !isNullOrUndefined(floatLabelElement)) {
+                        floatLabelElement.id = 'label_' + this.element.id.replace(/ /g, '_');
+                        attributes(this.inputWrapper.container, {
+                            'aria-labelledby': floatLabelElement.id
+                        });
+                    } else {
+                        this.inputWrapper.container.removeAttribute('aria-labelledby');
+                    }
+                }
                 break;
+            }
             case 'showClearButton':
                 if (!this.inputWrapper.clearButton){
                     Input.setClearButton(newProp.showClearButton, this.inputElement, this.inputWrapper, null, this.createElement);
@@ -4747,6 +4936,10 @@ export class DropDownList extends DropDownBase implements IInput {
             if (calculateWidth) {
                 label.style.width = calculateWidth + 'px';
             }
+        }
+        if (label && this.getModuleName() === 'dropdownlist' && (!this.placeholder || this.placeholder.trim() === '')) {
+            label.remove();
+            this.inputWrapper.container.removeAttribute('aria-labelledby');
         }
     }
     /**
@@ -4862,6 +5055,7 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         /* eslint-enable valid-jsdoc, jsdoc/require-param */
+        this.destroyPopupPositionObserver();
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             if (!isNullOrUndefined(this.inputElement)) {
                 Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -5016,7 +5210,11 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns {void}
      */
     public destroy(): void {
+        this.destroyPopupPositionObserver();
         this.isActive = false;
+        this.isStaleFilter = false;
+        this.filterGeneration = null;
+        this.pendingFilterRequests = 0;
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }

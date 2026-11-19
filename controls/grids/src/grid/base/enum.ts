@@ -380,6 +380,8 @@ export type ToolbarItems =
     'Edit' |
     /** Searches the grid records by given key */
     'Search' |
+    /** Highlights and navigates cell text occurrences without filtering records */
+    'Find' |
     /** ColumnChooser used show/gird columns */
     'ColumnChooser' |
     /** Print the Grid */
@@ -549,6 +551,7 @@ export enum ToolbarItem {
     Cancel,
     Print,
     Search,
+    Find,
     ColumnChooser,
     PdfExport,
     ExcelExport,

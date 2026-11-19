@@ -5,9 +5,9 @@
  * Supports colspan/rowspan and a fixed allowlist of style attributes consumed
  * by prosemirror-tables' `setCellAttr` command.
  */
-import type { NodeDefinition } from '../../../schema/types/node-definition';
-import type { AttributeDefinition } from '../../../schema/types/attribute-definition';
-import { NodeContent } from '../../../schema/types/content-expression';
+import type { NodeDefinition } from '../../../core/schema/types/node-definition';
+import type { AttributeDefinition } from '../../../core/schema/types/attribute-definition';
+import { NodeContent } from '../../../core/schema/types/content-expression';
 
 /**
  * NodeDefinition for the `tableCell` node.

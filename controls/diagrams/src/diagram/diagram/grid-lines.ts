@@ -144,6 +144,7 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
      */
     @Property('#07EDE1')
     public snapLineColor : string;
+
 }
 
 

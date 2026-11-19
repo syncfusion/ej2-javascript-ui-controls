@@ -6,7 +6,6 @@ import { PdfDocumentBase } from './../document/pdf-document-base';
 import { ObjectStatus } from './../input-output/enum';
 import { PdfWriter, PdfWriterHelper } from './pdf-writer';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
-import { DictionaryProperties } from './pdf-dictionary-properties';
 import { Operators } from './pdf-operators';
 import { PdfMainObjectCollection, ObjectInfo } from './pdf-main-object-collection';
 import { Dictionary } from './../collections/dictionary';
@@ -70,12 +69,6 @@ export class PdfCrossTable {
      * @private
      */
     private objectCount : number = 0;
-    /**
-     * Internal variable for accessing fields from `DictionryProperties` class.
-     * @default new PdfDictionaryProperties()
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     //Properties
     /**
      * Gets or sets if the document `is merged`.
@@ -210,7 +203,7 @@ export class PdfCrossTable {
         writer.write(Operators.trailer + Operators.newLine);
         // Save the dictionary.
         let trailer : PdfDictionary = this.trailer;
-        trailer.items.setValue(this.dictionaryProperties.size, new PdfNumber(this.objectCount + 1));
+        trailer.items.setValue('Size', new PdfNumber(this.objectCount + 1));
         trailer = new PdfDictionary(trailer); // Make it real dictionary.
         trailer.setEncrypt(false);
         trailer.save(writer);
@@ -410,7 +403,7 @@ export class PdfCrossTable {
     public saveIndirectObject(obj : IPdfPrimitive, writer : PdfWriter) : void {
         let reference : PdfReference = this.getReference(obj);
         if (obj instanceof PdfCatalog) {
-            this.trailer.items.setValue(this.dictionaryProperties.root, reference);
+            this.trailer.items.setValue('Root', reference);
         }
         // NOTE :  This is needed for correct string objects encryption.
         this.pdfDocument.currentSavingObj = reference;

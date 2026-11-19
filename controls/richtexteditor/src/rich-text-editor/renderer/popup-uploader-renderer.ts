@@ -53,6 +53,7 @@ export class PopupUploader {
             height: '85px',
             width: '300px',
             actionOnScroll: 'none',
+            collision: {X: 'flip'},
             close: this.onPopupClose.bind(boundObj)
         });
 
@@ -414,8 +415,9 @@ export class PopupUploader {
             popup.element.style.display = 'block';
         } else {
             if (popup) {
-                popup.refreshPosition(targetElement);
                 popup.element.style.display = 'block';
+                popup.refreshPosition(targetElement);
+                popup.resolveCollision();
             }
         }
     }

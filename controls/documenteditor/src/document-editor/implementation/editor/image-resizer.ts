@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer, WebLayoutViewer } from '../index';
+import { LayoutViewer, WebLayoutViewer } from '../index';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
 import { ImageSizeInfo } from '../selection/selection-helper';
@@ -251,6 +251,9 @@ export class ImageResizer {
      */
     public positionImageResizer(elementBox: ImageElementBox | ShapeElementBox | GroupShapeElementBox): void {
         this.selectedImageWidget.clear();
+        if (isNullOrUndefined(elementBox) || isNullOrUndefined(elementBox.line)) {
+            return;
+        }
         // Initializes the image resizer on demand, i.e at the time of selecting an image for the first time.
         let resizeDiv: HTMLElement;
         if (!isNullOrUndefined(this.documentHelper.currentPage)) {

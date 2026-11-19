@@ -4,7 +4,8 @@ import { PdfGraphics } from './pdf-graphics';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { _toRectangle } from './../utils';
 import { _JsonDocument } from './../import-export/json-document';
-import { Rectangle, Size } from './../pdf-type';
+import { Rectangle, Size } from './../pdf-document-helper';
+import { PdfPage } from '../pdf-page';
 /**
  * `PdfTemplate` class represents the template of the PDF.
  * ```typescript
@@ -29,6 +30,12 @@ import { Rectangle, Size } from './../pdf-type';
  * ```
  */
 export class PdfTemplate {
+    /**
+     * Source page from which this template was created.
+     *
+     * @private
+     */
+    _sourcePage: PdfPage;
     /**
      * Internal structure storing template graphics and metadata.
      *
@@ -360,6 +367,7 @@ export class PdfTemplate {
     _initialize(): void {
         this._content.dictionary.set('Type', _PdfName.get('XObject'));
         this._content.dictionary.set('Subtype', _PdfName.get('Form'));
+        this._content.dictionary._updated = true;
     }
     /**
      * Exports a dictionary entry to a compact JSON form suitable for
@@ -369,14 +377,16 @@ export class PdfTemplate {
      * @param {_PdfDictionary} dictionary The container dictionary.
      * @param {_PdfCrossReference} crossReference Cross reference context.
      * @param {string} key The key to export.
+     * @param {boolean} [isResourceExport=false] Indicates whether to export the entry as a resource.
      * @returns {void}
      */
-    _exportStream(dictionary: _PdfDictionary, crossReference: _PdfCrossReference, key: string): void {
+    _exportStream(dictionary: _PdfDictionary, crossReference: _PdfCrossReference, key: string, isResourceExport: boolean = false): void {
         const jsonDocument: _JsonDocument = new _JsonDocument();
         jsonDocument._crossReference = crossReference;
         jsonDocument._isAnnotationExport = true;
         const resourceTable: Map<string, string> = new Map<string, string>();
-        jsonDocument._writeObject(resourceTable, dictionary.get(key), dictionary, 'normal');
+        const entryKey: string = isResourceExport ? 'resources' : 'normal';
+        jsonDocument._writeObject(resourceTable, dictionary.get(key), dictionary, entryKey);
         this._appearance = jsonDocument._convertToJson(resourceTable);
         jsonDocument._dispose();
     }

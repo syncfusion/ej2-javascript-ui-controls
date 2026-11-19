@@ -450,6 +450,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private previousFilterText: string;
     private fallbackValue: string[] = [];
     private uncheckedNodeId: string | null = null;
+    private isTotalCountClicked: boolean = false;
 
     /**
      * Specifies the template that renders to the popup list content of the
@@ -1118,7 +1119,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.tree = this.createElement('div', { id: this.element.id + '_tree' });
         this.popupDiv.appendChild(this.tree);
         if (!this.destroyPopupOnHide) {
-            document.body.appendChild(this.popupDiv);
+            this.getAppendToElement().appendChild(this.popupDiv);
         }
         this.wireTreeEvents();
         addClass([this.popupDiv], DDTHIDEICON);
@@ -1209,6 +1210,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 switch (e.action) {
                 case 'altUp':
                     if (this.isPopupOpen) {
+                        this.hidePopup();
+                    }
+                    break;
+                case 'tab':
+                    if (this.isPopupOpen && !isNOU(this.popupDiv) && this.popupDiv.classList.contains('e-no-data')) {
                         this.hidePopup();
                     }
                     break;
@@ -2609,7 +2615,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     });
                     this.popupEle.setAttribute('role', 'region');
                     this.popupEle.setAttribute('aria-label', this.element.id);
-                    document.body.appendChild(this.popupEle);
+                    this.getAppendToElement().appendChild(this.popupEle);
                     this.createPopup(this.popupEle);
                 } else {
                     this.popupEle = this.popupObj.element;
@@ -2692,6 +2698,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.trigger('open', eventArgs);
             }
         });
+    }
+
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element && this.element.closest ? this.element.closest('.cdk-overlay-pane') as HTMLElement : null;
+            const popoverEl: HTMLElement = this.element && this.element.closest ? this.element.closest('[popover]') as HTMLElement : null;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
 
     private checkCollision(popupEle: HTMLElement): void {
@@ -2818,6 +2835,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
             (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
         const isSelectAllArea: boolean = target.classList.contains('e-ripple-container');
+        if (this.overFlowWrapper && !this.overFlowWrapper.classList.contains(HIDEICON) && !this.isPopupOpen){
+            this.isTotalCountClicked = true;
+        } else {
+            this.isTotalCountClicked = false;
+        }
         if ((this.isPopupOpen && ((!isNOU(this.inputWrapper) &&
             this.inputWrapper.contains(target)) || isTree || isScroller || isHeader || isFooter || isSelectAllArea)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
@@ -3833,7 +3855,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private removeChip(e: MouseEvent): void {
-        if (!this.enabled || this.readonly) {
+        if (!this.enabled || this.readonly || this.isTotalCountClicked) {
+            this.isTotalCountClicked = false;
             return;
         }
         if ((e.target as HTMLElement).classList.contains('e-chips-close') && !this.isPopupOpen) {

@@ -1,5 +1,5 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { HomeTab } from './../home-tab/home-tab';
@@ -17,6 +17,7 @@ import { DeveloperTab } from '../developer-tab/developer-tab';
 
 /**
  * Manages all ribbon tabs
+ *
  * @private
  */
 export class RibbonTabManager {
@@ -79,6 +80,7 @@ export class RibbonTabManager {
 
     /**
      * Constructor for RibbonTabManager
+     *
      * @param {DocumentEditorContainer} container - Document editor container
      * @param {L10n} localObj - Localization object
      */
@@ -90,6 +92,7 @@ export class RibbonTabManager {
 
     /**
      * Initialize all tab instances
+     *
      * @returns {void}
      * @private
      */
@@ -111,6 +114,7 @@ export class RibbonTabManager {
 
     /**
      * Get all ribbon tabs
+     *
      * @returns {RibbonTabModel[]} Array of ribbon tab models
      * @private
      */
@@ -128,6 +132,7 @@ export class RibbonTabManager {
 
     /**
      * Get file menu items
+     *
      * @returns {MenuItemModel[]} Array of menu item models
      * @private
      */
@@ -137,6 +142,7 @@ export class RibbonTabManager {
 
     /**
      * Update style gallery in home tab
+     *
      * @returns {void}
      * @private
      */
@@ -147,6 +153,7 @@ export class RibbonTabManager {
 
     /**
      * Update all tabs based on current selection
+     *
      * @returns {void}
      * @private
      */
@@ -154,6 +161,11 @@ export class RibbonTabManager {
         const tab: RibbonTabModel = this.container.ribbon.ribbon.tabs[this.container.ribbon.ribbon.selectedTab];
         const selectedTab: any = this.getTabByHeader(tab.header);
 
+        // Format Painter stays armed across selection and tab changes, so its ribbon
+        // button must be refreshed even when Home is not the selected tab.
+        if (!isNullOrUndefined(this.homeTab) && !isNullOrUndefined(this.homeTab.clipboardGroup)) {
+            this.homeTab.clipboardGroup.updateSelection();
+        }
         switch (selectedTab) {
         case this.homeTab:
             this.homeTab.updateSelection();
@@ -187,6 +199,7 @@ export class RibbonTabManager {
 
     /**
      * Get tab instance by header
+     *
      * @param {string} header - Tab header text
      * @returns {any} Tab instance
      * @private
@@ -222,6 +235,7 @@ export class RibbonTabManager {
 
     /**
      * Destroy all tab instances
+     *
      * @returns {void}
      * @private
      */

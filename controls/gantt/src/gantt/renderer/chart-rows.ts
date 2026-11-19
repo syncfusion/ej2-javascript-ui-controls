@@ -326,7 +326,7 @@ export class ChartRows extends DateProcessor {
                 //split taskbar
                 '<div class="' + cls.childTaskBarInnerDiv + ' ' + segmentPosition + ' ' + cls.traceChildTaskBar + ' ' +
                 ' e-segmented-taskbar' +
-                '"style="width:' + segment.width + 'px;position: absolute;' + (this.parent.enableRtl ? 'right:' : 'left:') + segment.left + 'px;height:' +
+                '" role="term" style="width:' + segment.width + 'px;position: absolute;' + (this.parent.enableRtl ? 'right:' : 'left:') + segment.left + 'px;height:' +
                 (this.taskBarHeight) + 'px; overflow:' + progressBarVisible + ';" data-segment-index = "' + i + '" aria-label = "' +
                 this.generateSpiltTaskAriaLabel(segment, data.ganttProperties) + '"> ' +
                 this.getSplitTaskbarLeftResizerNode() +

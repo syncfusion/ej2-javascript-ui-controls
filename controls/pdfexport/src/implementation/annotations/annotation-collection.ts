@@ -4,7 +4,6 @@ import { PdfArray } from './../primitives/pdf-array';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
 import { PdfAnnotation } from './../annotations/annotation';
 import { IPdfPrimitive } from './../../interfaces/i-pdf-primitives';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { SizeF, RectangleF, PointF } from './../drawing/pdf-drawing';
 import { PdfStringLayouter, PdfStringLayoutResult } from './../graphics/fonts/string-layouter';
 import { PdfDocumentLinkAnnotation } from './document-link-annotation';
@@ -25,11 +24,6 @@ export class PdfAnnotationCollection implements IPdfWrapper {
      * @private
      */
     private missingAnnotationException : string = 'Annotation is not contained in collection.';
-    /**
-     * Specifies the Internal variable to store fields of `PdfDictionaryProperties`.
-     * @private
-     */
-    protected dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Parent `page` of the collection.
      * @private
@@ -146,7 +140,7 @@ export class PdfAnnotationCollection implements IPdfWrapper {
     private setColor(annotation : PdfAnnotation) : void {
         let cs : PdfColorSpace = PdfColorSpace.Rgb;
         let colours : PdfArray = annotation.color.toArray(cs);
-        annotation.dictionary.items.setValue(this.dictionaryProperties.c, colours);
+        annotation.dictionary.items.setValue('C', colours);
     }
     // IPdfWrapper Members
     /**

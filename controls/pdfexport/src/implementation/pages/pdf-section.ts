@@ -14,7 +14,6 @@ import { PdfNumber } from './../primitives/pdf-number';
 import { PdfName } from './../primitives/pdf-name';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { SaveSectionEventHandler } from './../primitives/pdf-dictionary';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { IPdfWrapper } from './../../interfaces/i-pdf-wrapper';
 import { IPdfPrimitive } from './../../interfaces/i-pdf-primitives';
 import { IPdfWriter } from './../../interfaces/i-pdf-writer';
@@ -86,11 +85,6 @@ export class PdfSection implements IPdfWrapper {
      */
     private pageTemplate : PdfSectionTemplate;
     /**
-     * @hidden
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
-    /**
      * A virtual `collection of pages`.
      * @private
      */
@@ -132,7 +126,7 @@ export class PdfSection implements IPdfWrapper {
     }
     public set parent(value : PdfSectionCollection) {
         this.sectionCollection = value;
-        this.section.items.setValue(this.dictionaryProperties.parent, new PdfReferenceHolder(value));
+        this.section.items.setValue('Parent', new PdfReferenceHolder(value));
     }
     /**
      * Gets the `parent document`.
@@ -239,9 +233,9 @@ export class PdfSection implements IPdfWrapper {
         this.state = new PageSettingsState(this.pdfDocument);
         this.section.sectionBeginSave = new SaveSectionEventHandler(this, this.state);
         this.pageCount = new PdfNumber(0);
-        this.section.items.setValue(this.dictionaryProperties.count, this.pageCount);
-        this.section.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.pages));
-        this.section.items.setValue(this.dictionaryProperties.kids, this.pagesReferences);
+        this.section.items.setValue('Count', this.pageCount);
+        this.section.items.setValue('Type', new PdfName('Pages'));
+        this.section.items.setValue('Kids', this.pagesReferences);
     }
     /**
      * Checks whether any template should be printed on this layer.
@@ -528,11 +522,11 @@ export class PdfSection implements IPdfWrapper {
      */
     private applyPageSettings(container : PdfDictionary, parentSettings : PdfPageSettings, state : PageSettingsState) : void {
         let bounds : RectangleF = new RectangleF(state.origin, state.size);
-        container.items.setValue(this.dictionaryProperties.mediaBox, PdfArray.fromRectangle(bounds));
+        container.items.setValue('MediaBox', PdfArray.fromRectangle(bounds));
         let rotate : number = 0;
         rotate = PdfSectionCollection.rotateFactor * state.rotate;
         let angle : PdfNumber = new PdfNumber(rotate);
-        container.items.setValue(this.dictionaryProperties.rotate, angle);
+        container.items.setValue('Rotate', angle);
     }
     /**
      * Catches the Save event of the dictionary.

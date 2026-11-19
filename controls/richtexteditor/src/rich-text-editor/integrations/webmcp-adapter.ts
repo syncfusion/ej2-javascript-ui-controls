@@ -14,7 +14,7 @@ import { NodeSelection } from '../../selection/selection';
  * WebMcpAdapter — Integrates RichTextEditor with WebMCP protocol.
  * Inject this module to enable AI tool execution capabilities.
  */
-export class WebMcpAdapter {
+export class WebMcpRichTextEditor {
     private parent: RichTextEditor;
     private webMcpAbortController: AbortController | null = null;
 
@@ -63,7 +63,13 @@ export class WebMcpAdapter {
         tools.forEach((tool: WebMcpTool): void => {
             tool.name = `${toolPrefix}_${tool.name}`;
             tool.execute = tool.execute || (async (args: object) => this.executeHandler(tool.name, args || {}));
-            modelContext.registerTool(tool, { signal: (<AbortController>this.webMcpAbortController).signal, exposedTo: args.exposedTo });
+            const registerOptions: { signal: AbortSignal; exposedTo?: string[] } = {
+                signal: (<AbortController>this.webMcpAbortController).signal
+            };
+            if (Array.isArray(args.exposedTo) && args.exposedTo.length > 0) {
+                registerOptions.exposedTo = args.exposedTo;
+            }
+            modelContext.registerTool(tool, registerOptions);
         });
     }
 
@@ -372,7 +378,7 @@ export class WebMcpAdapter {
 
     // Returns module name for identification.
     public getModuleName(): string {
-        return 'WebMcpAdapter';
+        return 'WebMcpRichTextEditor';
     }
 
     //  Formats successful response in WebMCP standard format.

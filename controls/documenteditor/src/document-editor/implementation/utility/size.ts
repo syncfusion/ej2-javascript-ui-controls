@@ -1,5 +1,6 @@
 /**
  * Size defines and processes the size(width/height) of the objects
+ *
  * @private
  */
 export class Size {

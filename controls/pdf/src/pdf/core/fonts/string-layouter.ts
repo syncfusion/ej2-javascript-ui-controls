@@ -1,7 +1,7 @@
 import { PdfStringFormat } from './pdf-string-format';
 import { PdfFont } from './pdf-standard-font';
 import { _PdfWordWrapType } from './../enumerator';
-import { Size } from '../pdf-type';
+import { Size } from '../pdf-document-helper';
 /**
  * Lays out text into lines within a given size using the specified font and format.
  *

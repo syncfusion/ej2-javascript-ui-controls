@@ -71,6 +71,9 @@ export class RestrictEditing {
             this.isShowRestrictPane = true;
             this.documentHelper.selection.isHighlightEditRegion = true;
             this.wireEvents();
+            // Bug 1046959: with rulers under optionsPaneContainer, keep restrict pane
+            // as the first child so side-pane layout is not pushed behind ruler chrome.
+            this.placeRestrictPaneAsFirstChild();
             this.documentHelper.updateViewerSize();
             this.loadPaneValue();
             this.addUserCollection();
@@ -81,6 +84,20 @@ export class RestrictEditing {
             }
         }
         this.documentHelper.owner.triggerResize();
+    }
+    /**
+     * Ensures restrictPane is the first child of optionsPaneContainer.
+     * @private
+     * @returns {void}
+     */
+    private placeRestrictPaneAsFirstChild(): void {
+        const optionsPane: HTMLElement = this.documentHelper.optionsPaneContainer;
+        if (!optionsPane || !this.restrictPane) {
+            return;
+        }
+        if (optionsPane.firstChild !== this.restrictPane) {
+            optionsPane.insertBefore(this.restrictPane, optionsPane.firstChild);
+        }
     }
     private initPane(localValue: L10n, isRtl?: boolean): void {
         this.restrictPane = createElement('div', { className: 'e-de-restrict-pane'});
@@ -104,7 +121,8 @@ export class RestrictEditing {
         this.initRestrictEditingPane(localValue);
         const cssText: string = 'display:inline-flex;';
         updateCSSText(this.documentHelper.optionsPaneContainer, cssText);
-        this.documentHelper.optionsPaneContainer.insertBefore(this.restrictPane, this.documentHelper.viewerContainer);
+        // Insert as first child of optionsPaneContainer (before rulers / viewer).
+        this.placeRestrictPaneAsFirstChild();
     }
     /* eslint-disable  */
     public initRestrictEditingPane(localObj: L10n): void {
@@ -153,6 +171,7 @@ export class RestrictEditing {
         this.protectionTypeDrop.isAngular = this.documentHelper.owner.isModalDialog;
         this.protectionTypeDrop.value = 'Read only';
         this.protectionTypeDrop.appendTo(protectionTypeInput);
+        this.protectionTypeDrop.element.setAttribute('aria-label', localObj.getConstant('Editing restrictions'));
         // let allowPrint: HTMLInputElement = createElement('input', {
         //     attrs: { type: 'checkbox' },
         //     id: this.viewer.owner.containerId + '_allowPrint'

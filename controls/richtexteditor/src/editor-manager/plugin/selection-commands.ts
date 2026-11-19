@@ -590,7 +590,7 @@ export class SelectionCommands {
             if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname') {
                 let liElement: HTMLElement = nodes[index as number].parentElement;
                 let parentElement: HTMLElement = nodes[index as number].parentElement;
-                while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li' && parentElement !== endNode) {
                     parentElement = parentElement.parentElement;
                     liElement = parentElement;
                 }
@@ -685,7 +685,7 @@ export class SelectionCommands {
                     if (value === 'formatPainter' || isFontStyle) {
                         let liElement: HTMLElement = nodes[index as number].parentElement;
                         let parentElement: HTMLElement = nodes[index as number].parentElement;
-                        while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                        while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li' && parentElement !== endNode) {
                             parentElement = parentElement.parentElement;
                             liElement = parentElement;
                         }

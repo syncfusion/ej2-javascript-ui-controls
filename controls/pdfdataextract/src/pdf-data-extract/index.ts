@@ -30,6 +30,7 @@ export * from './core/pdf-text-parser';
 export * from './core/text-structure';
 export * from './core/pdf-structure-element';
 export * from './core/utils';
+export * from './core/rtl-utils';
 export * from './core/text-extraction/enumerator';
 export * from './core/image-extraction/colorspace-utils';
 export * from './core/image-extraction/colorspace';

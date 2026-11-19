@@ -8,7 +8,7 @@
  * This is the single source of truth for built-in toolbar item properties.
  */
 
-import { BuiltInToolbarItem, LinkQuickToolbarItem, TableQuickToolbarItem, ImageQuickToolbarItem } from '../../richtexteditor-ui/model';
+import { BuiltInToolbarItem, LinkQuickToolbarItem, TableQuickToolbarItem, ImageQuickToolbarItem, CustomToolbarItem, BaseToolbarItem } from '../../richtexteditor-ui/model';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -39,8 +39,8 @@ export interface ToolbarSubItem extends ItemModel {
  * Configuration metadata for a built-in toolbar item.
  */
 export interface ToolbarItemConfig {
-    /** Stable ID matching the BuiltInToolbarItem name */
-    id: BuiltInToolbarItem | LinkQuickToolbarItem | TableQuickToolbarItem | ImageQuickToolbarItem;
+    /** Stable ID matching the BuiltInToolbarItem name or quick toolbar item */
+    id: BuiltInToolbarItem | string;
     /** Editor command name to execute when item is clicked */
     command?: string;
     /** Control rendering type */
@@ -55,6 +55,8 @@ export interface ToolbarItemConfig {
      * Optional nested menu items for dropdown/splitButton controls.
      */
     items?: ToolbarSubItem[];
+    /** Optional value to pass to `command` when this top-level button is clicked. */
+    value?: unknown;
     /** Optional keyboard shortcut hints */
     shortcuts?: ShortcutConfig;
     /** Specify the rendering way for the dropdown button content */
@@ -248,11 +250,11 @@ export const TOOLBAR_ITEM_CONFIGS: Readonly<Record<BuiltInToolbarItem, ToolbarIt
         renderMode: 'iconContent',
         items: [
             { id: 'NumberDecimal',    text: 'Number',      command: 'setListStyle', value: { listType: 'decimal' } },
-            { id: 'NumberLowerGreek', text: 'Lower Greek', command: 'setListStyle', value: { listType: 'lowerGreek' } },
-            { id: 'NumberLowerRoman', text: 'Lower Roman', command: 'setListStyle', value: { listType: 'lowerRoman' } },
-            { id: 'NumberUpperAlpha', text: 'Upper Alpha', command: 'setListStyle', value: { listType: 'upperAlpha' } },
-            { id: 'NumberLowerAlpha', text: 'Lower Alpha', command: 'setListStyle', value: { listType: 'lowerAlpha' } },
-            { id: 'NumberUpperRoman', text: 'Upper Roman', command: 'setListStyle', value: { listType: 'upperRoman' } }
+            { id: 'NumberLowerGreek', text: 'Lower Greek', command: 'setListStyle', value: { listType: 'lower-greek' } },
+            { id: 'NumberLowerRoman', text: 'Lower Roman', command: 'setListStyle', value: { listType: 'lower-roman' } },
+            { id: 'NumberUpperAlpha', text: 'Upper Alpha', command: 'setListStyle', value: { listType: 'upper-alpha' } },
+            { id: 'NumberLowerAlpha', text: 'Lower Alpha', command: 'setListStyle', value: { listType: 'lower-alpha' } },
+            { id: 'NumberUpperRoman', text: 'Upper Roman', command: 'setListStyle', value: { listType: 'upper-roman' } }
         ]
     },
     'BulletFormatList': {
@@ -268,6 +270,14 @@ export const TOOLBAR_ITEM_CONFIGS: Readonly<Record<BuiltInToolbarItem, ToolbarIt
             { id: 'BulletCircle', text: 'Circle', command: 'setListStyle', value: { listType: 'circle' } },
             { id: 'BulletSquare', text: 'Square', command: 'setListStyle', value: { listType: 'square' } }
         ]
+    },
+    'Checklist': {
+        id: 'Checklist',
+        command: 'checklist',
+        controlType: 'button',
+        iconCss: 'e-icons e-checklist',
+        tooltipKey: 'Checklist',
+        shortcuts: { windows: ['Ctrl+Shift+7'], mac: ['⌘ ⇧ 7'] }
     },
     'Alignment': {
         id: 'Alignment',
@@ -297,6 +307,21 @@ export const TOOLBAR_ITEM_CONFIGS: Readonly<Record<BuiltInToolbarItem, ToolbarIt
         iconCss: 'e-icons e-code-block e-preformat-code',
         tooltipKey: 'CodeBlock',
         shortcuts: { windows: ['Ctrl+Shift+B'], mac: ['⌘ ⇧ B'] }
+    },
+    'Callout': {
+        id: 'Callout',
+        command: 'callout',
+        controlType: 'splitButton',
+        iconCss: 'e-icons e-callout',
+        renderMode: 'iconContent',
+        tooltipKey: 'Callout',
+        items: [
+            { id: 'CalloutInfo',    text: 'Info',    command: 'callout', value: 'info',    iconCss: 'e-icons e-circle-info' },
+            { id: 'CalloutWarning', text: 'Warning', command: 'callout', value: 'warning', iconCss: 'e-icons e-warning' },
+            { id: 'CalloutError',   text: 'Error',   command: 'callout', value: 'error',   iconCss: 'e-icons e-circle-close' },
+            { id: 'CalloutSuccess', text: 'Success', command: 'callout', value: 'success', iconCss: 'e-icons e-circle-check' },
+            { id: 'CalloutNote',    text: 'Note',    command: 'callout', value: 'note',    iconCss: 'e-icons e-notes' }
+        ]
     },
     'Link': {
         id: 'Link',
@@ -406,6 +431,46 @@ export const TOOLBAR_ITEM_CONFIGS: Readonly<Record<BuiltInToolbarItem, ToolbarIt
         controlType: 'button',
         iconCss: 'e-icons e-align-justify',
         tooltipKey: 'AlignJustify'
+    },
+    'CalloutInfo': {
+        id: 'CalloutInfo',
+        command: 'calloutInfo',
+        controlType: 'button',
+        iconCss: 'e-icons e-circle-info',
+        tooltipKey: 'calloutInfo',
+        value: 'info'
+    },
+    'CalloutSuccess': {
+        id: 'CalloutSuccess',
+        command: 'calloutSuccess',
+        controlType: 'button',
+        iconCss: 'e-icons e-circle-check',
+        tooltipKey: 'calloutSuccess',
+        value: 'success'
+    },
+    'CalloutWarning': {
+        id: 'CalloutWarning',
+        command: 'calloutWarning',
+        controlType: 'button',
+        iconCss: 'e-icons e-warning',
+        tooltipKey: 'calloutWarning',
+        value: 'warning'
+    },
+    'CalloutError': {
+        id: 'CalloutError',
+        command: 'calloutError',
+        controlType: 'button',
+        iconCss: 'e-icons e-circle-close',
+        tooltipKey: 'calloutError',
+        value: 'error'
+    },
+    'CalloutNote': {
+        id: 'CalloutNote',
+        command: 'calloutNote',
+        controlType: 'button',
+        iconCss: 'e-icons e-notes',
+        tooltipKey: 'calloutNote',
+        value: 'note'
     }
 };
 
@@ -420,7 +485,7 @@ export function getToolbarItemConfig(id: BuiltInToolbarItem): ToolbarItemConfig 
 }
 
 
-export type LinkToolbarItem = Exclude<LinkQuickToolbarItem, '|'>;
+export type LinkToolbarItem = Exclude<LinkQuickToolbarItem, '|' | CustomToolbarItem>;
 
 export interface LinkToolbarItemConfig extends Omit<ToolbarItemConfig, 'id'> {
     id: LinkToolbarItem;
@@ -429,29 +494,29 @@ export interface LinkToolbarItemConfig extends Omit<ToolbarItemConfig, 'id'> {
 export const LINK_TOOLBAR_ITEM_CONFIGS: Readonly<
 Record<LinkToolbarItem, LinkToolbarItemConfig>
 > = {
-    OpenLink: {
-        id: 'OpenLink',
+    Open: {
+        id: 'Open',
         command: 'openLink',
         controlType: 'button',
         iconCss: 'e-icons e-open-link',
         tooltipKey: 'OpenLink'
     },
-    CopyLink: {
-        id: 'CopyLink',
+    Copy: {
+        id: 'Copy',
         command: 'copyLink',
         controlType: 'button',
         iconCss: 'e-icons e-copy',
         tooltipKey: 'CopyLink'
     },
-    EditLink: {
-        id: 'EditLink',
+    Edit: {
+        id: 'Edit',
         command: 'editLink',
         controlType: 'button',
         iconCss: 'e-icons e-edit',
         tooltipKey: 'EditLink'
     },
-    RemoveLink: {
-        id: 'RemoveLink',
+    Remove: {
+        id: 'Remove',
         command: 'removeLink',
         controlType: 'button',
         iconCss: 'e-icons e-remove-link',
@@ -468,7 +533,7 @@ export function getLinkToolbarItemConfig(
     return LINK_TOOLBAR_ITEM_CONFIGS[id];
 }
 
-export type TableToolbarItem = Exclude<TableQuickToolbarItem, '|'>;
+export type TableToolbarItem = Exclude<TableQuickToolbarItem, '|' | CustomToolbarItem>;
 
 export interface TableToolbarItemConfig extends Omit<ToolbarItemConfig, 'id'> {
     id: TableToolbarItem;
@@ -623,8 +688,8 @@ Record<TableToolbarItem, TableToolbarItemConfig>
         ]
     },
 
-    Delete: {
-        id: 'Delete',
+    Remove: {
+        id: 'Remove',
         command: 'deleteTable',
         controlType: 'button',
         iconCss: 'e-icons e-table-remove',
@@ -641,7 +706,7 @@ export function getTableToolbarItemConfig(
     return TABLE_TOOLBAR_ITEM_CONFIGS[id];
 }
 
-export type ImageToolbarItem = Exclude<ImageQuickToolbarItem, '|'>;
+export type ImageToolbarItem = Exclude<ImageQuickToolbarItem, '|' | CustomToolbarItem>;
 
 export interface ImageToolbarItemConfig extends Omit<ToolbarItemConfig, 'id'> {
     id: ImageToolbarItem;
@@ -654,14 +719,14 @@ Record<ImageToolbarItem, ImageToolbarItemConfig>
         id: 'AltText',
         command: 'altText',
         controlType: 'button',
-        iconCss: 'e-icons e-caption',
+        iconCss: 'e-icons e-alt-text',
         tooltipKey: 'alternativeText'
     },
     Caption: {
         id: 'Caption',
         command: 'caption',
         controlType: 'button',
-        iconCss: 'e-icons e-alt-text',
+        iconCss: 'e-icons e-caption',
         tooltipKey: 'imageCaption'
     },
     Align: {

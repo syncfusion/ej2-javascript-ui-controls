@@ -5,6 +5,7 @@ export * from './barcode';
 export * from './barcode-base';
 export * from './barcode-model';
 export * from './one-dimension';
+export * from './integrations/webmcp-adapter';
 
 
 //enums
@@ -35,8 +36,12 @@ export * from './one-dimension/code128';
 export * from './one-dimension/code128A';
 export * from './one-dimension/code128B';
 export * from './one-dimension/code128C';
+export * from './one-dimension/gs1-code128';
+export * from './one-dimension/itf14';
 export * from './one-dimension/code39';
 export * from './one-dimension/ean8';
 export * from './one-dimension/ean13';
 export * from './one-dimension/upcA';
 export * from './one-dimension/upcE';
+export * from './one-dimension/gs1-databar';
+export * from './one-dimension/gs1-databar-expanded';

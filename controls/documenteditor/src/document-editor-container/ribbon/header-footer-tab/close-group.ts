@@ -8,11 +8,13 @@ export const CLOSE_BUTTON_ID: string = '_close_button';
 
 /**
  * Represents the Close Group in Header & Footer tab
+ *
  * @private
  */
 export class CloseGroup extends RibbonGroupBase {
     /**
      * Constructor for the CloseGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -21,6 +23,7 @@ export class CloseGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Close
+     *
      * @returns {RibbonGroupModel} The ribbon group model
      */
     public getGroupModel(): RibbonGroupModel {
@@ -54,6 +57,7 @@ export class CloseGroup extends RibbonGroupBase {
 
     /**
      * Closes the header and footer editor
+     *
      * @returns {void}
      */
     private closeHeaderFooter(): void {

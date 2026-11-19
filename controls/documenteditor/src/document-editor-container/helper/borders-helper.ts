@@ -4,11 +4,13 @@ import { L10n, createElement, updateCSSText } from '@syncfusion/ej2-base';
 
 /**
  * Helper class for border operations in Document Editor
+ *
  * @private
  */
 export class BordersHelper {
     /**
      * Get border settings based on border type and properties
+     *
      * @param {BorderType} borderType - The type of border to apply
      * @param {string} borderColor - The color of the border
      * @param {string | number} borderWidth - The width of the border
@@ -33,6 +35,7 @@ export class BordersHelper {
 
     /**
      * Apply border to the document
+     *
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @param {BorderType} borderType - The type of border to apply
      * @param {string} borderColor - The color of the border
@@ -47,6 +50,7 @@ export class BordersHelper {
 
     /**
      * Gets the border type based on the localized text
+     *
      * @param {string} text The localized text of the border type
      * @param {L10n} localObj The localization object
      * @returns {BorderType} The border type
@@ -80,6 +84,7 @@ export class BordersHelper {
 
     /**
      * Creates a dropdown option for border width
+     *
      * @param {HTMLElement} ulTag - The ul element to append the option to
      * @param {string} text - The text for the option
      * @param {L10n} localObj - Localization object
@@ -114,6 +119,7 @@ export class BordersHelper {
 
     /**
      * Get border width items
+     *
      * @param {L10n} localObj - Localization object
      * @returns {string[]} Array of border width items
      */
@@ -136,6 +142,7 @@ export class BordersHelper {
 
     /**
      * Get border dropdown items
+     *
      * @param {L10n} localObj - Localization object
      * @param {commonId} commonId - Common ID for dropdown items}
      * @returns {Array<{text: string, id: string, iconCss: string}>} Array of border dropdown items

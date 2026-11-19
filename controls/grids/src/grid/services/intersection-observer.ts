@@ -74,11 +74,15 @@ export class InterSectionObserver {
 
     private onVirtualContentScroll(): Function {
         return (e: Event) => {
-            if ((<HTMLElement>e.target).classList.contains('e-virtual-vertical-scrollbar')) {
-                this.options.container.scrollTop = (<HTMLElement>e.target).scrollTop;
+            const target: HTMLElement = <HTMLElement>e.target;
+            const container: HTMLElement = this.options.container;
+            if (target.classList.contains('e-virtual-vertical-scrollbar') &&
+                container.scrollTop !== target.scrollTop) {
+                container.scrollTop = target.scrollTop;
             }
-            if ((<HTMLElement>e.target).classList.contains('e-virtual-horizontal-scrollbar')) {
-                this.options.container.scrollLeft = (<HTMLElement>e.target).scrollLeft;
+            if (target.classList.contains('e-virtual-horizontal-scrollbar') &&
+                container.scrollLeft !== target.scrollLeft) {
+                container.scrollLeft = target.scrollLeft;
             }
         };
     }
@@ -96,12 +100,18 @@ export class InterSectionObserver {
             let direction: ScrollDirection = this.options.prevTop < top ? 'down' : 'up';
             direction = this.options.prevLeft === left ? direction : this.options.prevLeft < left ? 'right' : 'left';
             this.options.prevTop = top; this.options.prevLeft = left;
-            if (!isNullOrUndefined(this.options.verticalScrollbar)) {
-                this.options.verticalScrollbar.scrollTop = this.options.container.scrollTop;
-            }
-            if (!isNullOrUndefined(this.options.horizontalScrollbar)) {
-                this.options.horizontalScrollbar.scrollLeft = this.options.container.scrollLeft;
-            }
+            requestAnimationFrame(() => {
+                const currentTop: number = this.options.container.scrollTop;
+                const currentLeft: number = this.options.container.scrollLeft;
+                if (!isNullOrUndefined(this.options.verticalScrollbar) &&
+                    this.options.verticalScrollbar.scrollTop !== currentTop) {
+                    this.options.verticalScrollbar.scrollTop = currentTop;
+                }
+                if (!isNullOrUndefined(this.options.horizontalScrollbar) &&
+                    this.options.horizontalScrollbar.scrollLeft !== currentLeft) {
+                    this.options.horizontalScrollbar.scrollLeft = currentLeft;
+                }
+            });
             const current: SentinelType = this.sentinelInfo[`${direction}`];
 
             if (this.options.axes.indexOf(current.axis) === -1) {

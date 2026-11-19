@@ -2,7 +2,7 @@ import { _PdfReference } from './../../pdf-primitives';
 import { _PdfStream } from './../../base-stream';
 import { _PdfGraphicsUnit } from './../../enumerator';
 import { PdfGraphics, _PdfUnitConvertor, PdfGraphicsState } from './../../graphics/pdf-graphics';
-import { Point, Size } from './../../pdf-type';
+import { Point, Size } from './../../pdf-document-helper';
 /**
  * The 'PdfImage' contains methods and properties to handle the images.
  * ```typescript

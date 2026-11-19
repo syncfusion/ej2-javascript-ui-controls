@@ -95,7 +95,6 @@ export class PdfTextWebLink extends PdfTextElement {
         }
         this.uniformResourceLocator = value;
     }
-
     // Constructors
     /**
      * Initializes a new instance of the `PdfTextWebLink` class.
@@ -107,7 +106,6 @@ export class PdfTextWebLink extends PdfTextElement {
             this.defaultBorder.add(new PdfNumber(0));
         }
     }
-
     // Implementation
     /* tslint:disable */
     /**

@@ -9,11 +9,13 @@
  *
  * Sealed inside src/pm/. Nothing outside src/pm/ may import from this file.
  */
+import { appendTrailingParagraphIfFinal } from '../../../extensions/common/insert-trailing-paragraph';
 import {
     PMEditorState,
     PMTransaction,
     PMNode,
     PMNodeType,
+    PMResolvedPos,
     PMSchema,
     PMTableMap,
     pmAddColumnBefore,
@@ -33,6 +35,146 @@ import {
 type PMDispatch = (tr: PMTransaction) => void;
 
 // ── Table insertion ───────────────────────────────────────────────────────────
+
+interface TableCellContext {
+    tablePos: number;
+    table: PMNode;
+    cellPos: number;
+    tableMap: PMTableMap;
+    cellRect: ReturnType<PMTableMap['findCell']>;
+}
+
+/**
+ * Resolve the table and cell context for the current selection.
+ *
+ * Walks up the current selection's resolved position to find the enclosing
+ * table and table cell/header, then calculates the cell position and
+ * rectangular coordinates from the table map.
+ *
+ * @param {PMEditorState} state - Current PM editor state.
+ * @returns {TableCellContext | null} The enclosing table and cell context,
+ * or `null` when the selection is not inside a table cell.
+ */
+function findTableCellContext(
+    state: PMEditorState
+): TableCellContext | null {
+    const { $from } = state.selection;
+    let tableDepth: number = -1;
+    let cellDepth: number = -1;
+    for (let depth: number = $from.depth; depth > 0; depth--) {
+        const node: PMNode = $from.node(depth);
+        if (cellDepth === -1 && (node.type.name === 'tableCell' || node.type.name === 'tableHeader')) {
+            cellDepth = depth;
+        }
+        if (node.type.name === 'table') {
+            tableDepth = depth;
+            break;
+        }
+    }
+    if (tableDepth === -1 || cellDepth === -1) {
+        return null;
+    }
+    const table: PMNode = $from.node(tableDepth);
+    const tablePos: number = $from.before(tableDepth);
+    const tableStart: number = $from.start(tableDepth);
+    const cellDocPos: number = $from.before(cellDepth);
+    const cellPos: number = cellDocPos - tableStart;
+    const tableMap: PMTableMap = PMTableMap.get(table);
+    return {
+        tablePos,
+        table,
+        cellPos,
+        tableMap,
+        cellRect: tableMap.findCell(cellPos)
+    };
+}
+
+/**
+ * Set a text cursor inside the specified table cell.
+ *
+ * Maps the original table position through the transaction, resolves the
+ * target cell using the updated table map, and places a text selection
+ * inside that cell.
+ *
+ * @param {PMTransaction} tr - Current PM transaction.
+ * @param {number} tablePos - Position immediately before the table node.
+ * @param {number} row - Zero-based target row index.
+ * @param {number} column - Zero-based target column index.
+ * @returns {void}
+ */
+function setCursorInTableCell(
+    tr: PMTransaction,
+    tablePos: number,
+    row: number,
+    column: number
+): void {
+    const mappedTablePos: number = tr.mapping.map(tablePos, 1);
+    const table: PMNode | null = tr.doc.nodeAt(mappedTablePos);
+    if (!table) {
+        return;
+    }
+    const tableMap: PMTableMap = PMTableMap.get(table);
+    const cellPos: number = tableMap.positionAt(row, column, table);
+    // tablePos = position before the table node.
+    // +1 = table content start.
+    // cellPos = position before the target cell relative to table content.
+    // +1 = position inside the cell.
+    const cellStart: number = mappedTablePos + 1 + cellPos;
+    tr.setSelection(
+        TextSelection.near(tr.doc.resolve(cellStart + 1))
+    );
+}
+
+type PMTableCommand = (
+    state: PMEditorState,
+    dispatch?: PMDispatch
+) => boolean;
+
+/**
+ * Execute a table command and restore the cursor to a target cell.
+ *
+ * Resolves the current table-cell context before executing the supplied
+ * command. When dispatching, the target cell is calculated from the
+ * original cell context and the cursor is restored after the table
+ * modification using the updated transaction state.
+ *
+ * @param {PMEditorState} state - Current PM editor state.
+ * @param {PMDispatch} [dispatch] - Optional transaction dispatch function.
+ * @param {PMTableCommand} command - PM table command to execute.
+ * @param {Function} getTargetCell - Calculates the row and column where the
+ * cursor should be placed after the command.
+ * @returns {boolean} `true` if the command was applicable and executed;
+ * otherwise `false`.
+ */
+function executeTableCellCommand(
+    state: PMEditorState,
+    dispatch: PMDispatch | undefined,
+    command: PMTableCommand,
+    getTargetCell: (
+        context: TableCellContext
+    ) => { row: number; column: number }
+): boolean {
+    const context: TableCellContext | null = findTableCellContext(state);
+    if (!context) {
+        return false;
+    }
+    return command(
+        state,
+        dispatch
+            ? (tr: PMTransaction): void => {
+                const target: { row: number; column: number } =
+                    getTargetCell(context);
+                setCursorInTableCell(
+                    tr,
+                    context.tablePos,
+                    target.row,
+                    target.column
+                );
+                dispatch(tr);
+            }
+            : undefined
+    );
+}
 
 /**
  * Insert a new table at the current cursor position.
@@ -78,12 +220,46 @@ export function insertTable(
 
         const table: PMNode = tableType.createAndFill({}, tableRows) as PMNode;
 
-        // Insert after current selection
-        const insertPos: number = state.selection.to;
-        tr.insert(insertPos, table);
+        // Consume the trailing empty paragraph with the new Table, then append
+        // a fresh paragraph so the document remains editable. Also matches the
+        // empty-doc case where the sole paragraph IS the trailing paragraph —
+        // replaces the entire doc content with the Table, producing
+        // [Table, freshParagraph] consistent with the HR insertion contract.
+        const trailingPara: { start: number; size: number } | null = ((): { start: number; size: number } | null => {
+            const doc: { childCount: number; content: { size: number }; child: (n: number) => PMNode } = state.doc;
+            if (doc.childCount < 1) { return null; }
+            const last: PMNode = doc.child(doc.childCount - 1);
+            if (last.type.name !== 'paragraph' || last.childCount !== 0) { return null; }
+            const endPos: number = doc.content.size;
+            const startPos: number = endPos - last.nodeSize;
+            // Empty-doc: the sole paragraph occupies the entire doc content;
+            // caret position is irrelevant since there's only one valid place.
+            const isSoleContent: boolean = doc.childCount === 1;
+            if (!isSoleContent) {
+                const caret: number = state.selection.from;
+                if (caret < startPos || caret > endPos) { return null; }
+            }
+            return { start: startPos, size: last.nodeSize };
+        })();
 
-        const firstTextPos: number = insertPos + 4;
-        tr.setSelection(TextSelection.near(tr.doc.resolve(firstTextPos)));
+        let tablePos: number;
+
+        if (trailingPara !== null) {
+            const trailingParaStart: number = trailingPara.start;
+            tr.replaceWith(
+                trailingParaStart,
+                trailingParaStart + trailingPara.size,
+                table
+            );
+            tablePos = trailingParaStart;
+        } else {
+            tablePos = state.selection.to;
+            tr.insert(tablePos, table);
+        }
+
+        appendTrailingParagraphIfFinal(tr, schema, tablePos);
+
+        tr.setSelection(TextSelection.near(tr.doc.resolve(tablePos + 4)));
         dispatch(tr.scrollIntoView());
     }
 
@@ -103,7 +279,15 @@ export function insertRowBefore(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmAddRowBefore(state, dispatch);
+    return executeTableCellCommand(
+        state,
+        dispatch,
+        pmAddRowBefore,
+        ({ cellRect }: { cellRect: ReturnType<PMTableMap['findCell']>; }) => ({
+            row: cellRect.top,
+            column: cellRect.left
+        })
+    );
 }
 
 /**
@@ -117,7 +301,17 @@ export function insertRowAfter(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmAddRowAfter(state, dispatch);
+    return executeTableCellCommand(
+        state,
+        dispatch,
+        pmAddRowAfter,
+        ({ cellRect }: { cellRect: ReturnType<PMTableMap['findCell']>; }) => ({
+            // TableMap rectangles are half-open, so bottom is the
+            // first row after the current cell.
+            row: cellRect.bottom,
+            column: cellRect.left
+        })
+    );
 }
 
 /**
@@ -131,7 +325,46 @@ export function deleteRow(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmDeleteRow(state, dispatch);
+    const tableContext: TableCellContext | null =
+        findTableCellContext(state);
+    if (!tableContext) {
+        return false;
+    }
+    const tableMap: PMTableMap = PMTableMap.get(tableContext.table);
+    const cellRect: ReturnType<PMTableMap['findCell']> =
+        tableMap.findCell(tableContext.cellPos);
+    // Keep the same column.
+    // After deletion, the next row takes the deleted row's index.
+    // If the deleted row is the last row, use the previous row.
+    const targetRow: number =
+        Math.min(cellRect.top, tableMap.height - 2);
+    return pmDeleteRow(
+        state,
+        dispatch
+            ? (tr: PMTransaction): void => {
+                const mappedTablePos: number =
+                    tr.mapping.map(tableContext.tablePos, 1);
+                const table: PMNode | null =
+                    tr.doc.nodeAt(mappedTablePos);
+                if (table && targetRow >= 0) {
+                    const newTableMap: PMTableMap =
+                        PMTableMap.get(table);
+                    if (targetRow < newTableMap.height) {
+                        setCursorInTableCell(
+                            tr,
+                            tableContext.tablePos,
+                            targetRow,
+                            Math.min(
+                                cellRect.left,
+                                newTableMap.width - 1
+                            )
+                        );
+                    }
+                }
+                dispatch(tr);
+            }
+            : undefined
+    );
 }
 
 // ── Column operations ─────────────────────────────────────────────────────────
@@ -147,7 +380,15 @@ export function insertColumnBefore(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmAddColumnBefore(state, dispatch);
+    return executeTableCellCommand(
+        state,
+        dispatch,
+        pmAddColumnBefore,
+        ({ cellRect }: { cellRect: ReturnType<PMTableMap['findCell']>; }) => ({
+            row: cellRect.top,
+            column: cellRect.left
+        })
+    );
 }
 
 /**
@@ -161,7 +402,17 @@ export function insertColumnAfter(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmAddColumnAfter(state, dispatch);
+    return executeTableCellCommand(
+        state,
+        dispatch,
+        pmAddColumnAfter,
+        ({ cellRect }: { cellRect: ReturnType<PMTableMap['findCell']>; }) => ({
+            // TableMap rectangles are half-open, so right is the
+            // first column after the current cell.
+            row: cellRect.top,
+            column: cellRect.right
+        })
+    );
 }
 
 /**
@@ -175,7 +426,46 @@ export function deleteColumn(
     state: PMEditorState,
     dispatch?: PMDispatch
 ): boolean {
-    return pmDeleteColumn(state, dispatch);
+    const tableContext: TableCellContext | null =
+        findTableCellContext(state);
+    if (!tableContext) {
+        return false;
+    }
+    const tableMap: PMTableMap = PMTableMap.get(tableContext.table);
+    const cellRect: ReturnType<PMTableMap['findCell']> =
+        tableMap.findCell(tableContext.cellPos);
+    // Keep the same row.
+    // After deletion, the next column takes the deleted column's index.
+    // If the deleted column is the last column, use the previous column.
+    const targetColumn: number =
+        Math.min(cellRect.left, tableMap.width - 2);
+    return pmDeleteColumn(
+        state,
+        dispatch
+            ? (tr: PMTransaction): void => {
+                const mappedTablePos: number =
+                    tr.mapping.map(tableContext.tablePos, 1);
+                const table: PMNode | null =
+                    tr.doc.nodeAt(mappedTablePos);
+                if (table && targetColumn >= 0) {
+                    const newTableMap: PMTableMap =
+                        PMTableMap.get(table);
+                    if (targetColumn < newTableMap.width) {
+                        setCursorInTableCell(
+                            tr,
+                            tableContext.tablePos,
+                            cellRect.top,
+                            Math.min(
+                                targetColumn,
+                                newTableMap.width - 1
+                            )
+                        );
+                    }
+                }
+                dispatch(tr);
+            }
+            : undefined
+    );
 }
 
 // ── Table deletion ────────────────────────────────────────────────────────────
@@ -329,7 +619,10 @@ export function insertParagraphInCell(
     if (dispatch) {
         const tr: PMTransaction = state.tr;
         const para: PMNode = paraType.createAndFill() as PMNode;
+        const { from } = tr.selection;
         tr.replaceSelectionWith(para, false);
+        const insertedParagraphPos: number = from;
+        tr.setSelection(TextSelection.near(tr.doc.resolve(insertedParagraphPos + 1)));
         dispatch(tr.scrollIntoView());
     }
 

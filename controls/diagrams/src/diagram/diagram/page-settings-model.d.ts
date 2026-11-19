@@ -192,6 +192,14 @@ export interface PageSettingsModel {
 export interface ScrollSettingsModel {
 
     /**
+     * Restricts the viewport to the positive coordinate region.
+     * Objects with negative coordinates are retained but are not visible.
+     *
+     * @default false
+     */
+    restrictNegativeAxis?: boolean;
+
+    /**
      * Defines horizontal offset of the scroller
      *
      * @default 0

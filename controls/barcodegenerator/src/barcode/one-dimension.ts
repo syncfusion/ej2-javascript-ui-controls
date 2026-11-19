@@ -64,7 +64,7 @@ export abstract class OneDimension extends BarcodeBase {
             // total number of line for double width lines
             const doublwidth: number = code.length * ((type === 'Code39' || type === 'Code32' || type === 'Code39Extension') ? 3 : 2) * 2;
             return (widthValue / (doublwidth + singlewidth + code.length - 1));
-        } else if (type === 'Code128A' || type === 'Code128B' || type === 'Code128C' || type === 'Code128') {
+        } else if (type === 'Code128A' || type === 'Code128B' || type === 'Code128C' || type === 'Code128' || type === 'GS1Code128') {
             const lineCount: number = (code[0] as string).length;
             return (widthValue / (lineCount + code.length - 1));
         } else if (type === 'Code93Extension') {

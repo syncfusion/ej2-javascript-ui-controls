@@ -729,7 +729,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * Specifies the drop target to handle the drag-and-drop upload.
      * By default, the component creates wrapper around file input that will act as drop target.
      *
-     * > For more information, refer to the [drag-and-drop](../../uploader/file-source/#drag-and-drop) section from the documentation.
+     * > For more information, refer to the [drag-and-drop](../../uploader/file-source#drag-and-drop) section from the documentation.
      *
      * @default null
      */
@@ -1526,7 +1526,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private setDropArea(): void {
-        const dropTextArea: HTMLElement = <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
+        const dropTextArea: HTMLElement = this.dropAreaWrapper && this.dropAreaWrapper.querySelector('.e-file-drop') as HTMLElement;
         if (this.dropArea) {
             this.dropZoneElement = (typeof(this.dropArea) !== 'string') ? this.dropArea :
                 select(this.dropArea, document) as HTMLElement;
@@ -1560,7 +1560,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.setDropArea();
         } else {
             this.dropZoneElement = null;
-            const dropTextArea: HTMLElement = <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
+            const dropTextArea: HTMLElement = this.dropAreaWrapper && <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
             if (dropTextArea) {
                 remove(dropTextArea);
             }

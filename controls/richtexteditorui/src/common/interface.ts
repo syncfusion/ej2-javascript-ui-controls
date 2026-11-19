@@ -14,83 +14,83 @@ export interface ICssClassArgs {
 }
 
 /**
- * Editor feature (`subType`) carried by every sub-component event argument
- * raised on the editor. The `subType` is a plain string set at sub-component
+ * Editor feature (`source`) carried by every sub-component event argument
+ * raised on the editor. The `source` is a plain string set at sub-component
  * initialization (e.g. `'Link'`, `'Image'`, `'Table'`) identifying which
  * feature the dialog, popup, or upload belongs to. A single handler can
- * branch on `args.subType` rather than wiring one callback per feature.
+ * branch on `args.source` rather than wiring one callback per feature.
  */
-export interface SubComponentEventArgs {
+export interface EditorComponentEventArgs {
     /**
      * The editor feature the sub-component belongs to. Supplied by the caller
      * when the sub-component is created. Undefined for generic sub-components
      * that are not tied to a specific feature.
      */
-    subType?: string;
+    source?: string;
 }
 
 /**
  * Event args for {@link RichTextEditor.beforeDialogOpen}. Extends the ej2
- * {@link BeforeOpenEventArgs} with the `subType` field that identifies the
+ * {@link BeforeOpenEventArgs} with the `source` field that identifies the
  * editor feature (e.g. `'Link'`, `'Image'`, `'Table'`) the dialog belongs to.
  */
-export interface BeforeDialogOpenEventArgs extends BeforeOpenEventArgs, SubComponentEventArgs { }
+export interface BeforeDialogOpenEventArgs extends BeforeOpenEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.beforeDialogClose}. Extends the ej2
- * {@link BeforeCloseEventArgs} with the `subType` field that identifies the
+ * {@link BeforeCloseEventArgs} with the `source` field that identifies the
  * editor feature (e.g. `'Link'`, `'Image'`, `'Table'`) the dialog belongs to.
  */
-export interface BeforeDialogCloseEventArgs extends BeforeCloseEventArgs, SubComponentEventArgs { }
+export interface BeforeDialogCloseEventArgs extends BeforeCloseEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.beforePopupOpen}. Extends the ej2
- * {@link PopupEventArgs} with the `subType` field that identifies the editor
+ * {@link PopupEventArgs} with the `source` field that identifies the editor
  * feature (e.g. `'Link'`, `'Image'`, `'Table'`) the popup belongs to.
  */
-export interface BeforePopupOpenEventArgs extends PopupEventArgs, SubComponentEventArgs { }
+export interface BeforePopupOpenEventArgs extends PopupEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.beforePopupClose}. Extends the ej2
- * {@link BeforeCloseEventArgs} with the `subType` field that identifies the
+ * {@link BeforeCloseEventArgs} with the `source` field that identifies the
  * editor feature (e.g. `'Link'`, `'Image'`, `'Table'`) the popup belongs to.
  */
-export interface BeforePopupCloseEventArgs extends BeforeCloseEventArgs, SubComponentEventArgs { }
+export interface BeforePopupCloseEventArgs extends BeforeCloseEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.beforeFileUpload}. Extends the ej2
- * {@link BeforeUploadEventArgs} with the `subType` field that identifies the
+ * {@link BeforeUploadEventArgs} with the `source` field that identifies the
  * editor feature the upload is for (e.g. `'Image'`).
  */
-export interface BeforeFileUploadEventArgs extends BeforeUploadEventArgs, SubComponentEventArgs { }
+export interface BeforeFileUploadEventArgs extends BeforeUploadEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.fileUploading}. Extends the ej2
- * {@link UploadingEventArgs} with the `subType` field that identifies the
+ * {@link UploadingEventArgs} with the `source` field that identifies the
  * editor feature the upload is for.
  */
-export interface FileUploadingEventArgs extends UploadingEventArgs, SubComponentEventArgs { }
+export interface FileUploadingEventArgs extends UploadingEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.fileSelected}. Extends the ej2
- * {@link SelectedEventArgs} with the `subType` field that identifies the
+ * {@link SelectedEventArgs} with the `source` field that identifies the
  * editor feature the upload is for.
  */
-export interface FileSelectedEventArgs extends SelectedEventArgs, SubComponentEventArgs { }
+export interface FileSelectedEventArgs extends SelectedEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.fileUploadSuccess}. Extends the ej2
- * {@link SuccessEventArgs} with the `subType` field that identifies the
+ * {@link SuccessEventArgs} with the `source` field that identifies the
  * editor feature the upload is for.
  */
-export interface FileUploadSuccessEventArgs extends SuccessEventArgs, SubComponentEventArgs { }
+export interface FileUploadSuccessEventArgs extends SuccessEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.fileUploadFailed}. Extends the ej2
- * {@link FailureEventArgs} with the `subType` field that identifies the
+ * {@link FailureEventArgs} with the `source` field that identifies the
  * editor feature the upload is for.
  */
-export interface FileUploadFailedEventArgs extends FailureEventArgs, SubComponentEventArgs { }
+export interface FileUploadFailedEventArgs extends FailureEventArgs, EditorComponentEventArgs { }
 
 /**
  * Event args for {@link RichTextEditor.fileRemoving}. Raised before a
@@ -101,7 +101,7 @@ export interface FileUploadFailedEventArgs extends FailureEventArgs, SubComponen
  * Set `args.cancel = true` to keep the image in place; both the `Blob`
  * revocation and the `removeUrl` POST will be skipped.
  */
-export interface FileRemovingEventArgs extends SubComponentEventArgs {
+export interface FileRemovingEventArgs extends EditorComponentEventArgs {
     /**
      * Cancels the removal. Both local `URL.revokeObjectURL` and the
      * `removeUrl` POST will be skipped.
@@ -120,7 +120,7 @@ export interface FileRemovingEventArgs extends SubComponentEventArgs {
  *
  * Set `args.cancel = true` to keep the document untouched.
  */
-export interface BeforeFileDropEventArgs extends SubComponentEventArgs {
+export interface BeforeFileDropEventArgs extends EditorComponentEventArgs {
     /** Cancels the drop pipeline. */
     cancel?: boolean;
     /** Files dropped onto or pasted into the editor. */
@@ -137,8 +137,9 @@ export interface BeforeFileDropEventArgs extends SubComponentEventArgs {
  *
  * Per the spec, only `resize` (start) is cancellable. `resizing` and
  * `resizeStop` ignore `args.cancel`.
+ * @private
  */
-export interface ResizeEventArgs extends SubComponentEventArgs {
+export interface ResizeEventArgs extends EditorComponentEventArgs {
     /** Cancels the resize start. Honored only when `name === 'resize'`. */
     cancel?: boolean;
     /** Source URL of the image being resized. */
@@ -151,46 +152,7 @@ export interface ResizeEventArgs extends SubComponentEventArgs {
     name: 'resize' | 'resizing' | 'resizeStop';
 }
 
-/**
- * Provides information about a BeforeSanitizeHtml event.
- */
-export interface BeforeSanitizeHtmlArgs {
-    /** Indicates whether the current action needs to be prevented. */
-    cancel?: boolean
-    /** A callback function executed before the inbuilt action, which should return HTML as a string.
-     *
-     * @function
-     * @param {string} value - The input value.
-     * @returns {string} - The HTML string.
-     */
-    helper?: Function
-    /** Returns the selectors object containing both tags and attribute selectors to block cross-site scripting attacks.
-     * It is also possible to modify the block list within this event.
-     */
-    selectors?: SanitizeSelectors
-}
-
-/**
- * Provides information about SanitizeSelectors.
- */
-export interface SanitizeSelectors {
-    /** Returns the list of tags. */
-    tags?: string[]
-    /** Returns the list of attributes to be removed. */
-    attributes?: SanitizeRemoveAttrs[]
-}
-
-/**
- * Provides information about a SanitizeRemoveAttributes.
- */
-export interface SanitizeRemoveAttrs {
-    /** Defines the attribute name to sanitize. */
-    attribute?: string
-    /** Defines the selector that sanitizes the specified attributes within the selector. */
-    selector?: string
-}
-
-/**
+/**I
  * Specifies the custom slash command item configuration.
  */
 export interface ISlashCommandItem {

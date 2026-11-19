@@ -1,5 +1,5 @@
 import { MouseEventArgs, Draggable, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { removeClass, updateCSSText, initializeTelemetryFeature } from '@syncfusion/ej2-base';
+import { removeClass, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs, extend } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';

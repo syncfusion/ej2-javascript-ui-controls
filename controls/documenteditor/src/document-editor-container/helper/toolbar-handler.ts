@@ -1,10 +1,12 @@
 /**
  * Interface for handling toolbar/ribbon operations
+ *
  * @private
  */
 export interface IToolbarHandler {
     /**
      * Initializes the toolbar or ribbon
+     *
      * @param {boolean} isToggle - Specifies whether the track changes is toggle or not
      */
     initialize(isToggle?: boolean): void;

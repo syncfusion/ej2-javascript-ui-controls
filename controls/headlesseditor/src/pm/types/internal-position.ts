@@ -6,9 +6,7 @@
  * Nothing outside src/pm/ should ever import or depend on this type.
  */
 export interface InternalPosition {
-    /** UUID of the target EditorNode. */
-    nodeId: string;
-    /** Zero-based character offset within that node. */
+    /** Zero-based character offset within the node. */
     offset: number;
     /**
      * Absolute ProseMirror document position.

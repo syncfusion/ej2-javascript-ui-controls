@@ -12,6 +12,7 @@ export const TABLE_LAYOUT_TAB_ID: string = '_table_layout_tab';
 
 /**
  * Represents the Table Layout Tab in the Ribbon
+ *
  * @private
  */
 export class TableLayoutTab {

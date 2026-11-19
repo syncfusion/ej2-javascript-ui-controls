@@ -10,6 +10,7 @@ import {
     DomVirtualizationSettingsModel, AdvancedFilterSettingsModel, FormulaSettingsModel, GridWebMcpSettingsModel
 } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
+import { FindSettingsModel } from './find-settings';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
@@ -55,6 +56,54 @@ import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 import { ColumnChooser, Search } from '../..';
 import { WebMcpGrid } from '../actions/webmcp-adapter';
+
+/**
+ * A single occurrence of the Find query in a Grid cell.
+ */
+export interface FindMatch {
+    /** 1-based position in the ordered result list. */
+    matchNumber: number;
+    /** Total occurrences in the supported client-enumerable result set. */
+    totalMatches: number;
+    /** Logical displayed row index. */
+    rowIndex: number;
+    /** Column field that contains the occurrence. */
+    field: string;
+    /** 0-based occurrence within the cell. */
+    occurrenceIndex: number;
+    /** Start offset in the searched plain text. */
+    start: number;
+    /** Length of the matched text. */
+    length: number;
+}
+
+/**
+ * Event arguments raised when Find state changes.
+ */
+export interface FindChangeEventArgs {
+    /** Current Find text. */
+    searchText: string;
+    /** Occurrence count after the change. */
+    totalMatches: number;
+    /** Active occurrence, or null when none is active. */
+    activeMatch: FindMatch | null;
+    /** Why the Find state changed. */
+    reason: 'search' | 'navigation' | 'data' | 'view' | 'options' | 'clear';
+}
+
+/**
+ * Event arguments raised after a successful Find navigation.
+ */
+export interface FindNavigateEventArgs {
+    /** Navigation command that changed the active occurrence. */
+    action: 'next' | 'previous' | 'goTo';
+    /** 1-based active result after navigation. */
+    matchNumber: number;
+    /** Occurrence count after navigation. */
+    totalMatches: number;
+    /** Active occurrence after navigation. */
+    activeMatch: FindMatch;
+}
 
 /**
  * Specifies grid interfaces.
@@ -166,6 +215,21 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     allowPaging?: boolean;
+
+    /**
+     * If `enableCache` is set to true with a custom-binding data source (`{ result, count }`),
+     * resolved `dataStateChange` pages are cached and reused.
+     *
+     * @default false
+     */
+    enableCache?: boolean;
+
+    /**
+     * Maximum number of cache objects stored for custom binding cache.
+     *
+     * @default 5
+     */
+    cacheLimit?: number;
 
     /**
      * Specifies the 'enableAutoFill' for Grid.
@@ -298,6 +362,13 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     allowSelection?: boolean;
+
+    /**
+     * If `allowTextSelection` is set to true, enables text selection in rendered data cells using the browser's native text selection.
+     *
+     * @default true
+     */
+    allowTextSelection?: boolean;
 
     /**
      * It is used to select the row while initializing the grid.
@@ -447,6 +518,14 @@ export interface IGrid extends Component<HTMLElement> {
     searchSettings?: SearchSettingsModel;
 
     /**
+     * Specifies the findSettings for Grid.
+     * Find highlights and navigates occurrences; it does not filter records.
+     *
+     * @default []
+     */
+    findSettings?: FindSettingsModel;
+
+    /**
      * Specifies the rowDropSettings for Grid.
      *
      * @default []
@@ -499,6 +578,7 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Specifies pin rows to top across all pages.
+     *
      * @default null
      */
     isRowPinned?: PinRow | Function;
@@ -842,6 +922,8 @@ export interface IGrid extends Component<HTMLElement> {
     enableSeamlessScrolling?: boolean;
     domRowObj?: Map<number, Row<Column>>;
     domVirtualClearActions?: string[];
+    columnTemplateIDs?: string[];
+    isLastRecordLoaded?: boolean;
 
     /**
      * @hidden
@@ -975,7 +1057,7 @@ export interface IGrid extends Component<HTMLElement> {
     refreshReactColumnTemplateByUid?(columnUid: string, renderTemplates?: boolean): void;
     refreshReactHeaderTemplateByUid?(columnUid: string): void;
     refreshGroupCaptionFooterTemplate?(): void;
-    refreshColumnTemplates?(): void;
+    refreshRowCellTemplates?(row: Element): void;
     getAllDataRows?(includeBatch: boolean): Element[];
     getAllMovableDataRows?(includeBatch: boolean): Element[];
     getAllFrozenDataRows?(includeBatch: boolean): Element[];
@@ -993,6 +1075,15 @@ export interface IGrid extends Component<HTMLElement> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pdfExport(exportProperties?: any, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object>;
     search(searchString: string): void;
+    find?(searchString: string): void;
+    findNext?(): void;
+    findPrevious?(): void;
+    goToMatch?(matchNumber: number): void;
+    clearActiveMatch?(): void;
+    clearFind?(): void;
+    getTotalMatches?(): number;
+    getActiveMatch?(): FindMatch;
+    findModule?: { find(searchString: string): void; refreshHighlights?(): void };
     deleteRecord?(fieldname?: string, data?: Object): void;
     startEdit?(): void;
     endEdit?(): void;
@@ -1035,6 +1126,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenRightContentTbody?(): Element;
     createColumnchooser(x: number, y: number, target: Element): void;
     getDataModule?(): Data;
+    setRequiresCount?(query: Query): Query;
     refreshTooltip?(): void;
     copy?(withHeader?: boolean): void;
     getLocaleConstants?(): Object;
@@ -2720,11 +2812,13 @@ export interface CommandClickEventArgs {
 export interface IFilterCreate extends IFilterBase {
     /**
      * Specifies the instance of filter operator.
+     *
      * @hidden
      */
     getOptrInstance?: FlMenuOptrUI;
     /**
      * Defines the localized text for different cultures.
+     *
      * @hidden
      */
     localizeText?: L10n;
@@ -3633,6 +3727,7 @@ export type Validation = QueryBuilderValidation;
 /**
  * Defines the column configuration for QueryBuilder in Advanced Filter.
  * Extends ColumnsModel to include validation and data source information.
+ *
  * @hidden
  */
 export interface QueryBuilderColumnDefinition extends ColumnsModel {
@@ -3656,6 +3751,7 @@ export interface QueryBuilderColumnDefinition extends ColumnsModel {
 
 /**
  * Defines the button configuration for Advanced Filter dialog.
+ *
  * @hidden
  */
 export interface DialogButtonDefinition {
@@ -3667,6 +3763,7 @@ export interface DialogButtonDefinition {
 
 /**
  * Defines a single filter column configuration for Advanced Filter.
+ *
  * @hidden
  */
 export type AdvancedFilterGridFilterColumn = {
@@ -3680,6 +3777,7 @@ export type AdvancedFilterGridFilterColumn = {
 
 /**
  * Defines the filter settings configuration for Advanced Filter in Grid.
+ *
  * @hidden
  */
 export type AdvancedFilterGridFilterSettings = {
@@ -3825,3 +3923,4 @@ export interface WebMcpToolExecuteEventArgs {
      */
     cancellationResponse?: string;
 }
+

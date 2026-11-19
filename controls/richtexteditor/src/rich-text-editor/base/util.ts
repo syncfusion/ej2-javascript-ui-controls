@@ -278,9 +278,12 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         }
                         const fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
-                        result = value === 'empty' ? '' : getDropDownValue(fontNameItems, value, 'value', 'text');
-                        const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? (fontNameItems.length === 0) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName') : fontNameItems[0].text :
+                        let fontNameContent: string = isNOU(e.parent.fontFamily.default) ? (fontNameItems.length === 0) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName') : fontNameItems[0].text :
                             e.parent.fontFamily.default;
+                        const fontItem: IDropDownItemModel = fontNameItems.filter(
+                            (item: IDropDownItemModel) => item.text === fontNameContent)[0];
+                        fontNameContent = fontItem ? fontItem.value : fontNameContent;
+                        result = value === 'empty' ? '' : getDropDownValue(fontNameItems, (value === '' ? fontNameContent : value), 'value', 'text');
                         const name: string = (isNOU(result) ? fontNameContent : result) === 'Default' ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName')
                             : (isNOU(result) ? fontNameContent : result);
                         const htmlValue: string = ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + e.parent.fontFamily.width + '" >' +

@@ -16,6 +16,7 @@ import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updateP
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
 import { SnapSettingsModel } from '../../diagram/diagram/grid-lines-model';
 import { Gridlines } from '../../diagram/diagram/grid-lines';
+import { UnitGrid } from '../utility/measurement-util';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
@@ -48,6 +49,8 @@ export class DiagramRenderer {
     /**   @private  */
     public renderer: IRenderer = null;
     private diagramId: string;
+    /** @private */
+    public unitGrid: () => UnitGrid = null;
     /** @private */
 
     public isSvgMode: Boolean = true;
@@ -1406,7 +1409,8 @@ export class DiagramRenderer {
             let diagram: Diagram;
             if (diagramElement) {
                 diagram = diagramElement[`${instance}`][0];
-                if ((diagram as any).eventHandler.currentAction !== 'PortDrag') {
+                // 1051722 - Guard against `eventHandler` being undefined. When the renderer is owned by
+                if (diagram && (diagram as any).eventHandler && (diagram as any).eventHandler.currentAction !== 'PortDrag') {
                     element.offsetX = options.x + (element.width / 2);
                     element.offsetY = options.y + (element.height / 2);
                 }
@@ -1474,7 +1478,13 @@ export class DiagramRenderer {
             snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
         const horizontalLineIntervals: number[] = isLine ?
             snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
-        if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
+        const unitGrid: UnitGrid = this.unitGrid ? this.unitGrid() : null;
+        if (unitGrid) {
+            hSegmentwidth = unitGrid.tileY;
+            vSegmentwidth = unitGrid.tileX;
+            this.setUnitIntervals(snapSettings, unitGrid);
+            isRulerGrid = true;
+        } else if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
             hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(t.scale);
             vSegmentwidth = (hRuler as Ruler).updateSegmentWidth(t.scale);
             (snapSettings.horizontalGridlines as Gridlines).scaledIntervals = [hSegmentwidth / hRuler.interval];
@@ -1492,7 +1502,7 @@ export class DiagramRenderer {
         hWidth = isRulerGrid ? vSegmentwidth : hWidth * scale;
         hHeight = isRulerGrid ? hSegmentwidth : hHeight * scale;
         const attr: Object = {
-            id: this.diagramId + '_pattern', x: 0, y: 0, width: hWidth,
+            id: this.diagramId + '_pattern', x: unitGrid ? unitGrid.phaseX : 0, y: unitGrid ? unitGrid.phaseY : 0, width: hWidth,
             height: hHeight, patternUnits: 'userSpaceOnUse'
         };
         setAttributeSvg(pattern, attr);
@@ -1515,7 +1525,10 @@ export class DiagramRenderer {
             if (snapSettings.horizontalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.horizontalGridlines.lineDashArray);
             }
-            if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler) {
+            const unitGrid: UnitGrid = this.unitGrid ? this.unitGrid() : null;
+            if (unitGrid) {
+                intervals = this.updateLineIntervals(intervals, rulerSettings, { interval: unitGrid.countY }, hHeight, isLine);
+            } else if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler) {
                 intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight, isLine);
             }
             intervals = getInterval(intervals, isLine);
@@ -1590,7 +1603,10 @@ export class DiagramRenderer {
             if (snapSettings.verticalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.verticalGridlines.lineDashArray);
             }
-            if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
+            const unitGrid: UnitGrid = this.unitGrid ? this.unitGrid() : null;
+            if (unitGrid) {
+                intervals = this.updateLineIntervals(intervals, rulerSettings, { interval: unitGrid.countX }, hWidth, isLine);
+            } else if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
                 intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth, isLine);
             }
             const spaceY: number = 0;
@@ -1663,7 +1679,13 @@ export class DiagramRenderer {
                 snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
             const horizontalLineIntervals: number[] = isLine ?
                 snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
-            if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
+            const unitGrid: UnitGrid = this.unitGrid ? this.unitGrid() : null;
+            if (unitGrid) {
+                hSegmentwidth = unitGrid.tileY;
+                vSegmentwidth = unitGrid.tileX;
+                isRulerGrid = true;
+                this.setUnitIntervals(snapSettings, unitGrid);
+            } else if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
                 hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(transform.scale);
                 vSegmentwidth = (hRuler as Ruler).updateSegmentWidth(transform.scale);
                 isRulerGrid = true;
@@ -1690,7 +1712,7 @@ export class DiagramRenderer {
             width = isRulerGrid ? vSegmentwidth : width * scale;
             height = isRulerGrid ? hSegmentwidth : height * scale;
             attr = {
-                id: this.diagramId + '_pattern', x: 0, y: 0, width: width,
+                id: this.diagramId + '_pattern', x: unitGrid ? unitGrid.phaseX : 0, y: unitGrid ? unitGrid.phaseY : 0, width: width,
                 height: height, patternUnits: 'userSpaceOnUse'
             };
             pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
@@ -1706,9 +1728,16 @@ export class DiagramRenderer {
         }
     }
 
+    private setUnitIntervals(snapSettings: SnapSettingsModel, unitGrid: UnitGrid): void {
+        // Snapping::round divides by zoom, so each axis quantizes to its own ruler's minor step in model units.
+        // x-snapping uses verticalGridlines and follows the horizontal ruler; y-snapping uses horizontalGridlines.
+        (snapSettings.verticalGridlines as Gridlines).scaledIntervals = [unitGrid.minorX];
+        (snapSettings.horizontalGridlines as Gridlines).scaledIntervals = [unitGrid.minorY];
+    }
+
     private updateLineIntervals(
         intervals: number[],
-        rulerSettings: RulerSettingsModel, ruler: RulerModel, segmentWidth: number, isLine: boolean)
+        rulerSettings: RulerSettingsModel, ruler: { interval?: number }, segmentWidth: number, isLine: boolean)
         : number[] {
         const newInterval: number[] = [];
         const tickInterval: number = segmentWidth / ruler.interval;

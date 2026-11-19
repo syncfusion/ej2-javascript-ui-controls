@@ -1,6 +1,5 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
-import { RibbonGroupModel, RibbonGalleryItemModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
-import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
+import { RibbonGroupModel, RibbonGalleryItemModel, RibbonItemModel, GallerySelectEventArgs } from '@syncfusion/ej2-ribbon';
 import { StylesHelper } from '../../helper/styles-helper';
 import { SanitizeHtmlHelper, isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -9,11 +8,13 @@ export const STYLES_GROUP_ID: string = '_styles_group';
 
 /**
  * StylesGroup class for handling style operations in Document Editor ribbon
+ *
  * @private
  */
 export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
     /**
      * Get the Ribbon group model for Styles
+     *
      * @returns {RibbonGroupModel} - Ribbon group model
      * @private
      */
@@ -47,7 +48,7 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
                                     }
                                 ],
                                 itemCount: 3,
-                                select: (args: any) => {
+                                select: (args: GallerySelectEventArgs) => {
                                     if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
                                         const styleName: string = this.documentEditor.stylesDialogModule.getStyleName(
                                             SanitizeHtmlHelper.sanitize(args.currentItem.content)

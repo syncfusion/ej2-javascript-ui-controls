@@ -8,7 +8,6 @@ import { PdfStream } from './../primitives/pdf-stream';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { PdfGraphics, GetResourceEventHandler } from './../graphics/pdf-graphics';
 import { PdfPageLayerCollection } from './pdf-page-layer-collection';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfArray } from './../primitives/pdf-array';
 import { PdfPage } from './pdf-page';
 import { RectangleF } from './../drawing/pdf-drawing';
@@ -90,11 +89,6 @@ export class PdfPageLayer implements IPdfWrapper {
      * @private
      */
     public usage : PdfDictionary;
-    /**
-     * Instance for `PdfDictionaryProperties` Class.
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     // Properties
     /**
      * Get or set the `color space`.

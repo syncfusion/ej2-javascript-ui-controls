@@ -16,6 +16,7 @@ import { OlapEngine } from '../../base/olap/engine';
 import { GridSettings } from '../../pivotview/model/gridsettings';
 import { ChartSettings } from '../../pivotview/model/chartsettings';
 import { Workbook } from '@syncfusion/ej2-excel-export';
+import { ConditionalFormatSettingsModel, FilterModel, FormatSettingsModel, SortModel, ValueSortSettingsModel } from '../../model/datasourcesettings-model';
 
 /**
  * Interface
@@ -1754,4 +1755,222 @@ export interface FocusedCellInfo {
  */
 export interface DocumentWithAdoptedSheets extends Document {
     adoptedStyleSheets: CSSStyleSheet[];
+}
+
+/**
+ * Defines the event arguments for the `beforeWebMcpToolExecute` event.
+ * Provides access to the tool name and its input arguments before execution,
+ * and allows the application to inspect, modify, or cancel the operation.
+ */
+export interface WebMcpToolExecuteEventArgs {
+    /**
+     * Specifies whether the tool execution should be cancelled.
+     * Set to `true` to prevent the tool from executing.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the name of the WebMCP tool being executed (e.g. `'editCell'`, `'getCellData'`).
+     */
+    toolName?: string;
+    /**
+     * Specifies the arguments passed to the tool.
+     * The shape of this object matches the tool's `inputSchema` as defined in the tool registry.
+     */
+    toolArgs?: object;
+    /**
+     * Set to `true` to display a confirmation dialog to the user before the tool executes.
+     * Execution proceeds only if the user confirms.
+     */
+    showConfirmationDialog?: boolean;
+    /**
+     * Specifies a custom response message to send back to the AI when tool execution is cancelled,
+     * either by setting `cancel` to `true` or when the user dismisses the confirmation dialog.
+     * When not provided, a default cancellation message is sent to the AI.
+     */
+    cancellationResponse?: string;
+}
+
+/**
+ * Defines the structure of a WebMCP tool, including its name, description,
+ * and input/output JSON schemas used for tool registration and execution.
+ */
+export interface WebMcpTool {
+    /**
+     * The unique identifier name of the WebMCP tool (e.g., 'editCell', 'getCellData').
+     */
+    name: string;
+    /**
+     * A description of the tool's functionality and purpose.
+     */
+    description: string;
+    /**
+     * The JSON schema object that defines the expected input parameters for the tool.
+     */
+    inputSchema: object;
+    /**
+     * The JSON schema object that defines the structure of the tool's output response.
+     */
+    outputSchema: object;
+    /**
+     * A readOnlyHint flag indicating whether the tool performs read-only operations without modifying state.
+     */
+    annotations: object;
+    /**
+     * A function that executes the tool's logic when invoked.
+     */
+    execute?: Function;
+}
+
+/**
+ * Defines the result returned by a WebMCP tool execution,
+ * containing the response content array and an optional error flag.
+ *
+ * @hidden
+ */
+export interface WebMcpToolResponse {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+}
+
+/**
+ * Arguments for the WebMCP tool that sets or replaces the pivot data source.
+ */
+export interface WebMcpSetDataSourceArgs {
+    /**
+     * Data to apply as the new data source.
+     *
+     * Provide either:
+     * - JSON: `IDataset[]` (array of records)
+     * - CSV: `string[][]` (array of rows)
+     */
+    dataSource?: IDataSet[] | string[][];
+    /** Optional URL to fetch the data from. */
+    url?: string;
+    /** Optional hint for the data type. */
+    type?: string;
+}
+
+/**
+ * Arguments that target a single pivot field on a specific axis.
+ */
+export interface WebMcpFieldAxisArgs {
+    /** Field name as it exists in the current pivot configuration. */
+    fieldName: string;
+    /** Target axis (for example: rows, columns, values, filters). */
+    axis: string;
+}
+
+/**
+ * Arguments that move a field between two different pivot axes.
+ */
+export interface WebMcpMoveFieldBetweenAxesArgs {
+    /** Field name as it exists in the current pivot configuration. */
+    fieldName: string;
+    /** Source axis name. */
+    fromAxis: string;
+    /** Destination axis name. */
+    toAxis: string;
+}
+
+/**
+ * Arguments for applying filters to the pivot.
+ */
+export interface WebMcpApplyFilteringArgs {
+    /** Collection of filter models to apply. */
+    filters: FilterModel[];
+}
+
+/**
+ * Arguments for applying sorting to the pivot fields.
+ */
+export interface WebMcpApplySortingArgs {
+    /** Collection of sort models to apply. */
+    sortSettings: SortModel[];
+}
+
+/**
+ * Arguments for applying value sorting to the pivot.
+ */
+export interface WebMcpApplyValueSortingArgs {
+    /** Value sort settings (single object) to apply. */
+    valueSortSettings: ValueSortSettingsModel;
+}
+
+/**
+ * Arguments for creating/updating/deleting a calculated field.
+ */
+export interface WebMcpManageCalculatedFieldArgs {
+    /** Operation type for calculated fields: create, update, or delete. */
+    action: string;
+    /** Calculated field name. Required for update/delete. */
+    fieldName?: string;
+    /** Calculated field formula. Required for create/update. */
+    formula?: string;
+}
+
+/**
+ * Arguments for exporting the pivot report to a file.
+ */
+export interface WebMcpExportToFileArgs {
+    /** Optional export properties wrapper (kept for compatibility). */
+    exportProperties?: {
+        /** Optional target file name. */
+        fileName?: string;
+    };
+    /** Optional direct file name (alternative to exportProperties.fileName). */
+    fileName?: string;
+}
+
+/** Arguments for setting the pivot chart type. */
+export interface WebMcpSetChartTypeArgs {
+    /** Chart type identifier. */
+    chartType: string;
+}
+
+/** Arguments for switching pivot view mode. */
+export interface WebMcpToggleViewModeArgs {
+    /** View mode identifier. */
+    viewMode: string;
+}
+
+/**
+ * Arguments for applying number formatting to the pivot.
+ */
+export interface WebMcpApplyNumberFormatArgs {
+    /** Collection of number format models to apply. */
+    formatSettings: FormatSettingsModel[];
+}
+
+/** Additional WebMCP interfaces used for type safety. */
+export interface WebMcpField {
+    /** Field name. */
+    name: string;
+    /** If true, expand all members in the drill-down UI (when supported). */
+    expandAll?: boolean;
+}
+
+/**
+ * Common export properties shape.
+ */
+export interface WebMcpExportProperties {
+    /** Optional target file name. */
+    fileName?: string;
+}
+
+/**
+ * Chart-specific settings wrapper used by some WebMCP tools.
+ */
+export interface WebMcpChartSettings {
+    chartSeries?: {
+        /** Chart series type. */
+        type?: ChartSeriesType;
+    };
+}
+
+/**
+ * Arguments for applying conditional formatting rules to the pivot.
+ */
+export interface WebMcpApplyConditionalFormattingArgs {
+    /** Collection of conditional formatting models to apply. */
+    formatRules: ConditionalFormatSettingsModel[];
 }

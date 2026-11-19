@@ -1,5 +1,5 @@
 import { createElement, formatUnit, isNullOrUndefined, updateCSSText, closest, extend, Browser } from '@syncfusion/ej2-base';
-import { IGrid, IRenderer, NotifyArgs, KeyboardEventArgs, InterSection } from '../base/interface';
+import { IFocus, IGrid, IRenderer, NotifyArgs, KeyboardEventArgs, InterSection } from '../base/interface';
 import { ContentRender } from './content-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { ColumnWidthService } from '../services/width-controller';
@@ -663,7 +663,15 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
             if (rowIndex < 0 || rowIndex >= this.totalRecords) { return; }
             this.rowIndex = rowIndex;
             this.cellIndex = parseInt(element.getAttribute(literals.ariaColIndex) as string, 10) - 1;
-            const row: Element = (this.parent.getRowByIndex as Function)(rowIndex);
+            let row: Element = (this.parent.getRowByIndex as Function)(rowIndex);
+            const isTreeGrid: string = 'isTreeGrid';
+            if (this.parent[`${isTreeGrid}`]) {
+                const contentFocus: IFocus = this.parent.focusModule.getContent();
+                const current: number[] = contentFocus.matrix.current;
+                const table: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
+                const index: number = e.action === 'downArrow' || e.action === 'enter' ? current[0] + 1 : current[0] - 1;
+                row = table.rows.item(index) as Element;
+            }
             const visibleRowCount: number = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
             const emptyRow: boolean = isNullOrUndefined(row);
             if (emptyRow

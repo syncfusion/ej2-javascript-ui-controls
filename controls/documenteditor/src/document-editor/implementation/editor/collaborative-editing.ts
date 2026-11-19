@@ -10,10 +10,9 @@ import { WSectionFormat } from '../format/section-format';
 import { XmlHttpRequestHandler, actionCompleteEvent } from '../../base/index';
 import { ElementInfo, PositionInfo, ParagraphInfo, LockSelectionInfo, CollaborativeEditingEventArgs } from './editor-helper';
 import { HistoryInfo, BaseHistoryInfo } from '../editor-history/index';
-import { DialogUtility } from '@syncfusion/ej2-popups';
+import { DialogUtility, OpenEventArgs, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { DocumentHelper } from '../viewer';
 import { CollaborativeEditingSettingsModel } from '../../document-editor-model';
-import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Dictionary } from '../../base';
 import { Revision } from '../track-changes/index';
 import { WCharacterFormat, WRowFormat } from '../format/index';
@@ -326,7 +325,7 @@ export class CollaborativeEditing {
             localizeValue.setLocale(this.owner.locale);
             DialogUtility.alert({
                 content: localizeValue.getConstant('Already locked'),
-                open: (e: any) => {
+                open: (e: OpenEventArgs) => {
                     if (isAngularModal) {
                         this.documentHelper.owner.moveAlertToCdkOverlay(e);
                     }
@@ -341,7 +340,7 @@ export class CollaborativeEditing {
         localizeValue.setLocale(this.owner.locale);
         DialogUtility.alert({
             content: localizeValue.getConstant('Error in establishing connection with web server'),
-            open: (e: any) => {
+            open: (e: OpenEventArgs) => {
                 if (isAngularModal) {
                     this.documentHelper.owner.moveAlertToCdkOverlay(e);
                 }

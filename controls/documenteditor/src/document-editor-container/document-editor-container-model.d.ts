@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, internalAsyncPagesVisible } from '../document-editor/base/constants';import { HelperMethods } from '../index';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { DialogUtility } from '@syncfusion/ej2-popups';import { Text } from './properties-pane/text-properties';import { Ribbon } from './ribbon/ribbon';import { BackStageMenuModel } from '@syncfusion/ej2-ribbon';import { defaultLocaleStrings } from './locale-strings';import { IToolbarHandler } from './helper/toolbar-handler';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings, DocumentEditorWebMcpSettings, DocumentSettings } from '../document-editor/document-editor';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType, WebMcpToolExecuteEventArgs, WebMcpTool } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentEditorWebMcpSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, internalAsyncPagesVisible, internalFormatPainterStateChange } from '../document-editor/base/constants';import { HelperMethods } from '../index';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { DialogUtility } from '@syncfusion/ej2-popups';import { Text } from './properties-pane/text-properties';import { Ribbon } from './ribbon/ribbon';import { BackStageMenuModel } from '@syncfusion/ej2-ribbon';import { defaultLocaleStrings } from './locale-strings';import { IToolbarHandler } from './helper/toolbar-handler';import { WebMcpDocumentEditor } from '../document-editor/integrations/webmcp-adapter';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -123,6 +123,13 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     enableAutoFocus?: boolean;
 
     /**
+     * Enables WebMCP tools for AI agent integration.
+     *
+     * @default false
+     */
+    enableWebMcp?: boolean;
+
+    /**
      * Enables the partial lock and edit module.
      *
      * @default false
@@ -143,6 +150,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Specifies the toolbar mode for the document editor container. Two modes are available: 'Toolbar' and 'Ribbon'.
+     *
      * @default 'Toolbar'
      */
     toolbarMode?: ToolbarMode;
@@ -173,7 +181,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * This event is triggered before content is pasted in Document Editor.
      *
-     * @event
+     * @event beforePaste
      * @returns {void}
      */
     beforePaste?: EmitType<BeforePasteEventArgs>;
@@ -184,6 +192,13 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * @event contentChange
      */
     contentChange?: EmitType<ContainerContentChangeEventArgs>;
+
+    /**
+     * Triggers before a WebMCP tool is executed, allowing cancellation or confirmation.
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    beforeWebMcpToolExecute?: EmitType<WebMcpToolExecuteEventArgs>;
 
     /**
      * Triggers whenever selection changes in the document editor container.
@@ -305,7 +320,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Defines toolbar items for DocumentEditorContainer.
      *
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','TextBox','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
      */
     toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 
@@ -334,5 +349,13 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * @default undefined
      */
     backstageMenu?: BackStageMenuModel;
+
+    /**
+         * Specifies the WebMCP integration settings for the DocumentEditor.
+         * Use `name`, `tools`, and `exposedTo` to customize registration.
+         *
+         * @default {}
+         */
+    webMcpSettings?: DocumentEditorWebMcpSettingsModel;
 
 }

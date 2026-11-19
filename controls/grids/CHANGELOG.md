@@ -2,6 +2,59 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I884591` - Resolved an issue where function-based `emptyRecordTemplate` was not rendered in React child Grids. Improved React context detection to ensure proper empty record template rendering in child Grid scenarios.
+- `#FB76239` - Resolved an issue where Grid `popup` components were rendered behind Angular CDK Dialog containers. Improved dialog container detection to ensure proper `popup` rendering within Angular dialog environments.
+- `#FB76523` - Fixed an issue with the `aria-sort` attribute not retaining the correct value after a header refresh.
+
+#### Features
+
+- `#I854400` - Added `enableCache` support for custom data binding to reuse previously fetched data, reducing unnecessary data requests and improving performance.
+- `#I698641`, `#I715172` - Added `enableCountLessMode` support for infinite scrolling. The Grid can now load data without a total record count and automatically stops fetching data when the returned record count is less than the configured page size.
+
+## 35.1.42 (2026-10-27)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I882490` - Resolved an issue where tab navigation became unresponsive after pressing the escape key during inline editing in a command column.
+- `#I881718`- Fixed an issue where column resizing enforced a minimum width of `10px` even when the `minWidth` property was explicitly set to 0.
+
+## 35.1.41 (2026-10-20)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I879141` - Fixed an issue where the focus indicator was not retained on the column header after sorting a column using keyboard interaction.
+- `#I877941` - Resolved an accessibility issue that caused the clipboard element to be announced by screen readers when performing a paste action.
+
+## 35.1.40 (2026-10-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I878707` - Fixed an issue where clicking the Filter Bar clear icon did not instantly remove the applied filter when the `OnEnter` filter mode was enabled.
+- `#I877718` - Fixed a script error that occurred when navigating between cells after adding multiple rows in Batch editing mode.
+
+## 35.1.39 (2026-10-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I873552` - Fixed an issue where grouping a column whose field name started with a numeric character resulted in a `querySelector` syntax error.
+- `#I873174` - Resolved an issue where entering text in the Grid filter bar using the Chinese `Pinyin` IME resulted in duplicated characters when `Immediate Filtering` mode was enabled.
+- `#FB75803` - Resolved an issue where the Group Reorder drag handle tooltip was not localized and always displayed "Drag" regardless of the configured culture.
+- `#I874924` - Fixed an issue where calling the `getContent` method after the Grid had been destroyed resulted in a script error.
+
 ## 35.1.37 (2026-09-29)
 
 ### Grid

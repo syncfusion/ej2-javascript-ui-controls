@@ -40,11 +40,11 @@ export interface BulletFormatList {
 
 export const NumberFormatLists:  NumberFormatList[] = [
     { id: 'NumberDecimal',    text: 'Number',       command: 'setListStyle', listType: 'decimal' },
-    { id: 'NumberLowerGreek', text: 'Lower Greek',  command: 'setListStyle', listType: 'lowerGreek' },
-    { id: 'NumberLowerRoman', text: 'Lower Roman',  command: 'setListStyle', listType: 'lowerRoman' },
-    { id: 'NumberUpperAlpha', text: 'Upper Alpha',  command: 'setListStyle', listType: 'upperAlpha' },
-    { id: 'NumberLowerAlpha', text: 'Lower Alpha',  command: 'setListStyle', listType: 'lowerAlpha' },
-    { id: 'NumberUpperRoman', text: 'Upper Roman',  command: 'setListStyle', listType: 'upperRoman' }
+    { id: 'NumberLowerGreek', text: 'Lower Greek',  command: 'setListStyle', listType: 'lower-greek' },
+    { id: 'NumberLowerRoman', text: 'Lower Roman',  command: 'setListStyle', listType: 'lower-roman' },
+    { id: 'NumberUpperAlpha', text: 'Upper Alpha',  command: 'setListStyle', listType: 'upper-alpha' },
+    { id: 'NumberLowerAlpha', text: 'Lower Alpha',  command: 'setListStyle', listType: 'lower-alpha' },
+    { id: 'NumberUpperRoman', text: 'Upper Roman',  command: 'setListStyle', listType: 'upper-roman' }
 ];
 
 export const BulletFormatLists:  BulletFormatList[] = [
@@ -89,4 +89,13 @@ export class ListSettings extends ChildProperty<ListSettings> {
      */
     @Property(BulletFormatLists)
     public bulletFormatListItems: BulletFormatListItem[];
+
+    /**
+     * Defines the checkbox marker shape for checklist items.
+     * Controls the visual appearance of the checkbox in task lists.
+     *
+     * @default 'Square'
+     */
+    @Property('Square')
+    public checklistType: 'Circle' | 'Square';
 }

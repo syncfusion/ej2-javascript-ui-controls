@@ -1,6 +1,6 @@
 import { L10n, EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, extend, Browser } from '@syncfusion/ej2-base';
-import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs, VirtualSelectionInfo } from '../base/interface';
+import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs, VirtualSelectionInfo, CellFocusEventArgs } from '../base/interface';
 import { CellType, FocusType } from '../base/enum';
 import * as event from '../base/constant';
 import { Row } from '../models/row';
@@ -9,7 +9,7 @@ import { Column } from '../models/column';
 import { NotifyArgs, EJ2Intance } from '../base/interface';
 import { RowModelGenerator } from './row-model-generator';
 import { ServiceLocator } from '../services/service-locator';
-import { parentsUntil, addRemoveEventListener, findCellIndex } from '../base/util';
+import { parentsUntil, addRemoveEventListener, findCellIndex, getParsedFieldID } from '../base/util';
 import * as literals from '../base/string-literals';
 import { Grid } from '../base/grid';
 import { Group } from '../actions/group';
@@ -795,7 +795,8 @@ export class FocusStrategy {
             const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems();
             if (focusableToolbarItems.length > 0) {
                 e.preventDefault();
-                (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
+                (this.parent as Grid).toolbarModule
+                    .getBackwardEntryElement(focusableToolbarItems[focusableToolbarItems.length - 1]).focus();
                 return;
             } else if (this.parent.toolbarTemplate) {
                 e.preventDefault();
@@ -856,6 +857,9 @@ export class FocusStrategy {
         }
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
             const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
+            if ((this.parent as Grid).toolbarModule.getNextFindControl(e)) {
+                return true;
+            }
             const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
             if (parentsUntil(e.target as Element, 'e-toolbar-item')
@@ -1087,7 +1091,7 @@ export class FocusStrategy {
         if (!this.shouldTriggerCellFocusEvent(cellType)) {
             return;
         }
-        const args: any = {
+        const args: CellFocusEventArgs = {
             cell: cell,
             rowIndex: this.prevIndexes.rowIndex,
             cellIndex: this.prevIndexes.cellIndex,
@@ -1241,7 +1245,7 @@ export class FocusStrategy {
                         }
                     }
                 } else if (e.args.focusElement && e.args.focusElement.classList.contains('e-filtertext')) {
-                    const focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + e.args.focusElement.id);
+                    const focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + getParsedFieldID(e.args.focusElement.id));
                     if (focusElement) {
                         focusElement.focus();
                     }

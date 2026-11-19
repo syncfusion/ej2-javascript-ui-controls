@@ -9,7 +9,7 @@ import {
     defaultSlashCommandDataModel,
     injectableSlashCommandDataModel,
     ISlashCommandModel,
-    IInjectableSlashCommandModel
+    IModuleSlashCommandModel
 } from '../../richtexteditor-ui/model/slash-command-settings';
 import { slashCommandCommandsKey, defaultLocale } from '../../richtexteditor-ui/model/default-locale';
 import * as events from '../../common/constant';
@@ -29,7 +29,7 @@ export class SlashCommand {
     private L10n: L10n;
     public mentionPopup: EditorMentionPopup;
     private defaultItems: ISlashCommandModel[];
-    private injectableItems: IInjectableSlashCommandModel[];
+    private injectableItems: IModuleSlashCommandModel[];
     private saveSelection: any;
 
     constructor(parent: RichTextEditorUI) {
@@ -47,8 +47,8 @@ export class SlashCommand {
     private removeEventListener(): void {
         if (this.parent && !this.parent.isDestroyed) {
             this.parent.off(events.modelChanged, this.onPropertyChanged);
-            this.parent.off(events.destroy, this.removeEventListener);
             this.parent.off(events.initialEnd, this.render);
+            this.parent.off(events.destroy, this.removeEventListener);
         }
     }
 
@@ -142,7 +142,7 @@ export class SlashCommand {
 
     private handleSelect(args: SelectEventArgs): void {
         args.cancel = true;
-        this.parent.focus();
+        this.parent.focusIn();
         const item: FieldSettingsModel = args.itemData as FieldSettingsModel;
         const selectEventArgs: SlashCommandItemSelectArgs = {
             isInteracted: args.isInteracted,
@@ -154,50 +154,111 @@ export class SlashCommand {
         if ((args.itemData as any).isCustomItem) {
             this.beforeSlashCommandApply();
         }
-        this.parent.trigger('slashCommanditemSelect', selectEventArgs, (selectArgs: SlashCommandItemSelectArgs) => {
-            if (selectArgs.cancel) {
-                return;
-            } else {
-                if (!(selectArgs.itemData as any).isCustomItem) {
-                    this.beforeSlashCommandApply();
-                    const itemModel: ISlashCommandModel = item as unknown as ISlashCommandModel;
-                    switch (itemModel.command) {
-                    case 'NumberedList':
-                        this.parent.commands().numberedList().apply();
-                        break;
-                    case 'BulletList':
-                        this.parent.commands().bulletList().apply();
-                        break;
-                    case 'Image':
-                    case 'Table':
-                    case 'Link':
-                        this.mentionPopup.hide();
-                        setTimeout(() => {
-                            this.notifyDialog(itemModel.subCommand, selectEventArgs);
-                        }, 100);
-                        break;
-                    default:
-                        {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/tslint/config
-                            const commandName = itemModel.subCommand as any;
-                            // Map command names to builder methods
-                            // eslint-disable-next-line security/detect-object-injection, @typescript-eslint/tslint/config
-                            const builderMethod = (this.parent.commands() as any)[commandName];
-                            if (builderMethod && typeof builderMethod === 'function') {
-                                builderMethod.call(this.parent.commands()).apply();
-                            }
-                        }
-                        break;
+        if (this.parent.slashCommandSettings && this.parent.slashCommandSettings.itemSelect) {
+            this.parent.slashCommandSettings.itemSelect.call(this.parent, selectEventArgs);
+        }
+        this.afterItemSelect(selectEventArgs, item);
+    }
+
+    /**
+     * Continuation invoked after the public `itemSelect` event handler has run.
+     * Honors `args.cancel` set by the consumer, then dispatches the matching
+     * editor command for the selected slash command item.
+     *
+     * @param {SlashCommandItemSelectArgs} selectArgs - the select event args (may be cancelled).
+     * @param {FieldSettingsModel} item - the selected item data.
+     * @returns {void}
+     * @private
+     */
+    private afterItemSelect(selectArgs: SlashCommandItemSelectArgs, item: FieldSettingsModel): void {
+        if (selectArgs.cancel) {
+            return;
+        }
+        if (!(selectArgs.itemData as any).isCustomItem) {
+            this.beforeSlashCommandApply();
+            const itemModel: ISlashCommandModel = item as unknown as ISlashCommandModel;
+            switch (itemModel.command) {
+            case 'Collapsible Paragraph':
+                this.parent.editorController.execute('collapsible', {
+                    triggerType: 'paragraph'
+                });
+                break;
+            case 'Collapsible Heading 1':
+                this.parent.editorController.execute('collapsible', {
+                    triggerType: 'heading',
+                    level: 1
+                });
+                break;
+            case 'Collapsible Heading 2':
+                this.parent.editorController.execute('collapsible', {
+                    triggerType: 'heading',
+                    level: 2
+                });
+                break;
+            case 'Collapsible Heading 3':
+                this.parent.editorController.execute('collapsible', {
+                    triggerType: 'heading',
+                    level: 3
+                });
+                break;
+            case 'Collapsible Heading 4':
+                this.parent.editorController.execute('collapsible', {
+                    triggerType: 'heading',
+                    level: 4
+                });
+                break;
+            case 'NumberedList':
+                this.parent.commands().numberedList().apply();
+                break;
+            case 'BulletList':
+                this.parent.commands().bulletList().apply();
+                break;
+            case 'Checklist':
+                this.parent.commands().toggleTaskList().apply();
+                break;
+            case 'Image':
+            case 'Table':
+            case 'Link':
+                this.mentionPopup.hide();
+                setTimeout(() => {
+                    this.notifyDialog(itemModel.subCommand, selectArgs);
+                }, 100);
+                break;
+            case 'Info':
+                this.parent.commands().callout().apply();
+                break;
+            case 'Warning':
+                this.parent.commands().callout().callout('warning').apply();
+                break;
+            case 'Error':
+                this.parent.commands().callout().callout('error').apply();
+                break;
+            case 'Success':
+                this.parent.commands().callout().callout('success').apply();
+                break;
+            case 'Note':
+                this.parent.commands().callout().callout('note').apply();
+                break;
+            default:
+                {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/tslint/config
+                    const commandName = itemModel.subCommand as any;
+                    // Map command names to builder methods
+                    // eslint-disable-next-line security/detect-object-injection, @typescript-eslint/tslint/config
+                    const builderMethod = (this.parent.commands() as any)[commandName];
+                    if (builderMethod && typeof builderMethod === 'function') {
+                        builderMethod.call(this.parent.commands()).apply();
                     }
-                    if (selectArgs.originalEvent && selectArgs.originalEvent.type === 'keydown') {
-                        this.closeOpenPopup();
-                    }
-                    this.parent.notify(events.toolbarRefresh, {});
-                } else {
-                    this.closeOpenPopup();
                 }
+                break;
             }
-        });
+            if (selectArgs.originalEvent && selectArgs.originalEvent.type === 'keydown') {
+                this.closeOpenPopup();
+            }
+            this.parent.notify(events.toolbarRefresh, {});
+        } else {
+            this.closeOpenPopup();
+        }
     }
 
     /**
@@ -219,7 +280,7 @@ export class SlashCommand {
             this.parent.notify(events.insertImage, selectEventArgs);
             break;
         case DialogType.InsertTable:
-            this.parent.notify(events.insertTable, selectEventArgs);
+            this.parent.notify(events.insertTableBySlash, selectEventArgs);
             break;
         default:
             break;
@@ -245,17 +306,22 @@ export class SlashCommand {
             editor.commands.deleteRange({ from: slashPosition, to: selection.to });
         }
     }
-
     private findSlashPosition(document: DocumentRoot, selectionPosition: number): number | null {
         let slashPosition: number | null = null;
         const visit: (node: EditorNode, position: number) => number = (node: EditorNode, position: number): number => {
             if ('text' in node && typeof node.text === 'string') {
-                const offset: number = Math.min(node.text.length, Math.max(0, selectionPosition - position));
-                const index: number = node.text.lastIndexOf('/', offset - 1);
-                if (index >= 0) {
-                    slashPosition = position + index;
+                const nodeStart: number = position;
+                const nodeEnd: number = position + node.text.length;
+                if (selectionPosition < nodeStart || selectionPosition > nodeEnd) {
+                    return nodeEnd;
                 }
-                return position + node.text.length;
+                const offset: number = selectionPosition - nodeStart;
+                const textBeforeCursor: string = node.text.substring(0, offset);
+                const match: RegExpMatchArray | null = textBeforeCursor.match(/(?:^|\s)\/.*$/);
+                if (match) {
+                    slashPosition = nodeStart + textBeforeCursor.lastIndexOf('/');
+                }
+                return nodeEnd;
             }
             if (!node.children || node.children.length === 0) {
                 return position + 1;
@@ -263,6 +329,9 @@ export class SlashCommand {
             let childPosition: number = node.type === 'document' ? position : position + 1;
             for (const child of node.children) {
                 childPosition = visit(child, childPosition);
+                if (slashPosition !== null) {
+                    break;
+                }
             }
             return node.type === 'document' ? childPosition : childPosition + 1;
         };
@@ -297,7 +366,7 @@ export class SlashCommand {
                 )[0];
                 if (isNOU(model)) {
                     model = this.injectableItems.filter(
-                        (item: IInjectableSlashCommandModel) => item.module.toLowerCase().replace(' ', '') ===
+                        (item: IModuleSlashCommandModel) => item.module.toLowerCase().replace(' ', '') ===
                         commnadName.toLowerCase().replace(' ', ''))[0];
                 }
                 // Skip unknown command names gracefully — the editor surfaces a
@@ -312,7 +381,7 @@ export class SlashCommand {
                     command: model.command,
                     subCommand: model.subCommand,
                     type: model.type,
-                    module: (model as IInjectableSlashCommandModel).module,
+                    module: (model as IModuleSlashCommandModel).module,
                     iconCss: model.iconCss,
                     description: this.L10n.getConstant(localeKey ? localeKey.description : '')
                 });

@@ -116,7 +116,7 @@ export class PdfResources extends PdfDictionary {
         if (this.pdfNames == null) {
             this.pdfNames = new TemporaryDictionary<IPdfPrimitive, PdfName>();
         }
-        let fonts : IPdfPrimitive = this.items.getValue(this.dictionaryProperties.font);
+        let fonts : IPdfPrimitive = this.items.getValue('Font');
         if (fonts != null) {
             let reference : PdfReferenceHolder = fonts as PdfReferenceHolder;
             let dictionary : PdfDictionary = fonts as PdfDictionary;
@@ -132,10 +132,10 @@ export class PdfResources extends PdfDictionary {
         if (procedureSetName == null) {
             throw new Error('ArgumentNullException:procedureSetName');
         }
-        let procSets : PdfArray = this.items.getValue(this.dictionaryProperties.procset) as PdfArray;
+        let procSets : PdfArray = this.items.getValue('ProcSet') as PdfArray;
         if (procSets == null) {
             procSets = new PdfArray();
-            this.items.setValue(this.dictionaryProperties.procset, procSets);
+            this.items.setValue('ProcSet', procSets);
         }
         let name : PdfName = new PdfName(procedureSetName);
         if (!procSets.contains(name)) {
@@ -196,34 +196,34 @@ export class PdfResources extends PdfDictionary {
     public add(arg1 : PdfFont|PdfTemplate|PdfTransparency|PdfBrush|PdfImage|PdfBitmap, arg2 : PdfName) : void {
         if (arg1 instanceof PdfFont) {
             let dictionary : PdfDictionary = null;
-            let fonts : IPdfPrimitive = this.items.getValue(this.dictionaryProperties.font);
+            let fonts : IPdfPrimitive = this.items.getValue('Font');
             if (fonts != null) {
                 let reference : PdfReferenceHolder = fonts as PdfReferenceHolder;
                 dictionary = fonts as PdfDictionary;
                 dictionary = fonts as PdfDictionary;
             } else {
                 dictionary = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.font, dictionary);
+                this.items.setValue('Font', dictionary);
             }
             dictionary.items.setValue(arg2.value,  new PdfReferenceHolder((<IPdfWrapper>arg1).element));
         } else if (arg1 instanceof PdfTemplate) {
             let xobjects : PdfDictionary;
-            xobjects = this.items.getValue(this.dictionaryProperties.xObject) as PdfDictionary;
+            xobjects = this.items.getValue('XObject') as PdfDictionary;
             // Create fonts dictionary.
             if (xobjects == null) {
                 xobjects = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.xObject, xobjects);
+                this.items.setValue('XObject', xobjects);
             }
             xobjects.items.setValue(arg2.value, new PdfReferenceHolder((<IPdfWrapper>arg1).element));
         } else if (arg1 instanceof PdfBrush) {
             if (arg1 instanceof PdfGradientBrush || arg1 instanceof PdfTilingBrush) {
                 let savable : IPdfPrimitive = (arg1 as IPdfWrapper).element;
                 if (savable != null) {
-                    let pattern : PdfDictionary = this.items.getValue(this.dictionaryProperties.pattern) as PdfDictionary;
+                    let pattern : PdfDictionary = this.items.getValue('Pattern') as PdfDictionary;
                     // Create a new pattern dictionary.
                     if (pattern == null) {
                         pattern = new PdfDictionary();
-                        this.items.setValue(this.dictionaryProperties.pattern, pattern);
+                        this.items.setValue('Pattern', pattern);
                     }
                     pattern.items.setValue(arg2.value, new PdfReferenceHolder(savable));
                 }
@@ -231,26 +231,26 @@ export class PdfResources extends PdfDictionary {
         } else if (arg1 instanceof PdfTransparency) {
             let savable : IPdfPrimitive = (arg1 as IPdfWrapper).element;
             let transDic : PdfDictionary = null;
-            transDic = this.items.getValue(this.dictionaryProperties.extGState) as PdfDictionary;
+            transDic = this.items.getValue('ExtGState') as PdfDictionary;
             // Create a new pattern dictionary.
             if (transDic == null) {
                 transDic = new PdfDictionary();
-                this.items.setValue(this.dictionaryProperties.extGState, transDic);
+                this.items.setValue('ExtGState', transDic);
             }
             transDic.items.setValue(arg2.value, new PdfReferenceHolder(savable));
         } else {
             /* tslint:disable */
-            let xobjects : PdfDictionary = this.Dictionary.items.getValue(this.dictionaryProperties.xObject) as PdfDictionary;
+            let xobjects : PdfDictionary = this.Dictionary.items.getValue('XObject') as PdfDictionary;
             let parentXObjects : PdfDictionary;
             if (typeof this.pdfDocument !== 'undefined') {
-                parentXObjects = ((this.pdfDocument.sections.element as PdfDictionary).items.getValue(this.dictionaryProperties.resources) as PdfDictionary).items.getValue(this.dictionaryProperties.xObject) as PdfDictionary;
+                parentXObjects = ((this.pdfDocument.sections.element as PdfDictionary).items.getValue('Resources') as PdfDictionary).items.getValue('XObject') as PdfDictionary;
             }
             let values : IPdfPrimitive[] = this.Dictionary.items.values();
             let hasSameImageStream : boolean = false;
             let oldReference : PdfReferenceHolder;
             if ( typeof this.pdfDocument !== 'undefined' && (typeof parentXObjects === undefined || parentXObjects == null)) {
                 parentXObjects = new PdfDictionary();
-                ((this.pdfDocument.sections.element as PdfDictionary).items.getValue(this.dictionaryProperties.resources) as PdfDictionary).items.setValue(this.dictionaryProperties.xObject, parentXObjects);
+                ((this.pdfDocument.sections.element as PdfDictionary).items.getValue('Resources') as PdfDictionary).items.setValue('XObject', parentXObjects);
             } else if (typeof this.pdfDocument !== 'undefined') {
                 let values : IPdfPrimitive[] = parentXObjects.items.values();
                 for (let i : number = 0; i < values.length; i++) {
@@ -264,7 +264,7 @@ export class PdfResources extends PdfDictionary {
             }
             if (xobjects == null) {
                 xobjects = new PdfDictionary();
-                this.Dictionary.items.setValue(this.dictionaryProperties.xObject, xobjects);
+                this.Dictionary.items.setValue('XObject', xobjects);
             }
             if (hasSameImageStream && typeof oldReference !== 'undefined') {
                 xobjects.items.setValue(arg2.value, oldReference);

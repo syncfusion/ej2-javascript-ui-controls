@@ -410,8 +410,12 @@ export class _PdfRedactionProcessor {
                     const inkAnnotation: PdfInkAnnotation = (annotation as PdfInkAnnotation);
                     const inkList: Array<Point[]> = inkAnnotation.inkPointsCollection;
                     const inkPointsToNumberArray: number[][] = _convertPointsToNumberArrays(inkList);
-                    inkBounds = this._getBoundsFromPoints(inkPointsToNumberArray[0], page);
-                    bounds = inkAnnotation.bounds;
+                    let inkStrokePoints: number[] = [];
+                    for (let stroke: number = 0; stroke < inkPointsToNumberArray.length; stroke++) {
+                        inkStrokePoints = inkStrokePoints.concat(inkPointsToNumberArray[Number.parseInt(stroke.toString(), 10)]);
+                    }
+                    inkBounds = this._getBoundsFromPoints(inkStrokePoints, page);
+                    bounds = inkPointsToNumberArray.length > 0 ? inkBounds.bounds : inkAnnotation.bounds;
                     if (!inkAnnotation._isLoaded) {
                         inkBounds.isValidAnnotation = true;
                     }

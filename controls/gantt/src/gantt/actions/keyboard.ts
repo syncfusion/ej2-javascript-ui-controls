@@ -282,8 +282,10 @@ export class FocusModule {
             if (isRemoteData(this.parent.dataSource) && this.parent.element.querySelectorAll('.e-editedcell').length > 0) {
                 const editedCell: Element = this.parent.element.querySelectorAll('.e-editedcell')[0];
                 const column: Element | string = this.parent.ganttChartModule['getNextElement'](editedCell, e.action === 'tab' ? true : false, false);
-                const columnName: string = this.parent.ganttColumns[parseInt((column as Element).getAttribute('aria-colindex'), 10) - 1].field;
-                this.tabElement = {column: columnName, isTab: true };
+                if (column !== 'noNextRow') {
+                    const columnName: string = this.parent.ganttColumns[parseInt((column as Element).getAttribute('aria-colindex'), 10) - 1].field;
+                    this.tabElement = {column: columnName, isTab: true };
+                }
             }
             const nextElement: Element | string  = this.parent.ganttChartModule['getNextElement'](target, e.action === 'tab' ? true : false, false);
             if (!ganttObj.element.classList.contains('e-scroll-disabled')) {

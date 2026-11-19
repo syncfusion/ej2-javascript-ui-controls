@@ -522,9 +522,7 @@ export class Filter implements IAction {
          (e.target as Element).classList.contains('e-clear-icon')) {
             const targetText: HTMLInputElement = (e.target as Element).previousElementSibling as  HTMLInputElement;
             Input.setValue(null, targetText as HTMLInputElement | HTMLTextAreaElement, 'Never', true);
-            if (this.filterSettings.mode === 'Immediate') {
-                this.removeFilteredColsByField(targetText.id.slice(0, -14)); //Length of _filterBarcell = 14
-            }
+            this.removeFilteredColsByField(targetText.id.slice(0, -14)); //Length of _filterBarcell = 14
         }
     }
 
@@ -1144,7 +1142,7 @@ export class Filter implements IAction {
 
     private startTimer(e: KeyboardEvent): void {
         this.timer = window.setInterval(
-            () => { this.onTimerTick(); },
+            () => { this.onTimerTick(e); },
             e.keyCode === 13 ? 0 : this.filterSettings.immediateModeDelay);
     }
 
@@ -1152,7 +1150,7 @@ export class Filter implements IAction {
         window.clearInterval(this.timer);
     }
 
-    private onTimerTick(): void {
+    private onTimerTick(e: KeyboardEvent): void {
         const selector: string = '[id=\'' + this.column.field + '_filterBarcell\']';
         let filterElement: HTMLInputElement = (this.element.querySelector(selector) as HTMLInputElement);
         if (!filterElement) {
@@ -1175,6 +1173,9 @@ export class Filter implements IAction {
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
             return;
+        }
+        if (e && (e as { isComposing?: boolean }).isComposing) {
+            this.value = filterElement.value;
         }
         this.validateFilterValue(this.value as string);
         this.filterByMethod = false;

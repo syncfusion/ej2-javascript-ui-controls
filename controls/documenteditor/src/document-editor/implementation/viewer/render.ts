@@ -11,9 +11,10 @@ import {
     FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox,
     ContentControl,
     GroupShapeElementBox,
-    Margin
+    Margin, FieldTextElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
+import { RevisionSettingsModel } from '../../document-editor-model';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo, BorderRenderInfo } from '../editor/editor-helper';
@@ -23,7 +24,7 @@ import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WColumnFormat, WSectionFormat } from '../format';
 import { FontScriptType, TextWrappingStyle } from '../../index';
-import { TextHelper, TextSizeInfo } from './text-helper';
+import { TextSizeInfo } from './text-helper';
 import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
 import { Dictionary } from '../../base/dictionary';
 import { getPathString, PathSegment, pathSegmentCollection, PointModel, processPathData, splitArrayCollection, transformPath } from '../utility/path-util';
@@ -190,7 +191,6 @@ export class Renderer {
         }
         let cliped: boolean = false;
         let height: number = 0;
-        let pageHt: number = 0;
         // Calculating header/footer height based on Word 2013 mode.
         let headerFooterHeight: number = this.documentHelper.compatibilityMode === 'Word2013'
             && page.headerWidget.height + page.footerWidget.height < page.boundingRectangle.height / 100 * 80 ?
@@ -227,12 +227,12 @@ export class Renderer {
                 Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
             }
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
-            pageHt = page.boundingRectangle.height - footerDistance;
         }
         this.renderFloatingItems(page, widget.floatingElements, 'Behind');
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
             const block: BlockWidget = widget.childWidgets[parseInt(i.toString(), 10)] as BlockWidget;
             if (!isHeader) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 height += block.height;
             }
             // if (isHeader || !isHeader && this.getScaledValue(Math.round(height)) <= this.getScaledValue(Math.round(pageHt))) {
@@ -593,9 +593,6 @@ export class Renderer {
         }
     }
     private renderShapeElementBox(shape: ShapeElementBox, shapeLeft: number, shapeTop: number, page: Page): void {
-        if (shape.isHorizontalRule) {
-            return;
-        }
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
@@ -620,6 +617,7 @@ export class Renderer {
             if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
                 this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+                this.setShapeLineDash(shape);
                 if (shapeType === 'Rectangle') {
                     this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 } else if(shapeType === 'StraightConnector') {
@@ -627,6 +625,7 @@ export class Renderer {
                     this.pageContext.lineTo(shapeLeft + this.getScaledValue(shape.width), shapeTop + this.getScaledValue(shape.height));
                     this.pageContext.stroke();
                 }
+                this.pageContext.setLineDash([]);
             }
         }
         this.pageContext.closePath();
@@ -783,6 +782,7 @@ export class Renderer {
                 ctx.stroke();
             }
             ctx.restore();
+            ctx.setLineDash([]);
         }
     }
     private renderPath(canvas: any, collection: Object[]): void {
@@ -814,7 +814,6 @@ export class Renderer {
                 seg.x = x; seg.y = y; seg.x1 = x1; seg.y1 = y1;
                 break;
             case 'A':
-            // eslint-disable-next-line
             let curr: PointModel = { x: x0, y: y0 }; let rx: number = seg.r1; let ry: number = seg.r2;
             const xAxisRotation: number = seg.angle * (Math.PI / 180.0);
             const largeArc: boolean = seg.largeArc; const sweep: boolean = seg.sweep; const cp: PointModel = { x: x, y };
@@ -854,7 +853,6 @@ export class Renderer {
                   }
                 const dir: number = !sweep ? -1.0 : 1.0;
                 const ah: number = a1 + dir * (ad / 2.0);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const halfWay: PointModel = {
                         x:
                             centp.x + rx * Math.cos(ah),
@@ -946,7 +944,45 @@ private calculatePathBounds(data: string): Rect {
         if (shape.lineFormat.weight === 0) {
             ctx.strokeStyle = 'transparent';
         }
+        this.setShapeLineDash(shape);
         //ctx.globalAlpha = style.opacity;
+    }
+
+    private setShapeLineDash(shape: ShapeElementBox): void {
+        const w: number = shape.lineFormat.weight;
+        const gap: number = 3 * w;
+        let pattern: number[] = [];
+        switch (shape.lineFormat.dashStyle) {
+            case 'Dot':
+                pattern = [1.25 * w, w];
+                break;
+            case 'DotGEL':
+                pattern = [4.5 * w, 3 * w];
+                break;
+            case 'Dash':
+                pattern = [4 * w, 1.5 * w];
+                break;
+            case 'DashGEL':
+                pattern = [4.5 * w, 3.5 * w];
+                break;
+            case 'DashDot':
+            case 'DashDotGEL':
+                pattern = [4.5 * w, 1.25 * gap, w, 1.25 * gap];
+                break;
+            case 'DashDotDot':
+                pattern = [4.5 * w, gap, w, gap, w, gap];
+                break;
+            case 'LongDashGEL':
+                pattern = [9 * w, gap];
+                break;
+            case 'LongDashDotGEL':
+                pattern = [9.5 * w, 1.25 * gap, w, 1.25 * gap];
+                break;
+            case 'LongDashDotDotGEL':
+                pattern = [9.5 * w, gap, w, 1.25 * gap, w, 1.25 * gap];
+                break;
+        }
+        this.pageContext.setLineDash(w > 0 ? pattern : []);
     }
 
     private renderLockRegionBorder(page: Page, widget: Widget) {
@@ -1405,7 +1441,7 @@ private calculatePathBounds(data: string): Rect {
                 let lastLine: LineWidget = lastPara.lastChild as LineWidget;
                 let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
                 let yPosition: number = lastPara.y + lastLine.margin.top;
-                this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(yPosition, 2), this.getScaledValue(lastLine.height - (lastLine.margin.bottom + lastLine.margin.top)), 1);
+                this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(yPosition, 2), (this.getScaledValue(lastLine.height - (lastLine.margin.bottom + lastLine.margin.top)) - 2), 1);
             }
         }
     }
@@ -2023,7 +2059,7 @@ private calculatePathBounds(data: string): Rect {
         if (this.documentHelper.owner.documentEditorSettings.showBookmarks && bookmarks.length > 0) {
             for (let i = 0; i < bookmarks.length; i++) {
                 let bookmark = bookmarks[i];
-                this.renderBookmark(this.getScaledValue(bookmark.x, 1), this.getScaledValue(bookmark.y, 2), this.getScaledValue(bookmark.height), bookmark.type);
+                this.renderBookmark(this.getScaledValue(bookmark.x, 1), this.getScaledValue(bookmark.y, 2), (this.getScaledValue(bookmark.height) - 2), bookmark.type);
             }
         }
         let isEnableParaMark: boolean = false;
@@ -2172,7 +2208,7 @@ private calculatePathBounds(data: string): Rect {
                 if (lineWidget.paragraph.bidi && !lineWidget.paragraph.isEmpty()) {
                     x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
-                if(paraFormat.firstLineIndent > 0){
+                if (paraFormat.firstLineIndent > 0 || (paraFormat.firstLineIndent < 0 && lineWidget.paragraph.isEmpty() && isEnableParaMark)) {
                     x = left;
                 }
                 this.pageContext.font = characterFont;
@@ -2623,6 +2659,9 @@ private calculatePathBounds(data: string): Rect {
         }
         //this.pageContext.direction = 'ltr';
         text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
+        if (elementBox instanceof FieldTextElementBox && elementBox.isRtlPageNumber) {
+            text = HelperMethods.reverseString(text);
+        }
         const line: LineWidget = elementBox.line;
         const index: number = line.renderedElements.indexOf(elementBox);
         if (index > 0) {
@@ -2674,14 +2713,15 @@ private calculatePathBounds(data: string): Rect {
             // Text frame align position.
             if (((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox) && (elementBox.paragraph.containerWidget as TextFrame).textVerticalAlignment == 'Center') {
                 let shapeHeight: number = ((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox).height;
-                let y: number = this.getScaledValue(top + topMargin, 2) + (this.getScaledValue(shapeHeight) / 4.5);
                 let height: number = 0;
                 if(elementBox.paragraph.containerWidget.childWidgets && elementBox.paragraph.containerWidget.childWidgets.length > 0) {
                     for(let i = 0; i < elementBox.paragraph.containerWidget.childWidgets.length; i++) {
                         height = height + (elementBox.paragraph.containerWidget.childWidgets[i] as TextFrame).height;
                     }
                 }
-                if((height + this.getScaledValue(shapeHeight) / 2) < this.getScaledValue(shapeHeight)) {
+                let rect: number = this.getScaledValue(shapeHeight) - ((elementBox.paragraph.containerWidget as TextFrame).marginTop + (elementBox.paragraph.containerWidget as TextFrame).marginBottom);
+                let y: number = this.getScaledValue(top + topMargin, 2) + (rect - height) / 2;
+                if (height < this.getScaledValue(shapeHeight)) {
                     this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), y, scaledWidth);
                 } else {
                     this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
@@ -3236,10 +3276,10 @@ private calculatePathBounds(data: string): Rect {
 
                     if (!isNullOrUndefined(render.documentHelper) && lastLoaded !== elementBox.element.src) {
                         if (!elementBox.isCrop) {
-                            if (!isNullOrUndefined(render.documentHelper.owner) && !isNullOrUndefined(render.documentHelper.owner.imageResizerModule)
-                                && !render.documentHelper.owner.imageResizerModule.isImageResizing) {
                                 render.pageContext.drawImage(elementBox.element, imgX, imgY, width, height);
-                            }
+                                if (render.documentHelper.owner.enableHeaderAndFooter) {
+                                    render.documentHelper.viewer.updateScrollBars();
+                                }
                         } else {
                             render.pageContext.drawImage(elementBox.element,
                                 elementBox.cropX,
@@ -3392,6 +3432,15 @@ private calculatePathBounds(data: string): Rect {
     }
     /* eslint-disable  */
     private renderTableCellOutline(documentHelper: DocumentHelper, cellWidget: TableCellWidget): void {
+        this.isRenderingCellBorders = true;
+        try {
+            this.renderTableCellOutlineBorders(documentHelper, cellWidget);
+        } finally {
+            this.isRenderingCellBorders = false;
+        }
+        this.renderCellMultiLineBorders(cellWidget);
+    }
+    private renderTableCellOutlineBorders(documentHelper: DocumentHelper, cellWidget: TableCellWidget): void {
         let layout: Layout = documentHelper.layout;
         let borders: WBorders = undefined;
         let tableCell: TableCellWidget = cellWidget;
@@ -3476,7 +3525,11 @@ private calculatePathBounds(data: string): Rect {
             // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             let width: number = 0;
-            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right + width, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth, border.lineStyle);
+            let topStartX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
+            if (!isBidiTable && tableCell.columnIndex === 0 && tableCell.ownerRow.rowIndex > 0) {
+                topStartX += leftBorderWidth;
+            }
+            this.renderSingleBorder(border.color, topStartX, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right + width, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth, border.lineStyle);
             // }
         }
         let isLastCell: boolean = false;
@@ -3590,6 +3643,146 @@ private calculatePathBounds(data: string): Rect {
         }
         // }
     }
+    /**
+     * Renders Double / Triple cell borders. Every edge of the cell owns a border band that is split into
+     * parallel lines. The outermost line is drawn only on the edges that form the table perimeter (so it
+     * surrounds the entire table); the remaining lines are drawn on every cell, so each cell is surrounded
+     * by its own inner border.
+     */
+    private renderCellMultiLineBorders(cellWidget: TableCellWidget): void {
+        const table: TableWidget = cellWidget.ownerTable;
+        const isBidi: boolean = table.isBidiTable;
+        const row: TableRowWidget = cellWidget.ownerRow;
+        const columnCount: number = table.tableHolder.columns.length;
+        const columnEnd: number = cellWidget.columnIndex + cellWidget.cellFormat.columnSpan;
+        // Rows may start later (gridBefore) or end earlier (gridAfter) than the table grid.
+        const isFirstColumn: boolean = cellWidget.columnIndex <= row.rowFormat.gridBefore;
+        const isLastColumn: boolean = columnEnd >= columnCount - row.rowFormat.gridAfter;
+        const rowEnd: number = row.rowIndex + cellWidget.cellFormat.rowSpan - 1;
+        // A horizontal edge is on the table perimeter when no cell of the neighbouring row lies beside it.
+        const left: number = cellWidget.x - cellWidget.margin.left;
+        const right: number = cellWidget.x + cellWidget.width + cellWidget.margin.right;
+        const overlappingCells = (neighbour: TableRowWidget): TableCellWidget[] => {
+            const cells: TableCellWidget[] = [];
+            if (!isNullOrUndefined(neighbour)) {
+                for (let i: number = 0; i < neighbour.childWidgets.length; i++) {
+                    const other: TableCellWidget = neighbour.childWidgets[i] as TableCellWidget;
+                    if (Math.min(right, other.x + other.width + other.margin.right) - Math.max(left, other.x - other.margin.left) > 1) {
+                        cells.push(other);
+                    }
+                }
+            }
+            return cells;
+        };
+        // A cell owns a Double / Triple edge when the edge is defined on the cell itself or inherited from the row / table.
+        // An explicit different style (for example Single or Cleared) means the border belongs to the adjacent cell.
+        const ownsMultiLine = (other: TableCellWidget, resolved: WBorder, edgeName: string): boolean => {
+            const own: WBorder = (other.cellFormat.borders as any)[edgeName];
+            const ownStyle: string = isNullOrUndefined(own) ? 'None' : own.lineStyle;
+            return !isNullOrUndefined(resolved) && (resolved.lineStyle === 'Double' || resolved.lineStyle === 'Triple') &&
+                (ownStyle === 'Double' || ownStyle === 'Triple' || ownStyle === 'None');
+        };
+        const isOutsideRow = (neighbour: TableRowWidget, neighbourEdge: string, resolvedEdge: string): boolean => {
+            const cells: TableCellWidget[] = overlappingCells(neighbour);
+            for (let i: number = 0; i < cells.length; i++) {
+                const resolved: WBorder = neighbourEdge === 'top' ? TableCellWidget.getCellTopBorder(cells[i]) : TableCellWidget.getCellBottomBorder(cells[i]);
+                if (ownsMultiLine(cells[i], resolved, neighbourEdge)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        const bottomRow: TableRowWidget = rowEnd < table.childWidgets.length ? (table.childWidgets[rowEnd] as TableRowWidget).nextWidget as TableRowWidget : undefined;
+        // Edge order: 0 - left, 1 - top, 2 - right, 3 - bottom.
+        let bottomBorder: WBorder = TableCellWidget.getCellBottomBorder(cellWidget);
+        if (cellWidget.cellFormat.rowSpan > 1 && rowEnd === table.childWidgets.length - 1 &&
+            !(cellWidget.cellFormat.borders.bottom && cellWidget.cellFormat.borders.bottom.lineStyle === 'Cleared')) {
+            // Vertically merged cells at the end of the table resolve their bottom border by priority.
+            bottomBorder = cellWidget.getBorderBasedOnPriority(cellWidget.getBorderBasedOnPriority(cellWidget.cellFormat.borders.bottom, row.rowFormat.borders.bottom), table.tableFormat.borders.bottom);
+        }
+        const borders: WBorder[] = [
+            isBidi ? TableCellWidget.getCellRightBorder(cellWidget) : TableCellWidget.getCellLeftBorder(cellWidget),
+            TableCellWidget.getCellTopBorder(cellWidget),
+            isBidi ? TableCellWidget.getCellLeftBorder(cellWidget) : TableCellWidget.getCellRightBorder(cellWidget),
+            bottomBorder
+        ];
+        const isPerimeter: boolean[] = [
+            isBidi ? isLastColumn : isFirstColumn,
+            isOutsideRow(row.previousWidget as TableRowWidget, 'bottom', 'top'),
+            isBidi ? isFirstColumn : isLastColumn,
+            isOutsideRow(bottomRow, 'top', 'bottom')
+        ];
+        const lineCount: number[] = [];
+        const bandWidth: number[] = [];
+        const lineWidth: number[] = [];
+        let hasMultiLine: boolean = false;
+        for (let edge: number = 0; edge < 4; edge++) {
+            let style: string = isNullOrUndefined(borders[edge]) ? 'None' : borders[edge].lineStyle;
+            if ((edge === 1 || edge === 3) && !isPerimeter[edge] && !ownsMultiLine(cellWidget, borders[edge], edge === 1 ? 'top' : 'bottom')) {
+                // The neighbouring cell owns this shared edge and draws all of its lines.
+                style = 'None';
+            }
+            lineCount[edge] = style === 'Double' ? 2 : (style === 'Triple' ? 3 : 0);
+            bandWidth[edge] = lineCount[edge] > 0 ? HelperMethods.convertPointToPixel(borders[edge].getLineWidth()) : 0;
+            // Lines and the gaps between them have the same thickness.
+            lineWidth[edge] = lineCount[edge] > 0 ? bandWidth[edge] / (2 * lineCount[edge] - 1) : 0;
+            hasMultiLine = hasMultiLine || lineCount[edge] > 0;
+        }
+        if (!hasMultiLine) {
+            return;
+        }
+        const bottomMargin: number = cellWidget.margin.bottom - (cellWidget.containerWidget instanceof TableRowWidget ? (cellWidget.containerWidget as TableRowWidget).bottomBorderWidth : 0);
+        // The edge shared with the next cell is measured with the left margin, as the next cell positions its own
+        // left edge. This keeps merged cells, whose right margin differs, aligned with their neighbours.
+        let rightEdge: number = cellWidget.x + cellWidget.width + cellWidget.margin.right;
+        if (!isBidi && !isPerimeter[2]) {
+            rightEdge = cellWidget.x + cellWidget.width + cellWidget.margin.left;
+        }
+        // Start of each edge band, positioned like the single line borders are.
+        const bandStart: number[] = [
+            // An edge shared with the previous cell reuses that cell's band, so both inner lines sit side by side.
+            cellWidget.x - cellWidget.margin.left - (isPerimeter[0] ? bandWidth[0] / 2 : bandWidth[0]),
+            cellWidget.y - cellWidget.margin.top,
+            rightEdge - bandWidth[2],
+            cellWidget.y + cellWidget.height + bottomMargin
+        ];
+        const hasLine = (edge: number, line: number): boolean => lineCount[edge] > line && (isPerimeter[edge] || line > 0);
+        // Centre of a line across its band; the outermost line is first.
+        const lineCentre = (edge: number, line: number): number => {
+            const offset: number = (2 * line + 0.5) * lineWidth[edge];
+            return edge < 2 ? bandStart[edge] + offset : bandStart[edge] + bandWidth[edge] - offset;
+        };
+        // Where a line ends against a perpendicular edge: at the matching line of that edge, or at the band edge.
+        const lineLimit = (edge: number, line: number): number => {
+            const offset: number = hasLine(edge, line) ? 2 * line * lineWidth[edge] : 0;
+            return edge < 2 ? bandStart[edge] + offset : bandStart[edge] + bandWidth[edge] - offset;
+        };
+        const context: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
+        context.setLineDash([]);
+        for (let edge: number = 0; edge < 4; edge++) {
+            for (let line: number = 0; line < lineCount[edge]; line++) {
+                if (!hasLine(edge, line)) {
+                    continue;
+                }
+                const centre: number = lineCentre(edge, line);
+                const isVertical: boolean = edge % 2 === 0;
+                const from: number = lineLimit(isVertical ? 1 : 0, line);
+                const to: number = lineLimit(isVertical ? 3 : 2, line);
+                context.beginPath();
+                if (isVertical) {
+                    context.moveTo(this.getScaledValue(centre, 1), this.getScaledValue(from, 2));
+                    context.lineTo(this.getScaledValue(centre, 1), this.getScaledValue(to, 2));
+                } else {
+                    context.moveTo(this.getScaledValue(from, 1), this.getScaledValue(centre, 2));
+                    context.lineTo(this.getScaledValue(to, 1), this.getScaledValue(centre, 2));
+                }
+                context.lineWidth = this.getScaledValue(lineWidth[edge]);
+                context.strokeStyle = HelperMethods.getColor(borders[edge].color);
+                context.stroke();
+                context.closePath();
+            }
+        }
+    }
     private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, rightMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
 
@@ -3602,7 +3795,7 @@ private calculatePathBounds(data: string): Rect {
 
         if (cellWidget.ownerRow.rowFormat.revisionLength > 0) {
             let revision: Revision = cellWidget.ownerRow.rowFormat.getRevision(cellWidget.ownerRow.rowFormat.revisionLength - 1);
-            bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
+            bgColor = this.resolveRowRevisionFillColor(revision);
         }
         if (bgColor !== 'empty') {
             const cellLeftBorder: WBorder = TableCellWidget.getCellLeftBorder(cellWidget);
@@ -3703,7 +3896,39 @@ private calculatePathBounds(data: string): Rect {
                 break;
         }
     }
+    private isRenderingCellBorders: boolean = false;
+    private renderMultipleLineBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number, lineCount: number): void {
+        const length: number = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        if (length === 0) {
+            return;
+        }
+        // Each individual line is thinner than the configured border width.
+        const subLineWidth: number = Math.max(lineWidth / (lineCount + 1), 0.5);
+        const gap: number = Math.max(lineWidth, 2);
+        // Unit normal to the border line, used to offset each parallel line.
+        const normalX: number = -(endY - startY) / length;
+        const normalY: number = (endX - startX) / length;
+        const offsets: number[] = lineCount === 2 ? [-gap / 2, gap / 2] : [-gap, 0, gap];
+        this.pageContext.setLineDash([]);
+        for (const offset of offsets) {
+            this.pageContext.beginPath();
+            this.pageContext.moveTo(this.getScaledValue(startX + normalX * offset, 1), this.getScaledValue(startY + normalY * offset, 2));
+            this.pageContext.lineTo(this.getScaledValue(endX + normalX * offset, 1), this.getScaledValue(endY + normalY * offset, 2));
+            this.pageContext.lineWidth = this.getScaledValue(subLineWidth);
+            this.pageContext.strokeStyle = HelperMethods.getColor(color);
+            this.pageContext.stroke();
+            this.pageContext.closePath();
+        }
+    }
     private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number, lineStyle: string): void {
+        if (lineStyle === 'Double' || lineStyle === 'Triple') {
+            if (this.isRenderingCellBorders) {
+                // Double and Triple cell borders are drawn together per cell by renderCellMultiLineBorders.
+                return;
+            }
+            this.renderMultipleLineBorder(color, startX, startY, endX, endY, lineWidth, lineStyle === 'Double' ? 2 : 3);
+            return;
+        }
         this.setLineDashBasedOnStyle(lineStyle, lineWidth);
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));
@@ -3734,13 +3959,97 @@ private calculatePathBounds(data: string): Rect {
         let count: number = elementBox.revisionLength;
         for (let i: number = 0; i < count; i++) {
             let currentRevision: Revision = elementBox.getRevision(i);
-            let color: string = this.documentHelper.authors.get(currentRevision.author);
-            if (isNullOrUndefined(color)) {
-                color = this.documentHelper.getAuthorColor(currentRevision.author);
-            }
+            let color: string = this.resolveRevisionDisplayColor(currentRevision);
             revisions.push({ 'type': currentRevision.revisionType, 'color': color });
         }
         return revisions
+    }
+    /**
+     * Resolves the display color for a revision using insertRevisionColor / deleteRevisionColor
+     * when set to a fixed hex value; otherwise falls back to the author-specific color.
+     *
+     * @private
+     * @param {Revision} revision - The revision whose display color is needed.
+     * @returns {string} Hex color string used for visual identification.
+     */
+    private resolveRevisionDisplayColor(revision: Revision): string {
+        return this.resolveTypedRevisionColor(revision, false);
+    }
+    /**
+     * Resolves the background color for table-row revisions using insertedRowColor / deletedRowColor
+     * when set to a fixed hex value; otherwise falls back to the author-specific color.
+     *
+     * @private
+     * @param {Revision} revision - The row revision whose display color is needed.
+     * @returns {string} Hex color string used for visual identification of the row.
+     */
+    private resolveRowRevisionFillColor(revision: Revision): string {
+        // Row/cell fill uses the same base color as text revisions, then softens it
+        // to 10% tint so the background remains readable behind content.
+        return this.tintColor(this.resolveTypedRevisionColor(revision, true), 10);
+    }
+    /**
+     * Mixes the given hex color with white at the specified percent intensity.
+     * Example: 10% of #0e76b1 on white yields a light wash of that color.
+     *
+     * @param {string} color - Source hex color (e.g. `#0e76b1` or `0e76b1`).
+     * @param {number} percent - Intensity of the source color (0–100).
+     * @returns {string} Tinted hex color string.
+     */
+    private tintColor(color: string, percent: number): string {
+        if (isNullOrUndefined(color) || color === '' || color === 'empty') {
+            return color;
+        }
+        let normalized: string = color.charAt(0) === '#' ? color : ('#' + color);
+        // Strip alpha channel if present (#AARRGGBB -> #RRGGBB).
+        if (normalized.length === 9) {
+            normalized = '#' + normalized.substring(3);
+        }
+        const rgb: WColor = HelperMethods.convertHexToRgb(normalized);
+        if (isNullOrUndefined(rgb)) {
+            return color;
+        }
+        const ratio: number = Math.max(0, Math.min(100, percent)) / 100;
+        // Blend toward white: out = color * ratio + 255 * (1 - ratio)
+        const r: number = Math.round(rgb.r * ratio + 255 * (1 - ratio));
+        const g: number = Math.round(rgb.g * ratio + 255 * (1 - ratio));
+        const b: number = Math.round(rgb.b * ratio + 255 * (1 - ratio));
+        return ('#' + HelperMethods.convertRgbToHex(r) + HelperMethods.convertRgbToHex(g) + HelperMethods.convertRgbToHex(b));
+    }
+    /**
+     * Shared resolver for type-based revision colors (content vs table-row).
+     *
+     * @param {Revision} revision - The revision whose display color is needed.
+     * @param {boolean} forTableRow - When true, uses insertedRowColor/deletedRowColor; otherwise insertRevisionColor/deleteRevisionColor.
+     * @returns {string} Hex color string used for visual identification.
+     */
+    private resolveTypedRevisionColor(revision: Revision, forTableRow: boolean): string {
+        const revisionSettings: RevisionSettingsModel = this.documentHelper.owner
+            && this.documentHelper.owner.documentEditorSettings
+            ? this.documentHelper.owner.documentEditorSettings.revisionSettings : undefined;
+        const isInsert: boolean = revision.revisionType === 'Insertion' || revision.revisionType === 'MoveTo';
+        const isDelete: boolean = revision.revisionType === 'Deletion' || revision.revisionType === 'MoveFrom';
+        if (!isNullOrUndefined(revisionSettings)) {
+            const insertColor: string = forTableRow
+                ? revisionSettings.insertedRowColor : revisionSettings.insertRevisionColor;
+            const deleteColor: string = forTableRow
+                ? revisionSettings.deletedRowColor : revisionSettings.deleteRevisionColor;
+            if (isInsert && !isNullOrUndefined(insertColor)
+                && insertColor !== ''
+                && insertColor.toLowerCase() !== 'byauthor') {
+                return insertColor;
+            }
+            if (isDelete && !isNullOrUndefined(deleteColor)
+                && deleteColor !== ''
+                && deleteColor.toLowerCase() !== 'byauthor') {
+                return deleteColor;
+            }
+        }
+        let color: string = this.documentHelper.authors.get(revision.author);
+        if (isNullOrUndefined(color)) {
+            color = this.documentHelper.getAuthorColor(revision.author);
+        }
+        return color;
     }
     private getRevisionColor(revisionInfo: RevisionInfo[]): string {
         if (revisionInfo.length === 1) {
@@ -3793,7 +4102,6 @@ private calculatePathBounds(data: string): Rect {
         return this.shapes[shape.toString()];
     }
     
-    // eslint-disable-next-line prefer-const
     private shapes: {} = {
     
         //<---------------- Basic Shapes ---------------->
@@ -4129,7 +4437,7 @@ private calculatePathBounds(data: string): Rect {
     
         'RoundSameSideCornerRectangle': 'M 154 1690 v -1029 q 0 -63 24 -118 q 24 -55 65 -96 q 41 -41 96 -65 q 55 -24 117 -24 h 1136 q 62 0 117 24 q 55 24 96 65 q 41 41 65 96 q 24 55 24 118 v 1029 z',
     
-        'RoundDiagonalCornerRectangle': 'M 456 1690 q -62 0 -117 -24 q -55 -24 -96 -65 q -41 -41 -65 -96 q -24 -55 -24 -118 v -1029 h 1438 q 62 0 117 24 q 55 24 96 65 q 41 41 65 96 q 24 55 24 118 v 1029 z'
+        'RoundDiagonalCornerRectangle': 'M 200 0 L 1800 0 L 1800 1300 A 200 200 0 0 1 1600 1500 L 0 1500 L 0 200 A 200 200 0 0 1 200 0 Z'
     
     
         //<---------------- umlActivityShapes Shapes ---------------->
@@ -4161,7 +4469,6 @@ private calculatePathBounds(data: string): Rect {
         // // Note,
         // 'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z'
     };
-    // eslint-disable-next-line    
     /**
      * Destroys the internal objects which is maintained.
      * 

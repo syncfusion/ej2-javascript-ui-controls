@@ -1,4 +1,4 @@
-import { _extractAttributes, _areUint8ArraysEqual, _bytesToHex, _padStart } from '../../utils';
+import { _extractAttributes, _areUint8ArraysEqual, _bytesToHex, _padStart, _stringToBytes } from '../../utils';
 import { _PdfBigInt } from './pdf-big-integer';
 import { _PdfCertificateIdentifier } from './pdf-certificate-identifier';
 import { _PdfCertificateTable } from './pdf-certificate-table';
@@ -16,14 +16,12 @@ import { _PdfBasicEncodingElement } from './asn1/basic-encoding-element';
 import { _isBasicEncodingElement } from './asn1/utils';
 import { _TagClassType } from './asn1/enumerator';
 import { _Sha1 } from '../encryptors/secureHash-algorithm1';
-//import { _Sha256 } from '../encryptors/secureHash-algorithm256';
-//import { _Sha384, _Sha512 } from '../encryptors/secureHash-algorithm512';
 import { _MD5 } from '../encryptors/messageDigest5';
-//import { _RaceEvaluationMessageDigest } from '../encryptors/evaluation-digest';
-import { _AdvancedEncryption128Cipher } from '../encryptors/advance-cipher';
+import { _AdvancedEncryption128Cipher, _AdvancedEncryption256Cipher } from '../encryptors/advance-cipher';
 import { _CipherTwo, _NormalCipherFour } from '../encryptors/normal-cipher';
 import { _TripleDataEncryptionStandardCipher } from '../encryptors/encryption-cipher';
 import { _DataEncryptionStandardCipher } from '../encryptors/cipher-tranform';
+import { _Sha256 } from '../encryptors/secureHash-algorithm256';
 export interface _PdfKeyEntry {
     privateKey: any; //eslint-disable-line
     attributes: Record<string, any>; //eslint-disable-line
@@ -172,8 +170,9 @@ export class _PdfPublicKeyCryptographyCertificate {
         if (!password) {
             throw new Error('password is null');
         }
+        const certificateBytes: Uint8Array = new Uint8Array(input);
         const root: _PdfUniqueEncodingElement = new _PdfUniqueEncodingElement();
-        root._fromBytes(input);
+        root._fromBytes(certificateBytes);
         const pfxSequence: _PdfAbstractSyntaxElement[] = root._getSequence();
         const contentInfo: _PdfAbstractSyntaxElement = pfxSequence[1];
         const contentInfoSeq: _PdfAbstractSyntaxElement[] = contentInfo._getSequence();
@@ -687,6 +686,51 @@ export class _PdfPublicKeyCryptographyCertificate {
     _getCryptographicData(algorithmSeq: _PdfAbstractSyntaxElement[], encryptedData: Uint8Array, password: string): Uint8Array {
         const oid: string = algorithmSeq[0]._getObjectIdentifier().toString();
         const params: _PdfAbstractSyntaxElement[] = algorithmSeq[1]._getSequence();
+        if (oid === '1.2.840.113549.1.5.13') {
+            const keyDerivationFunction: _PdfAbstractSyntaxElement[] = params[0]._getSequence();
+            const keyDerivationOID: string = keyDerivationFunction[0]._getObjectIdentifier().toString();
+            if (keyDerivationOID !== '1.2.840.113549.1.5.12') {
+                throw new Error(`Unsupported PBES2 key derivation algorithm: ${keyDerivationOID}`);
+            }
+            const pbkdf2Parameters: _PdfAbstractSyntaxElement[] = keyDerivationFunction[1]._getSequence();
+            const salt: Uint8Array = pbkdf2Parameters[0]._getOctetString();
+            const iterations: number = Number(pbkdf2Parameters[1]._getInteger());
+            let keyLength: number;
+            let parameterIndex: number = 2;
+            if (pbkdf2Parameters[<number>parameterIndex] &&
+                pbkdf2Parameters[<number>parameterIndex]._getTagNumber() === 2) {
+                keyLength = Number(pbkdf2Parameters[<number>parameterIndex]._getInteger());
+                parameterIndex++;
+            }
+            let prfOID: string = '1.2.840.113549.2.7';
+            if (pbkdf2Parameters[<number>parameterIndex]) {
+                const prfAlgorithm: _PdfAbstractSyntaxElement[] =
+                    pbkdf2Parameters[<number>parameterIndex]._getSequence();
+                prfOID = prfAlgorithm[0]._getObjectIdentifier().toString();
+            }
+            if (prfOID !== '1.2.840.113549.2.9') {
+                throw new Error(`Unsupported PBKDF2 PRF algorithm: ${prfOID}`);
+            }
+            const encryptionScheme: _PdfAbstractSyntaxElement[] = params[1]._getSequence();
+            const encryptionSchemeOID: string =
+                encryptionScheme[0]._getObjectIdentifier().toString();
+            if (encryptionSchemeOID !== '2.16.840.1.101.3.4.1.42') {
+                throw new Error(`Unsupported PBES2 encryption scheme: ${encryptionSchemeOID}`);
+            }
+            if (typeof keyLength !== 'undefined' && keyLength !== 32) {
+                throw new Error(`Invalid AES-256 key length: ${keyLength}`);
+            }
+            const iv: Uint8Array = encryptionScheme[1]._getOctetString();
+            if (iv.length !== 16) {
+                throw new Error(`Invalid AES-CBC initialization vector length: ${iv.length}`);
+            }
+            if (encryptedData.length % 16 !== 0) {
+                throw new Error('AES-CBC encrypted data must be a multiple of 16 bytes.');
+            }
+            const passwordBytes: Uint8Array = _stringToBytes(password) as Uint8Array;
+            const key: Uint8Array = this._pbkdf2Sha256(passwordBytes, salt, iterations, 32);
+            return new _AdvancedEncryption256Cipher(key)._decryptBlock(encryptedData, true, iv);
+        }
         const salt: Uint8Array = params[0]._getOctetString();
         const iterations: number = Number(params[1]._getInteger());
         const passwordBytes: Uint8Array = this._getPassword(password) as Uint8Array;
@@ -729,7 +773,7 @@ export class _PdfPublicKeyCryptographyCertificate {
         const iv: Uint8Array = algorithm.ivSize > 0
             ? this._generateDerivedKey(passwordBytes, salt, 2, iterations, algorithm.ivSize, inputHash)
             : undefined;
-        const actualEncrypted: Uint8Array = encryptedData;
+        const actualEncrypted: Uint8Array = new Uint8Array(encryptedData);
         let decrypted: Uint8Array;
         switch (algorithm.cipher) {
         case 'AES':
@@ -775,6 +819,81 @@ export class _PdfPublicKeyCryptographyCertificate {
         }
         }
         return decrypted;
+    }
+    /**
+     * Computes an HMAC-SHA256 value using the specified key and data.
+     *
+     * @private
+     * @param {Uint8Array} key The HMAC key.
+     * @param {Uint8Array} data The data to authenticate.
+     * @returns {Uint8Array} The 32-byte HMAC-SHA256 value.
+     */
+    _hmacSha256(key: Uint8Array, data: Uint8Array): Uint8Array {
+        const blockSize: number = 64;
+        const sha256: _Sha256 = new _Sha256();
+        let normalizedKey: Uint8Array = key;
+        if (normalizedKey.length > blockSize) {
+            normalizedKey = sha256._hash(normalizedKey, 0, normalizedKey.length);
+        }
+        const keyBlock: Uint8Array = new Uint8Array(blockSize);
+        keyBlock.set(normalizedKey);
+        const innerPad: Uint8Array = new Uint8Array(blockSize);
+        const outerPad: Uint8Array = new Uint8Array(blockSize);
+        for (let i: number = 0; i < blockSize; i++) {
+            innerPad[<number>i] = keyBlock[<number>i] ^ 0x36;
+            outerPad[<number>i] = keyBlock[<number>i] ^ 0x5c;
+        }
+        const innerInput: Uint8Array = new Uint8Array(blockSize + data.length);
+        innerInput.set(innerPad);
+        innerInput.set(data, blockSize);
+        const innerHash: Uint8Array = sha256._hash(innerInput, 0, innerInput.length);
+        const outerInput: Uint8Array = new Uint8Array(blockSize + innerHash.length);
+        outerInput.set(outerPad);
+        outerInput.set(innerHash, blockSize);
+        return sha256._hash(outerInput, 0, outerInput.length);
+    }
+    /**
+     * Derives key bytes using PBKDF2 with HMAC-SHA256.
+     *
+     * @private
+     * @param {Uint8Array} password The password bytes.
+     * @param {Uint8Array} salt The PBKDF2 salt.
+     * @param {number} iterations The iteration count.
+     * @param {number} keyLength The required key length.
+     * @returns {Uint8Array} The derived key bytes.
+     */
+    _pbkdf2Sha256(password: Uint8Array, salt: Uint8Array, iterations: number,
+                  keyLength: number): Uint8Array {
+        if (iterations <= 0) {
+            throw new Error('PBKDF2 iteration count must be greater than zero.');
+        }
+        if (keyLength <= 0) {
+            throw new Error('PBKDF2 key length must be greater than zero.');
+        }
+        const hashLength: number = 32;
+        const blockCount: number = Math.ceil(keyLength / hashLength);
+        const derivedKey: Uint8Array = new Uint8Array(keyLength);
+        let offset: number = 0;
+        for (let blockIndex: number = 1; blockIndex <= blockCount; blockIndex++) {
+            const blockInput: Uint8Array = new Uint8Array(salt.length + 4);
+            blockInput.set(salt);
+            blockInput[salt.length] = (blockIndex >>> 24) & 0xff;
+            blockInput[salt.length + 1] = (blockIndex >>> 16) & 0xff;
+            blockInput[salt.length + 2] = (blockIndex >>> 8) & 0xff;
+            blockInput[salt.length + 3] = blockIndex & 0xff;
+            let current: Uint8Array = this._hmacSha256(password, blockInput);
+            const result: Uint8Array = new Uint8Array(current);
+            for (let iteration: number = 1; iteration < iterations; iteration++) {
+                current = this._hmacSha256(password, current);
+                for (let i: number = 0; i < hashLength; i++) {
+                    result[<number>i] ^= current[<number>i];
+                }
+            }
+            const count: number = Math.min(hashLength, keyLength - offset);
+            derivedKey.set(result.subarray(0, count), offset);
+            offset += count;
+        }
+        return derivedKey;
     }
     /* eslint-disable */
     /**

@@ -231,38 +231,38 @@ export class EditorUploadPopup {
             dropArea: this.model.dropArea,
             enableRtl: this.parent.enableRtl,
             beforeUpload: (args: BeforeFileUploadEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.beforeFileUpload === 'function') {
                     this.model.beforeFileUpload(args);
                 }
             },
             uploading: (args: FileUploadingEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.fileUploading === 'function') {
                     this.model.fileUploading(args);
                 }
             },
             selected: (args: FileSelectedEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.fileSelected === 'function') {
                     this.model.fileSelected(args);
                 }
                 setTimeout(() => this.updateUploadStatusVisibility(), 0);
             },
             success: (args: FileUploadSuccessEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.fileUploadSuccess === 'function') {
                     this.model.fileUploadSuccess(args);
                 }
             },
             failure: (args: FileUploadFailedEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.fileUploadFailed === 'function') {
                     this.model.fileUploadFailed(args);
                 }
             },
             removing: (args: FileRemovingEventArgs): void => {
-                args.subType = this.model.type;
+                args.source = this.model.type;
                 if (typeof this.model.fileRemoving === 'function') {
                     this.model.fileRemoving(args);
                 }

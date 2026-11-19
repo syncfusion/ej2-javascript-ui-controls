@@ -5,6 +5,7 @@ import { PivotUtil } from './util';
 import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition, RenderMode } from './types';
 import { DateGroup, GroupType, ProviderType, DataSourceType } from './types';
 import { HeaderCollection, AggregateEventArgs, GrandTotalsPosition, HeadersSortEventArgs, SubTotalsPosition } from '../common';
+import { evaluateExpression } from './expression-evaluator';
 
 /**
  * PivotEngine is used to manipulate the relational or Multi-Dimensional data as pivoting values.
@@ -6078,7 +6079,8 @@ export class PivotEngine {
                         );
                     }
                 }
-                cellValue = this.evaluate(actualFormula);
+                // CSP-safe evaluation (no eval/Function) of the substituted formula
+                cellValue = <number>this.evaluate(actualFormula);
                 cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ?
                     undefined : JSON.parse(String(cellValue)));
             }
@@ -6135,8 +6137,35 @@ export class PivotEngine {
         return ((type && type.toLowerCase() === 'avg' && cellValue !== 0 &&
             !isNullOrUndefined(cellValue)) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
     }
-    private evaluate(obj: string): number {
-        return Function('"use strict";return (' + obj + ')')();
+    /**
+     * CSP-safe arithmetic evaluation of a substituted calculated field formula
+     * using the enhanced ExpressionEvaluator. Supports:
+     * - Numeric literals (including scientific notation)
+     * - String literals
+     * - Arithmetic operators: +, -, *, /, %, ^
+     * - Comparison operators: <, >, <=, >=, ==, ===, !=, !==
+     * - Logical operators: &&, ||, !
+     * - Math functions: min, max, abs, pow, sqrt, floor, ceil, round, trunc, log, exp, etc.
+     * - Math constants: PI, E, LN2, LN10, SQRT2, etc.
+     * - Ternary operator: condition ? value1 : value2
+     * - Parenthesized expressions
+     * - Unary +/-
+     *
+     * @param {string} obj - The substituted formula text.
+     * @returns {number | string} - The evaluated result.
+     */
+    private evaluate(obj: string): number | string {
+        try {
+            const result: number | string | boolean | null | undefined = evaluateExpression(obj);
+            // Convert boolean results to numbers for calculated field context
+            if (typeof result === 'boolean') {
+                return result ? 1 : 0;
+            }
+            return result as number | string;
+        } catch (error) {
+            // Re-throw with context about calculated field
+            throw new Error(`Error evaluating calculated field formula "${obj}": ${(error as Error).message}`);
+        }
     }
     /**
      * It performs the formatting to get formatted Value
@@ -7220,6 +7249,12 @@ export interface IFieldOptions {
      */
     caption?: string;
     /**
+     * Identifies the value-field instance associated with this cell when duplicate value fields exist.
+     *
+     * @hidden
+     */
+    instanceId?: string;
+    /**
      * Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… The available types are,
      * * `Sum`: Allows to display the pivot table values with sum.
      * * `Product`: Allows to display the pivot table values with product.
@@ -7647,6 +7682,12 @@ export interface IField {
      * @hidden
      */
     isMembersFilled?: boolean;
+    /**
+     * Identifies the value-field instance associated with this cell when duplicate value fields exist.
+     *
+     * @hidden
+     */
+    instanceId?: string;
 }
 
 /**
@@ -7661,6 +7702,12 @@ export interface IAxisSet {
      * It allows to set the actual text.
      */
     actualText?: number | string;
+    /**
+     * Identifies the value-field instance associated with this cell when duplicate value fields exist.
+     *
+     * @hidden
+     */
+    instanceId?: string;
     /**
      * It allows to set the member type.
      */

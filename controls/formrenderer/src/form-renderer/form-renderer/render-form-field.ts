@@ -336,7 +336,6 @@ export const renderFormField = (options: RenderFormFieldOptions): any => {
                 const optionValue: string = option;
                 const optionText: string = option;
                 const row: HTMLDivElement = createElement('div') as HTMLDivElement;
-                row.style.marginBottom = '8px';
                 wrapper.appendChild(row);
 
                 const rbHost: HTMLInputElement = createElement('input', {

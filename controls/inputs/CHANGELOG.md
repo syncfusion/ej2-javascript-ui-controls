@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I871777` - Resolved a memory leak issue in the TextBox (Input) component by properly cleaning up resize event handlers and preventing retention of detached DOM elements during component destruction.
+
+## 35.1.43 (2026-11-03)
+
+### Input
+
+#### Bug Fixes
+
+- `#I874489` - Fixed an accessibility issue with the floating label when no placeholder was provided.
+
+## 35.1.42 (2026-10-27)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I878826` - Resolved the accessibility issue where label and placeholder text in Angular input components under the Material theme did not meet WCAG AA contrast ratio requirements.
+
 ## 35.1.41 (2026-10-20)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#I876207` - Provided proper `noColor` value support for the component.
+
+## 35.1.37 (2026-09-29)
 
 ### ColorPicker
 

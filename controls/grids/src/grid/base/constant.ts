@@ -187,6 +187,10 @@ export const searchBegin: string = 'searching-begin';
 /** @hidden */
 export const searchComplete: string = 'searching-complete';
 /** @hidden */
+export const findChange: string = 'findChange';
+/** @hidden */
+export const findNavigate: string = 'findNavigate';
+/** @hidden */
 export const reorderBegin: string = 'reorder-begin';
 /** @hidden */
 export const reorderComplete: string = 'reorder-complete';

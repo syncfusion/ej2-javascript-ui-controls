@@ -3,7 +3,6 @@
  */
 import { ByteArray } from './byte-array';
 import { PdfStream } from './../../primitives/pdf-stream';
-import { DictionaryProperties } from './../../input-output/pdf-dictionary-properties';
 import { PdfName } from './../../primitives/pdf-name';
 import { PdfNumber } from './../../primitives/pdf-number';
 import { PdfBoolean } from './../../primitives/pdf-boolean';
@@ -157,12 +156,6 @@ export class ImageDecoder {
      * @private
      */
     private offset : number;
-    /**
-     * Internal variable for accessing fields from `DictionryProperties` class.
-     * @hidden
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     /**
      * Initialize the new instance for `image-decoder` class.
      * @private
@@ -324,14 +317,14 @@ export class ImageDecoder {
             }
             this.imageStream.data = [decodedString];
             this.imageStream.compress = false;
-            this.imageStream.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.xObject));
-            this.imageStream.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.image));
-            this.imageStream.items.setValue(this.dictionaryProperties.width, new PdfNumber(this.width));
-            this.imageStream.items.setValue(this.dictionaryProperties.height, new PdfNumber(this.height));
-            this.imageStream.items.setValue(this.dictionaryProperties.bitsPerComponent, new PdfNumber(this.bitsPerComponent));
-            this.imageStream.items.setValue(this.dictionaryProperties.filter, new PdfName(this.dictionaryProperties.dctdecode));
-            this.imageStream.items.setValue(this.dictionaryProperties.colorSpace, new PdfName(this.getColorSpace() as string));
-            this.imageStream.items.setValue(this.dictionaryProperties.decodeParms, this.getDecodeParams());
+            this.imageStream.items.setValue('Type', new PdfName('XObject'));
+            this.imageStream.items.setValue('Subtype', new PdfName('Image'));
+            this.imageStream.items.setValue('Width', new PdfNumber(this.width));
+            this.imageStream.items.setValue('Height', new PdfNumber(this.height));
+            this.imageStream.items.setValue('BitsPerComponent', new PdfNumber(this.bitsPerComponent));
+            this.imageStream.items.setValue('Filter', new PdfName('DCTDecode'));
+            this.imageStream.items.setValue('ColorSpace', new PdfName(this.getColorSpace() as string));
+            this.imageStream.items.setValue('DecodeParms', this.getDecodeParams());
             return this.imageStream;
         } else {
             return this.imageStream;
@@ -343,7 +336,7 @@ export class ImageDecoder {
      * @private
      */
     private getColorSpace() : string {
-        return this.dictionaryProperties.deviceRgb;
+        return 'DeviceRGB';
     }
     /**
      * Return `decode parameters` of an image.
@@ -352,14 +345,13 @@ export class ImageDecoder {
      */
     private getDecodeParams() : PdfDictionary {
         let decodeParams : PdfDictionary = new PdfDictionary();
-        decodeParams.items.setValue(this.dictionaryProperties.columns, new PdfNumber(this.width));
-        decodeParams.items.setValue(this.dictionaryProperties.blackIs1, new PdfBoolean(true));
-        decodeParams.items.setValue(this.dictionaryProperties.k, new PdfNumber(-1));
-        decodeParams.items.setValue(this.dictionaryProperties.predictor, new PdfNumber(15));
-        decodeParams.items.setValue(this.dictionaryProperties.bitsPerComponent, new PdfNumber(this.bitsPerComponent));
+        decodeParams.items.setValue('Columns', new PdfNumber(this.width));
+        decodeParams.items.setValue('BlackIs1', new PdfBoolean(true));
+        decodeParams.items.setValue('K', new PdfNumber(-1));
+        decodeParams.items.setValue('Predictor', new PdfNumber(15));
+        decodeParams.items.setValue('BitsPerComponent', new PdfNumber(this.bitsPerComponent));
         return decodeParams;
     }
-
     /**
      * 'readExceededJPGImage' stream 
      * @hidden

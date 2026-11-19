@@ -361,12 +361,22 @@ export class Lists {
             startNodeParent.appendChild(clonedContent);
         }
         if (firstPosition.node.nodeName === 'BR') {
+            this.removeDeniedTags(firstPosition);
             const newRange: Range = this.parent.editableElement.ownerDocument.createRange();
             newRange.setStartBefore(firstPosition.node);
             newRange.setEndBefore(firstPosition.node);
             this.parent.nodeSelection.setRange(this.parent.currentDocument, newRange);
         } else {
             this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, firstPosition.node as Element, 0);
+        }
+    }
+
+    private removeDeniedTags(firstPosition: { node: Node; position: number }): void {
+        const anchorElement: HTMLElement = (firstPosition.node.parentElement as HTMLElement);
+        if (anchorElement && anchorElement.parentElement && anchorElement.nodeName.toLowerCase() === 'a') {
+            const brElement: HTMLElement = document.createElement('br');
+            (anchorElement.parentElement as HTMLElement).replaceChild(brElement, anchorElement);
+            firstPosition.node = brElement;
         }
     }
     /*
@@ -1130,6 +1140,12 @@ export class Lists {
                 }
                 if (firstNode) {
                     const nestedElement: Element = createElement('li');
+                    // The item is rebuilt so it can be prepended into the previous
+                    // nested list. Keep the original item's inline formatting.
+                    const sourceItemStyle: string = (elements[i as number] as HTMLElement).getAttribute('style');
+                    if (sourceItemStyle) {
+                        nestedElement.setAttribute('style', sourceItemStyle);
+                    }
                     prepend([nestedElement], firstNode);
                     for (let h: Node = this.domNode.contents(elements[i as number] as Element)[0];
                         h && !this.domNode.isList(h as Element); null) {
@@ -1885,7 +1901,12 @@ export class Lists {
                 }
                 node.parentNode.removeChild(node);
             } else if (!isNOU(node.getAttribute('level'))) {
-                if (node.tagName === node.previousElementSibling.tagName) {
+                // Only merge into a preceding list of the same nesting level. The
+                // previous sibling here can be a plain wrapper <ul> with no level
+                // attribute; appending the leveled list into it would re-nest the
+                // items that were just outdented out of that wrapper.
+                if (node.tagName === node.previousElementSibling.tagName &&
+                    node.getAttribute('level') === node.previousElementSibling.getAttribute('level')) {
                     (node.previousElementSibling.lastChild as HTMLElement).append(node);
                 }
             } else if (this.domNode.isList(node.previousElementSibling) && containsListElements.contains(node.previousElementSibling) && ((node.tagName === 'OL' || node.tagName === 'UL') && (node.previousElementSibling.nodeName === 'OL' || node.previousElementSibling.nodeName === 'UL')) &&
@@ -1898,7 +1919,12 @@ export class Lists {
             }
         }
         if (firstNodeOL) {
-            (firstNodeOL as HTMLElement).style.listStyleType = listStyleType;
+            // Preserve the merged list's own inline bullet style; only inherit
+            // the parent list style when the list does not define one.
+            const existingListStyleType: string = (firstNodeOL as HTMLElement).style.listStyleType;
+            if (!existingListStyleType || existingListStyleType === 'none') {
+                (firstNodeOL as HTMLElement).style.listStyleType = listStyleType;
+            }
             const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             let listOlUlElements: Node[] = [];
             if (range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'OL') {
@@ -2403,6 +2429,7 @@ export class Lists {
         return output;
     }
 
+
     private revertList(elements: HTMLElement[], e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         const temp: Element[] = [];
         for (let i: number = elements.length - 1; i >= 0; i--) {
@@ -2424,8 +2451,19 @@ export class Lists {
             let parentNode: Element = elements[i as number].parentNode as Element;
             let className: string = element.getAttribute('class');
             if (temp.length === 0) {
-                const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i as number] as Element).querySelectorAll('ul, ol');
-                const firstNode: Element = siblingList[0];
+                // Only a list that is a direct child of the outdented item belongs to that item.
+                // querySelectorAll would also match lists inside later siblings once those siblings
+                // are temporarily reparented under this item, which incorrectly nests them.
+                const nestedChildren: Element[] = [];
+                const itemChildren: NodeListOf<ChildNode> = (elements[i as number] as Element).childNodes;
+                for (let childIndex: number = 0; childIndex < itemChildren.length; childIndex++) {
+                    const childNode: ChildNode = itemChildren[childIndex as number];
+                    if (childNode.nodeType === Node.ELEMENT_NODE &&
+                        (childNode.nodeName === 'UL' || childNode.nodeName === 'OL')) {
+                        nestedChildren.push(childNode as Element);
+                    }
+                }
+                const firstNode: Element = nestedChildren[0];
                 if (firstNode) {
                     const child: NodeListOf<HTMLLIElement> = firstNode
                         .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
@@ -2449,7 +2487,18 @@ export class Lists {
                     classAttr += ' class="' + className + '"';
                 }
                 const closestListMargin: string = this.getClosestListParentMargin(element);
-                if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
+                let nestedList: Element = null;
+                const directChildren: NodeListOf<ChildNode> = element.childNodes;
+                for (let childIndex: number = 0; childIndex < directChildren.length; childIndex++) {
+                    const child: ChildNode = directChildren[childIndex as number];
+                    if (child.nodeType === 1 && ((child as Element).tagName === 'UL' || (child as Element).tagName === 'OL')) {
+                        nestedList = child as Element;
+                        break;
+                    }
+                }
+                const hasNonListBlock: boolean = element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length > 0 &&
+                    isNullOrUndefined(nestedList);
+                if (CONSTANT.DEFAULT_TAG && !hasNonListBlock) {
                     const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
                         ' class="' + className + ' e-rte-wrap-inner"';
                     const parentElement: HTMLElement = parentNode as HTMLElement;
@@ -2469,7 +2518,8 @@ export class Lists {
                     if (targetElement.getAttribute('style')) {
                         const removableStyles: string[] = ['color', 'font-size', 'font-family', 'font-weight', 'font-style'];
                         removableStyles.forEach((prop: string) => {
-                            if (targetElement.style.getPropertyValue(prop)) {
+                            if (targetElement.style.getPropertyValue(prop) &&
+                                this.isMarkerStyleCopiedFromContent(targetElement, prop)) {
                                 targetElement.style.removeProperty(prop);
                             }
                         });
@@ -2485,7 +2535,19 @@ export class Lists {
                         (tempElement.firstElementChild as HTMLElement).style.marginLeft = closestListMargin;
                     }
                     if (e.enterAction !== 'BR') {
-                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(tempElement.innerHTML));
+                        if (!isNullOrUndefined(nestedList)) {
+                            const wrapperNode: HTMLElement = tempElement.firstElementChild as HTMLElement;
+                            let inlineChild: Node = element.firstChild;
+                            while (inlineChild && inlineChild !== nestedList) {
+                                const nextInline: Node = inlineChild.nextSibling;
+                                wrapperNode.appendChild(inlineChild);
+                                inlineChild = nextInline;
+                            }
+                            element.insertBefore(wrapperNode, nestedList);
+                        } else {
+                            const wrapperNode: HTMLElement = this.domNode.parseHTMLFragment(tempElement.innerHTML) as HTMLElement;
+                            this.domNode.wrapInner(element, wrapperNode);
+                        }
                     }
                     else if (element.textContent !== '') {
                         const wrapperSpan: string = '<span class=e-rte-wrap-inner id=removeSpan></span>';
@@ -2539,7 +2601,13 @@ export class Lists {
                 append([this.openTag('LI') as Element], element);
                 prepend([this.closeTag('LI') as Element], element);
             }
-            this.domNode.insertAfter(this.openTag(parentNode.tagName), element);
+            // Capture the source list's attributes before parentNode is
+            // re-assigned below. The open-tag marker carries them so the list
+            // reopened during string serialization keeps the level and bullet
+            // style of the list the item was actually outdented from, instead
+            // of inheriting an outer list's attributes.
+            const sourceListAttributes: string = this.domNode.attributes(parentNode);
+            this.domNode.insertAfter(this.openTag(parentNode.tagName, sourceListAttributes), element);
             if ((parentNode.parentNode as Element).tagName === 'LI') {
                 parentNode = parentNode.parentNode.parentNode as Element;
             }
@@ -2551,9 +2619,32 @@ export class Lists {
             const node: Element = viewNode[i as number] as Element;
             let nodeInnerHtml: string = node.innerHTML;
             const closeTag: RegExp = /<span class="e-rte-list-close-([a-z]*)"><\/span>/g;
-            const openTag: RegExp = /<span class="e-rte-list-open-([a-z]*)"><\/span>/g;
+            /* eslint-disable-next-line security/detect-unsafe-regex */
+            const openTag: RegExp = /<span class="e-rte-list-open-([a-z]+(?:\|attrs=[A-Za-z0-9%\-._;]+)?)"><\/span>/g;
+            // Keep an outdented block wrapper intact: the marker replacement below copies the list
+            // element's attributes onto every reopened tag, which would unwrap the paragraph into a
+            // bare inline element at the editor root.
+            const protectedWraps: string[] = [];
+            nodeInnerHtml = nodeInnerHtml.replace(/<(p|div)\b[^>]*class="[^"]*e-rte-wrap-inner[^"]*"[^>]*>/gi, (match: string): string => {
+                protectedWraps.push(match);
+                return '<span class="e-rte-wrap-protect-' + (protectedWraps.length - 1) + '"></span>';
+            });
             nodeInnerHtml = nodeInnerHtml.replace(closeTag, '</$1>');
-            nodeInnerHtml = nodeInnerHtml.replace(openTag, '<$1 ' + this.domNode.attributes(node) + '>');
+            nodeInnerHtml = nodeInnerHtml.replace(openTag, (match: string, markerClass: string): string => {
+                // The marker class may carry the attributes of the list the
+                // item was outdented from (|attrs=...). Use them so the
+                // reopened list keeps its own level and bullet style; fall
+                // back to the container list's attributes otherwise.
+                const attrsIndex: number = markerClass.indexOf('|attrs=');
+                const tagName: string = attrsIndex > -1 ? markerClass.slice(0, attrsIndex) : markerClass;
+                if (attrsIndex > -1) {
+                    return '<' + tagName + ' ' + decodeURIComponent(markerClass.slice(attrsIndex + 7)) + '>';
+                }
+                return '<' + tagName + ' ' + this.domNode.attributes(node) + '>';
+            });
+            nodeInnerHtml = nodeInnerHtml.replace(/<span class="e-rte-wrap-protect-(\d+)"><\/span>/g, (match: string, index: string): string => {
+                return protectedWraps[parseInt(index, 10)];
+            });
             this.domNode.replaceWith(node, this.domNode.openTagString(node) + nodeInnerHtml.trim() + this.domNode.closeTagString(node));
         }
         const emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
@@ -2587,6 +2678,40 @@ export class Lists {
             }
         });
     }
+    // Marker styles are copied onto the li only when every text node inside it carries the same
+    // value (see setStyle). A removable property is therefore marker formatting — and must not
+    // follow the li onto the outdented wrapper — only when the item's own content still has it.
+    // Paragraph formatting pasted onto the li (Word) is not present on the content and is kept.
+    private isMarkerStyleCopiedFromContent(listItem: HTMLElement, prop: string): boolean {
+        const listValue: string = listItem.style.getPropertyValue(prop);
+        if (!listValue) {
+            return false;
+        }
+        const normalizedListValue: string = listValue.replace(/\s/g, '').toLowerCase();
+        let sawText: boolean = false;
+        const childNodes: NodeListOf<ChildNode> = listItem.childNodes;
+        for (let childIndex: number = 0; childIndex < childNodes.length; childIndex++) {
+            const child: ChildNode = childNodes[childIndex as number];
+            if (child.nodeType === Node.ELEMENT_NODE && this.isListTag((child as Element).tagName)) {
+                continue;
+            }
+            const walker: TreeWalker = this.parent.currentDocument.createTreeWalker(child, NodeFilter.SHOW_TEXT, null);
+            let textNode: Node = walker.nextNode();
+            while (textNode) {
+                if ((textNode.textContent || '').trim().length > 0) {
+                    sawText = true;
+                    const snapshot: Map<string, string> = this.getStyleSnapshot(
+                        textNode.parentElement, listItem, [prop]);
+                    const contentValue: string = snapshot.get(prop);
+                    if (!contentValue || contentValue.replace(/\s/g, '').toLowerCase() !== normalizedListValue) {
+                        return false;
+                    }
+                }
+                textNode = walker.nextNode();
+            }
+        }
+        return sawText;
+    }
     private getClosestListParentMargin(element: Element): string {
         let current: Element | null = element;
         while (current && current !== this.parent.editableElement) {
@@ -2597,8 +2722,9 @@ export class Lists {
         }
         return '';
     }
-    private openTag(type: string): Element {
-        return this.domNode.parseHTMLFragment('<span class="e-rte-list-open-' + type.toLowerCase() + '"></span>');
+    private openTag(type: string, listAttributes?: string): Element {
+        const attrPart: string = listAttributes ? '|attrs=' + encodeURIComponent(listAttributes) : '';
+        return this.domNode.parseHTMLFragment('<span class="e-rte-list-open-' + type.toLowerCase() + attrPart + '"></span>');
     }
 
     private closeTag(type: string): Element {

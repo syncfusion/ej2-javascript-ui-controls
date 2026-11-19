@@ -28,7 +28,6 @@ export class PdfUriAnnotation extends PdfActionLinkAnnotation {
         }
         return this.pdfUriAction;
     }
-
     // Properties
     /**
      * Gets or sets the `Uri` address.
@@ -53,7 +52,6 @@ export class PdfUriAnnotation extends PdfActionLinkAnnotation {
         this.getSetAction(value);
         this.uriAction.next = value;
     }
-
     // Constructors
     /**
      * Initializes a new instance of the `PdfUriAnnotation` class with specified bounds.
@@ -71,7 +69,6 @@ export class PdfUriAnnotation extends PdfActionLinkAnnotation {
             this.uri = uri;
         }
     }
-
     // Implementation
     /**
      * `Initializes` annotation object.
@@ -79,8 +76,8 @@ export class PdfUriAnnotation extends PdfActionLinkAnnotation {
      */
     protected initialize() : void {
         super.initialize();
-        this.dictionary.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.link));
+        this.dictionary.items.setValue('Subtype', new PdfName('Link'));
         let tempPrimitive : IPdfPrimitive = this.uriAction.element;
-        this.dictionary.items.setValue(this.dictionaryProperties.a, this.uriAction.element);
+        this.dictionary.items.setValue('A', this.uriAction.element);
     }
 }

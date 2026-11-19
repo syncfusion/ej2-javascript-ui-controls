@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, Property, NotifyPropertyChanges, setStyleAttribute, formatUnit, L10n, Event, EmitType, removeClass, isNullOrUndefined as isNOU, addClass, Complex, print, ModuleDeclaration, EventHandler, isNullOrUndefined, closest, initializeTelemetry, debounce, select, Browser } from '@syncfusion/ej2-base';import { BlurredEventArgs, ChangeEventArgs, FocusedEventArgs, itemClickEventArgs, UpdatedToolbarStatusEventArgs } from './interface';import { ToolbarSettings, FontSize, FontFamily, Format } from './model/toolbar-settings';import { ToolbarSettingsModel, FontSizeModel, FontFamilyModel, FormatModel } from './model/toolbar-settings-model';import { FontColorModel, BackgroundColorModel } from './model/color-picker-settings-model';import { FontColor, BackgroundColor } from './model/color-picker-settings';import { ToolbarItemUpdate, ToolbarItem, AddToolbarItem } from './model/toolbar.types';import { DocumentRoot, ExtensionDefinition, backgroundColorExtension, blockquoteExtension, horizontalRuleExtension, boldExtension, clearFormattingExtension, indentOutdentExtension, codeBlockExtension, fontColorExtension, fontFamilyExtension, fontSizeExtension, headingExtension, imageExtension, inlineCodeExtension, italicExtension, linkExtension, listExtension, paragraphExtension, strikethroughExtension, subscriptExtension, superscriptExtension, toLowerCaseExtension, toUpperCaseExtension, underlineExtension, undoRedoExtension, textAlignExtension, tableExtension, DOCUMENT_CHANGED, DocumentChangedPayload, placeholderExtension } from '@syncfusion/ej2-headless-editor';import { ListSettings } from './model/list-settings';import { ListSettingsModel } from './model/list-settings-model';import { ToolbarModule } from './module/toolbar';import { reconcileToolbarItems } from './model/toolbar-reconciler';import { IToolbar } from '../base/toolbar-interface';import { IEditorCoreOptions } from '../core/base/interface';import { EditorCore } from '../core/base/editor-core';import { EditorController } from '../controller/editor-controller';import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../controller/interface';import * as classes from '../common/classes';import * as constant from '../common/constant';import { BeforeDialogOpenEventArgs, BeforeDialogCloseEventArgs, BeforePopupOpenEventArgs, BeforePopupCloseEventArgs, BeforeFileUploadEventArgs, FileUploadingEventArgs, FileSelectedEventArgs, FileUploadSuccessEventArgs, FileUploadFailedEventArgs, FileRemovingEventArgs, BeforeFileDropEventArgs, ResizeEventArgs, SlashCommandItemSelectArgs } from '../common/interface';import { Locale } from '../base/service/locale';import { QuickToolbarSettings } from './model/quick-toolbar-settings';import { QuickToolbarSettingsModel } from './model/quick-toolbar-settings-model';import { LinkSettings } from './model/link-settings';import { LinkSettingsModel } from './model/link-settings-model';import { TableSettings } from './model/table-settings';import { TableSettingsModel } from './model/table-settings-model';import { getScrollableParent } from '@syncfusion/ej2-popups';import { QuickToolbarModule } from './module/quick-toolbar';import { ValueFormat } from './interface';import { getRegisteredCustomExtensions } from '../common/custom-node-extension';import { SlashCommandSettings } from './model/slash-command-settings';import { SlashCommand } from '../base/renderer/slash-commands';import { SlashCommandSettingsModel } from './model';import { InteractionSettings } from './model/interaction-settings';import { InteractionSettingsModel } from './model/interaction-settings-model';import { ImageSettings } from './model/image-settings';import { ImageSettingsModel } from './model/image-settings-model';import { EditorDocument } from './types/editor-document';import { ImageModule } from './module/image';import { LinkModule } from './module/link-module';import { ServiceLocator } from '../base/service/service-locator';import * as events from '../common/constant';import { CommandExecutor } from './command-builder';import { FormattingState, FormattingStateService } from '../common/services/formatting-state.service';import { TableModule } from './module/table';import * as CLS from '../base/classes';import { EditorKeyBindingAction, EditorKeyBindingMap } from './model/key-bindings';import { KeyBindingRegistry } from './module/keybindings';import { BaseQuickToolbar } from '../base/renderer/base-quick-toolbar';import { CustomUserAgentData } from '../common/user-agent';import { DialogType } from '../common/enum';
+import { Component, INotifyPropertyChanged, Property, NotifyPropertyChanges, setStyleAttribute, formatUnit, L10n, Event, EmitType, removeClass, isNullOrUndefined as isNOU, addClass, Complex, print, ModuleDeclaration, EventHandler, isNullOrUndefined, closest, initializeTelemetry, debounce, select, Browser, attributes } from '@syncfusion/ej2-base';import { BlurEventArgs, ChangeEventArgs, FocusEventArgs, UpdatedToolbarStatusEventArgs } from './interface';import { ToolbarSettings, FontSize, FontFamily, Format } from './model/toolbar-settings';import { ToolbarSettingsModel, FontSizeModel, FontFamilyModel, FormatModel } from './model/toolbar-settings-model';import { FontColorModel, BackgroundColorModel } from './model/color-picker-settings-model';import { FontColor, BackgroundColor } from './model/color-picker-settings';import { ToolbarItemUpdate, ToolbarItem, AddToolbarItem } from './model/toolbar.types';import { DocumentRoot, ExtensionDefinition, backgroundColorExtension, blockquoteExtension, horizontalRuleExtension, boldExtension, clearFormattingExtension, indentOutdentExtension, codeBlockExtension, fontColorExtension, fontFamilyExtension, fontSizeExtension, headingExtension, imageExtension, inlineCodeExtension, italicExtension, linkExtension, listExtension, taskListExtension, paragraphExtension, strikethroughExtension, subscriptExtension, superscriptExtension, toLowerCaseExtension, toUpperCaseExtension, underlineExtension, undoRedoExtension, textAlignExtension, tableExtension, DocumentChangedEventArgs, placeholderExtension, collapsibleExtension, calloutExtension, hardBreakExtension } from '@syncfusion/ej2-headless-editor';import { ListSettings } from './model/list-settings';import { ListSettingsModel } from './model/list-settings-model';import { ToolbarModule } from './module/toolbar';import { reconcileToolbarItems } from './model/toolbar-reconciler';import { IToolbar } from '../base/toolbar-interface';import { IEditorCoreOptions } from '../core/base/interface';import { EditorCore } from '../core/base/editor-core';import { EditorController } from '../controller/editor-controller';import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../controller/interface';import * as classes from '../common/classes';import * as constant from '../common/constant';import { BeforeDialogOpenEventArgs, BeforeDialogCloseEventArgs, BeforePopupOpenEventArgs, BeforePopupCloseEventArgs, BeforeFileUploadEventArgs, FileUploadingEventArgs, FileSelectedEventArgs, FileUploadSuccessEventArgs, FileUploadFailedEventArgs, FileRemovingEventArgs, BeforeFileDropEventArgs, ResizeEventArgs } from '../common/interface';import { Locale } from '../base/service/locale';import { QuickToolbarSettings } from './model/quick-toolbar-settings';import { QuickToolbarSettingsModel } from './model/quick-toolbar-settings-model';import { LinkSettings } from './model/link-settings';import { LinkSettingsModel } from './model/link-settings-model';import { TableSettings } from './model/table-settings';import { TableSettingsModel } from './model/table-settings-model';import { getScrollableParent } from '@syncfusion/ej2-popups';import { QuickToolbarModule } from './module/quick-toolbar';import { ValueFormat } from './interface';import { getRegisteredCustomExtensions } from '../common/custom-node-extension';import { SlashCommandSettings } from './model/slash-command-settings';import { SlashCommand } from '../base/renderer/slash-commands';import { SlashCommandSettingsModel } from './model';import { InteractionSettings } from './model/interaction-settings';import { InteractionSettingsModel } from './model/interaction-settings-model';import { ImageSettings } from './model/image-settings';import { ImageSettingsModel } from './model/image-settings-model';import { EditorDocument } from './types/editor-document';import { ImageModule } from './module/image';import { LinkModule } from './module/link-module';import { ServiceLocator } from '../base/service/service-locator';import * as events from '../common/constant';import { CommandExecutor } from './command-builder';import { FormattingState, FormattingStateService } from '../common/services/formatting-state.service';import { TableModule } from './module/table';import * as CLS from '../base/classes';import { EditorKeyBindingAction, EditorKeyBindingMap } from './model/key-bindings';import { KeyBindingRegistry } from './module/keybindings';import { BaseQuickToolbar } from '../base/renderer/base-quick-toolbar';import { CustomUserAgentData } from '../common/user-agent';import { DialogType } from '../common/enum';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -7,7 +7,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface RichTextEditorUIModel extends ComponentModel{
 
     /**
-     * Enable or disable the Rich Text Editor component. When set to `false`, the editor becomes non-interactive
+     * Enable or disable the Rich Text Editor. When set to `false`, the editor becomes non-interactive
      * and all toolbar items are disabled. The editable area remains visible but input is prevented.
      *
      * @default true
@@ -56,7 +56,7 @@ export interface RichTextEditorUIModel extends ComponentModel{
     htmlAttributes?: { [key: string]: string };
 
     /**
-     * Enables persistence for the component state. When set to `true`, the editor state (including content)
+     * Enables persistence for the Editor state. When set to `true`, the editor state (including content)
      * is persisted across page reloads using the browser's local storage.
      *
      * @default false
@@ -111,7 +111,7 @@ export interface RichTextEditorUIModel extends ComponentModel{
     saveInterval?: number;
 
     /**
-     * Sets the locale (language and region) for the Rich Text Editor component. This affects the language of
+     * Sets the locale (language and region) for the Rich Text Editor. This affects the language of
      * toolbar tooltips, placeholder text, dialog labels, and error messages displayed in the editor.
      *
      * @default 'en-US'
@@ -128,7 +128,8 @@ export interface RichTextEditorUIModel extends ComponentModel{
 
     /**
      * Specifies the maximum number of undo history steps stored in the editor. Each step corresponds to a user action
-     * or batch of compatible adjacent actions. Increasing this value allows more undo actions at the cost of increased memory.
+     * or batch of compatible adjacent actions. The history can temporarily contain more entries than the configured limit.
+     * Older entries are removed when the 20-entry overflow threshold is reached and the history is updated.
      *
      * @default 30
      */
@@ -148,10 +149,13 @@ export interface RichTextEditorUIModel extends ComponentModel{
      * including the items displayed, their grouping, and visibility. Use this to customize toolbar appearance
      * and behavior based on your application's requirements.
      *
+     * {% codeBlock src='richtexteditor-ui/toolbar-settings/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
+     *   items: ['Bold', 'Italic', 'Underline', 'Strikethrough', '|', 'Formats', 'Alignment', 'BulletList', 'NumberedList', '|', 'Link', 'Image', 'Table', '|', 'Undo', 'Redo']
      *   enable: true,
-     *   type: 'Expanded',
+     *   type: 'Auto',
      *   position: 'Top',
      *   enableFloating: true,
      *   floatingOffset: 0
@@ -163,17 +167,19 @@ export interface RichTextEditorUIModel extends ComponentModel{
      * Defines the font size settings of the Rich Text Editor. Configures the font size dropdown items,
      * default font size selection, and the width of the font size dropdown in the toolbar.
      *
+     * {% codeBlock src='richtexteditor-ui/font-size/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
      *   items: [
-     *     { text: 'Default', value: { size: 'Default' } },
-     *     { text: '8', value: { size: '8px' } },
-     *     { text: '10', value: { size: '10px' } },
-     *     { text: '12', value: { size: '12px' } },
-     *     { text: '14', value: { size: '14px' } },
-     *     { text: '16', value: { size: '16px' } },
-     *     { text: '18', value: { size: '18px' } },
-     *     { text: '24', value: { size: '24px' } }
+     *     { text: 'Default', value: 'Default' },
+     *     { text: '8', value: '8px' },
+     *     { text: '10', value: '10px' },
+     *     { text: '12', value: '12px' },
+     *     { text: '14', value: '14px' },
+     *     { text: '16', value: '16px' },
+     *     { text: '18', value: '18px' },
+     *     { text: '24', value: '24px' }
      *   ]
      * }
      */
@@ -183,22 +189,23 @@ export interface RichTextEditorUIModel extends ComponentModel{
      * Defines the font family settings of the Rich Text Editor. Configures the font family dropdown items,
      * default font family selection, and the width of the font family dropdown in the toolbar.
      *
+     * {% codeBlock src='richtexteditor-ui/font-family/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
      *   items: [
-     *     { text: 'Default', value: { family: 'Default' } },
-     *     { text: 'Arial', value: { family: 'Arial' } },
-     *     { text: 'Helvetica', value: { family: 'Helvetica' } },
-     *     { text: 'Times New Roman', value: { family: 'Times New Roman' } },
-     *     { text: 'Courier New', value: { family: 'Courier New' } }
+     *     { text: 'Default', value:'Default' },
+     *     { text: 'Arial', value: 'Arial' },
+     *     { text: 'Helvetica', value: 'Helvetica' },
+     *     { text: 'Times New Roman', value: 'Times New Roman' },
+     *     { text: 'Courier New', value: 'Courier New' }
      *   ]
      * }
      */
     fontFamily?: FontFamilyModel;
 
     /**
-     * Configures the font color picker. Controls the default color, color
-     * Defines the Quick Toolbar settings of the Editor.
+     * Defines the Quick Toolbar settings of the Rich Text Editor.
      *
      * The quick toolbar is a contextual popup toolbar that appears next to the
      * current text selection within the editable area, providing fast access to
@@ -209,15 +216,24 @@ export interface RichTextEditorUIModel extends ComponentModel{
      * * Toggle the quick toolbar on or off via {@link QuickToolbarSettings.enable|enable}.
      * * Configure the items displayed on text selection via
      *   {@link QuickToolbarSettings.text|text}.
-     * * Control popup attachment via {@link QuickToolbarSettings.appendToBody|appendToBody}
+     * * Control popup attachment via {@link QuickToolbarSettings.enableAppendToBody|appendToBody}
      *   to avoid clipping inside narrow or scroll-constrained containers.
+     * * Configure the items displayed for selected images via
+     *   {@link QuickToolbarSettings.image|image}.
+     * * Configure the items displayed for selected links via
+     *   {@link QuickToolbarSettings.link|link}.
+     * * Configure the items displayed for selected tables via
+     *   {@link QuickToolbarSettings.table|table}.
+     *
+     * {% codeBlock src='richtexteditor-ui/quicktoolbar-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
      *   enable: true,
      *   text: null,
-     *   image: ['image-src', 'image-alt', 'image-title', 'image-height', 'image-width', '|', 'image-delete', '|', 'image-block', 'image-inline', '|', 'image-blob', 'image-base64', '|', 'image-align-left', 'image-align-center', 'image-align-right', '|', 'image-wrap-left', 'image-wrap-right'],
-     *   table: ['Row', 'Column', 'Header', 'CellBackgroundColor', 'VerticalAlign', 'Align', 'Delete']
+     *   image: ['AltText', 'Caption', '|', 'Align', 'Display', 'WrapText', '|', 'Dimension', 'Replace', 'Remove'],
+     *   table: ['Header', 'Remove', '|', 'Row', 'Column', '|', 'CellBackgroundColor', 'Align', 'VerticalAlign'],
+     *   link: ['Open', 'Copy', 'Edit', 'Remove']
      * }
      */
     quickToolbarSettings?: QuickToolbarSettingsModel;
@@ -406,16 +422,16 @@ export interface RichTextEditorUIModel extends ComponentModel{
     imageSettings?: ImageSettingsModel;
 
     /**
-     * Raised when the Rich Text Editor component has completed initialization and is ready for user interaction.
-     * At this point, all internal modules and subcomponents have been initialized and the editor is fully operational.
+     * Raised when the Rich Text Editor has completed initialization and is ready for user interaction.
+     * At this point, all internal modules have been initialized and the editor is fully operational.
      *
      * @event created
      */
     created?: EmitType<Object>;
 
     /**
-     * Raised when the Rich Text Editor component has been destroyed. This event fires after all resources
-     * have been cleaned up and the component is no longer functional.
+     * Raised when the Rich Text Editor has been destroyed. This event fires after all resources
+     * have been cleaned up and the Rich Text Editor is no longer functional.
      *
      * @event destroyed
      */
@@ -423,19 +439,19 @@ export interface RichTextEditorUIModel extends ComponentModel{
 
     /**
      * Raised when focus enters the Rich Text Editor shell (editable area or toolbar). This event allows
-     * applications to respond when the editor becomes the active component.
+     * applications to respond when the editor becomes the active element.
      *
-     * @event focused
+     * @event focus
      */
-    focused?: EmitType<FocusedEventArgs>;
+    focus?: EmitType<FocusEventArgs>;
 
     /**
      * Raised when focus leaves the Rich Text Editor shell. This event fires when the user moves focus away
-     * from the editor to another component.
+     * from the editor to another element.
      *
-     * @event blurred
+     * @event blur
      */
-    blurred?: EmitType<BlurredEventArgs>;
+    blur?: EmitType<BlurEventArgs>;
 
     /**
      * Raised before an action-driven mutation is executed. This event allows prevention of user actions
@@ -462,112 +478,83 @@ export interface RichTextEditorUIModel extends ComponentModel{
     change?: EmitType<ChangeEventArgs>;
 
     /**
-     * Raised when a toolbar item is clicked by the user. This event allows applications to track or
-     * intercept toolbar item interactions and perform custom logic.
+     * This event triggers before a dialog is opened.
      *
-     * @event itemClick
-     */
-    itemClick?: EmitType<itemClickEventArgs>;
-
-    /**
-     * Raised after the toolbar item status (active states, dropdown values, color picker selections)
-     * has been synchronized with the current editor selection. This event fires after formatting states
-     * are updated to reflect the user's current cursor position or selection in the editor.
+     * Cancel this event to prevent the dialog from opening by setting the `cancel` argument to `true`.
+     * `source` identifies the editor feature that owns the dialog, such as `Link`, `Image`, or `Table`.
      *
-     * @event updatedToolbarStatus
-     */
-    updatedToolbarStatus?: EmitType<UpdatedToolbarStatusEventArgs>;
-
-    /**
-     * Raised before a sub-component dialog opens.
-     *
-     * The event args ({@link BeforeDialogOpenEventArgs}) extend the ej2
-     * `BeforeOpenEventArgs` with a `subType` field — a plain string set when
-     * the sub-component is created identifying the editor feature the dialog
-     * belongs to (e.g. `'Link'`, `'Image'`, `'Table'`).
+     * @event beforeDialogOpen
      */
     beforeDialogOpen?: EmitType<BeforeDialogOpenEventArgs>;
 
     /**
-     * Raised before a sub-component dialog closes.
+     * This event triggers before a dialog is closed.
      *
-     * The event args ({@link BeforeDialogCloseEventArgs}) extend the ej2
-     * `BeforeCloseEventArgs` with a `subType` field identifying the editor
-     * feature the dialog belongs to (e.g. `'Link'`, `'Image'`, `'Table'`).
+     * Cancel this event to prevent the dialog from closing by setting the `cancel` argument to `true`.
+     * `source` identifies the editor feature that owns the dialog, such as `Link`, `Image`, or `Table`.
+     *
+     * @event beforeDialogClose
      */
     beforeDialogClose?: EmitType<BeforeDialogCloseEventArgs>;
 
     /**
-     * Raised before a sub-component popup opens.
+     * Triggers before a file is uploaded to the server.
      *
-     * The event args ({@link BeforePopupOpenEventArgs}) extend the ej2
-     * `PopupEventArgs` with a `subType` field identifying the feature (e.g.
-     * `'Link'`, `'Image'`, `'Table'`).
-     */
-    beforePopupOpen?: EmitType<BeforePopupOpenEventArgs>;
-
-    /**
-     * Raised before a sub-component popup closes.
+     * Cancel this event to prevent the upload by setting the `cancel` argument to `true`.
+     * The `source` field identifies the feature that owns the upload, such as `Image`.
      *
-     * The event args ({@link BeforePopupCloseEventArgs}) extend the ej2
-     * `BeforeCloseEventArgs` with a `subType` field identifying the feature
-     * (e.g. `'Link'`, `'Image'`, `'Table'`).
-     */
-    beforePopupClose?: EmitType<BeforePopupCloseEventArgs>;
-
-    /**
-     * Raised before a file is uploaded to the server.
+     * See {@link BeforeFileUploadEventArgs} for the complete list of event arguments.
      *
-     * The event args ({@link BeforeFileUploadEventArgs}) extend the ej2
-     * `BeforeUploadEventArgs` with a `subType` field identifying the feature
-     * the upload is for (e.g. `'Image'`).
+     * @event beforeFileUpload
      */
     beforeFileUpload?: EmitType<BeforeFileUploadEventArgs>;
 
     /**
-     * Raised while a file is being uploaded to the server.
+     * Triggers while a file is being uploaded to the server.
      *
-     * The event args ({@link FileUploadingEventArgs}) extend the ej2
-     * `UploadingEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadingEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploading
      */
     fileUploading?: EmitType<FileUploadingEventArgs>;
 
     /**
-     * Raised when files are selected for upload.
+     * Triggers when files are selected for upload.
      *
-     * The event args ({@link FileSelectedEventArgs}) extend the ej2
-     * `SelectedEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileSelectedEventArgs} for the complete list of event arguments.
+     *
+     * @event fileSelected
      */
     fileSelected?: EmitType<FileSelectedEventArgs>;
 
     /**
-     * Raised when an upload succeeds.
+     * This event triggers when file has been successfully uploaded to the server side.
      *
-     * The event args ({@link FileUploadSuccessEventArgs}) extend the ej2
-     * `SuccessEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadSuccessEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploadSuccess
      */
     fileUploadSuccess?: EmitType<FileUploadSuccessEventArgs>;
 
     /**
-     * Raised when an upload fails.
+     * This event triggers when there is an error during media upload.
      *
-     * The event args ({@link FileUploadFailedEventArgs}) extend the ej2
-     * `FailureEventArgs` with a `subType` field identifying the feature the
-     * upload is for.
+     * See {@link FileUploadFailedEventArgs} for the complete list of event arguments.
+     *
+     * @event fileUploadFailed
      */
     fileUploadFailed?: EmitType<FileUploadFailedEventArgs>;
 
     /**
-     * Raised before a previously-uploaded image is removed (client-side
+     * Triggers before a previously-uploaded image is removed (client-side
      * `URL.revokeObjectURL` for `saveFormat: 'Blob'`, or before the
      * `removeUrl` POST is sent for server-side removal).
      *
      * Set `args.cancel = true` to keep the image in place; both the `Blob`
-     * revocation and the `removeUrl` POST will be skipped. The event args
-     * are {@link FileRemovingEventArgs}.
+     * revocation and the `removeUrl` POST will be skipped.
+     * The event args  are {@link FileRemovingEventArgs}.
+     *
+     * @event fileRemoving
      */
     fileRemoving?: EmitType<FileRemovingEventArgs>;
 
@@ -575,36 +562,9 @@ export interface RichTextEditorUIModel extends ComponentModel{
      * Raised before drop/paste-inserted files are routed through the typed
      * command pipeline. Set `args.cancel = true` to keep the document
      * untouched. The event args are {@link BeforeFileDropEventArgs}.
+     *
+     * @event beforeFileDrop
      */
     beforeFileDrop?: EmitType<BeforeFileDropEventArgs>;
-
-    /**
-     * Raised when an image resize gesture starts. Set `args.cancel = true`
-     * to prevent the gesture. The event args are {@link ResizeEventArgs}.
-     */
-    resize?: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised continuously while an image is being resized. NOT cancellable.
-     * The event args are {@link ResizeEventArgs} with `name: 'resizing'`.
-     */
-    resizing?: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised after an image resize gesture ends. NOT cancellable. The event
-     * args are {@link ResizeEventArgs} with `name: 'resizeStop'`.
-     */
-    resizeStop?: EmitType<ResizeEventArgs>;
-
-    /**
-     * Raised when a slash command item is selected from the slash command popup.
-     *
-     * Set `args.cancel` to `true` inside the handler to prevent the default
-     * command execution. The event args are of type
-     * {@link SlashCommandItemSelectArgs}.
-     *
-     * @event slashCommanditemSelect
-     */
-    slashCommanditemSelect?: EmitType<SlashCommandItemSelectArgs>;
 
 }

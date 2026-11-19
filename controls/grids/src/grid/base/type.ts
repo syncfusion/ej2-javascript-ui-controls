@@ -39,6 +39,7 @@ export type BatchChanges = { addedRecords?: Object[], changedRecords?: Object[],
 
 /**
  * A function that determines whether a given data row is selectable.
+ *
  * @param data - The data object for the row being evaluated.
  * @param columns - The column definitions of the Grid.
  * @returns Returns true to allow selecting the row; false to disable selection.
@@ -47,6 +48,7 @@ export type RowSelectable = (data: Object, columns: ColumnModel[]) => boolean;
 
 /**
  * A function that determines whether a given data row is pinned to the top.
+ *
  * @param data - The data object for the row being evaluated.
  * @param columns - The column definitions of the Grid.
  * @returns Returns true to pin the row to the top; false otherwise.
@@ -58,6 +60,7 @@ export type PinRow = (data: Object, columns: ColumnModel[]) => boolean;
  * Receives the row object and must return the height of that row in pixels.
  * Takes priority over the static `rowHeight` property but is superseded by
  * `domVirtualizationSettings.autoRowHeight: true` (DOM measurement).
+ *
  * @param row - The row object for the rendered row.
  * @returns The height of the row in pixels.
  */

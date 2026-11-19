@@ -1,4 +1,4 @@
-import { Component, Property, L10n } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { RenderingMode, BarcodeEvent, DataMatrixEncoding, DataMatrixSize, BarcodeExportType } from '../barcode/enum/enum';import { ValidateEvent } from '../barcode/rendering/canvas-interface';import { DisplayTextModel } from '../barcode/primitives/displaytext-model';import { MarginModel } from '../barcode/primitives/margin-model';import { DisplayText } from '../barcode/primitives/displaytext';import { Margin } from '../barcode/primitives/margin';import { BarcodeRenderer } from '../barcode/rendering/renderer';import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';import { DataMatrix } from './datamatrix-util';
+import { Component, Property, L10n, ModuleDeclaration } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { RenderingMode, BarcodeEvent, DataMatrixEncoding, DataMatrixSize, BarcodeExportType } from '../barcode/enum/enum';import { ValidateEvent } from '../barcode/rendering/canvas-interface';import { DisplayTextModel } from '../barcode/primitives/displaytext-model';import { MarginModel } from '../barcode/primitives/margin-model';import { DisplayText } from '../barcode/primitives/displaytext';import { Margin } from '../barcode/primitives/margin';import { BarcodeRenderer } from '../barcode/rendering/renderer';import { removeChildElements, refreshCanvasBarcode, exportAsImage } from '../barcode/utility/barcode-util';import { DataMatrix } from './datamatrix-util';import { Gs1DataMatrix } from './gs1-datamatrix';import { WebMcpBarcode, WebMcpBarcodeSettings } from '../barcode/integrations/webmcp-adapter';import { WebMcpBarcodeSettingsModel } from '../barcode/integrations/webmcp-adapter-model';import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../barcode/rendering/canvas-interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -89,5 +89,40 @@ export interface DataMatrixGeneratorModel extends ComponentModel{
      * Defines the xDimension of the DataMatrix.
      */
     xDimension?: number;
+
+    /**
+     * Specifies whether the value is encoded as a GS1 DataMatrix. When true, the value is
+     * GS1 data, bracketed or raw; it is validated and encoded with FNC1. Base256 encoding
+     * cannot be used.
+     *
+     * @default false
+     */
+    enableGS1?: boolean;
+
+    /**
+     * Specifies whether the WebMCP integration is enabled in the component.
+     * When set to `true`, the component provides a set of tools with schemas and execute functions
+     * that allow AI models to perform actions within the component context.
+     *
+     * @default false
+     */
+    enableWebMcp?: boolean;
+
+    /**
+     * Configures WebMCP tool registration and exposure settings.
+     * When set, tools are automatically registered with the provided configuration.
+     *
+     * @default undefined
+     */
+    webMcpSettings?: WebMcpBarcodeSettingsModel;
+
+    /**
+     * Triggers before a WebMCP tool execution begins.
+     * Set `args.cancel` to `true` to prevent the tool from running, or `args.showConfirmationDialog`
+     * to ask the user for confirmation first.
+     *
+     * @event
+     */
+    beforeWebMcpToolExecute?: EmitType<WebMcpToolExecuteEventArgs>;
 
 }

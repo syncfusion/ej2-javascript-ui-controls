@@ -917,6 +917,21 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 } else if (swimLaneShape.isPhase) {
                     laneHeight = swimLaneObj.height ? swimLaneObj.height : this.symbolHeight;
                     laneWidth = swimLaneObj.width ? swimLaneObj.width : this.symbolWidth;
+                    // Optional Swimlane Phases (`support-optional-swimlane-phases`, D-12): expose
+                    // an accessible name on the Phase preview symbol. The content is taken from the
+                    // symbol's `phases[0].header.annotation.content` when configured; otherwise the
+                    // fallback 'Phase' is used (matching the palette drop fallback in
+                    // `addSwimLaneObject`). The annotation stays on the symbol node after the
+                    // preview `shape.type` rewrite below, so existing palette accessibility
+                    // infrastructure can read it.
+                    if (!swimLaneObj.annotations || swimLaneObj.annotations.length === 0) {
+                        const phaseHeaderContent: string =
+                            (swimLaneShape.phases && swimLaneShape.phases[0] &&
+                             swimLaneShape.phases[0].header &&
+                             swimLaneShape.phases[0].header.annotation &&
+                             swimLaneShape.phases[0].header.annotation.content) || 'Phase';
+                        swimLaneObj.annotations = [{ content: phaseHeaderContent }];
+                    }
                     symbol.shape.type = 'Path';
                     if (isHorizontal) {
                         (symbol.shape as PathModel).data = 'M0,0 L' + laneWidth + ',' + '0';

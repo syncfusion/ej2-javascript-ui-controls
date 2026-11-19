@@ -1,14 +1,11 @@
 import { createElement, isNullOrUndefined, classList } from '@syncfusion/ej2-base';
-import { TextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
-import { FieldElementBox, TextFormField, FormField, DropDownFormField, CheckBoxFormField, ContentControl, ContentControlListItems } from '../viewer/page';
+import { FieldElementBox, ContentControl } from '../viewer/page';
 import { Point } from '../editor/editor-helper';
-import { DateTimePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
+import { ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { DocumentEditor } from '../../document-editor';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { TextFormFieldType } from '../../base/types';
-import { afterFormFieldFillEvent, FormFieldFillEventArgs } from '../../base/index';
 
 /**
  * @private

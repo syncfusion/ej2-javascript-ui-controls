@@ -3,7 +3,6 @@ import { IPdfPrimitive } from './../../interfaces/i-pdf-primitives';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
 import { PdfName } from './../primitives/pdf-name';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 /**
  * `PdfAction` class represents base class for all action types.
  * @private
@@ -19,11 +18,6 @@ export abstract class PdfAction implements IPdfWrapper {
      * @private
      */
     private pdfDictionary : PdfDictionary;
-    /**
-     * Specifies the Internal variable to store `dictionary properties`.
-     * @private
-     */
-    protected dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     // Constructors
     /**
      * Initialize instance for `Action` class.
@@ -44,7 +38,7 @@ export abstract class PdfAction implements IPdfWrapper {
     public set next(value : PdfAction) {
         // if (this.action !== value) {
         this.action = value;
-        this.dictionary.items.setValue(this.dictionaryProperties.next, new PdfReferenceHolder(this.action));
+        this.dictionary.items.setValue('Next', new PdfReferenceHolder(this.action));
         // }
     }
     /**
@@ -63,7 +57,7 @@ export abstract class PdfAction implements IPdfWrapper {
      * @private
      */
     protected initialize() : void {
-        this.dictionary.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.action));
+        this.dictionary.items.setValue('Type', new PdfName('Action'));
     }
     // IPdfWrapper Members
     /**

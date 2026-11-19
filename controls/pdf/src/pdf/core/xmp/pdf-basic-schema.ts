@@ -1,7 +1,7 @@
 import { PdfXmpSchema } from './pdf-xmp-schema';
 import { PdfXmpSchemaType } from '../enumerator';
 import { PdfXmpMetadata } from './pdf-xmp-metadata';
-import { PdfXmpThumbnail } from '../pdf-type';
+import { PdfXmpThumbnail } from '../pdf-document-helper';
 /**
  * Represents the Basic Schema.
  * ```typescript

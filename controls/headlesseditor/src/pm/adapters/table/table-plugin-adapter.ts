@@ -9,11 +9,14 @@ import { PMPlugin, tableEditing, columnResizing } from '../../pm-guard';
 /**
  * Creates the prosemirror-tables editing plugin.
  *
+ * Preserve table NodeSelection so the common two-beat special-block
+ * deletion can delete the whole table on the second keypress.
+ *
  * @returns {PMPlugin} The configured table editing plugin.
  * @hidden
  */
 export function createTableEditingPlugin(): PMPlugin {
-    return tableEditing();
+    return tableEditing({ allowTableNodeSelection: true });
 }
 
 /**

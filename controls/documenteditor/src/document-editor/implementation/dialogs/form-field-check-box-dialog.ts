@@ -4,7 +4,6 @@ import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper, ElementBox } from '../viewer';
 import { FieldElementBox, CheckBoxFormField } from '../viewer/page';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Form field checkbox dialog is used to modify the value in checkbox form field.

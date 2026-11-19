@@ -613,12 +613,26 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private firstPaletteFocus(): void {
         if (!select('.' + SELECT, this.container.children[0])) {
-            selectAll('.' + PALETTES, this.container)[0].focus();
+            const firstTile: HTMLElement = select('.' + TILE, this.container) as HTMLElement;
+            if (firstTile) {
+                firstTile.focus();
+            } else {
+                selectAll('.' + PALETTES, this.container)[0].focus();
+            }
         }
     }
 
     private appendPalette(colors: string[], key: string, refEle?: HTMLElement): void {
-        const palette: HTMLElement = this.createElement('div', { className: PALETTES, attrs: { 'tabindex': '0', 'role': 'grid' } });
+        const rowCount: number = Math.ceil(colors.length / this.columns);
+        const palette: HTMLElement = this.createElement('div', {
+            className: PALETTES,
+            attrs: {
+                'tabindex': '0', 'role': 'grid',
+                'aria-label': (key === 'recent-color' ? 'Recent ' : '') + 'Color palette, ' + rowCount +
+                    (rowCount === 1 ? ' row and ' : ' rows and ') + this.columns +
+                    (this.columns === 1 ? ' column' : ' columns')
+            }
+        });
         if (key === 'recent-color') { palette.classList.add('e-recent-palette'); }
         if (refEle) {
             refEle.appendChild(palette);
@@ -626,35 +640,51 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             this.appendElement(palette);
         }
         let row: HTMLElement; let tile: HTMLElement; let roundedColor: string;
+        let rowIdx: number = 0;
+        let colIdx: number;
         for (let i: number = 0, len: number = colors.length; i < len; i++) {
             if (i === 0 || i % this.columns === 0) {
+                rowIdx++;
+                colIdx = 0;
                 row = this.createElement('div', {
-                    className: 'e-row', attrs: { 'role': 'row' }
+                    className: 'e-row',
+                    attrs: { 'role': 'row', 'aria-label': 'Row ' + rowIdx }
                 });
                 palette.appendChild(row);
             }
+            colIdx++;
             roundedColor = this.roundValue(colors[i as number]).toLowerCase();
             tile = this.createElement('span', {
-                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false' }
+                className: TILE, attrs: {
+                    'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false',
+                    'tabindex': '-1',
+                    'aria-rowindex': rowIdx.toString(), 'aria-colindex': colIdx.toString()
+                }
             });
             this.trigger('beforeTileRender', <PaletteTileEventArgs>{ element: tile, presetName: key, value: colors[i as number] });
             row.appendChild(tile);
             if (this.value === roundedColor && key !== 'recent-color') {
                 this.addTileSelection(tile);
-                palette.focus();
             }
             tile.style.backgroundColor = this.convertToRgbString(this.hexToRgb(roundedColor));
+        }
+        const selectedTile: HTMLElement = palette.querySelector('.' + TILE + '.' + SELECT) as HTMLElement;
+        if (selectedTile) {
+            selectedTile.focus();
         }
     }
 
     private setNoColor(): void {
         const noColorEle: HTMLElement = this.container.querySelector('.e-row').children[0] as HTMLElement;
         noColorEle.classList.add(NOCOLOR);
+        noColorEle.setAttribute('aria-label', 'No color');
         if (!this.value) {
             noColorEle.classList.add(SELECT);
-            (closest(noColorEle, '.' + PALETTES) as HTMLElement).focus();
+            noColorEle.setAttribute('aria-selected', 'true');
+            noColorEle.focus();
+        } else {
+            noColorEle.setAttribute('aria-selected', 'false');
         }
-        ['aria-selected', 'aria-label'].forEach((attr: string): void => { noColorEle.removeAttribute(attr); });
         noColorEle.style.backgroundColor = '';
     }
 
@@ -1252,7 +1282,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         } else {
             this.setProperties({ 'value': hex }, true);
         }
-        this.element.value = hex ? hex : '#000000';
+        this.element.value = hex ? hex : (this.mode === 'Palette' && !this.modeSwitcher && this.noColor ? '' : '#000000');
     }
 
     private handlerDragPosition(prob: number, value: number, e: KeyboardEvent): void {
@@ -1537,10 +1567,12 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private paletteKeyDown(e: KeyboardEvent): void {
-        const target: HTMLElement = e.target as HTMLElement;
-        if (!target.classList.contains(PALETTES)) {
+        const eventTarget: HTMLElement = e.target as HTMLElement;
+        if (!eventTarget.classList.contains(PALETTES) && !eventTarget.classList.contains(TILE)) {
             return;
         }
+        const target: HTMLElement = eventTarget.classList.contains(TILE) ?
+            (closest(eventTarget, '.' + PALETTES) as HTMLElement) : eventTarget;
         let selectedEle: Element;
         let idx: number;
         const tiles: Element[] = [].slice.call(selectAll('.' + TILE, target));
@@ -1596,8 +1628,12 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         case 13:
             e.preventDefault();
             if (prevSelectedEle) {
-                const cValue: string = prevSelectedEle.getAttribute('aria-label');
-                this.enterKeyHandler(cValue ? cValue : '');
+                if (prevSelectedEle.classList.contains(NOCOLOR)) {
+                    this.enterKeyHandler('');
+                } else {
+                    const cValue: string = prevSelectedEle.getAttribute('aria-label');
+                    this.enterKeyHandler(cValue ? cValue : '');
+                }
             }
             break;
         }
@@ -1617,6 +1653,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 this.updateInput(cValue);
             }
             this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb), true);
+        }
+        if (newEle) {
+            (newEle as HTMLElement).focus();
         }
     }
 

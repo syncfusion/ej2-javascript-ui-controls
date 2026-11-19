@@ -19,7 +19,6 @@ import type { ExtensionDefinition, FlattenedExtension } from './types';
 import { ExtensionLifecycleState } from './types';
 import { ExtensionResolver } from './extension-resolver';
 import { LifecycleRunner } from './lifecycle-runner';
-import type { ReadyContext } from './contexts';
 
 /**
  * Manages extension registration and lifecycle.
@@ -33,7 +32,6 @@ import type { ReadyContext } from './contexts';
  * const manager = new ExtensionManager(extensions);
  * manager.register();
  * manager.initialize(initContext);
- * manager.ready(readyContext);
  *
  * if (manager.isReady()) {
  *   // Editor is fully operational

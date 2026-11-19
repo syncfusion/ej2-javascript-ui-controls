@@ -1,7 +1,6 @@
 import { LayoutViewer, DocumentHelper, ElementBox, ContentControl } from '../index';
 import { createElement, isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { TreeView, ContextMenu as Menu, MenuItemModel, ContextMenuModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { DocumentEditorContainer } from '../../../document-editor-container';
 import { DropDownList, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Dialog, DialogUtility } from '@syncfusion/ej2-popups';
 

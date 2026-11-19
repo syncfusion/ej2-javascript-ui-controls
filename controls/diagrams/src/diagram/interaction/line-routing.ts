@@ -984,7 +984,11 @@ export class LineRouting {
                     grid.afterDistance = grid.afterDistance || this.manhattan(
                         Math.abs(intermediatePoint.x - this.targetGrid.gridX), Math.abs(intermediatePoint.y - this.targetGrid.gridY));
                     grid.totalDistance = grid.previousDistance + grid.afterDistance;
-                    grid.parent = startGrid;
+                    // 1056864: Diagram freeze during Load Due to Circular Parent Chain loop in line routing process
+                    // when distance between edges are less than grid side the same parent is repeatedly set fo start grid
+                    if (this.canSetParent(grid, startGrid)) {
+                        grid.parent = startGrid;
+                    }
                 }
             }
 
@@ -999,6 +1003,18 @@ export class LineRouting {
             }
         }
         this.sorting(this.startArray);
+    }
+
+    // Validate that setting potentialParent as parent won't create a cycle
+    private canSetParent(grid: VirtualBoundaries, potentialParent: VirtualBoundaries): boolean {
+        let current: VirtualBoundaries = potentialParent;
+        while (current) {
+            if (current === grid) {
+                return false;
+            }
+            current = current.parent;
+        }
+        return true;
     }
 
     // sorting the array based on total distance between source and target node

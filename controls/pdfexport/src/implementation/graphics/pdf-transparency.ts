@@ -7,7 +7,6 @@ import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { PdfBlendMode } from './../graphics/enum';
 import { PdfNumber } from './../primitives/pdf-number';
 import { PdfName } from './../primitives/pdf-name';
-import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 /**
  * Represents a simple `transparency`.
  * @private
@@ -20,19 +19,13 @@ export class PdfTransparency implements IPdfWrapper {
      * @private
      */
     private dictionary : PdfDictionary = new PdfDictionary();
-    /**
-     * Internal variable for accessing fields from `DictionryProperties` class.
-     * @default new DictionaryProperties()
-     * @private
-     */
-    private dictionaryProperties : DictionaryProperties = new DictionaryProperties();
     // Properties
     // /**
     //  * Gets the `stroke` operation alpha value.
     //  * @private
     //  */
     // public get stroke() : number {
-    //     let result : number = this.getNumber(this.dictionaryProperties.CA);
+    //     let result : number = this.getNumber('CA');
     //     return result;
     // }
     // /**
@@ -40,7 +33,7 @@ export class PdfTransparency implements IPdfWrapper {
     //  * @private
     //  */
     // public get fill() : number {
-    //     let result : number = this.getNumber(this.dictionaryProperties.ca);
+    //     let result : number = this.getNumber('ca');
     //     return result;
     // }
     // /**
@@ -48,7 +41,7 @@ export class PdfTransparency implements IPdfWrapper {
     //  * @private
     //  */
     // public get mode() : PdfBlendMode {
-    //     let result : string = this.getName(this.dictionaryProperties.ca);
+    //     let result : string = this.getName('ca');
     //     return PdfBlendMode.Normal;
     // }
     // Constructors
@@ -57,9 +50,9 @@ export class PdfTransparency implements IPdfWrapper {
      * @private
      */
     public constructor(stroke : number, fill : number, mode : PdfBlendMode) {
-        this.dictionary.items.setValue(this.dictionaryProperties.CA, new PdfNumber(stroke));
-        this.dictionary.items.setValue(this.dictionaryProperties.ca, new PdfNumber(fill));
-        this.dictionary.items.setValue(this.dictionaryProperties.BM, new PdfName(mode.toString()));
+        this.dictionary.items.setValue('CA', new PdfNumber(stroke));
+        this.dictionary.items.setValue('ca', new PdfNumber(fill));
+        this.dictionary.items.setValue('BM', new PdfName(mode.toString()));
     }
     // // Implementation
     // /**

@@ -8,13 +8,11 @@ import { PMEditorState, PMTransaction } from '../pm-guard';
 import { DocumentMapper } from './document-mapper';
 import { SelectionAdapter } from './selection-adapter';
 import { PositionAdapter } from './position-adapter';
-import { EditorState } from '../../model/editor-state';
-import { EditorTransaction } from '../../model/editor-transaction';
-import { DefaultIdGenerator } from '../../utils/id-generator';
-import { Selection, SelectionType } from '../../model/selection';
-import { DocumentRoot } from '../../model/editor-node';
+import { EditorState } from '../../core/model/editor-state';
+import { EditorTransaction } from '../../core/model/editor-transaction';
+import { Selection, SelectionType } from '../../core/model/selection';
+import { DocumentRoot } from '../../core/model/editor-node';
 
-const idGen: DefaultIdGenerator = new DefaultIdGenerator();
 const positionAdapter: PositionAdapter = new PositionAdapter();
 const selectionAdapter: SelectionAdapter = new SelectionAdapter(positionAdapter);
 
@@ -27,7 +25,7 @@ const selectionAdapter: SelectionAdapter = new SelectionAdapter(positionAdapter)
  * @returns {EditorState} A PM-free editor state snapshot.
  */
 export function buildEditorState(pmState: PMEditorState, isMounted: boolean): EditorState {
-    const document: DocumentRoot = DocumentMapper.fromPMDoc(pmState.doc, idGen);
+    const document: DocumentRoot = DocumentMapper.fromPMDoc(pmState.doc);
     const selection: Selection =
         selectionAdapter.fromPMSelection(pmState.selection, pmState.doc) ??
         { type: SelectionType.Text };

@@ -1,5 +1,4 @@
-import { createElement, classList } from '@syncfusion/ej2-base';
-import { DocumentEditor } from '../../document-editor/index';
+import { createElement } from '@syncfusion/ej2-base';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { Text } from './text-properties';
 import { Paragraph } from './paragraph-properties';

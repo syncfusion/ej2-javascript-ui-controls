@@ -2,6 +2,66 @@
 
 ## [Unreleased]
 
+## 35.2.12 (2026-11-18)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I886354` - Resolved popup misalignment when the component position changes dynamically due to validation messages or DOM updates while the popup is open.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I884501` - Fixed an issue where MultiSelect did not correctly select and display items with null values during value assignment.
+
+- `#I888141` - Fixed an issue where the `aria-activedescendant` attribute was not being cleared from the filter input element when filtering returned no results in CheckBox mode.
+
+## 35.1.46 (2026-11-11)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I874489` - Fixed an accessibility issue with the floating label when no placeholder was provided.
+
+## 35.1.42 (2026-10-27)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `I#880939` - Fixed an issue where MultiSelect displays the first character of a previously entered custom value as a suggestion when `allowCustomValue` is enabled without a DataSource.
+
+## 35.1.41 (2026-10-20)
+
+### MultiSelect
+
+- `#I878495` - The issue with "MultiSelect floating label font size increases after clicking Clear All button while the component remains focused" has been resolved.
+
+- `#I879669` - Fixed an issue where the placeholder position changed after select and deselect operations.
+
+## 35.1.39 (2026-10-07)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I874489` - Resolved the issue where an empty label was added when no placeholder was provided.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I874490` - Resolved the issue where aria active descendant was not updated when the data source was dynamically updated.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I873166` - Resolved the issue where the Select All option was displayed twice and a console error was thrown when using the set Properties method.
+
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox

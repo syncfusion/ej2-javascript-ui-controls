@@ -37,12 +37,21 @@ export class ConnectorLine {
      * @hidden
      */
     public expandedRecords: IGanttData[];
+    /**
+     * @hidden - Set for O(1) lookup of expanded records (performance optimization)
+     */
+    public expandedRecordsSet: Set<IGanttData> = new Set();
+    /**
+     * @hidden - First-occurrence index cache over `parent.getTaskIds()`, rebuilt when the array length changes.
+     */
+    public taskIdsIndexCache: Map<string, number> = null;
     public svgObject: Element;
     private connectorPath: Element;
     private arrowlinePath: Element;
     private groupObject: Element;
     constructor(ganttObj?: Gantt) {
         this.expandedRecords = [];
+        this.expandedRecordsSet = new Set();
         this.parent = ganttObj;
         this.dependencyViewContainer =
             createElement('div', {
@@ -1087,7 +1096,20 @@ export class ConnectorLine {
         }
         else if (this.parent.viewType === 'ResourceView')
         {
-            return this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())];
+            const taskIds: string[] = this.parent.getTaskIds();
+            // Rebuild the first-occurrence taskIds index cache whenever the array is structurally
+            // changed (length differs), then resolve in O(1) instead of scanning taskIds per call.
+            if (this.taskIdsIndexCache === null ) {
+                const cache: Map<string, number> = new Map<string, number>();
+                for (let i: number = 0; i < taskIds.length; i++) {
+                    if (!cache.has(taskIds[i as number])) {
+                        cache.set(taskIds[i as number], i);
+                    }
+                }
+                this.taskIdsIndexCache = cache;
+            }
+            const recordIndex: number = this.taskIdsIndexCache.get('T' + id.toString());
+            return this.parent.flatData[isNullOrUndefined(recordIndex) ? -1 : recordIndex];
         }
         else
         {

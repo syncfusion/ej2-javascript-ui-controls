@@ -1,11 +1,12 @@
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { Ribbon, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
+import { Ribbon, RibbonTabModel, RibbonGroupModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from './ribbon-constants';
 import { DocumentEditor } from '../../../document-editor/document-editor';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Manages ribbon state
+ *
  * @private
  */
 export class RibbonStateManager {
@@ -16,6 +17,7 @@ export class RibbonStateManager {
 
     /**
      * Constructor for RibbonStateManager
+     *
      * @param {DocumentEditorContainer} container - Document editor container
      */
     constructor(container: DocumentEditorContainer) {
@@ -24,6 +26,7 @@ export class RibbonStateManager {
 
     /**
      * Update ribbon state based on current selection
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @returns {void}
      * @public
@@ -44,6 +47,7 @@ export class RibbonStateManager {
 
     /**
      * Enable or disable ribbon items based on protection state
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @param {boolean} enable - Whether to enable or disable items
      * @returns {void}
@@ -94,6 +98,7 @@ export class RibbonStateManager {
 
     /**
      * Handle home tab protection
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @param {RibbonTabModel} tab - Tab object
      * @returns {void}
@@ -115,6 +120,7 @@ export class RibbonStateManager {
 
     /**
      * Enable only find-related items
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @param {RibbonGroupModel} group - Group object
      * @returns {void}
@@ -135,6 +141,7 @@ export class RibbonStateManager {
 
     /**
      * Handle review tab protection
+     *
      * @param {Ribbon} ribbon - Ribbon instance
      * @param {RibbonTabModel} tab - Tab object
      * @returns {void}

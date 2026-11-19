@@ -192,7 +192,7 @@ export class Edit implements IAction {
             }
         } else if (!tr) {
             if (this.parent[`${isTreeGrid}`] && this.parent.allowPaging && gObj.selectionModule.selectedRowIndexes.length) {
-                const selectedIndex: any = gObj.selectionModule.selectedRowIndexes[0];
+                const selectedIndex: number = gObj.selectionModule.selectedRowIndexes[0];
                 tr = gObj.getRowByIndex(selectedIndex) as HTMLTableRowElement;
             }
             else if (gObj.getSelectedRowCellIndexes().length) {

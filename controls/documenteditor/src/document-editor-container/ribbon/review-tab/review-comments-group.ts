@@ -2,7 +2,6 @@ import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, Ribbon, RibbonItemModel } from '@syncfusion/ej2-ribbon';
 import { MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { L10n } from '@syncfusion/ej2-base';
 import { ContextType } from '../../../document-editor/base';
 
@@ -17,6 +16,7 @@ export const SHOW_COMMENTS_ID: string = '_show_comments';
 
 /**
  * Represents the Comments Group in Review tab
+ *
  * @private
  */
 export class ReviewCommentsGroup extends RibbonGroupBase {
@@ -24,6 +24,7 @@ export class ReviewCommentsGroup extends RibbonGroupBase {
 
     /**
      * Constructor for the ReviewCommentsGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -32,6 +33,7 @@ export class ReviewCommentsGroup extends RibbonGroupBase {
 
     /**
      * Gets the ribbon group model for Comments
+     *
      * @returns {RibbonGroupModel} - Ribbon group model for Comments
      * @private
      */
@@ -173,6 +175,7 @@ export class ReviewCommentsGroup extends RibbonGroupBase {
 
     /**
      * Update comment controls based on selection
+     *
      * @returns {void}
      * @private
      */

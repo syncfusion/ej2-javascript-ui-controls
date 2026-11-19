@@ -20,14 +20,12 @@ import { PMEditorState, PMPlugin, PMTransaction, PMNode, PMInputRule, inputRules
 import { DocumentMapper } from '../adapters/document-mapper';
 import { SelectionAdapter } from '../adapters/selection-adapter';
 import { PositionAdapter } from '../adapters/position-adapter';
-import { DefaultIdGenerator } from '../../utils/id-generator';
 import { InputRuleDefinition, InputRuleContext } from '../../extensions/types';
-import { CommandManager } from '../../commands/manager';
-import { EditorNode } from '../../model/editor-node';
-import { Selection } from '../../model/selection';
+import { CommandManager } from '../../core/commands/manager';
+import { EditorNode } from '../../core/model/editor-node';
+import { Selection } from '../../core/model/selection';
 
 // ── Shared adapter instances (stateless; safe to reuse across rules) ──────────
-const _idGen: DefaultIdGenerator = new DefaultIdGenerator();
 const _positionAdapter: PositionAdapter = new PositionAdapter();
 const _selectionAdapter: SelectionAdapter = new SelectionAdapter(_positionAdapter);
 
@@ -69,7 +67,7 @@ export function compileInputRulesPlugin(
                     ? (() => {
                         try {
                             // nodeAt returns a child node — use NodeMapper via fromPMDoc-like logic
-                            return DocumentMapper.fromPMDoc(pmNodeAt as any, _idGen) as unknown as EditorNode;
+                            return DocumentMapper.fromPMDoc(pmNodeAt as never) as unknown as EditorNode;
                         } catch {
                             return null;
                         }

@@ -2,7 +2,6 @@ import { ListView } from '@syncfusion/ej2-lists';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper, TabStopListInfo } from '../viewer';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { HelperMethods } from '../editor/editor-helper';
 import { TabJustification, TabLeader } from '../../base/types';
@@ -16,7 +15,7 @@ export class TabDialog {
     private target: HTMLElement;
     private listviewInstance: ListView;
     private textBoxInput: HTMLInputElement;
-    private defaultTabStopIn: any;
+    private defaultTabStopIn: NumericTextBox;
     private left: RadioButton;
     private right: RadioButton;
     private center: RadioButton;
@@ -35,6 +34,9 @@ export class TabDialog {
     private removedItems: TabStopListInfo[] = [];
     private tabStopList: { [key: string]: Object }[] | TabStopListInfo[] = [];
     private isAddUnits: boolean = true;
+    private isStyleDialog: boolean = false;
+    private styleDialogParagraphFormat: any = undefined;
+    private styleObject: any = undefined;
     private displayDiv: HTMLElement;
     private localeValue: L10n;
 
@@ -107,7 +109,26 @@ export class TabDialog {
     private getModuleName(): string {
         return 'TabDialog';
     }
-
+    /**
+     * @param {boolean} isStyleDialog - Whether editing a style
+     * @param {any} styleDialogParagraphFormat - The paragraph format from style dialog
+     * @param {any} styleObject - The actual style object to apply tabs to
+     * @returns {void}
+     * @private
+     */
+    public setStyleDialogContext(isStyleDialog: boolean, styleDialogParagraphFormat: any, styleObject: any): void {
+        this.isStyleDialog = isStyleDialog;
+        this.styleDialogParagraphFormat = styleDialogParagraphFormat;
+        this.styleObject = styleObject;
+    }
+    /**
+     * Gets the style object
+     * @returns {any} The style object
+     * @private
+     */
+    public getStyleObject(): any {
+        return this.styleObject;
+    }
     /**
      * @private
      * @returns {void}
@@ -138,13 +159,23 @@ export class TabDialog {
                 values.push(tab);
             }
         }
-        this.documentHelper.owner.editorModule.onApplyParagraphFormat('tabStop', values, false, false);
+        if (this.isStyleDialog && !isNullOrUndefined(this.styleObject) && !isNullOrUndefined(this.styleObject.paragraphFormat)) {
+            this.styleObject.paragraphFormat.tabs = [];
+            if (!isNullOrUndefined(values) && values.length > 0) {
+                for (const value of values) {
+                    this.styleObject.paragraphFormat.tabs.push(value);
+                }
+            }
+        } else {
+            this.documentHelper.owner.editorModule.onApplyParagraphFormat('tabStop', values, false, false);
+        }
         this.closeTabDialog();
     }
-    private onTextBoxInputChangeClick(args: any): void {
+    private onTextBoxInputChangeClick(args: KeyboardEvent): void {
         this.textBoxInputChange(args);
     }
-    private textBoxInputChange = (args: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private textBoxInputChange = (args: KeyboardEvent) => {
         const value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
         for (let i: number = 0; i < this.tabStopList.length; i++) {
             const tabValue: number = HelperMethods.getNumberFromString(this.tabStopList[parseInt(i.toString(), 10)].displayText as string);
@@ -163,10 +194,11 @@ export class TabDialog {
         this.isAddUnits = true;
     }
 
-    private onSetButtonClick(args: any): void {
+    private onSetButtonClick(args: MouseEvent): void {
         this.setButtonClick(args);
     }
-    private setButtonClick = (args: any): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private setButtonClick = (args: MouseEvent): void => {
         if (!isNullOrUndefined(this.selectedTabStop)) {
             const value: WTabStop = this.selectedTabStop.value as WTabStop;
             value.tabJustification = this.getTabAlignmentValue();
@@ -194,10 +226,11 @@ export class TabDialog {
             this.listviewInstance.selectItem(this.selectedTabStop as any);
         }
     }
-    private onClearAllButtonClick(args: any): void {
+    private onClearAllButtonClick(args: MouseEvent): void {
         this.clearAllButtonClick(args);
     }
-    private clearAllButtonClick = (args: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private clearAllButtonClick = (args: MouseEvent) => {
         for (let i: number = 0; i < this.tabStopList.length; i++) {
             this.removedItems.push(this.tabStopList[parseInt(i.toString(), 10)] as TabStopListInfo);
         }
@@ -209,10 +242,11 @@ export class TabDialog {
         this.textBoxInput.value = '';
         this.updateButtons();
     }
-    private onClearButtonClick(args: any): void {
+    private onClearButtonClick(args: MouseEvent): void {
         this.clearButtonClick(args);
     }
-    private clearButtonClick = (args: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private clearButtonClick = (args: MouseEvent) => {
         this.removedItems.push(this.selectedTabStop as TabStopListInfo);
         if (this.displayDiv.innerText !== this.localeValue.getConstant('All')) {
             if (this.displayDiv.innerText !== '') {
@@ -679,7 +713,12 @@ export class TabDialog {
         const localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localObj.setLocale(this.documentHelper.owner.locale);
         this.localeValue = localObj;
-        let tabs: WTabStop[] = this.documentHelper.owner.editorModule.getTabsInSelection();
+        let tabs: WTabStop[] = [];
+        if (this.isStyleDialog && !isNullOrUndefined(this.styleDialogParagraphFormat) && !isNullOrUndefined(this.styleDialogParagraphFormat.tabs)) {
+            tabs = this.styleDialogParagraphFormat.tabs;
+        } else {
+            tabs = this.documentHelper.owner.editorModule.getTabsInSelection();
+        }
         this.tabStopList = [];
         for (let i = 0; i < tabs.length; i++) {
             let value: string = parseFloat((tabs[i].position).toFixed(2)) + ' pt';
@@ -736,6 +775,9 @@ export class TabDialog {
         this.removedItems = undefined;
         this.tabStopList = undefined;
         this.localeValue = undefined;
+        this.isStyleDialog = false;
+        this.styleDialogParagraphFormat = undefined;
+        this.styleObject = undefined;
     }
     private removeEvents(): void {
         if (this.textBoxDiv) {

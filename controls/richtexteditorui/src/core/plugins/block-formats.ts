@@ -1,4 +1,5 @@
-import { CodeBlockCommand, EditorAction, EditorCommandName } from '../../controller/interface';
+import { ToggleCollapsiblePayload } from '@syncfusion/ej2-headless-editor/src/extensions/collapsible';
+import { CalloutCommand, CodeBlockCommand, EditorAction, EditorCommandName } from '../../controller/interface';
 import { EditorCore } from '../base';
 import * as events from '../constants';
 
@@ -48,11 +49,20 @@ export class BlockFormats {
         case 'blockQuote':
             this.parent.editor.commands.toggleBlockQuote();
             break;
+        case 'collapsible':
+            this.parent.editor.commands.toggleCollapsible(args.args as ToggleCollapsiblePayload);
+            break;
         case 'codeBlock':
             this.parent.editor.commands.setCodeBlock( {language: (args.args as CodeBlockCommand).language});
             break;
         case 'horizontalRule':
             this.parent.editor.commands.setHorizontalRule();
+            break;
+        case 'callout':
+            this.parent.editor.commands.toggleCallout( {
+                variant: typeof args.args === 'string' ? args.args
+                    : (args.args as CalloutCommand).callout } );
+            break;
         }
         // this.parent.restoreSelection(selection);
     }
@@ -62,7 +72,7 @@ export class BlockFormats {
      *
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
     }
 

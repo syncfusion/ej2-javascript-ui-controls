@@ -3,6 +3,7 @@
  */
 export * from './base/grid';
 export * from './base/grid-model';
+export * from './base/find-settings';
 export * from './base/enum';
 export * from './base/interface';
 export * from './base/util';

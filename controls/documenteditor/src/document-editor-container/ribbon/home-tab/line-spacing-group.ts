@@ -1,4 +1,3 @@
-import { RibbonGroupBase } from '../ribbon-interfaces';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { L10n } from '@syncfusion/ej2-base';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
@@ -12,6 +11,7 @@ export const LINE_SPACING_ID: string = '_line_spacing';
 
 /**
  * LineSpacingGroup class for handling line spacing operations in Document Editor ribbon
+ *
  * @private
  */
 export class LineSpacingGroup {
@@ -23,6 +23,7 @@ export class LineSpacingGroup {
 
     /**
      * Constructor for LineSpacingGroup
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -37,6 +38,7 @@ export class LineSpacingGroup {
 
     /**
      * Get the line spacing dropdown item configuration
+     *
      * @returns {RibbonItemModel} - Line spacing dropdown item configuration
      * @private
      */
@@ -51,7 +53,7 @@ export class LineSpacingGroup {
                 iconCss: 'e-de-ctnr-linespacing e-icons',
                 content: this.localObj.getConstant('Line spacing'),
                 items: LineSpacingHelper.getLineSpacingItems(this.localObj),
-                select: (args: any) => {
+                select: (args: MenuEventArgs) => {
                     this.lineSpacingAction(args);
                 },
                 beforeItemRender: (args: MenuEventArgs) => {
@@ -65,6 +67,7 @@ export class LineSpacingGroup {
 
     /**
      * Set the line spacing based on current paragraph format
+     *
      * @returns {void}
      * @private
      */
@@ -72,8 +75,8 @@ export class LineSpacingGroup {
         this.appliedLineSpacing = LineSpacingHelper.getCurrentLineSpacing(this.documentEditor, this.localObj);
     }
 
-    private lineSpacingAction(args: any): void {
-        const appliedSpacing: any = { value: this.appliedLineSpacing };
+    private lineSpacingAction(args: MenuEventArgs): void {
+        const appliedSpacing: { value: string } = { value: this.appliedLineSpacing };
         LineSpacingHelper.applyLineSpacing(this.documentEditor, args.item.text, appliedSpacing, this.localObj);
         this.appliedLineSpacing = appliedSpacing.value;
     }

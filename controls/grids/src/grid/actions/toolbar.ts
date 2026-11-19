@@ -1,11 +1,11 @@
 import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { remove, select, removeClass } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { IGrid, NotifyArgs, FocusInfo, ColumnMenuClickEventArgs, RefreshToolbarItemsArgs } from '../base/interface';
+import { IGrid, NotifyArgs, FocusInfo, ColumnMenuClickEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
-import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener, applyBiggerTheme, isAngularMatContainer } from '../base/util';
+import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener, applyBiggerTheme, isAngularMatContainer, getParsedFieldID } from '../base/util';
 import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum';
 import { ContextMenu as Menu } from '@syncfusion/ej2-navigations';
 import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
@@ -23,6 +23,10 @@ export class Toolbar {
     private predefinedItems: { [key: string]: ItemModel } = {};
     public toolbar: tool;
     private searchElement: HTMLInputElement;
+    private searchTimer: number;
+    private findElement: HTMLInputElement;
+    private findKeyHandler: (e: KeyboardEvent) => void;
+    private findInputHandler: () => void;
     private gridID: string;
     protected sIcon: HTMLElement;
     private isSearched: boolean = false;
@@ -32,7 +36,7 @@ export class Toolbar {
     private rowDeSelectedFunction: () => void;
     private serviceLocator: ServiceLocator;
     private l10n: L10n;
-    private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print', 'Search',
+    private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print', 'Search', 'Find',
         'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport', 'Undo', 'Redo', 'AdvancedFilter'];
     private searchBoxObj: SearchBox;
     private evtHandlers: { event: string, handler: Function }[];
@@ -40,6 +44,7 @@ export class Toolbar {
     private responsiveToolbarMenu: Menu;
     // internal variables
     private toolbarMenuElement: HTMLUListElement;
+    private isKeyboardNavigation: boolean = false;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -49,6 +54,9 @@ export class Toolbar {
     }
 
     private render(): void {
+        if (this.element) {
+            this.unWireEvent();
+        }
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         const preItems: ToolbarItems[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print',
             'PdfExport', 'ExcelExport', 'WordExport', 'CsvExport', 'Undo' , 'Redo'];
@@ -70,6 +78,11 @@ export class Toolbar {
         (this.predefinedItems as { Search: ItemModel }).Search = {
             id: this.gridID + '_search',
             tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper',
+            type: 'Input'
+        };
+        (this.predefinedItems as { Find: ItemModel }).Find = {
+            id: this.gridID + '_find',
+            tooltipText: this.l10n.getConstant('Find'), align: 'Right', cssClass: 'e-find-wrapper',
             type: 'Input'
         };
         (this.predefinedItems as { AdvancedFilter: ItemModel }).AdvancedFilter = {
@@ -161,6 +174,11 @@ export class Toolbar {
      * @returns {void}
      */
     public destroy(): void {
+        if (this.findElement && this.findKeyHandler) {
+            EventHandler.remove(this.findElement, 'keydown', this.findKeyHandler);
+            EventHandler.remove(this.findElement, 'input', this.findInputHandler);
+            this.findElement = null;
+        }
         if (this.toolbar && !this.toolbar.isDestroyed) {
             if (this.responsiveToolbarMenu) {
                 this.responsiveToolbarMenu.destroy();
@@ -211,7 +229,9 @@ export class Toolbar {
         if (!(this.parent.isVue3 && this.toolbar && this.toolbar.items && this.toolbar.items.length)) {
             return false;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const vueInstance: any = (this.parent as any).vueInstance;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const slots: any = vueInstance ? vueInstance.$slots : null;
         for (const item of this.toolbar.items) {
             const template: string | Object | Function | undefined = item.template;
@@ -224,6 +244,7 @@ export class Toolbar {
 
     private toolbarCreated(isNormal?: boolean): void {
         this.renderSearchInput(isNormal);
+        this.renderFindInput();
     }
 
     /**
@@ -255,16 +276,86 @@ export class Toolbar {
                     tabindex="-1" role= "button" title="' + this.l10n.getConstant('Search') + '"></span> \
                     </div>';
             }
-            (this.element.querySelector('#' + this.gridID + '_clearbutton')as HTMLElement).style.cursor = 'default';
+            (this.element.querySelector('#' + getParsedFieldID(this.gridID + '_clearbutton'))as HTMLElement).style.cursor = 'default';
         }
         if (this.element.querySelector('.e-responsive-toolbar-items')) {
             this.element.querySelector('.e-responsive-toolbar-items').innerHTML = '<button id="' + this.gridID
                     + '_responsivetoolbaritems" class="e-tbar-btn e-control e-btn e-lib e-icon-btn" \
                     type="button" data-ripple="true" tabindex="-1" data-tabindex="-1" aria-label="responsivetoolbaritems" \
                      aria-disabled="false" ><span class="e-btn-icon e-responsivetoolbaritems-btn e-icons"></span>';
-            (this.element.querySelector('#' + this.gridID + '_responsivetoolbaritems') as HTMLElement).style.width = 'auto';
+            (this.element.querySelector('#' + getParsedFieldID(this.gridID + '_responsivetoolbaritems')) as HTMLElement).style.width = 'auto';
         }
         this.bindSearchEvents();
+    }
+
+    /**
+     * Renders the Find input, match count, clear, and previous/next controls.
+     * Find does not filter records.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public renderFindInput(): void {
+        const wrapper: Element = this.element.querySelector('.e-find-wrapper');
+        if (!wrapper) {
+            return;
+        }
+        const findLabel: string = this.l10n.getConstant('Find');
+        const classList: string = this.parent.cssClass ? 'e-input-group e-find ' + this.parent.cssClass : 'e-input-group e-find';
+        wrapper.innerHTML = '<div class="' + classList + '" role="search">\
+            <input id="' + this.gridID + '_findbar" class="e-input e-find" name="input" type="text" \
+            aria-label="' + findLabel + '" placeholder="' + findLabel + '"/>\
+            <span id="' + this.gridID + '_findclearbutton" class="e-input-group-icon e-icons e-btn-icon e-close e-find-clear e-disabled" \
+            tabindex="-1" aria-label="' + this.l10n.getConstant('FindClear') + '" aria-disabled="true" role="button"></span>\
+            <span id="' + this.gridID + '_findcount" class="e-find-count e-input-group-icon" aria-live="polite">0/0</span>\
+            <span id="' + this.gridID + '_findprev" class="e-input-group-icon e-icons e-btn-icon e-chevron-left e-find-prev e-disabled" \
+            tabindex="-1" title="' + this.l10n.getConstant('FindPrevious') + '" aria-label="' + this.l10n.getConstant('FindPrevious') + '" aria-disabled="true" role="button"></span>\
+            <span id="' + this.gridID + '_findnext" class="e-input-group-icon e-icons e-btn-icon e-chevron-right e-find-next e-disabled" \
+            tabindex="-1" title="' + this.l10n.getConstant('FindNext') + '" aria-label="' + this.l10n.getConstant('FindNext') + '" aria-disabled="true" role="button"></span>\
+            </div>';
+        this.findElement = select('#' + this.gridID + '_findbar', this.element) as HTMLInputElement;
+        if (this.parent.findSettings && this.parent.findSettings.key && this.findElement) {
+            this.findElement.value = this.parent.findSettings.key;
+        }
+        this.findKeyHandler = this.onFindKeyDown.bind(this);
+        this.findInputHandler = this.onFindInput.bind(this);
+        if (this.findElement) {
+            EventHandler.add(this.findElement, 'keydown', this.findKeyHandler, this);
+            EventHandler.add(this.findElement, 'input', this.findInputHandler, this);
+        }
+        if (this.parent.findModule) {
+            this.parent.findModule.refreshHighlights();
+        }
+    }
+
+    private isFindControlEnabled(element: HTMLElement): boolean {
+        return element.getAttribute('aria-disabled') !== 'true';
+    }
+
+    private onFindKeyDown(e: KeyboardEvent): void {
+        if (!this.findElement || !this.parent.findModule) {
+            return;
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.parent.findPrevious();
+            } else {
+                this.parent.findNext();
+            }
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this.findElement.value = '';
+            this.parent.clearFind();
+        }
+    }
+
+    private onFindInput(): void {
+        if (this.findElement && this.parent.findModule) {
+            this.parent.find(this.findElement.value);
+        }
     }
 
     private createToolbar(): void {
@@ -375,7 +466,7 @@ export class Toolbar {
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
             for (const item of this.toolbar.items) {
                 const toolbarEle: Element = (item.template as string) && (item.template as string).length ?
-                    parentsUntil(this.toolbar.element.querySelector('#' + item.id), 'e-template').children[0] : this.toolbar.element.querySelector('#' + item.id);
+                    parentsUntil(this.toolbar.element.querySelector('#' + getParsedFieldID(item.id)), 'e-template').children[0] : this.toolbar.element.querySelector('#' + getParsedFieldID(item.id));
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -397,15 +488,15 @@ export class Toolbar {
                 if (right) {
                     right.classList.remove('e-responsive-right');
                 }
-                this.toolbarCreated(false);
                 this.unWireEvent();
+                this.toolbarCreated(false);
                 this.searchElement = undefined;
             }
         }
         if (action === ResponsiveToolbarAction.isSearch) {
             const items: string[] = [this.parent.element.id + '_responsiveback', this.parent.element.id + '_search'];
             for (const item of this.toolbar.items) {
-                const toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+                const toolbarEle: Element = this.toolbar.element.querySelector('#' + getParsedFieldID(item.id));
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         toolbarEle.parentElement.classList.remove('e-hidden');
@@ -417,15 +508,13 @@ export class Toolbar {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     /**
      * Refreshes the toolbar items
      *
-     * @param {RefreshToolbarItemsArgs} args - Defines the editSettings model and name.
      * @returns {void}
      * @hidden
      */
-    public refreshToolbarItems(args?: RefreshToolbarItemsArgs): void {
+    public refreshToolbarItems(): void {
         const gObj: IGrid = this.parent;
         let enableItems: string[] = [];
         let disableItems: string[] = [];
@@ -609,6 +698,22 @@ export class Toolbar {
                             gObj.redoEdit();
                         }
                         break;
+                    case gID + '_find':
+                        if (toolbarargs.originalEvent && toolbarargs.originalEvent.target) {
+                            const findTarget: HTMLElement = toolbarargs.originalEvent.target as HTMLElement;
+                            if (!this.isFindControlEnabled(findTarget)) {
+                                break;
+                            }
+                            if (findTarget.id === gID + '_findprev') {
+                                gObj.findPrevious();
+                            } else if (findTarget.id === gID + '_findnext') {
+                                gObj.findNext();
+                            } else if (findTarget.id === gID + '_findclearbutton' && this.findElement) {
+                                this.findElement.value = '';
+                                gObj.clearFind();
+                            }
+                        }
+                        break;
                     case gID + '_search':
                         if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
                             this.search();
@@ -618,6 +723,7 @@ export class Toolbar {
                             this.renderResponsiveSearch(true);
                         }
                         else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement) {
+                            this.clearSearchTimer();
                             this.searchElement.value = '';
                             if (this.searchElement) {
                                 this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
@@ -676,7 +782,7 @@ export class Toolbar {
         this.toolbarMenuElement.style.cssText = 'display:none;visibility:visible';
         let target : Element;
         if (isNullOrUndefined(e)) {
-            target = this.parent.element.querySelector('#' + id);
+            target = this.parent.element.querySelector('#' + getParsedFieldID(id));
         } else {
             target = e.target as Element;
         }
@@ -833,7 +939,28 @@ export class Toolbar {
         }
     }
 
+    private searchInputHandler(): void {
+        this.clearSearchTimer();
+        if (this.parent.searchSettings.mode === 'Immediate') {
+            this.startSearchTimer();
+        }
+    }
+
+    private clearSearchTimer(): void {
+        window.clearTimeout(this.searchTimer);
+    }
+
+    private startSearchTimer(): void {
+        this.searchTimer = window.setTimeout(() => {
+            if (this.parent.searchSettings.mode === 'Immediate') {
+                this.parent.searchModule.refreshSearch = false;
+                this.search();
+            }
+        }, this.parent.searchSettings.immediateModeDelay);
+    }
+
     private search(): void {
+        this.clearSearchTimer();
         this.isSearched = true;
         this.parent.search(this.searchElement.value);
     }
@@ -848,17 +975,22 @@ export class Toolbar {
         if (this.searchElement) {
             this.searchBoxObj = new SearchBox(this.searchElement, this.serviceLocator);
             EventHandler.add(this.searchElement, 'keyup', this.keyUpHandler, this);
+            EventHandler.add(this.searchElement, 'input', this.searchInputHandler, this);
             this.searchBoxObj.wireEvent();
         }
+        EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
         EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
         EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
     }
 
     private unWireEvent(): void {
+        this.clearSearchTimer();
         if (this.searchElement) {
+            EventHandler.remove(this.searchElement, 'input', this.searchInputHandler);
             EventHandler.remove(this.searchElement, 'keyup', this.keyUpHandler);
             this.searchBoxObj.unWireEvent();
         }
+        EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
         EventHandler.remove(this.element, 'focusin', this.onFocusIn);
         EventHandler.remove(this.element, 'focusout', this.onFocusOut);
     }
@@ -871,10 +1003,22 @@ export class Toolbar {
             currentInfo.element.tabIndex = -1;
         }
         (e.target as HTMLElement).tabIndex = 0;
+        this.setFindFocus(e.target as HTMLElement, true);
+    }
+
+    private setFindFocus(target: HTMLElement, focused: boolean): void {
+        if (!target.matches('.e-find-wrapper .e-input-group-icon')) {
+            return;
+        }
+        if (focused && !this.isKeyboardNavigation) {
+            return;
+        }
+        target.classList.toggle('e-focused', focused);
     }
 
     private onFocusOut(e: FocusEvent): void {
         (e.target as HTMLElement).tabIndex = -1;
+        this.setFindFocus(e.target as HTMLElement, false);
         if (e.target && (e.target as HTMLElement).id === this.parent.element.id + '_searchbar' &&
             !(e.relatedTarget && ((e.relatedTarget as HTMLElement).id === this.parent.element.id + '_clearbutton' ||
                 (e.relatedTarget as HTMLElement).id === this.parent.element.id + '_searchbutton'))) {
@@ -887,7 +1031,7 @@ export class Toolbar {
         let elementToFocus: Element = element.querySelector('.e-btn,.e-input,.e-toolbar-item-focus');
         if (!elementToFocus && this.parent.enableAdaptiveUI && !this.searchElement
             && element.classList.contains('e-search-wrapper')) {
-            elementToFocus = element.querySelector('#' + this.gridID + '_searchbutton');
+            elementToFocus = element.querySelector('#' + getParsedFieldID(this.gridID + '_searchbutton'));
         }
         (elementToFocus as HTMLElement).focus();
     }
@@ -918,8 +1062,54 @@ export class Toolbar {
         }
     }
 
+    private getFindControls(): HTMLElement[] {
+        return [].slice.call(this.element.querySelectorAll(
+            '.e-find-wrapper input.e-find, .e-find-wrapper [role="button"]:not([aria-disabled="true"])'));
+    }
+
+    public getNextFindControl(e: KeyboardEventArgs): HTMLElement {
+        if (e.action !== 'tab' && e.action !== 'shiftTab') {
+            return null;
+        }
+        const controls: HTMLElement[] = this.getFindControls();
+        const target: HTMLElement = e.target as HTMLElement;
+        const index: number = controls.indexOf(target);
+        if (index >= 0) {
+            return controls[index + (e.action === 'tab' ? 1 : -1)] || null;
+        }
+        if (e.action === 'shiftTab') {
+            const toolbarItem: Element = parentsUntil(target, 'e-toolbar-item');
+            if (toolbarItem) {
+                const prevToolbarItem: Element = toolbarItem.previousElementSibling as Element;
+                if (prevToolbarItem &&
+                    prevToolbarItem.classList.contains('e-find-wrapper')) {
+                    return this.getFindControls().pop() || null;
+                }
+            }
+        }
+        return null;
+    }
+
+    public getBackwardEntryElement(item: Element): HTMLElement {
+        return (item.classList.contains('e-find-wrapper') ? this.getFindControls().pop() : null)
+            || item.querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement;
+    }
+
+    private mouseDownHandler(): void {
+        this.isKeyboardNavigation = false;
+    }
+
     private keyPressedHandler(e: KeyboardEventArgs): void {
+        if (e.action === 'tab' || e.action === 'shiftTab') {
+            this.isKeyboardNavigation = true;
+        }
         if (e.target && parentsUntil(e.target as Element, 'e-toolbar-item')) {
+            const nextFindControl: HTMLElement = this.getNextFindControl(e);
+            if (nextFindControl) {
+                e.preventDefault();
+                nextFindControl.focus();
+                return;
+            }
             const targetParent: Element = parentsUntil(e.target as Element, 'e-toolbar-item');
             const focusableToolbarItems: Element[] = this.getFocusableToolbarItems();
             if (e.action === 'tab' || e.action === 'shiftTab') {

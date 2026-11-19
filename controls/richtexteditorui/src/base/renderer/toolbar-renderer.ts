@@ -19,7 +19,7 @@ import { RichTextEditorUI } from '../../richtexteditor-ui';
 import { FontColorModel, BackgroundColorModel } from '../../richtexteditor-ui/model/color-picker-settings-model';
 import { ColorPickerType, DEFAULT_BGCOLOR_PRESETS, DEFAULT_FONTCOLOR_PRESETS } from '../../richtexteditor-ui/model/color-picker.types';
 import { CLS_OVERLAY } from '../classes';
-import { addClass, createElement, detach } from '@syncfusion/ej2-base';
+import { addClass, Browser, createElement, detach } from '@syncfusion/ej2-base';
 import * as classes from '../classes';
 import { IColorPickerEventArgs } from '../toolbar-interface';
 import { ToolbarItemClickedEventArgs } from '../../richtexteditor-ui/model/toolbar-settings';
@@ -116,8 +116,7 @@ export class ToolbarRenderer {
                 const clickedItem: ToolbarItemModel | undefined = items.find((item: ToolbarItemModel) => item.id === args.item.id);
                 const eventArgs: ToolbarItemClickedEventArgs = {
                     item: clickedItem,
-                    event: args.originalEvent,
-                    cancel: false
+                    event: args.originalEvent
                 };
                 if (this.parent.toolbarSettings.itemClicked) {
                     this.parent.toolbarSettings.itemClicked.call(this.parent, eventArgs);
@@ -189,10 +188,12 @@ export class ToolbarRenderer {
     }
 
     /*
-     * Maps the editor toolbar type to the EJ2 Toolbar overflowMode value.
+     * Maps the toolbar type to the corresponding EJ2 overflow mode.
+     * `Auto` is resolved based on the device state.
      */
     private mapToolbarTypeToOverflowMode(type: ToolbarType): 'Scrollable' | 'Popup' | 'MultiRow' | 'Extended' {
-        switch (type) {
+        const resolved: ToolbarType = this.resolveToolbarType(type, !!(Browser && Browser.isDevice));
+        switch (resolved) {
         case 'Expanded':
             return 'Extended';
         case 'MultiRow':
@@ -201,6 +202,17 @@ export class ToolbarRenderer {
         default:
             return 'Scrollable';
         }
+    }
+
+    /*
+     * Maps `Auto` toolbar type to `Expanded` or `Scrollable`
+     * based on the device state.
+     */
+    private resolveToolbarType(type: ToolbarType, isDevice: boolean): ToolbarType {
+        if (type === 'Auto') {
+            return isDevice ? 'Scrollable' : 'Expanded';
+        }
+        return type;
     }
 
     /*
@@ -502,11 +514,7 @@ export class ToolbarRenderer {
                 tooltipText: item.toolbarItem.tooltipText
             };
         }
-        return {
-            id: item.id,
-            type: 'Input',
-            template: `<div id="${item.id}">${item.toolbarItem.template}</div>`
-        };
+        return item;
     }
 
     /*
@@ -535,6 +543,48 @@ export class ToolbarRenderer {
         }
     }
 
+    private itemNameMap: { [key: string]: string } = {
+        'fontcolor': 'Font Color',
+        'backgroundcolor': 'Background Color',
+        'formats': 'Formats',
+        'alignments': 'Alignments',
+        'callout': 'Callout',
+        'bulletformatlist': 'Bullet Format List',
+        'numberformatlist': 'Number Format List',
+        'fontname': 'Font Name',
+        'fontsize': 'Font Size'
+    };
+    private setAriaLabel(dropDownElement: Element, itemName: string, popupElement?: Element): void {
+        const displayLabel: string = this.itemNameMap[itemName.toLowerCase()] || itemName;
+        if (dropDownElement) {
+            const currentLabel: string = dropDownElement.getAttribute('aria-label') || '';
+            const dropdownPlaceholders: string[] = ['', 'dropdownbutton'];
+            const splitPlaceholders: string[] = ['', 'splitbutton', 'colorpicker'];
+            if (dropdownPlaceholders.indexOf(currentLabel) !== -1) {
+                const specialDropdownItems: Set<string> = new Set([
+                    'backgroundcolor',
+                    'fontcolor',
+                    'bulletformatlist',
+                    'numberformatlist'
+                ]);
+                const ariaLabel: string = specialDropdownItems.has(itemName.toLowerCase())
+                    ? `More ${displayLabel} Options`
+                    : `${displayLabel}`;
+                dropDownElement.setAttribute('aria-label', ariaLabel);
+            } else if (splitPlaceholders.indexOf(currentLabel) !== -1) {
+                dropDownElement.setAttribute('aria-label', `${displayLabel}`);
+            }
+        }
+        if (popupElement) {
+            const currentPopupLabel: string = popupElement.getAttribute('aria-label') || '';
+            const popupPlaceholders: string[] = ['', 'dropdown menu'];
+
+            if (popupPlaceholders.indexOf(currentPopupLabel) !== -1) {
+                popupElement.setAttribute('aria-label', `${displayLabel} Menu`);
+            }
+        }
+    }
+
     /*
      * Creates and appends a DropDownButton into the given slot element.
      */
@@ -548,7 +598,7 @@ export class ToolbarRenderer {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const selfRenderer: ToolbarRenderer = this;
         const ddb: DropDownButton = new DropDownButton({
-            content: this.dropdownContent(capturedItems[0].text && item.renderMode && item.renderMode === 'textContent' ? capturedItems[0].text : '', item),
+            content:  capturedItems[0] && item.renderMode !== 'iconContent' ? this.dropdownContent(capturedItems[0].text, item) : '',
             cssClass: css,
             iconCss:
                 item.toolbarItem?.prefixIcon &&
@@ -572,6 +622,8 @@ export class ToolbarRenderer {
             }
         });
         ddb.appendTo(btn);
+        const popupElement: HTMLElement = document.getElementById(ddb.element.id + '-popup');
+        this.setAriaLabel(ddb.element, item.source as string, popupElement);
         this.nestedItems[item.id] = ddb;
     }
 
@@ -614,7 +666,7 @@ export class ToolbarRenderer {
         const self: ToolbarRenderer = this;
         const capturedItem: ToolbarItemModel = item;
         const sb: SplitButton = new SplitButton({
-            cssClass: classes.CLS_DROPDOWN_BTN + ' ' + classes.CLS_RTE_ELEMENTS ,
+            cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_BTN + ' ' + classes.CLS_RTE_ELEMENTS ,
             content: capturedItems[0].text && item.renderMode && item.renderMode === 'textContent' ? capturedItems[0].text : '',
             items: capturedItems,
             iconCss: capturedItems[0] && item.renderMode && item.renderMode === 'iconContent' ? item.toolbarItem.prefixIcon : '',
@@ -630,11 +682,14 @@ export class ToolbarRenderer {
                 // Read the current popup sync callback for late-bound updates.
                 const sync: ToolbarPopupSync | null = self.popupSync;
                 if (sync) {
-                    sync(capturedId, e && e.element ? e.element : null);
+                    sync(capturedKind, e && e.element ? e.element : null);
                 }
             }
         });
         sb.appendTo(btn);
+        const popupElement: HTMLElement = document.getElementById(sb.element.id + '_dropdownbtn-popup');
+        this.setAriaLabel(sb.element, item.source as string, popupElement);
+        this.setAriaLabel(sb.element.nextElementSibling as HTMLElement, item.source as string);
         this.nestedItems[item.id] = sb;
     }
 
@@ -661,6 +716,7 @@ export class ToolbarRenderer {
         const prefixIcon: string = item.toolbarItem.prefixIcon || '';
         const prefixClasses: string[] = prefixIcon.length > 0 ? prefixIcon.split(/\s+/) : [];
         const host: HTMLElement = this.getOrCreateColorPickerHost(slotEl, item.id);
+        host.setAttribute('role', 'button');
         const cp: ColorPicker = new ColorPicker({
             beforeTileRender: (args: PaletteTileEventArgs): void => {
                 addClass([args.element], ['e-icons', 'e-custom-tile']);
@@ -699,6 +755,9 @@ export class ToolbarRenderer {
             }
         });
         cp.appendTo(host);
+        const popupElement: HTMLElement = document.getElementById(cp.element.parentElement?.querySelectorAll('button')[1].id + '-popup');
+        this.setAriaLabel(cp.element.parentElement?.querySelectorAll('button')[1] as HTMLElement, item.source as string, popupElement);
+        this.setAriaLabel(cp.element.parentElement?.querySelectorAll('button')[0] as HTMLElement, item.source as string);
         this.nestedItems[item.id] = cp;
     }
 
@@ -1054,6 +1113,7 @@ interface ToolbarItemModel {
     toolbarItem: ItemModel & { items?: ActionItemModel[] };
     template?: string;
     renderMode?: string;
+    value?: unknown;
 }
 
 /**

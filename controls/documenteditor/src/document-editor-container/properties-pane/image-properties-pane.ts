@@ -180,6 +180,11 @@ export class ImageProperties {
         }
     }
     private applyImageWidth(): void {
+        // A pending Enter-key timer can fire after the pane is destroyed;
+        // the size text boxes are undefined then.
+        if (isNullOrUndefined(this.widthNumericBox) || isNullOrUndefined(this.heightNumericBox)) {
+            return;
+        }
         if (!this.isMaintainAspectRatio) {
             let width: number = this.widthNumericBox.value;
             let height: number = this.heightNumericBox.value;
@@ -206,6 +211,11 @@ export class ImageProperties {
         }
     }
     private applyImageHeight(): void {
+        // A pending Enter-key timer can fire after the pane is destroyed;
+        // the size text boxes are undefined then.
+        if (isNullOrUndefined(this.widthNumericBox) || isNullOrUndefined(this.heightNumericBox)) {
+            return;
+        }
         if (!this.isMaintainAspectRatio) {
             const width: number = this.widthNumericBox.value;
             const height: number = this.heightNumericBox.value;

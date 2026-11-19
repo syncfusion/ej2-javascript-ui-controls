@@ -23,6 +23,8 @@ import { SlashCommandSettingsModel } from './model';
 /**
  * Interface for the RichTextEditor wrapper component.
  * Mirrors the public options shape consumed by EditorBase.
+ *
+ * @private
  */
 export interface IRichTextEditorUIModel {
     /**
@@ -37,7 +39,7 @@ export interface IRichTextEditorUIModel {
      * Configures the font family settings used by the editor.
      */
     fontFamily?: FontFamilyModel;
-    listsettings?: ListSettingsModel;
+    listSettings?: ListSettingsModel;
     format?: FormatModel;
     slashCommandSettings?: SlashCommandSettingsModel;
     enable?: boolean;
@@ -74,8 +76,8 @@ export interface IRichTextEditorUIModel {
     enableHtmlSanitizer?: boolean;
     created?: EmitType<Object>;
     destroyed?: EmitType<Object>;
-    focused?: EmitType<FocusedEventArgs>;
-    blurred?: EmitType<BlurredEventArgs>;
+    focus?: EmitType<FocusEventArgs>;
+    blur?: EmitType<BlurEventArgs>;
     change?: EmitType<ChangeEventArgs>;
     actionBegin?: EmitType<ActionBeginEventArgs>;
     actionComplete?: EmitType<ActionCompleteEventArgs>;
@@ -87,14 +89,13 @@ export interface IRichTextEditorUIModel {
     /**
      * Configures the background color / text highlight color picker using the
      * same shape as `fontColor` but with background-specific defaults
-     * (`default: '#1E293B'`, `columns: 4`).
+     * (`default: '#FFF7C7'`, `columns: 5`).
      */
     backgroundColor?: BackgroundColorModel;
-    updatedToolbarStatus?: EmitType<UpdatedToolbarStatusEventArgs>;
     isDestroyed?: boolean
     /**
      * Sub component rendered inside the editor. Each event arg extends the
-     * underlying ej2 event args with a `subType` field (a {@link DialogType}
+     * underlying ej2 event args with a `source` field (a {@link DialogType}
      * value) identifying the editor feature (link, image, or table).
      */
     beforeDialogOpen?: EmitType<BeforeDialogOpenEventArgs>;
@@ -133,15 +134,15 @@ export interface DestroyedEventArgs {
     readonly name: 'destroyed';
 }
 
-export interface FocusedEventArgs {
-    readonly name: 'focused';
+export interface FocusEventArgs {
+    readonly name: 'focus';
     readonly isInteracted: boolean;
     event: FocusEvent
     readonly source:  'Event' | 'Method'
 }
 
-export interface BlurredEventArgs {
-    readonly name: 'blurred';
+export interface BlurEventArgs {
+    readonly name: 'blur';
     readonly isInteracted: boolean;
     event: FocusEvent
     readonly source:  'Event' | 'Method'
@@ -174,11 +175,6 @@ export interface ChangeEventArgs {
      * - `'Unknown'`: All nodes with changes (best effort)
      */
     affectedNodes: EditorNode[];
-    /**
-     * Unique node IDs of affected nodes. Deduped for efficient lookups.
-     * Use for: filtering changes, triggering targeted updates, analytics.
-     */
-    affectedNodeIds: string[];
 }
 
 /**
@@ -210,6 +206,12 @@ export interface UpdatedToolbarStatusEventArgs {
         alignCenter: boolean;
         alignRight: boolean;
         alignJustify: boolean;
+        calloutInfo: boolean,
+        calloutWarning: boolean;
+        calloutError: boolean;
+        calloutSuccess: boolean;
+        calloutNote: boolean;
+        checklist: boolean;
     };
     /** Resolved font / color values at the current selection. */
     styles: {

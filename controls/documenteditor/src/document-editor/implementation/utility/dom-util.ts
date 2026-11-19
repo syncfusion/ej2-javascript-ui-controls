@@ -1,5 +1,4 @@
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditor } from '../../document-editor';
 //import { DocumentEditorRulerModel } from '../ruler-settings-model';
 import { Ruler } from '../ruler/index';
@@ -28,6 +27,10 @@ export class RulerHelper {
      * @private
      */
     public vRulerBottom: HTMLElement;
+    /**
+     * @private
+     */
+    public vRulerWrapper: HTMLElement;
 
     private locale: L10n;
 
@@ -1245,8 +1248,15 @@ export class RulerHelper {
         if (this.hRulerBottom) {
             this.showHideElement(show, this.hRulerBottom);
         }
-        if (this.vRulerBottom) {
+        // Hide the vertical wrapper (not only the bottom track) so restrict/read-only
+        // mode does not leave an empty chrome shell visible.
+        if (this.vRulerWrapper) {
+            this.showHideElement(show, this.vRulerWrapper);
+        } else if (this.vRulerBottom) {
             this.showHideElement(show, this.vRulerBottom);
+        }
+        if (this.overlap) {
+            this.showHideElement(show, this.overlap);
         }
     }
     private showHideElement(show: boolean, element: HTMLElement): void {
@@ -1355,8 +1365,15 @@ export class RulerHelper {
             class: 'e-ruler-overlap'
         };
         this.overlap = this.createHtmlElement('div', attributes);
-        const element: HTMLElement = documentEditor.element.querySelector('#' + documentEditor.element.id + '_viewerContainer');
-        element.insertBefore(this.overlap, element.firstChild);
+        // Bug 1046959: parent under optionsPaneContainer (outside scrollable viewer).
+        const element: HTMLElement = documentEditor.documentHelper.optionsPaneContainer;
+        if (element) {
+            if (!element.style.position) {
+                element.style.position = 'relative';
+            }
+            const viewer: HTMLElement = documentEditor.documentHelper.viewerContainer;
+            element.insertBefore(this.overlap, viewer ? viewer : element.firstChild);
+        }
         return this.overlap;
     }
     public renderRulerMarkerIndicatorElement(documentEditor: DocumentEditor): void {
@@ -1366,7 +1383,8 @@ export class RulerHelper {
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const attributes: Object = {
             'id': documentEditor.element.id + '_markIndicator',
-            style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:sticky;top:0;margin-left:0;margin-top:0;z-index:5;border:1px solid #ccc;display:' + (documentEditor.layoutType === 'Pages' ? 'block;' : 'none;'),
+            // Absolute (not sticky): chrome is outside the scrollable viewer; sticky would pan incorrectly.
+            style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;left:0;top:0;margin-left:0;margin-top:0;z-index:5;border:1px solid #ccc;display:' + (documentEditor.layoutType === 'Pages' ? 'block;' : 'none;'),
             class: 'e-de-ruler-markIndicator'
         };
         this.markIndicator = this.createHtmlElement('div', attributes);
@@ -1431,8 +1449,13 @@ export class RulerHelper {
         this.rulerDiv = this.documentEditor.element.querySelector('#' + documentEditor.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
         const rulerSize: Size = this.getRulerSize(documentEditor);
         this.rulerGeometry = this.getRulerGeometry(documentEditor);
-        const height: number = isHorizontal ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x
-            : (documentEditor.selectionModule.getPageTop(documentEditor.selectionModule.end.paragraph.bodyWidget.page));
+        const viewerForMargin: HTMLElement = documentEditor.documentHelper
+            ? documentEditor.documentHelper.viewerContainer : undefined;
+        const initScrollLeft: number = viewerForMargin ? viewerForMargin.scrollLeft : 0;
+        const initScrollTop: number = viewerForMargin ? viewerForMargin.scrollTop : 0;
+        const height: number = isHorizontal
+            ? (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x - initScrollLeft)
+            : (documentEditor.selectionModule.getPageTop(documentEditor.selectionModule.end.paragraph.bodyWidget.page) - initScrollTop);
         const margin: string = isHorizontal ? ('margin-left:' + height + 'px;') : ('margin-top:' + height + 'px;');
         if (documentEditor.selectionModule.isForward) {
             this.position = documentEditor.selectionModule.start;
@@ -1451,12 +1474,16 @@ export class RulerHelper {
         }
         this.rulerDiv.addEventListener('dblclick', this.onRulerDblClickHandler);
         const pageElement: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer');
-        const style: string = 'height:' + (isHorizontal ? rulerSize.height : pageElement.getBoundingClientRect().height) + 'px;overflow:hidden;width:' +
-            (isHorizontal ? pageElement.getBoundingClientRect().width : rulerSize.width) + 'px;' + (isHorizontal ? 'position:sticky;top:0;' : 'position:absolute;left:0;') + 'z-index:3;';
+        // Absolute vs optionsPaneContainer (Bug 1046959). Track size must match the visible
+        // viewer viewport — same visual clip sticky rulers had inside viewerContainer —
+        // so scroll/resize does not grow the chrome with pageContainer bounds.
+        const trackSize: { width: number; height: number } = this.getRulerTrackViewportSize(documentEditor, pageElement);
+        const style: string = 'height:' + (isHorizontal ? rulerSize.height : trackSize.height) + 'px;overflow:hidden;width:' +
+            (isHorizontal ? trackSize.width : rulerSize.width) + 'px;' + (isHorizontal ? 'position:absolute;top:0;left:0;' : 'position:absolute;left:0;top:0;') + 'z-index:3;';
         const pageContainer: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer') as HTMLElement;
         if (isHorizontal && pageContainer) {
-            this.applyPageContainerMargin(documentEditor, pageContainer, rulerSize, documentEditor.documentEditorSettings
-                && documentEditor.documentEditorSettings.showRuler);
+            // No negative marginTop: rulers are no longer sticky inside viewerContainer.
+            this.applyPageContainerMargin(documentEditor, pageContainer, rulerSize, false);
         }
         const attributes: Object = {
             'id': documentEditor.element.id + (isHorizontal ? '_hRulerBottom' : '_vRulerBottom'),
@@ -1470,18 +1497,33 @@ export class RulerHelper {
         else {
             this.vRulerBottom = this.rulerOverlap;
         }
-        const parentElement: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_viewerContainer');
+        // Bug 1046959: parent under optionsPaneContainer (outside scrollable viewer).
+        const parentElement: HTMLElement = this.documentEditor.documentHelper.optionsPaneContainer;
+        if (parentElement && !parentElement.style.position) {
+            parentElement.style.position = 'relative';
+        }
+        const viewerContainer: HTMLElement = this.documentEditor.documentHelper.viewerContainer;
+        const insertBeforeNode: Node = viewerContainer ? viewerContainer : (parentElement ? parentElement.firstChild : null);
         if (!isHorizontal) {
             const wrapper: HTMLElement = this.createHtmlElement('div', {
                 id: documentEditor.element.id + '_vRulerWrapper',
-                style: 'position:sticky;' + 'left:0;' + 'top:0;' + 'z-index:3;'
+                style: 'position:absolute;' + 'left:0;' + 'top:0;' + 'z-index:3;'
             });
             wrapper.appendChild(this.rulerOverlap);
+            this.vRulerWrapper = wrapper;
 
-            parentElement.insertBefore(wrapper, parentElement.firstChild);
+            if (parentElement) {
+                // vRulerWrapper must precede hRulerBottom in the DOM.
+                parentElement.insertBefore(wrapper, insertBeforeNode);
+            }
         }
-        else {
-            parentElement.insertBefore(this.rulerOverlap, parentElement.firstChild);
+        else if (parentElement) {
+            // Keep hRulerBottom after an existing vRulerWrapper when present.
+            let insertRef: Node = insertBeforeNode;
+            if (this.vRulerWrapper && this.vRulerWrapper.parentElement === parentElement) {
+                insertRef = this.vRulerWrapper.nextSibling;
+            }
+            parentElement.insertBefore(this.rulerOverlap, insertRef);
         }
         const element: HTMLElement = isHorizontal ? this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_hRulerBottom') : this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_vRulerBottom');
         element.insertBefore(this.rulerDiv, element.firstChild);
@@ -1538,6 +1580,8 @@ export class RulerHelper {
             document.addEventListener('mouseup', this.onVMouseUpHandler);
 
         }
+        // Align absolute chrome to viewer after each ruler render (handles side panes).
+        this.syncRulerChromeToViewer(documentEditor);
     }
     /**
      * @param {boolean} show - True when the ruler is being shown, false when hidden.
@@ -1556,15 +1600,136 @@ export class RulerHelper {
         const rulerSize: Size = this.getRulerSize(this.documentEditor);
         this.applyPageContainerMargin(this.documentEditor, pageContainer, rulerSize, show);
     }
-    private applyPageContainerMargin(documentEditor: DocumentEditor, pageContainer: HTMLElement, rulerSize: Size, show: boolean): void {
-        if (documentEditor.documentEditorSettings && show) {
-            pageContainer.style.marginTop = '-' + rulerSize.height + 'px';
-        } else {
-            // Ruler is being hidden/torn down: clear the negative margin so the
-            // page returns to its original position. Without this, disabling the
-            // ruler leaves the page shifted up by rulerSize.height px and
-            // re-enabling it appears to do nothing visually.
-            pageContainer.style.marginTop = '';
+    private applyPageContainerMargin(_documentEditor: DocumentEditor, pageContainer: HTMLElement, _rulerSize: Size, _show: boolean): void {
+        // Bug 1046959: rulers parented under optionsPaneContainer — clear negative marginTop
+        // (-rulerSize.height / ~-15px) that previously offset sticky h-ruler inside the viewer.
+        pageContainer.style.marginTop = '';
+    }
+
+    private getRulerTrackViewportSize(documentEditor: DocumentEditor, pageElement?: HTMLElement): { width: number; height: number } {
+        const viewer: HTMLElement = documentEditor.documentHelper && documentEditor.documentHelper.viewerContainer;
+        let width: number = viewer ? viewer.clientWidth : 0;
+        let height: number = viewer ? viewer.clientHeight : 0;
+        if ((!width || !height) && documentEditor.element) {
+            const bounds: DOMRect = documentEditor.element.getBoundingClientRect() as DOMRect;
+            if (!width) {
+                width = bounds.width;
+            }
+            if (!height) {
+                height = bounds.height;
+            }
+        }
+        // Fall back to page bounds only when viewport is not measurable yet.
+        if (pageElement) {
+            const pageBounds: DOMRect = pageElement.getBoundingClientRect() as DOMRect;
+            if (!width) {
+                width = pageBounds.width;
+            }
+            if (!height) {
+                height = pageBounds.height;
+            }
+        }
+        return { width: width > 0 ? width : 0, height: height > 0 ? height : 0 };
+    }
+
+    /**
+     * Keep absolute ruler chrome aligned to viewerContainer within optionsPaneContainer.
+     * When restrict/options panes are first flex children, left/top:0 would overlap those panes.
+     *
+     * @returns {void}
+     * @param {DocumentEditor} [documentEditor] - Optional document editor instance. Uses this.documentEditor if not provided.
+     * @private
+     */
+    public syncRulerChromeToViewer(documentEditor?: DocumentEditor): void {
+        const editor: DocumentEditor = documentEditor || this.documentEditor;
+        if (!editor || !editor.documentHelper) {
+            return;
+        }
+        const viewer: HTMLElement = editor.documentHelper.viewerContainer;
+        if (!viewer) {
+            return;
+        }
+        // offset* is relative to offsetParent; with optionsPane position:relative this is the pane.
+        const left: number = viewer.offsetLeft;
+        const top: number = viewer.offsetTop;
+        const trackSize: { width: number; height: number } = this.getRulerTrackViewportSize(editor);
+        if (this.hRulerBottom) {
+            this.hRulerBottom.style.left = left + 'px';
+            this.hRulerBottom.style.top = top + 'px';
+            if (trackSize.width > 0) {
+                this.hRulerBottom.style.width = trackSize.width + 'px';
+            }
+        }
+        if (this.vRulerWrapper) {
+            this.vRulerWrapper.style.left = left + 'px';
+            this.vRulerWrapper.style.top = top + 'px';
+        }
+        if (this.vRulerBottom) {
+            if (trackSize.height > 0) {
+                this.vRulerBottom.style.height = trackSize.height + 'px';
+            }
+            // When not wrapped, position the bottom track itself.
+            if (!this.vRulerWrapper) {
+                this.vRulerBottom.style.left = left + 'px';
+                this.vRulerBottom.style.top = top + 'px';
+            }
+        }
+        if (this.overlap) {
+            this.overlap.style.left = left + 'px';
+            this.overlap.style.top = top + 'px';
+        }
+        // Keep scale/indent markers aligned with scrolled page content.
+        this.syncRulerScrollOffset(editor);
+    }
+
+    /**
+     * Absolute chrome no longer rides viewer scroll (unlike sticky inside viewerContainer).
+     * Apply scroll offsets so h/v ruler scales still track the page on pan.
+     *
+     * @returns {void}
+     * @param {DocumentEditor} [documentEditor] - Optional document editor instance. Uses this.documentEditor if not provided.
+     * @private
+     */
+    public syncRulerScrollOffset(documentEditor?: DocumentEditor): void {
+        const editor: DocumentEditor = documentEditor || this.documentEditor;
+        if (!editor || !editor.documentHelper || !editor.selectionModule) {
+            return;
+        }
+        const viewer: HTMLElement = editor.documentHelper.viewerContainer;
+        if (!viewer) {
+            return;
+        }
+        const scrollLeft: number = viewer.scrollLeft || 0;
+        const scrollTop: number = viewer.scrollTop || 0;
+        const hRulerEl: HTMLElement = editor.hRuler && editor.hRuler.element
+            ? editor.hRuler.element
+            : (this.hRuler as HTMLElement);
+        if (hRulerEl) {
+            let pageX: number = 0;
+            if (editor.layoutType === 'Pages' && editor.selectionModule.end
+                && editor.selectionModule.end.paragraph
+                && editor.selectionModule.end.paragraph.bodyWidget
+                && editor.selectionModule.end.paragraph.bodyWidget.page) {
+                pageX = editor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x;
+            }
+            // Sticky hRulerBottom previously scrolled with content; emulate via margin - scrollLeft.
+            hRulerEl.style.marginLeft = (pageX - scrollLeft) + 'px';
+        }
+        const vRulerEl: HTMLElement = editor.vRuler && editor.vRuler.element
+            ? editor.vRuler.element
+            : (this.vRuler as HTMLElement);
+        if (vRulerEl && editor.layoutType === 'Pages' && editor.selectionModule.end
+            && editor.selectionModule.end.paragraph
+            && editor.selectionModule.end.paragraph.bodyWidget
+            && editor.selectionModule.end.paragraph.bodyWidget.page) {
+            const pageTop: number = editor.selectionModule.getPageTop(
+                editor.selectionModule.end.paragraph.bodyWidget.page);
+            vRulerEl.style.marginTop = (pageTop - scrollTop) + 'px';
+        }
+        // Tab-stop switch stays pinned to the visible ruler corner (chrome is viewport-fixed).
+        if (this.markIndicator) {
+            this.markIndicator.style.left = '0px';
+            this.markIndicator.style.position = 'absolute';
         }
     }
     private updateHRulerCursor(leftMargin: number, rightMargin: number, mouseXRelativeToDiv: number, clientX: number): void {
@@ -1734,7 +1899,6 @@ export class RulerHelper {
         const viewerContainer: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_viewerContainer');
         const pageContainer: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer');
         // let container = this.documentEditor.element.querySelector('#' + documentEditor.element.id);
-        const data: DOMRect = viewerContainer.getBoundingClientRect() as DOMRect;
         const pageData: DOMRect = pageContainer.getBoundingClientRect() as DOMRect;
         const pageHeight: number = pageData.height;
         const pageWidth: number = pageData.width;
@@ -1776,10 +1940,6 @@ export class RulerHelper {
         let indent: HTMLElement = undefined;
         const ownerId: string = documentEditor.element.id;
         let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin);
-        let currentIndentValue: number;
-        let finalValue: number;
-        let currentMargin: number;
-        let pixelValue: string;
         // if (documentEditor.selection.end.paragraph.isInsideTable) {
         //     currentIndentValue = documentEditor.selection.paragraphFormat.leftIndent;
         //     currentMargin = documentEditor.selection.sectionFormat.leftMargin;
@@ -2014,8 +2174,6 @@ export class RulerHelper {
     private renderRulerMargins(documentEditor: DocumentEditor, isHorizontal: boolean, rulerContainer: HTMLElement): void {
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-        const height: number = isHorizontal ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x
-            : (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.y + rulerSize.height);
         // const margin: string = isHorizontal ? ('margin-left:' + height + 'px;') : ('margin-top:' + height + 'px;');
 
         //const leftMarginValue = 2112 - (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin));
@@ -2178,8 +2336,6 @@ export class RulerHelper {
     }
 
     public getRulerOrigin(): void {
-        const range: number = 1584;
-        const pixelValue: number = HelperMethods.convertPointToPixel(1584);
         //console.log('PixelValue: ', pixelValue);
         //console.log('PointsValue: ', range);
     }
@@ -2226,7 +2382,6 @@ export class RulerHelper {
             //Draggable for first line Indent.
             this.isDraggingIndents1 = false;
             this.indentInitialValue = HelperMethods.getNumberFromString(this.firstLineIndent.style.left); // for mouse up event
-            const indentsInitialValue2: number = HelperMethods.getNumberFromString(this.firstLineIndent.style.left); // for mouse move event
             this.firstLineIndent.addEventListener('mouseenter', this.onDocumentIntentTrueChangeHandler);
             this.firstLineIndent.addEventListener('mouseleave', this.onDocumentIntentFalseChangeHandler);
             this.firstLineIndent.addEventListener('mousedown', this.onFirstLineIndentMouseDownHandler);
@@ -2275,7 +2430,6 @@ export class RulerHelper {
             this.hRuler.append(this.hangingIndent);
             this.hangingIndent.addEventListener('dblclick', this.onDoubleClickHandler);
             this.hangingIndentInitialValue = HelperMethods.getNumberFromString(this.hangingIndent.style.left); // for mouse up event
-            const initialValue2: number = HelperMethods.getNumberFromString(this.hangingIndent.style.left); // for mouse move event
             this.hangingIndent.addEventListener('mouseenter', this.onDocumentIntentTrueChangeHandler);
             this.hangingIndent.addEventListener('mouseleave', this.onDocumentIntentFalseChangeHandler);
             this.hangingIndent.addEventListener('mousedown', this.onHangIndentMouseDownHandler);
@@ -2323,7 +2477,6 @@ export class RulerHelper {
             this.hRuler.append(this.leftIndent);
             this.leftIndent.addEventListener('dblclick', this.onDoubleClickHandler);
             this.indentInitialValue = HelperMethods.getNumberFromString(this.leftIndent.style.left); // for mouse down event
-            const initialValue2: number = HelperMethods.getNumberFromString(this.leftIndent.style.left); // for mouse move event
             this.leftIndent.addEventListener('mouseenter', this.onDocumentIntentTrueChangeHandler);
             this.leftIndent.addEventListener('mouseleave', this.onDocumentIntentFalseChangeHandler);
             this.leftIndent.addEventListener('mousedown', this.onLeftIndentMouseDownHandler);
@@ -2372,7 +2525,6 @@ export class RulerHelper {
             //Draggable for left line Indent.
 
             this.indentInitialValue = HelperMethods.getNumberFromString(this.rightIndent.style.left); // for mouse down event
-            const initialValue2: number = HelperMethods.getNumberFromString(this.rightIndent.style.left); // for mouse move event
             this.rightIndent.addEventListener('mouseenter', this.onDocumentIntentTrueChangeHandler);
             this.rightIndent.addEventListener('mouseleave', this.onDocumentIntentFalseChangeHandler);
             this.rightIndent.addEventListener('mousedown', this.onRightIndentMouseDownHandler);
@@ -2424,6 +2576,7 @@ export class RulerHelper {
     }
 
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private removeTableMarkers(documentEditor: DocumentEditor, ruler: Ruler): void {
         const renderedTableMarkers: HTMLElement[] = HelperMethods.convertNodeListToArray(document.querySelectorAll('.e-de-ruler-table-marker'));
         if (!isNullOrUndefined(renderedTableMarkers)) {
@@ -2452,7 +2605,7 @@ export class RulerHelper {
     }
     private renderTableMarkers(documentEditor: DocumentEditor, ruler: Ruler): void {
         this.removeTableMarkers(documentEditor, documentEditor.hRuler);
-        let intialPosition: number;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const tablewidget: TableWidget = ((this.position.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget);
         const tableRowWidget: TableRowWidget = (
             (this.position.paragraph.associatedCell as TableCellWidget).ownerRow as TableRowWidget).clone();
@@ -2616,7 +2769,6 @@ export class RulerHelper {
      */
     private updateRulerDimension(documentEditor: DocumentEditor, ruler: Ruler, offset: number, rerenderRuler: boolean): void {
         const isHorizontal: boolean = ruler.orientation === 'Horizontal' ? true : false;
-        const rulerSize: Size = this.getRulerSize(documentEditor);
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         //const documentEditorRuler: DocumentEditorRulerModel = isHorizontal ? documentEditor.documentEditorSettings.rulerSettings.horizontalRuler : documentEditor.documentEditorSettings.rulerSettings.verticalRuler;
         this.updateRulerDiv(documentEditor, rulerGeometry, isHorizontal, ruler);
@@ -2628,11 +2780,20 @@ export class RulerHelper {
             ((ruler.zeroPosition * 2) / documentEditor.zoomFactor)
             : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
         const rulerObj: HTMLElement = ruler.element;
+        const viewerScrollLeft: number = documentEditor.documentHelper.viewerContainer
+            ? documentEditor.documentHelper.viewerContainer.scrollLeft : 0;
+        const viewerScrollTop: number = documentEditor.documentHelper.viewerContainer
+            ? documentEditor.documentHelper.viewerContainer.scrollTop : 0;
         if (isHorizontal) {
-            rulerObj.style.marginLeft = (documentEditor.layoutType === 'Pages' ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x : 0) + 'px';
+            // Page X minus horizontal scroll — absolute chrome does not move with viewer pan.
+            const pageX: number = documentEditor.layoutType === 'Pages'
+                ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x : 0;
+            rulerObj.style.marginLeft = (pageX - viewerScrollLeft) + 'px';
         } else {
             rulerObj.parentElement.style.display = documentEditor.layoutType === 'Pages' ? 'block' : 'none';
-            rulerObj.style.marginTop = documentEditor.selectionModule.getPageTop(documentEditor.selectionModule.end.paragraph.bodyWidget.page) + 'px';
+            const pageTop: number = documentEditor.selectionModule.getPageTop(
+                documentEditor.selectionModule.end.paragraph.bodyWidget.page);
+            rulerObj.style.marginTop = (pageTop - viewerScrollTop) + 'px';
         }
         if (rerenderRuler) {
             ruler.offset = offset;
@@ -2724,12 +2885,18 @@ export class RulerHelper {
                 isHorizontal ? (this.parentRulerDiv.style.height === ruler.thickness + 'px') : (this.parentRulerDiv.style.width === ruler.thickness + 'px');
             }
         }
+        // Keep track chrome clipped to viewer viewport (pre-fix sticky clip behavior).
+        const pageElement: HTMLElement = this.documentEditor.element.querySelector(
+            '#' + documentEditor.element.id + '_pageContainer') as HTMLElement;
+        const trackSize: { width: number; height: number } = this.getRulerTrackViewportSize(documentEditor, pageElement);
         if (isHorizontal) {
             if (this.hRulerBottom) {
-                const pageElement: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_pageContainer');
-                this.hRulerBottom.style.width = pageElement.getBoundingClientRect().width + 'px';
+                this.hRulerBottom.style.width = trackSize.width + 'px';
             }
+        } else if (this.vRulerBottom) {
+            this.vRulerBottom.style.height = trackSize.height + 'px';
         }
+        this.syncRulerChromeToViewer(documentEditor);
         // let vRulerDiv: HTMLElement = this.documentEditor.element.querySelector('#' + documentEditor.element.id + '_vRuler');
         // if (vRulerDiv) {
         //     vRulerDiv.style.width = ruler.thickness + 'px';
@@ -2745,7 +2912,6 @@ export class RulerHelper {
      * @private
      */
     private getRulerGeometry(documentEditor: DocumentEditor): Size {
-        const rulerSize: Size = this.getRulerSize(documentEditor);
         if (isNullOrUndefined(documentEditor.selectionModule.end)
             || isNullOrUndefined(documentEditor.selectionModule.end.paragraph)
             || isNullOrUndefined(documentEditor.selectionModule.end.paragraph.bodyWidget)
@@ -3009,7 +3175,6 @@ export class RulerHelper {
                 this.tabStopElement.addEventListener('dblclick', this.onTabStopDblClickHandler);
             }
             this.tabInitialValue = HelperMethods.getNumberFromString(this.tabStopElement.style.left); // for mouse up event
-            const initialValue2: number = HelperMethods.getNumberFromString(this.tabStopElement.style.left); // for mouse move event
             this.justification = this.tabStopElement.getAttribute('data-name');
             this.currrentParagraph = this.position.paragraph;
             this.tabStopElement.addEventListener('mousedown', this.onTabStopMouseDownHandler);
@@ -3063,6 +3228,7 @@ export class RulerHelper {
      * @param { DocumentEditor} documentEditor - provide the documentEditor  value.
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRulerSize(documentEditor: DocumentEditor): Size {
         let top: number = 0;
         let left: number = 0;
@@ -3093,6 +3259,10 @@ export class RulerHelper {
         if (this.vRulerBottom) {
             this.vRulerBottom.remove();
             this.vRulerBottom = null;
+        }
+        if (this.vRulerWrapper) {
+            this.vRulerWrapper.remove();
+            this.vRulerWrapper = null;
         }
         if (this.overlap) {
             this.overlap.remove();

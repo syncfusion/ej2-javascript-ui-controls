@@ -448,13 +448,31 @@ export class AIAssistant {
     private refreshPosition(): void {
         if (!this.dragged && this.queryPopup && !this.queryPopup.isDestroyed && this.queryPopup.element &&
             this.queryPopup.element.classList.contains('e-popup-open')) {
-            this.queryPopup.setProperties({ offsetY: this.getQueryPopupOffsetY() });
-            this.queryPopup.dataBind();
+            if (this.queryPopup.element.classList.contains('e-rte-aiquery-popup-fixed')) {
+                this.alignQueryPopupWithEditor();
+            } else {
+                this.queryPopup.setProperties({ offsetY: this.getQueryPopupOffsetY() });
+                this.queryPopup.dataBind();
+            }
             this.queryPopup.refreshPosition();
             const footer: HTMLElement = this.assistView.element.querySelector('.e-footer');
             this.historyDropDownButton.setProperties({ popupWidth : footer.getBoundingClientRect().width});
             this.historyDropDownButton.dataBind();
         }
+    }
+
+    private alignQueryPopupWithEditor(): void {
+        if (this.parent.userAgentData.isMobileDevice()) {
+            this.queryPopup.setProperties({ offsetY: 0 });
+        } else if (this.parent.inlineMode.enable) {
+            this.queryPopup.setProperties({ offsetY: 0 });
+        } else if (this.parent.toolbarSettings.position === 'Bottom') {
+            this.queryPopup.setProperties({ offsetY: 10 });
+        } else {
+            const toolbarElemRect: ClientRect = this.parent.getToolbarElement().getBoundingClientRect();
+            this.queryPopup.setProperties({ offsetY: toolbarElemRect.height + 11 });
+        }
+        this.queryPopup.dataBind();
     }
 
     public destroy(): void {
@@ -565,6 +583,9 @@ export class AIAssistant {
                 originalEvent: !isNOU(event) ? event : undefined
             };
             this.triggerBeforePopupOpenCloseEvent('beforePopupOpen', eventArgs, eventArgs, () => {
+                if (this.queryPopup.element.classList.contains('e-rte-aiquery-popup-fixed')) {
+                    this.alignQueryPopupWithEditor();
+                }
                 this.queryPopup.show();
                 this.queryPopup.refreshPosition();
                 this.renderHistoryDropDownButton();

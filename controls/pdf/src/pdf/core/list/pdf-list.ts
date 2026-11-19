@@ -10,7 +10,7 @@ import { PdfPage } from '../pdf-page';
 import { PdfListItem, PdfListItemCollection } from './pdf-list-item';
 import { PdfDocument } from '../pdf-document';
 import { _convertNumber } from './../utils';
-import { Point, Size, Rectangle } from './../pdf-type';
+import { Point, Size, Rectangle } from './../pdf-document-helper';
 import { PdfBitmap } from '../graphics/images/pdf-bitmap';
 /**
  * Represents the properties of the image marker with optional marker size for the unordered list.

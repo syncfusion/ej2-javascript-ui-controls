@@ -40,14 +40,14 @@ export class DrillThrough {
     }
 
     private addInternalEvents(): void {
-        if (this.parent) {
+        if (this.parent && !this.parent.isDestroyed) {
             this.parent.on(contentReady, this.wireEvents, this);
         }
     }
 
     private wireEvents(): void {
         this.unWireEvents();
-        if (this.parent && this.parent.element) {
+        if (this.parent && !this.parent.isDestroyed && this.parent.element) {
             EventHandler.add(this.parent.element, 'dblclick', this.mouseClickHandler, this);
         }
     }

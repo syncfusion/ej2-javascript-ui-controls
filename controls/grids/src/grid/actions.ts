@@ -9,6 +9,7 @@ export * from './actions/selection';
 export * from './actions/filter';
 export * from './actions/advanced-filter';
 export * from './actions/search';
+export * from './actions/find';
 export * from './actions/scroll';
 export * from './actions/resize';
 export * from './actions/reorder';

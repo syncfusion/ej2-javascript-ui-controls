@@ -12,7 +12,7 @@ import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
     FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo, AbsolutePositionInfo, FieldResultInfo,
     FieldStartInfo,
-    ScrollPosition
+    ScrollPosition, TableSelectionPosition
 } from '../editor/editor-helper';
 import {
     SelectionCharacterFormat, SelectionCellFormat, SelectionParagraphFormat,
@@ -22,23 +22,13 @@ import { TextSizeInfo } from '../viewer/text-helper';
 import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList, WRowFormat, SelectionInfo } from '../index';
 import { isNullOrUndefined, createElement, L10n, Browser } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
-import {
-    LineSpacingType, BaselineAlignment, HighlightColor,
-    Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
-    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType,
-    ContentControlInfo,
-    ContentControlType,
-    aftercontentControlFillEvent,
-    beforecontentControlFillEvent,
-    viewChangeEvent,
-    internalviewChangeEvent,
-    ViewChangeEventArgs
-} from '../../base/index';
+import { LineSpacingType, BaselineAlignment, HighlightColor, Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent, beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType, ContentControlInfo, ContentControlType, aftercontentControlFillEvent, beforecontentControlFillEvent, internalviewChangeEvent, ViewChangeEventArgs } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { DialogUtility, Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs, TablePasteOptions, PasteOptionSwitch } from '../../index';
+import { FormatPainter } from './format-painter';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageSizeInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
@@ -423,6 +413,50 @@ export class Selection {
         let scrollPosition: ScrollPosition = { scrollTop: this.documentHelper.viewerContainer.scrollTop, scrollLeft: this.documentHelper.viewerContainer.scrollLeft};
         return scrollPosition;
     }
+    
+    /**
+     * Gets the position of the table that contains the current selection.
+     *
+     * Returns 0 for both values when the selection is not inside a table, or when the selection is not empty
+     * (a range is selected). For a table that spans multiple pages, the table portion on the current page is used.
+     *
+     * @returns {TableSelectionPosition} An object containing the top and right position of the table relative to the current page.
+     */
+    public getTablePosition(): TableSelectionPosition {
+        const noPosition: TableSelectionPosition = { tableTopInCurrentPage: 0, tableRightInCurrentPage: 0 };
+        if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer) || isNullOrUndefined(this.start) || isNullOrUndefined(this.end) || !this.isEmpty) {
+            return noPosition;
+        }
+        let table: TableWidget = this.getTable(this.start, this.end);
+        if (isNullOrUndefined(table)) {
+            return noPosition;
+        }
+        // A split table has one widget per page. Use the part on the page that holds the selection end.
+        const selectionPage: Page = this.getSelectionPage(this.end);
+        const tableParts: Widget[] = table.getSplitWidgets();
+        for (let i: number = 0; i < tableParts.length; i++) {
+            if (this.getPage(tableParts[i]) === selectionPage) {
+                table = tableParts[i] as TableWidget;
+                break;
+            }
+        }
+        const page: Page = this.getPage(table);
+        if (isNullOrUndefined(page) || isNullOrUndefined(page.boundingRectangle)) {
+            return noPosition;
+        }
+        const zoomFactor: number = this.documentHelper.zoomFactor;
+        // The page gap is 0 in web layout view.
+        const pageGap: number = this.viewer.pageGap;
+        const pageIndex: number = this.documentHelper.pages.indexOf(page);
+        // Top: top of the page in the scrolling viewer area plus the top of the table part on that page.
+        const pageTop: number = (page.boundingRectangle.y - pageGap * (pageIndex + 1)) * zoomFactor + pageGap * (pageIndex + 1);
+        const top: number = pageTop + table.y * zoomFactor;
+        // Right: left edge of the page plus the table's left position and its width.
+        // The layout already includes the table's indents in table.x.
+        const right: number = page.boundingRectangle.x + (table.x + table.getTableCellWidth()) * zoomFactor;
+        const tableSelectionPosition: TableSelectionPosition = { tableTopInCurrentPage: top, tableRightInCurrentPage: right };
+        return tableSelectionPosition;
+    }
 
     /**
      * Sets the scroll position of the document editor.
@@ -661,7 +695,12 @@ export class Selection {
         this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
         this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
         this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        this.formatPainterModule = new FormatPainter(this.owner);
     }
+    /**
+     * @private
+     */
+    public formatPainterModule: FormatPainter;
     private isFootNoteParagraph(paragraph: ParagraphWidget): boolean {
         const container: Widget = this.getContainerWidget(paragraph);
         if (container instanceof FootNoteWidget && container.footNoteType === 'Footnote') {
@@ -864,6 +903,10 @@ export class Selection {
         if (pageNumber >= 1 && pageNumber <= this.owner.documentHelper.pages.length) {
             const page: Page = this.owner.documentHelper.pages[pageNumber - 1];
             this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
+            if(!this.validateHeadersParagraphs()){
+                this.shiftBlockOnHeaderFooterEnableDisable();
+                this.documentHelper.layout.layoutWholeDocument();
+            }
         }
     }
     /**
@@ -1316,6 +1359,9 @@ export class Selection {
         while (low <= high) {
             const mid = (low + high) >> 1;
             const comment = comments[mid];
+            if (isNullOrUndefined(comment.commentStart) || isNullOrUndefined(comment.commentStart.line) || isNullOrUndefined(comment.commentEnd) || isNullOrUndefined(comment.commentEnd.line)) {
+                break;
+            }
             const commentStartPosition = this.getElementPosition(comment.commentStart).startPosition;
             const commentEndPosition = this.getElementPosition(comment.commentEnd).startPosition;
             const insideComment =
@@ -1536,13 +1582,8 @@ export class Selection {
                 width = (left + width) - info.end;
                 left = info.end;
             } else if (left === info.start) {
-                if (width < info.end) {
-                    width = left + width - info.end;
-                    left = info.end;
-                } else {
-                    left += info.end;
-                    width = width - info.end
-                }
+                width = left + width - info.end;
+                left = info.end;
             }
             if (m === clipInfo.length - 1) {
                 selectedWidget.push(new SelectionWidgetInfo(left, width));
@@ -1696,7 +1737,8 @@ export class Selection {
                         canvasContext.globalAlpha = 0.4;
                         let fillStyle: string = 'gray';
 
-                        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                        if (this.owner.documentEditorSettings.commentSettings &&
+                            this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                             const highlightColor: string = this.getSelectedCommentHighlightColor();
                             if (!isNullOrUndefined(highlightColor)) {
                                 fillStyle = highlightColor;
@@ -3580,6 +3622,11 @@ export class Selection {
      * @returns {void}
      */
     public selectAll(): void {
+        // Keyboard and API select-all must not paint. The flag is consumed by
+        // the selection-change that this method fires.
+        if (!isNullOrUndefined(this.formatPainterModule) && this.formatPainterModule.isActive) {
+            this.formatPainterModule.skipSelectionApply();
+        }
         let documentStart: TextPosition;
         let documentEnd: TextPosition;
         this.documentHelper.skipScrollToPosition = true;
@@ -4004,6 +4051,9 @@ export class Selection {
     public getTextPosBasedOnLogicalIndex(hierarchicalIndex: string): TextPosition {
         const textPosition: TextPosition = new TextPosition(this.owner);
         const blockInfo: ParagraphInfo = this.getParagraph({ index: hierarchicalIndex });
+        if (isNullOrUndefined(blockInfo) || isNullOrUndefined(blockInfo.paragraph)) {
+            return this.getDocumentEnd();
+        }
         const lineInfo: LineInfo = this.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
         return textPosition;
@@ -5363,6 +5413,9 @@ export class Selection {
         if (!isNullOrUndefined(line) && !isNullOrUndefined(line.paragraph)) {
             bidi = line.paragraph.bidi;
         }
+        if (isNullOrUndefined(line) || isNullOrUndefined(line.children)) {
+            return length;
+        }
         for (let i: number = !bidi ? 0 : line.children.length - 1; bidi ? i > -1 : i < line.children.length; bidi ? i-- : i++) {
             const element: ElementBox = line.children[i] as ElementBox;
             if (element instanceof ListTextElementBox) {
@@ -5833,7 +5886,10 @@ export class Selection {
             }
 
             //Gets line spacing.
-            const lineSpacing: number = this.documentHelper.layout.getLineSpacing(paragraph, maxHeight);
+            let lineSpacing: number = this.documentHelper.layout.getLineSpacing(paragraph, maxHeight);
+            if (this.documentHelper.compatibilityMode === 'Word2003' && lineSpacing < 0 && paragraph.paragraphFormat.lineSpacingType === 'Exactly') {
+                lineSpacing = Math.abs(lineSpacing);
+            }
             const beforeSpacing: number = this.documentHelper.layout.getBeforeSpacing(paragraph);
             topMargin = maxBaselineOffset - baselineOffset;
             bottomMargin = maxHeight - maxBaselineOffset - (size.Height - baselineOffset);
@@ -5953,9 +6009,12 @@ export class Selection {
             } else {
                 if(start.paragraph.isInsideTable 
                     && start.paragraph.associatedCell.equals(end.paragraph.associatedCell)
-                    && end.paragraph.equals(this.getLastParagraph(end.paragraph.associatedCell))
-                    && (this.getParagraphLength(end.paragraph) + 1) == end.offset ){
-                    end.offset--;
+                    && end.paragraph.equals(this.getLastParagraph(end.paragraph.associatedCell))) {
+                    const lastLine: LineWidget = end.paragraph.childWidgets[end.paragraph.childWidgets.length - 1] as LineWidget;
+                    const isCellEndSelected: boolean = end.currentWidget === lastLine && (this.getLineLength(lastLine) + 1) === end.offset;
+                    if (isCellEndSelected) {
+                        end.offset--
+                    }
                 }
                 this.highlight(start.paragraph, start, end);
                 if (this.isHighlightNext) {
@@ -6458,11 +6517,13 @@ export class Selection {
      * @private
      */
     public getLastParagraph(cell: TableCellWidget): ParagraphWidget {
-        while (cell.nextSplitWidget) {
-            if (cell.nextSplitWidget.childWidgets.length > 0) {
-                cell = cell.nextSplitWidget as TableCellWidget;
-            } else {
-                break;
+        if (!isNullOrUndefined(cell.nextSplitWidget)) {
+            while (cell.nextSplitWidget) {
+                if (cell.nextSplitWidget.childWidgets.length > 0) {
+                    cell = cell.nextSplitWidget as TableCellWidget;
+                } else {
+                    break;
+                }
             }
         }
 
@@ -6498,11 +6559,13 @@ export class Selection {
      * @private
      */
     public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition, skipParaMark?: boolean): boolean {
+        const firstParagraph: ParagraphWidget = this.getFirstParagraph(cell as TableCellWidget) as ParagraphWidget;
         const lastParagraph: ParagraphWidget = this.getLastParagraph(cell as TableCellWidget) as ParagraphWidget;
 
+        const isAtCellStart: boolean = firstParagraph === startPosition.paragraph && startPosition.isAtParagraphStart;
         const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && lastParagraph.lastChild === endPosition.currentWidget && endPosition.offset === this.getLineLength((lastParagraph.lastChild as LineWidget)) + (!skipParaMark ? 1 : 0);
 
-        return (isAtCellEnd && startPosition.isAtParagraphStart) || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
+        return (isAtCellEnd && isAtCellStart) || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
             !this.containsCell(cell, endPosition.paragraph.associatedCell));
     }
     /**
@@ -7946,6 +8009,8 @@ export class Selection {
                                 index = this.getNextValidOffset(element.line, 0, true);
                             }
                         }
+                    } else if (element instanceof EditRangeStartElementBox) {
+                        index = this.getNextValidOffset(element.line, element.indexInOwner + 1, true);
                     }
                     else {
                         index = this.getTextLength(element.line, element);
@@ -8634,6 +8699,58 @@ export class Selection {
                 }
             }
         }
+        if (!isNullOrUndefined(this.formatPainterModule) && this.formatPainterModule.isActive) {
+            this.formatPainterModule.onSelectionChanged(isSelectionChanged);
+    }
+    }
+
+    /**
+     * Copies the formatting of the current selection and activates the Format Painter.
+     *
+     * @param {boolean} isPersistent Optional. Default is false.
+     * Specifies whether Format Painter remains active for multiple selections
+     * without invoking copyFormat again.
+     * @returns {void}
+     */
+    public copyFormat(isPersistent?: boolean): void {
+        if (!isNullOrUndefined(this.formatPainterModule)) {
+            this.formatPainterModule.copyFormat(isPersistent);
+        }
+    }
+
+    /**
+     * Applies the copied formatting to the current selection.
+     * If Format Painter is not in persistent mode, it is deactivated after the formatting is applied.
+     *
+     * @returns {void}
+     */
+    public applyCopiedFormat(): void {
+        if (!isNullOrUndefined(this.formatPainterModule)) {
+            this.formatPainterModule.applyCopiedFormat();
+        }
+    }
+
+    /**
+     * Cancels Format Painter and clears the copied formatting.
+     *
+     * After this method is called, copied formatting can no longer be applied
+     * until copyFormat is invoked again.
+     *
+     * @returns {void}
+     */
+    public cancelFormatPainter(): void {
+        if (!isNullOrUndefined(this.formatPainterModule)) {
+            this.formatPainterModule.cancel();
+        }
+    }
+
+    /**
+     * Gets a value indicating whether Format Painter is active.
+     *
+     * @returns {boolean} Returns true when Format Painter mode is currently active; otherwise, false.
+     */
+    public get isFormatPainterActive(): boolean {
+        return !isNullOrUndefined(this.formatPainterModule) && this.formatPainterModule.isActive;
     }
     /**
      * Notify selection change event
@@ -9232,7 +9349,7 @@ export class Selection {
      */
     public getContainerWidget(block: BlockWidget): BlockContainer {
         let bodyWidget: Widget;
-        if (block.containerWidget instanceof TextFrame) {
+        if (block.containerWidget instanceof TextFrame && !isNullOrUndefined(block.containerWidget.containerShape.line)) {
             bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;
         } else if (block.containerWidget instanceof BlockContainer) {
             if (!isNullOrUndefined(block.containerWidget.containerWidget) && block.containerWidget.containerWidget instanceof FootNoteWidget) {
@@ -9243,7 +9360,7 @@ export class Selection {
         } else {
             bodyWidget = block.containerWidget;
             while (!(bodyWidget instanceof BlockContainer)) {
-                if (bodyWidget instanceof TextFrame) {
+                if (bodyWidget instanceof TextFrame && !isNullOrUndefined(bodyWidget.containerShape.line)) {
                     bodyWidget = bodyWidget.containerShape.line.paragraph;
                 }
                 if (isNullOrUndefined(bodyWidget) || isNullOrUndefined(bodyWidget.containerWidget)) {
@@ -10279,10 +10396,10 @@ export class Selection {
                 let lastCell: TableCellWidget = cells[cells.length - 1];
                 let firstrow: TableRowWidget = firstcell.ownerRow;
                 let lastRow: TableRowWidget = lastCell.ownerRow;
-                let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, undefined, 0);
+                let startCell: TableCellWidget = firstrow.getCell(firstcell.rowIndex, undefined, 0);
                 let firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphInCell(startCell);
                 info.start = this.owner.documentHelper.selection.getHierarchicalIndex(firstPara, "0");
-                let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, undefined, lastRow.childWidgets.length - 1);
+                let lastCellInRow: TableCellWidget = lastRow.getCell(lastCell.rowIndex, undefined, lastRow.childWidgets.length - 1);
                 let lastPara: ParagraphWidget = this.getLastParagraph(lastCellInRow);
                 var offset: number = this.getParagraphLength(lastPara);
                 info.end = this.owner.documentHelper.selection.getHierarchicalIndex(lastPara, offset.toString());
@@ -11756,6 +11873,12 @@ export class Selection {
             }
         }
         if (key === 27) {
+            if (!isNullOrUndefined(this.formatPainterModule) && this.formatPainterModule.isActive) {
+                this.formatPainterModule.cancel();
+            }
+            if (!isNullOrUndefined(this.owner.editorModule)) {
+                this.owner.editorModule.hideLockedRegionAlert();
+            }
             if (!isNullOrUndefined(this.owner.optionsPaneModule)) {
                 this.owner.optionsPaneModule.showHideOptionsPane(false);
                 this.documentHelper.updateFocus();
@@ -11791,9 +11914,50 @@ export class Selection {
         if (this.owner.enableHeaderAndFooter) {
             this.owner.enableHeaderAndFooter = false;
             this.documentHelper.updateTextPositionForSelection(pagePoint, 1);
+            if (!this.validateHeadersParagraphs()) {
+                this.shiftBlockOnHeaderFooterEnableDisable();
+                this.documentHelper.layout.layoutWholeDocument();
+            }
             return true;
         }
         return false;
+    }
+    /**
+   * Validates headers by checking if they contain empty paragraphs.
+   * Returns false if any header contains an empty paragraph and
+   * its height is greater than the default header height.
+   *
+   * @returns {boolean}
+   */
+    public validateHeadersParagraphs(): boolean {
+        const defaultHeaderHeight: number = 36;
+
+        if (isNullOrUndefined(this.documentHelper.headersFooters)) {
+            return true;
+        }
+
+        for (let i: number = 0; i < this.documentHelper.headersFooters.length; i++) {
+            const headerFooters = this.documentHelper.headersFooters[i];
+
+            if (isNullOrUndefined(headerFooters)) {
+                continue;
+            }
+
+            for (const index in headerFooters) {
+                const headerWidget: HeaderFooterWidget = headerFooters[index];
+
+                if (isNullOrUndefined(headerWidget) ||
+                    this.sectionFormat.headerDistance <= defaultHeaderHeight) {
+                    continue;
+                }
+
+                if (headerWidget.childWidgets.length === 1 && (headerWidget.childWidgets[0] as ParagraphWidget).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
     /**
      * @private
@@ -11875,6 +12039,9 @@ export class Selection {
             this.comparePageWidthAndMargins(widget, page);
             this.updateTextPositionForBlockContainer(widget);
             this.shiftBlockOnHeaderFooterEnableDisable();
+            if (!this.validateHeadersParagraphs()) {
+                this.documentHelper.layout.layoutWholeDocument();
+            }
             return true;
         }
         return false;
@@ -12006,6 +12173,9 @@ export class Selection {
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
         this.shiftBlockOnHeaderFooterEnableDisable();
+        if (!this.validateHeadersParagraphs()) {
+            this.documentHelper.layout.layoutWholeDocument();
+        }
     }
     //#endregion
 
@@ -12041,6 +12211,10 @@ export class Selection {
             this.pasteDropDwn = undefined;
         }
         this.caret = undefined;
+        if (!isNullOrUndefined(this.formatPainterModule)) {
+            this.formatPainterModule.destroy();
+            this.formatPainterModule = undefined;
+        }
         this.contextTypeInternal = undefined;
         this.upDownSelectionLength = undefined;
         this.owner = undefined;
@@ -12133,14 +12307,25 @@ export class Selection {
         let startRowIndex: number = bookmark.paragraph.associatedCell.ownerRow.rowIndex;
         let endRowIndex: number = bookmark.reference.paragraph.associatedCell.ownerRow.rowIndex;
         let cellArray: TableCellWidget[] = [];
-        for (let i: number = startRowIndex; i <= endRowIndex; i++) {
-            let row: TableRowWidget = rows[i];
-            for (let j: number = columnFirst; j <= columnLast; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                if(!isNullOrUndefined(cell)){
-                    cellArray.push(cell);
+        let splittedTable: TableWidget = table;
+        while (!isNullOrUndefined(splittedTable)) {
+            let rows: TableRowWidget[] = splittedTable.childWidgets as TableRowWidget[];
+            for (let i: number = 0; i < rows.length; i++) {
+                let row: TableRowWidget = rows[i];
+                if (row.rowIndex < startRowIndex) {
+                    continue;
+                }
+                if (row.rowIndex > endRowIndex) {
+                    break;
+                }
+                for (let j: number = columnFirst; j <= columnLast; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    if (!isNullOrUndefined(cell)) {
+                        cellArray.push(cell);
+                    }
                 }
             }
+            splittedTable = splittedTable.nextSplitWidget as TableWidget;
         }
         return cellArray;
     }
@@ -12157,7 +12342,12 @@ export class Selection {
         }
         let table: TableWidget = bookmark.paragraph.associatedCell.ownerTable;
         let cellArray: TableCellWidget[] = this.getCellsToSelect(table, columnFirst, columnLast, bookmark);
-        if(!isNullOrUndefined(cellArray)){
+        if (!isNullOrUndefined(cellArray) && cellArray.length > 0) {
+            let firstPara: ParagraphWidget = this.getFirstParagraph(cellArray[0]);
+            let lastPara: ParagraphWidget = this.getLastParagraph(cellArray[cellArray.length - 1]);
+            this.start.setPosition(firstPara.firstChild as LineWidget, true);
+            this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+            this.selectPosition(this.start, this.end);
             for (let i: number = 0; i < cellArray.length; i++) {
                 this.highlightCellWidget(cellArray[i]);
             }
@@ -12249,8 +12439,9 @@ export class Selection {
     }
     /**
      * Returns true if the paragraph has toc style.
+     * @private
      */
-    private isTocStyle(paragraph: ParagraphWidget): boolean {
+    public isTocStyle(paragraph: ParagraphWidget): boolean {
         let style: WStyle = (paragraph.paragraphFormat.baseStyle as WStyle);
         return (style !== undefined && (style.name.toLowerCase().indexOf('toc') !== -1));
     }
@@ -13089,6 +13280,9 @@ export class Selection {
             if (!editRangeStart.line.paragraph.isInsideTable
                 || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)
                 || editRangeStart.columnFirst === -1) {
+                if (this.isEditRangeMarkInSelectedCell(editRangeStart, start, end)) {
+                    continue;
+                }
                 if (this.isSelectionInsideEditRange(editRangeStart, start, end)) {
                     return true;
                 }
@@ -13114,6 +13308,27 @@ export class Selection {
             }
         }
         return false;
+    }
+    /**
+     * Returns true when one end of the edit range lies inside a table cell that is part of a
+     * whole-cell selection while the other end is outside the table. Such a selection is treated as read-only.
+     */
+    private isEditRangeMarkInSelectedCell(editRangeStart: EditRangeStartElementBox, start: TextPosition, end: TextPosition): boolean {
+        const editRangeEnd: EditRangeEndElementBox = editRangeStart.editRangeEnd;
+        if (this.isEmpty || isNullOrUndefined(editRangeEnd) || isNullOrUndefined(editRangeEnd.line)
+            || !start.paragraph.isInsideTable || !end.paragraph.isInsideTable) {
+            return false;
+        }
+        const startInTable: boolean = editRangeStart.line.paragraph.isInsideTable;
+        const endInTable: boolean = editRangeEnd.line.paragraph.isInsideTable;
+        if (startInTable === endInTable) {
+            return false;
+        }
+        const markCell: TableCellWidget = (startInTable ? editRangeStart.line.paragraph : editRangeEnd.line.paragraph).associatedCell;
+        const startCell: TableCellWidget = start.paragraph.associatedCell;
+        const endCell: TableCellWidget = end.paragraph.associatedCell;
+        return markCell.ownerTable === startCell.ownerTable && startCell.ownerTable === endCell.ownerTable
+            && (startCell !== endCell || this.isCellSelected(startCell, start, end));
     }
     /**
      * @private

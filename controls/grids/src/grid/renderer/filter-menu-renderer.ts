@@ -13,7 +13,7 @@ import { StringFilterUI } from './string-filter-ui';
 import { NumberFilterUI } from './number-filter-ui';
 import { BooleanFilterUI } from './boolean-filter-ui';
 import { DateFilterUI } from './date-filter-ui';
-import { getFilterMenuPostion, parentsUntil, appendChildren, resetDialogAppend } from '../base/util';
+import { getFilterMenuPostion, parentsUntil, appendChildren, resetDialogAppend, getParsedFieldID  } from '../base/util';
 import * as events from '../base/constant';
 import { IXLFilter } from '../common/filter-interface';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
@@ -254,7 +254,7 @@ export class FilterMenuRenderer {
             }
         }
         if (!column.filterTemplate) {
-            this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));
+            this.writeMethod(column, this.dlgObj.element.querySelector('#' + getParsedFieldID(column.uid + '-flmenu')));
         }
         const args: Object = {
             requestType: events.filterAfterOpen,

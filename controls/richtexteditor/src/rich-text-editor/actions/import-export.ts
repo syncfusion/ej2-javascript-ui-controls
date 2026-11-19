@@ -43,7 +43,18 @@ export class ImportExport {
                             }
                         },
                         success: (args: SuccessEventArgs) => {
-                            (this.parent as RichTextEditor).executeCommand('importWord', ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response, { undo: true });
+                            const wordHtml: string = ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response;
+                            // Prepare Word import
+                            const importContainer: HTMLElement = this.parent.createElement('div');
+                            importContainer.innerHTML = wordHtml;
+                            const tableElement: NodeListOf<HTMLElement> = importContainer.querySelectorAll('table:not(.e-rte-table):not(.e-rte-paste-table)');
+                            for (let i: number = 0; i < tableElement.length; i++) {
+                                tableElement[i as number].classList.add('e-rte-paste-table');
+                            }
+                            const preparedHtml: string = importContainer.innerHTML;
+                            importContainer.remove();
+                            // Apply Word cleanup
+                            this.applyWordCleanupOnImport(preparedHtml);
                             this.parent.trigger(events.actionComplete, { requestType: 'Import' });
                             this.parent.notify(events.count, {});
                         }
@@ -159,6 +170,145 @@ export class ImportExport {
             this.uploaderObj.destroy();
             this.uploaderObj = null;
         }
+    }
+
+    private applyWordCleanupOnImport(html: string): void {
+        // Parse HTML to work with elements directly
+        const container: HTMLElement = this.parent.createElement('div');
+        container.innerHTML = html;
+        // STEP 1: Convert <p> to <li> inside lists
+        const lists: NodeListOf<Element> = container.querySelectorAll('ol, ul');
+        lists.forEach((listElement: Element) => {
+            const paragraphs: Element[] = [];
+            for (let i: number = 0; i < listElement.children.length; i++) {
+                const child: Element = listElement.children[i as number];
+                if (child.tagName.toLowerCase() === 'p') {
+                    paragraphs.push(child);
+                }
+            }
+            paragraphs.forEach((p: Element) => {
+                const li: HTMLElement = this.parent.createElement('li');
+                for (let i: number = 0; i < p.attributes.length; i++) {
+                    const attr: Attr = p.attributes[i as number];
+                    li.setAttribute(attr.name, attr.value);
+                }
+                while (p.firstChild) {
+                    li.appendChild(p.firstChild);
+                }
+                p.parentElement!.replaceChild(li, p);
+            });
+        });
+        // STEP 2: Build nested structure using margin-left
+        const processedContainer: HTMLElement = this.buildNestedListStructure(container);
+        // STEP 3: Extract bullet markers from list items
+        this.extractBulletMarkersFromLists(processedContainer);
+        // STEP 4: Clean RTL-specific styles if in RTL mode
+        this.cleanupRtlStyles(processedContainer);
+        const processedHtml: string = processedContainer.innerHTML;
+        // STEP 5: Insert cleaned HTML
+        (this.parent as RichTextEditor).executeCommand('insertHTML', processedHtml);
+    }
+
+    private cleanupRtlStyles(container: HTMLElement): void {
+        // Check if RTL mode is enabled
+        const isRtlMode: boolean = this.parent.element && this.parent.element.classList.contains('e-rtl');
+        if (!isRtlMode) {
+            return;  // Only cleanup in RTL mode
+        }
+        // Find all elements with text-align or text-indent styles
+        const allElements: NodeListOf<Element> = container.querySelectorAll('*[style*="text-align"], *[style*="text-indent"]');
+        for (let i: number = 0; i < allElements.length; i++) {
+            const element: Element = allElements[i as number];
+            const styleAttr: string = element.getAttribute('style') || '';
+            let newStyle: string = styleAttr;
+            // Remove text-align: left, text-align:left, text-align: start, text-align:start
+            newStyle = newStyle.replace(/text-align:\s*left\s*;?/gi, '');
+            newStyle = newStyle.replace(/text-align:\s*start\s*;?/gi, '');
+            // Remove negative text-indent (used by Word for hanging indents)
+            newStyle = newStyle.replace(/text-indent:\s*-[^;]*;?/gi, '');
+            // Clean up extra semicolons and whitespace
+            newStyle = newStyle.replace(/;\s*;/g, ';').replace(/;\s*$/, '').trim();
+            // Update or remove style attribute
+            if (newStyle && newStyle !== styleAttr) {
+                element.setAttribute('style', newStyle);
+            } else if (!newStyle && styleAttr) {
+                element.removeAttribute('style');
+            }
+        }
+    }
+
+    private buildNestedListStructure(container: HTMLElement): HTMLElement {
+        const lists: NodeListOf<Element> = container.querySelectorAll('ol, ul');
+        lists.forEach((list: Element) => {
+            const items: HTMLElement[] = [];
+            for (let i: number = 0; i < list.children.length; i++) {
+                const child: Element = list.children[i as number];
+                if (child.tagName.toLowerCase() === 'li') {
+                    items.push(child as HTMLElement);
+                }
+            }
+            // Build nested structure
+            for (let i: number = 0; i < items.length; i++) {
+                const currentItem: HTMLElement = items[i as number];
+                const currentMargin: number = this.getMarginValue(currentItem);
+                // Look ahead for nested items (higher margin)
+                const nestedItems: HTMLElement[] = [];
+                let j: number = i + 1;
+                while (j < items.length) {
+                    const nextItem: HTMLElement = items[j as number];
+                    const nextMargin: number = this.getMarginValue(nextItem);
+                    // Stop if margin is same or less (same level or parent level)
+                    if (nextMargin <= currentMargin) {
+                        break;
+                    }
+                    // This is a nested item
+                    if (nextMargin > currentMargin) {
+                        nestedItems.push(nextItem);
+                        j++;
+                    }
+                }
+                // If we found nested items, create nested list and move them
+                if (nestedItems.length > 0) {
+                    const nestedList: HTMLElement = this.parent.createElement(list.tagName.toLowerCase() as 'ol' | 'ul');
+                    nestedItems.forEach((nestedItem: HTMLElement) => {
+                        nestedList.appendChild(nestedItem);
+                    });
+                    currentItem.appendChild(nestedList);
+                }
+            }
+        });
+        return container;
+    }
+
+    private getMarginValue(element: HTMLElement): number {
+        const style: string = element.getAttribute('style') || '';
+        const marginMatch: RegExpMatchArray | null = style.match(/margin-left:\s*([0-9.]+)pt/);
+        return marginMatch ? parseFloat(marginMatch[1]) : 0;
+    }
+
+    private extractBulletMarkersFromLists(container: HTMLElement): void {
+        const listItems: NodeListOf<Element> = container.querySelectorAll('li');
+        listItems.forEach((item: Element) => {
+            const spans: Element[] = [];
+            const markerSpans: Element[] = [];
+            // Collect all span children and identify markers by lang attribute
+            for (let i: number = 0; i < item.children.length; i++) {
+                const child: Element = item.children[i as number];
+                if (child.tagName.toLowerCase() === 'span') {
+                    spans.push(child);
+                    // Span WITHOUT lang attribute = marker
+                    if (!child.hasAttribute('lang')) {
+                        markerSpans.push(child);
+                    }
+                }
+            }
+            // Remove all marker spans
+            markerSpans.forEach((span: Element) => {
+                if (span.remove) {
+                    span.remove();
+                }
+            });
+        });
     }
 
     /**

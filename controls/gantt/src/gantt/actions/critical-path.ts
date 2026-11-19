@@ -12,6 +12,9 @@ export class CriticalPath {
 
     private parent: Gantt;
     private validatedids: number[] = [];
+    private modelIdIndexMap: Map<string, number> = new Map<string, number>();
+    private resourceCollectionIdIndexMap: Map<string, number> = new Map<string, number>();
+    private durationMemoCache: Map<CalendarContext, Map<string, number>> = new Map<CalendarContext, Map<string, number>>();
     public detailPredecessorCollection: object[];
     public criticalPathCollection: number[];
     public resourceCollectionIds: string[] = [];
@@ -24,6 +27,98 @@ export class CriticalPath {
     }
     public getCriticalTasks(): IGanttData[] {
         return this.criticalTasks;
+    }
+    /**
+     * Returns the index associated with the specified key from the lookup map.
+     *
+     * @param {Map<string, number>} map - Defines the lookup map.
+     * @param {string} key - Defines the key to resolve.
+     * @returns {number} Returns the mapped index, or `-1` if the key is not found.
+     */
+    private getMappedIndex(map: Map<string, number>, key: string): number {
+        return map.has(key) ? map.get(key) : -1;
+    }
+    /**
+     * Returns the record associated with the specified task ID using the cached lookup map.
+     *
+     * @param {string} id - Defines the task ID.
+     * @returns {IGanttData} Returns the corresponding record, or `null` if the ID is invalid.
+     */
+    private getRecordByModelIndex(id: string): IGanttData {
+        if (isNullOrUndefined(id)) {
+            return null;
+        }
+        return this.parent.flatData[this.getMappedIndex(this.modelIdIndexMap, id.toString())];
+    }
+    /**
+     * Returns the duration for the specified date range and scheduling settings.
+     *
+     * @param {Date} startDate - Defines the start date.
+     * @param {Date} endDate - Defines the end date.
+     * @param {string} durationUnit - Defines the duration unit.
+     * @param {boolean} isAutoSchedule - Defines whether auto scheduling is enabled.
+     * @param {boolean} isMilestone - Defines whether the task is a milestone.
+     * @param {boolean} isCheckTimeZone - Defines whether timezone validation is applied.
+     * @param {CalendarContext} calendarContext - Defines the calendar context.
+     * @param {boolean} calculateSeconds - Defines whether duration should be calculated in seconds.
+     * @returns {number} Returns the calculated duration.
+     */
+    private getMemoizedDuration(
+        startDate: Date, endDate: Date, durationUnit: string, isAutoSchedule: boolean,
+        isMilestone: boolean, isCheckTimeZone: boolean, calendarContext: CalendarContext, calculateSeconds?: boolean
+    ): number {
+        const startTime: number = startDate ? startDate.getTime() : NaN;
+        const endTime: number = endDate ? endDate.getTime() : NaN;
+        const key: string = startTime + '|' + endTime + '|' + durationUnit + '|' + isAutoSchedule + '|' +
+            isMilestone + '|' + isCheckTimeZone + '|' + calculateSeconds;
+        let byContext: Map<string, number> = this.durationMemoCache.get(calendarContext);
+        if (!byContext) {
+            byContext = new Map<string, number>();
+            this.durationMemoCache.set(calendarContext, byContext);
+        }
+        if (byContext.has(key)) {
+            return byContext.get(key);
+        }
+        const result: number = this.parent.dataOperation.getDuration(
+            startDate, endDate, durationUnit, isAutoSchedule, isMilestone, isCheckTimeZone, calendarContext, calculateSeconds
+        );
+        byContext.set(key, result);
+        return result;
+    }
+    /**
+     * Encodes the specified value for signature generation.
+     *
+     * @param {any} value - Defines the value to encode.
+     * @returns {string} Returns the encoded value.
+     */
+    private encodeSlackCacheValue(value: any): string {
+        if (value === undefined) {
+            return 'u';
+        }
+        if (value === null) {
+            return 'n';
+        }
+        if (value instanceof Date) {
+            const time: number = value.getTime();
+            return isNaN(time) ? 'n' : 'd' + time;
+        }
+        if (typeof value === 'number' && isNaN(value)) {
+            return 'n';
+        }
+        return 'v' + value;
+    }
+    /**
+     * Generates a signature for the specified slack collection record.
+     *
+     * @param {object} row - Defines the collection record.
+     * @returns {string} Returns the generated signature.
+     */
+    private buildSlackCacheSignature(row: object): string {
+        return this.encodeSlackCacheValue(row['slack']) + '|' +
+            this.encodeSlackCacheValue(row['fs']) + '|' +
+            this.encodeSlackCacheValue(row['ff']) + '|' +
+            this.encodeSlackCacheValue(row['fsslack']) + '|' +
+            this.encodeSlackCacheValue(row['enddate']);
     }
     public showCriticalPath(isCritical: boolean): void {
         const modelIds: string[] = this.parent.ids;
@@ -46,6 +141,7 @@ export class CriticalPath {
             const fromDataObject: object[] = [];
             let criticalPathIds: number[] = [];
             this.criticalTasks = [];
+            this.durationMemoCache = new Map<CalendarContext, Map<string, number>>();
             /* eslint-disable-next-line */
             if (parentRecords[0].ganttProperties.autoEndDate > parentRecords[0].ganttProperties.endDate && !parentRecords[0].ganttProperties.isAutoSchedule) {
                 checkEndDate = parentRecords[0].ganttProperties.autoEndDate;
@@ -78,7 +174,7 @@ export class CriticalPath {
                 else {
                     calendarContext = ganttProp.calendarContext;
                 }
-                dateDifference = this.parent.dataOperation.getDuration(
+                dateDifference = this.getMemoizedDuration(
                     totalRecords[j as number].ganttProperties.endDate,
                     checkEndDate, totalRecords[j as number].ganttProperties.durationUnit,
                     totalRecords[j as number].ganttProperties.isAutoSchedule, totalRecords[j as number].ganttProperties.isMilestone,
@@ -101,12 +197,24 @@ export class CriticalPath {
                 for (let i: number = 0; i < this.parent.taskIds.length; i++) {
                     this.resourceCollectionIds[i as number] = this.parent.taskIds[i as number].slice(1);
                 }
+                this.resourceCollectionIdIndexMap = new Map<string, number>();
+                for (let i: number = 0; i < this.resourceCollectionIds.length; i++) {
+                    if (!this.resourceCollectionIdIndexMap.has(this.resourceCollectionIds[i as number])) {
+                        this.resourceCollectionIdIndexMap.set(this.resourceCollectionIds[i as number], i);
+                    }
+                }
+            }
+            this.modelIdIndexMap = new Map<string, number>();
+            for (let i: number = 0; i < modelIds.length; i++) {
+                if (!this.modelIdIndexMap.has(modelIds[i as number])) {
+                    this.modelIdIndexMap.set(modelIds[i as number], i);
+                }
             }
             // seperate the predecessor connected taskes from the individual taskes that ends on total project end date
             for (let k: number = 0; k < checkBeyondEnddate.length; k++) {
                 if (totalPredecessorsCollectionId.indexOf(checkBeyondEnddate[k as number]) === -1) {
                     if (this.parent.viewType === 'ProjectView') {
-                        predecessorIndex = modelIds.indexOf(checkBeyondEnddate[k as number].toString());
+                        predecessorIndex = this.getMappedIndex(this.modelIdIndexMap, checkBeyondEnddate[k as number].toString());
                     }
                     else {
                         const currentRecords: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
@@ -223,13 +331,13 @@ export class CriticalPath {
                 if (!collection[z as number]['to']) {
                     num = collection[z as number]['taskid'];
                     if (this.parent.viewType === 'ProjectView') {
-                        indexEnddate = modelIds.indexOf(num.toString());
+                        indexEnddate = this.getMappedIndex(this.modelIdIndexMap, num.toString());
                     }
                     else {
-                        indexEnddate = this.resourceCollectionIds.indexOf(num.toString());
+                        indexEnddate = this.getMappedIndex(this.resourceCollectionIdIndexMap, num.toString());
                     }
                     const flatData: ITaskData = totalRecords[indexEnddate as number].ganttProperties;
-                    dateDifference = this.parent.dataOperation.getDuration(flatData.endDate, checkEndDate, 'minute', flatData.isAutoSchedule, flatData.isMilestone, undefined, flatData.calendarContext);
+                    dateDifference = this.getMemoizedDuration(flatData.endDate, checkEndDate, 'minute', flatData.isAutoSchedule, flatData.isMilestone, undefined, flatData.calendarContext);
                     collection[z as number]['slack'] = dateDifference;
                     collection[z as number]['fs'] = -1;
                     collection[z as number]['enddate'] = flatData.endDate;
@@ -270,6 +378,12 @@ export class CriticalPath {
         const fromDataPredecessor: string[] = fromDataObject[0]['fromDataPredecessor'].split(',');
         collectionTaskId = collectionTaskId.toString();
         collectionTaskId = collectionTaskId.split(',');
+        const collectionTaskIdIndexMap: Map<string, number> = new Map<string, number>();
+        for (let m: number = 0; m < collectionTaskId.length; m++) {
+            if (!collectionTaskIdIndexMap.has(collectionTaskId[m as number])) {
+                collectionTaskIdIndexMap.set(collectionTaskId[m as number], m);
+            }
+        }
         let fromDateArray1: string[] = [];
         let fromTaskIdIndex: number;
         let indexFromTaskId: number;
@@ -281,11 +395,11 @@ export class CriticalPath {
         let ffslack: number;
         for (let i: number = 0; i < fromDateArray.length; i++) {
             fromDateArray1 = fromDateArray[i as number].split(':');
-            fromTaskIdIndex = collectionTaskId.indexOf((fromDateArray1[0].toString()));
-            totaskId = collectionTaskId.indexOf((fromDataObject[0]['todateID'].toString()));
+            fromTaskIdIndex = this.getMappedIndex(collectionTaskIdIndexMap, fromDateArray1[0].toString());
+            totaskId = this.getMappedIndex(collectionTaskIdIndexMap, fromDataObject[0]['todateID'].toString());
             if (fromTaskIdIndex !== -1) {
                 const cacheKey: string = fromTaskIdIndex.toString();
-                const currentValue: string = JSON.stringify(collection[fromTaskIdIndex as number]);
+                const currentValue: string = this.buildSlackCacheSignature(collection[fromTaskIdIndex as number]);
                 if (
                     Object.prototype.hasOwnProperty.call(slackCallCache, cacheKey) &&
                     slackCallCache[cacheKey as string] === currentValue
@@ -295,12 +409,12 @@ export class CriticalPath {
                 slackCallCache[cacheKey as string] = currentValue;
             }
             if (this.parent.viewType === 'ProjectView') {
-                indexFromTaskId = modelRecordIds.indexOf(fromDateArray1[0].toString());
-                indexToTaskId = modelRecordIds.indexOf(fromDataObject[0]['todateID'].toString());
+                indexFromTaskId = this.getMappedIndex(this.modelIdIndexMap, fromDateArray1[0].toString());
+                indexToTaskId = this.getMappedIndex(this.modelIdIndexMap, fromDataObject[0]['todateID'].toString());
             }
             else {
-                indexFromTaskId = this.resourceCollectionIds.indexOf(fromDateArray1[0].toString());
-                indexToTaskId = this.resourceCollectionIds.indexOf(fromDataObject[0]['todateID'].toString());
+                indexFromTaskId = this.getMappedIndex(this.resourceCollectionIdIndexMap, fromDateArray1[0].toString());
+                indexToTaskId = this.getMappedIndex(this.resourceCollectionIdIndexMap, fromDataObject[0]['todateID'].toString());
             }
             let fromIdFlatData: ITaskData;
             if (indexFromTaskId !== -1) {
@@ -321,10 +435,10 @@ export class CriticalPath {
                 // calculate slack value for the task contains predecessor connection in "finish to start".
                 if (fromDataPredecessor[i as number] === 'FS') {
                     if (fromIdFlatData.endDate > toIdFlatData.startDate) {
-                        dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
+                        dateDifference = -(this.getMemoizedDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                     }
                     else {
-                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
+                        dateDifference = this.getMemoizedDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                     }
 
                     // execute if the slack value is not set initially.
@@ -373,10 +487,10 @@ export class CriticalPath {
                     // It execute if the task is in auto mode.
                     if (fromIdFlatData.isAutoSchedule) {
                         if (fromIdFlatData.startDate > toIdFlatData.startDate) {
-                            dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
+                            dateDifference = -(this.getMemoizedDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                         }
                         else {
-                            dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
+                            dateDifference = this.getMemoizedDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                         }
                         // It execute while the slack value is not set to the corresponding task.
                         if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
@@ -508,7 +622,7 @@ export class CriticalPath {
                                 // execute if the previous task has sucessor.
                                 else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
                                     if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
+                                        dateDifference = -(this.getMemoizedDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                                     }
                                     else {
                                         dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
@@ -529,7 +643,7 @@ export class CriticalPath {
                                         dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
                                     }
                                     else {
-                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext );
+                                        dateDifference = this.getMemoizedDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext );
                                     }
                                 } else {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
@@ -551,7 +665,7 @@ export class CriticalPath {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
                                 } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
                                     if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext ));
+                                        dateDifference = -(this.getMemoizedDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext ));
                                     }
                                     else {
                                         dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
@@ -577,7 +691,7 @@ export class CriticalPath {
                                         dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
                                     }
                                     else {
-                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
+                                        dateDifference = this.getMemoizedDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                                     }
                                 } else {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
@@ -628,7 +742,7 @@ export class CriticalPath {
             return 0;
         }
         else {
-            return this.parent.dataOperation.getDuration(
+            return this.getMemoizedDuration(
                 startDate, endDate, durationUnit, record.ganttProperties.isAutoSchedule,
                 true, undefined, record.ganttProperties.calendarContext
             );
@@ -639,11 +753,11 @@ export class CriticalPath {
         for (let i: number = 0; i < record.ganttProperties.predecessor.length; i++) {
             let fromRecord: IGanttData;
             if (this.parent.viewType === 'ProjectView') {
-                fromRecord = this.parent.getRecordByID(record.ganttProperties.predecessor[i as number].from);
+                fromRecord = this.getRecordByModelIndex(record.ganttProperties.predecessor[i as number].from);
             }
             else {
-                const resourceIndex: number = this.resourceCollectionIds.indexOf(
-                    record.ganttProperties.predecessor[i as number].from.toString());
+                const resourceIndex: number = this.getMappedIndex(
+                    this.resourceCollectionIdIndexMap, record.ganttProperties.predecessor[i as number].from.toString());
                 fromRecord = this.parent.flatData[resourceIndex as number];
             }
             let durationDiff: number;
@@ -659,19 +773,19 @@ export class CriticalPath {
             }
             if (fromRecord) {
                 if (record.ganttProperties.predecessor[i as number].type === 'FS') {
-                    durationDiff = this.parent.dataOperation.getDuration(
+                    durationDiff = this.getMemoizedDuration(
                         fromRecord.ganttProperties.endDate, record.ganttProperties.startDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
                         true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'SS') {
-                    durationDiff = this.parent.dataOperation.getDuration(
+                    durationDiff = this.getMemoizedDuration(
                         fromRecord.ganttProperties.startDate, record.ganttProperties.startDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
                         true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'FF') {
-                    durationDiff = this.parent.dataOperation.getDuration(
+                    durationDiff = this.getMemoizedDuration(
                         fromRecord.ganttProperties.endDate, record.ganttProperties.endDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
                         true, undefined, record.ganttProperties.calendarContext );
@@ -682,7 +796,7 @@ export class CriticalPath {
                     if (startDate > endDate && !this.parent.updateOffsetOnTaskbarEdit) {
                         [startDate, endDate] = [endDate, startDate];
                     }
-                    durationDiff = this.parent.dataOperation.getDuration(
+                    durationDiff = this.getMemoizedDuration(
                         startDate, endDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
                         true, undefined, record.ganttProperties.calendarContext );
@@ -719,7 +833,7 @@ export class CriticalPath {
             const child: IGanttData = childTasks[j as number];
 
             // Update child slack relative to nearest critical ancestor end
-            const dateDiff: number = this.parent.dataOperation.getDuration(
+            const dateDiff: number = this.getMemoizedDuration(
                 child.ganttProperties.endDate,
                 parentCriticalEndDate,
                 child.ganttProperties.durationUnit,
@@ -789,7 +903,7 @@ export class CriticalPath {
             if (startDate > endDate) {
                 [startDate, endDate] = [endDate, startDate];
             }
-            const correctedDifference: number = this.parent.dataOperation.getDuration(
+            const correctedDifference: number = this.getMemoizedDuration(
                 startDate,
                 endDate,
                 currentData.durationUnit,
@@ -813,10 +927,10 @@ export class CriticalPath {
         const updateOffset: boolean = this.parent.updateOffsetOnTaskbarEdit;
         for (let x: number = collection.length - 1; x >= 0; x--) {
             if (this.parent.viewType === 'ProjectView') {
-                index = modelRecordIds.indexOf(collection[x as number]['taskid'].toString());
+                index = this.getMappedIndex(this.modelIdIndexMap, collection[x as number]['taskid'].toString());
             }
             else {
-                index = this.resourceCollectionIds.indexOf(collection[x as number]['taskid'].toString());
+                index = this.getMappedIndex(this.resourceCollectionIdIndexMap, collection[x as number]['taskid'].toString());
             }
             const predecessorLength: IPredecessor[] = flatRecords[index as number].ganttProperties.predecessor;
             const noSlackValue: string = 0 + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
@@ -824,10 +938,10 @@ export class CriticalPath {
                 for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
                     let toID: number;
                     if (this.parent.viewType === 'ProjectView') {
-                        toID = this.parent.ids.indexOf(predecessorLength[i as number].to);
+                        toID = this.getMappedIndex(this.modelIdIndexMap, predecessorLength[i as number].to);
                     }
                     else {
-                        toID = this.resourceCollectionIds.indexOf(predecessorLength[i as number].to);
+                        toID = this.getMappedIndex(this.resourceCollectionIdIndexMap, predecessorLength[i as number].to);
                     }
                     let dateDifference: number;
                     const currentData: ITaskData = flatRecords[index as number].ganttProperties;
@@ -837,7 +951,7 @@ export class CriticalPath {
                             if (predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                 if (this.parent.viewType === 'ResourceView' || predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                     /* eslint-disable-next-line */
-                                    dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                                    dateDifference = this.getMemoizedDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                                     if (!updateOffset) {
                                         dateDifference -= offsetValue;
                                         dateDifference = this.adjustSlackByMaxEndDate(
@@ -854,7 +968,7 @@ export class CriticalPath {
                         }
                         else if (predecessorLength[i as number].type === 'SF') {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            dateDifference = this.getMemoizedDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                             if (!updateOffset) {
                                 dateDifference -= offsetValue;
                                 dateDifference = this.adjustSlackByMaxEndDate(
@@ -869,7 +983,7 @@ export class CriticalPath {
                         }
                         else if (predecessorLength[i as number].type === 'SS') {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            dateDifference = this.getMemoizedDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                             if (!updateOffset) {
                                 dateDifference -= offsetValue;
                                 dateDifference = this.adjustSlackByMaxEndDate(
@@ -884,7 +998,7 @@ export class CriticalPath {
                         }
                         else {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            dateDifference = this.getMemoizedDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                             if (!updateOffset) {
                                 dateDifference -= offsetValue;
                                 dateDifference = this.adjustSlackByMaxEndDate(
@@ -941,10 +1055,10 @@ export class CriticalPath {
         if (taskBeyondEnddate.length > 0) {
             for (let i: number = 0; i < taskBeyondEnddate.length; i++) {
                 if (this.parent.viewType === 'ProjectView') {
-                    index = modelRecordIds.indexOf(taskBeyondEnddate[i as number].toString());
+                    index = this.getMappedIndex(this.modelIdIndexMap, taskBeyondEnddate[i as number].toString());
                 }
                 else {
-                    index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
+                    index = this.getMappedIndex(this.resourceCollectionIdIndexMap, taskBeyondEnddate[i as number].toString());
                 }
                 if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
                     if (this.criticalTasks.indexOf(flatRecords[index as number]) === -1){
@@ -1040,13 +1154,12 @@ export class CriticalPath {
                         if (criticalPathIds.indexOf(checkint) !== -1) {
                             const taskIdString: string = String(currentdata['taskid']);
                             const checkintString: string = String(checkint);
-                            const lineElement: NodeList = this.parent.element.querySelectorAll('#ConnectorLineparent' +
-                                taskIdString.replace(/([.])/g, '\\$1') + 'child' + checkintString.replace(/([.])/g, '\\$1'));
+                            const connectorSelector: string = '#ConnectorLineparent' +
+                                taskIdString.replace(/([.])/g, '\\$1') + 'child' + checkintString.replace(/([.])/g, '\\$1');
+                            const lineElement: NodeListOf<Element> = this.parent.element.querySelectorAll(connectorSelector);
                             if (lineElement.length > 0) {
-                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + taskIdString.replace(/([.])/g, '\\$1') + 'child' +
-                                checkintString.replace(/([.])/g, '\\$1'))[0].querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
-                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + taskIdString.replace(/([.])/g, '\\$1') + 'child' +
-                                checkintString.replace(/([.])/g, '\\$1'))[0].querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
+                                addClass(lineElement[0].querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
+                                addClass(lineElement[0].querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
                             }
                         }
                     }

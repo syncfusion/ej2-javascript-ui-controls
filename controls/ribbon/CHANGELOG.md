@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.1.46 (2026-11-11)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I882501` - Now, keytips work properly for all remaining Ribbon instances after one of multiple Ribbon instances, created with `enableKeyTips` enabled, is destroyed.
+
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

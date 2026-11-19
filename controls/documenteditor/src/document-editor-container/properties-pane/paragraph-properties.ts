@@ -1,15 +1,14 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, ListLevelPattern, ParagraphWidget, WAbstractList, WList, WListLevel, WStyle } from '../../document-editor/index';
-import { ComboBox } from '@syncfusion/ej2-dropdowns';
+import { DocumentEditor, ListLevelPattern, ParagraphWidget, WAbstractList, WList, WListLevel } from '../../document-editor/index';
+import { ComboBox, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
-import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
 import { DocumentEditorContainer } from '../document-editor-container';
-import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { BulletListHelper } from '../helper/bullet-list-helper';
 import { LineSpacingHelper } from '../helper/line-spacing-helper';
 import { StylesHelper } from '../helper/styles-helper';
-import { ElementsMap } from '../helper/ribbon-interfaces';
+import { ElementsMap, StyleInfo } from '../helper/ribbon-interfaces';
 /**
  * Paragraph Properties
  *
@@ -243,7 +242,7 @@ export class Paragraph {
     private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
         const isAngularModal: boolean = this.container.isModalDialog;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const paragraphDiv: any = this;
+        const paragraphDiv: Paragraph = this;
         const dropdown: DropDownButton = new DropDownButton({
             items: LineSpacingHelper.getLineSpacingItems(this.localObj),
             iconCss: 'e-de-ctnr-linespacing e-icons',
@@ -253,7 +252,7 @@ export class Paragraph {
             beforeItemRender: (args: MenuEventArgs) => {
                 LineSpacingHelper.customizeLineSpacingItem(args, this.appliedLineSpacing);
             },
-            beforeOpen: function(this: DropDownButton, e: any): void{
+            beforeOpen: function(this: DropDownButton, e: BeforeOpenCloseMenuEventArgs): void{
                 if (isAngularModal) {
                     const popupEl: HTMLElement = e.element.parentElement as HTMLElement;
                     const dropDownButtonEl: HTMLElement = this.element as HTMLElement;
@@ -269,7 +268,7 @@ export class Paragraph {
     private createNumberListDropButton(iconcss: string, button: HTMLElement): void {
         this.numberListDropDiv = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const paragraphDiv: any = this;
+        const paragraphDiv: Paragraph = this;
         this.numberListDropUlTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -292,7 +291,7 @@ export class Paragraph {
             target: this.numberListDropDiv,
             iconCss: iconcss,
             cssClass: this.splitButtonClass,
-            beforeOpen: function (this: SplitButton, e: any): void {
+            beforeOpen: function (this: SplitButton, e: BeforeOpenCloseMenuEventArgs): void {
                 paragraphDiv.numberSplitButtonBeforeOpen(e, this);
             },
             beforeClose: this.numberSplitButtonBeforeClose.bind(this)
@@ -309,7 +308,7 @@ export class Paragraph {
         this.numberListDropDiv.style.display = 'none';
         this.removeSelectedList();
     }
-    private numberSplitButtonBeforeOpen( e: any,  splitButton?: any): void {
+    private numberSplitButtonBeforeOpen(e: BeforeOpenCloseMenuEventArgs, splitButton?: SplitButton): void {
         const isAngularModal: boolean = this.container.isModalDialog;
         this.numberListDropDiv.style.display = 'block';
         let levelPattern: string = 'None';
@@ -397,7 +396,7 @@ export class Paragraph {
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
         const isAngularModal: boolean = this.container.isModalDialog;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const paragraphDiv: any = this;
+        const paragraphDiv: Paragraph = this;
         const div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
         const ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
@@ -422,7 +421,7 @@ export class Paragraph {
             target: div,
             iconCss: iconcss,
             cssClass: this.splitButtonClass,
-            beforeOpen: function (this: SplitButton, e: any): void {
+            beforeOpen: function (this: SplitButton, e: BeforeOpenCloseMenuEventArgs): void {
                 div.style.display = 'block';
                 if (isNullOrUndefined(paragraphDiv.documentEditor.selectionModule.paragraphFormat.listId) ||
                     paragraphDiv.documentEditor.selectionModule.paragraphFormat.listId === -1) {
@@ -480,13 +479,13 @@ export class Paragraph {
         if (!this.container.enableCsp) {
             if (this.isRtl) {
                 itemTemplate = initializeCSPTemplate(
-                    function (data: any): string {
+                    function (data: StyleInfo): string {
                         return `<span style="${data.Style}">${data.StyleName}</span><span class="${data.IconClass}"></span>`;
                     }
                 );
             } else {
                 itemTemplate = initializeCSPTemplate(
-                    function (data: any): string {
+                    function (data: StyleInfo): string {
                         return `<span class="${data.IconClass}"></span><span style="${data.Style}">${data.StyleName}</span>`;
                     }
                 );
@@ -495,7 +494,8 @@ export class Paragraph {
             this.style.isStringTemplate = true;
         }
         this.style.footerTemplate = initializeCSPTemplate(
-            (data: any): string => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (data: StyleInfo): string => {
                 return `<span class="e-de-ctnr-dropdown-ftr">
                 ${this.localObj.getConstant('Manage Styles')}...</span>`;
             }
@@ -508,8 +508,7 @@ export class Paragraph {
         };
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     }
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    private updateOptions(args: any): void {
+    private updateOptions(args: PopupEventArgs): void {
         args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle.bind(this));
     }
     /* eslint-disable */

@@ -1115,6 +1115,21 @@ export function updatePhaseMaxWidth(parent: NodeModel, diagram: Diagram, wrapper
 export function updateHeaderMaxWidth(diagram: Diagram, swimLane: NodeModel): void {
     if ((swimLane.shape as SwimLaneModel).header && (swimLane.shape as SwimLane).hasHeader) {
         const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
+        // 1033268 residual undo: defensive guard. During undo of a left-prepended lane
+        // drop, `removeLane` calls `diagram.drag(swimlane, ...)` to re-anchor, which
+        // triggers `nodePropertyChange` -> `updateHeaderMaxWidth`. In the post-undo
+        // grid state, `grid.rows[0].cells[0].children` may be empty (the header cell
+        // was moved by the header-restore block and the prepended column was removed).
+        // The existing `hasHeader` guard is correct, but the `children[0].id` read below
+        // is unguarded. Short-circuit when the cell is empty or children is missing to
+        // prevent the `Cannot read properties of undefined (reading 'id')` crash.
+        if (!grid.rows || !grid.rows[0] || !grid.rows[0].cells || !grid.rows[0].cells[0] ||
+            !grid.rows[0].cells[0].children || grid.rows[0].cells[0].children.length === 0) {
+            return;
+        }
+        // support-optional-swimlane-phases: `addLane` restores the header cell to
+        // `rows[0].cells[0]` after `addColumn(0, ...)` (see the header-restore block
+        // in `addLane`), so the header is always at cells[0] by the time this runs.
         const id: string = grid.rows[0].cells[0].children[0].id;
         const headerNode: Node = diagram.nameTable[`${id}`];
         if (headerNode && headerNode.isHeader && (headerNode.maxWidth < swimLane.width || headerNode.wrapper.maxWidth < swimLane.width)) {
@@ -1154,6 +1169,12 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             orientation = true;
             index = shape.phases.length > 0 ? index + 1 : index;
         }
+        // support-optional-swimlane-phases: in the vertical phase-less case the grid has no
+        // phase column, so the column the new lane is placed at is `laneIndex` (not
+        // `laneIndex + 1` as the populated case uses). Mirror `laneCollection`'s own
+        // `phaseCount` so the addColumn insert position and the redoObj col match the
+        // placement column `laneCollection` will use.
+        const phaseColOffset: number = (shape.phaseSize && shape.phases && shape.phases.length > 0) ? 1 : 0;
         const connectors: string[] = getConnectors(diagram, grid, 0, true);
         const laneIndex: number = (count !== undefined) ? count : shape.lanes.length;
         index += laneIndex;
@@ -1171,14 +1192,57 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             } else {
                 const colDef: ColumnDefinition = new ColumnDefinition();
                 colDef.width = lane.width;
-                grid.addColumn(laneIndex + 1, colDef, false);
+                // support-optional-swimlane-phases: insert the new column at the same
+                // column the new lane will be placed at. For populated swimlanes this is
+                // `laneIndex + phaseColOffset` (= laneIndex + 1) which matches the prior
+                // `laneIndex + 1`; for phase-less vertical swimlanes this is `laneIndex`
+                // (= 0 for prepend) which inserts the new col before the existing lane
+                // and lets `laneCollection` place the new lane in the spliced-in empty
+                // cell. The previous `addColumn(laneIndex + 1, ...)` would PUSH the new
+                // col to the end for a phase-less swimlane (since `1 > cells.length - 1`),
+                // leaving the new lane in `laneCollection` and the original lane in the
+                // same cell — the read of `cells[index].children[0].id` then hit the
+                // unmodified original cell (no children) or, after the empty splice
+                // variant, an empty cell, throwing `Cannot read properties of undefined
+                // (reading 'id')`.
+                grid.addColumn(laneIndex + phaseColOffset, colDef, false);
                 if (swimLane.width) {
                     swimLane.width += lane.width;
                     swimLane.wrapper.width = grid.width = swimLane.width;
                 }
                 //913805-Headerless vertical swimlane phase header get vanished.
                 if ((shape as SwimLane).hasHeader) {
-                    grid.rows[0].cells[0].columnSpan += 1;
+                    // support-optional-swimlane-phases: the header cell is only PUSHED
+                    // when the new column is spliced in at index 0, which happens for
+                    // a phase-less vertical prepend (`laneIndex === 0 &&
+                    // phaseColOffset === 0`). For all other cases the header stays at
+                    // cells[0] and the prior `columnSpan += 1` is correct. The prior
+                    // unconditional `grid.rows[0].cells[0].columnSpan += 1` was wrong
+                    // for the phase-less prepend (it touched the new empty cell) and
+                    // the header-restoration block (which moves children between
+                    // cells[0] and cells[1]) was wrong for the populated case (it
+                    // would wipe the header by overwriting cells[0].children with
+                    // cells[1].children, where cells[1] is the new empty cell).
+                    const headerPushed: boolean = (laneIndex + phaseColOffset) === 0;
+                    if (headerPushed && grid.rows[0].cells.length > 1) {
+                        // Mirror `insertFirstPhase` restore pattern: move the header
+                        // children back to cells[0] and set the columnSpan to span
+                        // all columns so the header still covers the full swimlane
+                        // width.
+                        grid.rows[0].cells[0].children = grid.rows[0].cells[1].children;
+                        grid.rows[0].cells[1].children = [];
+                        const headerRow: GridRow = grid.rows[0];
+                        for (let i: number = 0; i < headerRow.cells.length; i++) {
+                            headerRow.cells[parseInt(i.toString(), 10)].minWidth = undefined;
+                            if (i === 0) {
+                                headerRow.cells[parseInt(i.toString(), 10)].columnSpan = grid.rows[0].cells.length;
+                            } else {
+                                headerRow.cells[parseInt(i.toString(), 10)].columnSpan = 1;
+                            }
+                        }
+                    } else {
+                        grid.rows[0].cells[0].columnSpan += 1;
+                    }
                 }
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
@@ -1194,11 +1258,33 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
+            // support-optional-swimlane-phases: the column the new lane was just placed
+            // into is `laneIndex + phaseColOffset` (matches `laneCollection`'s
+            // `colValue = laneIndex + phaseCount`). The prior `cells[index]` happened to
+            // match the populated case because `addColumn(laneIndex + 1, ...)` pushed
+            // the existing lane to `index = laneIndex + 2` (= populated base + 1), but
+            // for phase-less swimlanes the new lane sits at `laneIndex` and `index`
+            // (= `1 + laneIndex` for the vertical base) points at a different cell.
+            const laneColIndex: number = laneIndex + phaseColOffset;
+            // 1033268 residual undo: for the phase-less vertical prepend case, the
+            // header-restore block in `addLane` moves the original lane's wrapper to
+            // `cells[0].children[0]` (with columnSpan = cells.length) and `laneCollection`
+            // then appends the new prepended lane to `cells[0].children[children.length-1]`.
+            // The original `children[0]` read would identify the ORIGINAL lane as the
+            // redo target, causing undo to remove the wrong lane. For the prepend case,
+            // read the last child (the new prepended lane) so undo removes the correct lane.
+            const isPrependLane: boolean = (shape.orientation !== 'Horizontal') &&
+                (laneIndex + phaseColOffset === 0) &&
+                (!shape.header || !(shape as SwimLane).hasHeader);
+            const prependCell: GridCell = (isPrependLane && grid.rows[0] && grid.rows[0].cells[parseInt(laneColIndex.toString(), 10)]) ?
+                grid.rows[0].cells[parseInt(laneColIndex.toString(), 10)] : null;
             redoObj = (shape.orientation === 'Horizontal') ?
                 diagram.nameTable[grid.rows[parseInt(index.toString(), 10)].cells[0].children[0].id] :
                 ((shape.header && (shape as SwimLane).hasHeader) ?
-                    diagram.nameTable[grid.rows[1].cells[parseInt(index.toString(), 10)].children[0].id] :
-                    diagram.nameTable[grid.rows[0].cells[parseInt(index.toString(), 10)].children[0].id]);
+                    diagram.nameTable[grid.rows[1].cells[parseInt(laneColIndex.toString(), 10)].children[0].id] :
+                    ((isPrependLane && prependCell && prependCell.children && prependCell.children.length > 1) ?
+                        diagram.nameTable[prependCell.children[prependCell.children.length - 1].id] :
+                        diagram.nameTable[grid.rows[0].cells[parseInt(laneColIndex.toString(), 10)].children[0].id]));
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
                 entry = {
                     type: 'LaneCollectionChanged', changeType: 'Insert', undoObject: cloneObject(laneObj),
@@ -1209,6 +1295,18 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             const startRowIndex: number = (shape.orientation === 'Horizontal') ?
                 index : ((shape.header && (shape as SwimLane).hasHeader) ? 1 : 0);
             ChangeLaneIndex(diagram, swimLane, startRowIndex);
+            // 1033268 residual: mirror `insertFirstPhase`'s `grid.updateColumnWidth(...)`
+            // call for the phase-less vertical left-prepend case. `addColumn(0, ...)` does
+            // not splice the private `desiredCellWidth[]` array, so `grid.arrange` uses a
+            // stale width (the old column 0's width, e.g. the full parent swimlane width)
+            // for the prepended cell. `updateColumnWidth` directly writes
+            // `desiredCellWidth[0] = lane.width` and triggers a full grid re-measure+
+            // re-arrange, fixing the pre-existing latent bug in `addColumn`. Guarded to
+            // the prepend case only — phased, right-append, and horizontal paths are
+            // unaffected.
+            if (laneIndex + phaseColOffset === 0) {
+                grid.updateColumnWidth(0, lane.width, false);
+            }
             swimLaneMeasureAndArrange(swimLane);
             updateHeaderMaxWidth(diagram, swimLane);
             children = lane.children;
@@ -1298,6 +1396,193 @@ function containsChildPoint(bounds: Rect, point: PointModel, padding: MarginMode
 }
 
 /**
+ * insertFirstPhase method \
+ * Optional Swimlane Phases (`support-optional-swimlane-phases`): runtime first-phase insertion
+ * into a swimlane whose phase collection is empty (`undefined` or `[]`). Mirrors the initial
+ * grid-construction logic in `initGridColumns`/`initGridRow`/`initSwimLane` so that the resulting
+ * grid is structurally identical to an initially-populated swimlane, and reuses `phaseDefine`,
+ * `swimLaneMeasureAndArrange`, `checkPhaseOffset`, selection, and history entry creation so that
+ * downstream layout, history, and palette paths see no special-case behavior.
+ *
+ * @returns {void} insertFirstPhase method .
+ * @param {Diagram} diagram - provide the diagram  value.
+ * @param {NodeModel} parent - provide the swimlane node  value.
+ * @param {PhaseModel} newPhase - provide the new phase  value.
+ * @param {boolean} orientation - provide the orientation  value.
+ * @private
+ */
+export function insertFirstPhase(
+    diagram: Diagram, parent: NodeModel, newPhase: PhaseModel, orientation: boolean): void {
+    const shape: SwimLaneModel = parent.shape as SwimLaneModel;
+    const padding: number = (shape as SwimLane).padding;
+    const x: number = parent.wrapper.bounds.x; const y: number = parent.wrapper.bounds.y;
+    const grid: GridPanel = parent.wrapper.children[0] as GridPanel;
+    const hasHeader: boolean = shape.header && (shape as SwimLane).hasHeader ? true : false;
+
+    // Pre-conditions (D-05): runtime first-phase addition requires at least one lane. Also apply
+    // the existing orientation-specific lane-header-size minimum offset rule.
+    if (!shape.lanes || shape.lanes.length === 0) {
+        return;
+    }
+    const laneHeaderSize: number = orientation ? shape.lanes[0].header.width : shape.lanes[0].header.height;
+    if (newPhase.offset === undefined || newPhase.offset <= laneHeaderSize) {
+        return;
+    }
+
+    // Initialise the phase entries exactly as the populated runtime add would. The Phase model is
+    // created before mutating the grid so `phaseDefine` can read it at index 0 (mirror line ~1410).
+    const phaseObj: PhaseModel = new Phase((parent.shape) as Shape, 'phases', newPhase, true);
+    if (!(diagram.diagramActions & DiagramAction.UndoRedo) && !diagram.enableCollaborativeEditing) {
+        phaseObj.id += randomId();
+    }
+    if (shape.phases === undefined || shape.phases === null) {
+        shape.phases = [];
+    }
+    shape.phases.splice(0, 0, phaseObj);
+
+    // Determine the row that should hold the phase header (`indexValue` argument to phaseDefine).
+    // For horizontal: header row 0 (if any) + phase row 1; for vertical: row index is computed
+    // relative to the lane layout (phase defines row 0 of the lane region).
+    const phaseIndex: number = 0;
+    const indexValue: number = orientation ? (hasHeader ? 1 : 0) : phaseIndex;
+
+    if (orientation) {
+        // Horizontal: the empty-state grid has a single full-width column where the lane canvas
+        // already lives. Mirror `initSwimLane`'s populated layout: insert a phase header row above
+        // the lane rows, and place the phase header in the existing column 0. Do NOT add a new
+        // column — doing so shifts the lane canvas to col 1 and breaks the expected layout when
+        // a single lane occupies the full swimlane width.
+        const phaseRowDefn: RowDefinition = new RowDefinition();
+        const phaseRowHeight: number = shape.phaseSize || 20;
+        phaseRowDefn.height = phaseRowHeight;
+        const phaseRowIndex: number = hasHeader ? 1 : 0;
+        // 1049650: shrink the lane row (which becomes the row immediately below the new phase row)
+        // by the phase row's height so the grid stays within the swimlane's bounds — mirrors what
+        // the standard `addPhase` path does when inserting into a populated-from-init layout.
+        if (grid.rowDefinitions().length > phaseRowIndex) {
+            const existingLaneRow: RowDefinition = grid.rowDefinitions()[parseInt((phaseRowIndex).toString(), 10)];
+            existingLaneRow.height = Math.max(0, existingLaneRow.height - phaseRowHeight);
+            grid.updateRowHeight(phaseRowIndex, existingLaneRow.height, false);
+        }
+        grid.addRow(phaseRowIndex, phaseRowDefn, false);
+
+        // Populate the phase header at (row=phaseRowIndex, col=0).
+        phaseDefine(grid, diagram, parent, indexValue, orientation, phaseIndex);
+
+        // 1049650 (mirror standard `addPhase` path): pin the phase node's maxWidth to the (full)
+        // column width so the phase header's bounding box matches the populated-init layout.
+        const horizontalPhaseColWidth: number = grid.columnDefinitions()[parseInt(phaseIndex.toString(), 10)].width;
+        const horizontalPhaseNode: NodeModel = diagram.nameTable[shape.phases[parseInt(phaseIndex.toString(), 10)].header.id];
+        if (horizontalPhaseNode) {
+            horizontalPhaseNode.maxWidth = horizontalPhaseNode.wrapper.maxWidth = horizontalPhaseColWidth;
+        }
+
+        // Update swimlane width to the recomputed grid width.
+        parent.width = parent.wrapper.width = parent.wrapper.children[0].width = grid.actualSize.width;
+    } else {
+        // Vertical: mirror `initSwimLane`'s populated layout. The empty-state grid has at most
+        // `lanes.length` columns and a single lane row whose height already equals the full
+        // content area (swimlane.height - header.height). Two adjustments are needed:
+        //   1. Insert a phase header column at index 0 (width = shape.phaseSize) and shrink
+        //      the original lane column by the same width — matching `initGridColumns`'s
+        //      vertical-with-phase column ordering (phase header, lane).
+        //   2. Place the phase header in column 0 of the same row that already contains the
+        //      lane canvas/lane header (now in column 1 after the insert) — matches the
+        //      populated-from-init row structure (one phase row whose height absorbs the full
+        //      remaining content area).
+        // No additional row is added: the inserted phase header shares the lane row, matching
+        // `initGridRow`'s vertical-with-phase rule that lets the last phase row absorb the
+        // full content height.
+
+        // (1) Insert the phase header column at index 0 so the populated-layout column order
+        // (phase header, [lane header if any,] lane body) holds. Then shrink the original lane
+        // column (now at index 1) by the inserted phase column's width so the grid stays within
+        // the swimlane's bounds (mirrors how `initGridColumns` absorbs the remaining width into
+        // the last lane column when the swimlane is initialized from a populated model).
+        if (shape.phaseSize) {
+            const phaseColWidth: number = shape.phaseSize;
+            const phaseColDefn: ColumnDefinition = new ColumnDefinition();
+            phaseColDefn.width = phaseColWidth;
+            grid.addColumn(0, phaseColDefn, false);
+            const laneCol: ColumnDefinition = grid.columnDefinitions()[1];
+            laneCol.width = Math.max(0, laneCol.width - phaseColWidth);
+            grid.updateColumnWidth(1, laneCol.width, false);
+            // 1049650 (mirror horizontal fix): when the swimlane has a header, `addColumn(0, ...)`
+            // inserted a new empty cell at `cells[0]` of the header row, pushing the header's
+            // children to `cells[1]`. `updateHeaderMaxWidth` reads `grid.rows[0].cells[0]
+            // .children[0].id`, which is now `undefined` → TypeError. Restore the header cell so
+            // it spans all columns again (mirrors the `phaseIndex === 0 && hasHeader` block in
+            // the standard `addPhase` path).
+            if (hasHeader && grid.rows[0].cells.length > 1) {
+                grid.rows[0].cells[0].children = grid.rows[0].cells[1].children;
+                grid.rows[0].cells[1].children = [];
+                const fristRow: GridRow = grid.rows[0];
+                for (let i: number = 0; i < fristRow.cells.length; i++) {
+                    fristRow.cells[parseInt(i.toString(), 10)].minWidth = undefined;
+                    if (i === 0) {
+                        fristRow.cells[parseInt(i.toString(), 10)].columnSpan = grid.rows[0].cells.length;
+                    } else {
+                        fristRow.cells[parseInt(i.toString(), 10)].columnSpan = 1;
+                    }
+                }
+            }
+        }
+
+        // (2) Reuse the existing lane row as the phase row — both occupy the same vertical span
+        // in the populated-from-init layout (`initGridRow` lets the last phase absorb the
+        // remaining content height when phases.length > 0). The empty-state vertical swimlane
+        // has a single lane row whose height already equals the full content area
+        // (swimlane.height - header.height), so we simply place the phase header in column 0 of
+        // that same row and let the lane canvas/lane header remain in column 1.
+        const phaseRowIndex: number = hasHeader ? 1 : 0;
+        phaseDefine(grid, diagram, parent, indexValue, orientation, phaseIndex);
+
+        // (3) The lane row is now the same row as the phase row — pin the phase node's maxWidth
+        // to the inserted phase column's width (matches the populated-init cell width).
+        const verticalPhaseColWidth: number = grid.columnDefinitions()[parseInt(phaseIndex.toString(), 10)].width;
+        const verticalPhaseNode: NodeModel = diagram.nameTable[shape.phases[parseInt(phaseIndex.toString(), 10)].header.id];
+        if (verticalPhaseNode) {
+            verticalPhaseNode.maxWidth = verticalPhaseNode.wrapper.maxWidth = verticalPhaseColWidth;
+        }
+
+        parent.height = parent.wrapper.height = parent.wrapper.children[0].height = grid.actualSize.height;
+    }
+
+    // Measure/arrange, preserve top-left origin, recompute offsets, select the new phase, history.
+    swimLaneMeasureAndArrange(parent);
+    parent.width = parent.wrapper.actualSize.width;
+    parent.height = parent.wrapper.actualSize.height;
+    updateHeaderMaxWidth(diagram, parent);
+    // 1049650: after the grid mutations above (`grid.addRow` for horizontal shifts the lane row
+    // down by one; `grid.addColumn(0, ...)` for vertical shifts the lane canvas from col 0 to
+    // col 1), the lane Node's stored `rowIndex`/`columnIndex` fields are stale. Stale indices
+    // crash downstream helpers like `findLaneIndex` → `findLane` → `canLaneInterchange` (which
+    // reads `lane.canMove` on the resolved lane that is now `shape.lanes[-1]` = undefined). Run
+    // `ChangeLaneIndex` to refresh every lane child's rowIndex/columnIndex from the actual grid.
+    ChangeLaneIndex(diagram, parent, hasHeader ? 1 : 0);
+    diagram.drag(parent, x - parent.wrapper.bounds.x, y - parent.wrapper.bounds.y);
+    checkPhaseOffset(parent, diagram);
+
+    // Select the newly created phase header node. Its id is the swimlane id + phase id + '_header',
+    // which `phaseDefine` records on `shape.phases[0].header.id`.
+    const newPhaseNode: NodeModel = diagram.nameTable[shape.phases[0].header.id];
+    if (newPhaseNode) {
+        diagram.commandHandler.select(newPhaseNode);
+    }
+
+    if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+        const entry: HistoryEntry = {
+            type: 'PhaseCollectionChanged', changeType: 'Insert',
+            undoObject: cloneObject(phaseObj),
+            redoObject: cloneObject(newPhaseNode),
+            category: 'Internal'
+        };
+        diagram.addHistoryEntry(entry);
+    }
+    diagram.updateDiagramObject(parent);
+}
+
+/**
  * addPhase method \
  *
  * @returns {void} addPhase method .\
@@ -1316,6 +1601,14 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
         const padding: number = (shape as SwimLane).padding; const phasesCollection: PhaseModel[] = shape.phases; let width: number;
         const grid: GridPanel = parent.wrapper.children[0] as GridPanel;
         const orientation: boolean = shape.orientation === 'Horizontal' ? true : false;
+        // Optional Swimlane Phases (`support-optional-swimlane-phases`): if the swimlane currently
+        // has zero phases, delegate to the dedicated `insertFirstPhase` path instead of attempting
+        // to iterate the empty collection (which leaves `phaseIndex` undefined and silently does
+        // nothing).
+        if (!shape.phases || shape.phases.length === 0) {
+            insertFirstPhase(diagram, parent, newPhase, orientation);
+            return;
+        }
         gridRowIndex = (shape.header && (shape as SwimLane).hasHeader) ? 0 : -1;
         if (shape.phases.length > 0) { gridRowIndex += 1; gridColIndex = 0; }
         const laneHeaderSize: number = (orientation) ? shape.lanes[0].header.width : shape.lanes[0].header.height;
@@ -2111,6 +2404,31 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                 } else {
                     swimLane.width = (swimLane.width !== undefined) ?
                         swimLane.width - grid.rows[0].cells[parseInt(index.toString(), 10)].actualSize.width : swimLane.width;
+                    // 1033268 residual undo fix: mirror `removeFinalPhase`'s pre-shift. The
+                    // forward `addLane` header-restore block for the prepend case moves the
+                    // header children from `cells[1]` into `cells[0]` (so the prepended empty
+                    // cell stays empty and the header spans both columns). On undo, the
+                    // `for (i ...)` loop below iterates the prepended column (`cells[0]`) of
+                    // every row and calls `removeChildren` on its children — which for the
+                    // header row means deleting the header Node. Pre-shift the header back
+                    // to `cells[1]` and empty `cells[0]` so the deletion loop sees no
+                    // children in the header row at column `index`, and `removeColumn(index)`
+                    // removes the empty prepended cell while the header survives in what
+                    // becomes `cells[0]` post-splice. Reset `columnSpan` so the surviving
+                    // cell correctly spans all remaining columns (`cells.length - 1` to
+                    // match the post-splice cell count).
+                    const shapeModel: SwimLaneModel = swimLane.shape as SwimLaneModel;
+                    if (shapeModel.header && (shapeModel as SwimLane).hasHeader &&
+                        grid.rows[0].cells.length > 1 && index === 0) {
+                        grid.rows[0].cells[1].children = grid.rows[0].cells[0].children;
+                        grid.rows[0].cells[0].children = [];
+                        const headerRow: GridRow = grid.rows[0];
+                        const postSpliceSpan: number = headerRow.cells.length - 1;
+                        for (let k: number = 0; k < headerRow.cells.length; k++) {
+                            headerRow.cells[parseInt(k.toString(), 10)].minWidth = undefined;
+                            headerRow.cells[parseInt(k.toString(), 10)].columnSpan = (k === 1) ? postSpliceSpan : 1;
+                        }
+                    }
                     for (i = 0; i < grid.rows.length; i++) {
                         cell = grid.rows[parseInt(i.toString(), 10)].cells[parseInt(index.toString(), 10)];
                         if (cell && cell.children.length > 0) {
@@ -2189,6 +2507,104 @@ export function removeChildren(diagram: Diagram, canvas: Canvas): void {
     }
 }
 
+export function removeFinalPhase(
+    diagram: Diagram, grid: GridPanel, phase: NodeModel, phaseIndex: number, swimLane: NodeModel): void {
+    const shape: SwimLaneModel = swimLane.shape as SwimLaneModel;
+    const orientation: boolean = shape.orientation === 'Horizontal' ? true : false;
+    const hasHeader: boolean = shape.header && (shape as SwimLane).hasHeader ? true : false;
+    const phaseRowIndex: number = hasHeader ? (phaseIndex + 1) : phaseIndex;
+
+    // Capture whether the phase is currently selected so the swimlane selection fallback (D-07) fires.
+    let phaseWasSelected: boolean = false;
+    const selNodes: NodeModel[] = (diagram.selectedItems as any).nodes as NodeModel[];
+    if (selNodes && selNodes.length > 0) {
+        for (const n of selNodes) {
+            if (n && (n as Node).id === (phase as Node).id) {
+                phaseWasSelected = true;
+                break;
+            }
+        }
+    }
+
+    if (orientation) {
+        // Horizontal: `insertFirstPhase` adds a single phase row above the lane rows, leaves a
+        // single full-width column, and shrinks the lane row by `shape.phaseSize` so the grid
+        // stays within the swimlane's bounds. To undo first-phase insertion: drop the phase row
+        // and restore the absorbed height to the lane row that now shifts up.
+        deleteNode(diagram, phase);
+        const removedRowHeight: number = grid.rowDefinitions()[parseInt(phaseRowIndex.toString(), 10)].height;
+        grid.removeRow(phaseRowIndex);
+        const laneRowIndex: number = phaseRowIndex;
+        grid.updateRowHeight(laneRowIndex, grid.rowDefinitions()[parseInt(laneRowIndex.toString(), 10)].height + removedRowHeight, true);
+        swimLane.width =
+            (swimLane as Node).wrapper.children[0].width = grid.width = grid.actualSize.width;
+        swimLane.height =
+            (swimLane as Node).wrapper.children[0].height = grid.height = grid.actualSize.height;
+    } else {
+        // Vertical: `insertFirstPhase` inserts a phase column at index 0 (width = shape.phaseSize)
+        // and shrinks the existing lane column by the same amount, leaving the lane canvas and
+        // lane header child in column 1 of the (single) phase/lane row. To undo first-phase
+        // insertion: drop the phase column and grow the lane column by `shape.phaseSize`.
+        const phaseColWidth: number = grid.columnDefinitions()[parseInt(phaseIndex.toString(), 10)].width;
+        deleteNode(diagram, phase);
+        // 1049650: before `removeColumn(phaseIndex)`, shift the header row's content back to the
+        // lane column (cells[1]) so that after the splice (when cells[1] collapses into cells[0])
+        // the header content survives in the single remaining column. `insertFirstPhase` had
+        // re-balanced the header so cells[0] held the header children with columnSpan=2 and
+        // cells[1] was empty — `removeColumn(0)` would otherwise delete cells[0] and the header
+        // along with it. After the shift, the surviving header cell (which will become cells[0]
+        // post-splice) must span all remaining columns — so set its columnSpan to the post-splice
+        // cell count (`cells.length - 1`, since one cell is removed by `removeColumn`). When
+        // additional lanes were added at runtime (each `addLane` increments `cells[0].columnSpan`
+        // and inserts a new empty cell), the header row has more than 2 cells pre-splice, so
+        // `columnSpan = 1` would wrongly span only the first lane — using `cells.length - 1`
+        // keeps the header spanning the full swimlane width after the phase column is dropped.
+        if (hasHeader && grid.rows[0].cells.length > 1) {
+            grid.rows[0].cells[1].children = grid.rows[0].cells[0].children;
+            grid.rows[0].cells[0].children = [];
+            const fristRow: GridRow = grid.rows[0];
+            const postSpliceSpan: number = fristRow.cells.length - 1;
+            for (let i: number = 0; i < fristRow.cells.length; i++) {
+                fristRow.cells[parseInt(i.toString(), 10)].minWidth = undefined;
+                fristRow.cells[parseInt(i.toString(), 10)].columnSpan = (i === 1) ? postSpliceSpan : 1;
+            }
+        }
+        grid.removeColumn(phaseIndex);
+        const laneColIndex: number = phaseIndex;
+        grid.updateColumnWidth(
+            laneColIndex,
+            grid.columnDefinitions()[parseInt(laneColIndex.toString(), 10)].width + phaseColWidth,
+            true);
+        swimLane.width =
+            (swimLane as Node).wrapper.children[0].width = grid.width = grid.actualSize.width;
+        swimLane.height =
+            (swimLane as Node).wrapper.children[0].height = grid.height = grid.actualSize.height;
+    }
+
+    // Re-run the layout pass that downstream `addPhase` / `removePhase` callers expect after a
+    // final-phase mutation: header-span refresh + offset recompute for the lane rows.
+    swimLaneMeasureAndArrange(swimLane);
+    swimLane.width = (swimLane as Node).wrapper.actualSize.width;
+    swimLane.height = (swimLane as Node).wrapper.actualSize.height;
+    // 1049650: after `grid.removeRow` (horizontal, which shifts the lane row up by one) or
+    // `grid.removeColumn` (vertical, which shifts the lane canvas left by one), the lane Node's
+    // stored `rowIndex`/`columnIndex` fields are stale. Stale indices crash downstream helpers
+    // like `gridSelection` → `findBounds` (which reads `cells[columnIndex].children[0].bounds`
+    // at the stale index → `undefined.bounds` → TypeError). Run `ChangeLaneIndex` to refresh
+    // every lane child's rowIndex/columnIndex from the actual post-mutation grid layout —
+    // mirrors what the standard `removePhase` populated branch does via its own
+    // `ChangeLaneIndex(diagram, swimLane, (isHeader ? 1 : 0))` call.
+    ChangeLaneIndex(diagram, swimLane, hasHeader ? 1 : 0);
+
+    const connectors: string[] = getConnectors(diagram, grid, 0, true);
+    updateConnectorsProperties(connectors, diagram);
+
+    // Selection fallback (D-07): if the removed final phase was selected, select the swimlane.
+    if (phaseWasSelected) {
+        diagram.commandHandler.select(swimLane);
+    }
+}
+
 /**
  * removePhase method \
  *
@@ -2207,6 +2623,32 @@ export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeMo
     const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
     const phaseIndex: number = swimLanePhases ? shape.phases.indexOf(swimLanePhases) : findPhaseIndex(phase, swimLane);
     const phaseLength: number = shape.phases.length;
+    if (shape.phases.length === 1) {
+        // Optional Swimlane Phases (D-04): final-phase removal. Capture the PhaseModel (carries
+        // offset for deterministic undo replay), splice it out, record one history entry, then
+        // delegate to the no-sibling disposal helper. `isLastPhase` stays true because the only
+        // phase is also the last. The `isFinalPhase` flag is reserved for Phase 5 (history replay
+        // verification) — it will only be persisted if empirical replay tests prove it is required.
+        isLastPhase = true;
+        const undoObj: PhaseModel = cloneObject(shape.phases[parseInt(phaseIndex.toString(), 10)]) as PhaseModel;
+        shape.phases.splice(phaseIndex, 1);
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            const entry: HistoryEntry = {
+                type: 'PhaseCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                redoObject: cloneObject(phase), category: 'Internal',
+                isLastPhase: isLastPhase
+            };
+            (entry.undoObject as Node).laneGrids = (phase as Node).laneGrids;
+            (entry.redoObject as Node).laneGrids = (phase as Node).laneGrids;
+            diagram.addHistoryEntry(entry);
+        }
+        removeFinalPhase(diagram, grid, phase, phaseIndex, swimLane);
+        updateHeaderMaxWidth(diagram, swimLane);
+        checkPhaseOffset(swimLane, diagram);
+        diagram.protectPropertyChange(false);
+        diagram.updateDiagramObject(swimLane);
+        return;
+    }
     if (shape.phases.length > 1) {
         if (phaseIndex === phaseLength - 1) {
             isLastPhase = true;
@@ -2632,6 +3074,14 @@ export function checkSameLaneNodes(node1: Node, node2: Node, diagram: Diagram): 
 export function canLaneInterchange(laneNode: Node, diagram: Diagram): boolean {
     if (laneNode.isLane) {
         const lane: LaneModel = findLane(laneNode, diagram);
+        // 1049650: defensive guard — if the lane's stored rowIndex/columnIndex is stale relative
+        // to the current grid (e.g., after `insertFirstPhase` shifts the lane row/column before
+        // `ChangeLaneIndex` has refreshed indices), `findLaneIndex` may return -1 and
+        // `shape.lanes[-1]` evaluates to undefined. Return false (no interchange) instead of
+        // crashing with `Cannot read properties of undefined (reading 'canMove')`.
+        if (!lane) {
+            return false;
+        }
         const eventHandler: string = 'eventHandler';
         const resize: string = diagram[`${eventHandler}`].action;
         const canResize: boolean = resize.includes('Resize');

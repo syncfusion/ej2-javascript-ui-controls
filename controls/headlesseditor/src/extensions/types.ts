@@ -7,40 +7,24 @@
  * @module extensions/types
  */
 
-import type { MarkDefinition } from '../schema/types/mark-definition';
-import type { NodeDefinition } from '../schema/types/node-definition';
-import type { AttributeDefinition } from '../schema/types/attribute-definition';
-import type { Command } from '../commands/types';
-import type { EditorNode } from '../model/editor-node';
-import type { Selection } from '../model/selection';
+import type { MarkDefinition } from '../core/schema/types/mark-definition';
+import type { NodeDefinition } from '../core/schema/types/node-definition';
+import type { AttributeDefinition } from '../core/schema/types/attribute-definition';
+import type { Command } from '../core/commands/types';
+import type { EditorNode } from '../core/model/editor-node';
+import type { Selection } from '../core/model/selection';
 import type { HeadlessEditor } from '../headless-editor';
-import { EditorConfig } from '../model/editor-config';
+import { EditorConfig } from '../core/model/editor-config';
 
 /**
  * Single keyboard shortcut handler — a zero-arg function that returns
  * `true` when it handled the key (consumes it) or `false` to let the
  * next handler in the chain run. Used internally by the compiler and
  * plugin to type chain entries.
+ *
+ * @hidden
  */
 export type KeyboardShortcutHandler = () => boolean;
-
-/**
- * Unique identifier for an extension capability type.
- * Each capability maps to a contributor function in ExtensionConfig.
- */
-export type ExtensionCapability =
-    | 'Nodes'
-    | 'Marks'
-    | 'Commands'
-    | 'Keymaps'
-    | 'InputRules'
-    | 'PasteRules'
-    | 'Plugins'
-    | 'Serializers'
-    | 'GlobalAttributes'
-    | 'EventSubscriptions'
-    | 'DOMSpecs'
-    | 'NodeViews';
 
 /**
  * Describes the object returned by a NodeViewConstructor.
@@ -159,11 +143,6 @@ export interface ExtensionDOMSpecs {
 }
 
 /**
- * Generic payload type for commands and lifecycle hooks.
- */
-export type ContributorPayload = unknown;
-
-/**
  * PM-free context passed to every input rule handler at the point a pattern match fires.
  * All fields are read-only — handlers must not mutate the context.
  * Handlers must use only `dispatchCommand()` to modify editor state. Direct state
@@ -198,7 +177,14 @@ export interface InputRuleDefinition {
     readonly id: string;
     /** RegExp that is tested against the text immediately before the cursor. Must end with `$`. */
     readonly pattern: RegExp;
-    /** Handler invoked when the pattern matches. Use `ctx.dispatchCommand()` to act. */
+    /**
+     * Handler invoked when the pattern matches.
+     *
+     * @param ctx InputRuleContext containing:
+     *   - match: RegExpExecArray from pattern.exec()
+     *   - position: Current cursor position
+     *   - dispatchCommand(): Function to execute editor commands
+     */
     readonly handler: (ctx: InputRuleContext) => void;
     /** Priority for ordering rules (higher = earlier). Defaults to 0. */
     readonly priority?: number;
@@ -206,37 +192,6 @@ export interface InputRuleDefinition {
     readonly label?: string;
     readonly allowUndo?: boolean;
 }
-
-/** Context provided to dynamic placeholder callbacks. */
-export interface PlaceholderContext {
-    /** Type of the node currently receiving a placeholder. */
-    readonly nodeType: string;
-}
-
-/** Configuration options for the Placeholder Extension. */
-export interface PlaceholderOptions extends ExtensionOptions {
-    /** Placeholder text displayed for empty content. */
-    readonly placeholder: string | ((context: PlaceholderContext) => string);
-    /** CSS class applied to empty nodes displaying placeholders. */
-    readonly emptyNodeClass?: string | ((context: PlaceholderContext) => string);
-    /** Additional CSS class applied when the entire editor is empty. */
-    readonly emptyEditorClass?: string;
-    /** DOM attribute used to store placeholder text. */
-    readonly dataAttribute?: string;
-    /** Displays placeholders only for the currently active empty node. */
-    readonly showOnlyCurrent?: boolean;
-    /** Hides placeholders while the editor is in readonly mode. */
-    readonly showOnlyWhenEditable?: boolean;
-    /** Renders placeholders for nested nodes inside container structures. */
-    readonly includeChildren?: boolean;
-    /** Displays placeholders only when the entire editor is empty. */
-    readonly showOnlyWhenEditorEmpty?: boolean;
-}
-
-/**
- * Context type alias for capability contributors that don't require a specific shape.
- */
-export type ContributorContext = Record<string, unknown>;
 
 /**
  * Common, reusable options shared by built-in extensions (bold, italic,
@@ -256,6 +211,8 @@ export interface ExtensionOptions {
 /**
  * Extension lifecycle states.
  * Tracks the current state of an extension through registration, initialization, and destruction.
+ *
+ * @hidden
  */
 export enum ExtensionLifecycleState {
     /** Not yet registered */
@@ -331,29 +288,23 @@ export interface ExtensionConfig<TOptions extends object = object> {
     /** Contribute mark type definitions. */
     marks?: (this: ExtensionScope<TOptions>) => MarkDefinition[];
 
-    /** Contribute global attribute definitions. */
-    globalAttributes?: (this: ExtensionScope<TOptions>) => AttributeDefinition[];
-
     /** Contribute command definitions. */
     commands?: () => Command[];
 
     /** Contribute keyboard shortcut definitions. */
-    keyboardShortcuts?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => Record<string, Function>;
+    keyboardShortcuts?: (this: ExtensionScope<TOptions>, ctx: Record<string, unknown>) => Record<string, Function>;
 
     /** Contribute input rule definitions. */
-    inputRules?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => readonly InputRuleDefinition[];
+    inputRules?: (this: ExtensionScope<TOptions>, ctx: Record<string, unknown>) => readonly InputRuleDefinition[];
 
     /** Contribute paste rule definitions. */
-    pasteRules?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => readonly ContributorPayload[];
+    pasteRules?: (this: ExtensionScope<TOptions>, ctx: Record<string, unknown>) => readonly unknown[];
 
     /** Contribute editor plugins. */
-    plugins?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => readonly ContributorPayload[];
+    plugins?: (this: ExtensionScope<TOptions>, ctx: Record<string, unknown>) => readonly unknown[];
 
     /** Contribute serializer definitions. */
-    serializers?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => readonly ContributorPayload[];
-
-    /** Contribute event subscription definitions. */
-    eventSubscriptions?: (this: ExtensionScope<TOptions>, ctx: ContributorContext) => readonly ContributorPayload[];
+    serializers?: (this: ExtensionScope<TOptions>, ctx: Record<string, unknown>) => readonly unknown[];
 
     /**
      * Contribute DOM rendering specs for custom nodes and marks.
@@ -445,6 +396,8 @@ export interface ExtensionDefinition<TOptions extends object = object> {
 
 /**
  * Flattened extension with resolved dependencies.
+ *
+ * @hidden
  */
 export interface FlattenedExtension<TOptions extends object = object> {
     definition: ExtensionDefinition<TOptions>;

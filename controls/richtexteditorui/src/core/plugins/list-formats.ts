@@ -71,11 +71,11 @@ export interface BulletFormatList {
  */
 export const NumberFormatLists: readonly NumberFormatList[] = [
     { id: 'NumberDecimal',    text: 'Number',       command: 'setListStyle', listType: 'decimal' },
-    { id: 'NumberLowerGreek', text: 'Lower Greek',  command: 'setListStyle', listType: 'lowerGreek' },
-    { id: 'NumberLowerRoman', text: 'Lower Roman',  command: 'setListStyle', listType: 'lowerRoman' },
-    { id: 'NumberUpperAlpha', text: 'Upper Alpha',  command: 'setListStyle', listType: 'upperAlpha' },
-    { id: 'NumberLowerAlpha', text: 'Lower Alpha',  command: 'setListStyle', listType: 'lowerAlpha' },
-    { id: 'NumberUpperRoman', text: 'Upper Roman',  command: 'setListStyle', listType: 'upperRoman' }
+    { id: 'NumberLowerGreek', text: 'Lower Greek',  command: 'setListStyle', listType: 'lower-greek' },
+    { id: 'NumberLowerRoman', text: 'Lower Roman',  command: 'setListStyle', listType: 'lower-roman' },
+    { id: 'NumberUpperAlpha', text: 'Upper Alpha',  command: 'setListStyle', listType: 'upper-alpha' },
+    { id: 'NumberLowerAlpha', text: 'Lower Alpha',  command: 'setListStyle', listType: 'lower-alpha' },
+    { id: 'NumberUpperRoman', text: 'Upper Roman',  command: 'setListStyle', listType: 'upper-roman' }
 ];
 
 /**
@@ -172,7 +172,7 @@ export class ListFormats {
      * The command's behaviour, in priority order:
      *
      * 1. Unset marker (`'none'`) — lift the enclosing list items
-     *    out of any list via the typed `liftListItem` command. This
+     *    out of any list via the typed `outdentListItem` command. This
      *    clears the visual list-style without producing a new list.
      * 2. Numbered style — ensure the selection is wrapped in an
      *    ordered list through the typed `toggleOrderedList`
@@ -181,7 +181,7 @@ export class ListFormats {
      *    selection is not already in one.
      * 3. Bulleted style — same as above for `toggleBulletList`.
      *
-     * The list-style-type itself (e.g. `'lowerAlpha'`, `'disc'`)
+     * The list-style-type itself (e.g. `'lower-alpha'`, `'disc'`)
      * is a CSS-only attribute. The headless editor's list node
      * schema does not yet persist it as a node attribute (see
      * `extensions/builtins/list.d.ts`), so the command focuses on
@@ -266,10 +266,10 @@ export class ListFormats {
         if (listType === 'none') {
             // The unset marker — lift the current list items out
             // of the surrounding list so the list-style disappears
-            // entirely. `liftListItem` is the typed-commands facade
-            // entry for the headless editor's `liftListItemCommand`
+            // entirely. `outdentListItem` is the typed-commands facade
+            // entry for the headless editor's `outdentListItemCommand`
             // which performs the actual ProseMirror `lift`.
-            editor.commands.liftListItem();
+            editor.commands.outdentListItem();
             this.cacheActiveListStyle(editor, listType);
             return;
         }
@@ -285,6 +285,12 @@ export class ListFormats {
         if (this.isBulletedStyle(listType)) {
             // Bulleted style — same as above for the bullet list.
             editor.commands.toggleBulletList();
+            this.cacheActiveListStyle(editor, listType);
+            return;
+        }
+        if (this.isTaskStyle(listType)) {
+            // Task-list (checklist) style — toggle the headless
+            editor.commands.toggleTaskList();
             this.cacheActiveListStyle(editor, listType);
             return;
         }
@@ -325,6 +331,9 @@ export class ListFormats {
             break;
         case 'setListStyle':
             this.applySetListStyle(args.args as ListStyleTypeCommand);
+            break;
+        case 'checklist':
+            this.applyToggleTaskList(args.args as ListCommand);
             break;
         }
     }
@@ -372,9 +381,19 @@ export class ListFormats {
         if (!args || !args.listType) {
             return;
         }
-        this.tryExecuteListStyle(args.listType);
+        const listType: string = args.listType;
+        if (this.isNumberedStyle(listType as ListStyleType)) {
+            this.parent.editor.commands.toggleOrderedList({
+                listStyleType: listType
+            });
+            return;
+        }
+        if (this.isBulletedStyle(listType as ListStyleType)) {
+            this.parent.editor.commands.toggleBulletList({
+                listStyleType: listType
+            });
+        }
     }
-
     /**
      * Dispatch the registered `setListStyle` command. The command
      * is registered in the constructor, so this is a safe
@@ -410,11 +429,11 @@ export class ListFormats {
     private isNumberedStyle(listType: ListStyleType): boolean {
         switch (listType) {
         case 'decimal':
-        case 'lowerAlpha':
-        case 'upperAlpha':
-        case 'lowerRoman':
-        case 'upperRoman':
-        case 'lowerGreek':
+        case 'lower-alpha':
+        case 'upper-alpha':
+        case 'lower-roman':
+        case 'upper-roman':
+        case 'lower-greek':
             return true;
         default:
             return false;
@@ -439,6 +458,15 @@ export class ListFormats {
     }
 
     /**
+     * Type-guard for the task-list (checklist) family.
+     * @param {ListStyleType} listType - The list style type to check
+     * @returns {boolean} True if the style is a task-list style
+     */
+    private isTaskStyle(listType: ListStyleType): boolean {
+        return listType === 'task';
+    }
+
+    /**
      * Persist the requested list-style on the editor instance so
      * the toolbar can read the active style through
      * `editor.activeListStyle`. This is a forward-compatible
@@ -460,7 +488,23 @@ export class ListFormats {
         (editor as unknown as { activeListStyle?: ListStyleType }).activeListStyle = listType;
     }
 
-    private destroy(): void {
+    /**
+     * Apply toggle task list (checklist) command.
+     *
+     * Mirrors `applyToggleOrderedList` and `applyToggleBulletList` by
+     * calling the headless editor's registered `toggleTaskList`
+     * @param {ListCommand} args - The list command arguments
+     * @returns {void}
+     */
+    private applyToggleTaskList(args: ListCommand): void {
+        const keepMarks: boolean = !!(args && args.keepMarks);
+        this.parent.editor.commands.toggleTaskList();
+        if (args && args.listType) {
+            this.tryExecuteListStyle(args.listType);
+        }
+    }
+
+    public destroy(): void {
         this.removeEventListener();
     }
 }

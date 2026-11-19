@@ -927,6 +927,27 @@ export type GridType =
     'Dots';
 
 /**
+ * Defines the measurement unit of the rulers.
+ * Physical units convert at a fixed 96 diagram units per inch (the CSS inch).
+ * Pixel - Diagram units (default)
+ * Point - 1 pt = 96 / 72 diagram units
+ * Centimeter - 1 cm = 96 / 2.54 diagram units
+ * Millimeter - 1 mm = 96 / 25.4 diagram units
+ * Inch - 1 in = 96 diagram units
+ */
+export type MeasurementUnit =
+    /** Pixel - diagram units (default) */
+    'Pixel' |
+    /** Point - 96 / 72 diagram units */
+    'Point' |
+    /** Centimeter - 96 / 2.54 diagram units */
+    'Centimeter' |
+    /** Millimeter - 96 / 25.4 diagram units */
+    'Millimeter' |
+    /** Inch - 96 diagram units */
+    'Inch';
+
+/**
  * Defines how to decorate the text
  * Overline - Decorates the text with a line above the text
  * Underline - Decorates the text with an underline

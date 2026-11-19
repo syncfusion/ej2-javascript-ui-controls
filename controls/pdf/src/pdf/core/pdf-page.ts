@@ -1,19 +1,20 @@
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _PdfDictionary, _PdfReference, _PdfName } from './pdf-primitives';
-import { _areArrayEqual, _checkRotation, _getInheritableProperty, _getPageIndex, _isNullOrUndefined, _stringToBytes } from './utils';
+import { _checkRotation, _getInheritableProperty, _getPageIndex, _isNullOrUndefined, _stringToBytes } from './utils';
 import { PdfAnnotationCollection } from './annotations/annotation-collection';
 import { PdfGraphics, PdfGraphicsState, PdfBrush } from './graphics/pdf-graphics';
 import { _PdfBaseStream, _PdfContentStream } from './base-stream';
 import { PdfRotationAngle, PdfDestinationMode, PdfFormFieldsTabOrder, PdfPageOrientation, PdfLayoutBreakType, PdfLayoutType } from './enumerator';
-import { PdfDocument, PdfPageSettings } from './pdf-document';
+import { PdfDocument } from './pdf-document';
+import { PdfPageSettings, Point, Size, Rectangle, PdfShapeElement, PdfTextElement } from './pdf-document-helper';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfLayoutResult, _PdfLayoutParameters, PdfLayoutFormat } from './graphics/pdf-layouter';
 import { _PdfCatalog } from './pdf-catalog';
-import { Point, Size, Rectangle } from './pdf-type';
-import { PdfTextElement } from './pdf-type';
 import { PdfFont } from './fonts/pdf-standard-font';
 import { PdfStringFormat } from './fonts/pdf-string-format';
 import { _PdfStringLayouter, _PdfStringLayoutResult } from './fonts/string-layouter';
+import { PdfPageActions } from './actions/pdf-page-actions';
+import { _drawShapeElementWithPagination } from './graphics/pdf-shape-element';
 /**
  * Represents a page loaded from the PDF document.
  * ```typescript
@@ -28,6 +29,14 @@ import { _PdfStringLayouter, _PdfStringLayoutResult } from './fonts/string-layou
  * ```
  */
 export class PdfPage {
+    private _actions: PdfPageActions;
+    /**
+     * Tracks source pages whose interactive content has already been imported.
+     *
+     * @private
+     */
+    _importedInteractiveContent: Set<string> = new Set<string>();
+
     /**
      * Crossreference context for the page.
      *
@@ -532,6 +541,31 @@ export class PdfPage {
         return this._g;
     }
     /**
+     * Gets the actions associated with the page events.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * let page: PdfPage = document.addPage();
+     * // Get the page actions
+     * let actions: PdfPageActions = page.actions;
+     * // Create and assign an action to the page open event
+     * let action: PdfJavaScriptAction = new PdfJavaScriptAction('app.alert("Page opened");');
+     * actions.open = action;
+     * // Save and destroy the document
+     * document.save('output.pdf');
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfPageActions} The actions associated with the page events.
+     */
+    public get actions(): PdfPageActions {
+        if (!this._actions) {
+            this._actions = new PdfPageActions(this);
+        }
+        return this._actions;
+    }
+    /**
      * Draws a text element on the page at a given location.
      *
      * ```typescript
@@ -626,6 +660,43 @@ export class PdfPage {
         }
         this.graphics.drawString(element.text, element.font, bounds, element.pen, brush, element.stringFormat);
         return new PdfLayoutResult(this, bounds);
+    }
+    /**
+     * Draws a shape element on the page and paginates it to the following pages when it overflows the page height.
+     *
+     * The position and size of the shape are taken from the shape geometry. Content wider than the page is clipped
+     * to the page margin, and content taller than the page is continued on the next pages.
+     *
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * // Add a page
+     * let page: PdfPage = document.addPage();
+     * // Create a shape element
+     * let element: PdfShapeElement = {
+     *     shape: {
+     *         type: PdfShapeType.Rectangle,
+     *         bounds: { x: 20, y: 20, width: 100, height: 1000 }
+     *     },
+     *     brush: new PdfBrush({ r: 165, g: 42, b: 42 }),
+     *     layoutFormat: { layoutType: PdfLayoutType.paginate, breakType: PdfLayoutBreakType.fitPage }
+     * };
+     * // Draw the shape element with pagination
+     * let result: PdfLayoutResult = page.drawShapeElement(element);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfShapeElement} element The shape element to draw.
+     * @returns {PdfLayoutResult} The layout result containing the last page and the occupied bounds.
+     */
+    public drawShapeElement(element: PdfShapeElement): PdfLayoutResult {
+        if (typeof element === 'undefined' || element === null) {
+            throw new Error('PdfShapeElement cannot be null or undefined');
+        }
+        return _drawShapeElementWithPagination(this, element);
     }
     /**
      * Adds a widget annotation reference to the page's Annots array.
@@ -1007,6 +1078,27 @@ export class PdfPage {
         }
     }
     /**
+     * Generates a reusable template from the current PDF page.
+     *
+     * @returns {PdfTemplate} The reusable PDF template.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a template from the page content
+     * let template: PdfTemplate = page.createTemplate();
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public createTemplate(): PdfTemplate {
+        const template: PdfTemplate = this._contentTemplate;
+        template._sourcePage = this;
+        return template;
+    }
+    /**
      * Gets the page's combined content as a reusable template.
      *
      * @returns {PdfTemplate} Generated template containing the page content.
@@ -1019,14 +1111,11 @@ export class PdfPage {
         template._content.dictionary.set('Resources', this._resourceObject);
         if (this.cropBox[0] > 0 || this.cropBox[1] > 0) {
             template._content.dictionary.set('BBox', this.cropBox);
-            if (_areArrayEqual(this.cropBox, this.mediaBox)) {
-                template._size = {width: this.cropBox[0], height: this.cropBox[1]};
-            } else {
-                template._size = {width: this.cropBox[2], height: this.cropBox[3]};
-            }
+            template._size = {width: this.cropBox[2], height: this.cropBox[3]};
         } else if (this.mediaBox[0] > 0 || this.mediaBox[1] > 0) {
             template._content.dictionary.set('BBox', this.mediaBox);
-            template._size = {width: this.mediaBox[0], height: this.mediaBox[1]};
+            template._size = { width: Math.abs(this.mediaBox[2] - this.mediaBox[0]),
+                height: Math.abs(this.mediaBox[3] - this.mediaBox[1]) };
         } else {
             template._content.dictionary.set('BBox', [0, 0, this.size.width, this.size.height]);
             template._size = {width: this.size.width, height: this.size.height};

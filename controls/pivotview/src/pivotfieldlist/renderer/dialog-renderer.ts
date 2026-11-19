@@ -389,7 +389,9 @@ export class DialogRenderer {
                 locale: this.parent.locale,
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 width: this.parent.element.style.width,
-                position: { X: 'center', Y: this.parent.element.offsetTop },
+                position: {
+                    X: 'center', Y: (this.parent.pivotGridModule || this.parent.staticPivotGridModule || this.parent).element.offsetTop
+                },
                 footerTemplate: template,
                 closeOnEscape: false,
                 cssClass: this.parent.cssClass,
@@ -411,6 +413,23 @@ export class DialogRenderer {
     }
 
     private beforeOpen(): void {
+        const pivotElement: HTMLElement = (this.parent.pivotGridModule || this.parent.staticPivotGridModule || this.parent).element;
+        const dialogElement: HTMLElement = this.fieldListDialog.element;
+        dialogElement.style.visibility = 'hidden';
+        dialogElement.classList.remove('e-popup-close');
+        const dialogHeight: number = dialogElement.offsetHeight;
+        dialogElement.classList.add('e-popup-close');
+        dialogElement.style.visibility = '';
+        let componentHeight: number = 0;
+        if (this.parent.pivotGridModule) {
+            componentHeight = this.parent.pivotGridModule.getComponentHeight();
+        } else if (this.parent.staticPivotGridModule) {
+            componentHeight = this.parent.staticPivotGridModule.getComponentHeight();
+        }
+        const pivotHeight: number = componentHeight || pivotElement.offsetHeight;
+        const top: number = pivotElement.offsetTop + (dialogHeight < pivotHeight ?
+            (pivotHeight - dialogHeight) / 2 : 0);
+        this.fieldListDialog.setProperties({ position: { X: 'center', Y: top } });
         if (!isNullOrUndefined(this.parent.pivotFieldList) && this.parent.clonedFieldList &&
             Object.keys(this.parent.clonedFieldList).length === 0 && (this.parent.isDeferLayoutUpdate || (this.parent.pivotGridModule &&
                 this.parent.pivotGridModule.pivotDeferLayoutUpdate))) {

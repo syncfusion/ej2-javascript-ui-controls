@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { ISlashCommandItem } from '../../common/interface';import { SlashCommandItems } from '../../common/types';
+import { ChildProperty, Property, Event, EmitType } from '@syncfusion/ej2-base';import { ISlashCommandItem, SlashCommandItemSelectArgs } from '../../common/interface';import { SlashCommandItems } from '../../common/types';
 
 /**
  * Interface for a class SlashCommandSettings
@@ -15,7 +15,7 @@ export interface SlashCommandSettingsModel {
     /**
      * Defines the items to be displayed in the slash command popup.
      *
-     * @default ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Blockquote', 'Table', 'Link', 'Image']
+     * @default ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'NumberedList', 'BulletList', 'Checklist', 'Blockquote', 'Table', 'Link', 'Image', 'Collapsible Paragraph', 'Collapsible Heading 1', 'Collapsible Heading 2', 'Collapsible Heading 3', 'Collapsible Heading 4', 'Info', 'Warning', 'Error', 'Success', 'Note' ]
      */
     items?: (SlashCommandItems | ISlashCommandItem)[];
 
@@ -36,5 +36,16 @@ export interface SlashCommandSettingsModel {
      * @aspType string
      */
     popupHeight?: string | number;
+
+    /**
+     * Raised when a slash command item is selected from the slash command popup.
+     *
+     * Set `args.cancel` to `true` inside the handler to prevent the default
+     * command execution. The event args are of type
+     * {@link SlashCommandItemSelectArgs}.
+     *
+     * @event itemSelect
+     */
+    itemSelect?: EmitType<SlashCommandItemSelectArgs>;
 
 }

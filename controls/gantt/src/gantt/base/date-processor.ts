@@ -21,6 +21,10 @@ export class DateProcessor {
     protected parent: Gantt;
     private prevProjectStartDate: Date;
     private fromSegments: boolean = false;
+    /**  @hidden */
+    public endDateFromDurationCache: Map<string, Date> = new Map<string, Date>();
+    private calendarContextIds: WeakMap<Object, number> = new WeakMap<Object, number>();
+    private nextCalendarContextId: number = 1;
     private mondayTimeRangeLength: number = 0;
     private tuesdayTimeRangeLength: number = 0;
     private wednesdayTimeRangeLength: number = 0;
@@ -1100,6 +1104,18 @@ export class DateProcessor {
 
     private calculateEndDateFromDuration(startDate: Date, totalSeconds: number, ganttProp: ITaskData, validateAsMilestone: boolean,
                                          calendarContext: CalendarContext, isBaseline: boolean, ignoreAutoSchedule?: boolean): Date {
+        if (!this.calendarContextIds.has(calendarContext)) {
+            this.calendarContextIds.set(calendarContext, this.nextCalendarContextId++);
+        }
+        const contextId: number = this.calendarContextIds.get(calendarContext);
+        const cacheKey: string = startDate.getTime() + '|' + totalSeconds + '|' +
+            (ganttProp.isAutoSchedule ? 1 : 0) + '|' + (isBaseline ? 1 : 0) + '|' +
+            (ignoreAutoSchedule ? 1 : 0) + '|' + (validateAsMilestone ? 1 : 0) +
+            '|' + contextId;
+        const cached: Date = this.endDateFromDurationCache.get(cacheKey);
+        if (cached !== undefined) {
+            return new Date(cached.getTime());
+        }
         let current: Date = new Date(startDate.getTime());
         let endDate: Date = new Date(startDate.getTime());
         let remainingSeconds: number = totalSeconds;
@@ -2059,13 +2075,27 @@ export class DateProcessor {
             minStartDate = this.getDateFromFormat(new Date());
             maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
         } else if (flatData.length > 0) {
-            const sortedStartDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
-                ((new Date(a[this.parent.taskFields.startDate])).getTime() -
-                (new Date(b[this.parent.taskFields.startDate])).getTime()));
-            const sortedEndDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
-                ((new Date(b[this.parent.taskFields.endDate])).getTime() - (new Date(a[this.parent.taskFields.endDate])).getTime()));
-            minStartDate = sortedStartDate[0][this.parent.taskFields.startDate];
-            maxEndDate = sortedEndDate[sortedEndDate.length - 1][this.parent.taskFields.endDate];
+            // Single O(n) scan replacing two O(n log n) sort passes (each comparator allocated 2 Date objects).
+            // Semantics preserved: minStartDate = smallest start date (head of the former ascending sort).
+            // maxEndDate = head of the former DESCENDING end sort is the max end; its tail is the MIN end date,
+            // so the former code took the smallest endDate - replicate by tracking the minimum end key.
+            const startDateField: string = this.parent.taskFields.startDate;
+            const endDateField: string = this.parent.taskFields.endDate;
+            let minStartKey: number = null;
+            let minEndKey: number = null;
+            for (let i: number = 0; i < flatData.length; i++) {
+                const record: object = flatData[i as number];
+                const startKey: number = new Date(record[(startDateField as string)]).getTime();
+                const endKey: number = new Date(record[(endDateField as string)]).getTime();
+                if (minStartKey === null || startKey < minStartKey) {
+                    minStartKey = startKey;
+                    minStartDate = record[(startDateField as string)];
+                }
+                if (minEndKey === null || endKey < minEndKey) {
+                    minEndKey = endKey;
+                    maxEndDate = record[(endDateField as string)];
+                }
+            }
         }
         this.parent.cloneProjectStartDate = projectStartDate ? new Date(projectStartDate.getTime()) :
             typeof minStartDate === 'string' ? new Date(minStartDate) : minStartDate;

@@ -470,3 +470,9 @@ export const invalidFormula: string = 'Invalid formula';
 export const fieldListRefresh: string = 'Field list refreshed';
 /** @hidden */
 export const valueSettingsDialogClosed: string = 'Value settings dialog closed';
+/** @hidden */
+export const getWebMcpTools: string = 'getWebMcpTools';
+/** @hidden */
+export const registerWebMcpTools: string = 'registerWebMcpTools';
+/** @hidden */
+export const executeWebMcpTool: string = 'executeWebMcpTool';

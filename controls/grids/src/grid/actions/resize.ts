@@ -1,4 +1,4 @@
-import { EventHandler, detach, formatUnit, Browser, closest } from '@syncfusion/ej2-base';
+import { EventHandler, detach, formatUnit, Browser, closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs, DistributeColWidth } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
@@ -352,6 +352,7 @@ export class Resize implements IAction {
         this.parent.on(events.contentReady, this.autoFit, this);
         this.parent.on(events.refreshHandlers, this.refreshHeight, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.keyPressed, this.keyPressHandler, this);
     }
 
     /**
@@ -367,6 +368,7 @@ export class Resize implements IAction {
         this.parent.off(events.initialEnd, this.wireEvents);
         this.parent.off(events.refreshHandlers, this.refreshHeight);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.keyPressed, this.keyPressHandler);
     }
 
     /**
@@ -536,9 +538,9 @@ export class Resize implements IAction {
     }
 
     private getWidth(width: number, minWidth: number, maxWidth: number): number {
-        if (minWidth && width < minWidth) {
+        if (!isNullOrUndefined(minWidth) && width < minWidth) {
             return minWidth;
-        } else if ((maxWidth && width > maxWidth)) {
+        } else if (!isNullOrUndefined(maxWidth) && width > maxWidth) {
             return maxWidth;
         } else {
             return width;
@@ -556,8 +558,8 @@ export class Resize implements IAction {
         return {
             width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto'  ? '0'
                 : this.widthService.getWidth(column).toString()) + mousemove,
-            minWidth: column.minWidth ? parseFloat(column.minWidth.toString()) : null,
-            maxWidth: column.maxWidth ? parseFloat(column.maxWidth.toString()) : null
+            minWidth: !isNullOrUndefined(column.minWidth) ? parseFloat(column.minWidth.toString()) : null,
+            maxWidth: !isNullOrUndefined(column.maxWidth) ? parseFloat(column.maxWidth.toString()) : null
         };
     }
 
@@ -908,7 +910,7 @@ export class Resize implements IAction {
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         this.parent.log('resize_min_max', { column: this.column, width });
         if (((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX))) {
-            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
+            width = !isNullOrUndefined(this.column.minWidth) ? parseFloat(this.column.minWidth.toString()) : 10;
             this.pageX = pageX = this.minMove;
         }
         if (width !== parseFloat(isNullOrUndefined(this.column.width) || this.column.width === 'auto' ?
@@ -936,7 +938,7 @@ export class Resize implements IAction {
                 if (col.visible) {
                     columnWidth += parseInt(col.width.toString(), 10);
                 }
-                return col.visible && (col.maxWidth || col.minWidth);
+                return col.visible && (!isNullOrUndefined(col.maxWidth) || !isNullOrUndefined(col.minWidth));
             });
             if (this.parent.resizeSettings.mode === 'Auto' && minMaxCols.length && columnWidth < this.parentElementWidth) {
                 const columns: Column[] = this.parent.getColumns().filter((col: Column) => col.visible && col.uid !== this.column.uid);
@@ -967,13 +969,13 @@ export class Resize implements IAction {
         let extraWidth: number = 0;
         for (const col of columns) {
             const afterIncDec: number = parseFloat(col.width.toString()) - incDecWidth;
-            if (col.minWidth && afterIncDec < parseInt(col.minWidth.toString(), 10)) {
+            if (!isNullOrUndefined(col.minWidth) && afterIncDec < parseInt(col.minWidth.toString(), 10)) {
                 const remainWidth: number = parseFloat((parseInt(col.minWidth.toString(), 10) - afterIncDec).toFixed(3));
                 extraWidth += remainWidth;
                 usedWidth += (absIncDecWidth - remainWidth);
                 col.width = col.minWidth;
                 appliedColumns.push(col);
-            } else if (col.maxWidth && afterIncDec > parseInt(col.maxWidth.toString(), 10)) {
+            } else if (!isNullOrUndefined(col.maxWidth) && afterIncDec > parseInt(col.maxWidth.toString(), 10)) {
                 const remainWidth: number = parseFloat((afterIncDec - parseInt(col.maxWidth.toString(), 10)).toFixed(3));
                 extraWidth += remainWidth;
                 usedWidth += (absIncDecWidth - remainWidth);
@@ -1125,6 +1127,41 @@ export class Resize implements IAction {
             }
         }
         return width;
+    }
+    /**
+     * Resize the focused column with Alt + Left / Right arrow keys.
+     * The key press runs the same start, move, and stop path as a mouse drag.
+     * Right increases width; Left decreases width. RTL reverses the direction.
+     *
+     * @param {KeyboardEventArgs} e - Keyboard event args from the grid key handler.
+     * @returns {void}
+     * @hidden
+     */
+    private keyPressHandler(e: KeyboardEventArgs): void {
+        if (!this.parent.allowResizing || !this.parent.allowKeyboard || this.parent.isEdit) {
+            return;
+        }
+        // Alt+arrow is the resize binding on both Windows and Mac. A bare arrow must not resize.
+        const increase: boolean = e.altKey && e.action === 'altRightArrow';
+        const decrease: boolean = e.altKey && e.action === 'altLeftArrow';
+        if (!increase && !decrease) {
+            return;
+        }
+        const headerCell: HTMLElement = closest(e.target as Element, '.e-headercell') as HTMLElement;
+        const handler: HTMLElement = headerCell && headerCell.querySelector('.' + resizeClassList.root) as HTMLElement;
+        if (!handler) {
+            return;
+        }
+        const step: number = this.parent.resizeSettings.resizeStep;
+        const delta: number = (this.parent.enableRtl ? decrease : increase) ? step : -step;
+        e.preventDefault();
+        const startEvent: PointerEvent = { target: handler, pageX: 0 } as unknown as PointerEvent;
+        this.resizeStart(startEvent);
+        if (!this.helper || !this.column) {
+            return;
+        }
+        this.resizing({ pageX: this.parent.enableRtl ? -delta : delta } as PointerEvent);
+        this.resizeEnd({} as PointerEvent);
     }
 
     private getTargetColumn(e: PointerEvent | TouchEvent): Column {

@@ -1,6 +1,6 @@
 import { L10n, createElement, remove } from '@syncfusion/ej2-base';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { BorderType, DocumentEditor } from '../../../document-editor/index';
+import { BorderType } from '../../../document-editor/index';
 import { RibbonGroupModel, RibbonItemType, RibbonItemModel, RibbonItemSize } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 import { ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
@@ -16,6 +16,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * BordersGroup class provides the borders and shading options for table design
+ *
  * @private
  */
 export class BordersGroup {
@@ -30,6 +31,7 @@ export class BordersGroup {
 
     /**
      * Constructor for the BordersGroup class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -46,6 +48,7 @@ export class BordersGroup {
 
     /**
      * Gets the Borders group configuration
+     *
      * @returns {RibbonGroupModel} RibbonGroupModel for the Borders group
      */
     public getBordersGroup(): RibbonGroupModel {
@@ -73,6 +76,7 @@ export class BordersGroup {
 
     /**
      * Gets the Borders dropdown configuration
+     *
      * @returns {RibbonItemModel} RibbonItemModel for the Borders dropdown
      */
     private getBordersDropdown(): RibbonItemModel {
@@ -96,6 +100,7 @@ export class BordersGroup {
 
     /**
      * Gets the Border Color Picker configuration
+     *
      * @returns {RibbonItemModel} RibbonItemModel for the Border Color Picker
      */
     private getBorderColorPicker(): RibbonItemModel {
@@ -121,6 +126,7 @@ export class BordersGroup {
 
     /**
      * Gets the Border Width Dropdown configuration
+     *
      * @returns {RibbonItemModel} RibbonItemModel for the Border Width Dropdown
      */
     private getBorderWidthDropdown(): RibbonItemModel {
@@ -171,6 +177,7 @@ export class BordersGroup {
 
     /**
      * Creates the border size dropdown items
+     *
      * @param {HTMLElement} ulTag - The ul element to append the items to
      * @returns {void}
      */
@@ -197,6 +204,7 @@ export class BordersGroup {
 
     /**
      * Handles border width change
+     *
      * @param {string} width - The selected border width
      * @returns {void}
      */
@@ -214,6 +222,7 @@ export class BordersGroup {
 
     /**
      * Applies the border based on the selected option
+     *
      * @param {string} borderId - The ID of the selected border option
      * @returns {void}
      */
@@ -224,6 +233,7 @@ export class BordersGroup {
 
     /**
      * Clean up resources when destroyed
+     *
      * @returns {void}
      */
     public destroy(): void {

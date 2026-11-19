@@ -681,7 +681,8 @@ export class CommentPane {
         if (this.parent) {
             const elements: HTMLCollectionOf<Element> = this.parent.getElementsByClassName(className);
             for (let i: number = 0; i < elements.length; i++) {
-                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                if (this.owner.documentEditorSettings.commentSettings &&
+                    this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                     if (className === 'e-de-cmt-selection') {
                         (elements[i] as HTMLElement).style.borderLeftColor = '';
                     }
@@ -703,7 +704,8 @@ export class CommentPane {
             const selectedElement: HTMLElement = commentView.parentElement;
             if (selectedElement) {
                 classList(selectedElement, ['e-de-cmt-selection'], []);
-                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                if (this.owner.documentEditorSettings.commentSettings &&
+                    this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                     const authorColor: string = this.owner.documentHelper.getAuthorColor(comment.author);
                     (selectedElement as HTMLElement).style.borderLeftColor = authorColor;
                 }
@@ -1329,12 +1331,14 @@ export class CommentView {
         if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
             commentStart.commentMark.classList.add('e-de-cmt-mark-hover');
             
-            if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+            if (this.owner.documentEditorSettings.commentSettings &&
+                this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                 // Use helper method to update comment mark colors on hover
                 commentStart.updateCommentMarkColorOnHover();
             }
         }
-        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+        if (this.owner.documentEditorSettings.commentSettings &&
+            this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
             // For reply comments, apply border to parent comment's element
             if (this.comment.isReply) {
                 const parentCommentView: CommentView = this.commentPane.comments.get(this.comment.ownerComment);
@@ -1363,13 +1367,15 @@ export class CommentView {
             if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
                 commentStart.commentMark.classList.remove('e-de-cmt-mark-hover');
 
-                if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+                if (this.owner.documentEditorSettings.commentSettings &&
+                    this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
                     // Use helper method to update comment mark colors on unhover
                     commentStart.updateCommentMarkColorOnUnhover();
                 }
             }
         }
-        if (this.owner.documentEditorSettings.highlightCommentsByAuthor) {
+        if (this.owner.documentEditorSettings.commentSettings &&
+            this.owner.documentEditorSettings.commentSettings.highlightCommentsByAuthor) {
             // For reply comments, clear border on parent comment's element
             if (this.comment.isReply) {
                 const parentCommentView: CommentView = this.commentPane.comments.get(this.comment.ownerComment);

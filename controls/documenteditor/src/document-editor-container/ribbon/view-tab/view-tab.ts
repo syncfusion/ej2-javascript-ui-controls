@@ -3,13 +3,13 @@ import { RibbonTabModel } from '@syncfusion/ej2-ribbon';
 import { ViewsGroup } from './views-group';
 import { ZoomGroup } from './zoom-group';
 import { ShowGroup } from './show-group';
-import { RibbonConstants } from '../ribbon-constants';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 
 export const VIEW_TAB_ID: string = '_view_tab';
 
 /**
  * View tab implementation
+ *
  * @private
  */
 export class ViewTab {
@@ -23,6 +23,7 @@ export class ViewTab {
 
     /**
      * Constructor for ViewTab class
+     *
      * @param {DocumentEditorContainer} container - DocumentEditorContainer instance
      */
     constructor(container: DocumentEditorContainer) {
@@ -36,6 +37,7 @@ export class ViewTab {
 
     /**
      * Get the View tab configuration
+     *
      * @returns {RibbonTabModel} The ribbon tab model
      */
     public getViewTab(): RibbonTabModel {
@@ -52,6 +54,7 @@ export class ViewTab {
     }
     /**
      * Handle selection change to update ribbon controls state
+     *
      * @returns {void}
      */
     public onSelectionChange(): void {
@@ -62,6 +65,7 @@ export class ViewTab {
     /**
      * Clean up resources when tab is destroyed
      * This method properly disposes all group components and clears references
+     *
      * @returns {void}
      */
     public destroy(): void {

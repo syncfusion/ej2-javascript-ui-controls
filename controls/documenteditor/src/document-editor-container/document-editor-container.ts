@@ -2,19 +2,19 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Mod
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
-import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';
+import { DocumentEditor, DocumentEditorSettings, DocumentEditorWebMcpSettings, DocumentSettings } from '../document-editor/document-editor';
 import { HeaderFooterProperties } from './properties-pane/header-footer-pane';
 import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType, WebMcpToolExecuteEventArgs, WebMcpTool } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
+import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentEditorWebMcpSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, internalAsyncPagesVisible } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste, internalAsyncPagesVisible, internalFormatPainterStateChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -23,6 +23,7 @@ import { Ribbon } from './ribbon/ribbon';
 import { BackStageMenuModel } from '@syncfusion/ej2-ribbon';
 import { defaultLocaleStrings } from './locale-strings';
 import { IToolbarHandler } from './helper/toolbar-handler';
+import { WebMcpDocumentEditor } from '../document-editor/integrations/webmcp-adapter';
 /**
  * Document Editor container component.
  */
@@ -146,6 +147,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(true)
     public enableAutoFocus: boolean;
     /**
+     * Enables WebMCP tools for AI agent integration.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWebMcp: boolean;
+    /**
      * Enables the partial lock and edit module.
      *
      * @default false
@@ -167,6 +175,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Specifies the toolbar mode for the document editor container. Two modes are available: 'Toolbar' and 'Ribbon'.
+     *
      * @default 'Toolbar'
      */
     @Property('Toolbar')
@@ -201,7 +210,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * This event is triggered before content is pasted in Document Editor.
      *
-     * @event
+     * @event beforePaste
      * @returns {void}
      */
     @Event()
@@ -213,6 +222,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
+    /**
+     * Triggers before a WebMCP tool is executed, allowing cancellation or confirmation.
+     *
+     * @event beforeWebMcpToolExecute
+     */
+    @Event()
+    public beforeWebMcpToolExecute: EmitType<WebMcpToolExecuteEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
      *
@@ -444,12 +460,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Defines toolbar items for DocumentEditorContainer.
      *
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','TextBox','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields', 'ContentControl', 'XML Mapping'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'TextBox', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields', 'ContentControl', 'XML Mapping'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     /* eslint-enable max-len */
-    /* eslint-disable */
     /**
      * Adds the custom headers to XMLHttpRequest.
      *
@@ -478,7 +493,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(undefined)
     public backstageMenu: BackStageMenuModel;
 
-    /* eslint-enable */
     /**
      * Gets the DocumentEditor instance.
      *
@@ -619,6 +633,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.refreshFontFamilies(fontFamilyValue);
                     }
                     break;
+                case 'webMcpSettings':
+                    if (this.documentEditor) {
+                        this.documentEditor.webMcpSettings = this.webMcpSettings;
+                    }
+                    break;
                 case 'toolbarItems':
                     if (this.toolbarModule) {
                         this.toolbarModule.reInitToolbarItems(newModel.toolbarItems);
@@ -670,6 +689,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'enableAutoFocus':
                     if (this.documentEditor) {
                         this.documentEditor.enableAutoFocus = newModel.enableAutoFocus;
+                    }
+                    break;
+                case 'enableWebMcp':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableWebMcp = newModel.enableWebMcp;
                     }
                     break;
                 case 'autoResizeOnVisibilityChange':
@@ -940,8 +964,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.allowHyphensInBookmarkNames)) {
             this.documentEditor.documentEditorSettings.allowHyphensInBookmarkNames = this.documentEditorSettings.allowHyphensInBookmarkNames;
         }
-        if (!isNullOrUndefined(this.documentEditorSettings.highlightCommentsByAuthor)) {
-            this.documentEditor.documentEditorSettings.highlightCommentsByAuthor = this.documentEditorSettings.highlightCommentsByAuthor;
+        if (!isNullOrUndefined(this.documentEditorSettings.commentSettings)) {
+            if (!isNullOrUndefined(this.documentEditorSettings.commentSettings.highlightCommentsByAuthor)) {
+                this.documentEditor.documentEditorSettings.commentSettings.highlightCommentsByAuthor = this.documentEditorSettings.commentSettings.highlightCommentsByAuthor;
+            }
         }
     }
     /**
@@ -965,6 +991,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     member: 'toolbar', args: [this]
                 });
             }
+        }
+
+        // Add WebMcpDocumentEditor module if enabled
+        if (this.enableWebMcp) {
+            DocumentEditor.Inject(WebMcpDocumentEditor);
+            modules.push({ member: 'WebMcpDocumentEditor', args: [this] });
         }
 
         return modules;
@@ -1062,6 +1094,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
             beforeXmlHttpRequestSend: this.beforeXmlHttpSend.bind(this),
+            beforeWebMcpToolExecute: this.onBeforeWebMcpToolExecute.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -1076,7 +1109,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             showRevisions: true,
             showComments: true,
             enableLockAndEdit: this.enableLockAndEdit,
-            enableAutoFocus: this.enableAutoFocus
+            enableAutoFocus: this.enableAutoFocus,
+            enableWebMcp: this.enableWebMcp,
+            webMcpSettings:this.webMcpSettings
+            
         });
         // Pass isAngular property from container to document editor
         this.documentEditorInternal.isAngular = this.isModalDialog;
@@ -1104,7 +1140,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
         this.documentEditor.on(trackChanges, this.onEnableTrackChanges, this);
         this.documentEditor.on(internalOptionPaneChange, this.onOptionPaneChange, this);
-        this.documentEditor.on('isReadOnlyChanged', this.onReadOnlyChanged, this)
+        this.documentEditor.on(internalFormatPainterStateChange, this.onFormatPainterChanged, this);
+        this.documentEditor.on('isReadOnlyChanged', this.onReadOnlyChanged, this);
     }
 
     private onWindowResize(): void {
@@ -1163,7 +1200,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
         this.documentEditor.off(internalStyleCollectionChange, this.updateStyleCollection);
         this.documentEditor.off(internalAsyncPagesVisible, this.onAsyncPagesVisible);
+        this.documentEditor.off(internalFormatPainterStateChange, this.onFormatPainterChanged);
     }
+    private onFormatPainterChanged(): void {
+        // Refresh the ribbon button directly. updateRibbonState only updates the
+        // selected tab, so the pressed state would be lost while another tab is open.
+        const homeTab: any = this.ribbonModule && this.ribbonModule.tabManager ?
+            this.ribbonModule.tabManager.homeTab : undefined;
+        if (homeTab && homeTab.clipboardGroup) {
+            homeTab.clipboardGroup.updateSelection();
+        }
+    };
     private onCommentBegin(): void {
         if (this.toolbarHandler) {
             this.toolbarHandler.enableDisableInsertComment(false);
@@ -1197,6 +1244,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
         this.trigger(beforePaneSwitchEvent, args);
+    }
+    /**
+     * Handles the beforeWebMcpToolExecute event from the internal DocumentEditor.
+     *
+     * @param {WebMcpToolExecuteEventArgs} args - The WebMCP tool execute event arguments.
+     * @returns {void}
+     * @private
+     */
+    private onBeforeWebMcpToolExecute(args: WebMcpToolExecuteEventArgs): void {
+        this.trigger('beforeWebMcpToolExecute', args);
     }
     /**
      * @private
@@ -1623,6 +1680,29 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         HelperMethods.writeCharacterFormatProperties(this.documentEditor.documentHelper.characterFormat, format);
         return format;
     }
+
+    /**
+     * Gets all registered WebMCP tools for this component instance.
+     *
+     * @param {string[]} [toolNames] - Optional: specific tool names to retrieve
+     * @returns {WebMcpTool[]} Array of WebMCP tool definitions
+     */
+    public getWebMcpTools(toolNames?: string[]): WebMcpTool[] {
+        // Delegate to DocumentEditor which has WebMcpDocumentEditor injected
+        if (this.documentEditor) {
+            return this.documentEditor.getWebMcpTools(toolNames);
+        }
+        return [];
+    }
+
+    /**
+         * Specifies the WebMCP integration settings for the DocumentEditor.
+         * Use `name`, `tools`, and `exposedTo` to customize registration.
+         *
+         * @default {}
+         */
+        @Complex<DocumentEditorWebMcpSettingsModel>({}, DocumentEditorWebMcpSettings)
+        public webMcpSettings: DocumentEditorWebMcpSettingsModel;
 
     /**
      * Destroys all managed resources used by this object. 
