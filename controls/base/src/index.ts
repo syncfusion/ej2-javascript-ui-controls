@@ -28,5 +28,3 @@ export * from './util';
 export * from './dom';
 export * from './observer';
 export * from './sanitize-helper';
-export * from './validate-lic';
-export * from './telemetry';
